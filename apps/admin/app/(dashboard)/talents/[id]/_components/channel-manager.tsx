@@ -1,29 +1,13 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-  EmptyState,
-  Button as UIButton,
-} from '@shinju-date/ui'
+import { EmptyState, Button as UIButton } from '@shinju-date/ui'
 import { ExternalLink, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useActionToast } from '@/components/action-toast'
 import { ConfirmDialog } from '@/components/confirm-dialog'
-import type { FormState } from '@/components/form'
-import Form, {
-  ErrorMessage,
-  FormField,
-  Input,
-  Label,
-  SubmitButton,
-} from '@/components/form'
+import { ErrorMessage, FormField, Input, Label } from '@/components/form'
+import { FormDialog } from '@/components/form-dialog'
 import { Panel } from '@/components/panel'
 import {
   addYouTubeChannelAction,
@@ -46,7 +30,6 @@ export function ChannelManager({
   channels,
   isDeleted,
 }: ChannelManagerProps) {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [deletingChannelId, setDeletingChannelId] = useState<string | null>(
     null,
   )
@@ -54,20 +37,6 @@ export function ChannelManager({
   const [removalTarget, setRemovalTarget] = useState<Channel | null>(null)
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
   const { showToast } = useActionToast()
-
-  const handleAddChannel = async (
-    currentState: FormState,
-    formData: FormData,
-  ): Promise<FormState> => {
-    const result = await addYouTubeChannelAction(currentState, formData)
-
-    // Close dialog on success
-    if (result.success) {
-      setIsAddDialogOpen(false)
-    }
-
-    return result
-  }
 
   const handleRemoveChannel = async (channelId: string) => {
     setDeletingChannelId(channelId)
@@ -89,49 +58,37 @@ export function ChannelManager({
       <Panel
         actions={
           !isDeleted && (
-            <Dialog onOpenChange={setIsAddDialogOpen} open={isAddDialogOpen}>
-              <UIButton
-                onClick={() => setIsAddDialogOpen(true)}
-                type="button"
-                variant="secondary"
-              >
-                <Plus aria-hidden="true" className="mr-2 size-4" />
-                チャンネルを追加
-              </UIButton>
-              <DialogPortal>
-                <DialogOverlay />
-                <DialogContent>
-                  <DialogTitle>YouTubeチャンネルを追加</DialogTitle>
-                  <DialogDescription>
-                    ハンドル、チャンネルID、またはYouTube
-                    URLを入力してください。追加時にYouTube
-                    APIから名前とハンドルを取得します。
-                  </DialogDescription>
-                  <Form action={handleAddChannel} className="space-y-4">
-                    <input name="talent_id" type="hidden" value={talentId} />
-                    <FormField name="youtube_channel_id">
-                      <Label>ハンドル / チャンネルID / URL</Label>
-                      <Input
-                        placeholder="@handle または https://youtube.com/@handle"
-                        required
-                      />
-                      <p className="mt-1 text-caption text-muted">
-                        例: @example、https://www.youtube.com/@example、UCxxx...
-                      </p>
-                      <ErrorMessage />
-                    </FormField>
-                    <div className="flex justify-end gap-2">
-                      <DialogClose asChild>
-                        <UIButton type="button" variant="secondary">
-                          キャンセル
-                        </UIButton>
-                      </DialogClose>
-                      <SubmitButton>追加</SubmitButton>
-                    </div>
-                  </Form>
-                </DialogContent>
-              </DialogPortal>
-            </Dialog>
+            <FormDialog
+              action={addYouTubeChannelAction}
+              description={
+                <>
+                  ハンドル、チャンネルID、またはYouTube
+                  URLを入力してください。追加時にYouTube
+                  APIから名前とハンドルを取得します。
+                </>
+              }
+              submitLabel="追加"
+              title="YouTubeチャンネルを追加"
+              trigger={
+                <UIButton type="button" variant="secondary">
+                  <Plus aria-hidden="true" className="mr-2 size-4" />
+                  チャンネルを追加
+                </UIButton>
+              }
+            >
+              <input name="talent_id" type="hidden" value={talentId} />
+              <FormField name="youtube_channel_id">
+                <Label>ハンドル / チャンネルID / URL</Label>
+                <Input
+                  placeholder="@handle または https://youtube.com/@handle"
+                  required
+                />
+                <p className="mt-1 text-caption text-muted">
+                  例: @example、https://www.youtube.com/@example、UCxxx...
+                </p>
+                <ErrorMessage />
+              </FormField>
+            </FormDialog>
           )
         }
         description="タレントに紐づけられたYouTubeチャンネルの追加・削除"

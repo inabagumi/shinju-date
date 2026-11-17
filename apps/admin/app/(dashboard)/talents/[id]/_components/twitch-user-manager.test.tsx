@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ActionToastProvider } from '@/components/action-toast'
 
@@ -106,5 +112,49 @@ describe('TwitchUserManager', () => {
     expect(
       await screen.findByText('Twitchユーザーの削除に失敗しました。'),
     ).toBeInTheDocument()
+  })
+
+  it('adds with the dialog and closes it on success', async () => {
+    mocks.addTwitchUserAction.mockResolvedValue({ success: true })
+
+    renderManager()
+
+    fireEvent.click(screen.getByRole('button', { name: 'ユーザーを追加' }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Twitchユーザーを追加' })
+
+    fireEvent.change(
+      within(dialog).getByRole('textbox', {
+        name: 'ログイン名 / ユーザーID / URL',
+      }),
+      { target: { value: 'example' } },
+    )
+    fireEvent.click(within(dialog).getByRole('button', { name: '追加' }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+
+    const formData = mocks.addTwitchUserAction.mock.calls[0]?.[1] as FormData
+
+    expect(formData.get('talent_id')).toBe('talent-1')
+    expect(formData.get('twitch_user')).toBe('example')
+  })
+
+  it('keeps the dialog open when adding fails', async () => {
+    mocks.addTwitchUserAction.mockResolvedValue({
+      errors: { generic: ['Twitchユーザーの追加に失敗しました。'] },
+    })
+
+    renderManager()
+
+    fireEvent.click(screen.getByRole('button', { name: 'ユーザーを追加' }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Twitchユーザーを追加' })
+
+    fireEvent.click(within(dialog).getByRole('button', { name: '追加' }))
+
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+      'Twitchユーザーの追加に失敗しました。',
+    )
+    expect(screen.getByRole('dialog')).toBe(dialog)
   })
 })
