@@ -4,5 +4,5 @@
   },
   "exclude": ["node_modules"],
   "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/node20/tsconfig"],
-  "include": ["./src/**/*.ts", "./tsdown.config.ts"]
+  "include": ["./src/**/*.ts", "./test/**/*.ts", "./tsdown.config.ts"]
 }

@@ -170,7 +170,7 @@ export default function VideoCard({
   const publishedAt = Temporal.Instant.from(
     value.published_at,
   ).toZonedDateTimeISO(TIME_ZONE)
-  const duration = Temporal.Duration.from(value.duration ?? 'PT0S')
+  const duration = Temporal.Duration.from(value.duration)
   const hasCreator = getVideoCreator(value) !== null
   // 9:16 のサムネイルを使わない表示では、ショートをバッジで見分けられるようにする
   const isShortInWideThumbnail =
@@ -178,13 +178,13 @@ export default function VideoCard({
   const isUpcoming = showUpcomingLabel && value.status === 'UPCOMING'
   const { tags, text: titleText } = getVideoTitleParts(
     value.title,
-    value.talent?.name,
+    value.talent.name,
   )
 
   const href = getVideoExternalUrl({
     platform: value.platform,
     status: value.status,
-    twitchLoginName: value.twitch_video?.twitch_user?.twitch_login_name,
+    twitchLoginName: value.twitch_video?.twitch_user.twitch_login_name,
     twitchVideoId: value.twitch_video?.twitch_video_id,
     twitchVideoType: value.twitch_video?.type,
     youtubeVideoId: value.youtube_video?.youtube_video_id,
