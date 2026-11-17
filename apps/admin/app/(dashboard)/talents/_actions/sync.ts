@@ -68,7 +68,7 @@ async function syncPlatform(
       throw touchError
     }
 
-    await createAuditLog('CHANNEL_SYNC', talent.id, {
+    await createAuditLog(supabaseClient, 'CHANNEL_SYNC', talent.id, {
       accounts: changed.map(({ accountId, changes, iconUpdated, name }) => ({
         id: accountId,
         name,

@@ -1,6 +1,6 @@
 import type { User } from '@supabase/supabase-js'
 import { beforeEach, expect, vi } from 'vitest'
-import type { AuditAction } from '@/lib/audit-log'
+import type { AuditAction, AuditLogEntry } from '@/lib/audit-log'
 import { type FakeSupabase, setupSupabase } from './supabase'
 
 /**
@@ -14,6 +14,7 @@ import { type FakeSupabase, setupSupabase } from './supabase'
  */
 const mocks = vi.hoisted(() => ({
   createAuditLog: vi.fn(async () => {}),
+  createAuditLogs: vi.fn(async () => {}),
   createSupabaseServerClient: vi.fn(),
   getRedisClient: vi.fn(() => ({})),
   logger: {
@@ -46,7 +47,10 @@ vi.mock('@/lib/supabase', () => ({
 vi.mock('@/lib/supabase/admin', () => ({
   getSupabaseAdminClient: () => currentClient(),
 }))
-vi.mock('@/lib/audit-log', () => ({ createAuditLog: mocks.createAuditLog }))
+vi.mock('@/lib/audit-log', () => ({
+  createAuditLog: mocks.createAuditLog,
+  createAuditLogs: mocks.createAuditLogs,
+}))
 vi.mock('@/lib/redis', () => ({ getRedisClient: mocks.getRedisClient }))
 vi.mock('next/cache', () => ({ revalidatePath: mocks.revalidatePath }))
 vi.mock('@shinju-date/web-cache', () => ({
@@ -96,6 +100,7 @@ export function setupActionTest() {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.createAuditLog.mockImplementation(async () => {})
+    mocks.createAuditLogs.mockImplementation(async () => {})
     mocks.createSupabaseServerClient.mockResolvedValue(supabase.client)
     mocks.getRedisClient.mockImplementation(() => ({}))
     mocks.revalidateTags.mockImplementation(async () => {})
@@ -105,19 +110,40 @@ export function setupActionTest() {
   return {
     /** `createAuditLog()` of `@/lib/audit-log`. */
     createAuditLog: mocks.createAuditLog,
+    /** `createAuditLogs()` of `@/lib/audit-log`. */
+    createAuditLogs: mocks.createAuditLogs,
     /** `createSupabaseServerClient()` of `@/lib/supabase`. */
     createSupabaseServerClient: mocks.createSupabaseServerClient,
-    /** Asserts that an audit log entry was recorded with these arguments. */
+    /**
+     * Asserts that an audit log entry was recorded with these arguments by
+     * `createAuditLog()`, with the client of the signed-in user.
+     */
     expectAuditLog(
       ...args:
         | [action: AuditAction, targetRecordId: unknown]
         | [action: AuditAction, targetRecordId: unknown, details: unknown]
     ): void {
-      expect(mocks.createAuditLog).toHaveBeenCalledWith(...args)
+      expect(mocks.createAuditLog).toHaveBeenCalledWith(
+        supabase.client,
+        ...args,
+      )
+    },
+    /**
+     * Asserts that these audit log entries were recorded with one call of
+     * `createAuditLogs()`, with the client of the signed-in user, and that
+     * nothing else was recorded.
+     */
+    expectAuditLogs(entries: AuditLogEntry[]): void {
+      expect(mocks.createAuditLogs).toHaveBeenCalledExactlyOnceWith(
+        supabase.client,
+        entries,
+      )
+      expect(mocks.createAuditLog).not.toHaveBeenCalled()
     },
     /** Asserts that no audit log entry was recorded. */
     expectNoAuditLog(): void {
       expect(mocks.createAuditLog).not.toHaveBeenCalled()
+      expect(mocks.createAuditLogs).not.toHaveBeenCalled()
     },
     /** Asserts that nothing was revalidated. */
     expectNotRevalidated(): void {

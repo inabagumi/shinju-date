@@ -97,7 +97,7 @@ export async function requestVideoBackfillAction(
     }
 
     if (enqueued.length > 0) {
-      await createAuditLog('VIDEO_BACKFILL', talentId, {
+      await createAuditLog(supabaseClient, 'VIDEO_BACKFILL', talentId, {
         accounts: enqueued.map(({ accountId, name }) => ({ accountId, name })),
         entityName: talent.name,
         platform: provider,

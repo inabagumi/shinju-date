@@ -5,7 +5,7 @@ import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
-import { createAuditLog } from '@/lib/audit-log'
+import { createAuditLogs } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 
 interface VideoVisibilityGroup {
@@ -87,12 +87,13 @@ export async function toggleVisibilityAction(ids: string[]): Promise<{
 
     // 更新された動画には、一部が失敗した場合でも監査ログと再検証を行う
     if (updatedVideos.length > 0) {
-      await Promise.all(
-        updatedVideos.map((video) =>
-          createAuditLog('VIDEO_VISIBILITY_TOGGLE', video.id, {
-            entityName: video.title,
-          }),
-        ),
+      await createAuditLogs(
+        supabaseClient,
+        updatedVideos.map((video) => ({
+          action: 'VIDEO_VISIBILITY_TOGGLE',
+          details: { entityName: video.title },
+          targetRecordId: video.id,
+        })),
       )
 
       revalidatePath('/videos')
@@ -199,13 +200,14 @@ export async function softDeleteAction(ids: string[]): Promise<{
       }
     }
 
-    // Log audit entries for each video
-    await Promise.all(
-      videos.map((video) =>
-        createAuditLog('VIDEO_DELETE', video.id, {
-          entityName: video.title,
-        }),
-      ),
+    // Log audit entries for all videos with one call
+    await createAuditLogs(
+      supabaseClient,
+      videos.map((video) => ({
+        action: 'VIDEO_DELETE',
+        details: { entityName: video.title },
+        targetRecordId: video.id,
+      })),
     )
 
     revalidatePath('/videos')
@@ -297,13 +299,15 @@ export async function restoreAction(ids: string[]): Promise<{
       }
     }
 
-    // Log audit entries for each video (non-blocking - failures won't affect restore success)
-    await Promise.allSettled(
-      videos.map((video) =>
-        createAuditLog('VIDEO_RESTORE', video.id, {
-          entityName: video.title,
-        }),
-      ),
+    // Log audit entries for all videos with one call (a failure is logged and
+    // does not affect the restore)
+    await createAuditLogs(
+      supabaseClient,
+      videos.map((video) => ({
+        action: 'VIDEO_RESTORE',
+        details: { entityName: video.title },
+        targetRecordId: video.id,
+      })),
     )
 
     revalidatePath('/videos')

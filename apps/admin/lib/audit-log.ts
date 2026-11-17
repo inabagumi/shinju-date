@@ -1,6 +1,7 @@
 import type { default as Database, Enums, Tables } from '@shinju-date/database'
+import { logger } from '@shinju-date/logger'
 import type { AccountChanges } from '@shinju-date/scraper'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import type { TypedSupabaseClient } from '@/lib/supabase'
 
 export type AuditAction = Enums<'audit_action'>
 
@@ -8,6 +9,9 @@ type AuditLogJson = Exclude<
   Database['public']['Functions']['insert_audit_log']['Args']['p_details'],
   undefined
 >
+
+type AuditLogEntriesJson =
+  Database['public']['Functions']['insert_audit_logs']['Args']['p_entries']
 
 /** Values of `audit_logs.target_table`: what an audit log entry is about. */
 export const AUDIT_TARGET_TABLES = {
@@ -327,6 +331,29 @@ type AuditLogDetailsArgs<A extends AuditAction> = [AuditLogDetails<A>] extends [
   ? []
   : [details: AuditLogDetails<A>]
 
+/** The `details` of an `AuditLogEntry`, left out when the action has none. */
+type AuditLogEntryDetails<A extends AuditAction> = [
+  AuditLogDetails<A>,
+] extends [undefined]
+  ? { details?: undefined }
+  : { details: AuditLogDetails<A> }
+
+/** One entry for `createAuditLogs`, with the details that the action records. */
+export type AuditLogEntry = {
+  [A in AuditAction]: {
+    action: A
+    targetRecordId: string | null
+  } & AuditLogEntryDetails<A>
+}[AuditAction]
+
+/** An element of the `p_entries` array of `insert_audit_logs`. */
+interface AuditLogRow {
+  action: AuditAction
+  details: AuditLogJson
+  target_record_id: string | null
+  target_table: AuditTargetTable
+}
+
 /** Returns the table that an entry of the action with the details is about. */
 export function getAuditTargetTable<A extends AuditAction>(
   action: A,
@@ -339,29 +366,90 @@ export function getAuditTargetTable<A extends AuditAction>(
 }
 
 /**
- * Records an audit log entry of the action. The target table follows from
- * the action, and the details must have the shape that the action records.
+ * The details as the JSON that the RPC takes. They are plain JSON values, but
+ * an interface has no index signature, so TypeScript cannot see that it is
+ * assignable to `Json`.
+ */
+function toAuditLogJson(details: unknown): AuditLogJson {
+  return (details ?? null) as AuditLogJson
+}
+
+/**
+ * Records an audit log entry of the action, as the user that the client is
+ * authenticated as. The target table follows from the action, and the
+ * details must have the shape that the action records.
+ *
+ * A failure is logged and does not throw, so that it does not fail the
+ * action that has already made its change.
  */
 export async function createAuditLog<A extends AuditAction>(
+  supabaseClient: TypedSupabaseClient,
   action: A,
   targetRecordId: string | null,
   ...[details]: AuditLogDetailsArgs<A>
 ): Promise<void> {
   try {
-    const supabaseClient = await createSupabaseServerClient()
     const { error } = await supabaseClient.rpc('insert_audit_log', {
       p_action: action,
-      // The details are plain JSON values, but an interface has no index
-      // signature, so TypeScript cannot see that it is assignable to `Json`.
-      p_details: (details ?? null) as AuditLogJson,
+      p_details: toAuditLogJson(details),
       p_target_table: getAuditTargetTable(action, details),
       ...(targetRecordId ? { p_target_record_id: targetRecordId } : {}),
     })
 
     if (error) {
-      console.error('Failed to create audit log:', error)
+      throw error
     }
   } catch (error) {
-    console.error('Error creating audit log:', error)
+    logger.error('監査ログの記録に失敗しました', {
+      action,
+      error,
+      targetRecordId: targetRecordId ?? undefined,
+    })
+  }
+}
+
+/**
+ * Records the audit log entries with one call, as the user that the client
+ * is authenticated as. Each entry is recorded as `createAuditLog` would
+ * record it. Nothing is called when there are no entries.
+ *
+ * A failure is logged and does not throw, like `createAuditLog`.
+ */
+export async function createAuditLogs(
+  supabaseClient: TypedSupabaseClient,
+  entries: readonly AuditLogEntry[],
+): Promise<void> {
+  if (entries.length === 0) {
+    return
+  }
+
+  const rows = entries.map(
+    ({ action, details, targetRecordId }): AuditLogRow => ({
+      action,
+      details: toAuditLogJson(details),
+      // `createAuditLog` leaves out an empty ID, so it is recorded as NULL
+      target_record_id: targetRecordId || null,
+      target_table: getAuditTargetTable(action, details as never),
+    }),
+  )
+
+  try {
+    const { error } = await supabaseClient.rpc('insert_audit_logs', {
+      // An interface has no index signature, so TypeScript cannot see that
+      // the rows are assignable to `Json`.
+      p_entries: rows as unknown as AuditLogEntriesJson,
+    })
+
+    if (error) {
+      throw error
+    }
+  } catch (error) {
+    logger.error('監査ログの記録に失敗しました', {
+      action: [...new Set(rows.map((row) => row.action))].join(','),
+      error,
+      targetRecordId: rows
+        .flatMap((row) => (row.target_record_id ? [row.target_record_id] : []))
+        .join(','),
+    })
   }
 }

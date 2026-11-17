@@ -86,9 +86,17 @@ interface AccountDefinition<P extends AccountPlatform> {
   /** 入力（ID、ハンドル、URL など）を解釈する。解釈できなければ `null` */
   parse(input: string): AccountTypes[P]['identifier'] | null
   /** 追加の監査ログを、タレントを対象にして残す */
-  recordLink(talentId: string, account: AccountRow<P>): Promise<void>
+  recordLink(
+    supabaseClient: TypedSupabaseClient,
+    talentId: string,
+    account: AccountRow<P>,
+  ): Promise<void>
   /** 削除の監査ログを、タレントを対象にして残す */
-  recordUnlink(talentId: string, account: AccountRow<P>): Promise<void>
+  recordUnlink(
+    supabaseClient: TypedSupabaseClient,
+    talentId: string,
+    account: AccountRow<P>,
+  ): Promise<void>
   /** プラットフォーム側の ID を入れる列。すべてのタレントを通して一意 */
   remoteIdColumn: keyof Tables<AccountTypes[P]['table']> & string
   /** API でアカウントを解決する。見つからなければ `null` */
@@ -139,13 +147,13 @@ const ACCOUNT_DEFINITIONS: {
         '指定されたTwitchユーザーが見つかりません。既に削除されているか、存在しないIDが指定されています。',
     },
     parse: parseTwitchUserIdentifier,
-    recordLink: (talentId, { talent, ...account }) =>
-      createAuditLog('TWITCH_USER_CREATE', talentId, {
+    recordLink: (supabaseClient, talentId, { talent, ...account }) =>
+      createAuditLog(supabaseClient, 'TWITCH_USER_CREATE', talentId, {
         account,
         entityName: talent.name,
       }),
-    recordUnlink: (talentId, { talent, ...account }) =>
-      createAuditLog('TWITCH_USER_DELETE', talentId, {
+    recordUnlink: (supabaseClient, talentId, { talent, ...account }) =>
+      createAuditLog(supabaseClient, 'TWITCH_USER_DELETE', talentId, {
         account,
         entityName: talent.name,
       }),
@@ -189,13 +197,13 @@ const ACCOUNT_DEFINITIONS: {
         '指定されたチャンネルが見つかりません。既に削除されているか、存在しないIDが指定されています。',
     },
     parse: parseYouTubeChannelIdentifier,
-    recordLink: (talentId, { talent, ...account }) =>
-      createAuditLog('YOUTUBE_CHANNEL_CREATE', talentId, {
+    recordLink: (supabaseClient, talentId, { talent, ...account }) =>
+      createAuditLog(supabaseClient, 'YOUTUBE_CHANNEL_CREATE', talentId, {
         account,
         entityName: talent.name,
       }),
-    recordUnlink: (talentId, { talent, ...account }) =>
-      createAuditLog('YOUTUBE_CHANNEL_DELETE', talentId, {
+    recordUnlink: (supabaseClient, talentId, { talent, ...account }) =>
+      createAuditLog(supabaseClient, 'YOUTUBE_CHANNEL_DELETE', talentId, {
         account,
         entityName: talent.name,
       }),
@@ -431,7 +439,7 @@ export async function linkAccount<P extends AccountPlatform>(
   // アイコンの取得に失敗しても、追加は成功として扱う（次回の同期で取得し直す）
   await definition.syncIcon(remote, account.id)
   await touchTalent(supabaseClient, talentId)
-  await definition.recordLink(talentId, account)
+  await definition.recordLink(supabaseClient, talentId, account)
   await revalidateTalent(talentId)
 }
 
@@ -488,6 +496,6 @@ export async function unlinkAccount<P extends AccountPlatform>(
   }
 
   await touchTalent(supabaseClient, talentId)
-  await definition.recordUnlink(talentId, account)
+  await definition.recordUnlink(supabaseClient, talentId, account)
   await revalidateTalent(talentId)
 }

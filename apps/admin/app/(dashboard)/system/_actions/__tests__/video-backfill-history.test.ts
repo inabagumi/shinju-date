@@ -262,6 +262,7 @@ describe('retryFailedVideoBackfillJobsAction', () => {
       ],
     ])
     expect(test.createAuditLog).toHaveBeenCalledExactlyOnceWith(
+      supabase.client,
       'VIDEO_BACKFILL',
       null,
       expect.objectContaining({

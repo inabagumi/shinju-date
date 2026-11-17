@@ -110,6 +110,7 @@ describe('requestVideoBackfillRunAction', () => {
       expect.objectContaining({ requestedBy: 'user-1' }),
     )
     expect(test.createAuditLog).toHaveBeenCalledExactlyOnceWith(
+      supabase.client,
       'VIDEO_BACKFILL',
       runId,
       {
@@ -168,6 +169,7 @@ describe('requestVideoBackfillRunAction', () => {
       success: false,
     })
     expect(test.createAuditLog).toHaveBeenCalledWith(
+      supabase.client,
       'VIDEO_BACKFILL',
       runId,
       expect.objectContaining({ failed: 1, skipped: 3 }),

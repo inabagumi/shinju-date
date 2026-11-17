@@ -72,6 +72,7 @@ describe('requestVideoBackfillAction', () => {
       ],
     ])
     expect(test.createAuditLog).toHaveBeenCalledWith(
+      supabase.client,
       'VIDEO_BACKFILL',
       talentId,
       {
@@ -106,6 +107,7 @@ describe('requestVideoBackfillAction', () => {
 
     expect(result.message).toContain('実行中の1件は除く')
     expect(test.createAuditLog).toHaveBeenCalledWith(
+      supabase.client,
       'VIDEO_BACKFILL',
       talentId,
       expect.objectContaining({
@@ -127,6 +129,7 @@ describe('requestVideoBackfillAction', () => {
       success: false,
     })
     expect(test.createAuditLog).toHaveBeenCalledWith(
+      supabase.client,
       'VIDEO_BACKFILL',
       talentId,
       expect.objectContaining({

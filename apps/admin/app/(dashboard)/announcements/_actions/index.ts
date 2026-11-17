@@ -87,9 +87,14 @@ export async function createAnnouncementAction(
     }
 
     // Log audit entry
-    await createAuditLog('ANNOUNCEMENT_CREATE', newAnnouncement.id, {
-      entityName: newAnnouncement.message.substring(0, 50),
-    })
+    await createAuditLog(
+      supabaseClient,
+      'ANNOUNCEMENT_CREATE',
+      newAnnouncement.id,
+      {
+        entityName: newAnnouncement.message.substring(0, 50),
+      },
+    )
 
     revalidatePath('/announcements')
     revalidatePath('/', 'page')
@@ -189,7 +194,7 @@ export async function updateAnnouncementAction(
     }
 
     // Log audit entry
-    await createAuditLog('ANNOUNCEMENT_UPDATE', id, {
+    await createAuditLog(supabaseClient, 'ANNOUNCEMENT_UPDATE', id, {
       entityName: updatedAnnouncement.message.substring(0, 50),
     })
 
@@ -244,7 +249,7 @@ export async function deleteAnnouncementAction(id: string): Promise<{
     }
 
     // Log audit entry
-    await createAuditLog('ANNOUNCEMENT_DELETE', id, {
+    await createAuditLog(supabaseClient, 'ANNOUNCEMENT_DELETE', id, {
       entityName: deletedAnnouncement.message.substring(0, 50),
     })
 
