@@ -1,5 +1,5 @@
-import * as Sentry from '@sentry/nextjs'
 import { createErrorResponse } from '@shinju-date/helpers'
+import { logger } from '@shinju-date/logger'
 import { revalidateTag } from 'next/cache'
 import { serverEnv } from '@/lib/env'
 import { type Payload, payloadSchema } from './_lib/schemas'
@@ -18,7 +18,7 @@ export async function POST(request: Request): Promise<Response> {
     const expectedAuth = `Bearer ${secretToken}`
 
     if (authHeader !== expectedAuth) {
-      Sentry.logger.warn('Unauthorized revalidation attempt.', {
+      logger.warn('Unauthorized revalidation attempt.', {
         hasAuthHeader: Boolean(authHeader),
       })
 
@@ -33,7 +33,7 @@ export async function POST(request: Request): Promise<Response> {
   try {
     payload = await parseRequest(request)
   } catch (error) {
-    Sentry.logger.warn('Incorrect request received.', {
+    logger.warn('Incorrect request received.', {
       cause: error,
     })
 
@@ -46,7 +46,7 @@ export async function POST(request: Request): Promise<Response> {
     revalidateTag(tag, 'hours')
   }
 
-  Sentry.logger.info('Revalidation was successful.', {
+  logger.info('Revalidation was successful.', {
     tags: payload.tags,
   })
 

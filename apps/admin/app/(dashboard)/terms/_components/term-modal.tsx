@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from '@shinju-date/ui'
 import { Plus } from 'lucide-react'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import type { FormState } from '@/components/form'
 import Form, {
   ErrorMessage,
@@ -67,19 +67,6 @@ export function TermModal({ term }: TermModalProps) {
 
     return result
   }
-
-  useEffect(() => {
-    if (!open) {
-      // Small delay to allow the modal to close before resetting
-      const timer = setTimeout(() => {
-        // Any cleanup if needed
-      }, 100)
-      return () => {
-        clearTimeout(timer)
-      }
-    }
-    return undefined
-  }, [open])
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
