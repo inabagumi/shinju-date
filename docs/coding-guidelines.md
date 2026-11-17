@@ -502,6 +502,14 @@ CREATE POLICY "Enable update for admins"
 - 検索ボックスには、`apps/admin/components/search-input.tsx` の `SearchInput` を使う。入力をやめてから少し待って URL に反映し、「戻る」などで URL が変わったら入力欄を合わせる
 - フォームの入力中の値（追加のフォームなど）は、URL に入れない
 
+## アナリティクスの取得関数の置き場所
+
+管理画面のアナリティクス（`apps/admin/app/(dashboard)/analytics/`）の取得関数は、画面と CSV のエクスポート（`apps/admin/app/api/export/`）の両方から使います。ルートの中に置くと、同じ種類の関数の置き場所が分かれ、エクスポートからルートの中のファイルを読み込むことになるため、次のように分けます。
+
+- Redis や Supabase を読む取得関数は、`apps/admin/lib/analytics/` に置く
+- 期間で集計する取得関数は、`({ range: { start, end }, limit? })` の形で引数を取る（`apps/admin/lib/analytics/period.ts` の `PeriodQuery` と `RankingQuery`）。`start` と `end` は両端を含む `YYYY-MM-DD` の文字列で、1日だけのときは同じ日を渡す。`Temporal` のオブジェクトはキャッシュのキーにできないため、文字列で渡す
+- ルートの `_lib/` には、URL のパラメータの解釈（`search-params-schema.ts`、`analytics-url-params.ts`、`resolve-period.ts` など）と、表示用の整形（`format-date.ts`、指標の評価と凡例の文を作る `metric-ratings.ts` など）だけを置く。Redis や Supabase を読む関数は置かない
+
 ## 共有パッケージに置くもの
 
 `packages/helpers`（小さな関数）と `packages/constants`（定数）は、複数のアプリやパッケージが使うものの置き場所です。1つのアプリだけが使うものまで置くと、どこで使われているかを追いにくくなり、そのアプリのための変更で、関係のないアプリまでビルドとテストをやり直すことになります。

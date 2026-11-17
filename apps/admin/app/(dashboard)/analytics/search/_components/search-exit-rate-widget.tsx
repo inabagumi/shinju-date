@@ -118,8 +118,8 @@ function SearchExitRateWidgetComponent({
 export async function SearchExitRateWidget({ searchParams }: Props) {
   const { dateRange, selectedDate } = await searchParams
 
-  const { start, end } = resolvePeriod({ dateRange, selectedDate })
-  const exitRates = await getSearchExitRates(start, end, 20)
+  const range = resolvePeriod({ dateRange, selectedDate })
+  const exitRates = await getSearchExitRates({ limit: 20, range })
 
   return (
     <SearchExitRateWidgetComponent

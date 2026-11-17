@@ -6,28 +6,30 @@ import { formatDateKey } from '@shinju-date/temporal-fns'
 import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 import { listDatesInRange } from './list-dates-in-range'
+import {
+  DEFAULT_RANKING_LIMIT,
+  type PeriodQuery,
+  type RankingQuery,
+  toDateRange,
+} from './period'
 import { dailyKeys, parseScoredMembers } from './redis'
 
 /**
  * Calculate search engagement rate for a single date or date range
- * @param startDate - Start date in ISO 8601 format (YYYY-MM-DD)
- * @param endDate - End date in ISO 8601 format (YYYY-MM-DD). If undefined, gets data for single date
+ * @param query.range - The date range (both ends inclusive). Pass the same date as `start` and `end` for a single date
  * @returns The rate in percent, or `null` when there is no session to
  * measure it against (or it could not be calculated)
  */
-export async function getSearchEngagementRate(
-  startDate: string,
-  endDate?: string,
-): Promise<number | null> {
+export async function getSearchEngagementRate({
+  range,
+}: PeriodQuery): Promise<number | null> {
   'use cache: private'
 
   cacheLife('minutes')
 
   try {
     const redisClient = getRedisClient()
-    const start = Temporal.PlainDate.from(startDate)
-    const end = endDate ? Temporal.PlainDate.from(endDate) : start
-
+    const { end, start } = toDateRange(range)
     const dates = listDatesInRange(start, end)
 
     if (dates.length === 0) {
@@ -66,33 +68,34 @@ export async function getSearchEngagementRate(
 
 /**
  * Calculate search exit rates by keyword for a single date or date range
- * @param startDate - Start date in ISO 8601 format (YYYY-MM-DD)
- * @param endDate - End date in ISO 8601 format (YYYY-MM-DD). If undefined, gets data for single date
- * @param limit - Maximum number of keywords to return
+ * @param query.range - The date range (both ends inclusive). Pass the same date as `start` and `end` for a single date
+ * @param query.limit - Maximum number of keywords to return (`DEFAULT_RANKING_LIMIT` by default)
  */
-export async function getSearchExitRates(
-  startDate: string,
-  endDate?: string,
-  limit = 20,
-): Promise<Array<{ keyword: string; exitRate: number; searchCount: number }>> {
+export async function getSearchExitRates({
+  limit = DEFAULT_RANKING_LIMIT,
+  range,
+}: RankingQuery): Promise<
+  Array<{ keyword: string; exitRate: number; searchCount: number }>
+> {
   'use cache: private'
 
   cacheLife('minutes')
 
   try {
     const redisClient = getRedisClient()
-    const start = Temporal.PlainDate.from(startDate)
-    const end = endDate ? Temporal.PlainDate.from(endDate) : start
+    const dateRange = toDateRange(range)
 
     // Aggregate search counts and exit counts across the date range
     const searchCounts = new Map<string, number>()
     const exitCounts = new Map<string, number>()
 
-    const range = { end, start }
-    const searchKeys = dailyKeys(REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX, range)
+    const searchKeys = dailyKeys(
+      REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX,
+      dateRange,
+    )
     const exitKeys = dailyKeys(
       REDIS_KEYS.SEARCH_EXIT_WITHOUT_CLICK_PREFIX,
-      range,
+      dateRange,
     )
 
     if (searchKeys.length === 0) {
@@ -170,24 +173,20 @@ export async function getSearchExitRates(
 
 /**
  * Calculate repeat search rate (average searches per session) for a single date or date range
- * @param startDate - Start date in ISO 8601 format (YYYY-MM-DD)
- * @param endDate - End date in ISO 8601 format (YYYY-MM-DD). If undefined, gets data for single date
+ * @param query.range - The date range (both ends inclusive). Pass the same date as `start` and `end` for a single date
  * @returns The average number of searches per session, or `null` when there
  * is no search session to measure it against (or it could not be calculated)
  */
-export async function getRepeatSearchRate(
-  startDate: string,
-  endDate?: string,
-): Promise<number | null> {
+export async function getRepeatSearchRate({
+  range,
+}: PeriodQuery): Promise<number | null> {
   'use cache: private'
 
   cacheLife('minutes')
 
   try {
     const redisClient = getRedisClient()
-    const start = Temporal.PlainDate.from(startDate)
-    const end = endDate ? Temporal.PlainDate.from(endDate) : start
-
+    const { end, start } = toDateRange(range)
     const dates = listDatesInRange(start, end)
 
     if (dates.length === 0) {

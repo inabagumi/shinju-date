@@ -9,11 +9,11 @@ import {
   TableRow,
 } from '@shinju-date/ui'
 import { TableSkeleton } from '@/components/table-skeleton'
+import { getZeroResultKeywords } from '@/lib/analytics/get-zero-result-keywords'
 import {
   WidgetHeader,
   WidgetHeaderSkeleton,
 } from '../../_components/widget-header'
-import { getZeroResultKeywords } from '../_lib/get-zero-result-keywords'
 
 /**
  * Zero Result Keywords Widget Component

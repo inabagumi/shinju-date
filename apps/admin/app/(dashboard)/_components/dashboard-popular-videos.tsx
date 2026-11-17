@@ -48,11 +48,10 @@ export function DashboardPopularVideosSkeleton() {
 export async function DashboardPopularVideos() {
   const today = Temporal.PlainDate.from(await getToday())
   const startDate = today.subtract({ days: 29 })
-  const popularVideos = await getPopularVideos(
-    POPULAR_VIDEOS_LIMIT,
-    startDate.toString(),
-    today.toString(),
-  )
+  const popularVideos = await getPopularVideos({
+    limit: POPULAR_VIDEOS_LIMIT,
+    range: { end: today.toString(), start: startDate.toString() },
+  })
 
   return (
     <Panel title="人気動画ランキング (過去30日間)">

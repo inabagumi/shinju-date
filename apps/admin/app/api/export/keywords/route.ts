@@ -1,10 +1,7 @@
 import { createErrorResponse } from '@shinju-date/helpers'
 import { stringify } from 'csv-stringify/sync'
 import { connection, type NextRequest, NextResponse } from 'next/server'
-import {
-  getPopularKeywords,
-  type PopularKeyword,
-} from '@/lib/analytics/get-popular-keywords'
+import { getPopularKeywords } from '@/lib/analytics/get-popular-keywords'
 import { exportSearchParamsSchema } from '../_lib/schema'
 
 /**
@@ -21,25 +18,11 @@ export async function GET(request: NextRequest) {
     )
     const validatedParams = exportSearchParamsSchema.parse(searchParams)
 
-    // Fetch data based on parameters
-    let keywords: PopularKeyword[]
-    if (validatedParams.selectedDate) {
-      keywords = await getPopularKeywords(
-        validatedParams.limit,
-        validatedParams.selectedDate,
-      )
-    } else if (validatedParams.endDate) {
-      keywords = await getPopularKeywords(
-        validatedParams.limit,
-        validatedParams.startDate,
-        validatedParams.endDate,
-      )
-    } else {
-      keywords = await getPopularKeywords(
-        validatedParams.limit,
-        validatedParams.startDate,
-      )
-    }
+    // Fetch data for the period of the parameters
+    const keywords = await getPopularKeywords({
+      limit: validatedParams.limit,
+      range: validatedParams.range,
+    })
 
     // Check if data is available
     if (keywords.length === 0) {

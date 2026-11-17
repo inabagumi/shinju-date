@@ -69,8 +69,8 @@ function RepeatSearchRateWidgetComponent({
 export async function RepeatSearchRateWidget({ searchParams }: Props) {
   const { dateRange, selectedDate } = await searchParams
 
-  const { start, end } = resolvePeriod({ dateRange, selectedDate })
-  const repeatRate = await getRepeatSearchRate(start, end)
+  const range = resolvePeriod({ dateRange, selectedDate })
+  const repeatRate = await getRepeatSearchRate({ range })
 
   return (
     <RepeatSearchRateWidgetComponent

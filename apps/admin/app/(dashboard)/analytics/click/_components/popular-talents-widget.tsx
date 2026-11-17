@@ -10,8 +10,8 @@ interface Props {
 /** 最もクリックされているタレントのランキング */
 export async function PopularTalentsWidget({ searchParams }: Props) {
   const { dateRange, selectedDate } = await searchParams
-  const { start, end } = resolvePeriod({ dateRange, selectedDate })
-  const talents = await getPopularTalents(20, start, end)
+  const range = resolvePeriod({ dateRange, selectedDate })
+  const talents = await getPopularTalents({ limit: 20, range })
 
   return (
     <RankingWidget
