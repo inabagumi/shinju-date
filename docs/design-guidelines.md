@@ -370,6 +370,8 @@ import { twMerge } from '@shinju-date/ui'
 
 ## 新しい画面を作るとき
 
+`dark:` と、Tailwind の既定の文字サイズ（`text-sm` など）・角丸（`rounded-md` など）・影（`shadow-lg` など）は、`pnpm run check` がエラーにします（`config/biome/no-default-tailwind-scale.grit`。`class` と `className` の値、`twMerge` と `cva` の引数を調べます）。
+
 - [ ] 色はセマンティックカラーで指定し、`dark:` で手書きしていない
 - [ ] 紫は要所（リンク・選択中・主ボタン・フォーカス・フッター）だけ、ピンクは配信中だけに使っている
 - [ ] 見出し・本文・補助情報に、上の[役割ごとの組み合わせ](#役割ごとの組み合わせ)を使っている

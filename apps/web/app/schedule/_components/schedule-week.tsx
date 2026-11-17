@@ -5,7 +5,7 @@ import {
   NavigationLink,
   NavigationLinkIcon,
 } from '@/components/navigation-link'
-import { WEEKDAYS } from '@/lib/date-heading'
+import { formatWeekday } from '@/lib/date-heading'
 import { fetchScheduleVideos, type ScheduleVideo } from '@/lib/fetchers'
 import { groupVideosByDate } from '@/lib/group-videos-by-date'
 import {
@@ -116,7 +116,7 @@ export async function ScheduleWeekdayBand({
               href={`#${getDayId(date)}`}
             >
               <span className="text-caption text-muted">
-                {WEEKDAYS[date.dayOfWeek - 1]}
+                {formatWeekday(date)}
               </span>
               <span className="font-semibold">{date.day}</span>
             </a>
@@ -133,6 +133,7 @@ export function ScheduleWeekdayBandSkeleton() {
       {Array.from({ length: 7 }, (_, index) => (
         <span
           className="h-11 animate-pulse rounded-control bg-muted"
+          // biome-ignore lint/suspicious/noArrayIndexKey: 件数が決まっていて並びも変わらないスケルトンなので、インデックスをキーにする
           key={index}
         />
       ))}
@@ -313,6 +314,7 @@ export function ScheduleDaysSkeleton() {
       <TimeColumn />
 
       {Array.from({ length: 7 }, (_, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: 件数が決まっていて並びも変わらないスケルトンなので、インデックスをキーにする
         <div className={twMerge(COLUMN_CLASS_NAME, 'min-w-0')} key={index}>
           <div className="border-b border-border pb-1">
             <span className="inline-block h-[1lh] w-20 animate-pulse rounded-control bg-muted text-body" />

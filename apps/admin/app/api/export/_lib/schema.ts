@@ -1,33 +1,42 @@
 import { z } from 'zod'
 import {
   MAX_RANGE_DAYS,
-  parseDate,
+  parseDateFormat,
+  validateDate,
   validateRange,
 } from '@/lib/analytics/date-window'
 import type { Period } from '@/lib/analytics/period'
 
-/** 1日だけの期間（`start` と `end` が同じ日） */
-function singleDayPeriod(date: Temporal.PlainDate): Period {
-  const value = date.toString()
+const DATE_KEYS = ['date', 'from', 'to'] as const
 
-  return { end: value, start: value }
-}
+const DATE_ERROR_MESSAGES = {
+  future: 'Date cannot be in the future',
+  'invalid-format': 'Date must be a valid date in YYYY-MM-DD format',
+  'too-old': `Date must be within the last ${MAX_RANGE_DAYS} days`,
+} as const
 
-/**
- * A date parameter. A value that is not a selectable date becomes `null` and
- * is treated like a missing parameter
- */
+const RANGE_ERROR_MESSAGES = {
+  reversed: 'Start date must be before or equal to end date',
+  'too-long': `Date range cannot exceed ${MAX_RANGE_DAYS} days`,
+} as const
+
+/** A date parameter. An empty value is treated like a missing parameter */
 const dateParamSchema = z
   .string()
   .optional()
-  .transform((val) => {
-    if (!val) return undefined
-    return parseDate(val)
-  })
+  .transform((val) => val || undefined)
 
 /**
  * Schema for CSV export API parameters
  * Uses same parameter names as analytics pages (from, to, date)
+ *
+ * - `date` exports the single day, ahead of `from` and `to`
+ * - `from` and `to` export the range of them
+ * - Only one of `from` and `to` exports the single day
+ *
+ * Every given date must be a selectable date, and the range of `from` and `to`
+ * must follow the rules of `@/lib/analytics/date-window`. Otherwise the
+ * parameters are rejected (instead of falling back to another period)
  */
 export const exportSearchParamsSchema = z
   .object({
@@ -49,82 +58,67 @@ export const exportSearchParamsSchema = z
     // End date of the range (to parameter)
     to: dateParamSchema,
   })
-  .refine(
-    (data) => {
-      // At least one of from, to, or date must be provided
-      return data.from || data.to || data.date
-    },
-    {
-      message: 'At least one of from, to, or date parameters is required',
-    },
-  )
-  .transform((data) => {
-    const { from, to, date, limit } = data
+  .superRefine((data, context) => {
+    const dates: Partial<
+      Record<(typeof DATE_KEYS)[number], Temporal.PlainDate>
+    > = {}
 
-    // If date is provided, use it for single-day export
-    if (date) {
-      return {
-        endDate: null,
-        limit,
-        range: singleDayPeriod(date),
-        selectedDate: date.toString(),
-        startDate: date.toString(),
+    for (const key of DATE_KEYS) {
+      const value = data[key]
+
+      if (value === undefined) continue
+
+      const date = parseDateFormat(value)
+      const error = date ? validateDate(date) : 'invalid-format'
+
+      if (error) {
+        context.addIssue({
+          code: 'custom',
+          message: DATE_ERROR_MESSAGES[error],
+          path: [key],
+        })
+      } else if (date) {
+        dates[key] = date
       }
     }
 
-    // If from/to are provided, validate the range
-    if (from && to) {
-      const rangeError = validateRange(from, to)
+    if (!data.date && !data.from && !data.to) {
+      context.addIssue({
+        code: 'custom',
+        message: 'At least one of from, to, or date parameters is required',
+        path: ['from'],
+      })
+    }
 
-      // Start date must be before or equal to end date
-      if (rangeError === 'reversed') {
-        throw new z.ZodError([
-          {
-            code: z.ZodIssueCode.custom,
-            message: 'Start date must be before or equal to end date',
-            path: ['from'],
-          },
-        ])
-      }
+    // `date` takes the place of the range
+    if (data.date || !dates.from || !dates.to) return
 
-      // Maximum period constraint
-      if (rangeError === 'too-long') {
-        throw new z.ZodError([
-          {
-            code: z.ZodIssueCode.custom,
-            message: `Date range cannot exceed ${MAX_RANGE_DAYS} days`,
-            path: ['from'],
-          },
-        ])
-      }
+    const rangeError = validateRange(dates.from, dates.to)
 
+    if (rangeError) {
+      context.addIssue({
+        code: 'custom',
+        message: RANGE_ERROR_MESSAGES[rangeError],
+        path: ['from'],
+      })
+    }
+  })
+  .transform(({ date, from, limit, to }) => {
+    if (!date && from && to) {
       return {
-        endDate: to.toString(),
         limit,
-        range: { end: to.toString(), start: from.toString() },
+        range: { end: to, start: from } satisfies Period,
         selectedDate: null,
-        startDate: from.toString(),
       }
     }
 
-    // Use only from or to (fallback to single date)
-    const singleDate = from || to
-    if (!singleDate) {
-      throw new z.ZodError([
-        {
-          code: z.ZodIssueCode.custom,
-          message: 'At least one date parameter is required',
-          path: ['from'],
-        },
-      ])
-    }
+    // `superRefine` makes sure that one of the dates is given
+    const day = date || from || to || ''
 
     return {
-      endDate: null,
       limit,
-      range: singleDayPeriod(singleDate),
-      selectedDate: singleDate.toString(),
-      startDate: singleDate.toString(),
+      range: { end: day, start: day } satisfies Period,
+      selectedDate: day,
     }
   })
 

@@ -1,11 +1,8 @@
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const limits = {
-  videosCheck: vi.fn(),
-  videosCheckAll: vi.fn(),
-  videosCheckRecent: vi.fn(),
-}
+const acquireLock = vi.fn()
+const releaseLock = vi.fn()
 const scraper = {
   refreshLiveVideos: vi.fn(),
   refreshRecentVideos: vi.fn(),
@@ -14,18 +11,7 @@ const scraper = {
 const createScraper = vi.fn(() => scraper)
 const finishVideoSync = vi.fn()
 
-vi.mock('@/lib/ratelimit', () => ({
-  recommendationQueriesUpdate: { limit: vi.fn() },
-  statsSnapshot: { limit: vi.fn() },
-  talentsUpdate: { limit: vi.fn() },
-  termsPopularityUpdate: { limit: vi.fn() },
-  videosBackfill: { limit: vi.fn() },
-  videosCascadeFromTalents: { limit: vi.fn() },
-  videosCheck: { limit: limits.videosCheck },
-  videosCheckAll: { limit: limits.videosCheckAll },
-  videosCheckRecent: { limit: limits.videosCheckRecent },
-  videosUpdate: { limit: vi.fn() },
-}))
+vi.mock('@/lib/lock', () => ({ acquireLock, releaseLock }))
 vi.mock('@/lib/scraper', () => ({ createScraper }))
 vi.mock('@/lib/video-sync', () => ({ finishVideoSync }))
 
@@ -56,9 +42,7 @@ describe('POST /videos/check', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    for (const limit of Object.values(limits)) {
-      limit.mockResolvedValue({ success: true })
-    }
+    acquireLock.mockResolvedValue('lock-value')
 
     for (const operation of Object.values(scraper)) {
       operation.mockResolvedValue(false)
@@ -66,49 +50,44 @@ describe('POST /videos/check', () => {
   })
 
   it.each([
-    ['', 'youtube', 'refreshLiveVideos', 'videosCheck', 'videos:check:youtube'],
+    ['', 'youtube', 'refreshLiveVideos', 'videos:check'],
     [
       '?mode=recent',
       'youtube',
       'refreshRecentVideos',
-      'videosCheckRecent',
-      'videos:check:recent:youtube',
+      'videos:check:mode=recent',
     ],
     [
       '?mode=all',
       'youtube',
       'removeUnavailableVideos',
-      'videosCheckAll',
-      'videos:check:all:youtube',
+      'videos:check:mode=all',
     ],
     [
       '?provider=twitch',
       'twitch',
       'refreshLiveVideos',
-      'videosCheck',
-      'videos:check:twitch',
+      'videos:check:provider=twitch',
     ],
     [
       '?provider=twitch&mode=recent',
       'twitch',
       'refreshRecentVideos',
-      'videosCheckRecent',
-      'videos:check:recent:twitch',
+      'videos:check:mode=recent:provider=twitch',
     ],
     [
       '?provider=twitch&mode=all',
       'twitch',
       'removeUnavailableVideos',
-      'videosCheckAll',
-      'videos:check:all:twitch',
+      'videos:check:mode=all:provider=twitch',
     ],
   ] as const)(
     '%s runs %s.%s',
-    async (search, provider, operation, ratelimit, ratelimitKey) => {
+    async (search, provider, operation, identifier) => {
       const response = await POST(createRequest(search))
 
       expect(response.status).toBe(204)
-      expect(limits[ratelimit]).toHaveBeenCalledWith(ratelimitKey)
+      expect(acquireLock).toHaveBeenCalledWith(identifier, 130)
       expect(createScraper).toHaveBeenCalledWith(provider)
 
       for (const [name, mock] of Object.entries(scraper)) {

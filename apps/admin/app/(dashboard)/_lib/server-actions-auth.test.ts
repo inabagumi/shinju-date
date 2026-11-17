@@ -111,6 +111,20 @@ const formActions: [string, () => Promise<unknown>][] = [
       ),
   ],
   [
+    'updateFeatureRequestStatus',
+    () =>
+      updateFeatureRequestStatus({}, formData({ id: ID, status: 'resolved' })),
+  ],
+  [
+    'updateFeatureRequestMemo',
+    () =>
+      updateFeatureRequestMemo({}, formData({ admin_memo: 'memo', id: ID })),
+  ],
+  [
+    'markFeatureRequestAsRead',
+    () => markFeatureRequestAsRead({}, formData({ id: ID, is_read: 'true' })),
+  ],
+  [
     'createTalentAction',
     () => createTalentAction({}, formData({ name: 'talent' })),
   ],
@@ -159,12 +173,6 @@ const formActions: [string, () => Promise<unknown>][] = [
 
 const resultActions: [string, () => Promise<unknown>][] = [
   ['deleteAnnouncementAction', () => deleteAnnouncementAction(ID)],
-  [
-    'updateFeatureRequestStatus',
-    () => updateFeatureRequestStatus(ID, 'resolved'),
-  ],
-  ['updateFeatureRequestMemo', () => updateFeatureRequestMemo(ID, 'memo')],
-  ['markFeatureRequestAsRead', () => markFeatureRequestAsRead(ID, true)],
   ['addQueryAction', () => addQueryAction('query')],
   ['deleteQueryAction', () => deleteQueryAction('query')],
   ['deleteTalentAction', () => deleteTalentAction(ID)],

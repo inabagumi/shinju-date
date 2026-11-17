@@ -61,6 +61,7 @@ describe('SearchResults', () => {
             createVideo('video-f', '2025-12-31T03:00:00Z'),
           ],
         ]}
+        referenceDate="2026-11-14"
       />,
     )
 
@@ -91,6 +92,7 @@ describe('SearchResults', () => {
     renderWithQueryClient(
       <SearchResults
         prefetchedData={[[createVideo('video-a', '2026-11-14T11:00:00Z')]]}
+        referenceDate="2026-11-14"
       />,
     )
 
@@ -103,7 +105,7 @@ describe('SearchResults', () => {
   test('should render nothing without videos', () => {
     const { container } = render(
       <QueryClientProvider client={new QueryClient()}>
-        <SearchResults prefetchedData={[[]]} />
+        <SearchResults prefetchedData={[[]]} referenceDate="2026-11-14" />
       </QueryClientProvider>,
     )
 
@@ -114,7 +116,12 @@ describe('SearchResults', () => {
     const talentIds = ['0f6b7c84-1a1e-4b4e-9d3a-5c7a0c1e2f01']
 
     renderWithQueryClient(
-      <SearchResults kind="short" query="歌" talentIds={talentIds} />,
+      <SearchResults
+        kind="short"
+        query="歌"
+        referenceDate="2026-11-14"
+        talentIds={talentIds}
+      />,
     )
 
     expect(fetchVideos).toHaveBeenCalledWith({

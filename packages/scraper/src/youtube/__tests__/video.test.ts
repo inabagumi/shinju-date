@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { diffVideoFields } from '../../internal/operations/diff-video-fields.js'
 import { createVideo } from '../../internal/testing/youtube.js'
-import { getThumbnailSource, getVideoChanges, toVideoFields } from '../video.js'
+import type { YouTubeVideo } from '../types.js'
+import { getThumbnailSource, toVideoFields } from '../video.js'
 
 const now = Temporal.Instant.from('2024-05-01T12:00:00Z')
 
@@ -57,30 +59,35 @@ describe('toVideoFields', () => {
   })
 })
 
-describe('getVideoChanges', () => {
+describe('the changes of a saved video', () => {
   const saved = toVideoFields(createVideo(upload), now)
+  const getChanges = (
+    savedFields: typeof saved,
+    video: YouTubeVideo,
+    at: Temporal.Instant,
+  ) => diffVideoFields(savedFields, toVideoFields(video, at))
 
-  it('returns null when nothing changed', () => {
-    expect(getVideoChanges(saved, createVideo(upload), now)).toBeNull()
+  it('are empty when nothing changed', () => {
+    expect(getChanges(saved, createVideo(upload), now)).toEqual({})
   })
 
   it('ignores how the database formats the same instant', () => {
     expect(
-      getVideoChanges(
+      getChanges(
         { ...saved, published_at: '2024-04-30T10:00:00+00:00' },
         createVideo(upload),
         now,
       ),
-    ).toBeNull()
+    ).toEqual({})
   })
 
-  it('returns only the columns that changed', () => {
+  it('hold only the columns that changed', () => {
     const video = createVideo({
       ...upload,
       snippet: { publishedAt: '2024-04-30T10:00:00Z', title: 'New title' },
     })
 
-    expect(getVideoChanges(saved, video, now)).toEqual({ title: 'New title' })
+    expect(getChanges(saved, video, now)).toEqual({ title: 'New title' })
   })
 
   it('follows a stream from scheduled to ended', () => {
@@ -103,7 +110,7 @@ describe('getVideoChanges', () => {
     })
 
     expect(
-      getVideoChanges(
+      getChanges(
         upcoming,
         ended,
         Temporal.Instant.from('2024-05-01T16:00:00Z'),
@@ -121,7 +128,7 @@ describe('getVideoChanges', () => {
       contentDetails: { duration: 'PT30S' },
     })
 
-    expect(getVideoChanges(saved, video, now)).toEqual({
+    expect(getChanges(saved, video, now)).toEqual({
       duration: 'PT30S',
       video_kind: 'short',
     })

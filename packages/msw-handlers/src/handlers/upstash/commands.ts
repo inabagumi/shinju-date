@@ -457,6 +457,15 @@ function incrementString(
   return value
 }
 
+/** Delete a lock only if it still holds the given token. */
+function releaseLock(
+  call: (...command: string[]) => RedisReply,
+  [lock = '']: string[],
+  [token]: string[],
+): RedisReply {
+  return call('GET', lock) === token ? call('DEL', lock) : 0
+}
+
 /** The scripts of `EVAL` that the mock emulates, as the commands they run. */
 const SCRIPTS: Record<
   string,
@@ -466,6 +475,8 @@ const SCRIPTS: Record<
     argv: string[],
   ) => RedisReply
 > = {
+  // `RELEASE_LOCK_SCRIPT` of the cron jobs of batch
+  'batch:release-lock': (call, keys, argv) => releaseLock(call, keys, argv),
   // `ENQUEUE_SCRIPT` of `@shinju-date/video-backfill`
   'video-backfill:enqueue': (call, [job = '', queue = '', lock = ''], argv) => {
     const [expected = '', value = '', ttl = '', id = ''] = argv
@@ -497,8 +508,8 @@ const SCRIPTS: Record<
     return 1
   },
   // `RUN_UNLOCK_SCRIPT` of `@shinju-date/video-backfill`
-  'video-backfill:run-unlock': (call, [lock = ''], [token]) =>
-    call('GET', lock) === token ? call('DEL', lock) : 0,
+  'video-backfill:run-unlock': (call, keys, argv) =>
+    releaseLock(call, keys, argv),
 }
 
 /** The commands that the mock supports, by their lowercase names. */

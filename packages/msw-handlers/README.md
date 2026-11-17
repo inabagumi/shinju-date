@@ -193,16 +193,16 @@ The package mocks the REST API of Upstash Redis: a single command (`POST /` with
 
 The commands are implemented in `src/handlers/upstash/commands.ts`, with the options and the errors of Redis:
 
-| Group       | Commands                                                                                                                                                                |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Keys        | `DEL`, `EXISTS`, `EXPIRE` (`NX`, `XX`, `GT`, `LT`), `TTL`                                                                                                               |
-| Strings     | `GET`, `MGET`, `SET` (`NX`, `XX`, `GET`, `EX`, `PX`, `EXAT`, `PXAT`, `KEEPTTL`), `SETEX`, `INCR`                                                                        |
-| Lists       | `LPUSH`, `RPOP`                                                                                                                                                         |
-| Sets        | `SADD`, `SREM`, `SMEMBERS`, `SCARD`                                                                                                                                     |
-| Sorted sets | `ZADD` (`NX`, `XX`, `GT`, `LT`, `CH`, `INCR`), `ZINCRBY`, `ZSCORE`, `ZCARD`, `ZRANGE` (`BYSCORE`, `REV`, `LIMIT`, `WITHSCORES`), `ZUNIONSTORE` (`WEIGHTS`, `AGGREGATE`) |
-| Hashes      | `HINCRBY`, `HGETALL`                                                                                                                                                    |
-| Scripts     | `EVAL` of the scripts of `@shinju-date/video-backfill` (`-- video-backfill:enqueue`, `requeue` and `run-unlock`), emulated with the commands that they run              |
-| Server      | `PING`                                                                                                                                                                  |
+| Group       | Commands                                                                                                                                                                                                       |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Keys        | `DEL`, `EXISTS`, `EXPIRE` (`NX`, `XX`, `GT`, `LT`), `TTL`                                                                                                                                                      |
+| Strings     | `GET`, `MGET`, `SET` (`NX`, `XX`, `GET`, `EX`, `PX`, `EXAT`, `PXAT`, `KEEPTTL`), `SETEX`, `INCR`                                                                                                               |
+| Lists       | `LPUSH`, `RPOP`                                                                                                                                                                                                |
+| Sets        | `SADD`, `SREM`, `SMEMBERS`, `SCARD`                                                                                                                                                                            |
+| Sorted sets | `ZADD` (`NX`, `XX`, `GT`, `LT`, `CH`, `INCR`), `ZINCRBY`, `ZSCORE`, `ZCARD`, `ZRANGE` (`BYSCORE`, `REV`, `LIMIT`, `WITHSCORES`), `ZUNIONSTORE` (`WEIGHTS`, `AGGREGATE`)                                        |
+| Hashes      | `HINCRBY`, `HGETALL`                                                                                                                                                                                           |
+| Scripts     | `EVAL` of the scripts of `@shinju-date/video-backfill` (`-- video-backfill:enqueue`, `requeue` and `run-unlock`) and of the locks of batch (`-- batch:release-lock`), emulated with the commands that they run |
+| Server      | `PING`                                                                                                                                                                                                         |
 
 A command that is not implemented returns the error of Redis, `ERR unknown command '<name>', with args beginning with: …`, with 400 (`@upstash/redis` throws it). In a pipeline, only that command gets the error; a transaction with it is discarded (`EXECABORT`), like Redis does. `EVAL` of another script also returns an error, as Lua cannot run in the mock.
 

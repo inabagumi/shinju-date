@@ -30,9 +30,7 @@ function multi() {
 
 vi.mock('../redis', () => ({ redisClient: { multi } }))
 
-const { limitOncePerWindow, statsSnapshot, videosCheck } = await import(
-  '../ratelimit'
-)
+const { limitOncePerWindow, videosBackfill } = await import('../ratelimit')
 
 function setNow(isoString: string) {
   vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
@@ -108,7 +106,7 @@ describe('limitOncePerWindow', () => {
   })
 })
 
-describe('the rate limiters of the cron jobs', () => {
+describe('the rate limiter of /videos/backfill', () => {
   beforeEach(() => {
     store.clear()
   })
@@ -117,34 +115,21 @@ describe('the rate limiters of the cron jobs', () => {
     vi.restoreAllMocks()
   })
 
-  it('use the window of each job', async () => {
+  it('uses a window of 30 seconds', async () => {
     setNow('2024-05-01T12:00:00Z')
 
-    await videosCheck.limit('videos:check')
-    await statsSnapshot.limit('stats:snapshot')
+    await videosBackfill.limit('videos:backfill')
 
-    expect([...store.values()].map(({ ttl }) => ttl)).toEqual([
-      30,
-      20 * 60 * 60,
-    ])
+    expect([...store.values()].map(({ ttl }) => ttl)).toEqual([30])
   })
 
-  it('reject the second run of a job in its window', async () => {
-    // The windows are counted from the Unix epoch, not from midnight.
-    const windowMilliseconds = 20 * 60 * 60 * 1000
-    const start = Temporal.Instant.fromEpochMilliseconds(
-      Math.ceil(
-        Temporal.Instant.from('2024-05-01T00:00:00Z').epochMilliseconds /
-          windowMilliseconds,
-      ) * windowMilliseconds,
-    )
+  it('rejects the second run in its window', async () => {
+    setNow('2024-05-01T12:00:00Z')
+    await videosBackfill.limit('videos:backfill')
 
-    setNow(start.toString())
-    await statsSnapshot.limit('stats:snapshot')
+    setNow('2024-05-01T12:00:29.999Z')
 
-    setNow(start.add({ hours: 19, minutes: 59, seconds: 59 }).toString())
-
-    await expect(statsSnapshot.limit('stats:snapshot')).resolves.toEqual({
+    await expect(videosBackfill.limit('videos:backfill')).resolves.toEqual({
       success: false,
     })
   })

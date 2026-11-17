@@ -24,6 +24,7 @@ function RecommendedQueriesSkeleton() {
       <span className="sr-only">読み込み中...</span>
       {/* 読み込み後に高さが変わらないよう、表示するクエリと同じ件数にする */}
       {Array.from({ length: TOTAL_DISPLAY_COUNT }, (_, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: 件数が決まっていて並びも変わらないスケルトンなので、インデックスをキーにする
         <div className="flex w-full items-center gap-3 px-4 py-3" key={index}>
           <span className="size-4 shrink-0 animate-pulse rounded-control bg-muted" />
           <span className="h-6 w-40 animate-pulse rounded-control bg-muted" />

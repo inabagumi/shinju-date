@@ -88,6 +88,7 @@ export function formatDateTimeFromISO(
   const { includeSeconds = true } = options
   const instant = parseISO8601(isoString)
   // Use JST timezone
+  // biome-ignore lint/plugin/no-hardcoded-time-zone: TIME_ZONE を使うよう #7100 で直す
   const zonedDateTime = instant.toZonedDateTimeISO('Asia/Tokyo')
   return formatDateTime(zonedDateTime, { includeSeconds })
 }

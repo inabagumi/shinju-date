@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import { renderToString } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import type { Video } from '@/lib/fetchers'
-import Timeline, { formatTimelineDate } from '../timeline'
+import Timeline from '../timeline'
 
 vi.mock('@/components/video-card', () => ({
   default: ({ value }: { value: Video }) => <article>{value.title}</article>,
@@ -22,35 +22,6 @@ function getCardTitles(group: HTMLElement) {
     .getAllByRole('article')
     .map((card) => card.textContent)
 }
-
-describe('formatTimelineDate', () => {
-  const today = Temporal.PlainDate.from('2026-11-14')
-
-  test('should use words for today and tomorrow', () => {
-    expect(formatTimelineDate(today, today)).toBe('今日')
-    expect(
-      formatTimelineDate(Temporal.PlainDate.from('2026-11-15'), today),
-    ).toBe('明日')
-  })
-
-  test('should show the date and weekday after tomorrow', () => {
-    expect(
-      formatTimelineDate(Temporal.PlainDate.from('2026-11-16'), today),
-    ).toBe('11/16（月）')
-    expect(
-      formatTimelineDate(Temporal.PlainDate.from('2026-11-22'), today),
-    ).toBe('11/22（日）')
-  })
-
-  test('should include the year when the date is in another year', () => {
-    expect(
-      formatTimelineDate(
-        Temporal.PlainDate.from('2027-01-02'),
-        Temporal.PlainDate.from('2026-12-31'),
-      ),
-    ).toBe('2027/01/02（土）')
-  })
-})
 
 describe('Timeline', () => {
   beforeEach(() => {

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { useToday } from '@/components/use-today'
-import { formatScheduleDay } from '@/lib/schedule'
+import { formatShortDate } from '@/lib/date-heading'
 
 interface ScheduleDayHeaderProps {
   count: number
@@ -46,7 +46,7 @@ export default function ScheduleDayHeader({
             aria-current={isToday ? 'date' : undefined}
             dateTime={date.toString()}
           >
-            {formatScheduleDay(date)}
+            {formatShortDate(date)}
           </time>
         </h2>
 
