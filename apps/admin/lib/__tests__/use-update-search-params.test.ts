@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   useSearchParamsHref,
   useUpdateSearchParams,
-} from './use-update-search-params'
+} from '../use-update-search-params'
 
 const mocks = vi.hoisted(() => ({
   pathname: '/videos',
