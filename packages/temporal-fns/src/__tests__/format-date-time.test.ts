@@ -1,12 +1,13 @@
 // biome-ignore lint/style/noRestrictedImports: this test compares the native Temporal with the polyfill, so it needs the polyfill's implementation.
 import { Temporal as PolyfillTemporal } from 'temporal-polyfill/implementation'
 import { describe, expect, it } from 'vitest'
-import formatDateTime, {
-  formatDate,
+import { formatDate } from '../format-date.js'
+import {
+  formatDateTime,
   formatDateTimeFromISO,
   formatDateTimeWithSeconds,
-  formatTime,
 } from '../format-date-time.js'
+import { formatTime } from '../format-time.js'
 
 // The server uses the native Temporal while some browsers use
 // temporal-polyfill. Both must produce the same strings to avoid hydration
