@@ -4,7 +4,6 @@ import { range } from '@shinju-date/helpers'
 import {
   Button,
   EmptyState,
-  Input,
   Table,
   TableBody,
   TableCell,
@@ -13,9 +12,11 @@ import {
   TableRow,
 } from '@shinju-date/ui'
 import { BookOpen } from 'lucide-react'
-import { Fragment, Suspense, use, useMemo, useState } from 'react'
+import { Fragment, Suspense, use, useMemo } from 'react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { SearchInput } from '@/components/search-input'
 import { deleteTermAction } from '../_actions'
+import type { TermsSearchParams } from '../_lib/search-params-schema'
 import { TermModal } from './term-modal'
 
 interface Term {
@@ -26,6 +27,8 @@ interface Term {
 }
 
 interface TermsListProps {
+  /** URL のパラメータを解釈したもの */
+  filters: Promise<TermsSearchParams>
   terms: Promise<Term[]>
 }
 
@@ -56,35 +59,28 @@ function getFirstCharacter(term: string): string {
   return firstChar
 }
 
-export function TermsList({ terms }: TermsListProps) {
-  const [searchQuery, setSearchQuery] = useState('')
-
+export function TermsList({ filters, terms }: TermsListProps) {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Input
+        <SearchInput
           aria-label="用語を検索"
           className="sm:max-w-md"
-          onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="用語、読み方、類義語で検索..."
-          type="text"
-          value={searchQuery}
         />
         <TermModal />
       </div>
 
       <Suspense fallback={<TermsResultsSkeleton />}>
-        <TermsResults searchQuery={searchQuery} terms={terms} />
+        <TermsResults filters={filters} terms={terms} />
       </Suspense>
     </div>
   )
 }
 
-function TermsResults({
-  searchQuery,
-  terms,
-}: TermsListProps & { searchQuery: string }) {
+function TermsResults({ filters, terms }: TermsListProps) {
   const resolvedTerms = use(terms)
+  const searchQuery = use(filters).search ?? ''
 
   // Filter terms based on search query
   const filteredTerms = useMemo(() => {

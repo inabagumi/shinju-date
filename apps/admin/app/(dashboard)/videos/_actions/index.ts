@@ -89,7 +89,7 @@ export async function toggleVisibilityAction(ids: string[]): Promise<{
     if (updatedVideos.length > 0) {
       await Promise.all(
         updatedVideos.map((video) =>
-          createAuditLog('VIDEO_VISIBILITY_TOGGLE', 'videos', video.id, {
+          createAuditLog('VIDEO_VISIBILITY_TOGGLE', video.id, {
             entityName: video.title,
           }),
         ),
@@ -202,7 +202,7 @@ export async function softDeleteAction(ids: string[]): Promise<{
     // Log audit entries for each video
     await Promise.all(
       videos.map((video) =>
-        createAuditLog('VIDEO_DELETE', 'videos', video.id, {
+        createAuditLog('VIDEO_DELETE', video.id, {
           entityName: video.title,
         }),
       ),
@@ -300,7 +300,7 @@ export async function restoreAction(ids: string[]): Promise<{
     // Log audit entries for each video (non-blocking - failures won't affect restore success)
     await Promise.allSettled(
       videos.map((video) =>
-        createAuditLog('VIDEO_RESTORE', 'videos', video.id, {
+        createAuditLog('VIDEO_RESTORE', video.id, {
           entityName: video.title,
         }),
       ),

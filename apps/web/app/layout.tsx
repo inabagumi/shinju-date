@@ -8,7 +8,7 @@ import SkipLink from '@/components/skip-link'
 import { TimerProvider } from '@/components/timer'
 import { publicEnv } from '@/lib/env'
 import { AnnouncementBannerWrapper } from './_components/announcement-banner-wrapper'
-import { Providers } from './_components/providers'
+import { QueryProvider } from './_components/query-client-provider'
 import { SearchModalProvider } from './_components/search-modal-context'
 import { SearchModalDialog } from './_components/search-modal-dialog'
 import { SiteFooter } from './_components/site-footer'
@@ -42,7 +42,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       <body className="grid min-h-svh grid-rows-[auto_1fr_auto] bg-background text-foreground antialiased">
         <SkipLink />
         <PageVisitTracker />
-        <Providers>
+        <QueryProvider>
           <SearchModalProvider>
             <SVGSymbols />
 
@@ -62,7 +62,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
 
             <Analytics />
           </SearchModalProvider>
-        </Providers>
+        </QueryProvider>
       </body>
     </html>
   )

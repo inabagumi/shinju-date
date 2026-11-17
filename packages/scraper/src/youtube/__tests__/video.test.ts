@@ -1,21 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import type { YouTubeVideo } from '../types.js'
+import { createVideo } from '../../internal/testing/youtube.js'
 import { getThumbnailSource, getVideoChanges, toVideoFields } from '../video.js'
 
 const now = Temporal.Instant.from('2024-05-01T12:00:00Z')
 
-function createVideo(overrides: Partial<YouTubeVideo> = {}): YouTubeVideo {
-  return {
-    contentDetails: { duration: 'PT1H' },
-    id: 'yt-1',
-    snippet: { publishedAt: '2024-04-30T10:00:00Z', title: 'Title' },
-    ...overrides,
-  }
+/** An upload without thumbnails; the tests change it one field at a time. */
+const upload = {
+  contentDetails: { duration: 'PT1H' },
+  snippet: { publishedAt: '2024-04-30T10:00:00Z', title: 'Title' },
 }
 
 describe('toVideoFields', () => {
   it('maps a regular upload', () => {
-    expect(toVideoFields(createVideo(), now)).toEqual({
+    expect(toVideoFields(createVideo(upload), now)).toEqual({
       duration: 'PT1H',
       published_at: '2024-04-30T10:00:00Z',
       status: 'PUBLISHED',
@@ -26,6 +23,7 @@ describe('toVideoFields', () => {
 
   it('maps a scheduled stream to its start time', () => {
     const video = createVideo({
+      ...upload,
       contentDetails: {},
       liveStreamingDetails: { scheduledStartTime: '2024-05-02T09:00:00Z' },
     })
@@ -39,6 +37,7 @@ describe('toVideoFields', () => {
 
   it('maps a stream that is on air', () => {
     const video = createVideo({
+      ...upload,
       liveStreamingDetails: {
         actualStartTime: '2024-05-01T11:00:00Z',
         scheduledStartTime: '2024-05-01T11:00:00Z',
@@ -49,24 +48,27 @@ describe('toVideoFields', () => {
   })
 
   it('classifies short videos', () => {
-    const video = createVideo({ contentDetails: { duration: 'PT45S' } })
+    const video = createVideo({
+      ...upload,
+      contentDetails: { duration: 'PT45S' },
+    })
 
     expect(toVideoFields(video, now).video_kind).toBe('short')
   })
 })
 
 describe('getVideoChanges', () => {
-  const saved = toVideoFields(createVideo(), now)
+  const saved = toVideoFields(createVideo(upload), now)
 
   it('returns null when nothing changed', () => {
-    expect(getVideoChanges(saved, createVideo(), now)).toBeNull()
+    expect(getVideoChanges(saved, createVideo(upload), now)).toBeNull()
   })
 
   it('ignores how the database formats the same instant', () => {
     expect(
       getVideoChanges(
         { ...saved, published_at: '2024-04-30T10:00:00+00:00' },
-        createVideo(),
+        createVideo(upload),
         now,
       ),
     ).toBeNull()
@@ -74,6 +76,7 @@ describe('getVideoChanges', () => {
 
   it('returns only the columns that changed', () => {
     const video = createVideo({
+      ...upload,
       snippet: { publishedAt: '2024-04-30T10:00:00Z', title: 'New title' },
     })
 
@@ -83,12 +86,14 @@ describe('getVideoChanges', () => {
   it('follows a stream from scheduled to ended', () => {
     const upcoming = toVideoFields(
       createVideo({
+        ...upload,
         contentDetails: {},
         liveStreamingDetails: { scheduledStartTime: '2024-05-01T13:00:00Z' },
       }),
       now,
     )
     const ended = createVideo({
+      ...upload,
       contentDetails: { duration: 'PT2H' },
       liveStreamingDetails: {
         actualEndTime: '2024-05-01T15:05:00Z',
@@ -111,7 +116,10 @@ describe('getVideoChanges', () => {
   })
 
   it('reclassifies a video once its duration is known', () => {
-    const video = createVideo({ contentDetails: { duration: 'PT30S' } })
+    const video = createVideo({
+      ...upload,
+      contentDetails: { duration: 'PT30S' },
+    })
 
     expect(getVideoChanges(saved, video, now)).toEqual({
       duration: 'PT30S',
@@ -130,6 +138,7 @@ describe('getThumbnailSource', () => {
 
   it('prefers the largest thumbnail', () => {
     const video = createVideo({
+      ...upload,
       snippet: {
         publishedAt: '2024-04-30T10:00:00Z',
         thumbnails: { high, maxres },
@@ -141,6 +150,7 @@ describe('getThumbnailSource', () => {
 
   it('falls back to smaller thumbnails', () => {
     const video = createVideo({
+      ...upload,
       snippet: { publishedAt: '2024-04-30T10:00:00Z', thumbnails: { high } },
     })
 
@@ -148,6 +158,6 @@ describe('getThumbnailSource', () => {
   })
 
   it('returns null when YouTube offers no usable thumbnail', () => {
-    expect(getThumbnailSource(createVideo())).toBeNull()
+    expect(getThumbnailSource(createVideo(upload))).toBeNull()
   })
 })

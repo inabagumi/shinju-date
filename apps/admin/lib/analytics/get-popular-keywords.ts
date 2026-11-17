@@ -24,7 +24,7 @@ export async function getPopularKeywords(
 
   cacheLife('minutes')
 
-  const keywordScores = await _getPopularItemsFromRedis<string>(
+  const keywordScores = await _getPopularItemsFromRedis(
     REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX,
     limit,
     Temporal.PlainDate.from(startDate),

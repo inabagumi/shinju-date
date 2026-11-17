@@ -4,18 +4,29 @@ import { Suspense } from 'react'
 import { ManagementTableSkeleton } from '@/components/skeletons'
 import { TalentsList } from './_components/talents-list'
 import { getTalents } from './_lib/get-talents'
+import { talentSearchParamsSchema } from './_lib/search-params-schema'
 
 export const metadata: Metadata = {
   title: 'タレント管理',
 }
 
-async function TalentsListData() {
-  const talents = await getTalents()
+async function TalentsListData({
+  searchParams,
+}: Pick<PageProps<'/talents'>, 'searchParams'>) {
+  const [talents, rawParams] = await Promise.all([getTalents(), searchParams])
+  const { search, sort, status } = talentSearchParamsSchema.parse(rawParams)
 
-  return <TalentsList talents={talents} />
+  return (
+    <TalentsList
+      search={search}
+      sortOrder={sort}
+      statusFilter={status}
+      talents={talents}
+    />
+  )
 }
 
-export default function TalentsPage() {
+export default function TalentsPage({ searchParams }: PageProps<'/talents'>) {
   return (
     <div>
       <PageHeader
@@ -24,7 +35,7 @@ export default function TalentsPage() {
       />
 
       <Suspense fallback={<ManagementTableSkeleton />}>
-        <TalentsListData />
+        <TalentsListData searchParams={searchParams} />
       </Suspense>
     </div>
   )

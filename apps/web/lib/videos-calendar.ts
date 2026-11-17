@@ -1,8 +1,10 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { createErrorResponse } from '@shinju-date/helpers'
+import { logger } from '@shinju-date/logger'
 import { startOfHour } from '@shinju-date/temporal-fns'
 import { createCalendarResponse, createEventAttributesList } from './calendar'
-import { supabaseClient } from './supabase'
+import { type CalendarVideo, fetchCalendarVideos } from './fetchers'
+import { normalizeTalentIds } from './talent-filter'
 import type { VideoKindFilter } from './video-kind-filter'
 
 interface CreateVideosCalendarResponseOptions {
@@ -20,62 +22,28 @@ export async function createVideosCalendarResponse({
   kind = 'all',
   talentIds = [],
 }: CreateVideosCalendarResponseOptions = {}): Promise<Response> {
-  const now = startOfHour(Temporal.Now.zonedDateTimeISO(TIME_ZONE))
-  let query = supabaseClient
-    .from('videos')
-    .select(
-      `
-        talent:talents!inner (
-          name
-        ),
-        duration,
-        id,
-        platform,
-        published_at,
-        status,
-        title,
-        youtube_video:youtube_videos (youtube_video_id),
-        twitch_video:twitch_videos (
-          twitch_video_id,
-          type,
-          twitch_user:twitch_users (twitch_login_name)
-        )
-      `,
-    )
-    .lt(
-      'published_at',
-      now
-        .add({
-          days: 7,
-        })
-        .toInstant()
-        .toString(),
-    )
+  let videos: CalendarVideo[]
 
-  if (talentIds.length > 0) {
-    query = query.in('talent_id', [...talentIds])
-  }
-
-  if (kind !== 'all') {
-    query = query.eq('video_kind', kind)
-  }
-
-  // The calendar also has the past videos, so there is no lower bound. They are
-  // sorted from the latest, so the oldest ones are dropped at the limit.
-  const { data: videos, error } = await query
-    .order('published_at', {
-      ascending: false,
+  try {
+    videos = await fetchCalendarVideos({
+      kind,
+      // Share one cache entry between the same talents in any order
+      talentIds: normalizeTalentIds(talentIds),
     })
-    .limit(100)
+  } catch (error) {
+    logger.error('カレンダーの動画の取得に失敗しました', {
+      error,
+      kind,
+      talentIds,
+    })
 
-  if (error) {
-    return createErrorResponse(error.message, {
+    return createErrorResponse('Internal Server Error', {
       status: 500,
     })
   }
 
   const events = createEventAttributesList(videos, {
-    now,
+    now: startOfHour(Temporal.Now.zonedDateTimeISO(TIME_ZONE)),
   })
 
   return createCalendarResponse(events)

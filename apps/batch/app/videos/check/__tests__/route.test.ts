@@ -15,8 +15,12 @@ const createScraper = vi.fn(() => scraper)
 const finishVideoSync = vi.fn()
 
 vi.mock('@/lib/ratelimit', () => ({
+  recommendationQueriesUpdate: { limit: vi.fn() },
+  statsSnapshot: { limit: vi.fn() },
   talentsUpdate: { limit: vi.fn() },
+  termsPopularityUpdate: { limit: vi.fn() },
   videosBackfill: { limit: vi.fn() },
+  videosCascadeFromTalents: { limit: vi.fn() },
   videosCheck: { limit: limits.videosCheck },
   videosCheckAll: { limit: limits.videosCheckAll },
   videosCheckRecent: { limit: limits.videosCheckRecent },

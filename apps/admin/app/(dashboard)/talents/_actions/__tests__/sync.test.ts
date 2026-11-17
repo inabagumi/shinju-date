@@ -127,7 +127,7 @@ describe('syncTalentWithYouTube', () => {
     expect(talentUpdates()[0]?.body).toEqual({
       updated_at: '2024-11-24T17:00:00Z',
     })
-    test.expectAuditLog('CHANNEL_SYNC', 'talents', talentId, {
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
       accounts: [
         {
           changes: updatedChannel.changes,
@@ -149,7 +149,7 @@ describe('syncTalentWithYouTube', () => {
     const result = await syncTalentWithYouTube(talentId)
 
     expect(result).toEqual({ success: true })
-    test.expectAuditLog('CHANNEL_SYNC', 'talents', talentId, {
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
       accounts: [{ iconUpdated: true, id: 'row', name: 'Name' }],
       entityName: 'Talent Name',
       platform: 'youtube',
@@ -249,7 +249,7 @@ describe('syncTalentWithTwitch', () => {
     expect(result).toEqual({ success: true })
     expect(scraper.createScraper).toHaveBeenCalledWith('twitch')
     expect(scraper.twitch).toHaveBeenCalledWith(talentId, now)
-    test.expectAuditLog('CHANNEL_SYNC', 'talents', talentId, {
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
       accounts: [
         { changes: updatedUser.changes, id: 'user-row-1', name: 'User' },
       ],
@@ -278,7 +278,7 @@ describe('syncTalentWithTwitch', () => {
     const result = await syncTalentWithTwitch(talentId)
 
     expect(result).toEqual({ success: true })
-    test.expectAuditLog('CHANNEL_SYNC', 'talents', talentId, {
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
       accounts: [{ iconUpdated: true, id: 'row', name: 'Name' }],
       entityName: 'Talent Name',
       platform: 'twitch',
@@ -320,13 +320,11 @@ describe('syncTalentAccounts', () => {
     expect(test.createAuditLog).toHaveBeenCalledTimes(2)
     test.expectAuditLog(
       'CHANNEL_SYNC',
-      'talents',
       talentId,
       expect.objectContaining({ platform: 'youtube' }),
     )
     test.expectAuditLog(
       'CHANNEL_SYNC',
-      'talents',
       talentId,
       expect.objectContaining({ platform: 'twitch' }),
     )
@@ -356,7 +354,6 @@ describe('syncTalentAccounts', () => {
     expect(test.createAuditLog).toHaveBeenCalledTimes(1)
     test.expectAuditLog(
       'CHANNEL_SYNC',
-      'talents',
       talentId,
       expect.objectContaining({ platform: 'twitch' }),
     )

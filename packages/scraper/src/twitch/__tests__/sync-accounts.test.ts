@@ -1,5 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../../internal/testing/context.js'
+import { createFakeTwitchFetcher } from '../../internal/testing/fetcher.js'
 import {
   createImage,
   mockStorage,
@@ -7,12 +8,12 @@ import {
 } from '../../internal/testing/profile-images.js'
 import {
   postgresError,
-  type SupabaseRequest,
+  type SupabaseResponder,
+  type SupabaseRoutes,
   setupSupabase,
 } from '../../internal/testing/supabase.js'
-import type { TwitchFetcher } from '../fetcher.js'
+import { createUser } from '../../internal/testing/twitch.js'
 import { syncTwitchUsers, syncTwitchUsersOfTalent } from '../sync-accounts.js'
-import type { TwitchUser } from '../types.js'
 
 const supabase = setupSupabase()
 const reportError = vi.fn()
@@ -22,31 +23,6 @@ const createContext = <T>(fetcher: T) =>
     reportError,
     supabaseClient: supabase.supabaseClient,
   })
-
-function createUser(
-  id: string,
-  login: string,
-  displayName: string,
-  profileImageUrl = '',
-): TwitchUser {
-  return {
-    broadcaster_type: '',
-    created_at: '2020-01-01T00:00:00Z',
-    description: '',
-    display_name: displayName,
-    id,
-    login,
-    offline_image_url: '',
-    profile_image_url: profileImageUrl,
-    type: '',
-  }
-}
-
-function createFetcher(users: TwitchUser[]) {
-  const getAccounts = vi.fn(async () => users)
-
-  return { fetcher: { getAccounts } as unknown as TwitchFetcher, getAccounts }
-}
 
 const savedTalents = [
   {
@@ -73,27 +49,10 @@ const savedTalents = [
 /**
  * A database holding `savedTalents`, in which every write succeeds.
  */
-function respondWithSavedTalents(
-  override?: (request: SupabaseRequest) => unknown,
-): void {
-  supabase.respond((request) => {
-    const overridden = override?.(request)
-
-    if (overridden !== undefined) {
-      return overridden
-    }
-
-    const { method, table } = request
-
-    if (method === 'GET') {
-      return table === 'talents' ? savedTalents : []
-    }
-
-    return method === 'PATCH' && table === 'twitch_users'
-      ? [{ id: 'user-row' }]
-      : []
-  })
-}
+const routes = {
+  'GET talents': savedTalents,
+  'PATCH twitch_users': [{ id: 'user-row' }],
+} satisfies SupabaseRoutes
 
 describe('syncTwitchUsers', () => {
   beforeEach(() => {
@@ -101,11 +60,13 @@ describe('syncTwitchUsers', () => {
   })
 
   it('updates only the accounts whose name or login changed', async () => {
-    respondWithSavedTalents()
-    const { getAccounts, fetcher } = createFetcher([
-      createUser('1001', 'alice', 'Alice'),
-      createUser('1002', 'alice_2nd', 'Alice 2nd'),
-    ])
+    supabase.respondWith(routes)
+    const { getAccounts, fetcher } = createFakeTwitchFetcher({
+      accounts: [
+        createUser('1001'),
+        createUser('1002', { display_name: 'Alice 2nd', login: 'alice_2nd' }),
+      ],
+    })
 
     const changed = await syncTwitchUsers(createContext(fetcher))
 
@@ -120,11 +81,13 @@ describe('syncTwitchUsers', () => {
   })
 
   it('writes nothing when every account is up to date', async () => {
-    respondWithSavedTalents()
-    const { fetcher } = createFetcher([
-      createUser('1001', 'alice', 'Alice'),
-      createUser('1002', 'alice_sub', 'Alice Sub'),
-    ])
+    supabase.respondWith(routes)
+    const { fetcher } = createFakeTwitchFetcher({
+      accounts: [
+        createUser('1001'),
+        createUser('1002', { display_name: 'Alice Sub', login: 'alice_sub' }),
+      ],
+    })
 
     const changed = await syncTwitchUsers(createContext(fetcher))
 
@@ -142,10 +105,12 @@ describe('syncTwitchUsers', () => {
         ? postgresError('23505', 'duplicate key value')
         : []
     })
-    const { fetcher } = createFetcher([
-      createUser('1001', 'alice_new', 'Alice'),
-      createUser('1002', 'alice_sub', 'Alice Sub!'),
-    ])
+    const { fetcher } = createFakeTwitchFetcher({
+      accounts: [
+        createUser('1001', { login: 'alice_new' }),
+        createUser('1002', { display_name: 'Alice Sub!', login: 'alice_sub' }),
+      ],
+    })
 
     const changed = await syncTwitchUsers(createContext(fetcher))
 
@@ -158,8 +123,8 @@ describe('syncTwitchUsers', () => {
     )
   })
   it('loads the saved icon of every account', async () => {
-    respondWithSavedTalents()
-    const { fetcher } = createFetcher([])
+    supabase.respondWith(routes)
+    const { fetcher } = createFakeTwitchFetcher()
 
     await syncTwitchUsers(createContext(fetcher))
 
@@ -181,10 +146,10 @@ describe('syncTwitchUsers', () => {
     it('stores the icon of an account that has none yet', async () => {
       serveImage(supabase, ICON_URL, { body: image, contentType: 'image/png' })
       const storage = mockStorage(supabase)
-      respondWithSavedTalents()
-      const { fetcher } = createFetcher([
-        createUser('1001', 'alice', 'Alice', ICON_URL),
-      ])
+      supabase.respondWith(routes)
+      const { fetcher } = createFakeTwitchFetcher({
+        accounts: [createUser('1001', { profile_image_url: ICON_URL })],
+      })
 
       const changed = await syncTwitchUsers(createContext(fetcher))
 
@@ -209,29 +174,28 @@ describe('syncTwitchUsers', () => {
     it('leaves an icon alone when Twitch serves the same one', async () => {
       const requests = serveImage(supabase, ICON_URL, { body: image })
       const storage = mockStorage(supabase)
-      respondWithSavedTalents(({ method, table }) =>
-        method === 'GET' && table === 'talents'
-          ? [
+      supabase.respondWith({
+        ...routes,
+        'GET talents': [
+          {
+            id: 'talent-1',
+            twitch_users: [
               {
-                id: 'talent-1',
-                twitch_users: [
-                  {
-                    ...savedTalents[0]?.twitch_users[0],
-                    profile_images: {
-                      etag: '"etag-1"',
-                      id: 'image-1',
-                      path: 'twitch/1001/icon.webp',
-                      source_url: ICON_URL,
-                    },
-                  },
-                ],
+                ...savedTalents[0]?.twitch_users[0],
+                profile_images: {
+                  etag: '"etag-1"',
+                  id: 'image-1',
+                  path: 'twitch/1001/icon.webp',
+                  source_url: ICON_URL,
+                },
               },
-            ]
-          : undefined,
-      )
-      const { fetcher } = createFetcher([
-        createUser('1001', 'alice', 'Alice', ICON_URL),
-      ])
+            ],
+          },
+        ],
+      })
+      const { fetcher } = createFakeTwitchFetcher({
+        accounts: [createUser('1001', { profile_image_url: ICON_URL })],
+      })
 
       const changed = await syncTwitchUsers(createContext(fetcher))
 
@@ -247,10 +211,16 @@ describe('syncTwitchUsers', () => {
         contentType: 'text/plain',
       })
       mockStorage(supabase)
-      respondWithSavedTalents()
-      const { fetcher } = createFetcher([
-        createUser('1002', 'alice_2nd', 'Alice 2nd', ICON_URL),
-      ])
+      supabase.respondWith(routes)
+      const { fetcher } = createFakeTwitchFetcher({
+        accounts: [
+          createUser('1002', {
+            display_name: 'Alice 2nd',
+            login: 'alice_2nd',
+            profile_image_url: ICON_URL,
+          }),
+        ],
+      })
 
       const changed = await syncTwitchUsers(createContext(fetcher))
 
@@ -270,18 +240,21 @@ describe('syncTwitchUsers', () => {
     it('still syncs the icon when the name cannot be updated', async () => {
       serveImage(supabase, ICON_URL, { body: image, contentType: 'image/png' })
       const storage = mockStorage(supabase)
-      respondWithSavedTalents(({ body, method, table }) =>
-        method === 'PATCH' &&
-        table === 'twitch_users' &&
-        body !== null &&
-        typeof body === 'object' &&
-        'name' in body
-          ? postgresError('23505', 'duplicate key value')
-          : undefined,
-      )
-      const { fetcher } = createFetcher([
-        createUser('1001', 'alice_new', 'Alice', ICON_URL),
-      ])
+      supabase.respondWith({
+        ...routes,
+        'PATCH twitch_users': ({ body }) =>
+          body !== null && typeof body === 'object' && 'name' in body
+            ? postgresError('23505', 'duplicate key value')
+            : routes['PATCH twitch_users'],
+      })
+      const { fetcher } = createFakeTwitchFetcher({
+        accounts: [
+          createUser('1001', {
+            login: 'alice_new',
+            profile_image_url: ICON_URL,
+          }),
+        ],
+      })
 
       const changed = await syncTwitchUsers(createContext(fetcher))
 
@@ -298,15 +271,15 @@ describe('syncTwitchUsers', () => {
 
     it('writes nothing for an account with a default icon', async () => {
       const storage = mockStorage(supabase)
-      respondWithSavedTalents()
-      const { fetcher } = createFetcher([
-        createUser(
-          '1001',
-          'alice',
-          'Alice',
-          'https://static-cdn.jtvnw.net/user-default-pictures-uv/default-profile_image-300x300.png',
-        ),
-      ])
+      supabase.respondWith(routes)
+      const { fetcher } = createFakeTwitchFetcher({
+        accounts: [
+          createUser('1001', {
+            profile_image_url:
+              'https://static-cdn.jtvnw.net/user-default-pictures-uv/default-profile_image-300x300.png',
+          }),
+        ],
+      })
 
       const changed = await syncTwitchUsers(createContext(fetcher))
 
@@ -322,25 +295,26 @@ describe('syncTwitchUsersOfTalent', () => {
     'https://static-cdn.jtvnw.net/jtv_user_pictures/alice-profile_image-300x300.png'
 
   /** Fails to write the display name and login of `user-row-1`. */
-  const failDetailsOfFirstUser = ({ body, method, query }: SupabaseRequest) =>
-    method === 'PATCH' &&
+  const failDetailsOfFirstUser: SupabaseResponder = ({ body, query }) =>
     query['id'] === 'eq.user-row-1' &&
     body !== null &&
     typeof body === 'object' &&
     'name' in body
       ? postgresError('23505', 'duplicate key value')
-      : undefined
+      : routes['PATCH twitch_users']
 
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it('syncs only the accounts of the talent and returns what changed', async () => {
-    respondWithSavedTalents()
-    const { fetcher, getAccounts } = createFetcher([
-      createUser('1001', 'alice', 'Alice'),
-      createUser('1002', 'alice_2nd', 'Alice Sub'),
-    ])
+    supabase.respondWith(routes)
+    const { fetcher, getAccounts } = createFakeTwitchFetcher({
+      accounts: [
+        createUser('1001'),
+        createUser('1002', { display_name: 'Alice Sub', login: 'alice_2nd' }),
+      ],
+    })
 
     const results = await syncTwitchUsersOfTalent(
       createContext(fetcher),
@@ -379,11 +353,13 @@ describe('syncTwitchUsersOfTalent', () => {
   })
 
   it('writes nothing when every account is up to date', async () => {
-    respondWithSavedTalents()
-    const { fetcher } = createFetcher([
-      createUser('1001', 'alice', 'Alice'),
-      createUser('1002', 'alice_sub', 'Alice Sub'),
-    ])
+    supabase.respondWith(routes)
+    const { fetcher } = createFakeTwitchFetcher({
+      accounts: [
+        createUser('1001'),
+        createUser('1002', { display_name: 'Alice Sub', login: 'alice_sub' }),
+      ],
+    })
 
     const results = await syncTwitchUsersOfTalent(
       createContext(fetcher),
@@ -398,10 +374,12 @@ describe('syncTwitchUsersOfTalent', () => {
   })
 
   it('reports an account Twitch does not return as not found', async () => {
-    respondWithSavedTalents()
-    const { fetcher } = createFetcher([
-      createUser('1002', 'alice_sub', 'Alice Sub'),
-    ])
+    supabase.respondWith(routes)
+    const { fetcher } = createFakeTwitchFetcher({
+      accounts: [
+        createUser('1002', { display_name: 'Alice Sub', login: 'alice_sub' }),
+      ],
+    })
 
     const results = await syncTwitchUsersOfTalent(
       createContext(fetcher),
@@ -417,11 +395,16 @@ describe('syncTwitchUsersOfTalent', () => {
   })
 
   it('reports an account that cannot be updated as failed and syncs the rest', async () => {
-    respondWithSavedTalents(failDetailsOfFirstUser)
-    const { fetcher } = createFetcher([
-      createUser('1001', 'alice_new', 'Alice'),
-      createUser('1002', 'alice_sub', 'Alice Sub!'),
-    ])
+    supabase.respondWith({
+      ...routes,
+      'PATCH twitch_users': failDetailsOfFirstUser,
+    })
+    const { fetcher } = createFakeTwitchFetcher({
+      accounts: [
+        createUser('1001', { login: 'alice_new' }),
+        createUser('1002', { display_name: 'Alice Sub!', login: 'alice_sub' }),
+      ],
+    })
 
     const results = await syncTwitchUsersOfTalent(
       createContext(fetcher),
@@ -446,10 +429,15 @@ describe('syncTwitchUsersOfTalent', () => {
       contentType: 'image/png',
     })
     mockStorage(supabase)
-    respondWithSavedTalents(failDetailsOfFirstUser)
-    const { fetcher } = createFetcher([
-      createUser('1001', 'alice_new', 'Alice', ICON_URL),
-    ])
+    supabase.respondWith({
+      ...routes,
+      'PATCH twitch_users': failDetailsOfFirstUser,
+    })
+    const { fetcher } = createFakeTwitchFetcher({
+      accounts: [
+        createUser('1001', { login: 'alice_new', profile_image_url: ICON_URL }),
+      ],
+    })
 
     const [result] = await syncTwitchUsersOfTalent(
       createContext(fetcher),
@@ -466,7 +454,7 @@ describe('syncTwitchUsersOfTalent', () => {
 
   it('returns nothing without asking Twitch when the talent has no accounts', async () => {
     supabase.respond(() => [])
-    const { fetcher, getAccounts } = createFetcher([])
+    const { fetcher, getAccounts } = createFakeTwitchFetcher()
 
     await expect(
       syncTwitchUsersOfTalent(createContext(fetcher), 'talent-9'),
@@ -476,7 +464,7 @@ describe('syncTwitchUsersOfTalent', () => {
 
   it('fails when the accounts cannot be loaded', async () => {
     supabase.respond(() => postgresError('42501', 'permission denied'))
-    const { fetcher } = createFetcher([])
+    const { fetcher } = createFakeTwitchFetcher()
 
     await expect(
       syncTwitchUsersOfTalent(createContext(fetcher), 'talent-1'),
@@ -484,10 +472,9 @@ describe('syncTwitchUsersOfTalent', () => {
   })
 
   it('fails when Twitch cannot be read', async () => {
-    respondWithSavedTalents()
-    const fetcher = {
-      getAccounts: vi.fn().mockRejectedValue(new Error('Helix is down')),
-    } as unknown as TwitchFetcher
+    supabase.respondWith(routes)
+    const { fetcher, getAccounts } = createFakeTwitchFetcher()
+    getAccounts.mockRejectedValue(new Error('Helix is down'))
 
     await expect(
       syncTwitchUsersOfTalent(createContext(fetcher), 'talent-1'),

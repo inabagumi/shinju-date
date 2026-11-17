@@ -1,12 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-
-// Import the server action for tracking page visits
-async function trackPageVisitAction() {
-  const { trackPageVisit } = await import('@/lib/session-analytics')
-  return trackPageVisit()
-}
+import { trackPageVisit } from '@/lib/session-analytics'
 
 /**
  * Client-side component that tracks page visits for analytics.
@@ -14,7 +9,7 @@ async function trackPageVisitAction() {
  */
 export default function PageVisitTracker() {
   useEffect(() => {
-    trackPageVisitAction().catch((error) => {
+    trackPageVisit().catch((error) => {
       // Silently fail if tracking fails
       console.debug('Page visit tracking failed:', error)
     })

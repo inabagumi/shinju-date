@@ -50,7 +50,7 @@ export async function getPopularTalents(
 
   cacheLife('minutes')
 
-  const talentScores = await _getPopularItemsFromRedis<string>(
+  const talentScores = await _getPopularItemsFromRedis(
     REDIS_KEYS.CLICK_CHANNEL_PREFIX,
     limit,
     Temporal.PlainDate.from(startDate),

@@ -102,17 +102,12 @@ describe('addYouTubeChannelAction', () => {
         youtube_handle: '@example_handle',
       },
     ])
-    test.expectAuditLog(
-      'YOUTUBE_CHANNEL_CREATE',
-      'youtube_channels',
-      newChannelId,
-      {
-        name: 'Example Channel',
-        talent_id: talentId,
-        youtube_channel_id: youtubeChannelId,
-        youtube_handle: '@example_handle',
-      },
-    )
+    test.expectAuditLog('YOUTUBE_CHANNEL_CREATE', newChannelId, {
+      name: 'Example Channel',
+      talent_id: talentId,
+      youtube_channel_id: youtubeChannelId,
+      youtube_handle: '@example_handle',
+    })
     test.expectRevalidated({
       paths: [`/talents/${talentId}`, '/talents'],
       tags: [['talents', 'videos']],
@@ -334,15 +329,10 @@ describe('removeYouTubeChannelAction', () => {
     const result = await removeYouTubeChannelAction('channel-123', talentId)
 
     expect(result).toEqual({ success: true })
-    test.expectAuditLog(
-      'YOUTUBE_CHANNEL_DELETE',
-      'youtube_channels',
-      'channel-123',
-      {
-        talent_id: talentId,
-        youtube_channel_id: youtubeChannelId,
-      },
-    )
+    test.expectAuditLog('YOUTUBE_CHANNEL_DELETE', 'channel-123', {
+      talent_id: talentId,
+      youtube_channel_id: youtubeChannelId,
+    })
     test.expectRevalidated({
       paths: [`/talents/${talentId}`, '/talents'],
       tags: [['talents', 'videos']],

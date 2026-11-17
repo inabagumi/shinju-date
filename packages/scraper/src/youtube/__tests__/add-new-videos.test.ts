@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../../internal/testing/context.js'
+import { createFakeFetcher } from '../../internal/testing/fetcher.js'
 import {
   postgresError,
-  type SupabaseResponder,
   setupSupabase,
 } from '../../internal/testing/supabase.js'
+import { createVideo, YOUTUBE_TALENTS } from '../../internal/testing/youtube.js'
 import {
   createThumbnail,
   removeThumbnail,
 } from '../../internal/thumbnails/index.js'
 import { addNewYouTubeVideos } from '../add-new-videos.js'
 import type { YouTubeFetcher } from '../fetcher.js'
-import type { YouTubeVideo } from '../types.js'
 
 vi.mock('../../internal/thumbnails/index.js', () => ({
   createThumbnail: vi.fn(),
@@ -29,83 +29,6 @@ const createContext = <T>(fetcher: T) =>
     supabaseClient: supabase.supabaseClient,
   })
 
-function createVideo(id: string): YouTubeVideo {
-  return {
-    contentDetails: { duration: 'PT10M' },
-    id,
-    snippet: {
-      publishedAt: '2024-05-01T10:00:00Z',
-      thumbnails: {
-        maxres: {
-          height: 720,
-          url: `https://i.ytimg.test/${id}.jpg`,
-          width: 1280,
-        },
-      },
-      title: `Video ${id}`,
-    },
-  }
-}
-
-interface FakeFetcherOptions {
-  failures?: { accountId: string; error: unknown }[]
-  uploads?: { accountId: string; videoIds: string[] }[]
-}
-
-function createFetcher({ failures = [], uploads = [] }: FakeFetcherOptions) {
-  const getRecentVideoIds = vi.fn(async () => ({
-    accounts: uploads,
-    failures,
-    missingAccountIds: [],
-  }))
-  const getVideos = vi.fn(async (ids: readonly string[]) => ({
-    missingIds: [],
-    videos: ids.map(createVideo),
-  }))
-
-  return {
-    fetcher: { getRecentVideoIds, getVideos } as unknown as YouTubeFetcher,
-    getRecentVideoIds,
-    getVideos,
-  }
-}
-
-interface DatabaseOptions {
-  /** YouTube video IDs that are already saved. */
-  savedIds?: string[]
-  write?: SupabaseResponder
-}
-
-function mockDatabase({
-  savedIds = [],
-  write = () => [],
-}: DatabaseOptions = {}) {
-  supabase.respond((request) => {
-    if (request.method !== 'GET') {
-      return write(request)
-    }
-
-    if (request.table === 'talents') {
-      return [
-        {
-          id: 'talent-1',
-          youtube_channels: [
-            { id: 'channel-row-1', youtube_channel_id: 'UCaaa' },
-          ],
-        },
-        {
-          id: 'talent-2',
-          youtube_channels: [
-            { id: 'channel-row-2', youtube_channel_id: 'UCbbb' },
-          ],
-        },
-      ]
-    }
-
-    return savedIds.map((id) => ({ youtube_video_id: id }))
-  })
-}
-
 describe('addNewYouTubeVideos', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -116,13 +39,18 @@ describe('addNewYouTubeVideos', () => {
   })
 
   it('adds the videos that are not saved yet', async () => {
-    mockDatabase({ savedIds: ['old-1'] })
-    const { getRecentVideoIds, getVideos, fetcher } = createFetcher({
-      uploads: [
-        { accountId: 'UCaaa', videoIds: ['new-1', 'old-1'] },
-        { accountId: 'UCbbb', videoIds: [] },
-      ],
+    supabase.respondWith({
+      'GET talents': YOUTUBE_TALENTS,
+      'GET youtube_videos': [{ youtube_video_id: 'old-1' }],
     })
+    const { getRecentVideoIds, getVideos, fetcher } =
+      createFakeFetcher<YouTubeFetcher>({
+        recentVideoIds: [
+          { accountId: 'UCaaa', videoIds: ['new-1', 'old-1'] },
+          { accountId: 'UCbbb', videoIds: [] },
+        ],
+        videos: [createVideo({ id: 'new-1' })],
+      })
 
     const added = await addNewYouTubeVideos(createContext(fetcher))
 
@@ -164,12 +92,13 @@ describe('addNewYouTubeVideos', () => {
   })
 
   it('links each video to the channel it was uploaded to', async () => {
-    mockDatabase()
-    const { fetcher } = createFetcher({
-      uploads: [
+    supabase.respondWith({ 'GET talents': YOUTUBE_TALENTS })
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      recentVideoIds: [
         { accountId: 'UCaaa', videoIds: ['a-1'] },
         { accountId: 'UCbbb', videoIds: ['b-1'] },
       ],
+      videos: [createVideo({ id: 'a-1' }), createVideo({ id: 'b-1' })],
     })
 
     await addNewYouTubeVideos(createContext(fetcher))
@@ -194,9 +123,12 @@ describe('addNewYouTubeVideos', () => {
   })
 
   it('does not request video details when nothing is new', async () => {
-    mockDatabase({ savedIds: ['old-1'] })
-    const { getVideos, fetcher } = createFetcher({
-      uploads: [{ accountId: 'UCaaa', videoIds: ['old-1'] }],
+    supabase.respondWith({
+      'GET talents': YOUTUBE_TALENTS,
+      'GET youtube_videos': [{ youtube_video_id: 'old-1' }],
+    })
+    const { getVideos, fetcher } = createFakeFetcher<YouTubeFetcher>({
+      recentVideoIds: [{ accountId: 'UCaaa', videoIds: ['old-1'] }],
     })
 
     const added = await addNewYouTubeVideos(createContext(fetcher))
@@ -209,9 +141,10 @@ describe('addNewYouTubeVideos', () => {
   it('still adds a video whose thumbnail cannot be stored', async () => {
     const error = new Error('image host is down')
     vi.mocked(createThumbnail).mockRejectedValue(error)
-    mockDatabase()
-    const { fetcher } = createFetcher({
-      uploads: [{ accountId: 'UCaaa', videoIds: ['new-1'] }],
+    supabase.respondWith({ 'GET talents': YOUTUBE_TALENTS })
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      recentVideoIds: [{ accountId: 'UCaaa', videoIds: ['new-1'] }],
+      videos: [createVideo({ id: 'new-1' })],
     })
 
     const added = await addNewYouTubeVideos(createContext(fetcher))
@@ -224,14 +157,14 @@ describe('addNewYouTubeVideos', () => {
   })
 
   it('discards its thumbnail when another run saved the video first', async () => {
-    mockDatabase({
-      write: ({ method, table }) =>
-        method === 'POST' && table === 'youtube_videos'
-          ? postgresError('23505', 'duplicate key value')
-          : [],
+    supabase.respondWith({
+      'GET talents': YOUTUBE_TALENTS,
+      'POST youtube_videos': () =>
+        postgresError('23505', 'duplicate key value'),
     })
-    const { fetcher } = createFetcher({
-      uploads: [{ accountId: 'UCaaa', videoIds: ['new-1'] }],
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      recentVideoIds: [{ accountId: 'UCaaa', videoIds: ['new-1'] }],
+      videos: [createVideo({ id: 'new-1' })],
     })
 
     const added = await addNewYouTubeVideos(createContext(fetcher))
@@ -245,16 +178,16 @@ describe('addNewYouTubeVideos', () => {
   })
 
   it('keeps adding the other videos when one cannot be saved', async () => {
-    mockDatabase({
-      write: ({ body, method, table }) =>
-        method === 'POST' &&
-        table === 'videos' &&
+    supabase.respondWith({
+      'GET talents': YOUTUBE_TALENTS,
+      'POST videos': ({ body }) =>
         (body as { title: string }).title === 'Video bad-1'
           ? postgresError('23502', 'null value in column')
           : [],
     })
-    const { fetcher } = createFetcher({
-      uploads: [{ accountId: 'UCaaa', videoIds: ['bad-1', 'new-1'] }],
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      recentVideoIds: [{ accountId: 'UCaaa', videoIds: ['bad-1', 'new-1'] }],
+      videos: [createVideo({ id: 'bad-1' }), createVideo({ id: 'new-1' })],
     })
 
     const added = await addNewYouTubeVideos(createContext(fetcher))
@@ -271,10 +204,11 @@ describe('addNewYouTubeVideos', () => {
 
   it('reports channels that could not be read and handles the rest', async () => {
     const error = new Error('quota exceeded')
-    mockDatabase()
-    const { fetcher } = createFetcher({
+    supabase.respondWith({ 'GET talents': YOUTUBE_TALENTS })
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
       failures: [{ accountId: 'UCaaa', error }],
-      uploads: [{ accountId: 'UCbbb', videoIds: ['b-1'] }],
+      recentVideoIds: [{ accountId: 'UCbbb', videoIds: ['b-1'] }],
+      videos: [createVideo({ id: 'b-1' })],
     })
 
     const added = await addNewYouTubeVideos(createContext(fetcher))
@@ -287,7 +221,7 @@ describe('addNewYouTubeVideos', () => {
 
   it('does not call YouTube when no channel is registered', async () => {
     supabase.respond(() => [])
-    const { getRecentVideoIds, fetcher } = createFetcher({})
+    const { getRecentVideoIds, fetcher } = createFakeFetcher<YouTubeFetcher>()
 
     const added = await addNewYouTubeVideos(createContext(fetcher))
 
@@ -297,7 +231,7 @@ describe('addNewYouTubeVideos', () => {
 
   it('fails when the channels cannot be loaded', async () => {
     supabase.respond(() => postgresError('42501', 'permission denied'))
-    const { fetcher } = createFetcher({})
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>()
 
     await expect(addNewYouTubeVideos(createContext(fetcher))).rejects.toThrow(
       'permission denied',

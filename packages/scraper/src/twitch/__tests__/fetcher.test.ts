@@ -5,27 +5,14 @@ import type {
   TwitchVideo,
 } from '@shinju-date/twitch-api-client'
 import { describe, expect, it, vi } from 'vitest'
+import {
+  createClip,
+  createStream,
+  createUser,
+  createVideo,
+} from '../../internal/testing/twitch.js'
 import { TwitchFetcher } from '../fetcher.js'
 import type { TwitchApi } from '../types.js'
-
-function stream(id: string, userId = 'user-1'): TwitchStream {
-  return {
-    game_id: '1',
-    game_name: 'Game',
-    id,
-    is_mature: false,
-    language: 'ja',
-    started_at: '2023-01-01T00:00:00Z',
-    tags: [],
-    thumbnail_url: 'https://example.com/{width}x{height}.jpg',
-    title: `Stream ${id}`,
-    type: 'live',
-    user_id: userId,
-    user_login: 'alice',
-    user_name: 'Alice',
-    viewer_count: 42,
-  }
-}
 
 function createClient(overrides: Partial<TwitchApi> = {}): TwitchApi {
   return {
@@ -36,62 +23,6 @@ function createClient(overrides: Partial<TwitchApi> = {}): TwitchApi {
     getVideosByUser: vi.fn(() => fromArray<TwitchVideo>([])),
     getVideosByUserPage: vi.fn(async () => ({ cursor: null, videos: [] })),
     ...overrides,
-  }
-}
-
-function video(id: string, userId = 'user-1'): TwitchVideo {
-  return {
-    created_at: '2023-01-01T00:00:00Z',
-    description: '',
-    duration: 'PT1H0M0S',
-    id,
-    language: 'ja',
-    published_at: '2023-01-01T00:00:00Z',
-    stream_id: null,
-    thumbnail_url: 'https://example.com/t.jpg',
-    title: `Video ${id}`,
-    type: 'archive',
-    url: `https://www.twitch.tv/videos/${id}`,
-    user_id: userId,
-    user_login: 'alice',
-    user_name: 'Alice',
-    view_count: 1,
-    viewable: 'public',
-  }
-}
-
-function user(id: string): TwitchUser {
-  return {
-    broadcaster_type: 'affiliate',
-    created_at: '2020-01-01T00:00:00Z',
-    description: '',
-    display_name: `User ${id}`,
-    id,
-    login: `user_${id}`,
-    offline_image_url: '',
-    profile_image_url: '',
-    type: '',
-  }
-}
-
-function clip(id: string): TwitchClip {
-  return {
-    broadcaster_id: 'user-1',
-    broadcaster_name: 'Alice',
-    created_at: '2023-01-01T00:00:00Z',
-    creator_id: 'user-2',
-    creator_name: 'Bob',
-    duration: 'PT30S',
-    embed_url: '',
-    game_id: '1',
-    id,
-    language: 'ja',
-    thumbnail_url: 'https://example.com/c.jpg',
-    title: `Clip ${id}`,
-    url: `https://clips.twitch.tv/${id}`,
-    video_id: 'v1',
-    view_count: 1,
-    vod_offset: 0,
   }
 }
 
@@ -111,7 +42,9 @@ describe('TwitchFetcher', () => {
   describe('getAccounts', () => {
     it('returns the users Helix knows about', async () => {
       const getUsers = vi.fn(({ ids }: { ids: string[] }) =>
-        fromArray(ids.filter((id) => id !== 'gone').map(user)),
+        fromArray(
+          ids.filter((id) => id !== 'gone').map((id) => createUser(id)),
+        ),
       )
       const fetcher = new TwitchFetcher({ client: createClient({ getUsers }) })
 
@@ -123,7 +56,7 @@ describe('TwitchFetcher', () => {
     it('requests each ID once in batches of 100', async () => {
       const ids = Array.from({ length: 150 }, (_, i) => `${i}`)
       const getUsers = vi.fn(({ ids }: { ids: string[] }) =>
-        fromArray(ids.map(user)),
+        fromArray(ids.map((id) => createUser(id))),
       )
       const fetcher = new TwitchFetcher({ client: createClient({ getUsers }) })
 
@@ -144,7 +77,9 @@ describe('TwitchFetcher', () => {
 
   describe('getLiveStreams', () => {
     it('returns the streams that are live', async () => {
-      const getStreamsByUserIds = vi.fn(() => fromArray([stream('s1')]))
+      const getStreamsByUserIds = vi.fn(() =>
+        fromArray([createStream({ id: 's1' })]),
+      )
       const fetcher = new TwitchFetcher({
         client: createClient({ getStreamsByUserIds }),
       })
@@ -161,7 +96,7 @@ describe('TwitchFetcher', () => {
   describe('getRecentVideos', () => {
     it('lists archives of every broadcaster by default', async () => {
       const getVideosByUser = vi.fn(({ userId }: { userId: string }) =>
-        fromArray([video(`${userId}-v1`, userId)]),
+        fromArray([createVideo({ id: `${userId}-v1`, user_id: userId })]),
       )
       const fetcher = new TwitchFetcher({
         client: createClient({ getVideosByUser }),
@@ -204,7 +139,7 @@ describe('TwitchFetcher', () => {
           throw error
         }
 
-        return fromArray([video('v2', userId)])
+        return fromArray([createVideo({ id: 'v2', user_id: userId })])
       })
       const logger = {
         debug: vi.fn(),
@@ -248,7 +183,11 @@ describe('TwitchFetcher', () => {
   describe('getRecentVideoIds', () => {
     it('lists the IDs of the newest videos per broadcaster', async () => {
       const getVideosByUser = vi.fn(({ userId }: { userId: string }) =>
-        fromArray(userId === 'user-1' ? [video('v1'), video('v2')] : []),
+        fromArray(
+          userId === 'user-1'
+            ? [createVideo({ id: 'v1' }), createVideo({ id: 'v2' })]
+            : [],
+        ),
       )
       const fetcher = new TwitchFetcher({
         client: createClient({ getVideosByUser }),
@@ -277,7 +216,9 @@ describe('TwitchFetcher', () => {
   describe('findMissingVideoIds', () => {
     it('returns the IDs Helix no longer knows', async () => {
       const getVideos = vi.fn(({ ids }: { ids: string[] }) =>
-        fromArray(ids.filter((id) => id !== 'gone').map((id) => video(id))),
+        fromArray(
+          ids.filter((id) => id !== 'gone').map((id) => createVideo({ id })),
+        ),
       )
       const fetcher = new TwitchFetcher({ client: createClient({ getVideos }) })
 
@@ -290,7 +231,9 @@ describe('TwitchFetcher', () => {
   describe('getVideos', () => {
     it('returns found videos and the IDs Helix omitted', async () => {
       const getVideos = vi.fn(({ ids }: { ids: string[] }) =>
-        fromArray(ids.filter((id) => id !== 'gone').map((id) => video(id))),
+        fromArray(
+          ids.filter((id) => id !== 'gone').map((id) => createVideo({ id })),
+        ),
       )
       const fetcher = new TwitchFetcher({ client: createClient({ getVideos }) })
 
@@ -313,7 +256,9 @@ describe('TwitchFetcher', () => {
   describe('getClips', () => {
     it('returns found clips and the IDs Helix omitted', async () => {
       const getClips = vi.fn(({ ids }: { ids: string[] }) =>
-        fromArray(ids.filter((id) => id !== 'gone').map(clip)),
+        fromArray(
+          ids.filter((id) => id !== 'gone').map((id) => createClip({ id })),
+        ),
       )
       const fetcher = new TwitchFetcher({ client: createClient({ getClips }) })
 

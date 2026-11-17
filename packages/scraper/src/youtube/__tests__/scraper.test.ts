@@ -6,6 +6,10 @@ import {
 } from '../../internal/database/index.js'
 import { TEST_NOW } from '../../internal/testing/context.js'
 import { setupSupabase } from '../../internal/testing/supabase.js'
+import {
+  createPlaylistItem,
+  YOUTUBE_TALENTS,
+} from '../../internal/testing/youtube.js'
 import { YouTubeScraper } from '../scraper.js'
 
 vi.mock('../../internal/thumbnails/index.js', async (importOriginal) => ({
@@ -93,9 +97,9 @@ function createClient({
         if (page) {
           return {
             data: {
-              items: page.videoIds.map((videoId) => ({
-                contentDetails: { videoId },
-              })),
+              items: page.videoIds.map((videoId) =>
+                createPlaylistItem(videoId),
+              ),
               nextPageToken: page.nextPageToken,
             },
           }
@@ -109,7 +113,7 @@ function createClient({
 
         return {
           data: {
-            items: result.map((videoId) => ({ contentDetails: { videoId } })),
+            items: result.map((videoId) => createPlaylistItem(videoId)),
           },
         }
       }),
@@ -119,17 +123,6 @@ function createClient({
 
   return { client, playlistItemsList: client.playlistItems.list, videosList }
 }
-
-const activeTalents = [
-  {
-    id: 'talent-1',
-    youtube_channels: [{ id: 'channel-row-1', youtube_channel_id: 'UCaaa' }],
-  },
-  {
-    id: 'talent-2',
-    youtube_channels: [{ id: 'channel-row-2', youtube_channel_id: 'UCbbb' }],
-  },
-]
 
 describe('YouTubeScraper', () => {
   const onError = vi.fn()
@@ -164,7 +157,7 @@ describe('YouTubeScraper', () => {
         }
 
         return table === 'talents'
-          ? activeTalents
+          ? YOUTUBE_TALENTS
           : [{ youtube_video_id: 'old-1' }]
       })
       const { scraper, videosList } = createScraper({
@@ -198,7 +191,7 @@ describe('YouTubeScraper', () => {
         }
 
         return table === 'talents'
-          ? activeTalents
+          ? YOUTUBE_TALENTS
           : [{ youtube_video_id: 'old-1' }]
       })
       const { scraper, videosList } = createScraper({
@@ -213,7 +206,7 @@ describe('YouTubeScraper', () => {
     it('reports a channel that cannot be read and handles the others', async () => {
       const error = new Error('quota exceeded')
       supabase.respond(({ method, table }) =>
-        method === 'GET' && table === 'talents' ? activeTalents : [],
+        method === 'GET' && table === 'talents' ? YOUTUBE_TALENTS : [],
       )
       const { scraper } = createScraper({
         channels: { UCaaa: 'Alice', UCbbb: 'Bob' },
@@ -227,7 +220,7 @@ describe('YouTubeScraper', () => {
 
     it('treats a channel without an uploads playlist as having no videos', async () => {
       supabase.respond(({ method, table }) =>
-        method === 'GET' && table === 'talents' ? activeTalents : [],
+        method === 'GET' && table === 'talents' ? YOUTUBE_TALENTS : [],
       )
       const { scraper } = createScraper({
         channels: { UCaaa: 'Alice', UCbbb: 'Bob' },
@@ -242,7 +235,7 @@ describe('YouTubeScraper', () => {
 
     it('rejects when YouTube cannot be reached at all', async () => {
       supabase.respond(({ method, table }) =>
-        method === 'GET' && table === 'talents' ? activeTalents : [],
+        method === 'GET' && table === 'talents' ? YOUTUBE_TALENTS : [],
       )
       const { client } = createClient({})
       vi.mocked(client.channels.list).mockRejectedValue(

@@ -23,6 +23,15 @@ export interface CronJob {
   schedule: string
 }
 
+export interface RunCronJobOptions {
+  /**
+   * Called after `run` throws, before the run is reported as failed. Use it
+   * to clean up after work that was partly done. An error it throws is
+   * logged and does not change the response.
+   */
+  onError?: (error: unknown) => Promise<void>
+}
+
 /**
  * Runs a cron route handler with the plumbing every job needs:
  *
@@ -31,12 +40,15 @@ export interface CronJob {
  * 3. reports the run to Sentry Cron Monitoring, as `ok` or `error`
  * 4. turns a thrown error into a 500 instead of an unreported crash
  *
- * `run` only has to do the actual work and throw when it fails.
+ * `run` only has to do the actual work and throw when it fails. What it
+ * returns is sent as JSON with 200; when it returns nothing, the response is
+ * 204.
  */
-export async function runCronJob(
+export async function runCronJob<T>(
   request: Request,
   job: CronJob,
-  run: () => Promise<void>,
+  run: () => Promise<T>,
+  { onError }: RunCronJobOptions = {},
 ): Promise<Response> {
   const cronSecure = serverEnv.CRON_SECRET
 
@@ -73,9 +85,22 @@ export async function runCronJob(
 
   after(() => Sentry.flush(SENTRY_FLUSH_TIMEOUT_MS))
 
+  let result: T
+
   try {
-    await run()
+    result = await run()
   } catch (error) {
+    if (onError) {
+      try {
+        await onError(error)
+      } catch (onErrorError) {
+        logger.error('失敗したジョブの後始末に失敗しました', {
+          error: onErrorError,
+          path: job.path,
+        })
+      }
+    }
+
     Sentry.captureException(error)
     Sentry.captureCheckIn({
       checkInId,
@@ -95,5 +120,9 @@ export async function runCronJob(
     status: 'ok',
   })
 
-  return new Response(null, { status: 204 })
+  if (result === undefined) {
+    return new Response(null, { status: 204 })
+  }
+
+  return Response.json(result, { status: 200 })
 }

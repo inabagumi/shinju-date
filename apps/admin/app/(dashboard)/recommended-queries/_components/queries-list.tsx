@@ -14,16 +14,23 @@ import {
 import { useMemo, useState } from 'react'
 import { useActionToast } from '@/components/action-toast'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { SearchInput } from '@/components/search-input'
 import { useServerAction } from '@/lib/use-server-action'
 import { addQueryAction, deleteQueryAction } from '../_actions'
 
 interface QueriesListProps {
   manualQueries: string[]
   autoQueries: Array<{ query: string; score: number }>
+  /** URL の `search`。前後の空白を取り除いたもの */
+  search: string | undefined
 }
 
-export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
-  const [searchQuery, setSearchQuery] = useState('')
+export function QueriesList({
+  manualQueries,
+  autoQueries,
+  search,
+}: QueriesListProps) {
+  const searchQuery = search ?? ''
   const [newQuery, setNewQuery] = useState('')
   const addQuery = useServerAction(addQueryAction, {
     errorText: '追加に失敗しました。',
@@ -101,13 +108,10 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
         </div>
 
         {/* Search */}
-        <Input
+        <SearchInput
           aria-label="クエリを検索"
           className="sm:max-w-md"
-          onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="クエリを検索..."
-          type="text"
-          value={searchQuery}
         />
       </div>
 

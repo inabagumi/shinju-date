@@ -10,6 +10,7 @@ import {
   X,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { queryKeys } from '@/lib/query-keys'
 import { dismissAnnouncement, getRenderedAnnouncement } from '../_lib/actions'
 import type { RenderedAnnouncement } from './announcement-message'
 
@@ -91,7 +92,7 @@ export function AnnouncementBanner({
       }
       return announcement
     },
-    queryKey: ['announcement'],
+    queryKey: queryKeys.announcement(),
     refetchInterval: 1_000 * 60, // Refetch every 60 seconds
     refetchIntervalInBackground: true,
     // The message is a React element rendered on the server, not JSON data.
