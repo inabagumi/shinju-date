@@ -55,6 +55,7 @@ export async function logSearchQuery(
     // Set TTL for daily and weekly keys in the same pipeline
     multi.expire(dailyKey, DAILY_TTL_SECONDS)
     multi.expire(weeklyKey, WEEKLY_TTL_SECONDS)
+    multi.expire(volumeKey, DAILY_TTL_SECONDS)
 
     await multi.exec()
 
