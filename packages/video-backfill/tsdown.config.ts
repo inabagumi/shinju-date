@@ -1,10 +1,5 @@
-import { defineConfig } from 'tsdown'
+import { definePackageConfig } from '@shinju-date/config/tsdown'
 
-export default defineConfig({
-  dts: true,
+export default definePackageConfig({
   entry: ['./src/index.ts', './src/testing/index.ts'],
-  fixedExtension: false,
-  format: 'esm',
-  sourcemap: true,
-  target: 'es2022',
 })

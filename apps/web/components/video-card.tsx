@@ -5,14 +5,12 @@ import { twMerge } from '@shinju-date/ui'
 import { ImageIcon } from 'lucide-react'
 import Image from 'next/image'
 import type { Video } from '@/lib/fetchers'
+import { getVideoCreator } from '@/lib/video-creator'
 import { getVideoTitleParts } from '@/lib/video-title'
 import FormattedTime from './formatted-time'
 import LiveBadge from './live-badge'
 import PlatformBadge from './platform-badge'
-import VideoCreator, {
-  getVideoCreator,
-  VideoCreatorSkeleton,
-} from './video-creator'
+import VideoCreator, { VideoCreatorSkeleton } from './video-creator'
 
 /**
  * - `grid`: サムネイルの下に文字を置く縦型

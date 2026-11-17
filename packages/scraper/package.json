@@ -15,6 +15,7 @@
   },
   "description": "Crawlers that keep YouTube and Twitch videos in the SHINJU DATE database in sync",
   "devDependencies": {
+    "@shinju-date/config": "workspace:*",
     "@shinju-date/helpers": "workspace:*",
     "@tsconfig/node20": "catalog:",
     "@tsconfig/strictest": "catalog:",
@@ -26,16 +27,16 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./twitch": {
-      "import": "./dist/twitch.js",
-      "types": "./dist/twitch.d.ts"
+      "types": "./dist/twitch.d.ts",
+      "default": "./dist/twitch.js"
     },
     "./youtube": {
-      "import": "./dist/youtube.js",
-      "types": "./dist/youtube.d.ts"
+      "types": "./dist/youtube.d.ts",
+      "default": "./dist/youtube.js"
     }
   },
   "homepage": "https://shinju.date/",

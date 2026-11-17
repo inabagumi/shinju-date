@@ -9,8 +9,8 @@ import { fetchVideos, type Video } from '@/lib/fetchers'
 import { groupVideosByDate } from '@/lib/group-videos-by-date'
 import { queryKeys } from '@/lib/query-keys'
 import { SEARCH_RESULT_COUNT } from '@/lib/site'
+import { useToday } from '@/lib/use-today'
 import type { VideoKindFilter } from '@/lib/video-kind-filter'
-import { useToday } from './use-today'
 import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
 /** PC 4列、タブレット 2列、モバイルは横型のカードで1列 */

@@ -1,14 +1,9 @@
-import { defineConfig } from 'tsdown'
+import { definePackageConfig } from '@shinju-date/config/tsdown'
 
-export default defineConfig({
-  dts: true,
+export default definePackageConfig({
   entry: {
     index: './src/index.ts',
     twitch: './src/twitch/index.ts',
     youtube: './src/youtube/index.ts',
   },
-  fixedExtension: false,
-  format: 'esm',
-  sourcemap: true,
-  target: 'es2022',
 })

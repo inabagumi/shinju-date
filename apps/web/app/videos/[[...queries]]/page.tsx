@@ -15,13 +15,12 @@ import {
   VideosPageHeading,
   VideosPageHeadingSkeleton,
   VideosPageResults,
-  type VideosPageSectionProps,
 } from './_components/videos-page-sections'
 
 export async function generateMetadata({
   params,
   searchParams,
-}: VideosPageSectionProps): Promise<Metadata> {
+}: PageProps<'/videos/[[...queries]]'>): Promise<Metadata> {
   const [{ queries }, searchParamValues] = await Promise.all([
     params,
     searchParams,
@@ -53,7 +52,7 @@ export async function generateMetadata({
 export default function VideosPage({
   params,
   searchParams,
-}: VideosPageSectionProps) {
+}: PageProps<'/videos/[[...queries]]'>) {
   return (
     <>
       <Suspense fallback={<VideosPageHeadingSkeleton />}>

@@ -1,17 +1,19 @@
 import { CalendarPlus, X } from 'lucide-react'
 import Link from 'next/link'
+import TalentChip, {
+  TALENT_CHIP_REMOVE_CLASS_NAME,
+} from '@/components/talent-chip'
+import { TextLink, TextLinkIcon } from '@/components/text-link'
+import VideoKindFilterNav, {
+  VideoKindFilterNavSkeleton,
+} from '@/components/video-kind-filter-nav'
 import type { Talent } from '@/lib/fetchers'
 import {
   getVideosCalendarPath,
   getVideosPath,
   type VideoKindFilter,
 } from '@/lib/video-kind-filter'
-import TalentChip, { TALENT_CHIP_REMOVE_CLASS_NAME } from './talent-chip'
 import TalentFilter from './talent-filter'
-import { TextLink, TextLinkIcon } from './text-link'
-import VideoKindFilterNav, {
-  VideoKindFilterNavSkeleton,
-} from './video-kind-filter-nav'
 
 interface SelectedTalentListProps {
   kind: VideoKindFilter

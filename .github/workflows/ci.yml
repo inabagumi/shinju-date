@@ -189,6 +189,10 @@ jobs:
 
       - run: pnpm build --filter=!@shinju-date/admin --filter=!@shinju-date/batch --filter=!@shinju-date/web
 
+      # Checks the shape of `exports` in packages/*/package.json and that the built files it points to exist
+      - name: Check package exports
+        run: pnpm run check:package-exports
+
   # Production build of Next.js apps with MSW (no live Supabase/Upstash needed)
   build-msw:
     name: Build with MSW (${{ matrix.package }})

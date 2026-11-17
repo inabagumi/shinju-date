@@ -1,8 +1,8 @@
 'use client'
 
 import { useMemo } from 'react'
-import { useToday } from '@/components/use-today'
 import { formatShortDate } from '@/lib/date-heading'
+import { useToday } from '@/lib/use-today'
 
 interface ScheduleDayHeaderProps {
   count: number
