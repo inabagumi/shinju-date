@@ -14,8 +14,6 @@ export interface DateRange {
 interface DateRangePickerProps {
   value: DateRange
   onChange: (range: DateRange) => void
-  showComparison?: boolean
-  onComparisonToggle?: (enabled: boolean) => void
 }
 
 // Maximum allowed period in days (90 days data retention policy)
@@ -28,13 +26,10 @@ function isSameRange(a: DateRange, b: DateRange): boolean {
 export default function DateRangePicker({
   value,
   onChange,
-  showComparison = false,
-  onComparisonToggle,
 }: DateRangePickerProps) {
   const [isCustomMode, setIsCustomMode] = useState(false)
   const [customStart, setCustomStart] = useState(value.startDate)
   const [customEnd, setCustomEnd] = useState(value.endDate)
-  const [comparisonEnabled, setComparisonEnabled] = useState(false)
   const [validationError, setValidationError] = useState('')
 
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
@@ -173,28 +168,9 @@ export default function DateRangePicker({
     setValidationError('')
   }
 
-  const handleComparisonToggle = () => {
-    const newValue = !comparisonEnabled
-    setComparisonEnabled(newValue)
-    onComparisonToggle?.(newValue)
-  }
-
   return (
     <div className="rounded-container border border-border bg-surface p-4">
-      <div className="mb-3 flex items-center justify-between gap-4">
-        <h2 className="text-meta font-semibold">期間選択</h2>
-        {showComparison && (
-          <label className="flex items-center gap-2 text-meta">
-            <input
-              checked={comparisonEnabled}
-              className="size-4 accent-accent"
-              onChange={handleComparisonToggle}
-              type="checkbox"
-            />
-            前期間と比較
-          </label>
-        )}
-      </div>
+      <h2 className="mb-3 text-meta font-semibold">期間選択</h2>
 
       {!isCustomMode ? (
         <div className="space-y-2">
