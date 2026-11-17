@@ -21,7 +21,6 @@ export const REDIS_KEYS = {
   CLICK_VIDEO_PREFIX: 'videos:clicked:',
   LAST_VIDEO_SYNC: 'status:last_video_sync',
   MAINTENANCE_MODE: 'maintenance_mode',
-  POPULAR_VIDEOS_PREFIX: 'videos:popular:cache:',
   QUERIES_AUTO_RECOMMENDED: 'queries:auto_recommended',
   QUERIES_MANUAL_RECOMMENDED: 'queries:manual_recommended',
   SEARCH_EXIT_WITHOUT_CLICK_PREFIX: 'search:exit_without_click:',
