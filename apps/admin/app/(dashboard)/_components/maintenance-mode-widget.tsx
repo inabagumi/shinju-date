@@ -1,7 +1,8 @@
 'use client'
 
-import { Alert, Button, twMerge } from '@shinju-date/ui'
-import { useState, useTransition } from 'react'
+import { twMerge } from '@shinju-date/ui'
+import { useState } from 'react'
+import { type ActionResult, ConfirmDialog } from '@/components/confirm-dialog'
 import { Panel } from '@/components/panel'
 import ToggleSwitch from '@/components/toggle-switch'
 import {
@@ -13,51 +14,53 @@ interface MaintenanceModeWidgetProps {
   initialStatus: boolean
 }
 
+type MaintenanceModeOperation = 'enable' | 'disable'
+
+const MAINTENANCE_MODE_OPERATIONS = {
+  disable: {
+    action: disableMaintenanceMode,
+    confirmLabel: '無効にする',
+    confirmVariant: 'primary',
+    description: '一般ユーザーのアクセスとバッチ処理が再開されます。',
+    fallbackError: 'メンテナンスモードの無効化に失敗しました。',
+    title: 'メンテナンスモードを無効にしますか？',
+  },
+  enable: {
+    action: enableMaintenanceMode,
+    confirmLabel: '有効にする',
+    confirmVariant: 'danger',
+    description:
+      '一般ユーザーのアクセスがメンテナンスページに切り替わり、バッチ処理が停止されます。',
+    fallbackError: 'メンテナンスモードの有効化に失敗しました。',
+    title: 'メンテナンスモードを有効にしますか？',
+  },
+} as const
+
 export function MaintenanceModeWidget({
   initialStatus,
 }: MaintenanceModeWidgetProps) {
   const [isEnabled, setIsEnabled] = useState(initialStatus)
-  const [showConfirmation, setShowConfirmation] = useState(false)
-  const [pendingAction, setPendingAction] = useState<
-    'enable' | 'disable' | null
-  >(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+  // 閉じるアニメーションの間も文言を保つため、開閉とは別に操作を持つ
+  const [operation, setOperation] = useState<MaintenanceModeOperation>('enable')
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
-  const handleToggle: (checked: boolean) => void = (checked) => {
-    setPendingAction(checked ? 'enable' : 'disable')
-    setShowConfirmation(true)
-    setError(null)
+  const config = MAINTENANCE_MODE_OPERATIONS[operation]
+
+  const handleToggle = (checked: boolean) => {
+    setOperation(checked ? 'enable' : 'disable')
+    setIsConfirmOpen(true)
   }
 
-  const handleConfirm = () => {
-    startTransition(async () => {
-      if (pendingAction === 'enable') {
-        const result = await enableMaintenanceMode()
-        if (result.success) {
-          setIsEnabled(true)
-          setShowConfirmation(false)
-          setPendingAction(null)
-        } else {
-          setError(result.error ?? 'メンテナンスモードの有効化に失敗しました。')
-        }
-      } else if (pendingAction === 'disable') {
-        const result = await disableMaintenanceMode()
-        if (result.success) {
-          setIsEnabled(false)
-          setShowConfirmation(false)
-          setPendingAction(null)
-        } else {
-          setError(result.error ?? 'メンテナンスモードの無効化に失敗しました。')
-        }
-      }
-    })
-  }
+  const handleConfirm = async (): Promise<ActionResult> => {
+    const result = await config.action()
 
-  const handleCancel = () => {
-    setShowConfirmation(false)
-    setPendingAction(null)
-    setError(null)
+    if (!result.success) {
+      return { error: result.error ?? config.fallbackError, success: false }
+    }
+
+    setIsEnabled(operation === 'enable')
+
+    return { success: true }
   }
 
   return (
@@ -85,52 +88,11 @@ export function MaintenanceModeWidget({
           <div className="shrink-0">
             <ToggleSwitch
               checked={isEnabled}
-              disabled={isPending}
               label="メンテナンスモード切り替え"
               onChange={handleToggle}
             />
           </div>
         </div>
-
-        {showConfirmation && (
-          <Alert
-            title={
-              pendingAction === 'enable'
-                ? 'メンテナンスモードを有効にしますか?'
-                : 'メンテナンスモードを無効にしますか?'
-            }
-            tone="warning"
-          >
-            <p className="mb-4">
-              {pendingAction === 'enable'
-                ? '一般ユーザーのアクセスがメンテナンスページに切り替わり、バッチ処理が停止されます。'
-                : '一般ユーザーのアクセスとバッチ処理が再開されます。'}
-            </p>
-            {error && (
-              <p className="mb-4 text-danger" role="alert">
-                {error}
-              </p>
-            )}
-            <div className="flex gap-2">
-              <Button
-                disabled={isPending}
-                onClick={handleConfirm}
-                type="button"
-                variant="primary"
-              >
-                {isPending ? '処理中...' : '確認'}
-              </Button>
-              <Button
-                disabled={isPending}
-                onClick={handleCancel}
-                type="button"
-                variant="secondary"
-              >
-                キャンセル
-              </Button>
-            </div>
-          </Alert>
-        )}
 
         <div className="rounded-container bg-muted p-4">
           <p className="mb-2 text-meta font-semibold">注意事項</p>
@@ -141,6 +103,16 @@ export function MaintenanceModeWidget({
           </ul>
         </div>
       </div>
+      <ConfirmDialog
+        confirmLabel={config.confirmLabel}
+        confirmVariant={config.confirmVariant}
+        description={config.description}
+        onConfirm={handleConfirm}
+        onOpenChange={setIsConfirmOpen}
+        open={isConfirmOpen}
+        pendingLabel="処理中..."
+        title={config.title}
+      />
     </Panel>
   )
 }

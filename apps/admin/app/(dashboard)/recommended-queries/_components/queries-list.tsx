@@ -12,6 +12,8 @@ import {
   TableRow,
 } from '@shinju-date/ui'
 import { useMemo, useState } from 'react'
+import { useActionToast } from '@/components/action-toast'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useServerAction } from '@/lib/use-server-action'
 import { addQueryAction, deleteQueryAction } from '../_actions'
 
@@ -28,11 +30,8 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
     onSuccess: () => setNewQuery(''),
     successText: 'クエリを追加しました。',
   })
-  const deleteQuery = useServerAction(deleteQueryAction, {
-    errorText: '削除に失敗しました。',
-    successText: 'クエリを削除しました。',
-  })
-  const isPending = addQuery.isPending || deleteQuery.isPending
+  const { showToast } = useActionToast()
+  const isPending = addQuery.isPending
 
   // Filter queries based on search query
   const filteredManualQueries = useMemo(() => {
@@ -53,6 +52,17 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
 
   const handleAddQuery = () => {
     void addQuery.run(newQuery)
+  }
+
+  // 失敗はダイアログの中に出し、成功したらダイアログを閉じてトーストで知らせる
+  const handleDeleteQuery = async (query: string) => {
+    const result = await deleteQueryAction(query)
+
+    if (result.success) {
+      showToast('success', 'クエリを削除しました。')
+    }
+
+    return result
   }
 
   return (
@@ -131,16 +141,24 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
                 <TableRow key={query}>
                   <TableCell className="whitespace-normal">{query}</TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      aria-label={`「${query}」を削除`}
-                      disabled={isPending}
-                      onClick={() => deleteQuery.run(query)}
-                      size="sm"
-                      type="button"
-                      variant="danger"
-                    >
-                      削除
-                    </Button>
+                    <ConfirmDialog
+                      confirmLabel="削除"
+                      confirmVariant="danger"
+                      description={`「${query}」を削除しますか？`}
+                      onConfirm={() => handleDeleteQuery(query)}
+                      title="おすすめクエリを削除"
+                      trigger={
+                        <Button
+                          aria-label={`「${query}」を削除`}
+                          disabled={isPending}
+                          size="sm"
+                          type="button"
+                          variant="danger"
+                        >
+                          削除
+                        </Button>
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ))}

@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
   Input,
+  twMerge,
 } from '@shinju-date/ui'
 import { type ReactElement, type ReactNode, useId, useState } from 'react'
 
@@ -35,6 +36,14 @@ export type ConfirmHandler = () =>
   | Promise<void>
   | Promise<ActionResult | undefined>
 
+/** ダイアログの幅 */
+export type ConfirmDialogSize = 'md' | 'lg'
+
+const SIZE_CLASS_NAMES = {
+  lg: 'max-w-lg',
+  md: undefined,
+} as const satisfies Record<ConfirmDialogSize, string | undefined>
+
 type ConfirmResult = Awaited<ReturnType<ConfirmHandler>>
 
 /** `onConfirm` が例外を投げたときに表示するエラー */
@@ -55,6 +64,11 @@ interface ConfirmDialogBaseProps {
    * 入力欄を出す
    */
   requireKeyword?: string | undefined
+  /**
+   * ダイアログの幅。`md`（既定）は 450px、`lg` は動画の一覧など広い内容を出すとき
+   * に使う。高さが画面に収まらない場合は、ダイアログの中でスクロールする
+   */
+  size?: ConfirmDialogSize | undefined
   /**
    * 確認ボタンが押されたときに呼ばれる。
    *
@@ -108,6 +122,7 @@ export function ConfirmDialog({
   confirmVariant = 'primary',
   pendingLabel = `${confirmLabel}中...`,
   requireKeyword,
+  size = 'md',
   onConfirm,
 }: ConfirmDialogProps) {
   const keywordInputId = useId()
@@ -207,6 +222,7 @@ export function ConfirmDialog({
       <DialogPortal>
         <DialogOverlay />
         <DialogContent
+          className={twMerge('overflow-y-auto', SIZE_CLASS_NAMES[size])}
           onEscapeKeyDown={preventWhilePending}
           onInteractOutside={preventWhilePending}
         >

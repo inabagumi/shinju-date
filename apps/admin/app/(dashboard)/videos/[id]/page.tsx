@@ -1,18 +1,23 @@
-import { formatNumber, getVideoExternalUrl } from '@shinju-date/helpers'
+import { formatNumber } from '@shinju-date/helpers'
 import {
   formatDateTimeFromISO,
   formatDuration,
 } from '@shinju-date/temporal-fns'
 import { Alert, Button, PageHeader } from '@shinju-date/ui'
-import { ChevronLeft, ExternalLink } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { type ReactNode, Suspense } from 'react'
+import { BackLink } from '@/components/back-link'
+import {
+  ExternalVideoLink,
+  getExternalVideoUrl,
+} from '@/components/external-video-link'
 import { DetailList, DetailRow, Panel } from '@/components/panel'
 import { DetailCardsSkeleton } from '@/components/skeletons'
+import { VideoThumbnail } from '@/components/video-thumbnail'
 import { PlatformBadge } from '../_components/platform-badge'
 import { VideoKindBadge } from '../_components/video-kind-badge'
 import { VideoStatusBadge } from '../_components/video-status-badge'
@@ -65,14 +70,7 @@ async function CachedVideoDetails({ id }: { id: string }) {
   }
 
   const isDeleted = video.deleted_at !== null
-  const externalUrl = getVideoExternalUrl({
-    platform: video.platform,
-    status: video.status,
-    twitchLoginName: video.twitch_video?.twitch_user?.twitch_login_name,
-    twitchVideoId: video.twitch_video?.twitch_video_id,
-    twitchVideoType: video.twitch_video?.type,
-    youtubeVideoId: video.youtube_video?.youtube_video_id,
-  })
+  const hasExternalUrl = getExternalVideoUrl(video) !== null
 
   const details: DetailItem[] = [
     { label: 'タイトル', value: video.title },
@@ -180,23 +178,11 @@ async function CachedVideoDetails({ id }: { id: string }) {
         <div className="space-y-6">
           {/* Thumbnail */}
           <Panel title="サムネイル">
-            {video.thumbnail ? (
-              <div className="relative aspect-video w-full">
-                <Image
-                  alt={video.title}
-                  blurDataURL={video.thumbnail.blur_data_url}
-                  className="rounded-container object-cover"
-                  fill
-                  placeholder="blur"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  src={`/images/thumbnails/${video.thumbnail.id}`}
-                />
-              </div>
-            ) : (
-              <div className="flex aspect-video w-full items-center justify-center rounded-container bg-muted text-meta text-muted">
-                No Image
-              </div>
-            )}
+            <VideoThumbnail
+              alt={video.title}
+              size="lg"
+              thumbnail={video.thumbnail}
+            />
           </Panel>
 
           {/* Status */}
@@ -230,12 +216,12 @@ async function CachedVideoDetails({ id }: { id: string }) {
         }
         title="外部リンク"
       >
-        {externalUrl && (
+        {hasExternalUrl && (
           <Button asChild className="gap-2" variant="secondary">
-            <a href={externalUrl} rel="noopener noreferrer" target="_blank">
+            <ExternalVideoLink video={video}>
               {video.platform === 'twitch' ? 'Twitchで見る' : 'YouTubeで見る'}
               <ExternalLink aria-hidden="true" className="size-4" />
-            </a>
+            </ExternalVideoLink>
           </Button>
         )}
       </Panel>
@@ -261,13 +247,7 @@ export default function VideoDetailPage({ params }: Props) {
   return (
     <div>
       <div className="mb-4">
-        <Link
-          className="inline-flex items-center rounded-control text-meta text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          href="/videos"
-        >
-          <ChevronLeft aria-hidden="true" className="mr-1 size-4" />
-          動画一覧に戻る
-        </Link>
+        <BackLink href="/videos">動画一覧に戻る</BackLink>
       </div>
 
       <Suspense fallback={<DetailCardsSkeleton />}>

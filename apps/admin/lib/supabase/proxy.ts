@@ -3,9 +3,8 @@ import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 import { isAdminUser } from '@/lib/admin-user'
 import { getSafeRedirectPath, REDIRECT_PARAM } from '@/lib/redirect-path'
+import { getSupabaseConfig } from '@/lib/supabase/config'
 import { withMockSessionCookie } from '@/lib/supabase/mock-session'
-
-const isProd = process.env['NODE_ENV'] === 'production'
 
 /**
  * Updates the session by refreshing the Supabase auth token if needed.
@@ -19,13 +18,7 @@ const isProd = process.env['NODE_ENV'] === 'production'
 export async function updateSession(
   request: NextRequest,
 ): Promise<NextResponse> {
-  const url = process.env['NEXT_PUBLIC_SUPABASE_URL']
-  const key = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']
-
-  if (!url || !key) {
-    throw new TypeError('Supabase URL and key are required.')
-  }
-
+  const { cookieOptions, key, url } = getSupabaseConfig()
   const response = NextResponse.next({
     request,
   })
@@ -38,12 +31,7 @@ export async function updateSession(
       setAll(cookiesToSet) {
         for (const { name, value, options } of cookiesToSet) {
           request.cookies.set(name, value)
-          response.cookies.set(name, value, {
-            ...options,
-            httpOnly: true,
-            sameSite: 'strict',
-            secure: isProd,
-          })
+          response.cookies.set(name, value, { ...options, ...cookieOptions })
         }
       },
     },

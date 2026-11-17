@@ -5,6 +5,7 @@ import * as z from 'zod'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedFormState } from '@/lib/auth'
+import { publicEnv } from '@/lib/env'
 import { zodErrorToFormState } from '../_lib/form-helpers'
 
 const emailSchema = z.object({
@@ -68,7 +69,7 @@ export async function updateUserEmail(
       email: email.email,
     },
     {
-      emailRedirectTo: `${process.env['NEXT_PUBLIC_BASE_URL'] || 'http://localhost:4000'}/api/auth/callback`,
+      emailRedirectTo: `${publicEnv.NEXT_PUBLIC_BASE_URL}/api/auth/callback`,
     },
   )
 

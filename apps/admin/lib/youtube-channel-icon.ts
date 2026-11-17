@@ -5,7 +5,7 @@ import {
   type SyncYouTubeChannelIconOptions,
   syncYouTubeChannelIcon,
 } from '@shinju-date/scraper/youtube'
-import { supabaseClient } from '@/lib/supabase/admin'
+import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 
 /**
  * YouTube チャンネルのアイコンを YouTube に合わせて保存・差し替える。
@@ -22,7 +22,11 @@ export async function syncYouTubeChannelIconSafely(
   saved: SavedYouTubeChannelIcon,
 ): Promise<ProfileImageSyncResult | null> {
   try {
-    return await syncYouTubeChannelIcon({ channel, saved, supabaseClient })
+    return await syncYouTubeChannelIcon({
+      channel,
+      saved,
+      supabaseClient: getSupabaseAdminClient(),
+    })
   } catch (error) {
     // エラーオブジェクトをそのまま渡さず、名前とメッセージだけを記録する
     logger.warn('YouTubeチャンネルのアイコンを同期できませんでした', {
