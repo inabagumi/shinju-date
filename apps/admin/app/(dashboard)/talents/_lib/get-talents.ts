@@ -3,6 +3,7 @@ import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
 } from '@/lib/supabase'
+import { unwrap } from '@/lib/supabase/query'
 
 const TALENT_LIST_SELECT = `
   id,
@@ -29,13 +30,5 @@ export async function getTalents(): Promise<TalentListItem[]> {
   const supabaseClient = await createSupabaseServerClient()
 
   // Admin can read deleted talents via RLS; include all for filter UI
-  const { data: talents, error } = await selectTalents(supabaseClient)
-
-  if (error) {
-    throw new TypeError(error.message, {
-      cause: error,
-    })
-  }
-
-  return talents
+  return unwrap(await selectTalents(supabaseClient), 'getTalents')
 }

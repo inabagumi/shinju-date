@@ -2,10 +2,11 @@ import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
+import { unwrapCount } from '@/lib/supabase/query'
 import {
   applyVideoSummaryFilter,
   VIDEO_SUMMARY_FILTERS,
-  type VideoSummaryFilter,
+  type VideoSummaryTile,
 } from './video-summary-filters'
 
 export interface SummaryStats {
@@ -47,66 +48,56 @@ export async function getSummaryStats(
 ): Promise<SummaryStats | SummaryStatsWithTrends> {
   const supabaseClient = await createSupabaseServerClient()
 
-  const countVideos = (filter: VideoSummaryFilter) =>
-    applyVideoSummaryFilter(
-      supabaseClient.from('videos').select('*', { count: 'exact', head: true }),
-      filter,
+  const countVideos = async (tile: VideoSummaryTile) =>
+    unwrapCount(
+      await applyVideoSummaryFilter(
+        supabaseClient
+          .from('videos')
+          .select('*', { count: 'exact', head: true }),
+        VIDEO_SUMMARY_FILTERS[tile],
+      ),
+      `getSummaryStats.${tile}`,
     )
 
   const [
-    { count: totalVideos, error: totalError },
-    { count: visibleVideos, error: visibleError },
-    { count: scheduledVideos, error: scheduledError },
-    { count: hiddenVideos, error: hiddenError },
-    { count: deletedVideos, error: deletedError },
+    totalVideos,
+    visibleVideos,
+    scheduledVideos,
+    hiddenVideos,
+    deletedVideos,
   ] = await Promise.all([
-    countVideos(VIDEO_SUMMARY_FILTERS.totalVideos),
-    countVideos(VIDEO_SUMMARY_FILTERS.visibleVideos),
-    countVideos(VIDEO_SUMMARY_FILTERS.scheduledVideos),
-    countVideos(VIDEO_SUMMARY_FILTERS.hiddenVideos),
-    countVideos(VIDEO_SUMMARY_FILTERS.deletedVideos),
+    countVideos('totalVideos'),
+    countVideos('visibleVideos'),
+    countVideos('scheduledVideos'),
+    countVideos('hiddenVideos'),
+    countVideos('deletedVideos'),
   ])
 
-  const videoError =
-    totalError ?? visibleError ?? scheduledError ?? hiddenError ?? deletedError
-
-  if (videoError) {
-    throw new TypeError(videoError.message, {
-      cause: videoError,
-    })
-  }
-
   // Get total terms count
-  const { count: totalTerms, error: termsError } = await supabaseClient
-    .from('terms')
-    .select('*', { count: 'exact', head: true })
-
-  if (termsError) {
-    throw new TypeError(termsError.message, {
-      cause: termsError,
-    })
-  }
+  const totalTerms = unwrapCount(
+    await supabaseClient
+      .from('terms')
+      .select('*', { count: 'exact', head: true }),
+    'getSummaryStats.totalTerms',
+  )
 
   // Get total talents count
-  const { count: totalTalents, error: talentsError } = await supabaseClient
-    .from('talents')
-    .select('*', { count: 'exact', head: true })
-    .is('deleted_at', null)
-
-  if (talentsError) {
-    throw new TypeError(talentsError.message, {
-      cause: talentsError,
-    })
-  }
+  const totalTalents = unwrapCount(
+    await supabaseClient
+      .from('talents')
+      .select('*', { count: 'exact', head: true })
+      .is('deleted_at', null),
+    'getSummaryStats.totalTalents',
+  )
 
   const currentStats: SummaryStats = {
-    deletedVideos: deletedVideos ?? 0,
-    hiddenVideos: hiddenVideos ?? 0,
-    scheduledVideos: scheduledVideos ?? 0,
-    totalTalents: totalTalents ?? 0,
-    totalTerms: totalTerms ?? 0,
-    totalVideos: totalVideos ?? 0,
-    visibleVideos: visibleVideos ?? 0,
+    deletedVideos,
+    hiddenVideos,
+    scheduledVideos,
+    totalTalents,
+    totalTerms,
+    totalVideos,
+    visibleVideos,
   }
 
   // If trends not requested, return current data only

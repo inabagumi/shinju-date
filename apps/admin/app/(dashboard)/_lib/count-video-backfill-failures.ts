@@ -1,5 +1,6 @@
 import { cacheLife } from 'next/cache'
 import { createSupabaseServerClient } from '@/lib/supabase'
+import { unwrapCount } from '@/lib/supabase/query'
 
 /**
  * Counts the accounts whose latest backfill job failed. Accounts that were
@@ -11,14 +12,12 @@ export async function countVideoBackfillFailures(): Promise<number> {
   cacheLife('minutes')
 
   const supabaseClient = await createSupabaseServerClient()
-  const { count, error } = await supabaseClient
-    .from('video_backfill_latest_jobs')
-    .select('id', { count: 'exact', head: true })
-    .eq('status', 'failed')
 
-  if (error) {
-    throw error
-  }
-
-  return count ?? 0
+  return unwrapCount(
+    await supabaseClient
+      .from('video_backfill_latest_jobs')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'failed'),
+    'countVideoBackfillFailures',
+  )
 }

@@ -4,6 +4,7 @@ import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
 } from '@/lib/supabase'
+import { unwrap } from '@/lib/supabase/query'
 
 const RECENT_VIDEO_SELECT = `
   id,
@@ -44,17 +45,8 @@ export async function getRecentVideosForTalent(
 
   const supabaseClient = await createSupabaseServerClient()
 
-  const { data: videos, error } = await selectRecentVideos(
-    supabaseClient,
-    talentId,
-    limit,
+  return unwrap(
+    await selectRecentVideos(supabaseClient, talentId, limit),
+    'getRecentVideosForTalent',
   )
-
-  if (error) {
-    throw new TypeError(error.message, {
-      cause: error,
-    })
-  }
-
-  return videos
 }

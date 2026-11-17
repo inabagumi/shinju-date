@@ -9,6 +9,7 @@ import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
 } from '@/lib/supabase'
+import { unwrap } from '@/lib/supabase/query'
 import { escapeSearchString } from './escape-search'
 import { VIDEO_SELECT } from './video-select'
 
@@ -91,23 +92,11 @@ export async function getVideos(
   }
 
   // Fetch videos from Supabase with pagination
-  const {
-    data: videos,
-    error,
-    count,
-  } = await query
+  const result = await query
     .order(sortField, { ascending: sortOrder === 'asc' })
     .range(from, to)
-
-  if (error) {
-    throw new TypeError(error.message, {
-      cause: error,
-    })
-  }
-
-  if (!videos) {
-    return { total: 0, videos: [] }
-  }
+  const videos = unwrap(result, 'getVideos')
+  const { count } = result
 
   // Get last 7 days in JST timezone
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)

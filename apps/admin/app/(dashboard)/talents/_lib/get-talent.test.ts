@@ -1,9 +1,17 @@
 import { describe, expect, it, vi } from 'vitest'
+import {
+  INVALID_TEXT_REPRESENTATION_ERROR_CODE,
+  QueryError,
+} from '@/lib/supabase/query'
+import { postgresError, setupSupabase } from '@/test/supabase'
 import { getTalent } from './get-talent'
 
-// Mock dependencies
-vi.mock('@/lib/supabase', () => ({
+const mocks = vi.hoisted(() => ({
   createSupabaseServerClient: vi.fn(),
+}))
+
+vi.mock('@/lib/supabase', () => ({
+  createSupabaseServerClient: mocks.createSupabaseServerClient,
 }))
 
 vi.mock('next/cache', () => ({
@@ -11,79 +19,59 @@ vi.mock('next/cache', () => ({
   cacheTag: vi.fn(),
 }))
 
+vi.mock('@shinju-date/logger', () => ({
+  logger: { debug: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn() },
+}))
+
+const supabase = setupSupabase()
+mocks.createSupabaseServerClient.mockResolvedValue(supabase.client)
+
+const TALENT_ID = '123e4567-e89b-12d3-a456-426614174000'
+
 describe('getTalent', () => {
-  it('should return null when talent is not found (PGRST116 error)', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
+  it('should return the talent', async () => {
+    supabase.on('select', 'talents', { id: TALENT_ID, name: 'Test Talent' })
 
-    const mockSupabaseClient = {
-      eq: vi.fn().mockReturnThis(),
-      from: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: null,
-        error: {
-          code: 'PGRST116',
-          message: 'The result contains 0 rows',
-        },
-      }),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
-
-    const result = await getTalent('non-existent-id')
-
-    expect(result).toBeNull()
+    await expect(getTalent(TALENT_ID)).resolves.toMatchObject({
+      id: TALENT_ID,
+      name: 'Test Talent',
+    })
+    expect(supabase.calls('select', 'talents')[0]?.query).toMatchObject({
+      id: `eq.${TALENT_ID}`,
+    })
   })
 
-  it('should throw error for other database errors', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-
-    const mockSupabaseClient = {
-      eq: vi.fn().mockReturnThis(),
-      from: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: null,
-        error: {
-          code: 'PGRST500',
-          message: 'Database connection error',
-        },
-      }),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
-
-    await expect(getTalent('some-id')).rejects.toThrow(
-      'Database connection error',
-    )
+  it('should return null when the talent does not exist', async () => {
+    await expect(getTalent(TALENT_ID)).resolves.toBeNull()
   })
 
-  it('should return null when talent ID has invalid UUID format', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-
-    const mockSupabaseClient = {
-      eq: vi.fn().mockReturnThis(),
-      from: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: null,
-        error: {
-          code: '22P02',
-          message: 'invalid input syntax for type uuid: "a"',
-        },
-      }),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
+  it('should return null when the ID is not in the form of a UUID', async () => {
+    supabase.on(
+      'select',
+      'talents',
+      postgresError(
+        INVALID_TEXT_REPRESENTATION_ERROR_CODE,
+        'invalid input syntax for type uuid: "a"',
+      ),
     )
 
-    const result = await getTalent('a')
+    await expect(getTalent('a')).resolves.toBeNull()
+  })
 
-    expect(result).toBeNull()
+  it('should throw a QueryError naming the query for other errors', async () => {
+    supabase.on(
+      'select',
+      'talents',
+      postgresError('PGRST000', 'Database connection error'),
+    )
+
+    const error = await getTalent(TALENT_ID).catch((error: unknown) => error)
+
+    expect(error).toBeInstanceOf(QueryError)
+    expect(error).toMatchObject({
+      code: 'PGRST000',
+      message: 'getTalent: Database connection error',
+      operation: 'getTalent',
+    })
   })
 })
