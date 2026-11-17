@@ -454,7 +454,13 @@ describe('createTalentAction', () => {
       'talents',
       createTalent({ id: TALENT_ID, name: 'New Talent' }),
     )
-    supabase.on('insert', 'youtube_channels', { id: 'channel-row-1' })
+    supabase.on('insert', 'youtube_channels', {
+      id: 'channel-row-1',
+      name: 'Example Channel',
+      talent: { name: 'New Talent' },
+      youtube_channel_id: youtubeChannel.id,
+      youtube_handle: '@example',
+    })
 
     const formData = new FormData()
     formData.append('name', 'New Talent')
@@ -474,11 +480,14 @@ describe('createTalentAction', () => {
       profile_images: null,
       youtube_channel_id: youtubeChannel.id,
     })
-    test.expectAuditLog('YOUTUBE_CHANNEL_CREATE', 'channel-row-1', {
-      name: 'Example Channel',
-      talent_id: TALENT_ID,
-      youtube_channel_id: youtubeChannel.id,
-      youtube_handle: '@example',
+    test.expectAuditLog('YOUTUBE_CHANNEL_CREATE', TALENT_ID, {
+      account: {
+        id: 'channel-row-1',
+        name: 'Example Channel',
+        youtube_channel_id: youtubeChannel.id,
+        youtube_handle: '@example',
+      },
+      entityName: 'New Talent',
     })
     test.expectAuditLog('CHANNEL_CREATE', TALENT_ID, {
       entityName: 'New Talent',

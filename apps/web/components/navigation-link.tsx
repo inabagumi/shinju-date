@@ -14,7 +14,7 @@ export function NavigationLink({
   return (
     <Link
       className={twMerge(
-        'inline-flex items-center gap-0.5 rounded-control font-semibold text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+        'inline-flex items-center gap-0.5 rounded-control font-semibold text-accent focus-ring hover:underline',
         className,
       )}
       {...props}

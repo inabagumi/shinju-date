@@ -1,13 +1,9 @@
-import {
-  SITE_DESCRIPTION,
-  SITE_NAME,
-  SITE_TAGLINE,
-} from '@shinju-date/constants'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Suspense } from 'react'
 import { MAIN_CONTENT_ID } from '@/components/skip-link'
 import { fetchDashboardVideos, fetchUpcomingVideos } from '@/lib/fetchers'
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE } from '@/lib/site'
 import hero from './_assets/hero.jpg'
 import {
   type DashboardVideos,

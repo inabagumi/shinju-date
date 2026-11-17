@@ -1,7 +1,7 @@
-import { SITE_NAME as siteName } from '@shinju-date/constants'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { SearchResultsSkeleton } from '@/components/search-results'
+import { SITE_NAME as siteName } from '@/lib/site'
 import { TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
 import { parseQueries } from '@/lib/url'
 import {

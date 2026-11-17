@@ -33,19 +33,23 @@ export type AccountPlatform = Enums<'platform_type'>
 /** プラットフォームごとに違う型 */
 interface AccountTypes {
   twitch: {
+    /** 監査ログに残す、アカウントの行の列 */
+    account: AuditLogDetails<'TWITCH_USER_CREATE'>['account']
     identifier: TwitchUserIdentifier
-    linkDetails: AuditLogDetails<'TWITCH_USER_CREATE'>
     remote: TwitchUser
     table: 'twitch_users'
-    unlinkDetails: AuditLogDetails<'TWITCH_USER_DELETE'>
   }
   youtube: {
+    account: AuditLogDetails<'YOUTUBE_CHANNEL_CREATE'>['account']
     identifier: YouTubeChannelIdentifier
-    linkDetails: AuditLogDetails<'YOUTUBE_CHANNEL_CREATE'>
     remote: FilteredYouTubeChannel
     table: 'youtube_channels'
-    unlinkDetails: AuditLogDetails<'YOUTUBE_CHANNEL_DELETE'>
   }
+}
+
+/** 結び付いているタレントの名前を埋め込んだ、アカウントの行 */
+type AccountRow<P extends AccountPlatform> = AccountTypes[P]['account'] & {
+  talent: Pick<Tables<'talents'>, 'name'>
 }
 
 /** 画面に出すエラーの文 */
@@ -72,6 +76,8 @@ interface AccountMessages {
 
 /** プラットフォームごとの定義 */
 interface AccountDefinition<P extends AccountPlatform> {
+  /** 行を作ったあとと削除の前に読み、監査ログに残す列 */
+  accountColumns: readonly (keyof AccountTypes[P]['account'] & string)[]
   /** エラーを結び付ける、フォームの入力欄の名前 */
   field: string
   /** API の認証情報が設定されていないことを示すエラーかどうか */
@@ -79,16 +85,10 @@ interface AccountDefinition<P extends AccountPlatform> {
   messages: AccountMessages
   /** 入力（ID、ハンドル、URL など）を解釈する。解釈できなければ `null` */
   parse(input: string): AccountTypes[P]['identifier'] | null
-  /** 追加の監査ログを残す */
-  recordLink(
-    accountId: string,
-    details: AccountTypes[P]['linkDetails'],
-  ): Promise<void>
-  /** 削除の監査ログを残す */
-  recordUnlink(
-    accountId: string,
-    details: AccountTypes[P]['unlinkDetails'],
-  ): Promise<void>
+  /** 追加の監査ログを、タレントを対象にして残す */
+  recordLink(talentId: string, account: AccountRow<P>): Promise<void>
+  /** 削除の監査ログを、タレントを対象にして残す */
+  recordUnlink(talentId: string, account: AccountRow<P>): Promise<void>
   /** プラットフォーム側の ID を入れる列。すべてのタレントを通して一意 */
   remoteIdColumn: keyof Tables<AccountTypes[P]['table']> & string
   /** API でアカウントを解決する。見つからなければ `null` */
@@ -102,20 +102,19 @@ interface AccountDefinition<P extends AccountPlatform> {
   ): Promise<unknown>
   /** アカウントを保存するテーブル */
   table: AccountTypes[P]['table']
-  /** 保存する行。同じ値を、追加の監査ログにも残す */
+  /** API が返したアカウントから作る、保存する行 */
   toRow(
     remote: AccountTypes[P]['remote'],
     talentId: string,
-  ): AccountTypes[P]['linkDetails']
-  /** 削除の前に読み、削除の監査ログに残す列 */
-  unlinkAuditColumns: readonly (keyof AccountTypes[P]['unlinkDetails'] &
-    string)[]
+  ): Omit<AccountTypes[P]['account'], 'id'> &
+    Pick<Tables<AccountTypes[P]['table']>, 'talent_id'>
 }
 
 const ACCOUNT_DEFINITIONS: {
   [P in AccountPlatform]: AccountDefinition<P>
 } = {
   twitch: {
+    accountColumns: ['id', 'name', 'twitch_login_name', 'twitch_user_id'],
     field: 'twitch_user',
     isCredentialsError: (error) =>
       error instanceof TypeError &&
@@ -140,10 +139,16 @@ const ACCOUNT_DEFINITIONS: {
         '指定されたTwitchユーザーが見つかりません。既に削除されているか、存在しないIDが指定されています。',
     },
     parse: parseTwitchUserIdentifier,
-    recordLink: (accountId, details) =>
-      createAuditLog('TWITCH_USER_CREATE', accountId, details),
-    recordUnlink: (accountId, details) =>
-      createAuditLog('TWITCH_USER_DELETE', accountId, details),
+    recordLink: (talentId, { talent, ...account }) =>
+      createAuditLog('TWITCH_USER_CREATE', talentId, {
+        account,
+        entityName: talent.name,
+      }),
+    recordUnlink: (talentId, { talent, ...account }) =>
+      createAuditLog('TWITCH_USER_DELETE', talentId, {
+        account,
+        entityName: talent.name,
+      }),
     remoteIdColumn: 'twitch_user_id',
     resolve: resolveTwitchUser,
     syncIcon: (user, accountId) =>
@@ -159,9 +164,9 @@ const ACCOUNT_DEFINITIONS: {
       twitch_login_name: user.login,
       twitch_user_id: user.id,
     }),
-    unlinkAuditColumns: ['talent_id', 'twitch_login_name', 'twitch_user_id'],
   },
   youtube: {
+    accountColumns: ['id', 'name', 'youtube_channel_id', 'youtube_handle'],
     field: 'youtube_channel_id',
     isCredentialsError: (error) =>
       error instanceof TypeError && error.message.includes('API Key'),
@@ -184,10 +189,16 @@ const ACCOUNT_DEFINITIONS: {
         '指定されたチャンネルが見つかりません。既に削除されているか、存在しないIDが指定されています。',
     },
     parse: parseYouTubeChannelIdentifier,
-    recordLink: (accountId, details) =>
-      createAuditLog('YOUTUBE_CHANNEL_CREATE', accountId, details),
-    recordUnlink: (accountId, details) =>
-      createAuditLog('YOUTUBE_CHANNEL_DELETE', accountId, details),
+    recordLink: (talentId, { talent, ...account }) =>
+      createAuditLog('YOUTUBE_CHANNEL_CREATE', talentId, {
+        account,
+        entityName: talent.name,
+      }),
+    recordUnlink: (talentId, { talent, ...account }) =>
+      createAuditLog('YOUTUBE_CHANNEL_DELETE', talentId, {
+        account,
+        entityName: talent.name,
+      }),
     remoteIdColumn: 'youtube_channel_id',
     resolve: resolveYouTubeChannel,
     syncIcon: (channel, accountId) =>
@@ -203,7 +214,6 @@ const ACCOUNT_DEFINITIONS: {
       youtube_channel_id: channel.id,
       youtube_handle: channel.snippet.customUrl || null,
     }),
-    unlinkAuditColumns: ['talent_id', 'youtube_channel_id'],
   },
 }
 
@@ -238,6 +248,7 @@ export interface UnlinkAccountOptions {
 
 /** 定義のうち、テーブルの問い合わせに使う、プラットフォームの型によらない部分 */
 interface AccountTableDefinition {
+  accountColumns: readonly string[]
   field: string
   messages: AccountMessages
   remoteIdColumn: string
@@ -256,6 +267,11 @@ function accountsTable(
   { table }: AccountTableDefinition,
 ) {
   return (supabaseClient as SupabaseClient).from(table)
+}
+
+/** 監査ログに残す列と、結び付いているタレントの名前を読む `select` */
+function accountSelect({ accountColumns }: AccountTableDefinition): string {
+  return `${accountColumns.join(', ')}, talent:talents (name)`
 }
 
 /**
@@ -394,15 +410,14 @@ export async function linkAccount<P extends AccountPlatform>(
     typeof input === 'string'
       ? await resolveAccount(platform, { input, supabaseClient, talentId })
       : input
-  const row = definition.toRow(remote, talentId)
 
   const { data: account, error } = await accountsTable(
     supabaseClient,
     definition,
   )
-    .insert(row)
-    .select('id')
-    .single<{ id: string }>()
+    .insert(definition.toRow(remote, talentId))
+    .select(accountSelect(definition))
+    .single<AccountRow<P>>()
 
   if (error) {
     // 確かめたあとに、別の操作で登録された場合は、登録済みとして知らせる
@@ -416,7 +431,7 @@ export async function linkAccount<P extends AccountPlatform>(
   // アイコンの取得に失敗しても、追加は成功として扱う（次回の同期で取得し直す）
   await definition.syncIcon(remote, account.id)
   await touchTalent(supabaseClient, talentId)
-  await definition.recordLink(account.id, row)
+  await definition.recordLink(talentId, account)
   await revalidateTalent(talentId)
 }
 
@@ -444,10 +459,10 @@ export async function unlinkAccount<P extends AccountPlatform>(
     supabaseClient,
     definition,
   )
-    .select(definition.unlinkAuditColumns.join(', '))
+    .select(accountSelect(definition))
     .eq('id', accountId)
     .eq('talent_id', talentId)
-    .single<AccountTypes[P]['unlinkDetails']>()
+    .single<AccountRow<P>>()
 
   if (fetchError) {
     if (isNotFoundError(fetchError)) {
@@ -473,6 +488,6 @@ export async function unlinkAccount<P extends AccountPlatform>(
   }
 
   await touchTalent(supabaseClient, talentId)
-  await definition.recordUnlink(accountId, account)
+  await definition.recordUnlink(talentId, account)
   await revalidateTalent(talentId)
 }

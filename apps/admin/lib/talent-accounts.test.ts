@@ -133,7 +133,13 @@ describe('resolveAccount', () => {
 
 describe('linkAccount', () => {
   it('links an account that was resolved before without resolving it again', async () => {
-    supabase.on('insert', 'youtube_channels', { id: 'channel-row-1' })
+    supabase.on('insert', 'youtube_channels', {
+      id: 'channel-row-1',
+      name: 'Example Channel',
+      talent: { name: 'Example Talent' },
+      youtube_channel_id: youtubeChannelId,
+      youtube_handle: '@example',
+    })
 
     await linkAccount('youtube', {
       input: { platform: 'youtube', remote: youtubeChannel as never },
@@ -149,11 +155,14 @@ describe('linkAccount', () => {
       youtube_channel_id: youtubeChannelId,
       youtube_handle: '@example',
     })
-    test.expectAuditLog('YOUTUBE_CHANNEL_CREATE', 'channel-row-1', {
-      name: 'Example Channel',
-      talent_id: talentId,
-      youtube_channel_id: youtubeChannelId,
-      youtube_handle: '@example',
+    test.expectAuditLog('YOUTUBE_CHANNEL_CREATE', talentId, {
+      account: {
+        id: 'channel-row-1',
+        name: 'Example Channel',
+        youtube_channel_id: youtubeChannelId,
+        youtube_handle: '@example',
+      },
+      entityName: 'Example Talent',
     })
   })
 

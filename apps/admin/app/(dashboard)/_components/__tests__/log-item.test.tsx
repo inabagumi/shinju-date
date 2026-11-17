@@ -104,4 +104,73 @@ describe('LogItem', () => {
       )
     },
   )
+
+  it.each([
+    {
+      action: 'TWITCH_USER_CREATE',
+      details: {
+        account: {
+          id: '20000000-0000-0000-0000-000000000001',
+          name: 'Account',
+          twitch_login_name: 'account',
+          twitch_user_id: '12345678',
+        },
+        entityName: 'Talent Name',
+      },
+    },
+    {
+      action: 'YOUTUBE_CHANNEL_DELETE',
+      details: {
+        account: {
+          id: '20000000-0000-0000-0000-000000000002',
+          name: 'Account',
+          youtube_channel_id: 'UC1234567890123456789012',
+          youtube_handle: '@account',
+        },
+        entityName: 'Talent Name',
+      },
+    },
+  ] as const)(
+    'links $action to the talent that the account belongs to',
+    ({ action, details }) => {
+      const talentId = '10000000-0000-0000-0000-000000000001'
+
+      render(
+        <LogItem
+          log={{
+            ...videoSyncLog(details),
+            action,
+            target_record_id: talentId,
+            target_table: 'talents',
+          }}
+        />,
+      )
+
+      expect(screen.getByRole('link', { name: 'Talent Name' })).toHaveAttribute(
+        'href',
+        `/talents/${talentId}`,
+      )
+    },
+  )
+
+  it.each(['twitch_users', 'youtube_channels'])(
+    'does not link an account logged against %s before it was logged against its talent',
+    (targetTable) => {
+      const accountId = '20000000-0000-0000-0000-000000000001'
+
+      render(
+        <LogItem
+          log={{
+            ...videoSyncLog({ talent_id: 'talent-1' }),
+            action: 'TWITCH_USER_CREATE',
+            target_record_id: accountId,
+            target_table: targetTable,
+          }}
+        />,
+      )
+
+      expect(screen.getByText(accountId)).toBeInTheDocument()
+      expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    },
+  )
 })

@@ -42,6 +42,7 @@ vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
 const NOW = '2024-11-24T17:00:00Z'
 const talentId = '123e4567-e89b-12d3-a456-426614174000'
 const accountId = 'account-row-123'
+const talent = { name: 'Example Talent' }
 
 const youtubeChannelId = 'UCabcdefghijklmnopqrstuv'
 const twitchUserId = '141981764'
@@ -111,8 +112,6 @@ interface PlatformCase {
   syncIcon: Mock
   table: string
   unlinkAuditAction: AuditAction
-  /** The columns read before the account is removed, without `talent_id`. */
-  unlinkDetails: Record<string, string>
 }
 
 const platformCases: PlatformCase[] = [
@@ -174,7 +173,6 @@ const platformCases: PlatformCase[] = [
     syncIcon: vi.mocked(syncYouTubeChannelIconSafely),
     table: 'youtube_channels',
     unlinkAuditAction: 'YOUTUBE_CHANNEL_DELETE',
-    unlinkDetails: { youtube_channel_id: youtubeChannelId },
   },
   {
     addAction: addTwitchUserAction,
@@ -238,10 +236,6 @@ const platformCases: PlatformCase[] = [
     syncIcon: vi.mocked(syncTwitchUserIconSafely),
     table: 'twitch_users',
     unlinkAuditAction: 'TWITCH_USER_DELETE',
-    unlinkDetails: {
-      twitch_login_name: 'exampleuser',
-      twitch_user_id: twitchUserId,
-    },
   },
 ]
 
@@ -267,6 +261,19 @@ describe.each(platformCases)('$platform accounts', (platformCase) => {
   const { field, messages, table } = platformCase
   const [{ input: validInput } = { input: '' }] = platformCase.inputs
   const row = { ...platformCase.row, talent_id: talentId }
+  /** The account as the database returns it, with the name of its talent. */
+  const savedAccount = { id: accountId, ...platformCase.row, talent }
+  /** What the audit log records, with the talent as its target. */
+  const auditDetails = {
+    account: { id: accountId, ...platformCase.row },
+    entityName: talent.name,
+  }
+  /** The columns read for the audit log, with the name of the talent. */
+  const accountSelect = [
+    'id',
+    ...Object.keys(platformCase.row),
+    'talent:talents(name)',
+  ]
 
   function addAccount(fields: Record<string, string>): Promise<FormState> {
     const formData = new FormData()
@@ -283,9 +290,9 @@ describe.each(platformCases)('$platform accounts', (platformCase) => {
     return addAccount({ [field]: validInput, talent_id: talentId })
   }
 
-  /** Lets the insert of the new account succeed and return its id. */
+  /** Lets the insert of the new account succeed and return the account. */
   function answerInsert(): void {
-    supabase.on('insert', table, { id: accountId })
+    supabase.on('insert', table, savedAccount)
   }
 
   /** The rows the action inserted into the table of the accounts. */
@@ -305,8 +312,11 @@ describe.each(platformCases)('$platform accounts', (platformCase) => {
 
       expect(result).toEqual({ success: true })
       expect(insertedRows()).toEqual([row])
+      expect(
+        supabase.calls('insert', table)[0]?.query['select']?.split(',').sort(),
+      ).toEqual([...accountSelect].sort())
       expectTalentTouched()
-      test.expectAuditLog(platformCase.linkAuditAction, accountId, row)
+      test.expectAuditLog(platformCase.linkAuditAction, talentId, auditDetails)
       test.expectRevalidated({
         paths: [`/talents/${talentId}`, '/talents'],
         tags: [['talents', 'videos']],
@@ -368,7 +378,7 @@ describe.each(platformCases)('$platform accounts', (platformCase) => {
         'タレントの更新日時の更新に失敗しました',
         expect.objectContaining({ talentId }),
       )
-      test.expectAuditLog(platformCase.linkAuditAction, accountId, row)
+      test.expectAuditLog(platformCase.linkAuditAction, talentId, auditDetails)
     })
 
     it('should return an error when the talent ID is missing', async () => {
@@ -491,10 +501,7 @@ describe.each(platformCases)('$platform accounts', (platformCase) => {
   describe('removing an account', () => {
     /** Answers the read of the account before it is removed. */
     function answerAccount(): void {
-      supabase.on('select', table, {
-        ...platformCase.unlinkDetails,
-        talent_id: talentId,
-      })
+      supabase.on('select', table, savedAccount)
     }
 
     it('should remove the account', async () => {
@@ -509,10 +516,11 @@ describe.each(platformCases)('$platform accounts', (platformCase) => {
       expect(removal?.query['id']).toBe(`eq.${accountId}`)
       expect(removal?.query['talent_id']).toBe(`eq.${talentId}`)
       expectTalentTouched()
-      test.expectAuditLog(platformCase.unlinkAuditAction, accountId, {
-        ...platformCase.unlinkDetails,
-        talent_id: talentId,
-      })
+      test.expectAuditLog(
+        platformCase.unlinkAuditAction,
+        talentId,
+        auditDetails,
+      )
       test.expectRevalidated({
         paths: [`/talents/${talentId}`, '/talents'],
         tags: [['talents', 'videos']],
@@ -527,7 +535,7 @@ describe.each(platformCases)('$platform accounts', (platformCase) => {
       const [read] = supabase.calls('select', table)
 
       expect(read?.query['select']?.split(',').sort()).toEqual(
-        ['talent_id', ...Object.keys(platformCase.unlinkDetails)].sort(),
+        [...accountSelect].sort(),
       )
       expect(read?.query['id']).toBe(`eq.${accountId}`)
       expect(read?.query['talent_id']).toBe(`eq.${talentId}`)

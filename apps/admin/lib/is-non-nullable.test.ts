@@ -1,4 +1,5 @@
-import { isNonNullable } from '../is-non-nullable.js'
+import { describe, expect, it } from 'vitest'
+import { isNonNullable } from './is-non-nullable'
 
 describe('isNonNullable', () => {
   it('should return true for non-null and non-undefined values', () => {

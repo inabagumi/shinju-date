@@ -13,17 +13,19 @@ type AuditLogJson = Exclude<
 export const AUDIT_TARGET_TABLES = {
   ANNOUNCEMENTS: 'announcements',
   AUTH_USERS: 'auth.users',
-  /** The former name of `talents`, still used by some actions. */
-  CHANNELS: 'channels',
   RECOMMENDED_QUERIES: 'redis:recommended_queries',
   SYSTEM: 'redis:system',
   TALENTS: 'talents',
   TERMS: 'terms',
-  TWITCH_USERS: 'twitch_users',
   VIDEO_BACKFILL: 'redis:video-backfill',
   VIDEOS: 'videos',
-  YOUTUBE_CHANNELS: 'youtube_channels',
 } as const
+
+/**
+ * The former name of `talents`. Entries recorded before the rename keep it
+ * as their target table; no new entry is recorded against it.
+ */
+export const LEGACY_TALENTS_TARGET_TABLE = 'channels'
 
 export type AuditTargetTable =
   (typeof AUDIT_TARGET_TABLES)[keyof typeof AUDIT_TARGET_TABLES]
@@ -75,6 +77,24 @@ export interface TalentSyncDetails extends EntityRef {
   accounts: TalentSyncAccount[]
   platform: Enums<'platform_type'>
 }
+
+/**
+ * A YouTube channel or a Twitch user that was added to or removed from a
+ * talent. The entry is about the talent, and `account` is the account row.
+ */
+export interface TalentAccountDetails<T> extends EntityRef {
+  account: T
+}
+
+type TwitchUserAccount = Pick<
+  Tables<'twitch_users'>,
+  'id' | 'name' | 'twitch_login_name' | 'twitch_user_id'
+>
+
+type YouTubeChannelAccount = Pick<
+  Tables<'youtube_channels'>,
+  'id' | 'name' | 'youtube_channel_id' | 'youtube_handle'
+>
 
 /** Backfill of the accounts of one talent on one platform. */
 export interface TalentVideoBackfillDetails extends EntityRef {
@@ -136,23 +156,23 @@ interface AuditLogDefinitions {
   }
   CHANNEL_ACTIVATE: {
     details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.CHANNELS
+    target: typeof AUDIT_TARGET_TABLES.TALENTS
   }
   CHANNEL_CREATE: {
     details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.CHANNELS
+    target: typeof AUDIT_TARGET_TABLES.TALENTS
   }
   CHANNEL_DELETE: {
     details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.CHANNELS
+    target: typeof AUDIT_TARGET_TABLES.TALENTS
   }
   CHANNEL_RESTORE: {
     details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.CHANNELS
+    target: typeof AUDIT_TARGET_TABLES.TALENTS
   }
   CHANNEL_RETIRE: {
     details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.CHANNELS
+    target: typeof AUDIT_TARGET_TABLES.TALENTS
   }
   CHANNEL_SYNC: {
     details: TalentSyncDetails
@@ -160,7 +180,7 @@ interface AuditLogDefinitions {
   }
   CHANNEL_UPDATE: {
     details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.CHANNELS
+    target: typeof AUDIT_TARGET_TABLES.TALENTS
   }
   MAINTENANCE_MODE_DISABLE: {
     details: undefined
@@ -191,23 +211,17 @@ interface AuditLogDefinitions {
     target: typeof AUDIT_TARGET_TABLES.TERMS
   }
   TWITCH_USER_CREATE: {
-    details: Pick<
-      Tables<'twitch_users'>,
-      'name' | 'talent_id' | 'twitch_login_name' | 'twitch_user_id'
-    >
-    target: typeof AUDIT_TARGET_TABLES.TWITCH_USERS
+    details: TalentAccountDetails<TwitchUserAccount>
+    target: typeof AUDIT_TARGET_TABLES.TALENTS
   }
   TWITCH_USER_DELETE: {
-    details: Pick<
-      Tables<'twitch_users'>,
-      'talent_id' | 'twitch_login_name' | 'twitch_user_id'
-    >
-    target: typeof AUDIT_TARGET_TABLES.TWITCH_USERS
+    details: TalentAccountDetails<TwitchUserAccount>
+    target: typeof AUDIT_TARGET_TABLES.TALENTS
   }
   VIDEO_BACKFILL:
     | {
         details: TalentVideoBackfillDetails
-        target: typeof AUDIT_TARGET_TABLES.CHANNELS
+        target: typeof AUDIT_TARGET_TABLES.TALENTS
       }
     | {
         details: VideoBackfillRetryDetails | VideoBackfillRunDetails
@@ -234,18 +248,12 @@ interface AuditLogDefinitions {
     target: typeof AUDIT_TARGET_TABLES.VIDEOS
   }
   YOUTUBE_CHANNEL_CREATE: {
-    details: Pick<
-      Tables<'youtube_channels'>,
-      'name' | 'talent_id' | 'youtube_channel_id' | 'youtube_handle'
-    >
-    target: typeof AUDIT_TARGET_TABLES.YOUTUBE_CHANNELS
+    details: TalentAccountDetails<YouTubeChannelAccount>
+    target: typeof AUDIT_TARGET_TABLES.TALENTS
   }
   YOUTUBE_CHANNEL_DELETE: {
-    details: Pick<
-      Tables<'youtube_channels'>,
-      'talent_id' | 'youtube_channel_id'
-    >
-    target: typeof AUDIT_TARGET_TABLES.YOUTUBE_CHANNELS
+    details: TalentAccountDetails<YouTubeChannelAccount>
+    target: typeof AUDIT_TARGET_TABLES.TALENTS
   }
 }
 
@@ -265,13 +273,13 @@ const AUDIT_LOG_TARGETS = {
   ANNOUNCEMENT_CREATE: AUDIT_TARGET_TABLES.ANNOUNCEMENTS,
   ANNOUNCEMENT_DELETE: AUDIT_TARGET_TABLES.ANNOUNCEMENTS,
   ANNOUNCEMENT_UPDATE: AUDIT_TARGET_TABLES.ANNOUNCEMENTS,
-  CHANNEL_ACTIVATE: AUDIT_TARGET_TABLES.CHANNELS,
-  CHANNEL_CREATE: AUDIT_TARGET_TABLES.CHANNELS,
-  CHANNEL_DELETE: AUDIT_TARGET_TABLES.CHANNELS,
-  CHANNEL_RESTORE: AUDIT_TARGET_TABLES.CHANNELS,
-  CHANNEL_RETIRE: AUDIT_TARGET_TABLES.CHANNELS,
+  CHANNEL_ACTIVATE: AUDIT_TARGET_TABLES.TALENTS,
+  CHANNEL_CREATE: AUDIT_TARGET_TABLES.TALENTS,
+  CHANNEL_DELETE: AUDIT_TARGET_TABLES.TALENTS,
+  CHANNEL_RESTORE: AUDIT_TARGET_TABLES.TALENTS,
+  CHANNEL_RETIRE: AUDIT_TARGET_TABLES.TALENTS,
   CHANNEL_SYNC: AUDIT_TARGET_TABLES.TALENTS,
-  CHANNEL_UPDATE: AUDIT_TARGET_TABLES.CHANNELS,
+  CHANNEL_UPDATE: AUDIT_TARGET_TABLES.TALENTS,
   MAINTENANCE_MODE_DISABLE: AUDIT_TARGET_TABLES.SYSTEM,
   MAINTENANCE_MODE_ENABLE: AUDIT_TARGET_TABLES.SYSTEM,
   RECOMMENDED_QUERY_CREATE: AUDIT_TARGET_TABLES.RECOMMENDED_QUERIES,
@@ -279,19 +287,19 @@ const AUDIT_LOG_TARGETS = {
   TERM_CREATE: AUDIT_TARGET_TABLES.TERMS,
   TERM_DELETE: AUDIT_TARGET_TABLES.TERMS,
   TERM_UPDATE: AUDIT_TARGET_TABLES.TERMS,
-  TWITCH_USER_CREATE: AUDIT_TARGET_TABLES.TWITCH_USERS,
-  TWITCH_USER_DELETE: AUDIT_TARGET_TABLES.TWITCH_USERS,
+  TWITCH_USER_CREATE: AUDIT_TARGET_TABLES.TALENTS,
+  TWITCH_USER_DELETE: AUDIT_TARGET_TABLES.TALENTS,
   VIDEO_BACKFILL: (details) =>
     'scope' in details
       ? AUDIT_TARGET_TABLES.VIDEO_BACKFILL
-      : AUDIT_TARGET_TABLES.CHANNELS,
+      : AUDIT_TARGET_TABLES.TALENTS,
   VIDEO_DELETE: AUDIT_TARGET_TABLES.VIDEOS,
   VIDEO_RESTORE: AUDIT_TARGET_TABLES.VIDEOS,
   VIDEO_SYNC: AUDIT_TARGET_TABLES.VIDEOS,
   VIDEO_UPDATE: AUDIT_TARGET_TABLES.VIDEOS,
   VIDEO_VISIBILITY_TOGGLE: AUDIT_TARGET_TABLES.VIDEOS,
-  YOUTUBE_CHANNEL_CREATE: AUDIT_TARGET_TABLES.YOUTUBE_CHANNELS,
-  YOUTUBE_CHANNEL_DELETE: AUDIT_TARGET_TABLES.YOUTUBE_CHANNELS,
+  YOUTUBE_CHANNEL_CREATE: AUDIT_TARGET_TABLES.TALENTS,
+  YOUTUBE_CHANNEL_DELETE: AUDIT_TARGET_TABLES.TALENTS,
 } satisfies {
   [A in AuditAction]:
     | AuditLogTarget<A>

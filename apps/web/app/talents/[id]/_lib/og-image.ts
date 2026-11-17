@@ -1,7 +1,7 @@
-import { SITE_THEME_COLOR } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import sharp from 'sharp'
 import type { ProfileImage } from '@/lib/fetchers'
+import { SITE_THEME_COLOR } from '@/lib/site'
 import { getSupabaseAdminClient, supabaseClient } from '@/lib/supabase'
 import { parseThemeColor } from '@/lib/theme-color'
 

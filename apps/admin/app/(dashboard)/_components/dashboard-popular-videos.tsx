@@ -78,7 +78,7 @@ export async function DashboardPopularVideos() {
                 </Button>
                 {getExternalVideoUrl(video) && (
                   <ExternalVideoLink
-                    className="flex items-center justify-center rounded-control border border-border bg-surface p-1 text-muted transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    className="flex items-center justify-center rounded-control border border-border bg-surface p-1 text-muted transition-colors focus-ring hover:bg-muted hover:text-foreground"
                     video={video}
                   >
                     <ExternalLink aria-hidden="true" className="size-5" />
