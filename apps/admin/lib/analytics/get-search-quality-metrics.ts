@@ -6,6 +6,7 @@ import { formatDateKey } from '@shinju-date/temporal-fns'
 import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 import { listDatesInRange } from './list-dates-in-range'
+import { dailyKeys, parseScoredMembers } from './redis'
 
 /**
  * Calculate search engagement rate for a single date or date range
@@ -87,9 +88,14 @@ export async function getSearchExitRates(
     const searchCounts = new Map<string, number>()
     const exitCounts = new Map<string, number>()
 
-    const dates = listDatesInRange(start, end)
+    const range = { end, start }
+    const searchKeys = dailyKeys(REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX, range)
+    const exitKeys = dailyKeys(
+      REDIS_KEYS.SEARCH_EXIT_WITHOUT_CLICK_PREFIX,
+      range,
+    )
 
-    if (dates.length === 0) {
+    if (searchKeys.length === 0) {
       return []
     }
 
@@ -97,22 +103,15 @@ export async function getSearchExitRates(
     // parallel) instead of one round trip per day
     const searchPipeline = redisClient.pipeline()
     const exitPipeline = redisClient.pipeline()
-    for (const date of dates) {
-      const dateKey = formatDateKey(date)
-
+    for (const key of searchKeys) {
       // Get search counts from popular searches
-      searchPipeline.zrange(
-        `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${dateKey}`,
-        0,
-        -1,
-        { withScores: true },
-      )
-      exitPipeline.hgetall(
-        `${REDIS_KEYS.SEARCH_EXIT_WITHOUT_CLICK_PREFIX}${dateKey}`,
-      )
+      searchPipeline.zrange(key, 0, -1, { withScores: true })
+    }
+    for (const key of exitKeys) {
+      exitPipeline.hgetall(key)
     }
     const [dailySearchResults, dailyExitResults] = await Promise.all([
-      searchPipeline.exec<string[][]>(),
+      searchPipeline.exec<unknown[][]>(),
       exitPipeline.exec<(Record<string, string> | null)[]>(),
     ])
 
@@ -120,9 +119,9 @@ export async function getSearchExitRates(
       const exitResults = dailyExitResults[index]
 
       // Process search counts
-      for (let i = 0; i < searchResults.length; i += 2) {
-        const keyword = searchResults[i]
-        const count = Number(searchResults[i + 1])
+      for (const { member: keyword, score: count } of parseScoredMembers(
+        searchResults,
+      )) {
         if (keyword) {
           searchCounts.set(keyword, (searchCounts.get(keyword) ?? 0) + count)
         }
