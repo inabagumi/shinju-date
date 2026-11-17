@@ -29,6 +29,7 @@ describe('getVideosForPage', () => {
       ),
     ).resolves.toEqual({
       currentPage: 2,
+      sort: { field: 'published_at', order: 'asc' },
       total: 45,
       totalPages: 3,
       videos: [],
@@ -46,7 +47,10 @@ describe('getVideosForPage', () => {
   it('uses the default list for an invalid page', async () => {
     await expect(
       getVideosForPage(Promise.resolve({ page: 'abc' })),
-    ).resolves.toMatchObject({ currentPage: 1 })
+    ).resolves.toMatchObject({
+      currentPage: 1,
+      sort: { field: 'updated_at', order: 'desc' },
+    })
 
     expect(mocks.getVideos).toHaveBeenCalledExactlyOnceWith(
       1,
