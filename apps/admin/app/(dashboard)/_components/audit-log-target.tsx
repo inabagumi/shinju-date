@@ -15,6 +15,8 @@ const getAdminPagePath = (table: string, id: string): string | null => {
       return `/videos/${id}`
     case AUDIT_TARGET_TABLES.TERMS:
       return '/terms'
+    case AUDIT_TARGET_TABLES.FEATURE_REQUESTS:
+      return `/feedback/${id}`
     default:
       return null
   }
