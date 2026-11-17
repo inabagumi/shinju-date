@@ -2,6 +2,11 @@ import type { TablesUpdate } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { countChanges } from '../internal/concurrency.js'
 import {
+  RECENT_VIDEO_COUNT,
+  SWEEP_PAGE_SIZE,
+  WRITE_CONCURRENCY,
+} from '../internal/constants.js'
+import {
   DatabaseError,
   paginateById,
   softDeleteUnavailableVideos,
@@ -17,14 +22,6 @@ import type {
 import type { YouTubeFetcher } from './fetcher.js'
 import type { YouTubeVideo } from './types.js'
 import { getVideoChanges, type YouTubeVideoFields } from './video.js'
-
-const UPDATE_CONCURRENCY = 8
-
-/** How many of the newest finished videos a `recent` refresh re-reads. */
-const RECENT_VIDEO_COUNT = 100
-
-/** Page size of the full sweep; PostgREST caps responses at 1000 rows. */
-const SWEEP_PAGE_SIZE = 1000
 
 /**
  * Which saved videos a refresh looks at:
@@ -124,7 +121,7 @@ export async function refreshYouTubeVideos(
 
   const updatedCount = await countChanges(
     videos,
-    UPDATE_CONCURRENCY,
+    WRITE_CONCURRENCY,
     async (video) => {
       const saved = savedByYouTubeId.get(video.id)
 

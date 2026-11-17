@@ -10,8 +10,8 @@ import type { TwitchFetcher } from './fetcher.js'
 import { isLivePlaceholder } from './saved-video.js'
 import {
   refreshTwitchBroadcast,
-  SAVED_LIVE_VIDEO_SELECT,
   type SavedLiveVideo,
+  selectSavedLiveVideos,
   toSavedLiveVideo,
 } from './sync-live.js'
 
@@ -19,9 +19,7 @@ async function findSavedVideo(
   supabaseClient: TypedSupabaseClient,
   videoId: string,
 ): Promise<SavedLiveVideo | null> {
-  const { data, error } = await supabaseClient
-    .from('videos')
-    .select(SAVED_LIVE_VIDEO_SELECT)
+  const { data, error } = await selectSavedLiveVideos(supabaseClient)
     .eq('id', videoId)
     .eq('platform', 'twitch')
     .is('deleted_at', null)

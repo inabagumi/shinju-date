@@ -1,29 +1,40 @@
 import type { Tables } from '@shinju-date/database'
 import { isLiveTwitchVideoId } from '@shinju-date/twitch-api-client'
+import type { QueryData } from '@supabase/supabase-js'
 import { chunk } from '../internal/batch.js'
+import { IN_FILTER_CHUNK_SIZE } from '../internal/constants.js'
 import { DatabaseError } from '../internal/database/index.js'
 import type { TypedSupabaseClient } from '../types.js'
 
-/** Keeps `in.(...)` filters comfortably below URL length limits. */
-const IN_FILTER_CHUNK_SIZE = 100
+/** Columns of the `videos` row of a saved Twitch video. */
+const VIDEO_COLUMNS =
+  'id, deleted_at, duration, published_at, status, thumbnail_id, title'
+
+/** Columns of the `twitch_videos` row of a saved Twitch video. */
+const TWITCH_VIDEO_COLUMNS = 'id, stream_id, twitch_video_id, type'
+
+/**
+ * Selects a saved Twitch video from `videos`: its `videos` row plus its
+ * `twitch_videos` row as `twitch_video`.
+ */
+export const SAVED_TWITCH_VIDEO_COLUMNS =
+  `${VIDEO_COLUMNS}, twitch_video:twitch_videos!inner(${TWITCH_VIDEO_COLUMNS})` as const
+
+/**
+ * {@link SAVED_TWITCH_VIDEO_COLUMNS} plus the broadcaster of the video, as
+ * `twitch_video.twitch_user` (`null` when the account is gone).
+ */
+export const SAVED_LIVE_VIDEO_COLUMNS =
+  `${VIDEO_COLUMNS}, twitch_video:twitch_videos!inner(${TWITCH_VIDEO_COLUMNS}, twitch_user:twitch_users(twitch_user_id))` as const
+
+function selectSavedTwitchVideos(supabaseClient: TypedSupabaseClient) {
+  return supabaseClient.from('videos').select(SAVED_TWITCH_VIDEO_COLUMNS)
+}
 
 /** A saved Twitch video: its `videos` row plus its `twitch_videos` row. */
-export interface SavedTwitchVideo
-  extends Pick<
-    Tables<'videos'>,
-    | 'deleted_at'
-    | 'duration'
-    | 'id'
-    | 'published_at'
-    | 'status'
-    | 'thumbnail_id'
-    | 'title'
-  > {
-  twitch_video: Pick<
-    Tables<'twitch_videos'>,
-    'id' | 'stream_id' | 'twitch_video_id' | 'type'
-  >
-}
+export type SavedTwitchVideo = QueryData<
+  ReturnType<typeof selectSavedTwitchVideos>
+>[number]
 
 /**
  * Whether the row still stands in for a broadcast whose archive is unknown,
@@ -47,20 +58,16 @@ export async function findSavedTwitchVideos(
   const savedVideos: SavedTwitchVideo[] = []
 
   for (const ids of chunk([...new Set(values)], IN_FILTER_CHUNK_SIZE)) {
-    const { data, error } = await supabaseClient
-      .from('twitch_videos')
-      .select(
-        'id, stream_id, twitch_video_id, type, video:videos!inner(id, deleted_at, duration, published_at, status, thumbnail_id, title)',
-      )
-      .in(column, ids)
+    const { data, error } = await selectSavedTwitchVideos(supabaseClient).in(
+      `twitch_video.${column}`,
+      ids,
+    )
 
     if (error) {
       throw new DatabaseError('Failed to look up Twitch videos', error)
     }
 
-    for (const { video, ...twitchVideo } of data) {
-      savedVideos.push({ ...video, twitch_video: twitchVideo })
-    }
+    savedVideos.push(...data)
   }
 
   return savedVideos

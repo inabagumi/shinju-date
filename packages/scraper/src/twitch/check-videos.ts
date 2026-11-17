@@ -1,6 +1,11 @@
 import { toDBString } from '@shinju-date/temporal-fns'
 import { countChanges } from '../internal/concurrency.js'
 import {
+  RECENT_VIDEO_COUNT,
+  SWEEP_PAGE_SIZE,
+  WRITE_CONCURRENCY,
+} from '../internal/constants.js'
+import {
   DatabaseError,
   paginateById,
   softDeleteUnavailableVideos,
@@ -16,6 +21,7 @@ import type { TwitchFetcher } from './fetcher.js'
 import { createTwitchThumbnail } from './save-video.js'
 import {
   isLivePlaceholder,
+  SAVED_TWITCH_VIDEO_COLUMNS,
   type SavedTwitchVideo,
   updateTwitchVideo,
 } from './saved-video.js'
@@ -27,16 +33,9 @@ import {
   toVideoFields,
 } from './video.js'
 
-const UPDATE_CONCURRENCY = 8
-
-/** How many of the newest finished videos a refresh re-reads. */
-const RECENT_VIDEO_COUNT = 100
-
-/** Page size of the full sweep; PostgREST caps responses at 1000 rows. */
-const SWEEP_PAGE_SIZE = 1000
-
+/** The talent is embedded only to filter on its status. */
 const SAVED_VIDEO_SELECT =
-  'id, deleted_at, duration, published_at, status, thumbnail_id, title, twitch_video:twitch_videos!inner(id, stream_id, twitch_video_id, type), talent:talents!inner(id)'
+  `${SAVED_TWITCH_VIDEO_COLUMNS}, talent:talents!inner(id)` as const
 
 /** What Twitch reports for one saved video or clip. */
 interface FetchedVideo {
@@ -214,7 +213,7 @@ export async function refreshRecentTwitchVideos(
 
   const updatedCount = await countChanges(
     [...fetchedById],
-    UPDATE_CONCURRENCY,
+    WRITE_CONCURRENCY,
     async ([twitchVideoId, fetched]) => {
       const saved = savedByTwitchId.get(twitchVideoId)
 

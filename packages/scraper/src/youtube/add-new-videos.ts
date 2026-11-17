@@ -1,5 +1,6 @@
 import { toDBString } from '@shinju-date/temporal-fns'
 import { countChanges } from '../internal/concurrency.js'
+import { WRITE_CONCURRENCY } from '../internal/constants.js'
 import {
   type ActiveYouTubeChannel,
   findSavedYouTubeVideoIds,
@@ -15,9 +16,6 @@ import type { CrawlContext, WriteContext } from '../types.js'
 import type { YouTubeFetcher } from './fetcher.js'
 import type { YouTubeVideo } from './types.js'
 import { getThumbnailSource, toVideoFields } from './video.js'
-
-/** Videos saved at once; each one downloads and resizes a thumbnail. */
-const SAVE_CONCURRENCY = 8
 
 async function createVideoThumbnail(
   { now, reportError, supabaseClient }: WriteContext,
@@ -163,7 +161,7 @@ export async function addNewYouTubeVideos(
 export async function saveNewYouTubeVideos(
   context: CrawlContext<YouTubeFetcher>,
   channelByVideoId: ReadonlyMap<string, ActiveYouTubeChannel>,
-  concurrency = SAVE_CONCURRENCY,
+  concurrency = WRITE_CONCURRENCY,
 ): Promise<number> {
   const { fetcher, logger, reportError, supabaseClient } = context
   const listedIds = [...channelByVideoId.keys()]

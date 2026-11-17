@@ -1,6 +1,7 @@
 import type { Tables } from '@shinju-date/database'
 import { diffAccountFields } from '../internal/account-fields.js'
 import { countChanges } from '../internal/concurrency.js'
+import { WRITE_CONCURRENCY } from '../internal/constants.js'
 import { DatabaseError } from '../internal/database/index.js'
 import { removeUnusedProfileImages } from '../internal/profile-images/index.js'
 import type {
@@ -15,8 +16,6 @@ import {
   syncYouTubeChannelIcon,
 } from './profile-image.js'
 import type { YouTubeChannel } from './types.js'
-
-const UPDATE_CONCURRENCY = 8
 
 /** The columns of a channel that are kept in line with YouTube. */
 export type YouTubeChannelFields = Pick<
@@ -207,7 +206,7 @@ export async function syncYouTubeChannels(
 
   const changedCount = await countChanges(
     channels,
-    UPDATE_CONCURRENCY,
+    WRITE_CONCURRENCY,
     async (channel) => {
       const saved = savedByYouTubeId.get(channel.id)
 
