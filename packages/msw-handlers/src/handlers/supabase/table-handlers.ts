@@ -1,6 +1,7 @@
 import type { Tables } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { HttpResponse } from 'msw'
+import { parseError } from './errors.js'
 import {
   applyOrder,
   applyPagination,
@@ -17,7 +18,7 @@ import {
   rest,
   singleObjectError,
 } from './rest.js'
-import { applySelect } from './select.js'
+import { applySelect, selectRows } from './select.js'
 import {
   getRows,
   type TableDefinition,
@@ -32,21 +33,28 @@ function returnsRepresentation(request: Request): boolean {
 }
 
 /**
- * The rows that a read returns, and the number of all the rows that match
- * the filters before the pagination, which an exact count returns.
+ * The rows that a read returns, projected with the select of the query, and
+ * the number of all the rows that match the filters (and the embedded
+ * resources with `!inner`) before the pagination, which an exact count
+ * returns.
  */
 async function readRows<Name extends TableName>(
   table: TableDefinition<Name>,
   request: Request,
 ): Promise<{
   headers: Record<string, string>
-  page: Tables<Name>[]
-  query: SupabaseQuery
+  page: object[]
 }> {
   const query = parseSupabaseQuery(new URL(request.url))
   const matched = applyOrder(
-    applySupabaseConditions(await getRows(table), query),
+    await selectRows(
+      applySupabaseConditions(await getRows(table), query),
+      query.select,
+      table.name,
+      query.filters,
+    ),
     query.order,
+    ({ row }) => row,
   )
   const page = applyPagination(matched, query)
   const counts =
@@ -62,9 +70,26 @@ async function readRows<Name extends TableName>(
       ),
       'Content-Type': 'application/json',
     },
-    page,
-    query,
+    page: page.map(({ output }) => output),
   }
+}
+
+/**
+ * Parse the query of a write. Writes change the rows that match the filters
+ * of the table itself, so filters on embedded resources are not supported.
+ */
+function parseWriteQuery(request: Request): SupabaseQuery {
+  const query = parseSupabaseQuery(new URL(request.url))
+  const embedded = query.filters.find(({ path }) => path.length > 0)
+
+  if (embedded) {
+    throw parseError(
+      `unsupported filter on the embedded resource '${embedded.path.join('.')}' in a write`,
+      'The mock supports filters on embedded resources only in reads (GET and HEAD)',
+    )
+  }
+
+  return query
 }
 
 /** The primary key, which every table of the mock has. */
@@ -261,7 +286,7 @@ function createWriteHandlers<Name extends TableName>(
     // `resolution=ignore-duplicates` on the columns of `on_conflict` (the
     // primary key without it)
     rest.post(url, async ({ request }) => {
-      const query = parseSupabaseQuery(new URL(request.url))
+      const query = parseWriteQuery(request)
       const prefer = request.headers.get('prefer') ?? ''
       const resolution = prefer.match(
         /resolution=(ignore|merge)-duplicates/,
@@ -346,7 +371,7 @@ function createWriteHandlers<Name extends TableName>(
     // Updates only the rows that match all the filters, such as
     // `id=in.(...)&visible=eq.false`
     rest.patch(url, async ({ request }) => {
-      const query = parseSupabaseQuery(new URL(request.url))
+      const query = parseWriteQuery(request)
       const changes = withTriggers(
         table,
         (await request.json()) as Partial<Tables<Name>>,
@@ -389,7 +414,7 @@ function createWriteHandlers<Name extends TableName>(
 
     // Deletes only the rows that match all the filters
     rest.delete(url, async ({ request }) => {
-      const query = parseSupabaseQuery(new URL(request.url))
+      const query = parseWriteQuery(request)
       const matches = applySupabaseConditions(collection.findMany(), query)
 
       if (acceptsSingleObject(request) && matches.length !== 1) {
@@ -423,12 +448,9 @@ export function createTableHandlers<Name extends TableName>(
 
   return [
     rest.get(url, async ({ request }) => {
-      const { headers, page, query } = await readRows(table, request)
+      const { headers, page } = await readRows(table, request)
 
-      return HttpResponse.json(
-        await applySelect(page, query.select, table.name),
-        { headers },
-      )
+      return HttpResponse.json(page, { headers })
     }),
     rest.head(url, async ({ request }) => {
       const { headers } = await readRows(table, request)

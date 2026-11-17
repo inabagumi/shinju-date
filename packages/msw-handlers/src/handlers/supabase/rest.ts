@@ -1,4 +1,5 @@
 import { HttpResponse, type HttpResponseResolver, http } from 'msw'
+import { PostgrestError } from './errors.js'
 
 /** The base URL of the PostgREST API of the mock Supabase project. */
 export const REST_URL = 'https://fake.supabase.test/rest/v1'
@@ -77,15 +78,24 @@ function createRestHandler(
   method: 'delete' | 'get' | 'head' | 'patch' | 'post',
 ) {
   return (url: string, resolver: RestResolver) =>
-    http[method](url, async (info) =>
-      toSingleObjectResponse(info.request, await resolver(info)),
-    )
+    http[method](url, async (info) => {
+      try {
+        return await toSingleObjectResponse(info.request, await resolver(info))
+      } catch (error) {
+        if (error instanceof PostgrestError) {
+          return error.toResponse()
+        }
+
+        throw error
+      }
+    })
 }
 
 /**
  * Use these instead of `http` for the PostgREST API (`/rest/v1/*`). Every
  * handler then supports `.single()`, so a resolver only has to return the
- * rows as an array. A resolver that writes has to check the number of rows
+ * rows as an array, and a `PostgrestError` that a resolver throws becomes
+ * its error response. A resolver that writes has to check the number of rows
  * with `acceptsSingleObject` before writing, as PostgREST changes nothing
  * when it returns `PGRST116`.
  */
