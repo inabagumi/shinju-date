@@ -324,6 +324,16 @@ describe('Supabase Handlers', () => {
       expect(data.every((video) => video.video_kind !== 'short')).toBe(true)
     })
 
+    it('should seed at least one hidden video', async () => {
+      const data = (await (
+        await fetch(
+          'https://fake.supabase.test/rest/v1/videos?select=id&visible=eq.false',
+        )
+      ).json()) as { id: string }[]
+
+      expect(data.length).toBeGreaterThan(0)
+    })
+
     it('should update only the rows that match all the filters', async () => {
       const url = 'https://fake.supabase.test/rest/v1/videos'
       const listVideos = async (filters: string) =>
@@ -337,7 +347,8 @@ describe('Supabase Handlers', () => {
           headers: { 'Content-Type': 'application/json' },
           method: 'PATCH',
         })
-      // The seeded videos may all be visible, so hide one for the test.
+      // Hide one of the visible videos here, so the test does not depend on
+      // which videos the seed hides.
       const [hiddenVideo, ...visibleVideos] =
         await listVideos('&visible=eq.true')
       const targets = visibleVideos.slice(0, 2)

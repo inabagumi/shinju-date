@@ -363,12 +363,17 @@ export async function seedCollections() {
       if (!talent) return
 
       const thumbnail = createdThumbnails[idx % createdThumbnails.length]
-      const status = faker.helpers.arrayElement([
-        'PUBLISHED',
-        'LIVE',
-        'ENDED',
-        'UPCOMING',
-      ] as const)
+      // The first video is always `UPCOMING` (hidden), so the seeded data has
+      // a hidden video whatever the other statuses are.
+      const status =
+        idx === 0
+          ? 'UPCOMING'
+          : faker.helpers.arrayElement([
+              'PUBLISHED',
+              'LIVE',
+              'ENDED',
+              'UPCOMING',
+            ] as const)
 
       // Make some videos shorts (30% chance) using weightedArrayElement for clarity
       const videoKind = faker.helpers.weightedArrayElement([
