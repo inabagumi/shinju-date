@@ -2059,6 +2059,44 @@ describe('Supabase Handlers', () => {
         user_email: 'admin@example.com',
       })
     })
+
+    it('should record an audit log of a feedback update', async () => {
+      const targetRecordId = crypto.randomUUID()
+      const details = {
+        changes: {
+          after: { status: 'resolved' },
+          before: { status: 'pending' },
+        },
+        entityName: '検索結果を配信日で絞り込みたいです',
+      }
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/rpc/insert_audit_log',
+        {
+          body: JSON.stringify({
+            p_action: 'FEATURE_REQUEST_UPDATE',
+            p_details: details,
+            p_target_record_id: targetRecordId,
+            p_target_table: 'feature_requests',
+          }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        },
+      )
+
+      expect(response.status).toBe(204)
+
+      // Logs recorded within the same second have the same `created_at`,
+      // so the log is looked up by its record instead of as the latest one.
+      expect(await getAuditLogs({})).toContainEqual(
+        expect.objectContaining({
+          action: 'FEATURE_REQUEST_UPDATE',
+          details,
+          target_record_id: targetRecordId,
+          target_table: 'feature_requests',
+          user_email: 'admin@example.com',
+        }),
+      )
+    })
   })
 
   describe('Query parameter parsing', () => {
