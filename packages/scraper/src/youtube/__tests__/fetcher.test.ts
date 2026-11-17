@@ -1,6 +1,11 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import { range } from '@shinju-date/helpers'
 import { describe, expect, it, vi } from 'vitest'
+import {
+  createChannel,
+  createPlaylistItem,
+  createVideo,
+} from '../../internal/testing/youtube.js'
 import { YouTubeFetcher } from '../fetcher.js'
 
 interface ListParams {
@@ -8,22 +13,6 @@ interface ListParams {
   maxResults?: number
   part?: string[]
   playlistId?: string
-}
-
-function createChannel(id: string): youtube.Schema$Channel {
-  return {
-    contentDetails: { relatedPlaylists: { uploads: `UU${id.slice(2)}` } },
-    id,
-    snippet: { title: `Channel ${id}` },
-  }
-}
-
-function createVideo(id: string): youtube.Schema$Video {
-  return {
-    contentDetails: { duration: 'PT10M' },
-    id,
-    snippet: { publishedAt: '2024-01-01T00:00:00Z', title: `Video ${id}` },
-  }
 }
 
 interface FakeYouTube {
@@ -43,7 +32,7 @@ function createClient({
     data: {
       items: id
         .filter((value) => channelIds.includes(value))
-        .map(createChannel),
+        .map((value) => createChannel(value)),
     },
   }))
 
@@ -57,7 +46,7 @@ function createClient({
 
     return {
       data: {
-        items: result.map((videoId) => ({ contentDetails: { videoId } })),
+        items: result.map((videoId) => createPlaylistItem(videoId)),
       },
     }
   })
@@ -67,7 +56,7 @@ function createClient({
       items: id
         .filter((value) => videoIds.includes(value))
         .map((value) =>
-          part.includes('snippet') ? createVideo(value) : { id: value },
+          part.includes('snippet') ? createVideo({ id: value }) : { id: value },
         ),
     },
   }))
