@@ -38,7 +38,7 @@ MSW（Mock Service Worker）は、開発・テスト環境でAPIリクエスト�
 MSWはサーバー側（Node.js）でだけ動かします。Supabase、Upstash、YouTubeなどへのアクセスは、サーバーコンポーネント、Server Action、ルートハンドラーで行っており、ブラウザから直接呼ぶ処理はないためです。ブラウザ側のMSW（`setupWorker()` とサービスワーカー）は使っていません。
 
 - **Web App** (`apps/web/`)、**Admin App** (`apps/admin/`)
-  - `instrumentation.ts` - `ENABLE_MSW=true` のとき、`@shinju-date/msw-handlers/server` の `startServer()` でMSWを起動する（Node.jsランタイムのみ）
+  - `instrumentation.ts` - `ENABLE_MSW=true` のとき、`@shinju-date/instrumentation/server` の `registerServer()` が、`@shinju-date/msw-handlers/server` の `startServer()` でMSWを起動する（Node.jsランタイムのみ）
   - `package.json` の `build:msw` - `@shinju-date/msw-handlers/register` を読み込んで本番ビルドする（[ビルド方法](#ビルド方法)を参照）
 - **Batch App** (`apps/batch/`)
   - `instrumentation.ts` - Web/Adminと同じく、`ENABLE_MSW=true` のときにMSWを起動する
@@ -108,7 +108,7 @@ const { data } = await supabase
 
 - **明示的に有効化**: `ENABLE_MSW=true` のときだけMSWが動作する（開発モードでも、指定しなければ動作しない）
 - **ブラウザへの影響なし**: クライアント向けの出力（`.next/static`）にはMSWのコードが含まれない
-- **条件付きロード**: `instrumentation.ts` から動的インポートするため、`ENABLE_MSW` を指定しなければ読み込まれない
+- **条件付きロード**: `instrumentation.ts` から呼ぶ `registerServer()` が動的インポートするため、`ENABLE_MSW` を指定しなければ読み込まれない
 
 ### 4. TypeScript統合
 

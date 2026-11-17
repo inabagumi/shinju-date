@@ -1,9 +1,8 @@
 import * as Sentry from '@sentry/nextjs'
 import { createErrorResponse } from '@shinju-date/helpers'
-import getVideoByURL from './_lib/get-video-by-url'
+import getVideoByURL, { type Video } from './_lib/get-video-by-url'
 import increment from './_lib/increment'
 import track from './_lib/track'
-import type { Video } from './_lib/types'
 
 export async function POST(request: Request): Promise<Response> {
   const requestType = request.headers.get('Content-Type')

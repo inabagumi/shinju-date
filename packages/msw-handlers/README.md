@@ -61,16 +61,14 @@ pnpm --filter @shinju-date/web build:msw
 
 ### Next.js Apps (Server Side)
 
-`apps/web`, `apps/admin`, and `apps/batch` start MSW from `instrumentation.ts` when `ENABLE_MSW=true`:
+`apps/web`, `apps/admin`, and `apps/batch` start MSW from `instrumentation.ts` when `ENABLE_MSW=true`, through `registerServer()` of [`@shinju-date/instrumentation`](../instrumentation/), which runs the following on the Node.js runtime:
 
 ```typescript
-// instrumentation.ts
-export async function register() {
-  if (process.env['ENABLE_MSW'] === 'true') {
-    if (process.env['NEXT_RUNTIME'] === 'nodejs') {
-      const { startServer } = await import('@shinju-date/msw-handlers/server')
-      startServer()
-    }
+// packages/instrumentation/src/server.ts
+if (enableMsw) {
+  if (process.env['NEXT_RUNTIME'] === 'nodejs') {
+    const { startServer } = await import('@shinju-date/msw-handlers/server')
+    startServer()
   }
 }
 ```
@@ -206,7 +204,7 @@ The commands are implemented in `src/handlers/upstash/commands.ts`, with the opt
 
 A command that is not implemented returns the error of Redis, `ERR unknown command '<name>', with args beginning with: …`, with 400 (`@upstash/redis` throws it). In a pipeline, only that command gets the error; a transaction with it is discarded (`EXECABORT`), like Redis does. `EVAL` of another script also returns an error, as Lua cannot run in the mock.
 
-`src/__tests__/upstash-commands.test.ts` finds the methods of `@upstash/redis` called in `apps/` and `packages/` (except the tests) and checks that every command of them is implemented. When an app starts to use a new command, add it to `COMMANDS` in `src/handlers/upstash/commands.ts`.
+`src/upstash-commands.test.ts` finds the methods of `@upstash/redis` called in `apps/` and `packages/` (except the tests) and checks that every command of them is implemented. When an app starts to use a new command, add it to `COMMANDS` in `src/handlers/upstash/commands.ts`.
 
 #### Example Usage
 

@@ -14,12 +14,8 @@ import {
   toggleVisibilityAction,
 } from '../_actions'
 import type { Video } from '../_lib/get-videos'
+import type { VideoSort } from '../_lib/video-sort'
 import VideoList from './video-list'
-
-vi.mock('next/navigation', () => ({
-  usePathname: () => '/videos',
-  useSearchParams: () => new URLSearchParams(),
-}))
 
 vi.mock('../_actions', () => ({
   restoreAction: vi.fn(),
@@ -33,6 +29,23 @@ interface WrapperProps {
 
 function Wrapper({ children }: WrapperProps) {
   return <ActionToastProvider>{children}</ActionToastProvider>
+}
+
+const DEFAULT_SORT: VideoSort = { field: 'updated_at', order: 'desc' }
+
+interface TestVideoListProps {
+  videos: Video[]
+  sort?: VideoSort | undefined
+  searchParams?: string | undefined
+}
+
+/** 既定の並べ替えで、絞り込みのない一覧を描く */
+function TestVideoList({
+  videos,
+  sort = DEFAULT_SORT,
+  searchParams = '',
+}: TestVideoListProps) {
+  return <VideoList searchParams={searchParams} sort={sort} videos={videos} />
 }
 
 function createVideo(overrides: Partial<Video> = {}): Video {
@@ -58,7 +71,7 @@ function createVideo(overrides: Partial<Video> = {}): Video {
 
 describe('VideoList', () => {
   it('renders the talent name', () => {
-    render(<VideoList videos={[createVideo()]} />, {
+    render(<TestVideoList videos={[createVideo()]} />, {
       wrapper: ActionToastProvider,
     })
 
@@ -68,7 +81,7 @@ describe('VideoList', () => {
   })
 
   it('renders a fallback instead of crashing when the talent is missing', () => {
-    render(<VideoList videos={[createVideo({ talent: null })]} />, {
+    render(<TestVideoList videos={[createVideo({ talent: null })]} />, {
       wrapper: ActionToastProvider,
     })
 
@@ -80,7 +93,7 @@ describe('VideoList', () => {
   })
 
   it('shows the published and updated dates in one column', () => {
-    render(<VideoList videos={[createVideo()]} />, {
+    render(<TestVideoList videos={[createVideo()]} />, {
       wrapper: ActionToastProvider,
     })
 
@@ -95,7 +108,7 @@ describe('VideoList', () => {
   })
 
   it('shows the platform and video kind badges in one column', () => {
-    render(<VideoList videos={[createVideo({ video_kind: 'short' })]} />, {
+    render(<TestVideoList videos={[createVideo({ video_kind: 'short' })]} />, {
       wrapper: ActionToastProvider,
     })
 
@@ -114,7 +127,7 @@ describe('VideoList', () => {
     function renderWithToast() {
       render(
         <ActionToastProvider>
-          <VideoList videos={[createVideo()]} />
+          <TestVideoList videos={[createVideo()]} />
         </ActionToastProvider>,
       )
     }
@@ -204,14 +217,14 @@ describe('VideoList', () => {
     })
 
     it('drops the selection that is no longer in the list', async () => {
-      const { rerender } = render(<VideoList videos={[videoA, videoB]} />, {
+      const { rerender } = render(<TestVideoList videos={[videoA, videoB]} />, {
         wrapper: Wrapper,
       })
       select('Video A')
       select('Video B')
       expect(screen.getByText('2 件選択中')).toBeInTheDocument()
 
-      rerender(<VideoList videos={[videoC]} />)
+      rerender(<TestVideoList videos={[videoC]} />)
       expect(
         screen.getByText('動画を選択すると、まとめて操作できます。'),
       ).toBeInTheDocument()
@@ -233,13 +246,13 @@ describe('VideoList', () => {
     })
 
     it('does not restore the selection when returning to the previous list', () => {
-      const { rerender } = render(<VideoList videos={[videoA, videoB]} />, {
+      const { rerender } = render(<TestVideoList videos={[videoA, videoB]} />, {
         wrapper: Wrapper,
       })
       select('Video A')
 
-      rerender(<VideoList videos={[videoC]} />)
-      rerender(<VideoList videos={[videoA, videoB]} />)
+      rerender(<TestVideoList videos={[videoC]} />)
+      rerender(<TestVideoList videos={[videoA, videoB]} />)
 
       expect(screen.getByLabelText('「Video A」を選択')).not.toBeChecked()
       expect(
@@ -248,12 +261,12 @@ describe('VideoList', () => {
     })
 
     it('checks "select all" only when every video in the list is selected', () => {
-      const { rerender } = render(<VideoList videos={[videoA, videoB]} />, {
+      const { rerender } = render(<TestVideoList videos={[videoA, videoB]} />, {
         wrapper: Wrapper,
       })
       select('Video A')
 
-      rerender(<VideoList videos={[videoC, videoD]} />)
+      rerender(<TestVideoList videos={[videoC, videoD]} />)
       select('Video C')
 
       expect(screen.getByLabelText('すべて選択')).not.toBeChecked()
@@ -264,7 +277,7 @@ describe('VideoList', () => {
     })
 
     it('deletes only the non-deleted videos shown in the dialog', async () => {
-      render(<VideoList videos={[videoA, deletedVideo]} />, {
+      render(<TestVideoList videos={[videoA, deletedVideo]} />, {
         wrapper: Wrapper,
       })
       fireEvent.click(screen.getByLabelText('すべて選択'))
@@ -285,7 +298,7 @@ describe('VideoList', () => {
     })
 
     it('restores only the deleted videos shown in the dialog', async () => {
-      render(<VideoList videos={[videoA, deletedVideo]} />, {
+      render(<TestVideoList videos={[videoA, deletedVideo]} />, {
         wrapper: Wrapper,
       })
       fireEvent.click(screen.getByLabelText('すべて選択'))
@@ -299,6 +312,123 @@ describe('VideoList', () => {
 
       await waitFor(() =>
         expect(restoreAction).toHaveBeenCalledWith([deletedVideo.id]),
+      )
+    })
+  })
+
+  describe('sorting', () => {
+    function getDateHeader() {
+      return screen.getByRole('columnheader', { name: /公開日時/ })
+    }
+
+    it('links to the reversed order for the current field', () => {
+      render(<TestVideoList searchParams="sortOrder=desc" videos={[]} />, {
+        wrapper: Wrapper,
+      })
+
+      const link = screen.getByRole('link', { name: /更新日時/ })
+      expect(link).toHaveAttribute('href', '/videos?sortOrder=asc')
+      expect(link).toHaveTextContent('降順で並べ替え中')
+      expect(getDateHeader()).toHaveAttribute('aria-sort', 'descending')
+    })
+
+    it('links to another field in descending order, keeping the filters', () => {
+      render(
+        <TestVideoList
+          searchParams="page=2&search=test&sortField=published_at&sortOrder=asc"
+          sort={{ field: 'published_at', order: 'asc' }}
+          videos={[]}
+        />,
+        { wrapper: Wrapper },
+      )
+
+      expect(screen.getByRole('link', { name: /更新日時/ })).toHaveAttribute(
+        'href',
+        '/videos?search=test&sortField=updated_at&sortOrder=desc',
+      )
+      expect(screen.getByRole('link', { name: /公開日時/ })).toHaveAttribute(
+        'href',
+        '/videos?search=test&sortField=published_at&sortOrder=desc',
+      )
+      expect(screen.getByRole('link', { name: /公開日時/ })).toHaveTextContent(
+        '昇順で並べ替え中',
+      )
+      expect(
+        screen.getByRole('link', { name: /更新日時/ }),
+      ).not.toHaveTextContent('並べ替え中')
+      expect(getDateHeader()).toHaveAttribute('aria-sort', 'ascending')
+    })
+  })
+
+  describe('row actions', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
+    function openMenu() {
+      fireEvent.click(
+        screen.getByRole('button', { name: 'アクションメニュー' }),
+      )
+    }
+
+    it('links to the video on the platform', () => {
+      render(<TestVideoList videos={[createVideo()]} />, { wrapper: Wrapper })
+      openMenu()
+
+      const link = screen.getByRole('menuitem', { name: 'YouTubeで見る' })
+      expect(link).toHaveAttribute(
+        'href',
+        'https://www.youtube.com/watch?v=abcdefghijk',
+      )
+      expect(link).toHaveAttribute('target', '_blank')
+    })
+
+    it('toggles the visibility of the video', async () => {
+      vi.mocked(toggleVisibilityAction).mockResolvedValue({
+        success: true,
+        updatedCount: 1,
+      })
+
+      render(<TestVideoList videos={[createVideo()]} />, { wrapper: Wrapper })
+      openMenu()
+      fireEvent.click(screen.getByText('表示/非表示を切り替え'))
+
+      const dialog = screen.getByRole('dialog')
+      expect(within(dialog).getByText('Test Video')).toBeInTheDocument()
+      fireEvent.click(
+        within(dialog).getByRole('button', { name: '切り替える' }),
+      )
+
+      await waitFor(() =>
+        expect(toggleVisibilityAction).toHaveBeenCalledWith([
+          '00000000-0000-4000-8000-000000000001',
+        ]),
+      )
+    })
+
+    it('offers only restoring for a deleted video', async () => {
+      vi.mocked(restoreAction).mockResolvedValue({ success: true })
+
+      render(
+        <TestVideoList
+          videos={[createVideo({ deleted_at: '2025-01-03T00:00:00Z' })]}
+        />,
+        { wrapper: Wrapper },
+      )
+      openMenu()
+
+      expect(screen.queryByText('削除')).not.toBeInTheDocument()
+      fireEvent.click(screen.getByText('復元'))
+      fireEvent.click(
+        within(screen.getByRole('dialog')).getByRole('button', {
+          name: '復元する',
+        }),
+      )
+
+      await waitFor(() =>
+        expect(restoreAction).toHaveBeenCalledWith([
+          '00000000-0000-4000-8000-000000000001',
+        ]),
       )
     })
   })
