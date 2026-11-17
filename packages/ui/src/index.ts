@@ -19,11 +19,6 @@ export {
 } from './Dialog/Dialog.js'
 export { EmptyState, type EmptyStateProps } from './EmptyState/EmptyState.js'
 export { FilterBar, type FilterBarProps } from './FilterBar/FilterBar.js'
-export {
-  FIELD_FOCUS_RING,
-  FIELD_FOCUS_RING_DANGER,
-  FOCUS_RING,
-} from './focus.js'
 export { Input, type InputProps } from './Input/Input.js'
 export {
   MultiSelect,

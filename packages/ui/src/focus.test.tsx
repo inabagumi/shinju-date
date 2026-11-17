@@ -1,22 +1,17 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { Button } from './Button/Button'
-import { FIELD_FOCUS_RING, FIELD_FOCUS_RING_DANGER, FOCUS_RING } from './focus'
 import { Input } from './Input/Input'
 import { MultiSelect } from './MultiSelect/MultiSelect'
 import { Select } from './Select/Select'
 import { Textarea } from './Textarea/Textarea'
 import { ToastClose, ToastProvider } from './Toast/Toast'
 
-function classesOf(classNames: string): string[] {
-  return classNames.split(' ')
-}
-
 describe('focus styles', () => {
   it('gives buttons the focus ring', () => {
     render(<Button>保存</Button>)
 
-    expect(screen.getByRole('button')).toHaveClass(...classesOf(FOCUS_RING))
+    expect(screen.getByRole('button')).toHaveClass('focus-ring')
   })
 
   it('gives the toast close button the focus ring', () => {
@@ -26,7 +21,7 @@ describe('focus styles', () => {
       </ToastProvider>,
     )
 
-    expect(screen.getByRole('button')).toHaveClass(...classesOf(FOCUS_RING))
+    expect(screen.getByRole('button')).toHaveClass('focus-ring')
   })
 
   it('gives every field the same focus ring', () => {
@@ -47,9 +42,8 @@ describe('focus styles', () => {
       screen.getByRole('textbox', { name: '複数行の入力欄' }),
       screen.getByRole('button'),
     ]) {
-      expect(field).toHaveClass(...classesOf(FIELD_FOCUS_RING))
-      // `outline-none` は `outline-2` の線の種類を `none` にし、線を消す
-      expect(field).not.toHaveClass('outline-none')
+      expect(field).toHaveClass('field-focus-ring')
+      expect(field.className).not.toMatch(/\bfocus:ring-/)
     }
   })
 
@@ -57,15 +51,20 @@ describe('focus styles', () => {
     render(
       <>
         <Input aria-label="入力欄" variant="danger" />
+        <Select aria-label="セレクトボックス" variant="danger">
+          <option>選択肢</option>
+        </Select>
         <Textarea aria-label="複数行の入力欄" variant="danger" />
       </>,
     )
 
-    for (const name of ['入力欄', '複数行の入力欄']) {
-      const field = screen.getByRole('textbox', { name })
-
-      expect(field).toHaveClass(...classesOf(FIELD_FOCUS_RING_DANGER))
-      expect(field).not.toHaveClass('focus-visible:outline-accent')
+    for (const field of [
+      screen.getByRole('textbox', { name: '入力欄' }),
+      screen.getByRole('combobox', { name: 'セレクトボックス' }),
+      screen.getByRole('textbox', { name: '複数行の入力欄' }),
+    ]) {
+      expect(field).toHaveClass('field-focus-ring-danger')
+      expect(field).not.toHaveClass('field-focus-ring')
     }
   })
 })

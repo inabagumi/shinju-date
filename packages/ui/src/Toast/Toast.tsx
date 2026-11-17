@@ -2,7 +2,6 @@ import * as ToastPrimitive from '@radix-ui/react-toast'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { X } from 'lucide-react'
 import type { ComponentPropsWithRef } from 'react'
-import { FOCUS_RING } from '../focus.js'
 import { twMerge } from '../tw-merge.js'
 
 export const ToastProvider = ToastPrimitive.Provider
@@ -58,8 +57,7 @@ export function ToastClose({
   return (
     <ToastPrimitive.Close
       className={twMerge(
-        'absolute top-2 right-2 rounded-control p-1 text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground focus:opacity-100',
-        FOCUS_RING,
+        'absolute top-2 right-2 rounded-control p-1 text-muted opacity-0 focus-ring transition-opacity group-hover:opacity-100 hover:text-foreground focus:opacity-100',
         className,
       )}
       {...props}

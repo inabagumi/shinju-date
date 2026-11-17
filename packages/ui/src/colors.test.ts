@@ -195,7 +195,7 @@ const ALERT_TINTED_COLORS = [
   '--color-success',
   '--color-warning',
 ]
-// フォーカスの線（`packages/ui/src/focus.ts`）の色
+// フォーカスの線（theme.css の `focus-ring` などの `@utility`）の色
 const FOCUS_RING_COLORS = ['--color-accent', '--color-danger']
 const FOREGROUND_PAIRS = [
   ['--color-accent-foreground', '--color-accent'],
