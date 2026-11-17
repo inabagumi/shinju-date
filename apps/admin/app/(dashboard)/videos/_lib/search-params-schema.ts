@@ -1,24 +1,6 @@
-import type Database from '@shinju-date/database'
-import type { Tables } from '@shinju-date/database'
+import { Constants, type Enums } from '@shinju-date/database'
 import { z } from 'zod'
 import type { VideoSortField, VideoSortOrder } from './get-videos'
-
-// Valid video status values from the database enum
-type VideoStatus = Tables<'videos'>['status']
-const VALID_VIDEO_STATUSES: readonly VideoStatus[] = [
-  'UPCOMING',
-  'LIVE',
-  'ENDED',
-  'PUBLISHED',
-] as const
-
-// Valid video kind values from the database enum
-type VideoKind = Database['public']['Enums']['video_kind']
-const VALID_VIDEO_KINDS: readonly VideoKind[] = ['standard', 'short'] as const
-
-// Valid platform values from the database enum
-type Platform = Tables<'videos'>['platform']
-const VALID_PLATFORMS: readonly Platform[] = ['youtube', 'twitch'] as const
 
 // Define the valid sort field and order values based on the types
 const VALID_SORT_FIELDS: VideoSortField[] = ['published_at', 'updated_at']
@@ -39,14 +21,35 @@ export const DEFAULT_VALUES = {
 } satisfies {
   deleted: boolean[] | undefined
   page: number
-  platform: Platform[] | undefined
+  platform: Enums<'platform_type'>[] | undefined
   search: string | undefined
   sortField: VideoSortField
   sortOrder: VideoSortOrder
-  status: VideoStatus[] | undefined
+  status: Enums<'video_status'>[] | undefined
   talentId: string[] | undefined
-  videoKind: VideoKind[] | undefined
+  videoKind: Enums<'video_kind'>[] | undefined
   visible: boolean[] | undefined
+}
+
+/**
+ * 1つまたは複数の値を受け取り、enum の値だけを残すスキーマ。
+ * 有効な値が1つもなければ `undefined` にする
+ */
+function enumValuesSchema<const T extends readonly [string, ...string[]]>(
+  values: T,
+) {
+  const valueSchema = z.enum(values)
+
+  return z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((val): T[number][] | undefined => {
+      if (!val) return undefined
+      const validValues = (Array.isArray(val) ? val : [val]).filter(
+        (v): v is T[number] => valueSchema.safeParse(v).success,
+      )
+      return validValues.length > 0 ? validValues : undefined
+    })
 }
 
 /**
@@ -85,17 +88,7 @@ export const videoSearchParamsSchema = z.object({
     }),
 
   // Platform filter - support multiple values for multi-select
-  platform: z
-    .union([z.string(), z.array(z.string())])
-    .optional()
-    .transform((val): Platform[] | undefined => {
-      if (!val) return undefined
-      const values = Array.isArray(val) ? val : [val]
-      const validPlatforms = values.filter((v) =>
-        VALID_PLATFORMS.includes(v as Platform),
-      ) as Platform[]
-      return validPlatforms.length > 0 ? validPlatforms : undefined
-    }),
+  platform: enumValuesSchema(Constants.public.Enums.platform_type),
 
   // Search query string (optional) - handle arrays by taking first element
   search: z
@@ -135,17 +128,7 @@ export const videoSearchParamsSchema = z.object({
     }),
 
   // Video status filter - support multiple values for multi-select
-  status: z
-    .union([z.string(), z.array(z.string())])
-    .optional()
-    .transform((val): VideoStatus[] | undefined => {
-      if (!val) return undefined
-      const values = Array.isArray(val) ? val : [val]
-      const validStatuses = values.filter((v) =>
-        VALID_VIDEO_STATUSES.includes(v as VideoStatus),
-      ) as VideoStatus[]
-      return validStatuses.length > 0 ? validStatuses : undefined
-    }),
+  status: enumValuesSchema(Constants.public.Enums.video_status),
 
   // Talent ID filter - support multiple values for multi-select
   talentId: z
@@ -159,17 +142,7 @@ export const videoSearchParamsSchema = z.object({
     }),
 
   // Video kind filter - support multiple values for multi-select
-  videoKind: z
-    .union([z.string(), z.array(z.string())])
-    .optional()
-    .transform((val): VideoKind[] | undefined => {
-      if (!val) return undefined
-      const values = Array.isArray(val) ? val : [val]
-      const validKinds = values.filter((v) =>
-        VALID_VIDEO_KINDS.includes(v as VideoKind),
-      ) as VideoKind[]
-      return validKinds.length > 0 ? validKinds : undefined
-    }),
+  videoKind: enumValuesSchema(Constants.public.Enums.video_kind),
 
   // Visibility filter - support multiple values for multi-select
   visible: z

@@ -2,7 +2,7 @@
 
 import type { Tables } from '@shinju-date/database'
 import { EllipsisVertical } from 'lucide-react'
-import { useEffect } from 'react'
+import { useState } from 'react'
 import { useActionToast } from '@/components/action-toast'
 import {
   DropdownMenu,
@@ -11,14 +11,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/dropdown-menu'
 import { useServerAction } from '@/lib/use-server-action'
-import {
-  activateTalentAction,
-  deleteTalentAction,
-  restoreTalentAction,
-  retireTalentAction,
-} from '../_actions'
 import { syncTalentAccounts } from '../_actions/sync'
-import { useTalentLifecycleAction } from '../_lib/use-talent-lifecycle-action'
+import {
+  TalentLifecycleDialog,
+  type TalentLifecycleOperation,
+} from './talent-lifecycle-dialog'
 
 type Talent = Pick<Tables<'talents'>, 'id' | 'name' | 'status' | 'deleted_at'>
 
@@ -27,11 +24,6 @@ interface TalentActionsProps {
 }
 
 export function TalentActions({ talent }: TalentActionsProps) {
-  const {
-    isPending: isLifecyclePending,
-    message,
-    run,
-  } = useTalentLifecycleAction()
   const { isPending: isSyncPending, run: runSync } = useServerAction(
     syncTalentAccounts,
     {
@@ -43,84 +35,75 @@ export function TalentActions({ talent }: TalentActionsProps) {
           : 'アカウント情報を同期しました。'),
     },
   )
-  const isPending = isLifecyclePending || isSyncPending
-  const { showToast } = useActionToast()
-
+  // メニューは項目を押すと閉じて中身が消えるため、ダイアログはメニューの外に置き、
+  // 開いている操作をここで持つ。閉じる途中も文言が変わらないよう、操作の種類は
+  // 閉じても残す
+  const [lifecycleDialog, setLifecycleDialog] = useState<{
+    open: boolean
+    operation: TalentLifecycleOperation
+  }>({ open: false, operation: 'delete' })
   // 一覧の行の中には結果を表示する場所がないため、トーストで知らせる
-  useEffect(() => {
-    if (message) {
-      showToast(message.type, message.text)
-    }
-  }, [message])
+  const { showToast } = useActionToast()
 
   const isDeleted = talent.deleted_at !== null
   const isRetired = !isDeleted && talent.status === 'retired'
   const isActive = !isDeleted && talent.status === 'active'
 
+  const openLifecycleDialog = (operation: TalentLifecycleOperation) => {
+    setLifecycleDialog({ open: true, operation })
+  }
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label={`「${talent.name}」の操作`}
-        disabled={isPending}
-      >
-        <EllipsisVertical aria-hidden="true" className="size-5" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {isDeleted ? (
-          <DropdownMenuItem
-            onClick={() =>
-              run(() => restoreTalentAction(talent.id), {
-                confirmMessage: `タレント「${talent.name}」を復活しますか？`,
-                successText: 'タレントを復活しました。',
-              })
-            }
-          >
-            復活
-          </DropdownMenuItem>
-        ) : (
-          <>
-            <DropdownMenuItem onClick={() => runSync(talent.id)}>
-              同期
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          aria-label={`「${talent.name}」の操作`}
+          disabled={isSyncPending}
+        >
+          <EllipsisVertical aria-hidden="true" className="size-5" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          {isDeleted ? (
+            <DropdownMenuItem onClick={() => openLifecycleDialog('restore')}>
+              復活
             </DropdownMenuItem>
-            {isActive && (
-              <DropdownMenuItem
-                onClick={() =>
-                  run(() => retireTalentAction(talent.id), {
-                    confirmMessage: `タレント「${talent.name}」を引退にしますか？`,
-                    successText: 'タレントを引退にしました。',
-                  })
-                }
-              >
-                引退にする
+          ) : (
+            <>
+              <DropdownMenuItem onClick={() => runSync(talent.id)}>
+                同期
               </DropdownMenuItem>
-            )}
-            {isRetired && (
+              {isActive && (
+                <DropdownMenuItem onClick={() => openLifecycleDialog('retire')}>
+                  引退にする
+                </DropdownMenuItem>
+              )}
+              {isRetired && (
+                <DropdownMenuItem
+                  onClick={() => openLifecycleDialog('activate')}
+                >
+                  アクティブに戻す
+                </DropdownMenuItem>
+              )}
+              <hr className="my-1 border-border" />
               <DropdownMenuItem
-                onClick={() =>
-                  run(() => activateTalentAction(talent.id), {
-                    confirmMessage: `タレント「${talent.name}」をアクティブに戻しますか？`,
-                    successText: 'タレントをアクティブに戻しました。',
-                  })
-                }
+                onClick={() => openLifecycleDialog('delete')}
+                variant="danger"
               >
-                アクティブに戻す
+                削除
               </DropdownMenuItem>
-            )}
-            <hr className="my-1 border-border" />
-            <DropdownMenuItem
-              onClick={() =>
-                run(() => deleteTalentAction(talent.id), {
-                  confirmMessage: `タレント「${talent.name}」を削除しますか？`,
-                  successText: 'タレントを削除しました。',
-                })
-              }
-              variant="danger"
-            >
-              削除
-            </DropdownMenuItem>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <TalentLifecycleDialog
+        onOpenChange={(open) =>
+          setLifecycleDialog((prev) => ({ ...prev, open }))
+        }
+        onSuccess={(text) => showToast('success', text)}
+        open={lifecycleDialog.open}
+        operation={lifecycleDialog.operation}
+        talent={talent}
+      />
+    </>
   )
 }
