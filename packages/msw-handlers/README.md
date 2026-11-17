@@ -125,17 +125,49 @@ The tables (and views) listed in `src/handlers/supabase/tables.ts` share the sam
 - `announcements`, `feature_requests`, `profile_images`, `talents`, `terms`, `thumbnails`, `twitch_users`, `twitch_videos`, `video_backfill_jobs`, `videos`, `youtube_channels`, `youtube_videos` - read and written (GET, HEAD, POST, PATCH, DELETE)
 - `video_backfill_latest_jobs` - a view, only read (GET, HEAD)
 
-Other tables, such as `audit_logs`, return no rows. The database functions (`/rest/v1/rpc/*`) have handlers of their own in `src/handlers/supabase/rpc.ts`.
+The database functions (`/rest/v1/rpc/*`) have handlers of their own in `src/handlers/supabase/rpc.ts`. Like PostgREST, a table (or view) without a definition returns 404 (`PGRST205`), and a function without a handler returns 404 (`PGRST202`), instead of an empty result.
 
 #### Query Parameters
 
-- `select` - Column selection (supports embedded resources from the relations of the table definitions)
-- `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `ilike`, `in`, `is.null`, `not.is.null` - Filters, combined with AND
-- `order` - Sorting
+- `select` - Columns, aliases (`name:title`), casts (`id::text`) and embedded resources from the relations of the table definitions, such as `talent:talents!inner(id,name)`
+- Filters on the columns, combined with AND. Each operator can be negated with `not.` (such as `deleted_at=not.is.null`)
+- `or`, `and` - Logic trees such as `or=(deleted_at.is.null,deleted_at.gte.2026-01-01T00:00:00Z)`, which can be nested (`or=(a.eq.1,and(b.eq.2,c.eq.3))`) and negated (`not.or=(…)`). A value with commas or parentheses is quoted (`a.eq."x,y"`)
+- Filters on embedded resources, such as `talents.deleted_at=is.null` or `talent.deleted_at=is.null` (by the alias). They narrow down the embedded rows; with `!inner`, the rows without a related row that matches are left out, before counting and paging
+- JSON paths in the columns of filters and `order`, such as `readings->0` and `data->>name`
+- `order` - Sorting, such as `published_at.desc.nullslast,id.asc`
 - `limit`, `offset` - Pagination. With `Prefer: count=exact`, `Content-Range` has the number of all the matching rows, not only the page
 - `on_conflict` - The columns of an upsert (`Prefer: resolution=merge-duplicates` or `resolution=ignore-duplicates`)
 
-PATCH and DELETE change only the rows that match all the filters. Inserts, upserts and updates are checked against the `NOT NULL` columns and unique constraints of the table definitions, and fail with the error codes of PostgreSQL (`23502` and `23505`) without changing anything. A write that asks for a single object (`.single()`) and would not return exactly one row also changes nothing (`PGRST116`).
+The filters follow the three-valued logic of SQL: a comparison with `NULL` is neither true nor false, so `id=neq.x` and `deleted_at=not.lt.x` do not match the rows where the column is `NULL`.
+
+| Operator     | Meaning                                                      |
+| ------------ | ------------------------------------------------------------ |
+| `eq`, `neq`  | Equal, not equal                                             |
+| `gt`, `gte`  | Greater than (or equal), compared as instants for timestamps |
+| `lt`, `lte`  | Less than (or equal)                                         |
+| `like`       | Pattern (`*` or `%` for any characters, `_` for one)         |
+| `ilike`      | Pattern, case-insensitive                                    |
+| `match`      | Regular expression                                           |
+| `imatch`     | Regular expression, case-insensitive                         |
+| `in`         | One of a list, such as `in.(1,2,"a,b")`                      |
+| `is`         | `null`, `not_null`, `true`, `false` or `unknown`             |
+| `isdistinct` | `IS DISTINCT FROM`, which treats `NULL` as a value           |
+
+PATCH and DELETE change only the rows that match all the filters (filters on embedded resources are not supported in writes). Inserts, upserts and updates are checked against the `NOT NULL` columns and unique constraints of the table definitions, and fail with the error codes of PostgreSQL (`23502` and `23505`) without changing anything. A write that asks for a single object (`.single()`) and would not return exactly one row also changes nothing (`PGRST116`).
+
+#### Errors for What the Mock Does Not Support
+
+The mock does not ignore what it does not support, so that a query does not silently get a result that differs from PostgREST. It returns the errors of PostgREST (`{ code, message, details, hint }`) instead:
+
+| Code       | Status | When                                                                                                                                                                                                                                |
+| ---------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PGRST100` | 400    | An operator that is not in the table above (the message names it, such as `fts` or `cs`), a modifier such as `eq(any)`, a filter of another form, a spread (`...talents(name)`) in `select`, and an `order` by an embedded resource |
+| `PGRST108` | 400    | A filter on a resource that is not embedded in `select`                                                                                                                                                                             |
+| `PGRST200` | 400    | An embedded resource that the table definition has no relation to                                                                                                                                                                   |
+| `PGRST202` | 404    | A function without a handler                                                                                                                                                                                                        |
+| `PGRST205` | 404    | A table without a definition                                                                                                                                                                                                        |
+
+When an app needs one of them, implement it in `src/handlers/supabase/query.ts` (filters and `order`) or `src/handlers/supabase/select.ts` (`select`).
 
 #### Example Queries
 
@@ -147,25 +179,34 @@ GET /rest/v1/videos?select=id,title
 GET /rest/v1/videos?select=id,title,thumbnails(path,blur_data_url)
 
 // With filters
-GET /rest/v1/videos?select=*&id.in.(1,2,3)&limit=10
+GET /rest/v1/videos?select=*&id=in.(1,2,3)&limit=10
+
+// With a filter on an embedded resource
+GET /rest/v1/videos?select=id,talents!inner(deleted_at)&talents.deleted_at=not.is.null
 ```
 
 ### Upstash Redis API
 
-The package mocks the following Redis operations:
+The package mocks the REST API of Upstash Redis: a single command (`POST /` with `["GET", "key"]`, or `POST /v2/<command>` with the arguments), a pipeline (`POST /pipeline`) and a transaction (`POST /multi-exec`). The keys are kept in memory with their types and expiry times (`src/handlers/upstash/store.ts`), so a key expires after its TTL, and a command on a key of another type fails with `WRONGTYPE`.
 
 #### Commands
 
-- `ZRANGE` - Get sorted set ranges (with scores, reverse order)
-- `ZUNIONSTORE` - Union multiple sorted sets
-- `PING` - Connection health check
-- `GET/SET` - Basic key-value operations
-- `EXPIRE` - Set key expiration
+The commands are implemented in `src/handlers/upstash/commands.ts`, with the options and the errors of Redis:
 
-#### Pipeline Support
+| Group       | Commands                                                                                                                                                                |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Keys        | `DEL`, `EXISTS`, `EXPIRE` (`NX`, `XX`, `GT`, `LT`), `TTL`                                                                                                               |
+| Strings     | `GET`, `MGET`, `SET` (`NX`, `XX`, `GET`, `EX`, `PX`, `EXAT`, `PXAT`, `KEEPTTL`), `SETEX`, `INCR`                                                                        |
+| Lists       | `LPUSH`, `RPOP`                                                                                                                                                         |
+| Sets        | `SADD`, `SREM`, `SMEMBERS`, `SCARD`                                                                                                                                     |
+| Sorted sets | `ZADD` (`NX`, `XX`, `GT`, `LT`, `CH`, `INCR`), `ZINCRBY`, `ZSCORE`, `ZCARD`, `ZRANGE` (`BYSCORE`, `REV`, `LIMIT`, `WITHSCORES`), `ZUNIONSTORE` (`WEIGHTS`, `AGGREGATE`) |
+| Hashes      | `HINCRBY`, `HGETALL`                                                                                                                                                    |
+| Scripts     | `EVAL` of the scripts of `@shinju-date/video-backfill` (`-- video-backfill:enqueue`, `requeue` and `run-unlock`), emulated with the commands that they run              |
+| Server      | `PING`                                                                                                                                                                  |
 
-- Multiple commands in a single request
-- Transaction-like behavior
+A command that is not implemented returns the error of Redis, `ERR unknown command '<name>', with args beginning with: …`, with 400 (`@upstash/redis` throws it). In a pipeline, only that command gets the error; a transaction with it is discarded (`EXECABORT`), like Redis does. `EVAL` of another script also returns an error, as Lua cannot run in the mock.
+
+`src/__tests__/upstash-commands.test.ts` finds the methods of `@upstash/redis` called in `apps/` and `packages/` (except the tests) and checks that every command of them is implemented. When an app starts to use a new command, add it to `COMMANDS` in `src/handlers/upstash/commands.ts`.
 
 #### Example Usage
 
@@ -178,6 +219,17 @@ await redisClient.zrange('videos:clicked:20231023', 0, 10, {
 
 await redisClient.ping()
 ```
+
+### Twitch API
+
+The package mocks the app access tokens (`POST https://id.twitch.tv/oauth2/token`) and these endpoints of the Helix API:
+
+- `GET /helix/users` - By `id` or `login`
+- `GET /helix/videos` - By `id` (404 when one of them does not exist, like Helix), or by `user_id` with `type`, `first` and `after`, newest first
+- `GET /helix/streams` - The broadcasts on air, by `user_id` or `user_login`
+- `GET /helix/clips` - By `id` (the clips that do not exist are left out) or by `broadcaster_id`
+
+The videos, streams and clips come from the Twitch videos of the Supabase mock (`twitch_videos` with their `videos` and `twitch_users`): the archives, highlights and uploads are videos, the `LIVE` video is a stream, and the clip is a clip. The thumbnails and the icons that they link to are served as well.
 
 ## Mock Data
 
