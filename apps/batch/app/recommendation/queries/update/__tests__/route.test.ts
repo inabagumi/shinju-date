@@ -7,11 +7,13 @@ const revalidateTags = vi.fn()
 const multi = {
   del: vi.fn(),
   exec: vi.fn(),
+  expire: vi.fn(),
   zadd: vi.fn(),
 }
 const redisClient = {
   del: vi.fn(),
   exists: vi.fn(),
+  expire: vi.fn(),
   multi: vi.fn(() => multi),
   zrange: vi.fn(),
   zunionstore: vi.fn(),
@@ -68,6 +70,7 @@ describe('POST /recommendation/queries/update', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     limit.mockResolvedValue({ success: true })
+    redisClient.del.mockResolvedValue(1)
     getAllTerms.mockImplementation(async function* () {
       yield { synonyms: ['ほげ'], term: 'Hoge' }
       yield { synonyms: [], term: 'Fuga' }
@@ -98,12 +101,86 @@ describe('POST /recommendation/queries/update', () => {
       { member: 'Fuga', score: 20 },
     )
     expect(multi.zadd).toHaveBeenCalledTimes(2)
+    expect(multi.expire).toHaveBeenCalledWith(
+      REDIS_KEYS.QUERIES_AUTO_RECOMMENDED,
+      8 * 24 * 60 * 60,
+    )
     expect(multi.exec).toHaveBeenCalledTimes(1)
     expect(revalidateTags).toHaveBeenCalledWith(
       [CACHE_TAGS.RECOMMENDATION_QUERIES],
       expect.anything(),
     )
     expect(revalidateTags).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps the working key of the union for 10 minutes and deletes it afterwards', async () => {
+    redisClient.exists.mockResolvedValue(1)
+    redisClient.zrange.mockResolvedValue(['ほげ', '30'])
+
+    const response = await POST(createRequest())
+
+    expect(response.status).toBe(204)
+    expect(redisClient.zunionstore).toHaveBeenCalledWith(
+      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
+      3,
+      expect.any(Array),
+    )
+    expect(redisClient.expire).toHaveBeenCalledWith(
+      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
+      10 * 60,
+    )
+    expect(redisClient.expire.mock.invocationCallOrder[0]).toBeGreaterThan(
+      redisClient.zunionstore.mock.invocationCallOrder[0] ?? 0,
+    )
+    expect(redisClient.del).toHaveBeenCalledWith(
+      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
+    )
+    expect(multi.del).not.toHaveBeenCalledWith(
+      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
+    )
+  })
+
+  it('does not set an expiry on the auto recommended queries when none match', async () => {
+    redisClient.exists.mockResolvedValue(1)
+    redisClient.zrange.mockResolvedValue(['unknown', '10'])
+
+    const response = await POST(createRequest())
+
+    expect(response.status).toBe(204)
+    expect(multi.del).toHaveBeenCalledWith(REDIS_KEYS.QUERIES_AUTO_RECOMMENDED)
+    expect(multi.zadd).not.toHaveBeenCalled()
+    expect(multi.expire).not.toHaveBeenCalled()
+  })
+
+  it('deletes the working key of the union when reading it fails', async () => {
+    const error = new Error('Redis is down')
+
+    redisClient.exists.mockResolvedValue(1)
+    redisClient.zrange.mockRejectedValueOnce(error)
+
+    const response = await POST(createRequest())
+
+    expect(response.status).toBe(500)
+    await expect(response.json()).resolves.toEqual({ error: 'Redis is down' })
+    expect(redisClient.del).toHaveBeenCalledWith(
+      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
+    )
+    expect(multi.exec).not.toHaveBeenCalled()
+    expect(revalidateTags).not.toHaveBeenCalled()
+  })
+
+  it('reports the original error when deleting the working key also fails', async () => {
+    const error = new Error('Redis is down')
+
+    redisClient.exists.mockResolvedValue(1)
+    redisClient.zrange.mockRejectedValueOnce(error)
+    redisClient.del.mockRejectedValueOnce(new Error('Connection lost'))
+
+    const response = await POST(createRequest())
+
+    expect(response.status).toBe(500)
+    await expect(response.json()).resolves.toEqual({ error: 'Redis is down' })
+    expect(captureException).toHaveBeenCalledWith(error)
   })
 
   it('clears the auto recommended queries and revalidates when there is no search data', async () => {
