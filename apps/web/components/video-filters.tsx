@@ -1,5 +1,7 @@
+import { twMerge } from '@shinju-date/ui'
 import { CalendarPlus, X } from 'lucide-react'
 import Link from 'next/link'
+import { TEXT_LINK_CLASS_NAME } from '@/lib/class-names'
 import type { Talent } from '@/lib/fetchers'
 import {
   getVideosCalendarPath,
@@ -100,7 +102,7 @@ export default function VideoFilters({
         {!query && (
           // カレンダーはページではないので、`next/link` のリンクにしない
           <a
-            className="inline-flex h-9 items-center gap-1 rounded-control px-1 text-meta font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className={twMerge(TEXT_LINK_CLASS_NAME, 'h-9 px-1 text-meta')}
             href={getVideosCalendarPath(kind, selectedIds)}
           >
             <CalendarPlus aria-hidden="true" className="size-4" />

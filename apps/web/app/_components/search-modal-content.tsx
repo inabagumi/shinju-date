@@ -21,6 +21,7 @@ import {
 import TalentChip, {
   TALENT_CHIP_REMOVE_CLASS_NAME,
 } from '@/components/talent-chip'
+import { LIST_OPTION_CLASS_NAME } from '@/lib/class-names'
 import type { Talent } from '@/lib/fetchers'
 import { parseTalentIds, TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
 import { findMatchingTalents } from '@/lib/talent-match'
@@ -30,9 +31,6 @@ import { SearchModalSectionHeading } from './search-modal-section-heading'
 
 /** 矢印キーで移動できる候補（タレントとキーワード）に付ける属性 */
 const OPTION_SELECTOR = '[data-search-modal-option]'
-
-const OPTION_CLASS_NAME =
-  'flex w-full items-center gap-3 rounded-control px-4 py-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent'
 
 function isVideosPath(pathname: string): boolean {
   return pathname === '/videos' || pathname.startsWith('/videos/')
@@ -281,7 +279,7 @@ export function SearchModalContent({ onClose }: SearchModalContentProps) {
                 <div className="p-2">
                   {talentCandidates.map((talent) => (
                     <button
-                      className={OPTION_CLASS_NAME}
+                      className={LIST_OPTION_CLASS_NAME}
                       data-search-modal-option
                       data-talent-option
                       key={talent.id}
@@ -315,7 +313,7 @@ export function SearchModalContent({ onClose }: SearchModalContentProps) {
                 <div className="p-2">
                   {suggestions.map((suggestion) => (
                     <Link
-                      className={OPTION_CLASS_NAME}
+                      className={LIST_OPTION_CLASS_NAME}
                       data-search-modal-option
                       data-suggestion-link
                       href={getVideosPath(

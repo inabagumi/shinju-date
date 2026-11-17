@@ -2,6 +2,7 @@ import { twMerge } from '@shinju-date/ui'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
+import { NAVIGATION_LINK_CLASS_NAME } from '@/lib/class-names'
 import { WEEKDAYS } from '@/lib/date-heading'
 import { fetchScheduleVideos, type ScheduleVideo } from '@/lib/fetchers'
 import { groupVideosByDate } from '@/lib/group-videos-by-date'
@@ -33,9 +34,6 @@ function getDayId(date: Temporal.PlainDate): string {
   return `day-${date.toString()}`
 }
 
-const LINK_CLASS_NAME =
-  'inline-flex items-center gap-0.5 rounded-control font-semibold text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
-
 /** 週の範囲と、前の週・今週・次の週へのリンク */
 const WEEK_NAVIGATION_CLASS_NAME =
   'mb-6 flex min-h-[1lh] flex-wrap items-center justify-between gap-x-6 gap-y-3 text-heading'
@@ -61,7 +59,7 @@ export async function ScheduleWeekNavigation({
           {isWeekInRange(previousWeek, range) && (
             <li>
               <Link
-                className={LINK_CLASS_NAME}
+                className={NAVIGATION_LINK_CLASS_NAME}
                 href={getSchedulePath(previousWeek)}
               >
                 <ChevronLeft aria-hidden="true" className="size-4" />
@@ -70,14 +68,17 @@ export async function ScheduleWeekNavigation({
             </li>
           )}
           <li>
-            <Link className={LINK_CLASS_NAME} href={getSchedulePath()}>
+            <Link
+              className={NAVIGATION_LINK_CLASS_NAME}
+              href={getSchedulePath()}
+            >
               今週
             </Link>
           </li>
           {isWeekInRange(nextWeek, range) && (
             <li>
               <Link
-                className={LINK_CLASS_NAME}
+                className={NAVIGATION_LINK_CLASS_NAME}
                 href={getSchedulePath(nextWeek)}
               >
                 次の週

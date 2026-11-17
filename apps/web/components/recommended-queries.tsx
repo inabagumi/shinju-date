@@ -1,5 +1,6 @@
 import { Hash } from 'lucide-react'
 import Link from 'next/link'
+import { LIST_OPTION_CLASS_NAME } from '@/lib/class-names'
 import { getVideosPath } from '@/lib/video-kind-filter'
 
 interface RecommendedQueriesProps {
@@ -36,7 +37,7 @@ export default function RecommendedQueries({
           <div className="p-2">
             {queries.map((query) => (
               <Link
-                className="flex w-full items-center gap-3 rounded-control px-4 py-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
+                className={LIST_OPTION_CLASS_NAME}
                 href={getVideosPath(query, 'all', talentIds)}
                 key={query}
                 {...(onClickLink ? { onClick: onClickLink } : {})}
