@@ -299,28 +299,22 @@ jobs:
     if: needs.changes.outputs.terraform == 'true'
     permissions:
       contents: read
-    defaults:
-      run:
-        working-directory: terraform
+    env:
+      # Uses the official image rather than a third-party setup action
+      TERRAFORM_IMAGE: hashicorp/terraform:1.17.2
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
-        with:
-          terraform_version: "^1.17"
-          terraform_wrapper: false
-
       - name: Check format
-        run: terraform fmt -check -recursive
+        run: docker run --rm -v "$PWD/terraform:/workspace" -w /workspace "$TERRAFORM_IMAGE" fmt -check -recursive
 
       # Skips HCP Terraform, which needs a token, and only downloads the providers
       - name: Initialize
-        run: terraform init -backend=false -input=false
+        run: docker run --rm -v "$PWD/terraform:/workspace" -w /workspace "$TERRAFORM_IMAGE" init -backend=false -input=false
 
       - name: Validate
-        run: terraform validate
+        run: docker run --rm -v "$PWD/terraform:/workspace" -w /workspace "$TERRAFORM_IMAGE" validate
 
   # Summary job - this is the only required status check
   ci-summary:
