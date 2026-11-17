@@ -1,13 +1,9 @@
 'use server'
 
-import { checkBotId } from 'botid/server'
 import { Resend } from 'resend'
 import { z } from 'zod'
-import {
-  type FormState,
-  getFormValues,
-  toValidationErrorState,
-} from '@/lib/form-state'
+import { UNEXPECTED_ERROR, withBotCheck } from '@/lib/form-action'
+import { type FormState, toValidationErrorState } from '@/lib/form-state'
 import { getContactFormConfig } from './utils'
 
 const MESSAGE_REQUIRED_ERROR = 'お問い合わせ内容を入力してください'
@@ -39,32 +35,8 @@ const CONTACT_FORM_FIELDS = [
   'wantsReply',
 ] as const satisfies readonly ContactFormField[]
 
-export async function submitContactForm(
-  _prevState: unknown,
-  formData: FormData,
-): Promise<ContactFormState> {
-  // Returned on failure so the form can restore what the user entered.
-  const values = getFormValues(formData, CONTACT_FORM_FIELDS)
-
-  try {
-    // Block bots before any validation or email send.
-    // In local development, checkBotId() always returns isBot: false
-    // unless developmentOptions.bypass is set.
-    const verification = await checkBotId({
-      advancedOptions: {
-        checkLevel: 'basic',
-      },
-    })
-
-    if (verification.isBot) {
-      return {
-        error:
-          '送信を完了できませんでした。しばらく時間をおいて再度お試しください。',
-        success: false,
-        values,
-      }
-    }
-
+export const submitContactForm = withBotCheck<ContactFormField>(
+  async (formData, values) => {
     // Check if contact form is enabled
     const config = getContactFormConfig()
 
@@ -144,25 +116,16 @@ ${message}
     if (sendError) {
       console.error('Failed to send contact form email:', sendError)
 
-      return {
-        error:
-          '送信中にエラーが発生しました。しばらく時間をおいて再度お試しください。',
-        success: false,
-        values,
-      }
+      return { error: UNEXPECTED_ERROR, success: false, values }
     }
 
     return {
       message: 'お問い合わせを受け付けました。ありがとうございます。',
       success: true,
     }
-  } catch (error) {
-    console.error('Contact form submission error:', error)
-    return {
-      error:
-        '送信中にエラーが発生しました。しばらく時間をおいて再度お試しください。',
-      success: false,
-      values,
-    }
-  }
-}
+  },
+  {
+    errorLogMessage: 'Contact form submission error:',
+    fields: CONTACT_FORM_FIELDS,
+  },
+)
