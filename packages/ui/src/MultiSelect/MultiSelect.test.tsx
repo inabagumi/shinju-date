@@ -131,16 +131,32 @@ describe('MultiSelect', () => {
       />,
     )
 
-    const button = screen.getByRole('button')
-    await user.click(button)
-
-    const selectAllButton = screen.getByText('すべて選択')
-    await user.click(selectAllButton)
+    await user.click(screen.getByRole('button'))
+    await user.click(screen.getByRole('checkbox', { name: 'すべて選択' }))
 
     expect(handleChange).toHaveBeenCalledWith(['1', '2', '3'])
   })
 
-  it('should deselect all items when "すべて解除" is clicked', async () => {
+  it('should select all items when "すべて選択" is clicked while some are selected', async () => {
+    const user = userEvent.setup()
+    const handleChange = vi.fn()
+
+    render(
+      <MultiSelect
+        onChange={handleChange}
+        options={defaultOptions}
+        placeholder="Select items"
+        value={['2']}
+      />,
+    )
+
+    await user.click(screen.getByRole('button'))
+    await user.click(screen.getByRole('checkbox', { name: 'すべて選択' }))
+
+    expect(handleChange).toHaveBeenCalledWith(['1', '2', '3'])
+  })
+
+  it('should deselect all items when "すべて選択" is clicked while all are selected', async () => {
     const user = userEvent.setup()
     const handleChange = vi.fn()
 
@@ -153,13 +169,98 @@ describe('MultiSelect', () => {
       />,
     )
 
-    const button = screen.getByRole('button')
-    await user.click(button)
-
-    const deselectAllButton = screen.getByText('すべて解除')
-    await user.click(deselectAllButton)
+    await user.click(screen.getByRole('button'))
+    await user.click(screen.getByRole('checkbox', { name: 'すべて選択' }))
 
     expect(handleChange).toHaveBeenCalledWith([])
+  })
+
+  it.each([
+    { checked: 'false', value: [] },
+    { checked: 'mixed', value: ['1'] },
+    { checked: 'true', value: ['1', '2', '3'] },
+  ])(
+    'should expose aria-checked="$checked" on "すべて選択" when $value.length items are selected',
+    async ({ checked, value }) => {
+      const user = userEvent.setup()
+
+      render(
+        <MultiSelect
+          onChange={vi.fn()}
+          options={defaultOptions}
+          placeholder="Select items"
+          value={value}
+        />,
+      )
+
+      await user.click(screen.getByRole('button'))
+
+      expect(
+        screen.getByRole('checkbox', { name: 'すべて選択' }),
+      ).toHaveAttribute('aria-checked', checked)
+    },
+  )
+
+  it('should use label as the accessible name of the trigger', () => {
+    render(
+      <MultiSelect
+        label="表示状態"
+        onChange={vi.fn()}
+        options={defaultOptions}
+        placeholder="Select items"
+        value={['1', '2']}
+      />,
+    )
+
+    const button = screen.getByRole('button', { name: '表示状態' })
+    expect(button).toHaveTextContent('2件選択中')
+  })
+
+  it('should not share checkbox ids between MultiSelects with the same option values', async () => {
+    const user = userEvent.setup()
+    const handleFirstChange = vi.fn()
+    const handleSecondChange = vi.fn()
+    const options = [
+      { label: '公開', value: 'true' },
+      { label: '非公開', value: 'false' },
+    ]
+
+    render(
+      <>
+        <MultiSelect
+          label="表示状態"
+          onChange={handleFirstChange}
+          options={options}
+          value={[]}
+        />
+        <MultiSelect
+          label="削除状態"
+          onChange={handleSecondChange}
+          options={options}
+          value={[]}
+        />
+      </>,
+    )
+
+    await user.click(screen.getByRole('button', { name: '表示状態' }))
+    const firstIds = screen
+      .getAllByRole('checkbox')
+      .map((checkbox) => checkbox.id)
+    await user.keyboard('{Escape}')
+
+    await user.click(screen.getByRole('button', { name: '削除状態' }))
+    const secondIds = screen
+      .getAllByRole('checkbox')
+      .map((checkbox) => checkbox.id)
+
+    expect(new Set([...firstIds, ...secondIds]).size).toBe(
+      firstIds.length + secondIds.length,
+    )
+
+    await user.click(screen.getByText('公開'))
+
+    expect(handleSecondChange).toHaveBeenCalledWith(['true'])
+    expect(handleFirstChange).not.toHaveBeenCalled()
   })
 
   it('should accept custom className', () => {
