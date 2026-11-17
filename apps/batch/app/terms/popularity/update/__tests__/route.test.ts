@@ -9,9 +9,8 @@ const mockRedisClient = {
   zrange: vi.fn(),
 }
 
-const mockRatelimit = {
-  limit: vi.fn(),
-}
+const acquireLock = vi.fn()
+const releaseLock = vi.fn()
 
 const mockUpdateTermPopularity = vi.fn()
 
@@ -32,18 +31,7 @@ vi.mock('@/lib/env', () => ({
   serverEnv: mockServerEnv,
 }))
 
-vi.mock('@/lib/ratelimit', () => ({
-  recommendationQueriesUpdate: { limit: vi.fn() },
-  statsSnapshot: { limit: vi.fn() },
-  talentsUpdate: { limit: vi.fn() },
-  termsPopularityUpdate: mockRatelimit,
-  videosBackfill: { limit: vi.fn() },
-  videosCascadeFromTalents: { limit: vi.fn() },
-  videosCheck: { limit: vi.fn() },
-  videosCheckAll: { limit: vi.fn() },
-  videosCheckRecent: { limit: vi.fn() },
-  videosUpdate: { limit: vi.fn() },
-}))
+vi.mock('@/lib/lock', () => ({ acquireLock, releaseLock }))
 
 vi.mock('../_lib/update-term-popularity', () => ({
   updateTermPopularity: mockUpdateTermPopularity,
@@ -85,7 +73,7 @@ describe('POST /terms/popularity/update', () => {
 
   it('should successfully update term popularity', async () => {
     // Setup
-    mockRatelimit.limit.mockResolvedValue({ success: true })
+    acquireLock.mockResolvedValue('lock-value')
     mockUpdateTermPopularity.mockResolvedValue({
       notFound: 5,
       total: 100,
@@ -115,9 +103,9 @@ describe('POST /terms/popularity/update', () => {
     )
   })
 
-  it('should return 429 when rate limited', async () => {
+  it('should return 429 while the previous run is still running', async () => {
     // Setup
-    mockRatelimit.limit.mockResolvedValue({ success: false })
+    acquireLock.mockResolvedValue(null)
 
     // Execute
     const request = new Request(
@@ -138,7 +126,7 @@ describe('POST /terms/popularity/update', () => {
     const error = new Error('Database error')
 
     // Setup
-    mockRatelimit.limit.mockResolvedValue({ success: true })
+    acquireLock.mockResolvedValue('lock-value')
     mockUpdateTermPopularity.mockRejectedValue(error)
 
     // Execute
@@ -164,7 +152,7 @@ describe('POST /terms/popularity/update', () => {
     // Setup
     mockServerEnv.CRON_SECRET = 'test-secret'
 
-    mockRatelimit.limit.mockResolvedValue({ success: true })
+    acquireLock.mockResolvedValue('lock-value')
 
     // Execute with wrong secret
     const request = new Request(

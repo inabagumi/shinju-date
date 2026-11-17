@@ -9,9 +9,16 @@ const serverEnv: { CRON_SECRET: string | undefined } = {
 
 vi.mock('@sentry/nextjs', () => ({ captureCheckIn, captureException, flush }))
 
-vi.mock('@shinju-date/logger', () => ({
-  logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
-}))
+const logger = { error: vi.fn(), info: vi.fn(), warn: vi.fn() }
+const redis = await vi.hoisted(async () => {
+  const { FakeLockRedis } = await import('./fake-lock-redis')
+
+  return new FakeLockRedis()
+})
+
+vi.mock('@shinju-date/logger', () => ({ logger }))
+
+vi.mock('../redis', () => ({ redisClient: redis }))
 
 vi.mock('../env', () => ({ serverEnv }))
 
@@ -19,13 +26,14 @@ vi.mock('next/server', () => ({
   after: vi.fn((callback: () => unknown) => callback()),
 }))
 
-const { runCronJob, verifyCronRequest } = await import('../cron')
+const { getCronJobIdentifier, runCronJob, verifyCronRequest } = await import(
+  '../cron'
+)
 
-const limit = vi.fn()
+const LOCK_KEY = 'cron:lock:videos:update'
 const job = {
+  maxDurationSeconds: 120,
   path: '/videos/update',
-  ratelimit: { limit },
-  ratelimitKey: 'videos:update:youtube',
   schedule: '1/5 * * * *',
 }
 
@@ -39,7 +47,7 @@ function createRequest(headers: Record<string, string> = {}): Request {
 describe('runCronJob', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    limit.mockResolvedValue({ success: true })
+    redis.clear()
     serverEnv.CRON_SECRET = undefined
   })
 
@@ -50,7 +58,6 @@ describe('runCronJob', () => {
 
     expect(response.status).toBe(204)
     expect(run).toHaveBeenCalledTimes(1)
-    expect(limit).toHaveBeenCalledWith('videos:update:youtube')
     expect(captureCheckIn).toHaveBeenNthCalledWith(
       1,
       { monitorSlug: '/videos/update', status: 'in_progress' },
@@ -144,15 +151,141 @@ describe('runCronJob', () => {
     expect(onError).not.toHaveBeenCalled()
   })
 
-  it('rejects runs that follow the previous one too closely', async () => {
-    limit.mockResolvedValue({ success: false })
-    const run = vi.fn()
+  it('rejects a run while the previous one is still running', async () => {
+    const { promise: finished, resolve: finish } =
+      Promise.withResolvers<undefined>()
+    const first = vi.fn(() => finished)
+    const second = vi.fn().mockResolvedValue(undefined)
+
+    const firstResponse = runCronJob(createRequest(), job, first)
+    await vi.waitFor(() => expect(first).toHaveBeenCalled())
+
+    const secondResponse = await runCronJob(createRequest(), job, second)
+
+    expect(secondResponse.status).toBe(429)
+    expect(second).not.toHaveBeenCalled()
+    expect(captureCheckIn).toHaveBeenCalledTimes(1)
+
+    finish(undefined)
+
+    await expect(firstResponse).resolves.toHaveProperty('status', 204)
+  })
+
+  it('runs again right after the previous run ends', async () => {
+    await runCronJob(createRequest(), job, vi.fn().mockResolvedValue(undefined))
+    const run = vi.fn().mockResolvedValue(undefined)
 
     const response = await runCronJob(createRequest(), job, run)
 
-    expect(response.status).toBe(429)
-    expect(run).not.toHaveBeenCalled()
-    expect(captureCheckIn).not.toHaveBeenCalled()
+    expect(response.status).toBe(204)
+    expect(run).toHaveBeenCalledTimes(1)
+  })
+
+  it('runs again right after the previous run fails', async () => {
+    await runCronJob(
+      createRequest(),
+      job,
+      vi.fn().mockRejectedValue(new Error('YouTube is down')),
+    )
+    const run = vi.fn().mockResolvedValue(undefined)
+
+    const response = await runCronJob(createRequest(), job, run)
+
+    expect(response.status).toBe(204)
+    expect(run).toHaveBeenCalledTimes(1)
+  })
+
+  it('locks the job for a little longer than its maximum duration', async () => {
+    const run = vi.fn(async () => {
+      expect(redis.ttls.get(LOCK_KEY)).toBe(130)
+    })
+
+    await runCronJob(createRequest(), job, run)
+
+    expect(run).toHaveBeenCalledTimes(1)
+    expect(redis.values.has(LOCK_KEY)).toBe(false)
+  })
+
+  it('locks each job separately', async () => {
+    const { promise: finished, resolve: finish } =
+      Promise.withResolvers<undefined>()
+    const first = runCronJob(createRequest(), job, () => finished)
+    const run = vi.fn().mockResolvedValue(undefined)
+
+    const response = await runCronJob(
+      createRequest(),
+      { ...job, path: '/videos/update?provider=twitch' },
+      run,
+    )
+
+    expect(response.status).toBe(204)
+    expect(run).toHaveBeenCalledTimes(1)
+
+    finish(undefined)
+    await first
+  })
+
+  it('keeps the lock that another run took after its own ran out', async () => {
+    const run = vi.fn(async () => {
+      // The lock of this run runs out, and another run takes it.
+      redis.delete(LOCK_KEY)
+      await redis.set(LOCK_KEY, 'another-run', { ex: 130, nx: true })
+    })
+
+    const response = await runCronJob(createRequest(), job, run)
+
+    expect(response.status).toBe(204)
+    expect(redis.values.get(LOCK_KEY)).toBe('another-run')
+  })
+
+  it('responds as usual when the lock cannot be released', async () => {
+    const run = vi.fn(async () => {
+      redis.evalFails = true
+
+      return { added: 1 }
+    })
+
+    const response = await runCronJob(createRequest(), job, run)
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({ added: 1 })
+    expect(logger.error).toHaveBeenCalledWith('ロックを外せませんでした', {
+      error: expect.any(Error),
+      path: '/videos/update',
+    })
+  })
+
+  describe('a job with a rate limit', () => {
+    const limit = vi.fn()
+    const rateLimitedJob = {
+      ...job,
+      path: '/videos/backfill',
+      ratelimit: { limit },
+    }
+
+    it('runs once in a window without taking the lock', async () => {
+      limit.mockResolvedValue({ success: true })
+      const run = vi.fn(async () => {
+        expect(redis.values.size).toBe(0)
+      })
+
+      const response = await runCronJob(createRequest(), rateLimitedJob, run)
+
+      expect(response.status).toBe(204)
+      expect(run).toHaveBeenCalledTimes(1)
+      expect(limit).toHaveBeenCalledWith('videos:backfill')
+    })
+
+    it('rejects a run in the same window as the previous one', async () => {
+      limit.mockResolvedValue({ success: false })
+      const run = vi.fn()
+
+      const response = await runCronJob(createRequest(), rateLimitedJob, run)
+
+      expect(response.status).toBe(429)
+      expect(run).not.toHaveBeenCalled()
+      expect(captureCheckIn).not.toHaveBeenCalled()
+    })
   })
 
   it('rejects requests without the cron secret', async () => {
@@ -163,7 +296,7 @@ describe('runCronJob', () => {
 
     expect(response.status).toBe(401)
     expect(run).not.toHaveBeenCalled()
-    expect(limit).not.toHaveBeenCalled()
+    expect(redis.values.size).toBe(0)
   })
 
   it('accepts requests with the cron secret', async () => {
@@ -178,6 +311,25 @@ describe('runCronJob', () => {
 
     expect(response.status).toBe(204)
     expect(run).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('getCronJobIdentifier', () => {
+  it.each([
+    ['/videos/update', 'videos:update'],
+    ['/videos/check?provider=twitch', 'videos:check:provider=twitch'],
+    [
+      '/videos/check?provider=twitch&mode=all',
+      'videos:check:mode=all:provider=twitch',
+    ],
+    [
+      '/videos/check?mode=all&provider=twitch',
+      'videos:check:mode=all:provider=twitch',
+    ],
+    ['/talents/update?provider=twitch', 'talents:update:provider=twitch'],
+    ['/terms/popularity/update', 'terms:popularity:update'],
+  ])('makes %s into %s', (path, identifier) => {
+    expect(getCronJobIdentifier(path)).toBe(identifier)
   })
 })
 

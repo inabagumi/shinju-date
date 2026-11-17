@@ -1,9 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mockSupabaseClient = {}
-const mockRatelimit = {
-  limit: vi.fn(),
-}
+const acquireLock = vi.fn()
+const releaseLock = vi.fn()
 const mockCascadeVideosFromTalents = vi.fn()
 const mockRevalidateTags = vi.fn()
 
@@ -11,18 +10,7 @@ vi.mock('@/lib/supabase', () => ({
   supabaseClient: mockSupabaseClient,
 }))
 
-vi.mock('@/lib/ratelimit', () => ({
-  recommendationQueriesUpdate: { limit: vi.fn() },
-  statsSnapshot: { limit: vi.fn() },
-  talentsUpdate: { limit: vi.fn() },
-  termsPopularityUpdate: { limit: vi.fn() },
-  videosBackfill: { limit: vi.fn() },
-  videosCascadeFromTalents: mockRatelimit,
-  videosCheck: { limit: vi.fn() },
-  videosCheckAll: { limit: vi.fn() },
-  videosCheckRecent: { limit: vi.fn() },
-  videosUpdate: { limit: vi.fn() },
-}))
+vi.mock('@/lib/lock', () => ({ acquireLock, releaseLock }))
 
 vi.mock('../_lib/cascade-from-talents', async (importOriginal) => {
   const actual =
@@ -71,7 +59,7 @@ describe('POST /videos/cascade-from-talents', () => {
   })
 
   it('returns cascade result and revalidates when work was done', async () => {
-    mockRatelimit.limit.mockResolvedValue({ success: true })
+    acquireLock.mockResolvedValue('lock-value')
     mockCascadeVideosFromTalents.mockResolvedValue({
       restored: 3,
       softDeleted: 5,
@@ -98,7 +86,7 @@ describe('POST /videos/cascade-from-talents', () => {
   })
 
   it('skips revalidation when nothing changed', async () => {
-    mockRatelimit.limit.mockResolvedValue({ success: true })
+    acquireLock.mockResolvedValue('lock-value')
     mockCascadeVideosFromTalents.mockResolvedValue({
       restored: 0,
       softDeleted: 0,
@@ -114,8 +102,8 @@ describe('POST /videos/cascade-from-talents', () => {
     expect(mockRevalidateTags).not.toHaveBeenCalled()
   })
 
-  it('returns 429 when rate limited', async () => {
-    mockRatelimit.limit.mockResolvedValue({ success: false })
+  it('returns 429 while the previous run is still running', async () => {
+    acquireLock.mockResolvedValue(null)
 
     const response = await POST(
       new Request('http://localhost:5000/videos/cascade-from-talents', {
@@ -131,7 +119,7 @@ describe('POST /videos/cascade-from-talents', () => {
     const Sentry = await import('@sentry/nextjs')
     const error = new Error('boom')
 
-    mockRatelimit.limit.mockResolvedValue({ success: true })
+    acquireLock.mockResolvedValue('lock-value')
     mockCascadeVideosFromTalents.mockRejectedValue(error)
 
     const response = await POST(
@@ -158,7 +146,7 @@ describe('POST /videos/cascade-from-talents', () => {
       softDeleted: 0,
     })
 
-    mockRatelimit.limit.mockResolvedValue({ success: true })
+    acquireLock.mockResolvedValue('lock-value')
     mockCascadeVideosFromTalents.mockRejectedValue(error)
     mockRevalidateTags.mockRejectedValue(new Error('web is down'))
 
@@ -181,7 +169,7 @@ describe('POST /videos/cascade-from-talents', () => {
     const { CascadePhaseError } = await import('../_lib/cascade-from-talents')
     const { logger } = await import('@shinju-date/logger')
 
-    mockRatelimit.limit.mockResolvedValue({ success: true })
+    acquireLock.mockResolvedValue('lock-value')
     mockCascadeVideosFromTalents.mockRejectedValue(
       new CascadePhaseError('partial failure', {
         restored: 0,
