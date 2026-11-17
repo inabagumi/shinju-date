@@ -3,6 +3,8 @@ import { getRepeatSearchRate } from '@/lib/analytics/get-search-quality-metrics'
 import { WidgetHeader } from '../../_components/widget-header'
 import { resolvePeriod } from '../../_lib/resolve-period'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
+import { REPEAT_SEARCH_RATE_RATINGS, rate } from '../_lib/metric-ratings'
+import { MetricLegend } from './metric-legend'
 import { MetricNoData } from './metric-no-data'
 
 interface Props {
@@ -21,32 +23,8 @@ function RepeatSearchRateWidgetComponent({
   dateRange: { startDate: string; endDate: string }
   selectedDate: string | null
 }) {
-  // Determine engagement level and interpretation
-  const getEngagementLevel = (rate: number) => {
-    if (rate >= 3.0) return 'high'
-    if (rate >= 2.0) return 'moderate'
-    if (rate >= 1.5) return 'normal'
-    return 'low'
-  }
-
-  const engagementLabels = {
-    high: '高いエンゲージメント',
-    low: '低い活動',
-    moderate: '適度なエンゲージメント',
-    normal: '標準的',
-  }
-
-  const engagementDescriptions = {
-    high: 'ユーザーが積極的に情報を探しています。検索結果の品質を継続的に改善し、ユーザーの期待に応えましょう。',
-    low: 'ユーザーの検索活動が少ないか、一度の検索で満足しています。',
-    moderate:
-      'ユーザーは複数の検索を行いながら、必要な情報を見つけています。検索体験は良好です。',
-    normal:
-      'ユーザーは基本的に一度の検索で満足しています。標準的な検索パターンです。',
-  }
-
-  const engagementLevel =
-    repeatRate === null ? null : getEngagementLevel(repeatRate)
+  const rating =
+    repeatRate === null ? null : rate(repeatRate, REPEAT_SEARCH_RATE_RATINGS)
 
   return (
     <div>
@@ -57,7 +35,7 @@ function RepeatSearchRateWidgetComponent({
         title="リピート検索率"
       />
 
-      {repeatRate === null || engagementLevel === null ? (
+      {repeatRate === null || rating === null ? (
         <MetricNoData
           description="この期間に検索したセッションがないため、評価できません。"
           label="回/セッション"
@@ -65,23 +43,22 @@ function RepeatSearchRateWidgetComponent({
       ) : (
         <>
           <StatTile
-            label={`回/セッション (${engagementLabels[engagementLevel]})`}
+            label={`回/セッション (${rating.label})`}
             value={repeatRate.toFixed(1)}
           />
 
           <p className="mt-4 text-meta">
-            <strong>解釈:</strong> {engagementDescriptions[engagementLevel]}
+            <strong>解釈:</strong> {rating.description}
           </p>
         </>
       )}
 
-      <dl className="mt-4 grid grid-cols-2 gap-x-4 text-caption text-muted">
-        <dt className="col-span-2 font-semibold">参考基準</dt>
-        <dd>3.0回以上: 高いエンゲージメント</dd>
-        <dd>2.0-2.9回: 適度なエンゲージメント</dd>
-        <dd>1.5-1.9回: 標準的</dd>
-        <dd>1.5回未満: 低い活動</dd>
-      </dl>
+      <MetricLegend
+        fractionDigits={1}
+        ratings={REPEAT_SEARCH_RATE_RATINGS}
+        title="参考基準"
+        unit="回"
+      />
     </div>
   )
 }

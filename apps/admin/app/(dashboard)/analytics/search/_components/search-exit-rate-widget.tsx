@@ -1,7 +1,6 @@
 import { formatNumber } from '@shinju-date/helpers'
 import {
   Badge,
-  type BadgeProps,
   EmptyState,
   Skeleton,
   Table,
@@ -20,6 +19,8 @@ import {
 } from '../../_components/widget-header'
 import { resolvePeriod } from '../../_lib/resolve-period'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
+import { EXIT_RATE_RATINGS, rate } from '../_lib/metric-ratings'
+import { MetricLegend } from './metric-legend'
 
 interface Props {
   searchParams: Promise<AnalyticsSearchParams>
@@ -29,19 +30,6 @@ interface SearchExitRate {
   keyword: string
   exitRate: number
   searchCount: number
-}
-
-/**
- * 離脱率の評価。良し悪しの意味で Badge の色を選ぶ
- */
-function getExitRateRating(exitRate: number): {
-  label: string
-  variant: NonNullable<BadgeProps['variant']>
-} {
-  if (exitRate >= 70) return { label: '要改善', variant: 'danger' }
-  if (exitRate >= 50) return { label: '注意', variant: 'warning' }
-  if (exitRate >= 30) return { label: '普通', variant: 'neutral' }
-  return { label: '良好', variant: 'success' }
 }
 
 /**
@@ -85,7 +73,7 @@ function SearchExitRateWidgetComponent({
           </TableHeader>
           <TableBody>
             {exitRates.map((item, index) => {
-              const rating = getExitRateRating(item.exitRate)
+              const rating = rate(item.exitRate, EXIT_RATE_RATINGS)
 
               return (
                 <TableRow key={item.keyword}>
@@ -113,13 +101,13 @@ function SearchExitRateWidgetComponent({
         <EmptyState title="データがありません" />
       )}
 
-      <dl className="mt-4 grid grid-cols-2 gap-x-4 text-caption text-muted sm:grid-cols-4">
-        <dt className="col-span-2 font-semibold sm:col-span-4">評価基準</dt>
-        <dd>30%未満: 良好</dd>
-        <dd>30-49%: 普通</dd>
-        <dd>50-69%: 注意</dd>
-        <dd>70%以上: 要改善</dd>
-      </dl>
+      <MetricLegend
+        columns={4}
+        order="ascending"
+        ratings={EXIT_RATE_RATINGS}
+        title="評価基準"
+        unit="%"
+      />
     </div>
   )
 }

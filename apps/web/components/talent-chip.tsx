@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 /** チップの「外す」に使うボタンやリンクのクラス */
 export const TALENT_CHIP_REMOVE_CLASS_NAME =
-  'inline-flex size-6 shrink-0 items-center justify-center rounded-full text-muted hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
+  'inline-flex size-6 shrink-0 items-center justify-center rounded-full text-muted hover:bg-muted hover:text-foreground focus-ring'
 
 interface TalentChipProps {
   /** 「外す」のボタンやリンク */

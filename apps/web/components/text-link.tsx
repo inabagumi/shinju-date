@@ -18,7 +18,7 @@ export function TextLink({
   return (
     <Comp
       className={twMerge(
-        'inline-flex items-center gap-1 rounded-control font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+        'inline-flex items-center gap-1 rounded-control font-semibold text-accent underline-offset-4 focus-ring hover:underline',
         className,
       )}
       {...props}

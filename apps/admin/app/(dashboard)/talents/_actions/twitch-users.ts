@@ -141,7 +141,7 @@ export async function addTwitchUserAction(
         twitch_login_name: loginName,
         twitch_user_id: twitchUserId,
       })
-      .select('id')
+      .select('id, talent:talents (name)')
       .single()
 
     if (error) {
@@ -162,11 +162,14 @@ export async function addTwitchUserAction(
       })
       .eq('id', talentId)
 
-    await createAuditLog('TWITCH_USER_CREATE', newUser.id, {
-      name: displayName,
-      talent_id: talentId,
-      twitch_login_name: loginName,
-      twitch_user_id: twitchUserId,
+    await createAuditLog('TWITCH_USER_CREATE', talentId, {
+      account: {
+        id: newUser.id,
+        name: displayName,
+        twitch_login_name: loginName,
+        twitch_user_id: twitchUserId,
+      },
+      entityName: newUser.talent.name,
     })
 
     revalidatePath(`/talents/${talentId}`)
@@ -215,7 +218,7 @@ export async function removeTwitchUserAction(
   try {
     const { data: user, error: fetchError } = await supabaseClient
       .from('twitch_users')
-      .select('twitch_user_id, twitch_login_name')
+      .select('name, twitch_login_name, twitch_user_id, talent:talents (name)')
       .eq('id', twitchUserRowId)
       .eq('talent_id', talentId)
       .single()
@@ -252,10 +255,14 @@ export async function removeTwitchUserAction(
       })
       .eq('id', talentId)
 
-    await createAuditLog('TWITCH_USER_DELETE', twitchUserRowId, {
-      talent_id: talentId,
-      twitch_login_name: user.twitch_login_name,
-      twitch_user_id: user.twitch_user_id,
+    await createAuditLog('TWITCH_USER_DELETE', talentId, {
+      account: {
+        id: twitchUserRowId,
+        name: user.name,
+        twitch_login_name: user.twitch_login_name,
+        twitch_user_id: user.twitch_user_id,
+      },
+      entityName: user.talent.name,
     })
 
     revalidatePath(`/talents/${talentId}`)

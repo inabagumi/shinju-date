@@ -1,10 +1,5 @@
 export const TIME_ZONE = 'Asia/Tokyo'
 
-// Cookie names
-export const COOKIE_NAMES = {
-  DISMISSED_ANNOUNCEMENT_ID: 'dismissed_announcement_id',
-} as const
-
 // Cache tags of the public site (web). admin and batch revalidate them
 export const CACHE_TAGS = {
   ANNOUNCEMENTS: 'announcements',
@@ -15,7 +10,9 @@ export const CACHE_TAGS = {
 
 export type CacheTag = (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS]
 
-// Redis keys for search analytics
+// Every Redis key of the apps and packages: the fixed keys, and the prefixes
+// (`*_PREFIX`) that a date or an ID is appended to. Do not write a key in the
+// code directly
 export const REDIS_KEYS = {
   CLICK_CHANNEL_PREFIX: 'channels:clicked:',
   CLICK_VIDEO_PREFIX: 'videos:clicked:',
@@ -56,18 +53,6 @@ export const REDIS_KEYS = {
   VIDEO_BACKFILL_RUN_RESULT_PREFIX: 'jobs:video-backfill:run-result:',
 } as const
 
-export const SITE_NAME = 'SHINJU DATE'
-
-export const SITE_DESCRIPTION = `「${SITE_NAME}」はななしいんくに所属するタレントがYouTubeで配信や投稿した動画を検索できるウェブサービスです。ななしいんくに定める二次創作ガイドラインに従ってななしいんくにとは直接の関係がない営利を目的としていない団体であるHaneru Developersによって開発と運営が行われています。`
-export const SITE_TAGLINE =
-  'ななしいんく所属タレントの配信スケジュールや動画の検索ができるウェブサービス'
-export const SITE_THEME_COLOR = '#1e0064' // var(--color-primary)
-
-export const SEARCH_RESULT_COUNT = 6
-
-/** タイトルの【】の中で、出演者の表記を見分けるための所属の名前 */
-export const TALENT_AFFILIATION_NAME = 'ななしいんく'
-
 /**
  * 1x1 transparent PNG image (89 bytes)
  * Used as fallback when thumbnail fetch fails
@@ -79,35 +64,9 @@ export const DUMMY_THUMBNAIL_PNG = new Uint8Array([
   0, 73, 69, 78, 68, 174, 66, 96, 130,
 ])
 
-/**
- * Prefix for synthetic `twitch_videos.twitch_video_id` values while a stream is
- * live (or recently ended) and the archive VOD id is not yet known.
- * Helix video IDs are numeric; this prefix avoids collisions.
- */
-export const LIVE_TWITCH_VIDEO_ID_PREFIX = 'live:' as const
-
-/**
- * Builds a stable synthetic platform id for a live (or pending-archive) stream.
- */
-export function toLiveTwitchVideoId(streamId: string): string {
-  return `${LIVE_TWITCH_VIDEO_ID_PREFIX}${streamId}`
-}
-
-/**
- * Returns true when `twitch_video_id` is a synthetic live placeholder.
- */
-export function isLiveTwitchVideoId(twitchVideoId: string): boolean {
-  return twitchVideoId.startsWith(LIVE_TWITCH_VIDEO_ID_PREFIX)
-}
-
-/**
- * Extracts the Helix stream id from a synthetic live video id, or null.
- */
-export function streamIdFromLiveTwitchVideoId(
-  twitchVideoId: string,
-): string | null {
-  if (!isLiveTwitchVideoId(twitchVideoId)) {
-    return null
-  }
-  return twitchVideoId.slice(LIVE_TWITCH_VIDEO_ID_PREFIX.length)
-}
+export {
+  isLiveTwitchVideoId,
+  LIVE_TWITCH_VIDEO_ID_PREFIX,
+  streamIdFromLiveTwitchVideoId,
+  toLiveTwitchVideoId,
+} from './twitch-live-id.js'

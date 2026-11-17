@@ -19,7 +19,7 @@ vi.mock('next/server', () => ({
   after: vi.fn((callback: () => unknown) => callback()),
 }))
 
-const { runCronJob } = await import('../cron')
+const { runCronJob, verifyCronRequest } = await import('../cron')
 
 const limit = vi.fn()
 const job = {
@@ -178,5 +178,63 @@ describe('runCronJob', () => {
 
     expect(response.status).toBe(204)
     expect(run).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('verifyCronRequest', () => {
+  it('should return true when Authorization header matches', () => {
+    const request = new Request('https://example.com', {
+      headers: {
+        Authorization: 'Bearer secret-token',
+      },
+    })
+
+    const result = verifyCronRequest(request, { cronSecure: 'secret-token' })
+
+    expect(result).toBe(true)
+  })
+
+  it('should return false when Authorization header is missing', () => {
+    const request = new Request('https://example.com')
+
+    const result = verifyCronRequest(request, { cronSecure: 'secret-token' })
+
+    expect(result).toBe(false)
+  })
+
+  it('should return false when Authorization type is not Bearer', () => {
+    const request = new Request('https://example.com', {
+      headers: {
+        Authorization: 'Basic secret-token',
+      },
+    })
+
+    const result = verifyCronRequest(request, { cronSecure: 'secret-token' })
+
+    expect(result).toBe(false)
+  })
+
+  it('should return false when credentials do not match', () => {
+    const request = new Request('https://example.com', {
+      headers: {
+        Authorization: 'Bearer wrong-token',
+      },
+    })
+
+    const result = verifyCronRequest(request, { cronSecure: 'secret-token' })
+
+    expect(result).toBe(false)
+  })
+
+  it('should handle extra whitespace in Authorization header', () => {
+    const request = new Request('https://example.com', {
+      headers: {
+        Authorization: '  Bearer   secret-token  ',
+      },
+    })
+
+    const result = verifyCronRequest(request, { cronSecure: 'secret-token' })
+
+    expect(result).toBe(true)
   })
 })

@@ -1,6 +1,6 @@
-import { SITE_THEME_COLOR } from '@shinju-date/constants'
 import { ImageResponse } from 'next/og'
 import SearchIcon from '@/app/_components/search-icon'
+import { SITE_THEME_COLOR } from '@/lib/site'
 
 interface SiteIconOptions {
   /** Rounds the corners. iOS rounds its icon by itself, so it does not. */

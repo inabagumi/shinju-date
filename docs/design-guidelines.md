@@ -270,7 +270,7 @@ export function TalentsListSkeleton() {
 
 ### 動画カードのタイトル
 
-動画のタイトルは、`@shinju-date/helpers` の `parseVideoTitle` で「本文・ラベル（【】と〖〗の中身）・末尾のハッシュタグ」に分けて表示します。【】の中の出演者の表記（所属の名前 `TALENT_AFFILIATION_NAME` を含む部分と、タレントの名前）は出しません。`title` 属性には元のタイトルを入れます。
+動画のタイトルは、`apps/web/lib/video-title.ts` の `parseVideoTitle` で「本文・ラベル（【】と〖〗の中身）・末尾のハッシュタグ」に分けて表示します。【】の中の出演者の表記（所属の名前 `TALENT_AFFILIATION_NAME`（`apps/web/lib/site.ts`）を含む部分と、タレントの名前）は出しません。`title` 属性には元のタイトルを入れます。
 
 | 部分                     | クラス                                                                                                                                                                |
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -315,6 +315,28 @@ import { twMerge } from '@shinju-date/ui'
 
 アプリにはまだ Tailwind の既定の角丸と影のクラスが残っています。画面を作り直すときに、上の名前に置き換えてください。
 
+## フォーカス
+
+キーボードでフォーカスしたときの見た目は2種類です。`packages/tailwind-config/theme.css` に `@utility` で定義しているので、ほかのクラスと同じように `className` に書きます。`focus-visible:outline-*` や `focus:ring-*` を、その場で組み合わせないでください。
+
+| 対象                                                                            | クラス                                                                 | 見た目                                                                    |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| ボタン、リンク、タブなど、押して操作する部品                                    | `focus-ring`                                                           | 部品から 2px 離して、`accent` の線を出す                                  |
+| 文字を入力する部品（`Input`・`Select`・`Textarea`・`MultiSelect` の開くボタン） | `field-focus-ring`（入力に誤りがあるときは `field-focus-ring-danger`） | 枠の線を `accent` にし、同じ色の線を外側に重ねる（誤りのときは `danger`） |
+
+```tsx
+<Link className="rounded-control text-accent focus-ring hover:underline" href="/">
+```
+
+- **`focus-visible` のときだけ出ます。** マウスでのクリックでは出ません
+- **薄い色の輪（`ring-accent/20` など）は使いません。** 背景との差が小さく、フォーカスの位置が見分けにくいためです。`accent` と `danger` は、ライトとダークの両方で、背景（`background`・`surface`・`muted`）とのコントラスト比 3:1 以上を `packages/ui/src/colors.test.ts` で確かめています
+- **`outline-none` と一緒に使いません。** `focus-ring` などは `outline-2` を `@apply` しているので、`outline-none` があると線の種類が `none` になり、線が出ません
+- 3つのクラスは `twMerge` に同じ組として登録しているので、`className` で渡すと部品のものと置き換わります。新しく足したときは、`packages/ui/src/tw-merge.ts` の `FOCUS_RINGS` にも足します
+- 次の場合だけ、`focus-ring` を使わずに `focus-visible:outline-*` を書きます
+  - 地が `primary` のところ（管理画面のナビゲーション、フッター）: `accent` との差が小さいので、`focus-visible:outline-primary-foreground` にする
+  - スクロールする入れ物の中の、幅いっぱいの項目（検索の候補など）: 外側の線が切れるので、`focus-visible:-outline-offset-2` で内側に出す
+  - 余白のないカード（動画カード、タレントのカード）: サムネイルと線がくっつかないよう、`focus-visible:outline-offset-4` にする
+
 ## 濃淡の表
 
 回数の分布を色の濃さで示す表（タレントのページの「配信の傾向」など）は、次の組み合わせにします。部品は `apps/web/app/talents/[id]/_components/talent-stream-tendency.tsx` です。
@@ -349,6 +371,7 @@ import { twMerge } from '@shinju-date/ui'
 - [ ] 時刻・再生時間・件数に `tabular-nums` を付けている
 - [ ] 角丸は `rounded-control` / `rounded-container` / `rounded-full` のいずれか
 - [ ] 影は重なるものだけに `shadow-overlay` を使っている
+- [ ] フォーカスの見た目は、`focus-ring` / `field-focus-ring` を使っている
 - [ ] `packages/ui` にある部品（Button・Badge・Card・Dialog・Input・Select・Table・PageHeader・EmptyState・StatTile・FilterBar・Alert・Skeleton など）を使っている
 - [ ] Badge の色と Alert の `tone` は状態の意味で選んでいる（成功は `success`、注意は `warning`、危険は `danger`、中立は `neutral`）
 - [ ] 管理画面の操作の結果は、[操作の結果の知らせ](#操作の結果の知らせ管理画面)に沿って出している

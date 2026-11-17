@@ -1,3 +1,4 @@
+import { formatNumber } from '@shinju-date/helpers'
 import { type ComponentProps, Suspense } from 'react'
 import NoResults from '@/components/no-results'
 import PageHeader, { PageHeaderSkeleton } from '@/components/page-header'
@@ -75,7 +76,7 @@ async function getVideosPageOptions({
 async function ResultCount({ kind, query, talentIds }: VideosPageOptions) {
   const count = await countVideos({ kind, query, talentIds })
 
-  return <p className="tabular-nums">{count.toLocaleString('ja-JP')}件</p>
+  return <p className="tabular-nums">{formatNumber(count)}件</p>
 }
 
 function ResultCountSkeleton() {

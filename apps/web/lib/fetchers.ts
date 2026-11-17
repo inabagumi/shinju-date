@@ -1,14 +1,11 @@
 'use server'
 
-import {
-  CACHE_TAGS,
-  SEARCH_RESULT_COUNT,
-  TIME_ZONE,
-} from '@shinju-date/constants'
+import { CACHE_TAGS, TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { startOfHour, toDBString } from '@shinju-date/temporal-fns'
 import { cacheLife, cacheTag } from 'next/cache'
+import { SEARCH_RESULT_COUNT } from '@/lib/site'
 import { STREAM_TENDENCY_DAYS } from '@/lib/stream-tendency'
 import { supabaseClient } from '@/lib/supabase'
 import { isUUID } from '@/lib/uuid'

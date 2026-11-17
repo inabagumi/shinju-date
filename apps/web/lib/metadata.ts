@@ -1,5 +1,5 @@
-import { SITE_NAME } from '@shinju-date/constants'
 import type { Metadata } from 'next'
+import { SITE_NAME } from '@/lib/site'
 
 /** The Open Graph types the pages use. */
 export type PageType = 'article' | 'profile' | 'website'

@@ -9,9 +9,6 @@ describe('BackLink', () => {
     const link = screen.getByRole('link', { name: 'タレント一覧に戻る' })
 
     expect(link).toHaveAttribute('href', '/talents')
-    expect(link).toHaveClass(
-      'focus-visible:outline-2',
-      'focus-visible:outline-accent',
-    )
+    expect(link).toHaveClass('focus-ring')
   })
 })

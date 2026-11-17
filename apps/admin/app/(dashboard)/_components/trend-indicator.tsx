@@ -58,10 +58,7 @@ export function StatTileLink({
 }: StatTileLinkProps) {
   return (
     <Link
-      className={twMerge(
-        'group block rounded-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
-        className,
-      )}
+      className={twMerge('group block rounded-container focus-ring', className)}
       href={href}
     >
       <StatTile

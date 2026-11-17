@@ -46,7 +46,7 @@ describe('Table', () => {
     const container = screen.getByRole('table').parentElement
 
     expect(container).toHaveAttribute('tabindex', '0')
-    expect(container).toHaveClass('focus-visible:outline-accent')
+    expect(container).toHaveClass('focus-ring')
   })
 
   it('renders column headers with the column scope', () => {

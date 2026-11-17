@@ -169,7 +169,7 @@ export function TalentsList({
                 aria-sort={sortOrder === 'desc' ? 'descending' : 'ascending'}
               >
                 <button
-                  className="inline-flex items-center gap-1 rounded-control hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  className="inline-flex items-center gap-1 rounded-control focus-ring hover:text-foreground"
                   onClick={toggleSortOrder}
                   type="button"
                 >

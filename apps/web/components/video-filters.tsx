@@ -51,7 +51,7 @@ function SelectedTalentList({
       {selectedTalents.length > 1 && (
         <li className="inline-flex h-8 items-center">
           <Link
-            className="rounded-control px-1 text-meta text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="rounded-control px-1 text-meta text-accent focus-ring hover:underline"
             href={getVideosPath(query, kind)}
             scroll={false}
           >

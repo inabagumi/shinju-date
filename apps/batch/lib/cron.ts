@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
-import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
+import { createErrorResponse } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { after } from 'next/server'
 import { serverEnv } from './env'
@@ -30,6 +30,32 @@ export interface RunCronJobOptions {
    * logged and does not change the response.
    */
   onError?: (error: unknown) => Promise<void>
+}
+
+interface VerifyCronRequestOptions {
+  /** The value of `CRON_SECRET`, which Vercel Cron sends as a bearer token. */
+  cronSecure: string
+}
+
+/**
+ * Whether the request carries the cron secret in its `Authorization` header
+ * (`Bearer <secret>`).
+ */
+export function verifyCronRequest(
+  request: Request,
+  { cronSecure }: VerifyCronRequestOptions,
+): boolean {
+  const authHeader = request.headers.get('Authorization')
+
+  if (!authHeader) {
+    return false
+  }
+
+  const [type, credentials] = authHeader
+    .split(/\s+/)
+    .map((value) => value.trim())
+
+  return type === 'Bearer' && credentials === cronSecure
 }
 
 /**

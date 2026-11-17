@@ -10,7 +10,7 @@ import { twMerge } from '../tw-merge.js'
  * 参考: https://webkit.org/blog/5610/input-tips-for-building-great-web-forms-on-mobile/
  */
 export const inputVariants = cva(
-  'w-full rounded-control border bg-surface px-4 py-2 text-foreground transition-colors outline-none placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-50',
+  'w-full rounded-control border bg-surface px-4 py-2 text-foreground transition-colors placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-50',
   {
     defaultVariants: {
       inputSize: 'md',
@@ -23,10 +23,8 @@ export const inputVariants = cva(
         sm: 'px-3 py-1 text-body leading-normal',
       },
       variant: {
-        danger:
-          'border-danger focus:border-danger focus:ring-2 focus:ring-danger/20',
-        default:
-          'border-border focus:border-accent focus:ring-2 focus:ring-accent/20',
+        danger: 'border-danger field-focus-ring-danger',
+        default: 'border-border field-focus-ring',
       },
     },
   },

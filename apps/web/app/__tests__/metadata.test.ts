@@ -1,5 +1,5 @@
-import { SITE_DESCRIPTION, SITE_TAGLINE } from '@shinju-date/constants'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { SITE_DESCRIPTION, SITE_TAGLINE } from '@/lib/site'
 
 vi.mock('@/lib/fetchers', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/fetchers')>()),
