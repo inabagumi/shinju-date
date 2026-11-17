@@ -21,6 +21,7 @@
 - **[database](packages/database/)** - Supabase のクライアントとデータベースの型定義
 - **[health-checkers](packages/health-checkers/)** - ヘルスチェック機能
 - **[helpers](packages/helpers/)** - 汎用のユーティリティ関数
+- **[instrumentation](packages/instrumentation/)** - 3つのアプリの Sentry と MSW の初期化
 - **[logger](packages/logger/)** - 共有のログ機能
 - **[msw-handlers](packages/msw-handlers/)** - 開発とテストで使う MSW のモックハンドラー
 - **[retryable-fetch](packages/retryable-fetch/)** - リトライ機能付きの fetch
