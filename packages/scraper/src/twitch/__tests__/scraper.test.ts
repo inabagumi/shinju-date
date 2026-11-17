@@ -515,6 +515,7 @@ describe('TwitchScraper', () => {
 
       expect(single.map(({ table }) => table)).toEqual([
         'twitch_videos',
+        'thumbnails',
         'videos',
       ])
       expect(writes()).toEqual(single)

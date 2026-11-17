@@ -1,3 +1,46 @@
+import { logger } from '@shinju-date/logger'
+import { unstable_rethrow } from 'next/navigation'
+import type * as z from 'zod'
+import {
+  type AuthenticatedContext,
+  requireAuthenticatedUser,
+  unauthenticatedFormState,
+  unauthenticatedResult,
+} from '@/lib/auth'
+import { actionErrorToFormState, parseFormData } from '@/lib/form'
+
+/**
+ * 予期しない例外で Server Action が失敗したときに、画面に見せる文。
+ * 例外の文は内部の情報を含みうるので、画面には出さない。
+ */
+export const ACTION_FAILED_ERROR_MESSAGE =
+  '処理に失敗しました。時間をおいて、もう一度お試しください。'
+
+/**
+ * `{ success, error }` 形式の Server Action の戻り値。
+ *
+ * 成功したが、利用者に知らせたいことがある（一部の処理を飛ばしたなど）ときは、
+ * `success: true` のまま `warnings` に文を入れる。
+ */
+export type ActionResult<T = void> =
+  | { success: true; data?: T; warnings?: string[] }
+  | { success: false; error: string }
+
+/**
+ * `useActionState` 用の Server Action の戻り値。
+ */
+export interface FormState {
+  /**
+   * 項目ごとのエラー。項目に結び付かないエラーは `generic` に入れる。
+   */
+  errors?: Record<string, string[]>
+  /**
+   * 項目に結び付かないエラー。
+   */
+  error?: string
+  success?: boolean
+}
+
 export interface ActionErrorOptions {
   /**
    * エラーを結び付けるフォームの項目の名前。省くと、項目に結び付かないエラーになる。
@@ -19,5 +62,146 @@ export class ActionError extends Error {
     super(message)
 
     this.field = field
+  }
+}
+
+/**
+ * `{ success, error }` 形式を返す Server Action を作る。
+ *
+ * 1. `requireAuthenticatedUser()` で認証を確かめ、未認証なら `handler` を呼ばずに
+ *    `unauthenticatedResult()` を返す
+ * 2. `handler` を、認証に使った Supabase のクライアントとユーザーを付けて呼び、
+ *    その戻り値をそのまま返す
+ * 3. `handler` が `ActionError` を投げたら、その文を返す。それ以外の例外は
+ *    `name` と引数を付けて記録し、決まった文（`ACTION_FAILED_ERROR_MESSAGE`）を返す
+ *
+ * `redirect()` や `notFound()` などの Next.js の制御用の例外は、そのまま投げ直す。
+ *
+ * @example
+ * ```ts
+ * 'use server'
+ *
+ * export const deleteSomethingAction = adminAction(
+ *   'deleteSomethingAction',
+ *   async ({ supabaseClient }, id: string): Promise<ActionResult> => {
+ *     const { error } = await supabaseClient.from('...').delete().eq('id', id)
+ *
+ *     if (error) {
+ *       throw error
+ *     }
+ *
+ *     return { success: true }
+ *   },
+ * )
+ * ```
+ */
+export function adminAction<TArgs extends unknown[], TData = void>(
+  name: string,
+  handler: (
+    context: AuthenticatedContext,
+    ...args: TArgs
+  ) => Promise<ActionResult<TData>>,
+): (...args: TArgs) => Promise<ActionResult<TData>> {
+  return async (...args) => {
+    const auth = await requireAuthenticatedUser()
+
+    if (!auth) {
+      return unauthenticatedResult()
+    }
+
+    try {
+      return await handler(auth, ...args)
+    } catch (error) {
+      unstable_rethrow(error)
+
+      if (error instanceof ActionError) {
+        return { error: error.message, success: false }
+      }
+
+      logger.error('Server Action が失敗しました', {
+        action: name,
+        args,
+        error,
+      })
+
+      return { error: ACTION_FAILED_ERROR_MESSAGE, success: false }
+    }
+  }
+}
+
+/**
+ * `useActionState` 用の、`FormState` を返す Server Action を作る。
+ *
+ * 1. `requireAuthenticatedUser()` で認証を確かめ、未認証なら `handler` を呼ばずに
+ *    `unauthenticatedFormState()` を返す
+ * 2. `FormData` を `schema` で検証し、失敗したら `handler` を呼ばずに
+ *    項目ごとのエラーを返す
+ * 3. `handler` を、認証に使った Supabase のクライアントとユーザー、検証した値を
+ *    付けて呼ぶ。`handler` が何も返さなければ `{ success: true }` を返す
+ * 4. `handler` が `ActionError` を投げたら、その文を（`field` があればその項目の
+ *    エラーとして）返す。それ以外の例外は `name` を付けて記録し、決まった文
+ *    （`ACTION_FAILED_ERROR_MESSAGE`）を `FormState.error` に入れて返す
+ *
+ * フォームの値はパスワードなどを含みうるので、記録しない。
+ * `redirect()` や `notFound()` などの Next.js の制御用の例外は、そのまま投げ直す。
+ *
+ * @example
+ * ```ts
+ * 'use server'
+ *
+ * export const createSomethingAction = adminFormAction(
+ *   'createSomethingAction',
+ *   z.object({ name: z.string().min(1, '名前を入力してください。') }),
+ *   async ({ supabaseClient }, { name }) => {
+ *     const { error } = await supabaseClient.from('...').insert({ name })
+ *
+ *     if (error?.code === '23505') {
+ *       throw new ActionError('すでに登録されています。', { field: 'name' })
+ *     }
+ *
+ *     if (error) {
+ *       throw error
+ *     }
+ *   },
+ * )
+ * ```
+ */
+export function adminFormAction<TSchema extends z.ZodType>(
+  name: string,
+  schema: TSchema,
+  handler: (
+    context: AuthenticatedContext,
+    data: z.output<TSchema>,
+  ) => Promise<FormState | undefined>,
+): (currentState: FormState, formData: FormData) => Promise<FormState> {
+  return async (_currentState, formData) => {
+    const auth = await requireAuthenticatedUser()
+
+    if (!auth) {
+      return unauthenticatedFormState()
+    }
+
+    const result = parseFormData(schema, formData)
+
+    if (!result.success) {
+      return result.state
+    }
+
+    try {
+      return (await handler(auth, result.data)) ?? { success: true }
+    } catch (error) {
+      unstable_rethrow(error)
+
+      if (error instanceof ActionError) {
+        return actionErrorToFormState(error)
+      }
+
+      logger.error('Server Action が失敗しました', {
+        action: name,
+        error,
+      })
+
+      return { error: ACTION_FAILED_ERROR_MESSAGE }
+    }
   }
 }

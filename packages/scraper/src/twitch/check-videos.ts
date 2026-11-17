@@ -44,6 +44,7 @@ export async function refreshTypeAndThumbnail(
         twitchVideoId: saved.twitch_video.twitch_video_id,
       }),
     fields: {},
+    previousThumbnailId: null,
     videoId: saved.id,
   })
 

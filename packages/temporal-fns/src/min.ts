@@ -1,4 +1,4 @@
-export default function min(
+export function min(
   ...values: Temporal.ZonedDateTime[]
 ): Temporal.ZonedDateTime {
   if (!values[0]) {

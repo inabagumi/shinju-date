@@ -46,6 +46,7 @@ describe('replaceThumbnail', () => {
     const thumbnail = await replaceThumbnail(context, {
       create: async () => created,
       fields: { title: 'Archive' },
+      previousThumbnailId: 'thumb-old',
       videoId: 'video-1',
     })
 
@@ -64,6 +65,64 @@ describe('replaceThumbnail', () => {
     expect(reportError).not.toHaveBeenCalled()
   })
 
+  it('marks the previous thumbnail as replaced at the time of the run, before the video', async () => {
+    const { context } = setup()
+    supabase.respond(() => [])
+
+    await replaceThumbnail(context, {
+      create: async () => created,
+      fields: {},
+      previousThumbnailId: 'thumb-old',
+      videoId: 'video-1',
+    })
+
+    expect(
+      supabase.requests.map(({ method, table }) => `${method} ${table}`),
+    ).toEqual(['PATCH thumbnails', 'PATCH videos'])
+    expect(supabase.written('PATCH', 'thumbnails')).toEqual([
+      expect.objectContaining({
+        body: { updated_at: '2024-05-01T12:00:00Z' },
+        query: { id: 'eq.thumb-old' },
+      }),
+    ])
+  })
+
+  it('touches no thumbnail when the video had none', async () => {
+    const { context } = setup()
+    supabase.respond(() => [])
+
+    await replaceThumbnail(context, {
+      create: async () => created,
+      fields: {},
+      previousThumbnailId: null,
+      videoId: 'video-1',
+    })
+
+    expect(supabase.written('PATCH', 'thumbnails')).toEqual([])
+    expect(supabase.written('PATCH', 'videos')).toHaveLength(1)
+  })
+
+  it('keeps the video and removes the new thumbnail when the previous one cannot be marked', async () => {
+    const { context, removedPaths } = setup()
+    supabase.respond(({ method, table }) =>
+      method === 'PATCH' && table === 'thumbnails'
+        ? postgresError('57014', 'statement timeout')
+        : [],
+    )
+
+    await expect(
+      replaceThumbnail(context, {
+        create: async () => created,
+        fields: { title: 'Archive' },
+        previousThumbnailId: 'thumb-old',
+        videoId: 'video-1',
+      }),
+    ).rejects.toThrow('Failed to update a replaced thumbnail')
+    expect(supabase.written('PATCH', 'videos')).toEqual([])
+    expect(deletedThumbnailIds()).toEqual(['eq.thumb-new'])
+    expect(removedPaths).toEqual([{ prefixes: ['vod-1/new.jpg'] }])
+  })
+
   it('updates only the other columns when no new thumbnail is stored', async () => {
     const { context } = setup()
     supabase.respond(() => [])
@@ -71,6 +130,7 @@ describe('replaceThumbnail', () => {
     const thumbnail = await replaceThumbnail(context, {
       create: async () => null,
       fields: { title: 'Archive' },
+      previousThumbnailId: 'thumb-old',
       videoId: 'video-1',
     })
 
@@ -88,6 +148,7 @@ describe('replaceThumbnail', () => {
     await replaceThumbnail(context, {
       create: async () => null,
       fields: {},
+      previousThumbnailId: 'thumb-old',
       videoId: 'video-1',
     })
 
@@ -104,6 +165,7 @@ describe('replaceThumbnail', () => {
       replaceThumbnail(context, {
         create: async () => created,
         fields: { title: 'Archive' },
+        previousThumbnailId: 'thumb-old',
         videoId: 'video-1',
       }),
     ).rejects.toThrow('statement timeout')
@@ -121,6 +183,7 @@ describe('replaceThumbnail', () => {
       replaceThumbnail(context, {
         create: async () => created,
         fields: {},
+        previousThumbnailId: null,
         videoId: 'video-1',
       }),
     ).rejects.toThrow('statement timeout on videos')

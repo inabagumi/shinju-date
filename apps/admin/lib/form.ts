@@ -1,6 +1,5 @@
 import type * as z from 'zod'
-import type { FormState } from '@/components/form'
-import type { ActionError } from '@/lib/action'
+import type { ActionError, FormState } from '@/lib/action'
 
 export type ParseFormDataResult<T> =
   | { data: T; success: true }

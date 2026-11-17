@@ -131,11 +131,11 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 
 [理由と例](docs/coding-guidelines.md#admin-の-server-action-の認証)
 
-- データを変更する Server Action では、**必ず** `@/lib/auth` の `requireAuthenticatedUser()` を関数の先頭で呼ぶ（入力値の検証や外部 API の呼び出しより前）
-- 未認証なら更新せず、共通のレスポンスを返す
-  - `{ success, error }` を返す Action: `unauthenticatedResult()`
-  - `FormState` を返す Action（`useActionState` 用）: `unauthenticatedFormState()`
-- Supabase のクライアントは `requireAuthenticatedUser()` の戻り値を使う（`createSupabaseServerClient()` を別に呼ばない）
+- データを変更する Server Action は、**必ず** `@/lib/action` のラッパーで作る（認証を入力値の検証や外部 API の呼び出しより前に確かめ、未認証なら `handler` を呼ばずに共通のレスポンスを返す）
+  - `ActionResult`（`{ success, error }`）を返す Action: `adminAction(name, handler)`
+  - `FormState` を返す Action（`useActionState` 用）: `adminFormAction(name, schema, handler)`
+- 画面に見せてよい失敗は `ActionError` を投げる。それ以外の例外の文は画面に返さない（ラッパーが記録し、決まった文を返す）
+- Supabase のクライアントは `handler` に渡される `supabaseClient` を使う（`createSupabaseServerClient()` を別に呼ばない）
 - サービスロールキーのクライアント（`@/lib/supabase/admin`）や Redis を使う Action は RLS で守られないので、特に忘れない
 - Action を追加したら、`apps/admin/app/(dashboard)/_lib/server-actions-auth.test.ts` にも追加し、未認証のときに副作用がないことを確かめる
 

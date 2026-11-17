@@ -1,7 +1,6 @@
 'use client'
 
 import { formatNumber, range } from '@shinju-date/helpers'
-import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import { Alert, Badge, Button, EmptyState, Skeleton } from '@shinju-date/ui'
 import { AsyncPanelBody } from '@/components/async-panel-body'
 import {
@@ -11,6 +10,7 @@ import {
 import { BackfillStatusBadge } from '@/components/backfill-status-badge'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Panel, PanelSkeleton } from '@/components/panel'
+import { formatDateTimeFromISO } from '@/lib/format'
 import { useBackfillRequest } from '@/lib/use-backfill-request'
 import { usePolledResource } from '@/lib/use-polled-resource'
 import {

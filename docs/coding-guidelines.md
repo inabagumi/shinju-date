@@ -444,35 +444,30 @@ await supabase
 
 ## admin の Server Action の認証
 
-`apps/admin` は `proxy.ts` でセッションを守っていますが、`matcher` の変更やリダイレクトの処理の不備に左右されないよう、Server Action ごとにも認証を確かめます（多層防御）。データを変更する Server Action では、次のようにします。
+`apps/admin` は `proxy.ts` でセッションを守っていますが、`matcher` の変更やリダイレクトの処理の不備に左右されないよう、Server Action ごとにも認証を確かめます（多層防御）。データを変更する Server Action は、`@/lib/action` のラッパーで作ります。
 
-- **必ず** `@/lib/auth` の `requireAuthenticatedUser()` を、関数の先頭で呼ぶ。入力値の検証や外部 API の呼び出しより前に、認証を確かめる
-- 未認証の場合は、更新せず、共通のレスポンスを返す
-  - `{ success, error }` を返す Action: `unauthenticatedResult()`
-  - `FormState` を返す Action（`useActionState` 用）: `unauthenticatedFormState()`
-- Supabase のクライアントは、`requireAuthenticatedUser()` の戻り値を使う（`createSupabaseServerClient()` を別に呼ばない）
-- サービスロールキーのクライアント（`@/lib/supabase/admin`）や Redis を使う Action は、RLS で守られないため、特に確認を忘れない
+- **必ず** `adminAction` か `adminFormAction` で作る。ラッパーは、入力値の検証や外部 API の呼び出しより前に `requireAuthenticatedUser()` で認証を確かめ、未認証なら `handler` を呼ばずに共通のレスポンスを返す
+  - `ActionResult`（`{ success, error }`）を返す Action: `adminAction(name, handler)`。未認証なら `unauthenticatedResult()` を返す
+  - `FormState` を返す Action（`useActionState` 用）: `adminFormAction(name, schema, handler)`。未認証なら `unauthenticatedFormState()` を返し、`FormData` を `schema` で検証してから `handler` を呼ぶ。`handler` が何も返さなければ `{ success: true }` を返す
+- 画面に見せてよい失敗（「すでに登録されています。」など）は `ActionError` を投げる。項目に結び付けるときは `new ActionError(message, { field })` とする
+- それ以外の例外は、ラッパーが `logger.error` に記録し、決まった文を返す。Supabase のエラーなど、例外の文を画面に返さない
+- Supabase のクライアントは、`handler` に渡される `supabaseClient` を使う（`createSupabaseServerClient()` を別に呼ばない）
+- サービスロールキーのクライアント（`@/lib/supabase/admin`）や Redis を使う Action は、RLS で守られないため、特にラッパーを忘れない
 - 新しい Action を足したら、`apps/admin/app/(dashboard)/_lib/server-actions-auth.test.ts` にも足し、未認証のときに副作用がないことを確かめる
 
 ```typescript
 'use server'
 
-import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
+import { type ActionResult, adminAction } from '@/lib/action'
 
-export async function deleteSomethingAction(id: string): Promise<{
-  success: boolean
-  error?: string
-}> {
-  const auth = await requireAuthenticatedUser()
+export const deleteSomethingAction = adminAction(
+  'deleteSomethingAction',
+  async ({ supabaseClient }, id: string): Promise<ActionResult> => {
+    // ... 更新処理
 
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  const { supabaseClient } = auth
-
-  // ... 更新処理
-}
+    return { success: true }
+  },
+)
 ```
 
 ## 管理者のロールと RLS
