@@ -2,7 +2,7 @@
 
 このドキュメントでは、SHINJU DATE プロジェクトにおけるテストの実装方法とベストプラクティスを説明します。
 
-**最終更新日**: 2026-11-16
+**最終更新日**: 2026-11-17
 
 ## 📋 目次
 
@@ -30,7 +30,7 @@ SHINJU DATE プロジェクトでは、以下のテストフレームワーク�
 ```tsx
 import { render, screen } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
-import MyComponent from '../my-component'
+import MyComponent from './my-component'
 
 describe('MyComponent', () => {
   test('should render correctly', () => {
@@ -101,7 +101,7 @@ export default defineConfig({
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
-import MyComponent from '../my-component'
+import MyComponent from './my-component'
 
 describe('MyComponent', () => {
   test('should render', () => {
@@ -117,7 +117,7 @@ describe('MyComponent', () => {
 // React インポートなし
 import { render, screen } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
-import MyComponent from '../my-component'
+import MyComponent from './my-component'
 
 describe('MyComponent', () => {
   test('should render', () => {
@@ -185,17 +185,28 @@ pnpm vitest --coverage
 
 ### 1. テストファイルの配置
 
-テストファイルは以下の規則に従って配置します：
+テストのファイルは、テストの対象の隣に `<名前>.test.ts` / `<名前>.test.tsx` として置きます。コンポーネント、ページ、関数、フック、Server Action のどれも同じで、`__tests__/` のフォルダーは使いません（Jest の慣習の名残で、Vitest では要りません）。
 
-- コンポーネントと同じディレクトリに `__tests__` フォルダを作成
-- ファイル名は `*.test.ts` または `*.test.tsx`
+- テストのファイルの名前は、対象のファイルの名前と同じにする
+  - コンポーネントのテストは、そのコンポーネントを描画して確かめる。テストの中で作った値どうしを比べるだけのテストにしない
+  - 1つの対象のテストは1つのファイルにまとめ、`describe` で分ける
+  - 複数の対象にまたがるテスト（同じ表を使う、複数のウィジェットの判定など）は、確かめる内容を表す名前にする
+  - ページ（`page.tsx`）や `error.tsx` のテストも、隣に `page.test.tsx` / `error.test.tsx` として置く
+- JSX を含むテストの拡張子は `.test.tsx`、含まないものは `.test.ts` にする。コンポーネントのテストは、すべて `.test.tsx` にする
+- 複数のテストで使う補助（モック、フィクスチャ）は、テストの対象の隣ではなく、アプリの `test/` に置く（例: `apps/admin/test/`）
 
 ```
 components/
 ├── my-component.tsx
-└── __tests__/
-    └── my-component.test.tsx
+└── my-component.test.tsx
+lib/
+├── my-function.ts
+└── my-function.test.ts
+test/
+└── factories.ts
 ```
+
+`apps/admin` は、この決まりに揃えています。ほかのアプリとパッケージには、まだ `__tests__/` に置いたテストが残っています（#7293 で移します）。
 
 ### 2. 適切なテストの粒度
 
