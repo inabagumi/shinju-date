@@ -1,7 +1,5 @@
-import { twMerge } from '@shinju-date/ui'
-import { UserRound } from 'lucide-react'
-import Image from 'next/image'
 import type { ProfileImage, TalentListItem } from '@/lib/fetchers'
+import Avatar from './avatar'
 
 /** `TalentDetail` and `TalentListItem` both have the accounts */
 type TalentAccounts = Pick<TalentListItem, 'twitch_users' | 'youtube_channels'>
@@ -42,43 +40,17 @@ interface TalentIconProps {
 export default function TalentIcon({
   className,
   size,
-  sizes = size ? `${size}px` : undefined,
+  sizes,
   talent,
 }: TalentIconProps) {
-  const profileImage = getTalentProfileImage(talent)
-  const baseClassName = twMerge(
-    'relative shrink-0 overflow-hidden rounded-full bg-muted',
-    className,
-  )
-  const style = size ? { height: size, width: size } : undefined
-
-  if (!profileImage) {
-    return (
-      <span
-        aria-hidden="true"
-        className={twMerge(
-          baseClassName,
-          'flex items-center justify-center text-muted',
-        )}
-        data-testid="talent-default-icon"
-        style={style}
-      >
-        <UserRound className="size-[70%]" strokeWidth={1.5} />
-      </span>
-    )
-  }
-
   return (
-    <span className={baseClassName} data-testid="talent-icon" style={style}>
-      <Image
-        alt=""
-        blurDataURL={profileImage.blur_data_url}
-        className="object-cover"
-        fill
-        placeholder={profileImage.blur_data_url ? 'blur' : 'empty'}
-        sizes={sizes}
-        src={`/images/profile-images/${profileImage.id}`}
-      />
-    </span>
+    <Avatar
+      className={className}
+      fallbackTestId="talent-default-icon"
+      image={getTalentProfileImage(talent)}
+      imageTestId="talent-icon"
+      size={size}
+      sizes={sizes}
+    />
   )
 }

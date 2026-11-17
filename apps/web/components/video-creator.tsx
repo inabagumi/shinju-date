@@ -1,7 +1,6 @@
 import { twMerge } from '@shinju-date/ui'
-import { UserRound } from 'lucide-react'
-import Image from 'next/image'
 import type { ProfileImage, Video } from '@/lib/fetchers'
+import Avatar from './avatar'
 
 export interface VideoCreatorInfo {
   name: string
@@ -58,48 +57,6 @@ export function getVideoCreator(video: Video): VideoCreatorInfo | null {
     : null
 }
 
-interface CreatorIconProps {
-  profileImage: ProfileImage | null
-}
-
-/**
- * The icon is decorative: the name is always shown next to it, so screen
- * readers do not need to announce it twice.
- */
-function CreatorIcon({ profileImage }: CreatorIconProps) {
-  const baseClassName =
-    'relative size-5 shrink-0 overflow-hidden rounded-full bg-muted'
-
-  if (!profileImage) {
-    return (
-      <span
-        aria-hidden="true"
-        className={twMerge(
-          baseClassName,
-          'flex items-center justify-center text-muted',
-        )}
-        data-testid="video-creator-default-icon"
-      >
-        <UserRound className="size-[70%]" strokeWidth={1.5} />
-      </span>
-    )
-  }
-
-  return (
-    <span className={baseClassName}>
-      <Image
-        alt=""
-        blurDataURL={profileImage.blur_data_url}
-        className="object-cover"
-        fill
-        placeholder={profileImage.blur_data_url ? 'blur' : 'empty'}
-        sizes="20px"
-        src={`/images/profile-images/${profileImage.id}`}
-      />
-    </span>
-  )
-}
-
 interface VideoCreatorProps {
   className?: string
   value: Video
@@ -122,7 +79,15 @@ export default function VideoCreator({ className, value }: VideoCreatorProps) {
       className={twMerge('flex min-w-0 items-center gap-1.5', className)}
       data-testid="video-creator"
     >
-      <CreatorIcon profileImage={creator.profileImage} />
+      {/*
+       * The icon is decorative: the name is always shown next to it, so
+       * screen readers do not need to announce it twice.
+       */}
+      <Avatar
+        fallbackTestId="video-creator-default-icon"
+        image={creator.profileImage}
+        size={20}
+      />
       <span className="min-w-0 truncate" title={creator.name}>
         {creator.name}
       </span>
