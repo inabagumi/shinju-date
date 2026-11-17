@@ -91,6 +91,21 @@ describe('SearchInput', () => {
     expect(mocks.replace).toHaveBeenCalledWith('/talents?q=abc')
   })
 
+  it('keeps the other parameters that change while waiting', () => {
+    const { rerender } = render(<SearchInput aria-label="検索" />)
+
+    fireEvent.change(getInput(), { target: { value: 'abc' } })
+    navigate(rerender, 'status=retired')
+    act(() => {
+      vi.runAllTimers()
+    })
+
+    expect(getInput()).toHaveValue('abc')
+    expect(mocks.replace).toHaveBeenCalledWith(
+      '/talents?status=retired&search=abc',
+    )
+  })
+
   it('follows the URL when it changes outside the input', () => {
     mocks.searchParams = new URLSearchParams('search=B')
     const { rerender } = render(<SearchInput aria-label="検索" />)

@@ -61,6 +61,13 @@ function SyncedSearchInput({
   // URL のパラメータの値。自分で書いた値は、URL に反映される前から入れておく
   const knownUrlValueRef = useRef(urlValue)
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  // 待っている間にほかのパラメータが変わっても消さないように、反映するときは
+  // 最新の URL のパラメータから作る
+  const updateSearchParamsRef = useRef(updateSearchParams)
+
+  useEffect(() => {
+    updateSearchParamsRef.current = updateSearchParams
+  }, [updateSearchParams])
 
   // 自分で書いた値でなければ、外から変わったので、入力欄を合わせる
   useEffect(() => {
@@ -87,7 +94,7 @@ function SyncedSearchInput({
       }
 
       knownUrlValueRef.current = nextUrlValue
-      updateSearchParams({ [paramName]: nextUrlValue || null })
+      updateSearchParamsRef.current({ [paramName]: nextUrlValue || null })
     }, debounceMs)
   }
 
