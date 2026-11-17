@@ -1,209 +1,88 @@
+// @vitest-environment node
+import { globSync, readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 /**
  * 未認証のリクエストで mutation 系 Server Action が更新処理を行わず、
  * 共通の未認証レスポンスを返すことを確認する。
+ *
+ * 対象は、ダッシュボードの `_actions/` にあるモジュールが公開している関数の
+ * すべて。`_actions/` にアクションを足せば、このテストの対象になる。
  */
 
 import { unauthenticatedFormState, unauthenticatedResult } from '@/lib/auth'
 import { setupActionTest } from '@/test/action-harness'
-import { updateUserEmail, updateUserPassword } from '../account/_actions'
-import {
-  createAnnouncementAction,
-  deleteAnnouncementAction,
-  updateAnnouncementAction,
-} from '../announcements/_actions'
-import {
-  markFeatureRequestAsRead,
-  updateFeatureRequestMemo,
-  updateFeatureRequestStatus,
-} from '../feedback/_actions/update-feedback'
-import {
-  addQueryAction,
-  deleteQueryAction,
-} from '../recommended-queries/_actions'
-import {
-  getVideoBackfillHistoryAction,
-  retryFailedVideoBackfillJobsAction,
-} from '../system/_actions/video-backfill-history'
-import {
-  getVideoBackfillRunAction,
-  requestVideoBackfillRunAction,
-} from '../system/_actions/video-backfill-run'
-import {
-  activateTalentAction,
-  createTalentAction,
-  deleteTalentAction,
-  restoreTalentAction,
-  retireTalentAction,
-  updateTalentAction,
-} from '../talents/_actions'
-import {
-  getVideoBackfillStatusAction,
-  requestVideoBackfillAction,
-} from '../talents/_actions/backfill'
-import {
-  addYouTubeChannelAction,
-  removeYouTubeChannelAction,
-} from '../talents/_actions/channels'
-import {
-  syncTalentAccounts,
-  syncTalentWithTwitch,
-  syncTalentWithYouTube,
-} from '../talents/_actions/sync'
-import {
-  addTwitchUserAction,
-  removeTwitchUserAction,
-} from '../talents/_actions/twitch-users'
-import {
-  createTermAction,
-  deleteTermAction,
-  updateTermAction,
-} from '../terms/_actions'
-import {
-  restoreAction,
-  softDeleteAction,
-  toggleVisibilityAction,
-} from '../videos/_actions'
-import { syncVideoAction } from '../videos/_actions/sync'
-import {
-  disableMaintenanceMode,
-  enableMaintenanceMode,
-} from './maintenance-mode-actions'
 
 const test = setupActionTest()
 const { supabase } = test
 
-const ID = '00000000-0000-4000-8000-000000000000'
+/** `apps/admin` */
+const APP_ROOT = fileURLToPath(new URL('../../../', import.meta.url))
 
-function formData(entries: Record<string, string>): FormData {
-  const data = new FormData()
-  for (const [key, value] of Object.entries(entries)) {
-    data.set(key, value)
+/**
+ * `_actions/` の外にある、`'use server'` で始まるファイル（`apps/admin` から
+ * のパス）。アクションを `_actions/` に移したら、この一覧から消す。
+ */
+const FILES_OUTSIDE_ACTIONS = [
+  // 認証が前提のアクション。下の `import.meta.glob()` で、このテストの対象にする（#7010 で移す）
+  'app/(dashboard)/_lib/maintenance-mode-actions.ts',
+  // ログインの前後に呼ぶため、認証を確かめないアクション（#7010 で移す）
+  'app/login/_lib/actions.ts',
+  'lib/actions/sign-out.ts',
+  // アクションではない、読み取りの取得関数（#7313 で `'use server'` を外す）
+  'app/(dashboard)/_lib/get-analytics-summary.ts',
+  'lib/analytics/get-click-volume.ts',
+  'lib/analytics/get-popular-keywords.ts',
+  'lib/analytics/get-popular-talents.ts',
+  'lib/analytics/get-popular-videos.ts',
+  'lib/analytics/get-search-quality-metrics.ts',
+  'lib/analytics/get-search-volume.ts',
+  'lib/analytics/get-zero-result-keywords.ts',
+  'lib/analytics/popular-items.ts',
+]
+
+/**
+ * `eager: true` にすると、Vite がモジュールの先頭に `import` を足し、
+ * `@/test/action-harness` の `vi.mock()` より先にアクションを読み込んでしまう。
+ * そのため、モックを登録したあとで読み込む。
+ */
+const actionModules = import.meta.glob<Record<string, unknown>>([
+  '../**/_actions/*.ts',
+  '!../**/_actions/*.test.ts',
+  './maintenance-mode-actions.ts',
+])
+
+const actions: [string, (...args: unknown[]) => Promise<unknown>][] = []
+
+for (const [path, load] of Object.entries(actionModules)) {
+  for (const [name, value] of Object.entries(await load())) {
+    if (typeof value === 'function') {
+      actions.push([
+        `${path}#${name}`,
+        value as (...args: unknown[]) => Promise<unknown>,
+      ])
+    }
   }
-  return data
 }
 
-const formActions: [string, () => Promise<unknown>][] = [
-  [
-    'createAnnouncementAction',
-    () =>
-      createAnnouncementAction(
-        {},
-        formData({
-          end_at: '2025-01-02T00:00:00Z',
-          message: 'message',
-          start_at: '2025-01-01T00:00:00Z',
-        }),
-      ),
-  ],
-  [
-    'updateAnnouncementAction',
-    () =>
-      updateAnnouncementAction(
-        {},
-        formData({
-          end_at: '2025-01-02T00:00:00Z',
-          id: ID,
-          message: 'message',
-          start_at: '2025-01-01T00:00:00Z',
-        }),
-      ),
-  ],
-  [
-    'updateFeatureRequestStatus',
-    () =>
-      updateFeatureRequestStatus({}, formData({ id: ID, status: 'resolved' })),
-  ],
-  [
-    'updateFeatureRequestMemo',
-    () =>
-      updateFeatureRequestMemo({}, formData({ admin_memo: 'memo', id: ID })),
-  ],
-  [
-    'markFeatureRequestAsRead',
-    () => markFeatureRequestAsRead({}, formData({ id: ID, is_read: 'true' })),
-  ],
-  [
-    'createTalentAction',
-    () => createTalentAction({}, formData({ name: 'talent' })),
-  ],
-  [
-    'updateTalentAction',
-    () => updateTalentAction({}, formData({ id: ID, name: 'talent' })),
-  ],
-  [
-    'addYouTubeChannelAction',
-    () =>
-      addYouTubeChannelAction(
-        {},
-        formData({ talent_id: ID, youtube_channel_id: '@handle' }),
-      ),
-  ],
-  [
-    'addTwitchUserAction',
-    () =>
-      addTwitchUserAction(
-        {},
-        formData({ talent_id: ID, twitch_user: 'login' }),
-      ),
-  ],
-  ['createTermAction', () => createTermAction({}, formData({ term: 'term' }))],
-  [
-    'updateTermAction',
-    () => updateTermAction({}, formData({ id: ID, term: 'term' })),
-  ],
-  [
-    'updateUserEmail',
-    () => updateUserEmail({}, formData({ email: 'admin@example.com' })),
-  ],
-  [
-    'updateUserPassword',
-    () =>
-      updateUserPassword(
-        {},
-        formData({
-          confirmPassword: 'new-password',
-          currentPassword: 'password123',
-          newPassword: 'new-password',
-        }),
-      ),
-  ],
+const ID = '00000000-0000-4000-8000-000000000000'
+
+/**
+ * アクションに渡す引数。未認証なら、引数を見る前に返るので、どの引数でも
+ * 同じ結果になるはず。`(prevState, formData)`、`(id, id)`、`(ids)` の形を試す。
+ */
+const argumentSets: [string, () => unknown[]][] = [
+  ['an empty FormData', () => [{}, new FormData()]],
+  ['IDs', () => [ID, ID]],
+  ['an array of IDs', () => [[ID]]],
 ]
 
-const resultActions: [string, () => Promise<unknown>][] = [
-  ['deleteAnnouncementAction', () => deleteAnnouncementAction(ID)],
-  ['addQueryAction', () => addQueryAction('query')],
-  ['deleteQueryAction', () => deleteQueryAction('query')],
-  ['deleteTalentAction', () => deleteTalentAction(ID)],
-  ['restoreTalentAction', () => restoreTalentAction(ID)],
-  ['retireTalentAction', () => retireTalentAction(ID)],
-  ['activateTalentAction', () => activateTalentAction(ID)],
-  ['removeYouTubeChannelAction', () => removeYouTubeChannelAction(ID, ID)],
-  ['removeTwitchUserAction', () => removeTwitchUserAction(ID, ID)],
-  ['syncTalentWithYouTube', () => syncTalentWithYouTube(ID)],
-  ['syncTalentWithTwitch', () => syncTalentWithTwitch(ID)],
-  [
-    'requestVideoBackfillAction',
-    () => requestVideoBackfillAction(ID, 'youtube'),
-  ],
-  ['getVideoBackfillStatusAction', () => getVideoBackfillStatusAction(ID)],
-  ['requestVideoBackfillRunAction', () => requestVideoBackfillRunAction()],
-  ['getVideoBackfillRunAction', () => getVideoBackfillRunAction()],
-  [
-    'retryFailedVideoBackfillJobsAction',
-    () => retryFailedVideoBackfillJobsAction(),
-  ],
-  ['getVideoBackfillHistoryAction', () => getVideoBackfillHistoryAction()],
-  ['syncTalentAccounts', () => syncTalentAccounts(ID)],
-  ['deleteTermAction', () => deleteTermAction(ID)],
-  ['toggleVisibilityAction', () => toggleVisibilityAction([ID])],
-  ['softDeleteAction', () => softDeleteAction([ID])],
-  ['restoreAction', () => restoreAction([ID])],
-  ['syncVideoAction', () => syncVideoAction(ID)],
-  ['enableMaintenanceMode', () => enableMaintenanceMode()],
-  ['disableMaintenanceMode', () => disableMaintenanceMode()],
-]
+const cases = actions.flatMap(([name, action]) =>
+  argumentSets.map(
+    ([argumentsName, args]) => [name, argumentsName, action, args] as const,
+  ),
+)
 
 function expectNoSideEffects() {
   expect(test.createSupabaseServerClient).not.toHaveBeenCalled()
@@ -219,21 +98,38 @@ describe('mutation Server Actions without an authenticated user', () => {
     test.signOut()
   })
 
-  it.each(formActions)(
-    '%s returns an unauthenticated FormState',
-    async (_name, action) => {
-      await expect(action()).resolves.toEqual(unauthenticatedFormState())
-      expect(test.requireAuthenticatedUser).toHaveBeenCalledOnce()
-      expectNoSideEffects()
-    },
-  )
+  it('collects the actions', () => {
+    expect(actions.length).toBeGreaterThan(0)
+  })
 
-  it.each(resultActions)(
-    '%s returns an unauthenticated result',
-    async (_name, action) => {
-      await expect(action()).resolves.toEqual(unauthenticatedResult())
+  it.each(cases)(
+    '%s returns an unauthenticated response with %s',
+    async (_name, _argumentsName, action, args) => {
+      const result = await action(...args())
+
+      expect([
+        unauthenticatedResult(),
+        unauthenticatedFormState(),
+      ]).toContainEqual(result)
       expect(test.requireAuthenticatedUser).toHaveBeenCalledOnce()
       expectNoSideEffects()
     },
   )
+})
+
+describe('files that start with "use server"', () => {
+  it('are in `_actions/`', () => {
+    const files = globSync('**/*.{ts,tsx}', {
+      cwd: APP_ROOT,
+      exclude: (path) => path === 'node_modules' || path === '.next',
+    }).filter(
+      (path) =>
+        !path.split('/').includes('_actions') &&
+        /^\s*['"]use server['"]/.test(
+          readFileSync(`${APP_ROOT}${path}`, 'utf8'),
+        ),
+    )
+
+    expect(files.sort()).toEqual([...FILES_OUTSIDE_ACTIONS].sort())
+  })
 })

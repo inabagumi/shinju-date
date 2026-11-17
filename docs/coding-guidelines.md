@@ -453,7 +453,9 @@ await supabase
 - それ以外の例外は、ラッパーが `logger.error` に記録し、決まった文を返す。Supabase のエラーなど、例外の文を画面に返さない
 - Supabase のクライアントは、`handler` に渡される `supabaseClient` を使う（`createSupabaseServerClient()` を別に呼ばない）
 - サービスロールキーのクライアント（`@/lib/supabase/admin`）や Redis を使う Action は、RLS で守られないため、特にラッパーを忘れない
-- 新しい Action を足したら、`apps/admin/app/(dashboard)/_lib/server-actions-auth.test.ts` にも足し、未認証のときに副作用がないことを確かめる
+- Action は `_actions/` に置く。`apps/admin/app/(dashboard)/_lib/server-actions-auth.test.ts` は、`app/(dashboard)/` の `_actions/` のモジュールが公開する関数をすべて集め、未認証のときに副作用がなく、共通のレスポンスを返すことを確かめる。テストへの追加は要らない
+  - `_actions/` には、Server Action だけを置く（公開している関数は、すべてテストの対象になる）
+  - `_actions/` の外に `'use server'` で始まるファイルがあると、このテストが失敗する
 
 ```typescript
 'use server'
