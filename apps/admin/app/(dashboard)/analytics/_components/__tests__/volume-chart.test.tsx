@@ -6,13 +6,13 @@ import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 const mocks = vi.hoisted(() => ({
   getClickVolume: vi.fn(),
   getSearchVolume: vi.fn(),
-  replace: vi.fn(),
+  push: vi.fn(),
   searchParams: new URLSearchParams(),
 }))
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/analytics/click',
-  useRouter: () => ({ replace: mocks.replace }),
+  useRouter: () => ({ push: mocks.push }),
   useSearchParams: () => mocks.searchParams,
 }))
 
@@ -173,8 +173,8 @@ describe('VolumeChart', () => {
 
     await clickSecondDay()
 
-    expect(mocks.replace).toHaveBeenCalledOnce()
-    expect(mocks.replace).toHaveBeenCalledWith(
+    expect(mocks.push).toHaveBeenCalledOnce()
+    expect(mocks.push).toHaveBeenCalledWith(
       '/analytics/click?from=2026-11-08&to=2026-11-09&date=2026-11-09',
     )
   })
@@ -193,7 +193,7 @@ describe('VolumeChart', () => {
 
     await clickSecondDay()
 
-    expect(mocks.replace).toHaveBeenCalledWith(
+    expect(mocks.push).toHaveBeenCalledWith(
       '/analytics/click?from=2026-11-08&to=2026-11-09',
     )
   })
@@ -213,6 +213,6 @@ describe('VolumeChart', () => {
     fireEvent.click(getChart(), { clientX: 700, clientY: 100 })
     await waitForAnimationFrame()
 
-    expect(mocks.replace).not.toHaveBeenCalled()
+    expect(mocks.push).not.toHaveBeenCalled()
   })
 })

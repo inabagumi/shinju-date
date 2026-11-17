@@ -2,7 +2,7 @@
 
 import { Button } from '@shinju-date/ui'
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { useSearchParamsHref } from '@/lib/use-update-search-params'
 
 interface Props {
   currentPage: number
@@ -10,15 +10,11 @@ interface Props {
 }
 
 export default function Pagination({ currentPage, totalPages }: Props) {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const createHref = useSearchParamsHref()
 
-  // Helper function to create URLs that preserve all current query parameters
-  const createPageUrl = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('page', page.toString())
-    return `${pathname}?${params.toString()}`
-  }
+  // Keep the current query parameters other than `page`
+  const createPageUrl = (page: number) =>
+    createHref({ page: page.toString() }, { resetPage: false })
   const pages = []
   const maxPagesToShow = 5
 

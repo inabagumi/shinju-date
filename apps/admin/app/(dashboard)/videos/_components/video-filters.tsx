@@ -7,8 +7,9 @@ import {
   MultiSelect,
   type MultiSelectOption,
 } from '@shinju-date/ui'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useUpdateSearchParams } from '@/lib/use-update-search-params'
 
 type Talent = Pick<
   Tables<'talents'>,
@@ -36,7 +37,7 @@ interface Props {
 }
 
 export function VideoFilters({ talents }: Props) {
-  const router = useRouter()
+  const updateSearchParams = useUpdateSearchParams()
   const searchParams = useSearchParams()
   const [searchInput, setSearchInput] = useState(
     searchParams.get('search') || '',
@@ -59,32 +60,17 @@ export function VideoFilters({ talents }: Props) {
       return
     }
 
+    // Removes `page` so that the results start from page 1
     const timer = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString())
-      if (searchInput === '') {
-        params.delete('search')
-      } else {
-        params.set('search', searchInput)
-      }
-      // Reset to page 1 when search changes
-      params.delete('page')
-      router.push(`/videos?${params.toString()}`)
+      updateSearchParams({ search: searchInput })
     }, 500) // 500ms debounce
 
     return () => clearTimeout(timer)
-  }, [searchInput, router, searchParams])
+  }, [searchInput, searchParams, updateSearchParams])
 
+  // Removes `page` so that the results start from page 1
   const handleMultiSelectChange = (key: FilterKey, values: string[]) => {
-    const params = new URLSearchParams(searchParams.toString())
-    // Remove all existing values for this key
-    params.delete(key)
-    // Add new values
-    for (const value of values) {
-      params.append(key, value)
-    }
-    // Reset to page 1 when filters change
-    params.delete('page')
-    router.push(`/videos?${params.toString()}`)
+    updateSearchParams({ [key]: values })
   }
 
   // Define options for each filter

@@ -5,7 +5,8 @@ import { VideoFilters } from './video-filters'
 const mockSearchParams = vi.hoisted(() => ({ current: new URLSearchParams() }))
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => '/videos',
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
   useSearchParams: () => mockSearchParams.current,
 }))
 
