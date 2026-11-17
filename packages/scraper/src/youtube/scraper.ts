@@ -3,6 +3,7 @@ import type {
   AddPastVideosOptions,
   AddPastVideosResult,
   RefreshVideoResult,
+  SyncAccountResult,
 } from '../types.js'
 import { addNewYouTubeVideos } from './add-new-videos.js'
 import { addPastYouTubeVideos } from './add-past-videos.js'
@@ -12,7 +13,11 @@ import {
   removeUnavailableYouTubeVideos,
 } from './check-videos.js'
 import { YouTubeFetcher } from './fetcher.js'
-import { syncYouTubeChannels } from './sync-accounts.js'
+import {
+  syncYouTubeChannels,
+  syncYouTubeChannelsOfTalent,
+  type YouTubeChannelFields,
+} from './sync-accounts.js'
 import type { YouTubeScraperOptions } from './types.js'
 
 /**
@@ -66,6 +71,13 @@ export class YouTubeScraper extends Scraper {
 
   async syncAccounts(now?: Temporal.Instant): Promise<boolean> {
     return (await syncYouTubeChannels(this.#context(now))) > 0
+  }
+
+  syncTalentAccounts(
+    talentId: string,
+    now?: Temporal.Instant,
+  ): Promise<SyncAccountResult<YouTubeChannelFields>[]> {
+    return syncYouTubeChannelsOfTalent(this.#context(now), talentId)
   }
 
   addPastVideos({

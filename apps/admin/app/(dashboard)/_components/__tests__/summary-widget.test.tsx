@@ -7,9 +7,6 @@ const mocks = vi.hoisted(() => ({
   getSummaryStats: vi.fn(),
 }))
 
-vi.mock('next/cache', () => ({
-  cacheLife: vi.fn(),
-}))
 vi.mock('../../_lib/get-historical-stats', () => ({
   getHistoricalStats: mocks.getHistoricalStats,
 }))

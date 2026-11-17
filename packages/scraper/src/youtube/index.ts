@@ -1,11 +1,14 @@
 export type { ProfileImageSyncResult } from '../internal/profile-images/index.js'
 export type {
+  AccountChanges,
+  AccountFields,
   AddPastVideosOptions,
   AddPastVideosResult,
   ErrorReporter,
   Logger,
   RefreshVideoResult,
   ScraperOptions,
+  SyncAccountResult,
   TypedSupabaseClient,
   VideoFields,
 } from '../types.js'
@@ -19,4 +22,5 @@ export {
   syncYouTubeChannelIcon,
 } from './profile-image.js'
 export { YouTubeScraper } from './scraper.js'
+export type { YouTubeChannelFields } from './sync-accounts.js'
 export type { YouTubeScraperOptions } from './types.js'

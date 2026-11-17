@@ -28,17 +28,19 @@ export async function GET(request: NextRequest) {
     let exitRates: SearchExitRate[]
     if (validatedParams.selectedDate) {
       exitRates = await getSearchExitRates(
-        Temporal.PlainDate.from(validatedParams.selectedDate),
+        validatedParams.selectedDate,
         undefined,
         validatedParams.limit,
       )
     } else if (validatedParams.endDate) {
-      const start = Temporal.PlainDate.from(validatedParams.startDate)
-      const end = Temporal.PlainDate.from(validatedParams.endDate)
-      exitRates = await getSearchExitRates(start, end, validatedParams.limit)
+      exitRates = await getSearchExitRates(
+        validatedParams.startDate,
+        validatedParams.endDate,
+        validatedParams.limit,
+      )
     } else {
       exitRates = await getSearchExitRates(
-        Temporal.PlainDate.from(validatedParams.startDate),
+        validatedParams.startDate,
         undefined,
         validatedParams.limit,
       )

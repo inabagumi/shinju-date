@@ -30,9 +30,10 @@ const changed = await scraper.addNewVideos()
 | `removeUnavailableVideos()` | 保存済みの全動画を確認し、取得できなくなった動画を削除扱いにする                     |
 | `refreshVideo(videoId)`     | 保存済みの動画 1 件を再取得し、変更を反映する（取得できなければ削除扱いにする）      |
 | `syncAccounts()`            | 保存済みアカウントの名前・ハンドル・アイコンをプラットフォームに合わせる             |
+| `syncTalentAccounts(id)`    | タレント 1 人のアカウントについて、`syncAccounts()` と同じ同期をする                 |
 | `addPastVideos(options)`    | 1 アカウントの全履歴を 1 ページ読み、未保存の動画を保存する（バックフィル）          |
 
-- `addPastVideos` と `refreshVideo` 以外の操作は「公開サイトに見える変更があったか」を `boolean` で返します（キャッシュ再検証の判断に使えます）。
+- `addPastVideos`、`refreshVideo`、`syncTalentAccounts` 以外の操作は「公開サイトに見える変更があったか」を `boolean` で返します（キャッシュ再検証の判断に使えます）。
 - 引数に実行時刻（`Temporal.Instant`）を渡すと、その実行で書き込む行のタイムスタンプが揃います。省略時は現在時刻です。
 
 ### 過去動画の取り込み（`addPastVideos`）
@@ -83,6 +84,29 @@ switch (result.status) {
 
 型 `RefreshVideoResult` は `@shinju-date/scraper` から import できます。
 
+### タレント 1 人のアカウントの同期（`syncTalentAccounts`）
+
+管理画面の「同期」のように、タレント 1 人を指定して、そのアカウントの名前・ハンドル（Twitch は login）・アイコンを同期するための操作です。`syncAccounts` と同じ関数を使うので、変更があったアカウントだけが更新されます。
+
+```ts
+const results = await scraper.syncTalentAccounts(talentId) // talents.id
+
+for (const result of results) {
+  result.accountId // youtube_channels.id / twitch_users.id
+  result.name // プラットフォームの名前（同期できなかったときは保存済みの名前）
+  result.status // 'updated' | 'unchanged' | 'not-found' | 'failed'
+  result.changes // 名前・ハンドルが変わったときだけ。変わった項目の before / after
+  result.iconUpdated // アイコンを保存・差し替え・削除したか
+}
+```
+
+- 結果は、タレントの保存済みのアカウントごとに 1 件です。アカウントがないタレントや、削除済みのタレントでは空になります（引退したタレントは対象です）。
+- `not-found` はプラットフォームがアカウントを返さなかった場合、`failed` は名前・ハンドルを書き込めなかった場合です（失敗は `onError` に渡します）。Twitch は名前とアイコンを独立して同期するので、`failed` でも `iconUpdated` が `true` になることがあります。
+- 1 人だけを扱うので、プラットフォームやデータベースを読めなければ reject します。
+- 使われなくなったアイコンの削除は行いません（定期の `syncAccounts` が行います）。
+
+型 `SyncAccountResult` は `@shinju-date/scraper` から import できます。
+
 ### 失敗の扱い
 
 - **1 アカウント・1 動画の失敗では止まりません。** その失敗は `onError(error, context)` に渡され、残りは処理されます。`onError` を省略すると `logger` に出力します。
@@ -124,7 +148,7 @@ switch (result.status) {
 - 表示名・login の更新とアイコンの同期は独立しています。どちらかが失敗しても、もう一方は同期されます。アイコンの失敗は `onError` に `operation: 'syncProfileImage'` 付きで渡されます
 - 使われなくなったアイコンの削除は YouTube の同期がプラットフォームを問わずに行うため、Twitch 側では行いません
 
-アイコンの書き込みには service role の Supabase クライアントが必要です。管理画面からの手動同期・チャンネル（ユーザー）追加では、`@shinju-date/scraper/youtube` の `syncYouTubeChannelIcon`、`@shinju-date/scraper/twitch` の `syncTwitchUserIcon` を直接使います。
+アイコンの書き込みには service role の Supabase クライアントが必要です。管理画面からのチャンネル（ユーザー）追加では、`@shinju-date/scraper/youtube` の `syncYouTubeChannelIcon`、`@shinju-date/scraper/twitch` の `syncTwitchUserIcon` を直接使います。
 
 ## プロバイダーを追加する
 

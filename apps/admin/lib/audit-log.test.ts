@@ -35,20 +35,18 @@ describe('createAuditLog', () => {
     })
   })
 
-  it.each<[string, AuditLogDetails<'CHANNEL_SYNC'>, string]>([
-    ['YouTube', { channels: [] }, 'channels'],
-    ['Twitch', { platform: 'twitch', users: [] }, 'twitch_users'],
-  ])(
-    'records a %s sync of a talent with its own target table',
-    async (_, details, targetTable) => {
-      await createAuditLog('CHANNEL_SYNC', 'talent-1', details)
+  it('records a sync of a talent against the talent', async () => {
+    await createAuditLog('CHANNEL_SYNC', 'talent-1', {
+      accounts: [{ id: 'account-1', name: 'Account' }],
+      entityName: 'Talent',
+      platform: 'twitch',
+    })
 
-      expect(mocks.rpc).toHaveBeenCalledWith(
-        'insert_audit_log',
-        expect.objectContaining({ p_target_table: targetTable }),
-      )
-    },
-  )
+    expect(mocks.rpc).toHaveBeenCalledWith(
+      'insert_audit_log',
+      expect.objectContaining({ p_target_table: 'talents' }),
+    )
+  })
 
   it('records a backfill of a talent against the talent', async () => {
     await createAuditLog('VIDEO_BACKFILL', 'talent-1', {

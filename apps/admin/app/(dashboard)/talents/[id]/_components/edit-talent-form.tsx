@@ -7,7 +7,6 @@ import type { FormState } from '@/components/form'
 import Form, {
   ErrorMessage,
   FormField,
-  GenericErrorMessage,
   Input,
   Label,
   SubmitButton,
@@ -189,9 +188,7 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
       <Form action={handleAction} className="max-w-xl space-y-4">
         <input name="id" type="hidden" value={talent.id} />
         <FormField name="name">
-          <Label className="mb-2 block text-meta font-semibold">
-            タレント名
-          </Label>
+          <Label>タレント名</Label>
           <Input
             defaultValue={talent.name}
             placeholder="表示に使用される名前"
@@ -200,12 +197,10 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
           <p className="mt-1 text-caption text-muted">
             管理画面から編集可能な表示名（YouTube APIによる自動更新の対象外）
           </p>
-          <ErrorMessage className="mt-1 text-meta text-danger" />
+          <ErrorMessage />
         </FormField>
         <FormField name="reading">
-          <Label className="mb-2 block text-meta font-semibold">
-            読み仮名（任意）
-          </Label>
+          <Label>読み仮名（任意）</Label>
           <Input
             defaultValue={talent.reading ?? ''}
             placeholder={TALENT_READING_PLACEHOLDER}
@@ -213,15 +208,10 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
           <p className="mt-1 text-caption text-muted">
             {TALENT_READING_DESCRIPTION}
           </p>
-          <ErrorMessage className="mt-1 text-meta text-danger" />
+          <ErrorMessage />
         </FormField>
         <FormField name="theme_color">
-          <Label
-            className="mb-2 block text-meta font-semibold"
-            htmlFor={themeColorId}
-          >
-            テーマカラー
-          </Label>
+          <Label htmlFor={themeColorId}>テーマカラー</Label>
           <ColorInput
             defaultValue={talent.theme_color}
             id={themeColorId}
@@ -230,9 +220,8 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
           <p className="mt-1 text-caption text-muted">
             タレントのテーマカラー（#RRGGBB形式で指定してください）
           </p>
-          <ErrorMessage className="mt-1 text-meta text-danger" />
+          <ErrorMessage />
         </FormField>
-        <GenericErrorMessage className="text-meta text-danger" />
         <div className="flex gap-2 pt-2">
           <UIButton
             onClick={() => setIsEditing(false)}
@@ -241,7 +230,7 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
           >
             キャンセル
           </UIButton>
-          <SubmitButton type="submit">保存</SubmitButton>
+          <SubmitButton>保存</SubmitButton>
         </div>
       </Form>
     </Panel>

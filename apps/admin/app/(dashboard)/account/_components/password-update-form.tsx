@@ -1,7 +1,6 @@
 import Form, {
   ErrorMessage,
   FormField,
-  GenericErrorMessage,
   Input,
   Label,
   SubmitButton,
@@ -19,48 +18,40 @@ export function PasswordUpdateForm() {
           message="パスワードを更新しました。"
         />
 
-        <GenericErrorMessage className="rounded-control bg-danger/10 p-3 text-meta text-danger" />
-
-        <FormField className="flex flex-col gap-2" name="currentPassword">
-          <Label className="text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50">
-            現在のパスワード
-          </Label>
+        <FormField name="currentPassword">
+          <Label>現在のパスワード</Label>
           <Input
             minLength={8}
             placeholder="••••••••"
             required
             type="password"
           />
-          <ErrorMessage className="text-meta text-danger" />
+          <ErrorMessage />
         </FormField>
 
-        <FormField className="flex flex-col gap-2" name="newPassword">
-          <Label className="text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50">
-            新しいパスワード
-          </Label>
+        <FormField name="newPassword">
+          <Label>新しいパスワード</Label>
           <Input
             minLength={8}
             placeholder="••••••••"
             required
             type="password"
           />
-          <ErrorMessage className="text-meta text-danger" />
+          <ErrorMessage />
         </FormField>
 
-        <FormField className="flex flex-col gap-2" name="confirmPassword">
-          <Label className="text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50">
-            新しいパスワード（確認）
-          </Label>
+        <FormField name="confirmPassword">
+          <Label>新しいパスワード（確認）</Label>
           <Input
             minLength={8}
             placeholder="••••••••"
             required
             type="password"
           />
-          <ErrorMessage className="text-meta text-danger" />
+          <ErrorMessage />
         </FormField>
 
-        <SubmitButton type="submit">パスワードを更新</SubmitButton>
+        <SubmitButton>パスワードを更新</SubmitButton>
       </Form>
     </Panel>
   )

@@ -1,7 +1,6 @@
 import Form, {
   ErrorMessage,
   FormField,
-  GenericErrorMessage,
   Input,
   Label,
   SubmitButton,
@@ -32,17 +31,13 @@ export function EmailUpdateForm({ currentEmail }: Props) {
           message="確認メールを送信しました。新しいメールアドレスに届いたリンクをクリックして変更を完了してください。"
         />
 
-        <GenericErrorMessage className="rounded-control bg-danger/10 p-3 text-meta text-danger" />
-
-        <FormField className="flex flex-col gap-2" name="email">
-          <Label className="text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50">
-            新しいメールアドレス
-          </Label>
+        <FormField name="email">
+          <Label>新しいメールアドレス</Label>
           <Input placeholder="new-email@example.com" required type="email" />
-          <ErrorMessage className="text-meta text-danger" />
+          <ErrorMessage />
         </FormField>
 
-        <SubmitButton type="submit">メールアドレスを更新</SubmitButton>
+        <SubmitButton>メールアドレスを更新</SubmitButton>
       </Form>
     </Panel>
   )

@@ -106,3 +106,49 @@ export type RefreshVideoResult =
    * to another platform.
    */
   | { status: 'not-found' }
+
+/**
+ * The account columns a sync keeps in line with the platform: the name and
+ * the handle (YouTube) or login (Twitch). The icon is reported separately.
+ */
+export type AccountFields =
+  | Pick<Tables<'twitch_users'>, 'name' | 'twitch_login_name'>
+  | Pick<Tables<'youtube_channels'>, 'name' | 'youtube_handle'>
+
+/** The account columns that changed, before and after. */
+export interface AccountChanges<TFields extends AccountFields = AccountFields> {
+  after: Partial<TFields>
+  before: Partial<TFields>
+}
+
+/** What `Scraper#syncTalentAccounts` did with one account of the talent. */
+export interface SyncAccountResult<
+  TFields extends AccountFields = AccountFields,
+> {
+  /**
+   * Primary key of the account row: `youtube_channels.id` for YouTube,
+   * `twitch_users.id` for Twitch.
+   */
+  accountId: string
+  /**
+   * The columns that were written, before and after. Present only when the
+   * name or the handle changed.
+   */
+  changes?: AccountChanges<TFields>
+  /** Whether the stored icon was created, replaced or removed. */
+  iconUpdated: boolean
+  /**
+   * The name of the account on the platform, or the saved one when the
+   * platform did not return the account or it could not be updated.
+   */
+  name: string | null
+  /**
+   * - `updated`: the name, the handle or the icon was written
+   * - `unchanged`: the account already matches the platform
+   * - `not-found`: the platform did not return the account
+   * - `failed`: the name and the handle could not be written (the failure is
+   *   passed to `onError`). On Twitch the icon is still synced, so
+   *   `iconUpdated` can be `true`
+   */
+  status: 'failed' | 'not-found' | 'unchanged' | 'updated'
+}

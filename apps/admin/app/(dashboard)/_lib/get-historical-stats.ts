@@ -1,5 +1,6 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { formatDate, formatDateKey } from '@shinju-date/temporal-fns'
+import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 import type { SummaryStats } from './get-summary-stats'
 
@@ -20,6 +21,10 @@ export interface HistoricalStatsEntry {
 export async function getHistoricalStats(
   days = 7,
 ): Promise<HistoricalStatsEntry[]> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   const redisClient = getRedisClient()
   const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
 

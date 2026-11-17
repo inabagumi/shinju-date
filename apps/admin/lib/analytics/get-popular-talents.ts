@@ -4,6 +4,7 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import { isNonNullable } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import type { QueryData } from '@supabase/supabase-js'
+import { cacheLife } from 'next/cache'
 import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
@@ -37,19 +38,23 @@ export interface PopularTalent extends PopularTalentRow {
 /**
  * Get popular talents based on click data for a date range
  * @param limit - Number of talents to return
- * @param startDate - Start date as Temporal.PlainDate
- * @param endDate - End date as Temporal.PlainDate. If undefined, gets data for single date
+ * @param startDate - Start date in ISO 8601 format (YYYY-MM-DD)
+ * @param endDate - End date in ISO 8601 format (YYYY-MM-DD). If undefined, gets data for single date
  */
 export async function getPopularTalents(
   limit: number,
-  startDate: Temporal.PlainDate,
-  endDate?: Temporal.PlainDate,
+  startDate: string,
+  endDate?: string,
 ): Promise<PopularTalent[]> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   const talentScores = await _getPopularItemsFromRedis<string>(
     REDIS_KEYS.CLICK_CHANNEL_PREFIX,
     limit,
-    startDate,
-    endDate,
+    Temporal.PlainDate.from(startDate),
+    endDate ? Temporal.PlainDate.from(endDate) : undefined,
   )
 
   if (talentScores.length === 0) {

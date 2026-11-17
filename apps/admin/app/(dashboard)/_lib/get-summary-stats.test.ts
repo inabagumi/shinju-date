@@ -4,6 +4,9 @@ import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
 import { getSummaryStats, type SummaryStats } from './get-summary-stats'
 
+vi.mock('next/cache', () => ({
+  cacheLife: vi.fn(),
+}))
 vi.mock('@/lib/supabase', () => ({
   createSupabaseServerClient: vi.fn(),
 }))

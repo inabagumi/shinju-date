@@ -3,6 +3,7 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
+import { cacheLife } from 'next/cache'
 import { listDatesInRange } from '@/lib/analytics/list-dates-in-range'
 import { getRedisClient } from '@/lib/redis'
 
@@ -20,6 +21,10 @@ export async function getClickVolume(
   startDate: string,
   endDate: string,
 ): Promise<DailyClickVolume[]> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   try {
     const redisClient = getRedisClient()
     const dates = listDatesInRange(

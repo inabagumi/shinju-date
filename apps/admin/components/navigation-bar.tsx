@@ -229,7 +229,6 @@ export function NavigationBar({ lastSync }: NavigationBarProps) {
               <Form action={signOut}>
                 <SubmitButton
                   className={twMerge(menuItemClassName, 'font-normal')}
-                  type="submit"
                   variant="ghost"
                 >
                   ログアウト
@@ -295,7 +294,6 @@ export function NavigationBar({ lastSync }: NavigationBarProps) {
                   barItemClassName,
                   'w-full justify-start font-normal',
                 )}
-                type="submit"
                 variant="ghost"
               >
                 ログアウト

@@ -1,7 +1,6 @@
 import { formatNumber } from '@shinju-date/helpers'
 import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
-import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
 import { TableSkeleton } from '@/components/skeletons'
 import { getTalents } from '../talents/_lib/get-talents'
@@ -23,10 +22,6 @@ export const metadata: Metadata = {
 }
 
 async function VideoFiltersData() {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const talents = await getTalents()
 
   return <VideoFilters talents={talents} />
@@ -37,10 +32,6 @@ async function VideoTableData({
 }: {
   searchParams: PageProps<'/'>['searchParams']
 }) {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const rawParams = await searchParams
 
   // Validate and parse search parameters using zod schema
@@ -109,10 +100,6 @@ async function VideoCountData({
 }: {
   searchParams: PageProps<'/'>['searchParams']
 }) {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const rawParams = await searchParams
   let validatedParams: VideoSearchParams
   try {

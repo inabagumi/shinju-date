@@ -93,7 +93,7 @@ export function FeatureRequestDetail({
               />
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <SubmitButton type="submit">メモを保存</SubmitButton>
+              <SubmitButton>メモを保存</SubmitButton>
               <ActionResult message="保存しました" state={memoState} />
             </div>
           </form>
@@ -145,7 +145,7 @@ export function FeatureRequestDetail({
               </Select>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <SubmitButton type="submit">ステータスを更新</SubmitButton>
+              <SubmitButton>ステータスを更新</SubmitButton>
               <ActionResult message="更新しました" state={statusState} />
             </div>
           </form>
@@ -163,7 +163,7 @@ export function FeatureRequestDetail({
               value={String(!featureRequest.is_read)}
             />
             <div className="flex flex-wrap items-center gap-3">
-              <SubmitButton type="submit" variant="secondary">
+              <SubmitButton variant="secondary">
                 {featureRequest.is_read ? '未読にする' : '既読にする'}
               </SubmitButton>
               <ActionResult message="更新しました" state={readState} />

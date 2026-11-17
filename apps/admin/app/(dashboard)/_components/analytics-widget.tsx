@@ -1,4 +1,3 @@
-import { cacheLife } from 'next/cache'
 import { Panel } from '@/components/panel'
 import { getAnalyticsSummary } from '../_lib/get-analytics-summary'
 import { StatTileLink } from './trend-indicator'
@@ -8,10 +7,6 @@ import { StatTileLink } from './trend-indicator'
  * This is an async Server Component that fetches its own data
  */
 export async function AnalyticsWidget() {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const analytics = await getAnalyticsSummary()
 
   return (

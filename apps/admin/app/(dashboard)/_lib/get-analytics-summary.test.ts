@@ -3,6 +3,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { getRedisClient } from '@/lib/redis'
 import { getAnalyticsSummary } from './get-analytics-summary'
 
+vi.mock('next/cache', () => ({
+  cacheLife: vi.fn(),
+}))
 vi.mock('@/lib/redis', () => ({
   getRedisClient: vi.fn(),
 }))

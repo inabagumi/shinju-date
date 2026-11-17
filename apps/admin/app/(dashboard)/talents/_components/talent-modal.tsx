@@ -16,7 +16,6 @@ import type { FormState } from '@/components/form'
 import Form, {
   ErrorMessage,
   FormField,
-  GenericErrorMessage,
   Input,
   Label,
   SubmitButton,
@@ -58,43 +57,36 @@ export function TalentModal() {
           <DialogTitle>新しいタレントを追加</DialogTitle>
           <Form action={handleAction} className="space-y-4">
             <FormField name="name">
-              <Label className="mb-2 block text-meta font-semibold">
-                タレント名
-              </Label>
+              <Label>タレント名</Label>
               <Input placeholder="表示に使用される名前" required />
               <p className="mt-1 text-caption text-muted">
                 管理画面から編集可能な表示名（YouTube
                 APIによる自動更新の対象外）
               </p>
-              <ErrorMessage className="mt-1 text-meta text-danger" />
+              <ErrorMessage />
             </FormField>
             <FormField name="reading">
-              <Label className="mb-2 block text-meta font-semibold">
-                読み仮名（任意）
-              </Label>
+              <Label>読み仮名（任意）</Label>
               <Input placeholder={TALENT_READING_PLACEHOLDER} />
               <p className="mt-1 text-caption text-muted">
                 {TALENT_READING_DESCRIPTION}
               </p>
-              <ErrorMessage className="mt-1 text-meta text-danger" />
+              <ErrorMessage />
             </FormField>
             <FormField name="youtube_channel_id">
-              <Label className="mb-2 block text-meta font-semibold">
-                YouTubeチャンネル（任意）
-              </Label>
+              <Label>YouTubeチャンネル（任意）</Label>
               <Input placeholder="@handle または https://youtube.com/@handle" />
               <p className="mt-1 text-caption text-muted">
                 ハンドル・チャンネルID・URLに対応。追加時にYouTube
                 APIから名前とハンドルを取得します。後から個別ページで設定することもできます。
               </p>
-              <ErrorMessage className="mt-1 text-meta text-danger" />
+              <ErrorMessage />
             </FormField>
-            <GenericErrorMessage className="text-meta text-danger" />
             <div className="flex items-center justify-end gap-2 pt-2">
               <DialogClose asChild>
                 <Button variant="secondary">キャンセル</Button>
               </DialogClose>
-              <SubmitButton type="submit">追加</SubmitButton>
+              <SubmitButton>追加</SubmitButton>
             </div>
           </Form>
         </DialogContent>

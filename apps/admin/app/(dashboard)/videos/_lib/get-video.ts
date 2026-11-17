@@ -3,7 +3,7 @@ import { range } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import type { QueryData } from '@supabase/supabase-js'
-import { cache } from 'react'
+import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 import {
   createSupabaseServerClient,
@@ -31,9 +31,13 @@ export interface VideoDetail extends Omit<VideoDetailRow, 'talent'> {
   talent: VideoDetailRow['talent'] | null
 }
 
-const getVideo = cache(async function getVideo(
+export default async function getVideo(
   id: string,
 ): Promise<VideoDetail | null> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   const supabaseClient = await createSupabaseServerClient()
 
   const video = unwrapOrNull(await selectVideo(supabaseClient, id), 'getVideo')
@@ -75,6 +79,4 @@ const getVideo = cache(async function getVideo(
   }
 
   return { ...video, clicks: totalClicks }
-})
-
-export default getVideo
+}

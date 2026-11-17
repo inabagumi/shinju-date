@@ -1,5 +1,5 @@
 import type { default as Database, Enums, Tables } from '@shinju-date/database'
-import type { ProfileImageSyncResult } from '@shinju-date/scraper/youtube'
+import type { AccountChanges } from '@shinju-date/scraper'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type AuditAction = Enums<'audit_action'>
@@ -13,10 +13,11 @@ type AuditLogJson = Exclude<
 export const AUDIT_TARGET_TABLES = {
   ANNOUNCEMENTS: 'announcements',
   AUTH_USERS: 'auth.users',
-  /** The former name of `talents`. */
+  /** The former name of `talents`, still used by some actions. */
   CHANNELS: 'channels',
   RECOMMENDED_QUERIES: 'redis:recommended_queries',
   SYSTEM: 'redis:system',
+  TALENTS: 'talents',
   TERMS: 'terms',
   TWITCH_USERS: 'twitch_users',
   VIDEO_BACKFILL: 'redis:video-backfill',
@@ -59,33 +60,20 @@ export interface AccountEmailUpdateDetails extends EntityRef {
   }
 }
 
-type SyncedProfileImage = Exclude<ProfileImageSyncResult, 'unchanged'>
-
-/** A YouTube channel of a talent that changed when it was synced. */
-export interface YouTubeChannelSyncChange {
-  after: { name: string; youtube_handle: string | null }
-  before: { name: string | null; youtube_handle: string | null }
-  profile_image?: SyncedProfileImage
-  youtube_channel_id: string
+/** An account of a talent that changed when the talent was synced. */
+export interface TalentSyncAccount {
+  /** The values before and after, when the name or handle changed. */
+  changes?: AccountChanges
+  /** Present only when the stored icon was created, replaced or removed. */
+  iconUpdated?: boolean
+  /** Primary key of the account row (`youtube_channels` / `twitch_users`). */
+  id: string
+  name: string | null
 }
 
-/** A Twitch user of a talent that changed when it was synced. */
-export interface TwitchUserSyncChange {
-  /** Omitted when the name and login could not be written. */
-  after?: { name: string; twitch_login_name: string }
-  /** Omitted when the name and login could not be written. */
-  before?: { name: string | null; twitch_login_name: string | null }
-  profile_image?: SyncedProfileImage
-  twitch_user_id: string
-}
-
-export interface YouTubeChannelsSyncDetails {
-  channels: YouTubeChannelSyncChange[]
-}
-
-export interface TwitchUsersSyncDetails {
-  platform: 'twitch'
-  users: TwitchUserSyncChange[]
+export interface TalentSyncDetails extends EntityRef {
+  accounts: TalentSyncAccount[]
+  platform: Enums<'platform_type'>
 }
 
 /** Backfill of the accounts of one talent on one platform. */
@@ -166,15 +154,10 @@ interface AuditLogDefinitions {
     details: EntityRef
     target: typeof AUDIT_TARGET_TABLES.CHANNELS
   }
-  CHANNEL_SYNC:
-    | {
-        details: YouTubeChannelsSyncDetails
-        target: typeof AUDIT_TARGET_TABLES.CHANNELS
-      }
-    | {
-        details: TwitchUsersSyncDetails
-        target: typeof AUDIT_TARGET_TABLES.TWITCH_USERS
-      }
+  CHANNEL_SYNC: {
+    details: TalentSyncDetails
+    target: typeof AUDIT_TARGET_TABLES.TALENTS
+  }
   CHANNEL_UPDATE: {
     details: EntityRef
     target: typeof AUDIT_TARGET_TABLES.CHANNELS
@@ -287,10 +270,7 @@ const AUDIT_LOG_TARGETS = {
   CHANNEL_DELETE: AUDIT_TARGET_TABLES.CHANNELS,
   CHANNEL_RESTORE: AUDIT_TARGET_TABLES.CHANNELS,
   CHANNEL_RETIRE: AUDIT_TARGET_TABLES.CHANNELS,
-  CHANNEL_SYNC: (details) =>
-    'users' in details
-      ? AUDIT_TARGET_TABLES.TWITCH_USERS
-      : AUDIT_TARGET_TABLES.CHANNELS,
+  CHANNEL_SYNC: AUDIT_TARGET_TABLES.TALENTS,
   CHANNEL_UPDATE: AUDIT_TARGET_TABLES.CHANNELS,
   MAINTENANCE_MODE_DISABLE: AUDIT_TARGET_TABLES.SYSTEM,
   MAINTENANCE_MODE_ENABLE: AUDIT_TARGET_TABLES.SYSTEM,
