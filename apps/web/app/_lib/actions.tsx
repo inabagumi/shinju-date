@@ -1,6 +1,5 @@
 'use server'
 
-import { COOKIE_NAMES } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { cookies } from 'next/headers'
 import { selectCurrentAnnouncement } from '@/lib/announcement'
@@ -11,6 +10,7 @@ import {
   type Talent,
 } from '@/lib/fetchers'
 import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
+import { COOKIE_NAMES } from '@/lib/site'
 import { supabaseClient } from '@/lib/supabase'
 import {
   type RenderedAnnouncement,

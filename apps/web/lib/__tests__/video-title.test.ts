@@ -1,5 +1,5 @@
-import { TALENT_AFFILIATION_NAME } from '@shinju-date/constants'
 import { describe, expect, test } from 'vitest'
+import { TALENT_AFFILIATION_NAME } from '../site'
 import { getVideoTitleParts } from '../video-title'
 
 describe('getVideoTitleParts', () => {

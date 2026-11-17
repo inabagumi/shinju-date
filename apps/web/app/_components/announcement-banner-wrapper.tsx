@@ -1,6 +1,6 @@
-import { COOKIE_NAMES } from '@shinju-date/constants'
 import { cookies } from 'next/headers'
 import { Suspense } from 'react'
+import { COOKIE_NAMES } from '@/lib/site'
 import { getAnnouncement } from '../_lib/actions'
 import { AnnouncementBanner } from './announcement-banner'
 import { renderAnnouncement } from './announcement-message'

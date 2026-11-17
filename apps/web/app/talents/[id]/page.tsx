@@ -1,10 +1,10 @@
-import { SITE_NAME as siteName } from '@shinju-date/constants'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { SearchResultsSkeleton } from '@/components/search-results'
 import { MAIN_CONTENT_ID } from '@/components/skip-link'
 import { fetchTalent } from '@/lib/fetchers'
+import { SITE_NAME as siteName } from '@/lib/site'
 import { getTalentCalendarPath, getTalentPath } from '@/lib/talent-links'
 import {
   TalentPageHeading,

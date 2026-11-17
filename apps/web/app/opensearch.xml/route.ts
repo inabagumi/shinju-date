@@ -1,7 +1,7 @@
-import { SITE_DESCRIPTION, SITE_NAME as siteName } from '@shinju-date/constants'
 import dedent from 'dedent'
 import { joinURL } from 'ufo'
 import { publicEnv } from '@/lib/env'
+import { SITE_DESCRIPTION, SITE_NAME as siteName } from '@/lib/site'
 import { getVideosPath } from '@/lib/video-kind-filter'
 
 /**

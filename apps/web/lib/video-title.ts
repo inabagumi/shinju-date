@@ -1,5 +1,5 @@
-import { TALENT_AFFILIATION_NAME } from '@shinju-date/constants'
 import { parseVideoTitle } from '@shinju-date/helpers'
+import { TALENT_AFFILIATION_NAME } from './site'
 
 /** ラベルとハッシュタグの行に出すハッシュタグの数 */
 const MAX_HASHTAGS = 3

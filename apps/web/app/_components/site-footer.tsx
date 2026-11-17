@@ -1,6 +1,6 @@
-import { SITE_NAME as siteName } from '@shinju-date/constants'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { SITE_NAME as siteName } from '@/lib/site'
 import { ContactLink } from './contact-link'
 import { NavLink } from './nav-link'
 
