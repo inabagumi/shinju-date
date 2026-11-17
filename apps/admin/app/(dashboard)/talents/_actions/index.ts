@@ -131,7 +131,7 @@ export async function createTalentAction(
 
     revalidatePath('/talents')
     await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
-    return {}
+    return { success: true }
   } catch (error) {
     if (error instanceof ActionError) {
       return actionErrorToFormState(error)

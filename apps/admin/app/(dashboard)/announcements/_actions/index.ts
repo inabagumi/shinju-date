@@ -94,7 +94,7 @@ export async function createAnnouncementAction(
     revalidatePath('/announcements')
     revalidatePath('/', 'page')
     await revalidateTags([CACHE_TAGS.ANNOUNCEMENTS])
-    return {}
+    return { success: true }
   } catch (error) {
     logger.error('お知らせの追加に失敗しました', {
       error,
@@ -196,7 +196,7 @@ export async function updateAnnouncementAction(
     revalidatePath('/announcements')
     revalidatePath('/', 'page')
     await revalidateTags([CACHE_TAGS.ANNOUNCEMENTS])
-    return {}
+    return { success: true }
   } catch (error) {
     logger.error('お知らせの更新に失敗しました', {
       error,

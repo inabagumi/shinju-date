@@ -1,29 +1,13 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-  EmptyState,
-  Button as UIButton,
-} from '@shinju-date/ui'
+import { EmptyState, Button as UIButton } from '@shinju-date/ui'
 import { ExternalLink, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useActionToast } from '@/components/action-toast'
 import { ConfirmDialog } from '@/components/confirm-dialog'
-import type { FormState } from '@/components/form'
-import Form, {
-  ErrorMessage,
-  FormField,
-  Input,
-  Label,
-  SubmitButton,
-} from '@/components/form'
+import { ErrorMessage, FormField, Input, Label } from '@/components/form'
+import { FormDialog } from '@/components/form-dialog'
 import { Panel } from '@/components/panel'
 import {
   addTwitchUserAction,
@@ -46,25 +30,11 @@ export function TwitchUserManager({
   users,
   isDeleted,
 }: TwitchUserManagerProps) {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   // Kept after the dialog closes so that its content stays while it fades out.
   const [removalTarget, setRemovalTarget] = useState<TwitchUser | null>(null)
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
   const { showToast } = useActionToast()
-
-  const handleAddUser = async (
-    currentState: FormState,
-    formData: FormData,
-  ): Promise<FormState> => {
-    const result = await addTwitchUserAction(currentState, formData)
-
-    if (result.success) {
-      setIsAddDialogOpen(false)
-    }
-
-    return result
-  }
 
   const handleRemoveUser = async (userId: string) => {
     setDeletingUserId(userId)
@@ -89,49 +59,37 @@ export function TwitchUserManager({
       <Panel
         actions={
           !isDeleted && (
-            <Dialog onOpenChange={setIsAddDialogOpen} open={isAddDialogOpen}>
-              <UIButton
-                onClick={() => setIsAddDialogOpen(true)}
-                type="button"
-                variant="secondary"
-              >
-                <Plus aria-hidden="true" className="mr-2 size-4" />
-                ユーザーを追加
-              </UIButton>
-              <DialogPortal>
-                <DialogOverlay />
-                <DialogContent>
-                  <DialogTitle>Twitchユーザーを追加</DialogTitle>
-                  <DialogDescription>
-                    ログイン名、ユーザーID、またはTwitch
-                    URLを入力してください。追加時にTwitch
-                    APIから表示名とログイン名を取得します。
-                  </DialogDescription>
-                  <Form action={handleAddUser} className="space-y-4">
-                    <input name="talent_id" type="hidden" value={talentId} />
-                    <FormField name="twitch_user">
-                      <Label>ログイン名 / ユーザーID / URL</Label>
-                      <Input
-                        placeholder="login または https://twitch.tv/login"
-                        required
-                      />
-                      <p className="mt-1 text-caption text-muted">
-                        例: example、https://www.twitch.tv/example、123456789
-                      </p>
-                      <ErrorMessage />
-                    </FormField>
-                    <div className="flex justify-end gap-2">
-                      <DialogClose asChild>
-                        <UIButton type="button" variant="secondary">
-                          キャンセル
-                        </UIButton>
-                      </DialogClose>
-                      <SubmitButton>追加</SubmitButton>
-                    </div>
-                  </Form>
-                </DialogContent>
-              </DialogPortal>
-            </Dialog>
+            <FormDialog
+              action={addTwitchUserAction}
+              description={
+                <>
+                  ログイン名、ユーザーID、またはTwitch
+                  URLを入力してください。追加時にTwitch
+                  APIから表示名とログイン名を取得します。
+                </>
+              }
+              submitLabel="追加"
+              title="Twitchユーザーを追加"
+              trigger={
+                <UIButton type="button" variant="secondary">
+                  <Plus aria-hidden="true" className="mr-2 size-4" />
+                  ユーザーを追加
+                </UIButton>
+              }
+            >
+              <input name="talent_id" type="hidden" value={talentId} />
+              <FormField name="twitch_user">
+                <Label>ログイン名 / ユーザーID / URL</Label>
+                <Input
+                  placeholder="login または https://twitch.tv/login"
+                  required
+                />
+                <p className="mt-1 text-caption text-muted">
+                  例: example、https://www.twitch.tv/example、123456789
+                </p>
+                <ErrorMessage />
+              </FormField>
+            </FormDialog>
           )
         }
         description="タレントに紐づけられたTwitchユーザーの追加・削除"

@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ActionToastProvider } from '@/components/action-toast'
 
@@ -106,5 +112,54 @@ describe('ChannelManager', () => {
     expect(
       await screen.findByText('チャンネルの削除に失敗しました。'),
     ).toBeInTheDocument()
+  })
+
+  it('adds with the dialog and closes it on success', async () => {
+    mocks.addYouTubeChannelAction.mockResolvedValue({ success: true })
+
+    renderManager()
+
+    fireEvent.click(screen.getByRole('button', { name: 'チャンネルを追加' }))
+
+    const dialog = screen.getByRole('dialog', {
+      name: 'YouTubeチャンネルを追加',
+    })
+
+    fireEvent.change(
+      within(dialog).getByRole('textbox', {
+        name: 'ハンドル / チャンネルID / URL',
+      }),
+      { target: { value: '@example' } },
+    )
+    fireEvent.click(within(dialog).getByRole('button', { name: '追加' }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+
+    const formData = mocks.addYouTubeChannelAction.mock
+      .calls[0]?.[1] as FormData
+
+    expect(formData.get('talent_id')).toBe('talent-1')
+    expect(formData.get('youtube_channel_id')).toBe('@example')
+  })
+
+  it('keeps the dialog open when adding fails', async () => {
+    mocks.addYouTubeChannelAction.mockResolvedValue({
+      errors: { generic: ['チャンネルの追加に失敗しました。'] },
+    })
+
+    renderManager()
+
+    fireEvent.click(screen.getByRole('button', { name: 'チャンネルを追加' }))
+
+    const dialog = screen.getByRole('dialog', {
+      name: 'YouTubeチャンネルを追加',
+    })
+
+    fireEvent.click(within(dialog).getByRole('button', { name: '追加' }))
+
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+      'チャンネルの追加に失敗しました。',
+    )
+    expect(screen.getByRole('dialog')).toBe(dialog)
   })
 })

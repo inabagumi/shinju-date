@@ -424,7 +424,7 @@ describe('createTalentAction', () => {
 
     const result = await createTalentAction({}, formData)
 
-    expect(result).toEqual({})
+    expect(result).toEqual({ success: true })
     expect(supabase.calls('insert', 'talents')[0]?.body).toEqual({
       name: 'New Talent',
       reading: null,
@@ -468,7 +468,7 @@ describe('createTalentAction', () => {
 
     const result = await createTalentAction({}, formData)
 
-    expect(result).toEqual({})
+    expect(result).toEqual({ success: true })
     expect(supabase.calls('insert', 'youtube_channels')[0]?.body).toEqual({
       name: 'Example Channel',
       talent_id: TALENT_ID,
@@ -701,7 +701,7 @@ describe('createTalentAction', () => {
 
     const result = await createTalentAction({}, formData)
 
-    expect(result).toEqual({})
+    expect(result).toEqual({ success: true })
     expect(supabase.calls('insert', 'talents')[0]?.body).toEqual({
       name: 'New Talent',
       reading: 'がー',
