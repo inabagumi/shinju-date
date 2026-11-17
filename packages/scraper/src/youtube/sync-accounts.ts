@@ -1,7 +1,14 @@
+import type { Tables } from '@shinju-date/database'
+import { diffAccountFields } from '../internal/account-fields.js'
 import { countChanges } from '../internal/concurrency.js'
 import { DatabaseError } from '../internal/database/index.js'
 import { removeUnusedProfileImages } from '../internal/profile-images/index.js'
-import type { CrawlContext } from '../types.js'
+import type {
+  AccountChanges,
+  CrawlContext,
+  SyncAccountResult,
+  TypedSupabaseClient,
+} from '../types.js'
 import type { YouTubeFetcher } from './fetcher.js'
 import {
   type SavedYouTubeChannelIcon,
@@ -11,27 +18,72 @@ import type { YouTubeChannel } from './types.js'
 
 const UPDATE_CONCURRENCY = 8
 
-interface SavedYouTubeChannel extends SavedYouTubeChannelIcon {
-  name: string | null
-  youtube_handle: string | null
+/** The columns of a channel that are kept in line with YouTube. */
+export type YouTubeChannelFields = Pick<
+  Tables<'youtube_channels'>,
+  'name' | 'youtube_handle'
+>
+
+interface SavedYouTubeChannel
+  extends SavedYouTubeChannelIcon,
+    YouTubeChannelFields {}
+
+/** What syncing one channel wrote. */
+interface ChannelSyncOutcome {
+  changes: AccountChanges<YouTubeChannelFields> | undefined
+  iconUpdated: boolean
+}
+
+/**
+ * Loads the saved channels of non-deleted talents (retired ones included),
+ * or of one talent only.
+ *
+ * @throws When the channels cannot be loaded.
+ */
+async function loadSavedChannels(
+  supabaseClient: TypedSupabaseClient,
+  talentId?: string,
+): Promise<SavedYouTubeChannel[]> {
+  let query = supabaseClient
+    .from('talents')
+    .select(
+      'id, youtube_channels!inner(id, name, youtube_channel_id, youtube_handle, profile_images(id, path, etag, source_url))',
+    )
+    .is('deleted_at', null)
+
+  if (talentId !== undefined) {
+    query = query.eq('id', talentId)
+  }
+
+  const { data: talents, error } = await query
+
+  if (error) {
+    throw new DatabaseError('Failed to load YouTube channels', error)
+  }
+
+  return talents.flatMap((talent) => talent.youtube_channels)
 }
 
 /**
  * Updates the name and handle of a saved channel.
  *
- * @returns Whether anything was written.
+ * @returns The columns that changed, or `undefined` when nothing was written.
  * @throws When the channel cannot be updated.
  */
 async function syncDetails(
   { logger, supabaseClient }: CrawlContext<YouTubeFetcher>,
   channel: YouTubeChannel,
   saved: SavedYouTubeChannel,
-): Promise<boolean> {
+): Promise<AccountChanges<YouTubeChannelFields> | undefined> {
   const name = channel.snippet.title
   const handle = channel.snippet.customUrl || null
+  const changes = diffAccountFields<YouTubeChannelFields>(
+    { name: saved.name, youtube_handle: saved.youtube_handle },
+    { name, youtube_handle: handle },
+  )
 
-  if (saved.name === name && saved.youtube_handle === handle) {
-    return false
+  if (!changes) {
+    return undefined
   }
 
   const { error } = await supabaseClient
@@ -49,7 +101,7 @@ async function syncDetails(
     youtubeChannelId: channel.id,
   })
 
-  return true
+  return changes
 }
 
 /**
@@ -94,6 +146,23 @@ async function syncIcon(
 }
 
 /**
+ * Syncs the name and handle of a saved channel, then its icon.
+ *
+ * @throws When the name and handle cannot be written; the icon is not synced
+ *   then.
+ */
+async function syncChannel(
+  context: CrawlContext<YouTubeFetcher>,
+  channel: YouTubeChannel,
+  saved: SavedYouTubeChannel,
+): Promise<ChannelSyncOutcome> {
+  const changes = await syncDetails(context, channel, saved)
+  const iconUpdated = await syncIcon(context, channel, saved)
+
+  return { changes, iconUpdated }
+}
+
+/**
  * Deletes icons no channel or user uses any more, e.g. those of deleted
  * channels. Unused icons are never served, so a failure is only reported.
  */
@@ -130,20 +199,7 @@ export async function syncYouTubeChannels(
   context: CrawlContext<YouTubeFetcher>,
 ): Promise<number> {
   const { fetcher, reportError, supabaseClient } = context
-  const { data: talents, error } = await supabaseClient
-    .from('talents')
-    .select(
-      'id, youtube_channels!inner(id, name, youtube_channel_id, youtube_handle, profile_images(id, path, etag, source_url))',
-    )
-    .is('deleted_at', null)
-
-  if (error) {
-    throw new DatabaseError('Failed to load YouTube channels', error)
-  }
-
-  const savedChannels: SavedYouTubeChannel[] = talents.flatMap(
-    (talent) => talent.youtube_channels,
-  )
+  const savedChannels = await loadSavedChannels(supabaseClient)
   const savedByYouTubeId = new Map(
     savedChannels.map((saved) => [saved.youtube_channel_id, saved]),
   )
@@ -159,10 +215,13 @@ export async function syncYouTubeChannels(
         return false
       }
 
-      const detailsChanged = await syncDetails(context, channel, saved)
-      const iconChanged = await syncIcon(context, channel, saved)
+      const { changes, iconUpdated } = await syncChannel(
+        context,
+        channel,
+        saved,
+      )
 
-      return detailsChanged || iconChanged
+      return changes !== undefined || iconUpdated
     },
     (error, channel) => reportError(error, { youtubeChannelId: channel.id }),
   )
@@ -170,4 +229,69 @@ export async function syncYouTubeChannels(
   await cleanUpProfileImages(context)
 
   return changedCount
+}
+
+/**
+ * Brings the name, handle and icon of the YouTube channels of one talent in
+ * line with YouTube, with the same functions as {@link syncYouTubeChannels}:
+ * a channel is written only when something changed.
+ *
+ * Unused icons are not deleted here; the scheduled sync picks them up.
+ *
+ * @returns One result per saved channel of the talent; empty when the talent
+ *   has none or was deleted.
+ * @throws When the channels cannot be loaded or YouTube cannot be read.
+ */
+export async function syncYouTubeChannelsOfTalent(
+  context: CrawlContext<YouTubeFetcher>,
+  talentId: string,
+): Promise<SyncAccountResult<YouTubeChannelFields>[]> {
+  const { fetcher, reportError, supabaseClient } = context
+  const savedChannels = await loadSavedChannels(supabaseClient, talentId)
+
+  if (savedChannels.length === 0) {
+    return []
+  }
+
+  const channels = await fetcher.getAccounts(
+    savedChannels.map((saved) => saved.youtube_channel_id),
+  )
+  const channelById = new Map(channels.map((channel) => [channel.id, channel]))
+
+  return Promise.all(
+    savedChannels.map(
+      async (saved): Promise<SyncAccountResult<YouTubeChannelFields>> => {
+        const channel = channelById.get(saved.youtube_channel_id)
+        const notSynced = {
+          accountId: saved.id,
+          iconUpdated: false,
+          name: saved.name,
+        }
+
+        if (!channel) {
+          return { ...notSynced, status: 'not-found' }
+        }
+
+        try {
+          const { changes, iconUpdated } = await syncChannel(
+            context,
+            channel,
+            saved,
+          )
+
+          return {
+            accountId: saved.id,
+            iconUpdated,
+            name: channel.snippet.title,
+            status: changes || iconUpdated ? 'updated' : 'unchanged',
+            ...(changes ? { changes } : {}),
+          }
+        } catch (error) {
+          reportError(error, { youtubeChannelId: channel.id })
+
+          return { ...notSynced, status: 'failed' }
+        }
+      },
+    ),
+  )
 }

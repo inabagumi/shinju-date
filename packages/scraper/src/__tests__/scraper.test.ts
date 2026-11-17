@@ -5,6 +5,7 @@ import type {
   CrawlContext,
   RefreshVideoResult,
   ScraperOptions,
+  SyncAccountResult,
   TypedSupabaseClient,
 } from '../types.js'
 
@@ -52,6 +53,10 @@ class ExampleScraper extends Scraper {
 
   syncAccounts(): Promise<boolean> {
     return Promise.resolve(false)
+  }
+
+  syncTalentAccounts(): Promise<SyncAccountResult[]> {
+    return Promise.resolve([])
   }
 }
 

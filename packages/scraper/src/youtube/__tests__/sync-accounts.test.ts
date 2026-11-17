@@ -12,7 +12,10 @@ import {
   setupSupabase,
 } from '../../internal/testing/supabase.js'
 import type { YouTubeFetcher } from '../fetcher.js'
-import { syncYouTubeChannels } from '../sync-accounts.js'
+import {
+  syncYouTubeChannels,
+  syncYouTubeChannelsOfTalent,
+} from '../sync-accounts.js'
 import type { YouTubeChannel } from '../types.js'
 
 const supabase = setupSupabase()
@@ -318,5 +321,226 @@ describe('syncYouTubeChannels', () => {
         { operation: 'removeUnusedProfileImages' },
       )
     })
+  })
+})
+
+describe('syncYouTubeChannelsOfTalent', () => {
+  const ICON_URL = 'https://yt3.ggpht.com/bob=s800-c-k-c0x00ffffff-no-rj'
+
+  /** A database holding the channels of `talent-2` only. */
+  function respondWithTalent(
+    override?: (request: SupabaseRequest) => unknown,
+  ): void {
+    respondWithSavedTalents((request) => {
+      const overridden = override?.(request)
+
+      if (overridden !== undefined) {
+        return overridden
+      }
+
+      return request.method === 'GET' && request.table === 'talents'
+        ? [
+            {
+              id: 'talent-2',
+              youtube_channels: [
+                ...(savedTalents[1]?.youtube_channels ?? []),
+                {
+                  id: 'channel-row-3',
+                  name: 'Bob Sub',
+                  profile_images: null,
+                  youtube_channel_id: 'UCccc',
+                  youtube_handle: '@bob_sub',
+                },
+              ],
+            },
+          ]
+        : undefined
+    })
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('syncs only the channels of the talent and returns what changed', async () => {
+    respondWithTalent()
+    const { fetcher, getAccounts } = createFetcher([
+      createChannel('UCbbb', 'Bob Ch.', '@bob'),
+      createChannel('UCccc', 'Bob Sub', '@bob_sub'),
+    ])
+
+    const results = await syncYouTubeChannelsOfTalent(
+      createContext(fetcher),
+      'talent-2',
+    )
+
+    expect(supabase.requests[0]?.query).toMatchObject({
+      deleted_at: 'is.null',
+      id: 'eq.talent-2',
+    })
+    expect(getAccounts).toHaveBeenCalledWith(['UCbbb', 'UCccc'])
+    expect(results).toEqual([
+      {
+        accountId: 'channel-row-2',
+        changes: {
+          after: { name: 'Bob Ch.', youtube_handle: '@bob' },
+          before: { name: 'Bob', youtube_handle: null },
+        },
+        iconUpdated: false,
+        name: 'Bob Ch.',
+        status: 'updated',
+      },
+      {
+        accountId: 'channel-row-3',
+        iconUpdated: false,
+        name: 'Bob Sub',
+        status: 'unchanged',
+      },
+    ])
+    expect(supabase.written('PATCH', 'youtube_channels')).toEqual([
+      expect.objectContaining({
+        body: { name: 'Bob Ch.', youtube_handle: '@bob' },
+        query: { id: 'eq.channel-row-2' },
+      }),
+    ])
+  })
+
+  it('keeps only the columns that changed in the changes', async () => {
+    respondWithTalent()
+    const { fetcher } = createFetcher([createChannel('UCbbb', 'Bob', '@bob')])
+
+    const [result] = await syncYouTubeChannelsOfTalent(
+      createContext(fetcher),
+      'talent-2',
+    )
+
+    expect(result?.changes).toEqual({
+      after: { youtube_handle: '@bob' },
+      before: { youtube_handle: null },
+    })
+  })
+
+  it('writes nothing when every channel is up to date', async () => {
+    respondWithTalent()
+    const { fetcher } = createFetcher([
+      createChannel('UCbbb', 'Bob'),
+      createChannel('UCccc', 'Bob Sub', '@bob_sub'),
+    ])
+
+    const results = await syncYouTubeChannelsOfTalent(
+      createContext(fetcher),
+      'talent-2',
+    )
+
+    expect(results.map(({ status }) => status)).toEqual([
+      'unchanged',
+      'unchanged',
+    ])
+    // Unused icons are left to the scheduled sync
+    expect(
+      supabase.requests.map(({ method, table }) => `${method} ${table}`),
+    ).toEqual(['GET talents'])
+  })
+
+  it('reports a channel YouTube does not return as not found', async () => {
+    respondWithTalent()
+    const { fetcher } = createFetcher([
+      createChannel('UCccc', 'Bob Sub', '@bob_sub'),
+    ])
+
+    const results = await syncYouTubeChannelsOfTalent(
+      createContext(fetcher),
+      'talent-2',
+    )
+
+    expect(results[0]).toEqual({
+      accountId: 'channel-row-2',
+      iconUpdated: false,
+      name: 'Bob',
+      status: 'not-found',
+    })
+  })
+
+  it('reports a channel that cannot be updated as failed and syncs the rest', async () => {
+    respondWithTalent(({ method, query, table }) =>
+      method === 'PATCH' &&
+      table === 'youtube_channels' &&
+      query['id'] === 'eq.channel-row-2'
+        ? postgresError('23505', 'duplicate key value')
+        : undefined,
+    )
+    const { fetcher } = createFetcher([
+      createChannel('UCbbb', 'Bob Ch.', '@bob'),
+      createChannel('UCccc', 'Bob Sub!', '@bob_sub'),
+    ])
+
+    const results = await syncYouTubeChannelsOfTalent(
+      createContext(fetcher),
+      'talent-2',
+    )
+
+    expect(results.map(({ name, status }) => ({ name, status }))).toEqual([
+      { name: 'Bob', status: 'failed' },
+      { name: 'Bob Sub!', status: 'updated' },
+    ])
+    expect(reportError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('duplicate key value'),
+      }),
+      { youtubeChannelId: 'UCbbb' },
+    )
+  })
+
+  it('reports an icon that changed although the name did not', async () => {
+    serveImage(supabase, ICON_URL, { body: await createImage(800, 800) })
+    mockStorage(supabase)
+    respondWithTalent()
+    const { fetcher } = createFetcher([
+      createChannel('UCbbb', 'Bob', undefined, createThumbnails(ICON_URL)),
+    ])
+
+    const [result] = await syncYouTubeChannelsOfTalent(
+      createContext(fetcher),
+      'talent-2',
+    )
+
+    expect(result).toEqual({
+      accountId: 'channel-row-2',
+      iconUpdated: true,
+      name: 'Bob',
+      status: 'updated',
+    })
+    expect(supabase.written('POST', 'profile_images')).toHaveLength(1)
+  })
+
+  it('returns nothing without asking YouTube when the talent has no channels', async () => {
+    supabase.respond(() => [])
+    const { fetcher, getAccounts } = createFetcher([])
+
+    await expect(
+      syncYouTubeChannelsOfTalent(createContext(fetcher), 'talent-9'),
+    ).resolves.toEqual([])
+    expect(getAccounts).not.toHaveBeenCalled()
+  })
+
+  it('fails when the channels cannot be loaded', async () => {
+    supabase.respond(() => postgresError('42501', 'permission denied'))
+    const { fetcher } = createFetcher([])
+
+    await expect(
+      syncYouTubeChannelsOfTalent(createContext(fetcher), 'talent-2'),
+    ).rejects.toThrow('permission denied')
+  })
+
+  it('fails when YouTube cannot be read', async () => {
+    respondWithTalent()
+    const fetcher = {
+      getAccounts: vi.fn().mockRejectedValue(new Error('quota exceeded')),
+    } as unknown as YouTubeFetcher
+
+    await expect(
+      syncYouTubeChannelsOfTalent(createContext(fetcher), 'talent-2'),
+    ).rejects.toThrow('quota exceeded')
+    expect(supabase.written('PATCH', 'youtube_channels')).toHaveLength(0)
   })
 })

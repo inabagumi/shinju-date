@@ -7,6 +7,7 @@ import type {
   ErrorReporter,
   RefreshVideoResult,
   ScraperOptions,
+  SyncAccountResult,
   TypedSupabaseClient,
 } from './types.js'
 
@@ -33,6 +34,7 @@ const silentLogger: Logger = {
  * | `refreshVideo`            | re-reads one saved video                        |
  * | `removeUnavailableVideos` | soft-deletes videos that are gone, across all   |
  * | `syncAccounts`            | updates names, handles and icons of accounts    |
+ * | `syncTalentAccounts`      | does the same for the accounts of one talent    |
  *
  * How a platform is read and how its videos are stored (its own link table,
  * its own notion of a broadcast) is entirely up to the subclass.
@@ -126,6 +128,24 @@ export abstract class Scraper {
    * accounts in line with the platform.
    */
   abstract syncAccounts(now?: Temporal.Instant): Promise<boolean>
+
+  /**
+   * Brings names and handles (and, where supported, icons) of the accounts of
+   * one talent in line with the platform, with the same functions as
+   * `syncAccounts`: an account is written only when something changed.
+   *
+   * Unlike `syncAccounts`, this concerns a single talent, so a failure to read
+   * the platform or the database rejects; an account that cannot be updated is
+   * still only reported, and returned as `failed`.
+   *
+   * @param talentId Primary key of the `talents` row.
+   * @returns One result per saved account of the talent on this platform;
+   *   empty when the talent has none or was deleted.
+   */
+  abstract syncTalentAccounts(
+    talentId: string,
+    now?: Temporal.Instant,
+  ): Promise<SyncAccountResult[]>
 
   /**
    * Reports a failure that does not stop the run.
