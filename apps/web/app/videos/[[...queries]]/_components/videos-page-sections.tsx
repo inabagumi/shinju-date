@@ -24,13 +24,6 @@ import SearchExitTracker from './search-exit-tracker'
 import SearchQueryTracker from './search-query-tracker'
 import VideoFilters, { VideoFiltersSkeleton } from './video-filters'
 
-export interface VideosPageSectionProps {
-  params: Promise<{
-    queries?: string[]
-  }>
-  searchParams: Promise<Record<string, string | string[] | undefined>>
-}
-
 interface VideosPageOptions {
   kind: VideoKindFilter
   query: string
@@ -59,7 +52,7 @@ export async function getSelectedTalentIds(
 async function getVideosPageOptions({
   params,
   searchParams,
-}: VideosPageSectionProps): Promise<VideosPageOptions> {
+}: PageProps<'/videos/[[...queries]]'>): Promise<VideosPageOptions> {
   const [{ queries }, searchParamValues] = await Promise.all([
     params,
     searchParams,
@@ -122,7 +115,9 @@ function VideosPageFilters({
   )
 }
 
-export async function VideosPageHeading(props: VideosPageSectionProps) {
+export async function VideosPageHeading(
+  props: PageProps<'/videos/[[...queries]]'>,
+) {
   const [options, talents] = await Promise.all([
     getVideosPageOptions(props),
     fetchActiveTalents(),
@@ -178,7 +173,9 @@ async function getNoResultsProps({
   }
 }
 
-export async function VideosPageResults(props: VideosPageSectionProps) {
+export async function VideosPageResults(
+  props: PageProps<'/videos/[[...queries]]'>,
+) {
   const options = await getVideosPageOptions(props)
   const { kind, query, talentIds } = options
   const [videos, referenceDate] = await Promise.all([
