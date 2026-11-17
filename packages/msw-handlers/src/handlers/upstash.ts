@@ -141,10 +141,11 @@ function simulateBackfillRequeue(keys: any[], argv: any[]): number {
 }
 
 /**
- * Simulate `RUN_UNLOCK_SCRIPT` of `@shinju-date/video-backfill`: deletes the
- * lock of a request for a check only if it still holds the request's token.
+ * Simulate the scripts that release a lock: `RUN_UNLOCK_SCRIPT` of
+ * `@shinju-date/video-backfill` and `RELEASE_LOCK_SCRIPT` of the cron jobs of
+ * batch. Deletes the lock only if it still holds the given token.
  */
-function simulateBackfillRunUnlock(keys: any[], argv: any[]): number {
+function simulateUnlock(keys: any[], argv: any[]): number {
   const [lockKey] = keys
   const [token] = argv
 
@@ -258,8 +259,11 @@ function processRedisCommand(command: string, args: any[]): any {
         return { result: simulateBackfillRequeue(keys, argv) }
       }
 
-      if (String(script).includes('-- video-backfill:run-unlock')) {
-        return { result: simulateBackfillRunUnlock(keys, argv) }
+      if (
+        String(script).includes('-- video-backfill:run-unlock') ||
+        String(script).includes('-- batch:release-lock')
+      ) {
+        return { result: simulateUnlock(keys, argv) }
       }
 
       return { result: null }

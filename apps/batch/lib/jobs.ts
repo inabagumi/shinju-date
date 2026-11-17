@@ -1,6 +1,6 @@
 import type { Enums } from '@shinju-date/database'
 import type { CronJob } from './cron'
-import * as ratelimit from './ratelimit'
+import { videosBackfill } from './ratelimit'
 
 export type VideosCheckMode = 'default' | 'recent' | 'all'
 
@@ -10,8 +10,10 @@ export type VideosCheckMode = 'default' | 'recent' | 'all'
  * The schedules are duplicated from `vercel.json` because Sentry needs them
  * to detect missed runs; a test keeps the two in sync.
  *
- * `maxDuration` cannot live here: Next.js reads it only as a literal exported
- * from the route file. Each job notes the value its route uses and why.
+ * `maxDurationSeconds` is duplicated from the `maxDuration` of each route,
+ * because Next.js reads it only as a literal exported from the route file;
+ * a test keeps the two in sync too. Each job notes why its route needs that
+ * long.
  */
 
 /**
@@ -20,15 +22,13 @@ export type VideosCheckMode = 'default' | 'recent' | 'all'
  */
 const TALENTS_UPDATE_JOBS: Record<Enums<'platform_type'>, CronJob> = {
   twitch: {
+    maxDurationSeconds: 120,
     path: '/talents/update?provider=twitch',
-    ratelimit: ratelimit.talentsUpdate,
-    ratelimitKey: 'channels:update:twitch',
     schedule: '51 1/3 * * *',
   },
   youtube: {
+    maxDurationSeconds: 120,
     path: '/talents/update',
-    ratelimit: ratelimit.talentsUpdate,
-    ratelimitKey: 'channels:update:youtube',
     schedule: '21 1/3 * * *',
   },
 }
@@ -39,21 +39,19 @@ const TALENTS_UPDATE_JOBS: Record<Enums<'platform_type'>, CronJob> = {
  */
 const VIDEOS_UPDATE_JOBS: Record<Enums<'platform_type'>, CronJob> = {
   twitch: {
+    maxDurationSeconds: 120,
     path: '/videos/update?provider=twitch',
-    ratelimit: ratelimit.videosUpdate,
-    ratelimitKey: 'videos:update:twitch',
     schedule: '3/5 * * * *',
   },
   youtube: {
+    maxDurationSeconds: 120,
     path: '/videos/update',
-    ratelimit: ratelimit.videosUpdate,
-    ratelimitKey: 'videos:update:youtube',
     schedule: '1/5 * * * *',
   },
 }
 
 /**
- * `maxDuration`: 120 seconds. `mode=all` asks the API of the provider about
+ * Needs 120 seconds: `mode=all` asks the API of the provider about
  * every video in the database.
  */
 const VIDEOS_CHECK_JOBS: Record<
@@ -62,41 +60,35 @@ const VIDEOS_CHECK_JOBS: Record<
 > = {
   twitch: {
     all: {
+      maxDurationSeconds: 120,
       path: '/videos/check?provider=twitch&mode=all',
-      ratelimit: ratelimit.videosCheckAll,
-      ratelimitKey: 'videos:check:all:twitch',
       schedule: '34 23 * * 2,4',
     },
     default: {
+      maxDurationSeconds: 120,
       path: '/videos/check?provider=twitch',
-      ratelimit: ratelimit.videosCheck,
-      ratelimitKey: 'videos:check:twitch',
       schedule: '*/1 * * * *',
     },
     recent: {
+      maxDurationSeconds: 120,
       path: '/videos/check?provider=twitch&mode=recent',
-      ratelimit: ratelimit.videosCheckRecent,
-      ratelimitKey: 'videos:check:recent:twitch',
       schedule: '15,45 * * * *',
     },
   },
   youtube: {
     all: {
+      maxDurationSeconds: 120,
       path: '/videos/check?mode=all',
-      ratelimit: ratelimit.videosCheckAll,
-      ratelimitKey: 'videos:check:all:youtube',
       schedule: '4 23 * * 2,4',
     },
     default: {
+      maxDurationSeconds: 120,
       path: '/videos/check',
-      ratelimit: ratelimit.videosCheck,
-      ratelimitKey: 'videos:check:youtube',
       schedule: '*/1 * * * *',
     },
     recent: {
+      maxDurationSeconds: 120,
       path: '/videos/check?mode=recent',
-      ratelimit: ratelimit.videosCheckRecent,
-      ratelimitKey: 'videos:check:recent:youtube',
       schedule: '*/30 * * * *',
     },
   },
@@ -107,13 +99,18 @@ const VIDEOS_CHECK_JOBS: Record<
  * but only does work while jobs are queued; the rate limit is separate from
  * `/videos/update` so a backfill never delays the discovery of new videos.
  *
+ * Rate limited instead of locked: a run starts new pages for only 50
+ * seconds so that the next run can start while it finishes its last page,
+ * and the lock of each job in `@shinju-date/video-backfill` keeps the two
+ * from reading the same job.
+ *
  * `maxDuration`: 120 seconds. A run starts new pages for 50 seconds, and the
  * page in progress when that runs out still has to finish.
  */
 export const VIDEOS_BACKFILL_JOB: CronJob = {
+  maxDurationSeconds: 120,
   path: '/videos/backfill',
-  ratelimit: ratelimit.videosBackfill,
-  ratelimitKey: 'videos:backfill',
+  ratelimit: videosBackfill,
   schedule: '*/1 * * * *',
 }
 
@@ -125,9 +122,8 @@ export const VIDEOS_BACKFILL_JOB: CronJob = {
  * in each direction, and the rest waits for the next run 5 minutes later.
  */
 export const VIDEOS_CASCADE_FROM_TALENTS_JOB: CronJob = {
+  maxDurationSeconds: 60,
   path: '/videos/cascade-from-talents',
-  ratelimit: ratelimit.videosCascadeFromTalents,
-  ratelimitKey: 'videos:cascade-from-talents',
   schedule: '*/5 * * * *',
 }
 
@@ -138,9 +134,8 @@ export const VIDEOS_CASCADE_FROM_TALENTS_JOB: CronJob = {
  * `maxDuration`: 60 seconds. Only counts rows and reads a few Redis keys.
  */
 export const STATS_SNAPSHOT_JOB: CronJob = {
+  maxDurationSeconds: 60,
   path: '/stats/snapshot',
-  ratelimit: ratelimit.statsSnapshot,
-  ratelimitKey: 'stats:snapshot',
   schedule: '10 15 * * *',
 }
 
@@ -152,9 +147,8 @@ export const STATS_SNAPSHOT_JOB: CronJob = {
  * batches of `UPDATE_BATCH_SIZE` (500).
  */
 export const TERMS_POPULARITY_UPDATE_JOB: CronJob = {
+  maxDurationSeconds: 60,
   path: '/terms/popularity/update',
-  ratelimit: ratelimit.termsPopularityUpdate,
-  ratelimitKey: 'terms:popularity:update',
   schedule: '0 0 * * *',
 }
 
@@ -165,9 +159,8 @@ export const TERMS_POPULARITY_UPDATE_JOB: CronJob = {
  * page of `TERMS_PAGE_SIZE` (1,000), to match them against the searches.
  */
 export const RECOMMENDATION_QUERIES_UPDATE_JOB: CronJob = {
+  maxDurationSeconds: 120,
   path: '/recommendation/queries/update',
-  ratelimit: ratelimit.recommendationQueriesUpdate,
-  ratelimitKey: 'recommendation:queries:update',
   schedule: '17 1 * * *',
 }
 

@@ -1,5 +1,5 @@
 import type { FilteredYouTubePlaylistItem } from '@shinju-date/youtube-api-client'
-import type { SavedYouTubeVideo } from '../../youtube/check-videos.js'
+import type { SavedYouTubeVideo } from '../../youtube/saved-video.js'
 import type { YouTubeChannel, YouTubeVideo } from '../../youtube/types.js'
 
 /** Active talents with one YouTube channel each, as the crawls load them. */

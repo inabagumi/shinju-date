@@ -1,23 +1,13 @@
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const limit = vi.fn()
+const acquireLock = vi.fn()
+const releaseLock = vi.fn()
 const scraper = { addNewVideos: vi.fn() }
 const createScraper = vi.fn(() => scraper)
 const finishVideoSync = vi.fn()
 
-vi.mock('@/lib/ratelimit', () => ({
-  recommendationQueriesUpdate: { limit: vi.fn() },
-  statsSnapshot: { limit: vi.fn() },
-  talentsUpdate: { limit: vi.fn() },
-  termsPopularityUpdate: { limit: vi.fn() },
-  videosBackfill: { limit: vi.fn() },
-  videosCascadeFromTalents: { limit: vi.fn() },
-  videosCheck: { limit: vi.fn() },
-  videosCheckAll: { limit: vi.fn() },
-  videosCheckRecent: { limit: vi.fn() },
-  videosUpdate: { limit },
-}))
+vi.mock('@/lib/lock', () => ({ acquireLock, releaseLock }))
 vi.mock('@/lib/scraper', () => ({ createScraper }))
 vi.mock('@/lib/video-sync', () => ({ finishVideoSync }))
 
@@ -47,7 +37,7 @@ function createRequest(search = ''): NextRequest {
 describe('POST /videos/update', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    limit.mockResolvedValue({ success: true })
+    acquireLock.mockResolvedValue('lock-value')
     scraper.addNewVideos.mockResolvedValue(false)
   })
 
@@ -57,7 +47,7 @@ describe('POST /videos/update', () => {
     const response = await POST(createRequest())
 
     expect(response.status).toBe(204)
-    expect(limit).toHaveBeenCalledWith('videos:update:youtube')
+    expect(acquireLock).toHaveBeenCalledWith('videos:update', 130)
     expect(createScraper).toHaveBeenCalledWith('youtube')
     expect(scraper.addNewVideos).toHaveBeenCalledTimes(1)
     expect(finishVideoSync).toHaveBeenCalledWith(
@@ -69,7 +59,10 @@ describe('POST /videos/update', () => {
     const response = await POST(createRequest('?provider=twitch'))
 
     expect(response.status).toBe(204)
-    expect(limit).toHaveBeenCalledWith('videos:update:twitch')
+    expect(acquireLock).toHaveBeenCalledWith(
+      'videos:update:provider=twitch',
+      130,
+    )
     expect(createScraper).toHaveBeenCalledWith('twitch')
     expect(finishVideoSync).toHaveBeenCalledWith(
       expect.objectContaining({ changed: false }),
@@ -94,7 +87,7 @@ describe('POST /videos/update', () => {
     await expect(response.json()).resolves.toEqual({
       error: expect.stringMatching(/^Invalid query parameters\. provider: /),
     })
-    expect(limit).not.toHaveBeenCalled()
+    expect(acquireLock).not.toHaveBeenCalled()
     expect(createScraper).not.toHaveBeenCalled()
   })
 

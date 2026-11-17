@@ -3,24 +3,57 @@ import { createErrorResponse } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { after } from 'next/server'
 import { serverEnv } from './env'
+import { acquireLock, releaseLock } from './lock'
 
 /** How long to wait for Sentry to send buffered events after the response. */
 const SENTRY_FLUSH_TIMEOUT_MS = 10_000
 
+/**
+ * How much longer than `maxDurationSeconds` the lock of a run lasts. A run
+ * that Vercel stops before it can release the lock still loses it soon
+ * after.
+ */
+const LOCK_MARGIN_SECONDS = 10
+
 export interface CronJob {
   /**
+   * `maxDuration` of the route, in seconds. A test keeps the two in sync.
+   * The lock of a run lasts this long plus `LOCK_MARGIN_SECONDS`.
+   */
+  maxDurationSeconds: number
+  /**
    * Path (including the query string) Vercel Cron requests.
-   * Doubles as the Sentry monitor slug.
+   * Doubles as the Sentry monitor slug, and the identifier of the lock is
+   * made from it (`getCronJobIdentifier`).
    */
   path: string
-  /** Rate limiter that guards against overlapping or repeated runs. */
-  ratelimit: {
+  /**
+   * Lets runs overlap, but only one of them start in each window, instead
+   * of keeping a run from starting until the previous one ends. Only for a
+   * job that keeps its overlapping runs from doing the same work by itself.
+   */
+  ratelimit?: {
     limit(identifier: string): Promise<{ success: boolean }>
   }
-  /** Identifier counted by `ratelimit`. */
-  ratelimitKey: string
   /** Crontab expression in UTC. Must match the entry in `vercel.json`. */
   schedule: string
+}
+
+/**
+ * The identifier of the lock (or the rate limit) of a job: the segments of
+ * the path and the query parameters sorted by name, joined with colons
+ * (`/videos/check?provider=twitch&mode=all` is
+ * `videos:check:mode=all:provider=twitch`).
+ */
+export function getCronJobIdentifier(path: string): string {
+  const url = new URL(path, 'http://localhost')
+
+  url.searchParams.sort()
+
+  return [
+    ...url.pathname.split('/').filter(Boolean),
+    ...[...url.searchParams].map(([name, value]) => `${name}=${value}`),
+  ].join(':')
 }
 
 export interface RunCronJobOptions {
@@ -62,7 +95,10 @@ export function verifyCronRequest(
  * Runs a cron route handler with the plumbing every job needs:
  *
  * 1. rejects requests without the cron secret (401)
- * 2. rejects runs that follow the previous one too closely (429)
+ * 2. rejects a run while the previous one is still running (429), and
+ *    releases the lock after the run, whether it succeeds or fails, so that
+ *    a failed job can be run again right away (a job with `ratelimit`
+ *    instead rejects a run in the same window as the previous one)
  * 3. reports the run to Sentry Cron Monitoring, as `ok` or `error`
  * 4. turns a thrown error into a 500 instead of an unreported crash
  *
@@ -84,17 +120,57 @@ export async function runCronJob<T>(
     return createErrorResponse('Unauthorized', { status: 401 })
   }
 
-  const { success } = await job.ratelimit.limit(job.ratelimitKey)
+  const identifier = getCronJobIdentifier(job.path)
 
-  if (!success) {
-    logger.warn('前回の実行から間隔が空いていません', { path: job.path })
+  if (job.ratelimit) {
+    const { success } = await job.ratelimit.limit(identifier)
 
-    return createErrorResponse(
-      'There has been no interval since the last run.',
-      { status: 429 },
-    )
+    if (!success) {
+      logger.warn('前回の実行から間隔が空いていません', { path: job.path })
+
+      return createErrorResponse(
+        'There has been no interval since the last run.',
+        { status: 429 },
+      )
+    }
+
+    return runAndReport(job, run, onError)
   }
 
+  const lock = await acquireLock(
+    identifier,
+    job.maxDurationSeconds + LOCK_MARGIN_SECONDS,
+  )
+
+  if (!lock) {
+    logger.warn('前回の実行が終わっていません', { path: job.path })
+
+    return createErrorResponse('The previous run has not finished yet.', {
+      status: 429,
+    })
+  }
+
+  try {
+    return await runAndReport(job, run, onError)
+  } finally {
+    try {
+      await releaseLock(identifier, lock)
+    } catch (error) {
+      // The lock runs out by itself, so the run is not failed for this.
+      logger.error('ロックを外せませんでした', { error, path: job.path })
+    }
+  }
+}
+
+/**
+ * Runs the job and reports it to Sentry Cron Monitoring. A thrown error
+ * becomes a 500.
+ */
+async function runAndReport<T>(
+  job: CronJob,
+  run: () => Promise<T>,
+  onError: RunCronJobOptions['onError'],
+): Promise<Response> {
   const checkInId = Sentry.captureCheckIn(
     {
       monitorSlug: job.path,

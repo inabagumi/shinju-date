@@ -72,6 +72,26 @@ function renderWithTrigger(overrides: DialogOverrides = {}) {
   return { onConfirm, openDialog }
 }
 
+function ControlledConfirmDialog() {
+  const [open, setOpen] = useState(true)
+
+  return (
+    <>
+      <button onClick={() => setOpen(true)} type="button">
+        外から開く
+      </button>
+      <ConfirmDialog
+        confirmLabel="削除"
+        description="削除してもよろしいですか？"
+        onConfirm={async () => ({ error: '失敗', success: false })}
+        onOpenChange={setOpen}
+        open={open}
+        title="項目を削除"
+      />
+    </>
+  )
+}
+
 describe('ConfirmDialog', () => {
   it('shows the message and the target', () => {
     renderDialog()
@@ -225,27 +245,7 @@ describe('ConfirmDialog', () => {
     })
 
     it('clears the error when reopened from outside', async () => {
-      function Controlled() {
-        const [open, setOpen] = useState(true)
-
-        return (
-          <>
-            <button onClick={() => setOpen(true)} type="button">
-              外から開く
-            </button>
-            <ConfirmDialog
-              confirmLabel="削除"
-              description="削除してもよろしいですか？"
-              onConfirm={async () => ({ error: '失敗', success: false })}
-              onOpenChange={setOpen}
-              open={open}
-              title="項目を削除"
-            />
-          </>
-        )
-      }
-
-      render(<Controlled />)
+      render(<ControlledConfirmDialog />)
 
       fireEvent.click(screen.getByRole('button', { name: '削除' }))
       expect(await screen.findByRole('alert')).toBeInTheDocument()

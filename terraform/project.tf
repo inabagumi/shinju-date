@@ -6,7 +6,6 @@ resource "vercel_project" "this" {
     repo              = "inabagumi/shinju-date"
     type              = "github"
   }
-  ignore_command               = "npx turbo-ignore"
   name                         = "shinju-date"
   node_version                 = "26.x"
   prioritise_production_builds = true
@@ -111,7 +110,6 @@ resource "vercel_project" "admin" {
     repo              = "inabagumi/shinju-date"
     type              = "github"
   }
-  ignore_command               = "npx turbo-ignore"
   name                         = "shinju-date-admin"
   node_version                 = "26.x"
   prioritise_production_builds = true
@@ -207,7 +205,6 @@ resource "vercel_project" "batch" {
     repo              = "inabagumi/shinju-date"
     type              = "github"
   }
-  ignore_command               = "npx turbo-ignore"
   name                         = "shinju-date-batch"
   node_version                 = "26.x"
   prioritise_production_builds = true

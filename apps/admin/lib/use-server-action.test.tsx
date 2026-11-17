@@ -50,6 +50,11 @@ function getToasts() {
   return within(screen.getByRole('region')).queryAllByRole('listitem')
 }
 
+function ComponentOutsideProvider() {
+  useServerAction(async () => ({ success: true }))
+  return null
+}
+
 describe('useServerAction', () => {
   it('passes the arguments to the action and shows the success text', async () => {
     const action = vi.fn(async (_id: string, _value: number) => ({
@@ -206,14 +211,9 @@ describe('useServerAction', () => {
   })
 
   it('throws when used outside ActionToastProvider', () => {
-    function Component() {
-      useServerAction(async () => ({ success: true }))
-      return null
-    }
-
     vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    expect(() => render(<Component />)).toThrow(
+    expect(() => render(<ComponentOutsideProvider />)).toThrow(
       'useActionToast must be used within an ActionToastProvider.',
     )
   })

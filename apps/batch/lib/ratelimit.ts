@@ -45,23 +45,8 @@ function oncePer(duration: Temporal.DurationLike): OncePerWindowLimiter {
   }
 }
 
-export const talentsUpdate = oncePer({ hours: 2 })
-
-export const recommendationQueriesUpdate = oncePer({ hours: 20 })
-
-export const videosCheck = oncePer({ seconds: 30 })
-
-export const videosCheckRecent = oncePer({ minutes: 25 })
-
-export const videosCheckAll = oncePer({ hours: 24 })
-
-export const videosUpdate = oncePer({ seconds: 90 })
-
-export const statsSnapshot = oncePer({ hours: 20 })
-
-// Daily job - once per day
-export const termsPopularityUpdate = oncePer({ hours: 24 })
-
-export const videosCascadeFromTalents = oncePer({ minutes: 4 })
-
+/**
+ * `/videos/backfill` lets its runs overlap, so it is limited to one run in
+ * each window instead of being locked like the other cron jobs.
+ */
 export const videosBackfill = oncePer({ seconds: 30 })

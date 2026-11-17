@@ -36,6 +36,7 @@ export function VideoCardListSkeleton({
       {Array.from({ length: count }, (_, index) => (
         <VideoCardSkeleton
           className={itemClassName?.(index)}
+          // biome-ignore lint/suspicious/noArrayIndexKey: 件数が決まっていて並びも変わらないスケルトンなので、インデックスをキーにする
           key={index}
           variant={variant}
         />

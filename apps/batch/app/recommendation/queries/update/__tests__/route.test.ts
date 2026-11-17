@@ -2,7 +2,8 @@ import { CACHE_TAGS, REDIS_KEYS } from '@shinju-date/constants'
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const limit = vi.fn()
+const acquireLock = vi.fn()
+const releaseLock = vi.fn()
 const revalidateTags = vi.fn()
 const multi = {
   del: vi.fn(),
@@ -20,18 +21,7 @@ const redisClient = {
 }
 const getAllTerms = vi.fn()
 
-vi.mock('@/lib/ratelimit', () => ({
-  recommendationQueriesUpdate: { limit },
-  statsSnapshot: { limit: vi.fn() },
-  talentsUpdate: { limit: vi.fn() },
-  termsPopularityUpdate: { limit: vi.fn() },
-  videosBackfill: { limit: vi.fn() },
-  videosCascadeFromTalents: { limit: vi.fn() },
-  videosCheck: { limit: vi.fn() },
-  videosCheckAll: { limit: vi.fn() },
-  videosCheckRecent: { limit: vi.fn() },
-  videosUpdate: { limit: vi.fn() },
-}))
+vi.mock('@/lib/lock', () => ({ acquireLock, releaseLock }))
 vi.mock('@/lib/redis', () => ({ redisClient }))
 vi.mock('@/lib/supabase', () => ({ supabaseClient: {} }))
 vi.mock('../_lib/get-all-terms', () => ({ getAllTerms }))
@@ -69,7 +59,7 @@ function createRequest(): NextRequest {
 describe('POST /recommendation/queries/update', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    limit.mockResolvedValue({ success: true })
+    acquireLock.mockResolvedValue('lock-value')
     redisClient.del.mockResolvedValue(1)
     getAllTerms.mockImplementation(async function* () {
       yield { synonyms: ['ほげ'], term: 'Hoge' }
@@ -219,8 +209,8 @@ describe('POST /recommendation/queries/update', () => {
     })
   })
 
-  it('does not run within the rate limit window', async () => {
-    limit.mockResolvedValue({ success: false })
+  it('does not run while the previous run is still running', async () => {
+    acquireLock.mockResolvedValue(null)
 
     const response = await POST(createRequest())
 
