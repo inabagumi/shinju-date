@@ -18,7 +18,6 @@ import type { FormState } from '@/components/form'
 import Form, {
   ErrorMessage,
   FormField,
-  GenericErrorMessage,
   Input,
   Label,
   Select,
@@ -126,31 +125,25 @@ export function AnnouncementModal({
               <input name="id" type="hidden" value={announcement.id} />
             )}
             <FormField name="message">
-              <Label className="mb-2 block text-meta font-semibold">
-                メッセージ
-              </Label>
+              <Label>メッセージ</Label>
               <Textarea
                 defaultValue={announcement?.message ?? ''}
                 required
                 rows={3}
               />
-              <ErrorMessage className="mt-1 text-meta text-danger" />
+              <ErrorMessage />
             </FormField>
             <FormField name="level">
-              <Label className="mb-2 block text-meta font-semibold">
-                レベル
-              </Label>
+              <Label>レベル</Label>
               <Select defaultValue={announcement?.level ?? 'info'}>
                 <option value="info">情報 (青)</option>
                 <option value="warning">警告 (黄)</option>
                 <option value="alert">重要 (赤)</option>
               </Select>
-              <ErrorMessage className="mt-1 text-meta text-danger" />
+              <ErrorMessage />
             </FormField>
             <FormField name="start_at_local">
-              <Label className="mb-2 block text-meta font-semibold">
-                開始日時 (JST)
-              </Label>
+              <Label>開始日時 (JST)</Label>
               <Input
                 defaultValue={defaultStartAt
                   .toPlainDateTime()
@@ -159,12 +152,10 @@ export function AnnouncementModal({
                 step={60 * 30}
                 type="datetime-local"
               />
-              <ErrorMessage className="mt-1 text-meta text-danger" />
+              <ErrorMessage />
             </FormField>
             <FormField name="end_at_local">
-              <Label className="mb-2 block text-meta font-semibold">
-                終了日時 (JST)
-              </Label>
+              <Label>終了日時 (JST)</Label>
               <Input
                 defaultValue={defaultEndAt
                   .toPlainDateTime()
@@ -173,10 +164,10 @@ export function AnnouncementModal({
                 step={60 * 30}
                 type="datetime-local"
               />
-              <ErrorMessage className="mt-1 text-meta text-danger" />
+              <ErrorMessage />
             </FormField>
             <FormField name="enabled">
-              <Label className="flex items-center gap-2">
+              <Label className="mb-0 flex items-center gap-2">
                 <input
                   className="size-4 accent-accent"
                   defaultChecked={announcement?.enabled ?? false}
@@ -184,18 +175,15 @@ export function AnnouncementModal({
                   type="checkbox"
                   value="true"
                 />
-                <span className="text-meta font-semibold">有効化</span>
+                有効化
               </Label>
-              <ErrorMessage className="mt-1 text-meta text-danger" />
+              <ErrorMessage />
             </FormField>
-            <GenericErrorMessage className="rounded-control bg-danger/10 p-3 text-meta text-danger" />
             <div className="flex justify-end gap-2 pt-2">
               <DialogClose asChild>
                 <Button variant="secondary">キャンセル</Button>
               </DialogClose>
-              <SubmitButton type="submit">
-                {isEditing ? '更新' : '追加'}
-              </SubmitButton>
+              <SubmitButton>{isEditing ? '更新' : '追加'}</SubmitButton>
             </div>
           </Form>
         </DialogContent>

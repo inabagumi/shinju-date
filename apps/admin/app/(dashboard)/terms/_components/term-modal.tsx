@@ -16,7 +16,6 @@ import type { FormState } from '@/components/form'
 import Form, {
   ErrorMessage,
   FormField,
-  GenericErrorMessage,
   Input,
   Label,
   SubmitButton,
@@ -111,14 +110,12 @@ export function TermModal({ term }: TermModalProps) {
               <input name="id" type="hidden" value={term.id.toString()} />
             )}
             <FormField name="term">
-              <Label className="mb-2 block text-meta font-semibold">用語</Label>
+              <Label>用語</Label>
               <Input defaultValue={term?.term ?? ''} required />
-              <ErrorMessage className="mt-1 text-meta text-danger" />
+              <ErrorMessage />
             </FormField>
             <FormField name="readings">
-              <Label className="mb-2 block text-meta font-semibold">
-                読み方
-              </Label>
+              <Label>読み方</Label>
               <Suspense
                 fallback={
                   <SortableInputListFallback
@@ -136,12 +133,10 @@ export function TermModal({ term }: TermModalProps) {
                   placeholder="読み方を入力"
                 />
               </Suspense>
-              <ErrorMessage className="mt-1 text-meta text-danger" />
+              <ErrorMessage />
             </FormField>
             <FormField name="synonyms">
-              <Label className="mb-2 block text-meta font-semibold">
-                類義語
-              </Label>
+              <Label>類義語</Label>
               <Suspense
                 fallback={
                   <SortableInputListFallback
@@ -159,16 +154,13 @@ export function TermModal({ term }: TermModalProps) {
                   placeholder="類義語を入力"
                 />
               </Suspense>
-              <ErrorMessage className="mt-1 text-meta text-danger" />
+              <ErrorMessage />
             </FormField>
-            <GenericErrorMessage className="rounded-control bg-danger/10 p-3 text-meta text-danger" />
             <div className="flex justify-end gap-2 pt-2">
               <DialogClose asChild>
                 <Button variant="secondary">キャンセル</Button>
               </DialogClose>
-              <SubmitButton type="submit">
-                {isEditing ? '更新' : '追加'}
-              </SubmitButton>
+              <SubmitButton>{isEditing ? '更新' : '追加'}</SubmitButton>
             </div>
           </Form>
         </DialogContent>

@@ -20,7 +20,6 @@ import type { FormState } from '@/components/form'
 import Form, {
   ErrorMessage,
   FormField,
-  GenericErrorMessage,
   Input,
   Label,
   SubmitButton,
@@ -111,27 +110,23 @@ export function TwitchUserManager({
                   <Form action={handleAddUser} className="space-y-4">
                     <input name="talent_id" type="hidden" value={talentId} />
                     <FormField name="twitch_user">
-                      <Label className="block text-meta font-semibold">
-                        ログイン名 / ユーザーID / URL
-                      </Label>
+                      <Label>ログイン名 / ユーザーID / URL</Label>
                       <Input
-                        className="mt-1"
                         placeholder="login または https://twitch.tv/login"
                         required
                       />
                       <p className="mt-1 text-caption text-muted">
                         例: example、https://www.twitch.tv/example、123456789
                       </p>
-                      <ErrorMessage className="mt-1 text-meta text-danger" />
+                      <ErrorMessage />
                     </FormField>
-                    <GenericErrorMessage className="text-meta text-danger" />
                     <div className="flex justify-end gap-2">
                       <DialogClose asChild>
                         <UIButton type="button" variant="secondary">
                           キャンセル
                         </UIButton>
                       </DialogClose>
-                      <SubmitButton type="submit">追加</SubmitButton>
+                      <SubmitButton>追加</SubmitButton>
                     </div>
                   </Form>
                 </DialogContent>
