@@ -1,13 +1,15 @@
 import Link from 'next/link'
-import { AUDIT_TARGET_TABLES } from '@/lib/audit-log'
+import {
+  AUDIT_TARGET_TABLES,
+  LEGACY_TALENTS_TARGET_TABLE,
+} from '@/lib/audit-log'
 import { getEntityName } from '../_lib/audit-log-details'
 import type { Log } from '../_lib/get-audit-logs'
 
 const getAdminPagePath = (table: string, id: string): string | null => {
   switch (table) {
-    // `channels` は `talents` の以前の名前（過去のログ）
-    case AUDIT_TARGET_TABLES.CHANNELS:
     case AUDIT_TARGET_TABLES.TALENTS:
+    case LEGACY_TALENTS_TARGET_TABLE:
       return `/talents/${id}`
     case AUDIT_TARGET_TABLES.VIDEOS:
       return `/videos/${id}`

@@ -924,7 +924,7 @@ export async function seedCollections() {
       details: updatedTalent ? { entityName: updatedTalent.name } : null,
       minutesAgo: 15,
       target_record_id: updatedTalent?.id ?? null,
-      target_table: 'channels',
+      target_table: 'talents',
     },
     {
       action: 'VIDEO_VISIBILITY_TOGGLE',

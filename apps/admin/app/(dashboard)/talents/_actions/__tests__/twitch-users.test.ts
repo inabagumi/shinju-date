@@ -30,6 +30,7 @@ vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
 const talentId = '123e4567-e89b-12d3-a456-426614174000'
 const twitchUserId = '141981764'
 const newUserId = 'twitch-user-row-123'
+const talent = { name: 'Example Talent' }
 
 const mockTwitchUser = {
   broadcaster_type: 'partner',
@@ -56,7 +57,7 @@ function createFormData(fields: Record<string, string>): FormData {
 
 /** Lets the insert of the new user succeed and return its id. */
 function answerInsert(): void {
-  supabase.on('insert', 'twitch_users', { id: newUserId })
+  supabase.on('insert', 'twitch_users', { id: newUserId, talent })
 }
 
 /** The rows the action inserted into `twitch_users`. */
@@ -90,11 +91,14 @@ describe('addTwitchUserAction', () => {
         twitch_user_id: twitchUserId,
       },
     ])
-    test.expectAuditLog('TWITCH_USER_CREATE', newUserId, {
-      name: 'ExampleUser',
-      talent_id: talentId,
-      twitch_login_name: 'exampleuser',
-      twitch_user_id: twitchUserId,
+    test.expectAuditLog('TWITCH_USER_CREATE', talentId, {
+      account: {
+        id: newUserId,
+        name: 'ExampleUser',
+        twitch_login_name: 'exampleuser',
+        twitch_user_id: twitchUserId,
+      },
+      entityName: 'Example Talent',
     })
     test.expectRevalidated({
       paths: [`/talents/${talentId}`, '/talents'],
@@ -284,22 +288,26 @@ describe('addTwitchUserAction', () => {
 
 describe('removeTwitchUserAction', () => {
   it('should successfully remove Twitch user', async () => {
-    supabase.on(
-      'select',
-      'twitch_users',
-      createTwitchUser({
+    supabase.on('select', 'twitch_users', {
+      ...createTwitchUser({
+        name: 'ExampleUser',
         twitch_login_name: 'exampleuser',
         twitch_user_id: twitchUserId,
       }),
-    )
+      talent,
+    })
 
     const result = await removeTwitchUserAction('twitch-user-row-123', talentId)
 
     expect(result).toEqual({ success: true })
-    test.expectAuditLog('TWITCH_USER_DELETE', 'twitch-user-row-123', {
-      talent_id: talentId,
-      twitch_login_name: 'exampleuser',
-      twitch_user_id: twitchUserId,
+    test.expectAuditLog('TWITCH_USER_DELETE', talentId, {
+      account: {
+        id: 'twitch-user-row-123',
+        name: 'ExampleUser',
+        twitch_login_name: 'exampleuser',
+        twitch_user_id: twitchUserId,
+      },
+      entityName: 'Example Talent',
     })
     test.expectRevalidated({
       paths: [`/talents/${talentId}`, '/talents'],
