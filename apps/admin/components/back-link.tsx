@@ -1,3 +1,4 @@
+import { FOCUS_RING } from '@shinju-date/ui'
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
@@ -13,7 +14,7 @@ interface BackLinkProps {
 export function BackLink({ children, href }: BackLinkProps) {
   return (
     <Link
-      className="inline-flex items-center gap-1 rounded-control text-meta text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className={`inline-flex items-center gap-1 rounded-control text-meta text-accent hover:underline ${FOCUS_RING}`}
       href={href}
     >
       <ChevronLeft aria-hidden="true" className="size-4" />

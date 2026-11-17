@@ -1,5 +1,10 @@
 import { formatNumber } from '@shinju-date/helpers'
-import { StatTile, type StatTileTone, twMerge } from '@shinju-date/ui'
+import {
+  FOCUS_RING,
+  StatTile,
+  type StatTileTone,
+  twMerge,
+} from '@shinju-date/ui'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
@@ -59,7 +64,7 @@ export function StatTileLink({
   return (
     <Link
       className={twMerge(
-        'group block rounded-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+        `group block rounded-container ${FOCUS_RING}`,
         className,
       )}
       href={href}
