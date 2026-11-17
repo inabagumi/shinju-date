@@ -83,6 +83,67 @@ describe('runCronJob', () => {
     })
   })
 
+  it('responds with the result of the job as JSON', async () => {
+    const run = vi.fn().mockResolvedValue({ restored: 1, softDeleted: 2 })
+
+    const response = await runCronJob(createRequest(), job, run)
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      restored: 1,
+      softDeleted: 2,
+    })
+    expect(captureCheckIn).toHaveBeenLastCalledWith({
+      checkInId: 'check-in-id',
+      monitorSlug: '/videos/update',
+      status: 'ok',
+    })
+  })
+
+  it('lets the job clean up after it fails', async () => {
+    const error = new Error('YouTube is down')
+    const run = vi.fn().mockRejectedValue(error)
+    const onError = vi.fn().mockResolvedValue(undefined)
+
+    const response = await runCronJob(createRequest(), job, run, { onError })
+
+    expect(response.status).toBe(500)
+    expect(onError).toHaveBeenCalledWith(error)
+    expect(captureException).toHaveBeenCalledWith(error)
+  })
+
+  it('reports the original error when the clean-up fails too', async () => {
+    const error = new Error('YouTube is down')
+    const run = vi.fn().mockRejectedValue(error)
+    const onError = vi.fn().mockRejectedValue(new Error('Redis is down'))
+
+    const response = await runCronJob(createRequest(), job, run, { onError })
+
+    expect(response.status).toBe(500)
+    await expect(response.json()).resolves.toEqual({ error: 'YouTube is down' })
+    expect(captureException).toHaveBeenCalledWith(error)
+    expect(captureCheckIn).toHaveBeenLastCalledWith({
+      checkInId: 'check-in-id',
+      monitorSlug: '/videos/update',
+      status: 'error',
+    })
+  })
+
+  it('does not call the clean-up after a job that succeeds', async () => {
+    const onError = vi.fn()
+
+    await runCronJob(
+      createRequest(),
+      job,
+      vi.fn().mockResolvedValue(undefined),
+      {
+        onError,
+      },
+    )
+
+    expect(onError).not.toHaveBeenCalled()
+  })
+
   it('rejects runs that follow the previous one too closely', async () => {
     limit.mockResolvedValue({ success: false })
     const run = vi.fn()
