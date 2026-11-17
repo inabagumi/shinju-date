@@ -1,67 +1,16 @@
 'use server'
 
 import { logger } from '@shinju-date/logger'
-import {
-  type BackfillProvider,
-  type BackfillRunJobStatus,
-  BackfillRuns,
-} from '@shinju-date/video-backfill'
+import { BackfillRuns } from '@shinju-date/video-backfill'
 import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 import { getRedisClient } from '@/lib/redis'
+import { getBackfillAccounts } from '../_lib/backfill-accounts'
 import {
-  type BackfillAccount,
-  getBackfillAccounts,
-} from '../_lib/backfill-accounts'
-
-/** Progress of the backfill of one account in a check of all talents. */
-export interface VideoBackfillRunAccount {
-  accountId: string
-  /** Whether the job is queued or being read. */
-  active: boolean
-  /** Videos saved since the check queued the job. */
-  added: number
-  error: string | null
-  /** Account name, or `null` when the account no longer exists. */
-  name: string | null
-  provider: BackfillProvider
-  status: BackfillRunJobStatus
-  talentId: string
-  /** Talent name, or `null` when the talent was deleted. */
-  talentName: string | null
-  updatedAt: string | null
-}
-
-/** The latest check of all talents for videos that are not saved. */
-export interface VideoBackfillRun {
-  accounts: VideoBackfillRunAccount[]
-  /** Whether any account is queued or being read. */
-  active: boolean
-  /** Videos saved by the check, across all accounts. */
-  added: number
-  counts: Record<BackfillRunJobStatus, number>
-  /** Accounts that could not be queued because of an error. */
-  failed: number
-  id: string
-  requestedAt: string
-  /** Accounts left out because they were being backfilled already. */
-  skipped: number
-}
-
-/** Accounts of active talents, the targets of a check. */
-export interface VideoBackfillTargets {
-  twitch: number
-  youtube: number
-}
-
-function countTargets(
-  targets: readonly BackfillAccount[],
-): VideoBackfillTargets {
-  return {
-    twitch: targets.filter((account) => account.provider === 'twitch').length,
-    youtube: targets.filter((account) => account.provider === 'youtube').length,
-  }
-}
+  countTargets,
+  readVideoBackfillRun,
+  type VideoBackfillRunState,
+} from '../_lib/get-video-backfill-run'
 
 /**
  * 全 active タレントの過去動画の取り込み（取得漏れチェック）をキューに追加する。
@@ -138,7 +87,7 @@ export async function requestVideoBackfillRunAction(): Promise<{
 
     const { failed, run, skipped } = result
 
-    await createAuditLog('VIDEO_BACKFILL', run.id, {
+    await createAuditLog(supabaseClient, 'VIDEO_BACKFILL', run.id, {
       accounts: run.jobs.length,
       entityName: `全タレントの取得漏れチェック（${run.jobs.length}件）`,
       failed,
@@ -176,13 +125,9 @@ export async function requestVideoBackfillRunAction(): Promise<{
 /**
  * 全タレントの取得漏れチェックの対象数と、最新のチェックの進捗を返す。
  */
-export async function getVideoBackfillRunAction(): Promise<{
-  success: boolean
-  error?: string
-  /** `null` when there was no check (or it was long ago). */
-  run?: VideoBackfillRun | null
-  targets?: VideoBackfillTargets
-}> {
+export async function getVideoBackfillRunAction(): Promise<
+  VideoBackfillRunState | { error: string; success: false }
+> {
   const auth = await requireAuthenticatedUser()
 
   if (!auth) {
@@ -190,40 +135,7 @@ export async function getVideoBackfillRunAction(): Promise<{
   }
 
   try {
-    const [{ all, targets }, progress] = await Promise.all([
-      getBackfillAccounts(auth.supabaseClient),
-      new BackfillRuns(getRedisClient()).getLatest(),
-    ])
-
-    return {
-      run: progress && {
-        accounts: progress.jobs.map((job) => {
-          const account = all.get(job.id)
-
-          return {
-            accountId: job.accountId,
-            active: job.active,
-            added: job.added,
-            error: job.error,
-            name: account?.name ?? null,
-            provider: job.provider,
-            status: job.status,
-            talentId: job.talentId,
-            talentName: account?.talentName ?? null,
-            updatedAt: job.updatedAt,
-          }
-        }),
-        active: progress.active,
-        added: progress.added,
-        counts: progress.counts,
-        failed: progress.run.failed,
-        id: progress.run.id,
-        requestedAt: progress.run.requestedAt,
-        skipped: progress.run.skipped,
-      },
-      success: true,
-      targets: countTargets(targets),
-    }
+    return await readVideoBackfillRun(auth.supabaseClient)
   } catch (error) {
     logger.error('全タレントの取得漏れチェックの状況の取得に失敗しました', {
       error,

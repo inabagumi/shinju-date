@@ -334,4 +334,30 @@ export const rpcHandlers = [
 
     return new HttpResponse(null, { status: 204 })
   }),
+
+  rest.post(`${REST_URL}/rpc/insert_audit_logs`, async ({ request }) => {
+    const { p_entries: entries } = (await request.json()) as {
+      p_entries: {
+        action: string
+        details?: unknown
+        target_record_id?: string | null
+        target_table: string
+      }[]
+    }
+    const createdAt = toDBString(Temporal.Now.instant())
+
+    for (const entry of entries) {
+      await auditLogs.create({
+        action: entry.action,
+        created_at: createdAt,
+        details: entry.details ?? null,
+        id: crypto.randomUUID(),
+        target_record_id: entry.target_record_id ?? null,
+        target_table: entry.target_table,
+        user_id: MOCK_SUPABASE_USER.id,
+      })
+    }
+
+    return new HttpResponse(null, { status: 204 })
+  }),
 ]

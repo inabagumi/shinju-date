@@ -29,12 +29,13 @@ describe('finishVideoSync', () => {
     expect(revalidateTags).not.toHaveBeenCalled()
   })
 
-  it('always records when videos were last synced', async () => {
+  it('always records when videos were last synced, for 30 days', async () => {
     await finishVideoSync({ changed: false, now })
 
     expect(set).toHaveBeenCalledWith(
       'status:last_video_sync',
       '2024-05-01T12:00:00Z',
+      { ex: 30 * 24 * 60 * 60 },
     )
   })
 })

@@ -1,11 +1,12 @@
 import { formatNumber } from '@shinju-date/helpers'
 import { Skeleton, StatTile } from '@shinju-date/ui'
 import { StatTileSkeleton } from '@/components/stat-tile-skeleton'
+import { getClickVolume } from '@/lib/analytics/get-click-volume'
+import { getSearchVolume } from '@/lib/analytics/get-search-volume'
+import type { Period } from '@/lib/analytics/period'
 import type { ChartSeries } from '../../_lib/chart-series'
 import { formatDateLabel } from '../_lib/format-date'
 import type { AnalyticsSearchParams } from '../_lib/search-params-schema'
-import { getClickVolume } from '../click/_lib/get-click-volume'
-import { getSearchVolume } from '../search/_lib/get-search-volume'
 import {
   type VolumeChartDatum,
   VolumeChartUI,
@@ -14,12 +15,12 @@ import {
 
 interface VolumeChartKindDefinition {
   /**
-   * 期間（`YYYY-MM-DD`）の日ごとの件数を取る
+   * 期間の日ごとの件数を取る
    *
    * 取得関数の行の型は `interface` で、インデックスシグネチャを持たないため、
    * `({ ...day })` と写してオブジェクトリテラルの型にしてから返す
    */
-  fetchData: (startDate: string, endDate: string) => Promise<VolumeChartDatum[]>
+  fetchData: (range: Period) => Promise<VolumeChartDatum[]>
   series: ChartSeries[]
   /** 合計を出す系列のキーと、その見出し */
   total: {
@@ -34,8 +35,8 @@ interface VolumeChartKindDefinition {
  */
 const VOLUME_CHART_KINDS = {
   click: {
-    fetchData: async (startDate, endDate) => {
-      const data = await getClickVolume(startDate, endDate)
+    fetchData: async (range) => {
+      const data = await getClickVolume({ range })
       return data.map((day) => ({ ...day }))
     },
     series: [{ className: 'text-accent', key: 'clicks', label: 'クリック数' }],
@@ -43,8 +44,8 @@ const VOLUME_CHART_KINDS = {
     variant: 'bar',
   },
   search: {
-    fetchData: async (startDate, endDate) => {
-      const data = await getSearchVolume(startDate, endDate)
+    fetchData: async (range) => {
+      const data = await getSearchVolume({ range })
       return data.map((day) => ({ ...day }))
     },
     series: [{ className: 'text-accent', key: 'count', label: '検索数' }],
@@ -74,10 +75,10 @@ export async function VolumeChart({ kind, searchParams }: VolumeChartProps) {
   const definition: VolumeChartKindDefinition = VOLUME_CHART_KINDS[kind]
   const { dateRange, selectedDate } = await searchParams
 
-  const data = await definition.fetchData(
-    dateRange.startDate,
-    dateRange.endDate,
-  )
+  const data = await definition.fetchData({
+    end: dateRange.endDate,
+    start: dateRange.startDate,
+  })
 
   return (
     <>

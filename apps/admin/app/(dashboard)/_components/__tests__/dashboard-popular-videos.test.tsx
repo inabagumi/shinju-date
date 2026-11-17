@@ -41,11 +41,10 @@ describe('DashboardPopularVideos', () => {
 
     render(await DashboardPopularVideos())
 
-    expect(mocks.getPopularVideos).toHaveBeenCalledWith(
-      10,
-      '2026-10-19',
-      '2026-11-17',
-    )
+    expect(mocks.getPopularVideos).toHaveBeenCalledWith({
+      limit: 10,
+      range: { end: '2026-11-17', start: '2026-10-19' },
+    })
   })
 
   it('links a Twitch video to Twitch and a YouTube video to YouTube', async () => {

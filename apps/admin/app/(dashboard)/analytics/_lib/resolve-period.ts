@@ -1,13 +1,5 @@
+import type { Period } from '@/lib/analytics/period'
 import type { AnalyticsSearchParams } from './search-params-schema'
-
-/**
- * 集計の期間（両端を含む、`YYYY-MM-DD`）。1日だけのときは、`start` と `end` が
- * 同じ日。取得関数のキャッシュのキーにするため、文字列で持つ
- */
-export interface Period {
-  end: string
-  start: string
-}
 
 /**
  * URL のパラメータから、ウィジェットが集計する期間を決める。

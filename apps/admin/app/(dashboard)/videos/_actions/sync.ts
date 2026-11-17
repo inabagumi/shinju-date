@@ -1,11 +1,11 @@
 'use server'
 
 import { CACHE_TAGS } from '@shinju-date/constants'
-import type { Enums } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
+import { PLATFORM_LABELS } from '@/components/platform-badge'
 import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 import { createScraper } from '@/lib/scraper'
@@ -16,11 +16,6 @@ export interface SyncVideoResult {
   success: boolean
   /** 動画がすでにプラットフォームと一致していた */
   unchanged?: boolean
-}
-
-const PLATFORM_LABELS: Record<Enums<'platform_type'>, string> = {
-  twitch: 'Twitch',
-  youtube: 'YouTube',
 }
 
 const NOT_FOUND_RESULT: SyncVideoResult = {
@@ -88,7 +83,7 @@ export async function syncVideoAction(
         }
 
       case 'unavailable':
-        await createAuditLog('VIDEO_SYNC', videoId, {
+        await createAuditLog(supabaseClient, 'VIDEO_SYNC', videoId, {
           changes: {
             after: {
               deleted_at: toDBString(now),
@@ -106,7 +101,7 @@ export async function syncVideoAction(
         }
 
       case 'updated':
-        await createAuditLog('VIDEO_SYNC', videoId, {
+        await createAuditLog(supabaseClient, 'VIDEO_SYNC', videoId, {
           changes: { after: result.after, before: result.before },
           entityName: result.title,
         })

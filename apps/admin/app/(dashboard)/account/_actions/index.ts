@@ -138,7 +138,11 @@ export async function updateUserPassword(
   }
 
   // Log password change (without storing the actual password for security)
-  await createAuditLog('ACCOUNT_PASSWORD_UPDATE', currentUser.id)
+  await createAuditLog(
+    supabaseClient,
+    'ACCOUNT_PASSWORD_UPDATE',
+    currentUser.id,
+  )
 
   revalidatePath('/account')
 

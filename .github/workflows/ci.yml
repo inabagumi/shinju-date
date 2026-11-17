@@ -49,7 +49,7 @@ jobs:
           else
             changed_files=$(git diff --name-only "$base" HEAD)
             # The Supabase CLI version is in package.json, and it can change the generated types
-            if grep -qE '^(supabase/|packages/database/|scripts/generate-types\.sh$|package\.json$|\.github/workflows/ci\.yml$)' <<< "$changed_files"; then
+            if grep -qE '^(supabase/|packages/database/|scripts/(generate-types|lib)\.sh$|package\.json$|\.github/workflows/ci\.yml$)' <<< "$changed_files"; then
               database=true
             else
               database=false

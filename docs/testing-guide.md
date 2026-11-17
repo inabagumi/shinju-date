@@ -158,7 +158,7 @@ pnpm test
 pnpm exec supabase test db
 ```
 
-CI でも、`supabase/`、`packages/database/`、`scripts/generate-types.sh`、ルートの `package.json`（Supabase CLI のバージョン）を変えたプルリクエストでは、`Database` ジョブがこのテストを実行します。このジョブは、次の3つを確かめます。
+CI でも、`supabase/`、`packages/database/`、`scripts/generate-types.sh`、`scripts/lib.sh`、ルートの `package.json`（Supabase CLI のバージョン）を変えたプルリクエストでは、`Database` ジョブがこのテストを実行します。このジョブは、次の3つを確かめます。
 
 1. `pnpm exec supabase db start` で、すべてのマイグレーションとシードが空のデータベースに適用できる
 2. `pnpm exec supabase test db` で、pgTAP のテストがすべて通る

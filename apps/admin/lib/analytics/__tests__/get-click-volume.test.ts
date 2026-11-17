@@ -6,9 +6,7 @@ vi.mock('next/cache', () => ({
   cacheLife: vi.fn(),
 }))
 vi.mock('@/lib/redis', async () => {
-  const { createMockPipeline } = await import(
-    '@/lib/analytics/__tests__/mock-redis-pipeline'
-  )
+  const { createMockPipeline } = await import('./mock-redis-pipeline')
   const mockedRedisClient = {
     pipeline: vi.fn(),
     zrange: vi.fn(),
@@ -46,7 +44,9 @@ describe('getClickVolume', async () => {
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce(['video1', '10'])
 
-    const result = await getClickVolume('2024-01-30', '2024-02-01')
+    const result = await getClickVolume({
+      range: { end: '2024-02-01', start: '2024-01-30' },
+    })
 
     expect(result).toEqual([
       { clicks: 5, date: '2024-01-30' },
@@ -77,7 +77,9 @@ describe('getClickVolume', async () => {
   })
 
   it('should return an empty array without calling Redis for an empty range', async () => {
-    const result = await getClickVolume('2024-02-01', '2024-01-31')
+    const result = await getClickVolume({
+      range: { end: '2024-01-31', start: '2024-02-01' },
+    })
 
     expect(result).toEqual([])
     expect(redisClient.pipeline).not.toHaveBeenCalled()
@@ -86,7 +88,9 @@ describe('getClickVolume', async () => {
   it('should return an empty array when Redis fails', async () => {
     vi.mocked(redisClient.zrange).mockRejectedValue(new Error('Redis error'))
 
-    const result = await getClickVolume('2024-01-30', '2024-02-01')
+    const result = await getClickVolume({
+      range: { end: '2024-02-01', start: '2024-01-30' },
+    })
 
     expect(result).toEqual([])
   })

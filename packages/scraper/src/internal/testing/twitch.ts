@@ -6,7 +6,11 @@ import type {
 } from '@shinju-date/twitch-api-client'
 import type { SavedTwitchVideo } from '../../twitch/saved-video.js'
 import type { SavedLiveVideo } from '../../twitch/sync-live.js'
-import type { SupabaseResponder, SupabaseRoutes } from './supabase.js'
+import type {
+  SupabaseRequest,
+  SupabaseResponder,
+  SupabaseRoutes,
+} from './supabase.js'
 
 /** An active talent with one Twitch account, as the crawls load it. */
 export const TWITCH_TALENTS = [
@@ -166,20 +170,43 @@ export function createSavedLiveVideo(
   return { ...createSavedVideo(overrides), twitchUserId }
 }
 
+/** The column a lookup of saved rows filters on, if the request is one. */
+function getLookupColumn(
+  query: Record<string, string>,
+): 'stream_id' | 'twitch_video_id' | undefined {
+  if (query['twitch_video.stream_id']) {
+    return 'stream_id'
+  }
+
+  if (query['twitch_video.twitch_video_id']) {
+    return 'twitch_video_id'
+  }
+
+  return undefined
+}
+
+/**
+ * Whether a `GET videos` request looks up saved rows by stream ID or Twitch
+ * video ID, as {@link findSavedVideos} answers it.
+ */
+export function isSavedVideoLookup({ query }: SupabaseRequest): boolean {
+  return getLookupColumn(query) !== undefined
+}
+
 /**
  * Answers the lookup of saved rows by stream ID or Twitch video ID
- * (`GET twitch_videos`) with the matching ones among `savedVideos`.
+ * (`GET videos`) with the matching ones among `savedVideos`.
  */
 export function findSavedVideos(
   savedVideos: readonly SavedTwitchVideo[],
 ): SupabaseResponder {
   return ({ query }) => {
-    const column = query['stream_id'] ? 'stream_id' : 'twitch_video_id'
-    const ids = (query[column] ?? '').slice(4, -1).split(',')
+    const column = getLookupColumn(query) ?? 'twitch_video_id'
+    const ids = (query[`twitch_video.${column}`] ?? '').slice(4, -1).split(',')
 
-    return savedVideos
-      .filter((saved) => ids.includes(String(saved.twitch_video[column])))
-      .map(({ twitch_video, ...video }) => ({ ...twitch_video, video }))
+    return savedVideos.filter((saved) =>
+      ids.includes(String(saved.twitch_video[column])),
+    )
   }
 }
 
@@ -190,17 +217,21 @@ export function findSavedVideos(
 export function liveVideoRoutes(
   savedLiveVideos: readonly SavedLiveVideo[] = [],
 ): SupabaseRoutes {
+  const lookUp = findSavedVideos(savedLiveVideos)
+
   return {
     'GET talents': TWITCH_TALENTS,
-    'GET twitch_videos': findSavedVideos(savedLiveVideos),
-    'GET videos': savedLiveVideos.map(
-      ({ twitch_video, twitchUserId, ...video }) => ({
-        ...video,
-        twitch_video: {
-          ...twitch_video,
-          twitch_user: twitchUserId ? { twitch_user_id: twitchUserId } : null,
-        },
-      }),
-    ),
+    'GET videos': (request) =>
+      isSavedVideoLookup(request)
+        ? lookUp(request)
+        : savedLiveVideos.map(({ twitch_video, twitchUserId, ...video }) => ({
+            ...video,
+            twitch_video: {
+              ...twitch_video,
+              twitch_user: twitchUserId
+                ? { twitch_user_id: twitchUserId }
+                : null,
+            },
+          })),
   }
 }

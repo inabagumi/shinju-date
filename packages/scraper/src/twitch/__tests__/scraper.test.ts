@@ -13,6 +13,8 @@ import {
   createSavedVideo,
   createStream,
   createVideo,
+  findSavedVideos,
+  isSavedVideoLookup,
   TWITCH_TALENTS,
 } from '../../internal/testing/twitch.js'
 import type { SavedTwitchVideo } from '../saved-video.js'
@@ -98,18 +100,23 @@ function respondWithSavedVideo(
 ) {
   let row = structuredClone(initial)
 
-  supabase.respond(({ body, method, query, table }) => {
+  supabase.respond((request) => {
+    const { body, method, table } = request
     const { twitch_video, ...video } = row
-    const request = `${method} ${table}`
+    const route = `${method} ${table}`
 
-    if (failing.includes(request)) {
+    if (failing.includes(route)) {
       return postgresError('57014', 'canceling statement due to timeout')
     }
 
-    switch (request) {
+    switch (route) {
       case 'GET talents':
         return TWITCH_TALENTS
       case 'GET videos':
+        if (isSavedVideoLookup(request)) {
+          return findSavedVideos([row])(request)
+        }
+
         return [
           {
             ...video,
@@ -119,11 +126,6 @@ function respondWithSavedVideo(
             },
           },
         ]
-      case 'GET twitch_videos':
-        return query['stream_id']?.includes(twitch_video.stream_id ?? '') ||
-          query['twitch_video_id']?.includes(twitch_video.twitch_video_id)
-          ? [{ ...twitch_video, video }]
-          : []
       case 'PATCH videos':
         row = { ...row, ...(body as Partial<SavedTwitchVideo>) }
         return [{ id: row.id }]
@@ -733,13 +735,13 @@ describe('TwitchScraper', () => {
         }
 
         // `vod-1` is saved already.
-        if (table === 'twitch_videos') {
-          const { twitch_video, ...video } = createSavedVideo({
-            status: 'ENDED',
-            twitch_video: { twitch_video_id: 'vod-1', type: 'archive' },
-          })
-
-          return [{ ...twitch_video, video }]
+        if (table === 'videos') {
+          return [
+            createSavedVideo({
+              status: 'ENDED',
+              twitch_video: { twitch_video_id: 'vod-1', type: 'archive' },
+            }),
+          ]
         }
 
         return []

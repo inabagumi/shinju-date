@@ -110,6 +110,7 @@ describe('requestVideoBackfillRunAction', () => {
       expect.objectContaining({ requestedBy: 'user-1' }),
     )
     expect(test.createAuditLog).toHaveBeenCalledExactlyOnceWith(
+      supabase.client,
       'VIDEO_BACKFILL',
       runId,
       {
@@ -168,6 +169,7 @@ describe('requestVideoBackfillRunAction', () => {
       success: false,
     })
     expect(test.createAuditLog).toHaveBeenCalledWith(
+      supabase.client,
       'VIDEO_BACKFILL',
       runId,
       expect.objectContaining({ failed: 1, skipped: 3 }),
@@ -270,15 +272,17 @@ describe('getVideoBackfillRunAction', () => {
 
     const result = await getVideoBackfillRunAction()
 
-    expect(result.run).toMatchObject({
-      active: true,
-      added: 5,
-      counts: { done: 1, running: 2 },
-      id: runId,
-      requestedAt: '2026-11-14T00:00:00Z',
-      skipped: 1,
+    expect(result).toMatchObject({
+      run: {
+        active: true,
+        added: 5,
+        counts: { done: 1, running: 2 },
+        id: runId,
+        requestedAt: '2026-11-14T00:00:00Z',
+        skipped: 1,
+      },
     })
-    expect(result.run?.accounts).toEqual([
+    expect(result).toHaveProperty('run.accounts', [
       expect.objectContaining({
         accountId: 'channel-row-1',
         added: 5,

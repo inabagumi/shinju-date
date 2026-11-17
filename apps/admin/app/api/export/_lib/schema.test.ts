@@ -17,6 +17,7 @@ describe('exportSearchParamsSchema', () => {
     ).toEqual({
       endDate: '2026-11-10',
       limit: 50,
+      range: { end: '2026-11-10', start: '2026-11-03' },
       selectedDate: null,
       startDate: '2026-11-03',
     })
@@ -32,6 +33,7 @@ describe('exportSearchParamsSchema', () => {
     ).toEqual({
       endDate: null,
       limit: 50,
+      range: { end: '2026-11-05', start: '2026-11-05' },
       selectedDate: '2026-11-05',
       startDate: '2026-11-05',
     })
@@ -41,6 +43,7 @@ describe('exportSearchParamsSchema', () => {
     expect(exportSearchParamsSchema.parse({ from: '2026-11-03' })).toEqual({
       endDate: null,
       limit: 50,
+      range: { end: '2026-11-03', start: '2026-11-03' },
       selectedDate: '2026-11-03',
       startDate: '2026-11-03',
     })

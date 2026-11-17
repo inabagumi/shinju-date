@@ -1,10 +1,7 @@
 import { createErrorResponse } from '@shinju-date/helpers'
 import { stringify } from 'csv-stringify/sync'
 import { connection, type NextRequest, NextResponse } from 'next/server'
-import {
-  getPopularVideos,
-  type PopularVideo,
-} from '@/lib/analytics/get-popular-videos'
+import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
 import { exportSearchParamsSchema } from '../_lib/schema'
 
 /**
@@ -20,25 +17,11 @@ export async function GET(request: NextRequest) {
     )
     const validatedParams = exportSearchParamsSchema.parse(searchParams)
 
-    // Fetch data based on parameters
-    let videos: PopularVideo[]
-    if (validatedParams.selectedDate) {
-      videos = await getPopularVideos(
-        validatedParams.limit,
-        validatedParams.selectedDate,
-      )
-    } else if (validatedParams.endDate) {
-      videos = await getPopularVideos(
-        validatedParams.limit,
-        validatedParams.startDate,
-        validatedParams.endDate,
-      )
-    } else {
-      videos = await getPopularVideos(
-        validatedParams.limit,
-        validatedParams.startDate,
-      )
-    }
+    // Fetch data for the period of the parameters
+    const videos = await getPopularVideos({
+      limit: validatedParams.limit,
+      range: validatedParams.range,
+    })
 
     // Check if data is available
     if (videos.length === 0) {

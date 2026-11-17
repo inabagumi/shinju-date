@@ -4,6 +4,14 @@ import {
   parseDate,
   validateRange,
 } from '@/lib/analytics/date-window'
+import type { Period } from '@/lib/analytics/period'
+
+/** 1日だけの期間（`start` と `end` が同じ日） */
+function singleDayPeriod(date: Temporal.PlainDate): Period {
+  const value = date.toString()
+
+  return { end: value, start: value }
+}
 
 /**
  * A date parameter. A value that is not a selectable date becomes `null` and
@@ -58,6 +66,7 @@ export const exportSearchParamsSchema = z
       return {
         endDate: null,
         limit,
+        range: singleDayPeriod(date),
         selectedDate: date.toString(),
         startDate: date.toString(),
       }
@@ -92,6 +101,7 @@ export const exportSearchParamsSchema = z
       return {
         endDate: to.toString(),
         limit,
+        range: { end: to.toString(), start: from.toString() },
         selectedDate: null,
         startDate: from.toString(),
       }
@@ -112,6 +122,7 @@ export const exportSearchParamsSchema = z
     return {
       endDate: null,
       limit,
+      range: singleDayPeriod(singleDate),
       selectedDate: singleDate.toString(),
       startDate: singleDate.toString(),
     }

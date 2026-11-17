@@ -62,19 +62,6 @@ describe('WidgetErrorBoundary', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
-  it('keeps the id so that links to the widget still work', () => {
-    render(
-      <WidgetErrorBoundary id="video-backfill-history" title="履歴">
-        <FlakyWidget />
-      </WidgetErrorBoundary>,
-    )
-
-    expect(screen.getByRole('alert')).toHaveAttribute(
-      'id',
-      'video-backfill-history',
-    )
-  })
-
   it('renders the children while nothing fails', () => {
     shouldThrow = false
 

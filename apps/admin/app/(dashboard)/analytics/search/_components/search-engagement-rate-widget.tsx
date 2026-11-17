@@ -59,8 +59,8 @@ function SearchEngagementRateWidgetComponent({
 export async function SearchEngagementRateWidget({ searchParams }: Props) {
   const { dateRange, selectedDate } = await searchParams
 
-  const { start, end } = resolvePeriod({ dateRange, selectedDate })
-  const engagementRate = await getSearchEngagementRate(start, end)
+  const range = resolvePeriod({ dateRange, selectedDate })
+  const engagementRate = await getSearchEngagementRate({ range })
 
   return (
     <SearchEngagementRateWidgetComponent

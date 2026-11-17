@@ -13,7 +13,9 @@ export async function updateFeatureRequestStatus(
   id: string,
   status: TablesUpdate<'feature_requests'>['status'],
 ): Promise<{ success: boolean; error?: string }> {
-  if (!(await requireAuthenticatedUser())) {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
     return unauthenticatedResult()
   }
 
@@ -54,7 +56,7 @@ export async function updateFeatureRequestStatus(
       throw error
     }
 
-    await createAuditLog('FEATURE_REQUEST_UPDATE', id, {
+    await createAuditLog(auth.supabaseClient, 'FEATURE_REQUEST_UPDATE', id, {
       changes: {
         after: { status },
         before: { status: featureRequest.status },
@@ -77,7 +79,9 @@ export async function updateFeatureRequestMemo(
   id: string,
   adminMemo: string,
 ): Promise<{ success: boolean; error?: string }> {
-  if (!(await requireAuthenticatedUser())) {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
     return unauthenticatedResult()
   }
 
@@ -112,7 +116,7 @@ export async function updateFeatureRequestMemo(
     }
 
     // メモは長いので、本文は記録せず、メモがあるかどうかだけを記録する
-    await createAuditLog('FEATURE_REQUEST_UPDATE', id, {
+    await createAuditLog(auth.supabaseClient, 'FEATURE_REQUEST_UPDATE', id, {
       changes: {
         after: { hasMemo: adminMemo !== '' },
         before: { hasMemo: Boolean(featureRequest.admin_memo) },

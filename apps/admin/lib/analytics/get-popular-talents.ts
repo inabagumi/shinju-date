@@ -9,7 +9,8 @@ import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
 } from '@/lib/supabase'
-import { _getPopularItemsFromRedis } from './_get-popular-items-from-redis'
+import { DEFAULT_RANKING_LIMIT, type RankingQuery, toDateRange } from './period'
+import { getPopularItems } from './popular-items'
 
 const POPULAR_TALENT_SELECT = `
   id,
@@ -37,25 +38,21 @@ export interface PopularTalent extends PopularTalentRow {
 
 /**
  * Get popular talents based on click data for a date range
- * @param limit - Number of talents to return
- * @param startDate - Start date in ISO 8601 format (YYYY-MM-DD)
- * @param endDate - End date in ISO 8601 format (YYYY-MM-DD). If undefined, gets data for single date
+ * @param query.range - The date range (both ends inclusive). Pass the same date as `start` and `end` for a single date
+ * @param query.limit - Maximum number to return (`DEFAULT_RANKING_LIMIT` by default)
  */
-export async function getPopularTalents(
-  limit: number,
-  startDate: string,
-  endDate?: string,
-): Promise<PopularTalent[]> {
+export async function getPopularTalents({
+  limit = DEFAULT_RANKING_LIMIT,
+  range,
+}: RankingQuery): Promise<PopularTalent[]> {
   'use cache: private'
 
   cacheLife('minutes')
 
-  const talentScores = await _getPopularItemsFromRedis(
-    REDIS_KEYS.CLICK_CHANNEL_PREFIX,
+  const talentScores = await getPopularItems(REDIS_KEYS.CLICK_CHANNEL_PREFIX, {
     limit,
-    Temporal.PlainDate.from(startDate),
-    endDate ? Temporal.PlainDate.from(endDate) : undefined,
-  )
+    range: toDateRange(range),
+  })
 
   if (talentScores.length === 0) {
     return []

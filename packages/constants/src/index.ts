@@ -12,7 +12,8 @@ export type CacheTag = (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS]
 
 // Every Redis key of the apps and packages: the fixed keys, and the prefixes
 // (`*_PREFIX`) that a date or an ID is appended to. Do not write a key in the
-// code directly
+// code directly. Every key gets an expiry, except the ones marked
+// `期限なし` with the reason
 export const REDIS_KEYS = {
   CLICK_CHANNEL_PREFIX: 'channels:clicked:',
   CLICK_VIDEO_PREFIX: 'videos:clicked:',
@@ -20,22 +21,27 @@ export const REDIS_KEYS = {
   // (format: prefix + `<job identifier>`)
   CRON_LOCK_PREFIX: 'cron:lock:',
   LAST_VIDEO_SYNC: 'status:last_video_sync',
+  // 期限なし: メンテナンスモードの状態。管理者が解除するまで続く
   MAINTENANCE_MODE: 'maintenance_mode',
   // Union of the daily rankings over a date range, cached by admin
   // (format: prefix + `<ranking prefix without trailing colon>:<YYYYMMDD>/<YYYYMMDD>`)
   POPULAR_ITEMS_CACHE_PREFIX: 'cache:popular_items:',
   QUERIES_AUTO_RECOMMENDED: 'queries:auto_recommended',
+  // 期限なし: 管理者が登録した、おすすめの検索語。管理者が削除するまで残す
   QUERIES_MANUAL_RECOMMENDED: 'queries:manual_recommended',
   // Runs of the batch cron jobs, counted per fixed window
   // (format: prefix + `<job identifier>:<window number>`)
   RATELIMIT_CRON_PREFIX: 'ratelimit:cron:',
   SEARCH_EXIT_WITHOUT_CLICK_PREFIX: 'search:exit_without_click:',
+  // 期限なし: 全期間の検索回数の集計。期限を付けると、それまでの集計が消える
   SEARCH_POPULAR_ALL_TIME: 'search:popular:all_time',
   SEARCH_POPULAR_DAILY_PREFIX: 'search:popular:daily:',
   SEARCH_POPULAR_TEMP_UNION: 'search:popular:temp_union',
   SEARCH_POPULAR_WEEKLY_PREFIX: 'search:popular:weekly:',
   SEARCH_SESSIONS_PREFIX: 'search:sessions:',
   SEARCH_VOLUME_PREFIX: 'search:volume:',
+  // 期限なし: 全期間の、結果が0件だった検索語の集計。期限を付けると、
+  // それまでの集計が消える
   SEARCH_ZERO_RESULTS: 'search:zero_results',
   // New keys for enhanced search analytics
   SESSIONS_TOTAL_PREFIX: 'sessions:total:',

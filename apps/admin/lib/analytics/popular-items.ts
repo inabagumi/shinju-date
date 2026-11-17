@@ -4,28 +4,30 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { getRedisClient } from '@/lib/redis'
-import { dailyKeys, parseScoredMembers } from './redis'
+import { type DateRange, dailyKeys, parseScoredMembers } from './redis'
 
 /**
  * キャッシュ有効期間（秒）
  */
 const CACHE_TTL_SECONDS = 60 * 10 // 10 minutes
 
+interface PopularItemsOptions {
+  limit: number
+  range: DateRange
+}
+
 /**
  * Generic helper function to get popular items from Redis
  * Automatically handles single-day (ZRANGE) vs multi-day (ZUNIONSTORE) operations
  *
  * @param keyPrefix - Redis key prefix for the item type (e.g., 'videos:click:', 'channels:click:')
- * @param limit - Maximum number of items to return
- * @param startDate - Start date as Temporal.PlainDate
- * @param endDate - End date as Temporal.PlainDate. If undefined or equals startDate, uses single-day operation
+ * @param options.range - The date range (both ends inclusive). When `start` equals `end`, uses single-day operation
+ * @param options.limit - Maximum number of items to return
  * @returns Array of [itemId, score] tuples
  */
-export async function _getPopularItemsFromRedis(
+export async function getPopularItems(
   keyPrefix: string,
-  limit: number,
-  startDate: Temporal.PlainDate,
-  endDate?: Temporal.PlainDate,
+  { limit, range }: PopularItemsOptions,
 ): Promise<[string, number][]> {
   const redisClient = getRedisClient()
 
@@ -42,8 +44,7 @@ export async function _getPopularItemsFromRedis(
   }
 
   try {
-    const start = startDate
-    const end = endDate ?? startDate
+    const { end, start } = range
 
     // Check if this is a single-day operation
     const isSingleDay = Temporal.PlainDate.compare(start, end) === 0
@@ -66,7 +67,7 @@ export async function _getPopularItemsFromRedis(
     }
 
     // Build daily keys for the date range
-    const keys = dailyKeys(keyPrefix, { end, start })
+    const keys = dailyKeys(keyPrefix, range)
 
     if (keys.length > 0) {
       // Create aggregated cache using ZUNIONSTORE
@@ -80,11 +81,11 @@ export async function _getPopularItemsFromRedis(
     return await getTopItems(cacheKey)
   } catch (error) {
     logger.error('Redis通信で人気アイテムの取得に失敗しました', {
-      endDate: endDate?.toString() ?? 'undefined',
+      endDate: range.end.toString(),
       error,
       keyPrefix,
       limit,
-      startDate: startDate.toString(),
+      startDate: range.start.toString(),
     })
 
     return []

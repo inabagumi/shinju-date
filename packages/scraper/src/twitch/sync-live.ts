@@ -5,31 +5,31 @@ import {
   TWITCH_API_MAX_RESULTS,
   toLiveTwitchVideoId,
 } from '@shinju-date/twitch-api-client'
+import type { QueryData } from '@supabase/supabase-js'
 import { countChanges } from '../internal/concurrency.js'
+import { WRITE_CONCURRENCY } from '../internal/constants.js'
 import {
   DatabaseError,
   getActiveTwitchUsers,
   updateVideo,
 } from '../internal/database/index.js'
-import { replaceThumbnail } from '../internal/thumbnails/index.js'
 import type {
   CrawlContext,
   TypedSupabaseClient,
   WriteContext,
 } from '../types.js'
 import { applyNewVideoAction, planNewVideos } from './add-new-videos.js'
+import { attachArchive } from './attach-archive.js'
 import type { TwitchFetcher } from './fetcher.js'
-import { createTwitchThumbnail, saveTwitchVideo } from './save-video.js'
+import { saveTwitchVideo } from './save-video.js'
 import {
   findSavedTwitchVideos,
   isLivePlaceholder,
+  SAVED_LIVE_VIDEO_COLUMNS,
   type SavedTwitchVideo,
-  updateTwitchVideo,
 } from './saved-video.js'
 import type { TwitchStream, TwitchVideo } from './types.js'
-import { toLiveFields, toVideoFields } from './video.js'
-
-const WRITE_CONCURRENCY = 8
+import { toLiveFields } from './video.js'
 
 /** A saved LIVE row together with the Helix ID of its broadcaster. */
 export interface SavedLiveVideo extends SavedTwitchVideo {
@@ -125,18 +125,17 @@ export function planLiveSync({
   return plan
 }
 
-/** Selects a saved row together with the Helix ID of its broadcaster. */
-export const SAVED_LIVE_VIDEO_SELECT =
-  'id, deleted_at, duration, published_at, status, thumbnail_id, title, twitch_video:twitch_videos!inner(id, stream_id, twitch_video_id, type, twitch_user:twitch_users(twitch_user_id))'
-
-interface SavedLiveVideoRow extends Omit<SavedTwitchVideo, 'twitch_video'> {
-  twitch_video: SavedTwitchVideo['twitch_video'] & {
-    twitch_user: { twitch_user_id: string } | null
-  }
+/** Selects saved rows together with the Helix ID of their broadcaster. */
+export function selectSavedLiveVideos(supabaseClient: TypedSupabaseClient) {
+  return supabaseClient.from('videos').select(SAVED_LIVE_VIDEO_COLUMNS)
 }
 
+type SavedLiveVideoRow = QueryData<
+  ReturnType<typeof selectSavedLiveVideos>
+>[number]
+
 /**
- * Flattens a row read with {@link SAVED_LIVE_VIDEO_SELECT}.
+ * Flattens a row read with {@link selectSavedLiveVideos}.
  */
 export function toSavedLiveVideo({
   twitch_video: { twitch_user, ...twitchVideo },
@@ -158,9 +157,7 @@ export function toSavedLiveVideo({
 async function getSavedLiveVideos(
   supabaseClient: TypedSupabaseClient,
 ): Promise<SavedLiveVideo[]> {
-  const { data, error } = await supabaseClient
-    .from('videos')
-    .select(SAVED_LIVE_VIDEO_SELECT)
+  const { data, error } = await selectSavedLiveVideos(supabaseClient)
     .eq('platform', 'twitch')
     .eq('status', 'LIVE')
     .is('deleted_at', null)
@@ -194,27 +191,7 @@ async function endBroadcast(
     return
   }
 
-  // Link first: should the next step fail, the row stays LIVE and the next
-  // run ends it, instead of leaving an ended row without its archive.
-  if (isLivePlaceholder(saved)) {
-    await updateTwitchVideo(supabaseClient, saved.twitch_video.id, {
-      twitch_video_id: archive.id,
-      type: archive.type,
-    })
-  }
-
-  // The preview of the stream gives way to the thumbnail of the archive. The
-  // preview is left for the cleanup of unused thumbnails, since cached pages
-  // may still show it.
-  await replaceThumbnail(context, {
-    create: () =>
-      createTwitchThumbnail(context, {
-        thumbnailUrl: archive.thumbnail_url,
-        twitchVideoId: archive.id,
-      }),
-    fields: toVideoFields(archive),
-    videoId: saved.id,
-  })
+  await attachArchive(context, saved, archive, { stillLive: false })
 }
 
 /**

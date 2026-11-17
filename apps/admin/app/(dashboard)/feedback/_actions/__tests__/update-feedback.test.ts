@@ -13,6 +13,15 @@ const { supabase } = test
 const ID = '70000000-0000-0000-0000-000000000001'
 const MEMO = '検索の絞り込みと合わせて、次の四半期に対応する。'
 
+/** What the audit log entries record, without the client passed first. */
+function recordedAuditLogs(): string {
+  return JSON.stringify(
+    test.createAuditLog.mock.calls.map(
+      ([, ...args]: unknown[]): unknown[] => args,
+    ),
+  )
+}
+
 describe('updateFeatureRequestStatus', () => {
   it('records the status before and after the change', async () => {
     supabase.on('select', 'feature_requests', [
@@ -112,7 +121,7 @@ describe('updateFeatureRequestMemo', () => {
       },
       entityName: 'Message',
     })
-    expect(JSON.stringify(test.createAuditLog.mock.calls)).not.toContain(MEMO)
+    expect(recordedAuditLogs()).not.toContain(MEMO)
     test.expectRevalidated({ paths: ['/feedback'] })
   })
 
@@ -133,7 +142,7 @@ describe('updateFeatureRequestMemo', () => {
       entityName: 'Message',
     })
 
-    const recorded = JSON.stringify(test.createAuditLog.mock.calls)
+    const recorded = recordedAuditLogs()
 
     expect(recorded).not.toContain(before)
     expect(recorded).not.toContain(MEMO)
