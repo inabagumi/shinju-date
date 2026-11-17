@@ -2,7 +2,7 @@ import { getVideoExternalUrl } from '@shinju-date/helpers'
 import { track as vercelTrack } from '@vercel/analytics/server'
 import type { Video } from './types'
 
-// Using type here because it needs to be compatible with Record<string, AllowedPropertyValues>
+// biome-ignore lint/style/useConsistentTypeDefinitions: interface には暗黙のインデックスシグネチャがなく、vercelTrack の Record<string, AllowedPropertyValues> に渡せないため
 type TrackProperties = {
   provider: 'YouTube' | 'Twitch'
   talent_id: string

@@ -64,7 +64,7 @@ export async function dismissAnnouncement(announcementId: string) {
   })
 }
 
-export type Suggestion = {
+export interface Suggestion {
   term: string
 }
 

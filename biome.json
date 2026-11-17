@@ -60,6 +60,12 @@
               "tailwind-merge": "theme.css の文字サイズなどを登録した twMerge を @shinju-date/ui からインポートしてください。"
             }
           }
+        },
+        "useConsistentTypeDefinitions": {
+          "level": "error",
+          "options": {
+            "style": "interface"
+          }
         }
       }
     }

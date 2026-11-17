@@ -2,7 +2,7 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Redis } from '@upstash/redis'
 
-export type SummaryStats = {
+export interface SummaryStats {
   totalVideos: number
   visibleVideos: number
   scheduledVideos: number
@@ -12,7 +12,7 @@ export type SummaryStats = {
   totalTalents: number
 }
 
-export type AnalyticsSummary = {
+export interface AnalyticsSummary {
   recentSearches: number
   totalPopularKeywords: number
   recentClicks: number

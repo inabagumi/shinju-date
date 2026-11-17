@@ -50,7 +50,7 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 
 ## TypeScript の型定義
 
-- オブジェクトの型（React の Props、関数のオプションなど）は `type` ではなく `interface` で定義する（[理由と例](docs/coding-guidelines.md#typescript-型定義)）
+- オブジェクトの型（React の Props、関数のオプションなど）は `type` ではなく `interface` で定義する（`pnpm run check` が確かめる。[理由と例](docs/coding-guidelines.md#typescript-型定義)）
 - ユニオン型、交差型、マップ型、条件型、タプル型は `type` を使う
 
 ## デザイン
