@@ -18,6 +18,7 @@ import {
   unauthenticatedFormState,
   unauthenticatedResult,
 } from '@/lib/auth'
+import { isNotFoundError } from '@/lib/supabase/query'
 import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
 import { zodErrorToFormState } from '../_lib/form-helpers'
 import { talentNameSchema, talentReadingSchema } from '../_lib/talent-schema'
@@ -244,8 +245,8 @@ export async function updateTalentAction(
       .single()
 
     if (error) {
-      // Handle PGRST116 error: No rows found (talent doesn't exist or is deleted)
-      if (error.code === 'PGRST116') {
+      // No row matched: the talent doesn't exist or is deleted
+      if (isNotFoundError(error)) {
         logger.warn('更新対象のタレントが見つかりませんでした', {
           id: validatedData.id,
         })
@@ -301,7 +302,7 @@ interface TalentLifecycleTransition {
   auditAction: AuditAction
   /** ログやエラーメッセージに使う操作名（例: 削除） */
   label: string
-  /** 対象が見つからなかった（PGRST116）ときに想定される理由 */
+  /** 対象が見つからなかったときに想定される理由 */
   notFoundReason: string
   /** 遷移前にタレントが満たしているべき状態 */
   from: {
@@ -387,8 +388,8 @@ async function transitionTalentLifecycle(
     const { data: talent, error } = await query.select('name').single()
 
     if (error) {
-      // PGRST116: 条件に一致する行がない（存在しない、または既に遷移済み）
-      if (error.code === 'PGRST116') {
+      // 条件に一致する行がない（存在しない、または既に遷移済み）
+      if (isNotFoundError(error)) {
         logger.warn(`${transition.label}対象のタレントが見つかりませんでした`, {
           id,
         })

@@ -349,8 +349,8 @@ describe('removeYouTubeChannelAction', () => {
     })
   })
 
-  it('should return error when channel is not found (PGRST116)', async () => {
-    // No row matches, so `.single()` fails with PGRST116
+  it('should return error when channel is not found', async () => {
+    // No row matches, so `.single()` fails
     supabase.on('select', 'youtube_channels', [])
 
     const result = await removeYouTubeChannelAction('channel-123', talentId)

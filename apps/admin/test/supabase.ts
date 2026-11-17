@@ -4,6 +4,7 @@ import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll } from 'vitest'
 import type { TypedSupabaseClient } from '@/lib/supabase'
+import { NO_ROWS_ERROR_CODE } from '@/lib/supabase/query'
 
 const SUPABASE_URL = 'https://fake.supabase.test'
 
@@ -99,7 +100,7 @@ function operationOf(
 function noRows(): Response {
   return HttpResponse.json(
     {
-      code: 'PGRST116',
+      code: NO_ROWS_ERROR_CODE,
       details: 'The result contains 0 rows',
       hint: null,
       message: 'JSON object requested, multiple (or no) rows returned',

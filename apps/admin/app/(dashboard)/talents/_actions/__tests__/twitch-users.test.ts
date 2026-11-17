@@ -312,8 +312,8 @@ describe('removeTwitchUserAction', () => {
     })
   })
 
-  it('should return error when user is not found (PGRST116)', async () => {
-    // No row matches, so `.single()` fails with PGRST116
+  it('should return error when user is not found', async () => {
+    // No row matches, so `.single()` fails
     supabase.on('select', 'twitch_users', [])
 
     const result = await removeTwitchUserAction('twitch-user-row-123', talentId)

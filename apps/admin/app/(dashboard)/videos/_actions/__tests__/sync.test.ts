@@ -204,7 +204,7 @@ describe('syncVideoWithTwitch', () => {
   })
 
   it('should return error when the video row is not found', async () => {
-    // An unanswered `single()` select gets PGRST116 (0 rows).
+    // An unanswered `single()` select gets no rows.
     supabase.on('select', 'videos', [])
 
     const result = await syncVideoWithTwitch(videoId)

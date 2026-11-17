@@ -16,6 +16,7 @@ import {
   unauthenticatedFormState,
   unauthenticatedResult,
 } from '@/lib/auth'
+import { isNotFoundError } from '@/lib/supabase/query'
 import { syncTwitchUserIconSafely } from '@/lib/twitch-user-icon'
 
 function twitchApiErrorFormState(error: unknown): FormState {
@@ -220,7 +221,7 @@ export async function removeTwitchUserAction(
       .single()
 
     if (fetchError) {
-      if (fetchError.code === 'PGRST116') {
+      if (isNotFoundError(fetchError)) {
         logger.warn('削除対象のTwitchユーザーが見つかりませんでした', {
           talent_id: talentId,
           twitch_user_row_id: twitchUserRowId,
