@@ -113,4 +113,32 @@ describe('signIn', () => {
     expect(signOutMock).not.toHaveBeenCalled()
     expect(redirectMock).not.toHaveBeenCalled()
   })
+
+  it('returns the errors for each field when the values are invalid', async () => {
+    const formData = new FormData()
+    formData.set('email', 'invalid')
+    formData.set('password', 'short')
+
+    const result = await signIn({}, formData)
+
+    expect(result).toEqual({
+      errors: {
+        email: ['メールアドレスの形式が正しくありません。'],
+        password: ['パスワードは8文字以上入力する必要があります。'],
+      },
+    })
+    expect(signInWithPasswordMock).not.toHaveBeenCalled()
+  })
+
+  it('returns the errors for each field when the values are missing', async () => {
+    const result = await signIn({}, new FormData())
+
+    expect(result).toEqual({
+      errors: {
+        email: ['メールアドレスは必須です。'],
+        password: ['パスワードは必須です。'],
+      },
+    })
+    expect(signInWithPasswordMock).not.toHaveBeenCalled()
+  })
 })
