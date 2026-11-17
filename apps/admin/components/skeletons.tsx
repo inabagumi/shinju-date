@@ -69,38 +69,6 @@ export function ManagementTableSkeleton({
   )
 }
 
-export function TermsListSkeleton() {
-  return (
-    <div aria-hidden="true" className="animate-pulse space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
-        <div className="h-10 w-full rounded-control bg-muted sm:max-w-md" />
-        <div className="h-10 w-28 rounded-control bg-muted" />
-      </div>
-      <div className="flex min-h-8 flex-wrap gap-1">
-        {range(8).map((item) => (
-          <div
-            className="h-8 w-9 rounded-control bg-muted"
-            key={`term-index-skeleton-${item}`}
-          />
-        ))}
-      </div>
-      <div className="overflow-hidden rounded-container border border-border">
-        <div className="h-10 bg-muted" />
-        {range(6).map((item) => (
-          <div
-            className="flex h-14 items-center gap-4 border-t border-border px-4"
-            key={`term-row-skeleton-${item}`}
-          >
-            <div className="h-4 w-1/4 rounded-control bg-muted" />
-            <div className="h-4 w-1/4 rounded-control bg-muted" />
-            <div className="h-4 flex-1 rounded-control bg-muted" />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 export function DetailCardsSkeleton() {
   return (
     <div aria-hidden="true" className="animate-pulse space-y-6">
@@ -275,71 +243,6 @@ export function CardSkeleton() {
         <div className="rounded-container border border-border p-4">
           <div className="mb-2 h-4 w-20 rounded-control bg-muted" />
           <div className="h-8 w-24 rounded-control bg-muted" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export function WidgetSkeleton() {
-  return (
-    <div
-      aria-hidden="true"
-      className="animate-pulse rounded-container border border-border bg-surface p-6"
-    >
-      <div className="mb-4 h-6 w-32 rounded-control bg-muted" />
-      <div className="flex flex-col gap-3">
-        <div className="h-12 rounded-container bg-muted" />
-        <div className="h-12 rounded-container bg-muted" />
-        <div className="h-12 rounded-container bg-muted" />
-        <div className="h-12 rounded-container bg-muted" />
-      </div>
-    </div>
-  )
-}
-
-export function AnalyticsPageSkeleton() {
-  return (
-    <div aria-hidden="true" className="animate-pulse">
-      <div className="mb-6 h-8 w-64 rounded-control bg-muted" />
-      <div className="mb-6 flex gap-4">
-        <div className="h-10 w-64 rounded-control bg-muted" />
-        <div className="h-10 w-48 rounded-control bg-muted" />
-      </div>
-      <div className="mb-6 h-64 rounded-container border border-border bg-surface p-6">
-        <div className="mb-4 h-6 w-32 rounded-control bg-muted" />
-        <div className="h-48 rounded-control bg-muted" />
-      </div>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-container border border-border bg-surface p-6">
-          <div className="mb-4 h-6 w-40 rounded-control bg-muted" />
-          <div className="space-y-3">
-            {range(5).map((i) => (
-              <div
-                className="flex items-center gap-4"
-                key={`analytics-item-${i}`}
-              >
-                <div className="h-4 w-4 rounded-full bg-muted" />
-                <div className="h-4 flex-1 rounded-control bg-muted" />
-                <div className="h-4 w-12 rounded-control bg-muted" />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="rounded-container border border-border bg-surface p-6">
-          <div className="mb-4 h-6 w-40 rounded-control bg-muted" />
-          <div className="space-y-3">
-            {range(5).map((i) => (
-              <div
-                className="flex items-center gap-4"
-                key={`analytics-item-2-${i}`}
-              >
-                <div className="h-4 w-4 rounded-full bg-muted" />
-                <div className="h-4 flex-1 rounded-control bg-muted" />
-                <div className="h-4 w-12 rounded-control bg-muted" />
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </div>
