@@ -3,6 +3,8 @@ import { getSearchEngagementRate } from '@/lib/analytics/get-search-quality-metr
 import { WidgetHeader } from '../../_components/widget-header'
 import { resolvePeriod } from '../../_lib/resolve-period'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
+import { ENGAGEMENT_RATE_RATINGS, rate } from '../_lib/metric-ratings'
+import { MetricLegend } from './metric-legend'
 import { MetricNoData } from './metric-no-data'
 
 interface Props {
@@ -21,24 +23,6 @@ function SearchEngagementRateWidgetComponent({
   dateRange: { startDate: string; endDate: string }
   selectedDate: string | null
 }) {
-  // Determine the performance level for styling
-  const getPerformanceLevel = (rate: number) => {
-    if (rate >= 30) return 'excellent'
-    if (rate >= 20) return 'good'
-    if (rate >= 10) return 'average'
-    return 'poor'
-  }
-
-  const performanceLabels = {
-    average: '平均的',
-    excellent: '優秀',
-    good: '良好',
-    poor: '改善が必要',
-  }
-
-  const performanceLevel =
-    engagementRate === null ? null : getPerformanceLevel(engagementRate)
-
   return (
     <div>
       <WidgetHeader
@@ -48,25 +32,23 @@ function SearchEngagementRateWidgetComponent({
         title="検索利用率"
       />
 
-      {engagementRate === null || performanceLevel === null ? (
+      {engagementRate === null ? (
         <MetricNoData
           description="この期間に計測されたセッションがないため、評価できません。"
           label="検索利用率"
         />
       ) : (
         <StatTile
-          label={`検索利用率 (${performanceLabels[performanceLevel]})`}
+          label={`検索利用率 (${rate(engagementRate, ENGAGEMENT_RATE_RATINGS).label})`}
           value={`${engagementRate.toFixed(1)}%`}
         />
       )}
 
-      <dl className="mt-4 grid grid-cols-2 gap-x-4 text-caption text-muted">
-        <dt className="col-span-2 font-semibold">判定基準</dt>
-        <dd>30%以上: 優秀</dd>
-        <dd>20-29%: 良好</dd>
-        <dd>10-19%: 平均的</dd>
-        <dd>10%未満: 改善が必要</dd>
-      </dl>
+      <MetricLegend
+        ratings={ENGAGEMENT_RATE_RATINGS}
+        title="判定基準"
+        unit="%"
+      />
     </div>
   )
 }
