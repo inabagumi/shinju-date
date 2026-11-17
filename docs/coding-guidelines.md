@@ -512,6 +512,21 @@ CREATE POLICY "Enable update for admins"
 - 期間で集計する取得関数は、`({ range: { start, end }, limit? })` の形で引数を取る（`apps/admin/lib/analytics/period.ts` の `PeriodQuery` と `RankingQuery`）。`start` と `end` は両端を含む `YYYY-MM-DD` の文字列で、1日だけのときは同じ日を渡す。`Temporal` のオブジェクトはキャッシュのキーにできないため、文字列で渡す
 - ルートの `_lib/` には、URL のパラメータの解釈（`search-params-schema.ts`、`analytics-url-params.ts`、`resolve-period.ts` など）と、表示用の整形（`format-date.ts`、指標の評価と凡例の文を作る `metric-ratings.ts` など）だけを置く。Redis や Supabase を読む関数は置かない
 
+## 公開サイトの部品の置き場所
+
+公開サイト（`apps/web`）の部品は、どこで使うかで置き場所を分けます。置き場所を見れば影響の範囲が分かり、1つのルートのための変更で、ほかのルートを確かめ直さずに済むようにするためです。
+
+| 置き場所                    | 置くもの                                                                                                                            |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/components/`      | 2つ以上のルートで使うコンポーネント                                                                                                 |
+| `apps/web/app/_components/` | ルートのレイアウト（ヘッダー、フッター、検索モーダル、お知らせ）だけが使うコンポーネント                                            |
+| 各ルートの `_components/`   | そのルートだけが使うコンポーネント（例: 動画の一覧の絞り込みは `apps/web/app/videos/[[...queries]]/_components/video-filters.tsx`） |
+| `apps/web/lib/`             | フックと、表示に関係しない関数・定数（例: `use-today.ts`、`talent-profile-image.ts`、`svg-symbols.ts`）                             |
+
+- コンポーネントのファイルには、表示に関係しない関数を置かない。OG 画像（`opengraph-image.tsx`）などのコンポーネントではないファイルが使う関数と定数は、`lib/` に置き、コンポーネントもそこから読み込む
+- 1つのルートだけが使う関数は、そのルートの `_lib/` に置いてもよい（例: `apps/web/app/talents/[id]/_lib/og-image.ts`）
+- 2つ目のルートが使うことになったときに、`components/` へ移す。使うルートが1つに減ったときは、そのルートの `_components/` へ移す
+
 ## 共有パッケージに置くもの
 
 `packages/helpers`（小さな関数）と `packages/constants`（定数）は、複数のアプリやパッケージが使うものの置き場所です。1つのアプリだけが使うものまで置くと、どこで使われているかを追いにくくなり、そのアプリのための変更で、関係のないアプリまでビルドとテストをやり直すことになります。
