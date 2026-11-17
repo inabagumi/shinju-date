@@ -142,16 +142,14 @@ function checkEmbeddedFilters(
 }
 
 /**
- * The rows of an embedded resource that match its filters, and the table
- * they come from. A relation that the table does not define is an error
- * (`PGRST200` of PostgREST).
+ * The relation of a table to an embedded resource, and the table it refers
+ * to. A relation that the table does not define is an error (`PGRST200` of
+ * PostgREST).
  */
-async function resolveRelation(
+function findRelation(
   table: AnyTableDefinition | undefined,
   relationName: string,
-  row: object,
-  filters: readonly Filter[],
-): Promise<{ rows: object[]; table: AnyTableDefinition; many: boolean }> {
+) {
   const relation = table?.relations.find(({ table }) => table === relationName)
   const target = relation && findTable(relation.table)
 
@@ -164,6 +162,47 @@ async function resolveRelation(
     })
   }
 
+  return { relation, target }
+}
+
+/** Check that every embedded resource of a select has a relation. */
+function checkRelations(
+  nodes: readonly SelectNode[],
+  table: AnyTableDefinition | undefined,
+): void {
+  for (const node of nodes) {
+    if (node.kind === 'relation') {
+      checkRelations(node.fields, findRelation(table, node.relation).target)
+    }
+  }
+}
+
+/**
+ * Check a select and the filters on its embedded resources without reading
+ * any rows, and throw the error of PostgREST for what is not supported. A
+ * write checks them before it changes anything, as PostgREST does.
+ */
+export function validateSelect(
+  selectStr: string,
+  tableName: TableName,
+  filters: readonly Filter[] = [],
+): SelectNode[] {
+  const nodes = parseSelect(selectStr)
+
+  checkEmbeddedFilters(nodes, filters)
+  checkRelations(nodes, findTable(tableName))
+
+  return nodes
+}
+
+/** The rows of an embedded resource that match its filters. */
+async function resolveRelation(
+  table: AnyTableDefinition | undefined,
+  relationName: string,
+  row: object,
+  filters: readonly Filter[],
+): Promise<{ rows: object[]; table: AnyTableDefinition; many: boolean }> {
+  const { relation, target } = findRelation(table, relationName)
   const value = getColumn(row, relation.column)
   const related =
     value == null
@@ -255,9 +294,7 @@ export async function selectRows<Row extends object>(
   tableName: TableName,
   filters: readonly Filter[] = [],
 ): Promise<SelectedRow<Row>[]> {
-  const nodes = parseSelect(selectStr)
-
-  checkEmbeddedFilters(nodes, filters)
+  const nodes = validateSelect(selectStr, tableName, filters)
 
   if (selectStr === '*') {
     return rows.map((row) => ({ output: row, row }))

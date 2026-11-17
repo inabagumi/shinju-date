@@ -18,7 +18,7 @@ import {
   rest,
   singleObjectError,
 } from './rest.js'
-import { applySelect, selectRows } from './select.js'
+import { applySelect, selectRows, validateSelect } from './select.js'
 import {
   getRows,
   type TableDefinition,
@@ -75,10 +75,16 @@ async function readRows<Name extends TableName>(
 }
 
 /**
- * Parse the query of a write. Writes change the rows that match the filters
- * of the table itself, so filters on embedded resources are not supported.
+ * Parse the query of a write, and check its select (for
+ * `Prefer: return=representation`) before anything is changed, so that an
+ * error leaves the data as it was. Writes change the rows that match the
+ * filters of the table itself, so filters on embedded resources are not
+ * supported.
  */
-function parseWriteQuery(request: Request): SupabaseQuery {
+function parseWriteQuery(
+  request: Request,
+  tableName: TableName,
+): SupabaseQuery {
   const query = parseSupabaseQuery(new URL(request.url))
   const embedded = query.filters.find(({ path }) => path.length > 0)
 
@@ -88,6 +94,8 @@ function parseWriteQuery(request: Request): SupabaseQuery {
       'The mock supports filters on embedded resources only in reads (GET and HEAD)',
     )
   }
+
+  validateSelect(query.select, tableName)
 
   return query
 }
@@ -286,7 +294,7 @@ function createWriteHandlers<Name extends TableName>(
     // `resolution=ignore-duplicates` on the columns of `on_conflict` (the
     // primary key without it)
     rest.post(url, async ({ request }) => {
-      const query = parseWriteQuery(request)
+      const query = parseWriteQuery(request, table.name)
       const prefer = request.headers.get('prefer') ?? ''
       const resolution = prefer.match(
         /resolution=(ignore|merge)-duplicates/,
@@ -371,7 +379,7 @@ function createWriteHandlers<Name extends TableName>(
     // Updates only the rows that match all the filters, such as
     // `id=in.(...)&visible=eq.false`
     rest.patch(url, async ({ request }) => {
-      const query = parseWriteQuery(request)
+      const query = parseWriteQuery(request, table.name)
       const changes = withTriggers(
         table,
         (await request.json()) as Partial<Tables<Name>>,
@@ -414,7 +422,7 @@ function createWriteHandlers<Name extends TableName>(
 
     // Deletes only the rows that match all the filters
     rest.delete(url, async ({ request }) => {
-      const query = parseWriteQuery(request)
+      const query = parseWriteQuery(request, table.name)
       const matches = applySupabaseConditions(collection.findMany(), query)
 
       if (acceptsSingleObject(request) && matches.length !== 1) {

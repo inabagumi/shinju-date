@@ -118,6 +118,70 @@ describe('Supabase filters', () => {
       expect(current?.visible).toBe(video?.visible)
     })
 
+    it.each([
+      ['an unsupported select', 'id,...talents(name)', 'PGRST100'],
+      [
+        'a relation that the table does not have',
+        'id,announcements(id)',
+        'PGRST200',
+      ],
+    ])(
+      'changes nothing in a write that returns %s',
+      async (_, select, code) => {
+        const [video] = videos
+        const termsBefore = await getJson<unknown[]>('terms?select=id')
+        const headers = {
+          'Content-Type': 'application/json',
+          prefer: 'return=representation',
+        }
+        const patched = await get(
+          `videos?id=eq.${video?.id}&select=${encodeURIComponent(select)}`,
+          {
+            body: JSON.stringify({ visible: !video?.visible }),
+            headers,
+            method: 'PATCH',
+          },
+        )
+        const deleted = await get(
+          `videos?id=eq.${video?.id}&select=${encodeURIComponent(select)}`,
+          { headers, method: 'DELETE' },
+        )
+        const created = await get(
+          `terms?select=${encodeURIComponent(select.replace('talents', 'videos'))}`,
+          {
+            body: JSON.stringify({
+              readings: [],
+              synonyms: [],
+              term: `term-${crypto.randomUUID()}`,
+            }),
+            headers,
+            method: 'POST',
+          },
+        )
+        const [current] = await getJson<Video[]>(
+          `videos?select=id,visible&id=eq.${video?.id}`,
+        )
+        const termsAfter = await getJson<unknown[]>('terms?select=id')
+
+        for (const response of [patched, deleted, created]) {
+          expect(response.status).toBe(400)
+          expect(((await response.json()) as ErrorBody).code).toBe(code)
+        }
+
+        expect(current).toEqual({ id: video?.id, visible: video?.visible })
+        expect(termsAfter).toHaveLength(termsBefore.length)
+      },
+    )
+
+    it('returns PGRST200 for a relation that the table does not have, even without rows', async () => {
+      const response = await get(
+        'videos?select=id,announcements(id)&id=eq.00000000-0000-4000-8000-000000000000',
+      )
+
+      expect(response.status).toBe(400)
+      expect(((await response.json()) as ErrorBody).code).toBe('PGRST200')
+    })
+
     it('returns 400 for an order by a column of an embedded resource', async () => {
       const response = await get(
         'videos?select=id,talent:talents(name)&order=talent(name).asc',
