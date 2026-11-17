@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import PageHeader from '@/components/page-header'
-import { MAIN_CONTENT_ID } from '@/components/skip-link'
+import PageMain from '@/components/page-main'
 import {
   ScheduleDays,
   ScheduleDaysSkeleton,
@@ -20,10 +20,7 @@ export default function SchedulePageContent({
   params,
 }: ScheduleWeekSectionProps) {
   return (
-    <main
-      className="mx-auto max-w-6xl scroll-mt-20 px-4 py-8"
-      id={MAIN_CONTENT_ID}
-    >
+    <PageMain>
       <PageHeader
         breadcrumbs={[{ name: '配信スケジュール' }]}
         title="配信スケジュール"
@@ -40,6 +37,6 @@ export default function SchedulePageContent({
       <Suspense fallback={<ScheduleDaysSkeleton />}>
         <ScheduleDays params={params} />
       </Suspense>
-    </main>
+    </PageMain>
   )
 }

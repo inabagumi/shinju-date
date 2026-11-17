@@ -1,29 +1,22 @@
-import type { Metadata } from 'next'
 import PageHeader from '@/components/page-header'
-import { MAIN_CONTENT_ID } from '@/components/skip-link'
+import PageMain from '@/components/page-main'
+import { createPageMetadata } from '@/lib/metadata'
 import { FeedbackForm } from './_components/feedback-form'
 
-export const metadata: Metadata = {
+const TITLE = '機能要望'
+
+export const metadata = createPageMetadata({
   description:
     'SHINJU DATEへの機能要望を送信できます。こんな機能があったらいいな、というアイデアをお寄せください。',
-  openGraph: {
-    description:
-      'SHINJU DATEへの機能要望を送信できます。こんな機能があったらいいな、というアイデアをお寄せください。',
-    title: '機能要望 - SHINJU DATE',
-    type: 'website',
-    url: '/feedback',
-  },
-  title: '機能要望',
-}
+  path: '/feedback',
+  title: TITLE,
+})
 
 export default function FeedbackPage() {
   return (
-    <main
-      className="mx-auto max-w-6xl scroll-mt-20 px-4 py-8"
-      id={MAIN_CONTENT_ID}
-    >
+    <PageMain>
       <PageHeader
-        breadcrumbs={[{ name: '機能要望' }]}
+        breadcrumbs={[{ name: TITLE }]}
         description={
           <>
             <p>
@@ -35,12 +28,12 @@ export default function FeedbackPage() {
             </p>
           </>
         }
-        title="機能要望"
+        title={TITLE}
       />
 
       <div className="max-w-xl">
         <FeedbackForm />
       </div>
-    </main>
+    </PageMain>
   )
 }

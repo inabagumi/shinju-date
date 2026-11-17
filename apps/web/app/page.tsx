@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Suspense } from 'react'
-import { MAIN_CONTENT_ID } from '@/components/skip-link'
+import PageMain from '@/components/page-main'
 import { fetchDashboardVideos, fetchUpcomingVideos } from '@/lib/fetchers'
+import { createPageMetadata } from '@/lib/metadata'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE } from '@/lib/site'
 import hero from './_assets/hero.jpg'
 import {
@@ -16,23 +17,22 @@ import {
   ShortsSectionSkeleton,
 } from './_components/home-sections'
 
-export const metadata: Metadata = {
-  alternates: {
-    canonical: '/',
-  },
+const pageMetadata = createPageMetadata({
+  absoluteTitle: `${SITE_NAME} - ${SITE_TAGLINE}`,
   description: SITE_DESCRIPTION,
+  path: '/',
+  title: SITE_NAME,
+})
+
+export const metadata: Metadata = {
+  ...pageMetadata,
   openGraph: {
-    description: SITE_DESCRIPTION,
-    title: SITE_NAME,
-    type: 'website',
+    ...pageMetadata.openGraph,
     url: '/',
   },
-  title: {
-    absolute: `${SITE_NAME} - ${SITE_TAGLINE}`,
-  },
   twitter: {
+    ...pageMetadata.twitter,
     card: 'summary_large_image',
-    title: SITE_NAME,
   },
 }
 
@@ -94,10 +94,7 @@ export default function SchedulePage() {
         />
       </div>
 
-      <main
-        className="mx-auto max-w-6xl scroll-mt-20 space-y-12 px-4 pt-12"
-        id={MAIN_CONTENT_ID}
-      >
+      <PageMain className="space-y-12 pt-12 pb-0">
         {/* 配信中が0件のときはセクションごと表示しないため、読み込み中も何も置かない */}
         <Suspense fallback={null}>
           <HomeLive dashboardVideos={dashboardVideos} />
@@ -114,7 +111,7 @@ export default function SchedulePage() {
         <Suspense fallback={<ShortsSectionSkeleton />}>
           <HomeShorts dashboardVideos={dashboardVideos} />
         </Suspense>
-      </main>
+      </PageMain>
     </>
   )
 }

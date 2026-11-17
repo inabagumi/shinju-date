@@ -1,22 +1,14 @@
-import type { ReactNode } from 'react'
 import SimpleDocument from '@/components/simple-document'
-import { SITE_NAME as siteName } from '@/lib/site'
+import { createPageMetadata } from '@/lib/metadata'
 
-export const metadata = {
-  alternates: {
-    canonical: '/terms',
-  },
-  openGraph: {
-    siteName,
-    title: '利用規約',
-    type: 'article',
-  },
-  title: '利用規約',
-  twitter: {
-    title: `利用規約 - ${siteName}`,
-  },
-}
+const TITLE = '利用規約'
 
-export default function TermsLayout({ children }: { children: ReactNode }) {
-  return <SimpleDocument title="利用規約">{children}</SimpleDocument>
+export const metadata = createPageMetadata({
+  path: '/terms',
+  title: TITLE,
+  type: 'article',
+})
+
+export default function TermsLayout({ children }: LayoutProps<'/terms'>) {
+  return <SimpleDocument title={TITLE}>{children}</SimpleDocument>
 }
