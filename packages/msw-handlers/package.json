@@ -4,6 +4,7 @@
   "dependencies": {
     "@msw/data": "1.1.8",
     "@shinju-date/database": "workspace:*",
+    "@shinju-date/video-backfill": "workspace:*",
     "msw": "catalog:",
     "zod": "catalog:"
   },

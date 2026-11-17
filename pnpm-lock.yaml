@@ -964,6 +964,9 @@ importers:
       '@shinju-date/database':
         specifier: workspace:*
         version: link:../database
+      '@shinju-date/video-backfill':
+        specifier: workspace:*
+        version: link:../video-backfill
       msw:
         specifier: 'catalog:'
         version: 3.0.6(@types/node@26.6.6)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0))
