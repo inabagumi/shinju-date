@@ -82,6 +82,23 @@ pnpm run check:docs
 - 外部の URL は確かめません
 - `.agents/` と `.claude/` の下のファイル（`skills` CLI が置いたファイル）は対象外です
 
+### 依存のバージョン
+
+2つ以上の `package.json` に書く依存のバージョンは、`pnpm-workspace.yaml` の `catalog:` に1か所だけ書き、各 `package.json` には `"catalog:"` と書きます。
+
+```json
+{
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}
+```
+
+- 新しいパッケージやアプリケーションを追加するときは、ほかの `package.json` からバージョンを写さず、`catalog:` にある依存は `"catalog:"` で参照してください
+- 1つの `package.json` だけが使う依存は、その `package.json` にバージョンを書きます。2つ目の `package.json` が使うようになったら、`catalog:` に移してください
+- `peerDependencies` は、受け入れる範囲（`^19.0.0` など）を書くため、`catalog:` を使いません
+- Renovate は、`catalog:` のバージョンを `pnpm-workspace.yaml` の中で更新します
+
 ### コミットメッセージ
 
 [Conventional Commits](https://www.conventionalcommits.org/) の形式に従ってください：

@@ -2,12 +2,12 @@
   "author": "Haneru Developers",
   "description": "Health check utilities for web services",
   "devDependencies": {
-    "@supabase/supabase-js": "2.119.0",
-    "@tsconfig/strictest": "2.0.9",
-    "@upstash/redis": "1.41.0",
-    "tsdown": "0.23.7",
-    "typescript": "6.0.3",
-    "vitest": "5.1.0"
+    "@supabase/supabase-js": "catalog:",
+    "@tsconfig/strictest": "catalog:",
+    "@upstash/redis": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
     ".": {
