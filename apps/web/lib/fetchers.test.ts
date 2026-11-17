@@ -827,7 +827,14 @@ describe('fetchUpcomingVideos', () => {
       title: `動画${index}`,
       twitch_video: null,
       video_kind: 'standard',
-      youtube_video: { youtube_channel: null, youtube_video_id: `YT${index}` },
+      youtube_video: {
+        youtube_channel: {
+          name: null,
+          profile_image: null,
+          youtube_handle: null,
+        },
+        youtube_video_id: `YT${index}`,
+      },
       ...overrides,
     }
   }
@@ -919,7 +926,14 @@ describe('fetchScheduleVideos', () => {
       title: `動画${index}`,
       twitch_video: null,
       video_kind: 'standard',
-      youtube_video: { youtube_channel: null, youtube_video_id: `YT${index}` },
+      youtube_video: {
+        youtube_channel: {
+          name: null,
+          profile_image: null,
+          youtube_handle: null,
+        },
+        youtube_video_id: `YT${index}`,
+      },
       ...overrides,
     }
   }
