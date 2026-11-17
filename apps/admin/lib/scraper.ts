@@ -3,7 +3,7 @@ import { logger } from '@shinju-date/logger'
 import type { Scraper } from '@shinju-date/scraper'
 import { TwitchScraper } from '@shinju-date/scraper/twitch'
 import { YouTubeScraper } from '@shinju-date/scraper/youtube'
-import { supabaseClient } from '@/lib/supabase/admin'
+import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 
 /**
  * プラットフォームの Scraper を、管理画面のデータベースとロガーで作る。
@@ -14,7 +14,7 @@ import { supabaseClient } from '@/lib/supabase/admin'
  * - 1件の失敗で止めない処理（サムネイルの保存など）の失敗は、`logger` に記録される
  */
 export function createScraper(platform: Enums<'platform_type'>): Scraper {
-  const options = { logger, supabaseClient }
+  const options = { logger, supabaseClient: getSupabaseAdminClient() }
 
   return platform === 'twitch'
     ? new TwitchScraper(options)
