@@ -221,6 +221,15 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
     steps:
+      # Sanitize package name for artifact. Runs first, so that the report
+      # keeps the package name even when a later step (e.g. the tests) fails
+      - name: Sanitize package name for artifact
+        id: sanitize
+        run: |
+          SANITIZED_NAME=$(echo "${{ matrix.package }}" | sed 's/[\/@]/_/g')
+          echo "name=$SANITIZED_NAME" >> $GITHUB_OUTPUT
+          echo "Sanitized artifact name: $SANITIZED_NAME"
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
@@ -253,14 +262,6 @@ jobs:
         run: pnpm test:e2e --filter=${{ matrix.package }}
         env:
           CI: true
-
-      # Sanitize package name for artifact
-      - name: Sanitize package name for artifact
-        id: sanitize
-        run: |
-          SANITIZED_NAME=$(echo "${{ matrix.package }}" | sed 's/[\/@]/_/g')
-          echo "name=$SANITIZED_NAME" >> $GITHUB_OUTPUT
-          echo "Sanitized artifact name: $SANITIZED_NAME"
 
       # Upload Playwright Report
       - name: Upload Playwright Report
