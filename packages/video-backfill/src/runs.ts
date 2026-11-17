@@ -123,6 +123,20 @@ function createCounts(): Record<BackfillRunJobStatus, number> {
   return { done: 0, failed: 0, interrupted: 0, pending: 0, running: 0 }
 }
 
+/**
+ * Tells the status of a job as it is shown to admins: a job that is `pending`
+ * or `running` but neither queued nor being read stopped without finishing,
+ * so it is `interrupted`.
+ */
+export function getBackfillRunJobStatus(
+  status: BackfillJobStatus,
+  active: boolean,
+): BackfillRunJobStatus {
+  return !active && (status === 'pending' || status === 'running')
+    ? 'interrupted'
+    : status
+}
+
 function toProgress(
   runJob: BackfillRunJob,
   job: BackfillJob,
@@ -133,10 +147,7 @@ function toProgress(
     active,
     added: Math.max(0, job.added - runJob.addedBefore),
     error: job.error,
-    status:
-      !active && (job.status === 'pending' || job.status === 'running')
-        ? 'interrupted'
-        : job.status,
+    status: getBackfillRunJobStatus(job.status, active),
     updatedAt: job.updatedAt,
   }
 }
