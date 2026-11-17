@@ -2,10 +2,7 @@ import { formatNumber } from '@shinju-date/helpers'
 import { type ComponentProps, Suspense } from 'react'
 import NoResults from '@/components/no-results'
 import PageHeader, { PageHeaderSkeleton } from '@/components/page-header'
-import SearchExitTracker from '@/components/search-exit-tracker'
-import SearchQueryTracker from '@/components/search-query-tracker'
 import SearchResults from '@/components/search-results'
-import VideoFilters, { VideoFiltersSkeleton } from '@/components/video-filters'
 import {
   countVideos,
   fetchActiveTalents,
@@ -23,6 +20,9 @@ import {
   VIDEO_KIND_SEARCH_PARAM,
   type VideoKindFilter,
 } from '@/lib/video-kind-filter'
+import SearchExitTracker from './search-exit-tracker'
+import SearchQueryTracker from './search-query-tracker'
+import VideoFilters, { VideoFiltersSkeleton } from './video-filters'
 
 export interface VideosPageSectionProps {
   params: Promise<{
