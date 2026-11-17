@@ -18,6 +18,7 @@ Dev Container設定（`.devcontainer/`）を変更する場合は、`@devcontain
 - `.devcontainer/compose.override.yml` - Dev Container専用サービス（appのみ）
 - `compose.yml`（ルート） - Redis と、Upstash 互換の Redis HTTP API
 - `config/dev-secrets.env` - 開発用の環境変数
+- `scripts/setup-dev.sh` - プロジェクトの初期化（`.devcontainer/post-create.sh` が呼ぶ。手元の `pnpm run setup` と同じもの）
 
 詳細は[.devcontainer/README.md](.devcontainer/README.md)を参照してください。
 

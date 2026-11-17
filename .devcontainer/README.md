@@ -23,7 +23,7 @@ Node.js のメジャーバージョンは、Renovate が `.node-version` と一�
 ```
 .devcontainer/
 ├── Dockerfile            # OS レベルの準備（イメージのビルド時）
-├── post-create.sh        # プロジェクトの初期化（コンテナの作成後。supabase start を含む）
+├── post-create.sh        # プロジェクトの初期化（コンテナの作成後。scripts/setup-dev.sh を呼ぶ）
 ├── devcontainer.json     # VS Code / Codespaces の設定
 ├── devcontainer-lock.json  # Dev Container の機能のロックファイル
 ├── compose.override.yml  # Dev Container 専用のサービス（app のみ）
@@ -31,6 +31,7 @@ Node.js のメジャーバージョンは、Renovate が `.node-version` と一�
 
 ../compose.yml            # 共有のサービス（Redis）
 ../config/dev-secrets.env # 開発用のシークレット（Supabase の API キー、Redis のトークン）
+../scripts/setup-dev.sh   # 開発環境の初期設定（手元の pnpm run setup、Copilot のワークフローと共通）
 ../supabase/              # Supabase CLI の設定とマイグレーション
 ```
 
@@ -41,15 +42,19 @@ Node.js のメジャーバージョンは、Renovate が `.node-version` と一�
 - apt のパッケージ（`postgresql-client` など）のインストール
 - pnpm のインストール（公式のインストールスクリプトを使う）
 
-プロジェクトの依存関係のインストールや、データベースの初期化は書きません（`post-create.sh` に書く）。イメージのキャッシュが効くため、再ビルドの時間が短くなります。
+プロジェクトの依存関係のインストールや、データベースの初期化は書きません（`scripts/setup-dev.sh` に書く）。イメージのキャッシュが効くため、再ビルドの時間が短くなります。
 
 ### post-create.sh
 
-コンテナの作成後に一度だけ実行する、プロジェクトの初期化を書きます。
+コンテナの作成後に一度だけ実行されます。`scripts/setup-dev.sh` を呼ぶだけで、ほかの処理は書きません。このスクリプトは、手元の `pnpm run setup` と、Copilot のワークフロー（`.github/workflows/copilot-setup-steps.yml`）が実行するものと同じです（[セットアップガイド](../docs/setup-guide.md#13-開発環境の初期設定)）。
 
-- 依存関係のインストール（`pnpm install --frozen-lockfile`）
-- Supabase の起動（`pnpm exec supabase start`）と、データベースのリセット（マイグレーションとシードの適用）
+- 依存関係のインストール（`pnpm install`）
+- Supabase の起動（`pnpm exec supabase start`。初回は、マイグレーションとシードも適用する）
+- Redis の起動（Dev Container では、外側の Docker Compose が起動済みなので、何もしない）
+- 3つのアプリの `.env.local` の作成（すでにあれば、上書きしない）
 - TypeScript の型定義の生成（`pnpm typegen`）
+
+Dev Container だけに要る初期化が出てきた場合も、まず `scripts/setup-dev.sh` に書けないかを考えてください（3つの環境の手順が、食い違わないようにするためです）。
 
 ### devcontainer.json
 
@@ -95,6 +100,7 @@ Supabase のポートを変える場合は、`supabase/config.toml` を編集し
 - **Supabase**: app コンテナの中の Docker-in-Docker（`docker-in-docker` の機能）の上で、`supabase start` が起動します。ポートは、app コンテナの `127.0.0.1` に公開されます。bind mount のパスも、コンテナのファイルシステムの中で完結します
 - **Redis**: 外側の Docker Compose（`compose.yml`）が、app と並べて起動します。app からは、サービス名 `serverless-redis-http` で接続します
 - Dev Container の中で `docker ps` を実行すると、**Docker-in-Docker の上のコンテナ（主に Supabase）だけ**が見えます。外側の Redis のコンテナは、ホストの Docker に属するため、表示されません。Redis が動いているかは、`curl http://serverless-redis-http/` などで確かめてください
+- `scripts/setup-dev.sh` は、環境変数 `UPSTASH_REDIS_REST_URL`（`compose.override.yml` が設定する）の Redis が応答すれば、Docker-in-Docker の上に、もう1つの Redis を起動しません
 
 ## 使い方
 
@@ -102,7 +108,7 @@ Supabase のポートを変える場合は、`supabase/config.toml` を編集し
 
 1. リポジトリをクローンする
 2. VS Code で開き、`Dev Containers: Reopen in Container` を実行する
-3. `Dockerfile` からイメージがビルドされ、`post-create.sh` が依存関係とデータベースを初期化する
+3. `Dockerfile` からイメージがビルドされ、`post-create.sh`（`scripts/setup-dev.sh`）が依存関係、データベース、`.env.local` を用意する
 
 ### 日常の開発
 
@@ -124,11 +130,11 @@ SQL を書いたら、`pnpm exec supabase db reset` でローカルに適用し�
 
 ## 設定を変更した場合
 
-| 変更したファイル                      | 反映のしかた                                                                                   |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `Dockerfile`、`devcontainer.json`     | `Dev Containers: Rebuild Container` で、コンテナを作り直す                                     |
-| `compose.yml`、`compose.override.yml` | コンテナを作り直す（`devcontainer down` の後に `devcontainer up`）                             |
-| `post-create.sh`                      | 次のコンテナの作成時に反映される。今のコンテナでは `./.devcontainer/post-create.sh` を実行する |
+| 変更したファイル                         | 反映のしかた                                                                   |
+| ---------------------------------------- | ------------------------------------------------------------------------------ |
+| `Dockerfile`、`devcontainer.json`        | `Dev Containers: Rebuild Container` で、コンテナを作り直す                     |
+| `compose.yml`、`compose.override.yml`    | コンテナを作り直す（`devcontainer down` の後に `devcontainer up`）             |
+| `post-create.sh`、`scripts/setup-dev.sh` | 次のコンテナの作成時に反映される。今のコンテナでは `pnpm run setup` を実行する |
 
 ## Dev Container のテスト
 
@@ -153,13 +159,10 @@ devcontainer down --workspace-folder .
 
 ### post-create.sh が失敗する
 
-ログを確かめ、失敗した処理を手で実行してください。
+ログを確かめ、原因を直してから、もう一度実行してください。何度実行しても、同じ結果になります。
 
 ```bash
-pnpm install --frozen-lockfile
-pnpm exec supabase start
-pnpm exec supabase db reset
-pnpm typegen
+pnpm run setup
 ```
 
 ### コンテナが起動しない
