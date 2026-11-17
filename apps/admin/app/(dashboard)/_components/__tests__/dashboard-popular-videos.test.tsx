@@ -13,7 +13,7 @@ vi.mock('@/lib/analytics/get-popular-videos', () => ({
   getPopularVideos: mocks.getPopularVideos,
 }))
 
-const { PopularVideosWidget } = await import('../popular-videos-widget')
+const { DashboardPopularVideos } = await import('../dashboard-popular-videos')
 
 function popularVideo(
   video: Pick<
@@ -29,7 +29,7 @@ function popularVideo(
   }
 }
 
-describe('PopularVideosWidget', () => {
+describe('DashboardPopularVideos', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -56,7 +56,7 @@ describe('PopularVideosWidget', () => {
       }),
     ])
 
-    render(await PopularVideosWidget())
+    render(await DashboardPopularVideos())
 
     expect(screen.getByRole('link', { name: 'Twitchで視聴' })).toHaveAttribute(
       'href',
@@ -79,7 +79,7 @@ describe('PopularVideosWidget', () => {
       }),
     ])
 
-    render(await PopularVideosWidget())
+    render(await DashboardPopularVideos())
 
     expect(screen.getByText('ID のない動画')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '詳細' })).toHaveAttribute(
