@@ -111,6 +111,10 @@ jobs:
       - name: Check docs
         run: pnpm run check:docs
 
+      # Checks that the apps send the token that the local Redis HTTP API accepts
+      - name: Check dev secrets
+        run: pnpm run check:dev-secrets
+
   # Type check job for Node.js (including test files, which Vitest does not type check)
   typecheck:
     name: Typecheck
