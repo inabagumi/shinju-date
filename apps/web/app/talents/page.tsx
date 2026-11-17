@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import PageHeader from '@/components/page-header'
 import PageMain from '@/components/page-main'
@@ -12,7 +11,7 @@ import {
 
 const TITLE = 'タレント一覧'
 
-export const metadata: Metadata = createPageMetadata({
+export const metadata = createPageMetadata({
   path: '/talents',
   title: TITLE,
 })

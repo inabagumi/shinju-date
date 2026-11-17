@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import PageHeader from '@/components/page-header'
 import PageMain from '@/components/page-main'
 import { createPageMetadata } from '@/lib/metadata'
@@ -7,7 +6,7 @@ import { isContactFormEnabled } from './_lib/utils'
 
 const TITLE = 'お問い合わせ'
 
-export const metadata: Metadata = createPageMetadata({
+export const metadata = createPageMetadata({
   description:
     'SHINJU DATEに関するお問い合わせフォームです。不具合報告や機能要望をお寄せください。',
   path: '/contact',

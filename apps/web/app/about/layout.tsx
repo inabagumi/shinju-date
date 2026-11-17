@@ -1,11 +1,10 @@
-import type { Metadata } from 'next'
 import SimpleDocument from '@/components/simple-document'
 import { createPageMetadata } from '@/lib/metadata'
 import { SITE_NAME } from '@/lib/site'
 
 const TITLE = `${SITE_NAME}とは?`
 
-export const metadata: Metadata = createPageMetadata({
+export const metadata = createPageMetadata({
   path: '/about',
   title: TITLE,
   type: 'article',

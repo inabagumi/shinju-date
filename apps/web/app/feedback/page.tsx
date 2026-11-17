@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import PageHeader from '@/components/page-header'
 import PageMain from '@/components/page-main'
 import { createPageMetadata } from '@/lib/metadata'
@@ -6,7 +5,7 @@ import { FeedbackForm } from './_components/feedback-form'
 
 const TITLE = '機能要望'
 
-export const metadata: Metadata = createPageMetadata({
+export const metadata = createPageMetadata({
   description:
     'SHINJU DATEへの機能要望を送信できます。こんな機能があったらいいな、というアイデアをお寄せください。',
   path: '/feedback',

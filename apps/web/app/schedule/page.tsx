@@ -1,9 +1,8 @@
-import type { Metadata } from 'next'
 import { createPageMetadata } from '@/lib/metadata'
 import { getSchedulePath } from '@/lib/schedule'
 import SchedulePageContent from './_components/schedule-page-content'
 
-export const metadata: Metadata = createPageMetadata({
+export const metadata = createPageMetadata({
   path: getSchedulePath(),
   title: '配信スケジュール',
   type: 'article',
