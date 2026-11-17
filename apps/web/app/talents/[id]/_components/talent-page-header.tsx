@@ -1,7 +1,7 @@
 import { twMerge } from '@shinju-date/ui'
 import { CalendarPlus, ExternalLink } from 'lucide-react'
 import LiveBadge from '@/components/live-badge'
-import PageHeader from '@/components/page-header'
+import PageHeader, { PageHeaderSkeleton } from '@/components/page-header'
 import TalentIcon from '@/components/talent-icon'
 import {
   LIVE_RING_CLASS_NAME,
@@ -156,14 +156,5 @@ export async function TalentPageHeading({ params }: TalentPageHeadingProps) {
 }
 
 export function TalentPageHeadingSkeleton() {
-  return (
-    <div aria-hidden="true" className="mb-8 space-y-2">
-      <div className="h-[1.4rem] w-48 animate-pulse rounded-control bg-muted" />
-      <div className="flex items-center gap-4">
-        <div className="size-16 shrink-0 animate-pulse rounded-full bg-muted" />
-        <div className="h-[2.1rem] w-64 animate-pulse rounded-control bg-muted md:h-[2.8rem]" />
-      </div>
-      <div className="h-[1lh] w-80 max-w-full animate-pulse rounded-control bg-muted text-meta" />
-    </div>
-  )
+  return <PageHeaderSkeleton description icon />
 }

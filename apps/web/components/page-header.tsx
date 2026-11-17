@@ -35,11 +35,35 @@ export default function PageHeader({
   )
 }
 
-export function PageHeaderSkeleton() {
+interface PageHeaderSkeletonProps {
+  /** 説明文の1行ぶんを出す。説明文が `text-meta` のときに使う */
+  description?: boolean
+  /** 見出しの前に、64px の丸いアイコンを出す */
+  icon?: boolean
+}
+
+export function PageHeaderSkeleton({
+  description = false,
+  icon = false,
+}: PageHeaderSkeletonProps) {
+  const title = (
+    <div className="h-[2.1rem] w-64 animate-pulse rounded-control bg-muted md:h-[2.8rem]" />
+  )
+
   return (
     <div aria-hidden="true" className="mb-8 space-y-2">
       <div className="h-[1.4rem] w-48 animate-pulse rounded-control bg-muted" />
-      <div className="h-[2.1rem] w-64 animate-pulse rounded-control bg-muted md:h-[2.8rem]" />
+      {icon ? (
+        <div className="flex items-center gap-4">
+          <div className="size-16 shrink-0 animate-pulse rounded-full bg-muted" />
+          {title}
+        </div>
+      ) : (
+        title
+      )}
+      {description && (
+        <div className="h-[1lh] w-80 max-w-full animate-pulse rounded-control bg-muted text-meta" />
+      )}
     </div>
   )
 }
