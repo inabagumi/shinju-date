@@ -8,6 +8,10 @@
 
 **原則として、オブジェクトの型定義には `interface` を使用してください。**
 
+`pnpm run check` が、Biome の `style/useConsistentTypeDefinitions` で確かめます。`type X = { … }` と書くとエラーになります。ユニオン型や `z.infer<typeof schema>` のような、ほかの型から導く `type` は対象になりません。
+
+`interface` には暗黙のインデックスシグネチャがないため、`Record<string, …>` を受け取る関数に渡せないことがあります。その場合だけ、`// biome-ignore lint/style/useConsistentTypeDefinitions: <理由>` を付けて `type` を使います。
+
 #### 理由
 
 1. **拡張性**: `interface` は `extends` による拡張が可能で、将来的な型の拡張に対応しやすい
@@ -89,12 +93,12 @@ type ID = string | number
 
 ```typescript
 // ✅ インターセクション型は type を使用
-type WithTimestamps = {
+interface WithTimestamps {
   createdAt: Date
   updatedAt: Date
 }
 
-type User = {
+interface User {
   id: string
   name: string
 }
