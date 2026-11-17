@@ -354,6 +354,23 @@ describe('Upstash Redis Handlers', () => {
       await expect(send(['get', 'test:run-lock'])).resolves.toBeNull()
     })
 
+    it('emulates the script that releases the lock of a cron job', async () => {
+      const script = '-- batch:release-lock\n...'
+
+      await send(['set', 'test:cron-lock', 'value-2', 'nx', 'ex', 130])
+
+      // The lock of a run that ran out was taken by another one.
+      await expect(
+        send(['eval', script, 1, 'test:cron-lock', 'value-1']),
+      ).resolves.toBe(0)
+      await expect(send(['get', 'test:cron-lock'])).resolves.toBe('value-2')
+
+      await expect(
+        send(['eval', script, 1, 'test:cron-lock', 'value-2']),
+      ).resolves.toBe(1)
+      await expect(send(['get', 'test:cron-lock'])).resolves.toBeNull()
+    })
+
     it('works as a FIFO queue with LPUSH and RPOP', async () => {
       await expect(send(['lpush', 'test:queue', 'a'])).resolves.toBe(1)
       await expect(send(['lpush', 'test:queue', 'b', 'c'])).resolves.toBe(3)
