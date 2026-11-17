@@ -111,8 +111,8 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 
 [理由と例](docs/coding-guidelines.md#時刻の扱い)
 
-- `new Date()` と `Date.now()` は原則として使わない。ライブラリとの受け渡しなど、やむを得ない場合だけ、サーバーとブラウザで値が違いうることに注意して使う
-- 時刻には、グローバルの `Temporal` を使う。`import { Temporal } from 'temporal-polyfill'` とは書かない（ブラウザでは、各アプリの `instrumentation-client.ts` が `temporal-polyfill/global` を読み込む）
+- `new Date()` と `Date.now()` は原則として使わない（`pnpm run check` が確かめる。テストのファイルは対象外）。ライブラリとの受け渡しなど、やむを得ない場合だけ、理由を書いた `biome-ignore` を付け、サーバーとブラウザで値が違いうることに注意して使う
+- 時刻には、グローバルの `Temporal` を使う。`import { Temporal } from 'temporal-polyfill'` とは書かない（`pnpm run check` が確かめる。ブラウザでは、各アプリの `instrumentation-client.ts` が `temporal-polyfill/global` を読み込む）
 - テストで現在時刻を固定するときは、`vi.mock('temporal-polyfill')` ではなく `vi.spyOn(Temporal.Now, 'instant')` などを使う
 - 現在の絶対時刻は `Temporal.Now.instant()` で取る
 - API で送受信するときは ISO 8601 の文字列にする。`Temporal.Instant` の `toString()` は常に UTC。タイムゾーン付きの文字列が要る場合は `Temporal.ZonedDateTime` の `toString()` を使う

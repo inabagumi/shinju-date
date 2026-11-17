@@ -403,8 +403,11 @@ await redis.set('summary:stats:2025-11-11', data)
 
 - `new Date()` と `Date.now()` は、原則として使わない。サーバーとブラウザで値がずれ、React のハイドレーションのエラーの主な原因になる
   - ライブラリとの受け渡しなど、やむを得ない場合だけ使う。その場合も、サーバーとブラウザで値が違いうることに注意する
+  - `pnpm run check` が、`Date` を使っている箇所をエラーにする（`style/noRestrictedGlobals`）。型として書いた `Date` もエラーになる。やむを得ず使う行には、理由を書いた `biome-ignore` を付ける
+  - テストのファイル（`**/__tests__/**`、`**/*.test.*`、`**/e2e/**`）は対象外（`vi.setSystemTime(new Date(…))` などで使う）
 - 時刻には、グローバルの `Temporal` を使う。`import { Temporal } from 'temporal-polyfill'` とは書かない
   - サーバー（Node.js v26 以降）では、ネイティブ実装が使われる。ブラウザでは、各アプリの `instrumentation-client.ts` が `temporal-polyfill/global` を読み込み、ネイティブ実装がない場合だけポリフィルする
+  - `pnpm run check` が、`temporal-polyfill` とそのサブパス（`temporal-polyfill/global` など）からの import をエラーにする（`style/noRestrictedImports`）。各アプリの `instrumentation-client.ts` は対象外
 - テストで現在時刻を固定するときは、`vi.mock('temporal-polyfill')` ではなく、`vi.spyOn(Temporal.Now, 'instant')` などを使う
 - タイムゾーンに依存しない絶対時刻は、`Temporal.Now.instant()` で取る
 - API で送受信するときは、ISO 8601 の文字列にする。`Temporal.Instant` の `toString()` は、常に UTC（末尾が `Z`。例: `2025-11-01T12:00:00Z`）で出力する。タイムゾーン付きの文字列（例: `2025-11-01T21:00:00+09:00`）が要る場合は、`Temporal.ZonedDateTime` の `toString()` を使う
