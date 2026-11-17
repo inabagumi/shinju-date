@@ -12,6 +12,7 @@ const RECENT_VIDEO_SELECT = `
   published_at,
   visible,
   deleted_at,
+  status,
   thumbnail:thumbnails (id, path, blur_data_url),
   youtube_video:youtube_videos (youtube_video_id)
 `

@@ -37,6 +37,7 @@ import {
   ExternalVideoLink,
   getExternalVideoUrl,
 } from '@/components/external-video-link'
+import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
 import {
   restoreAction,
@@ -48,7 +49,6 @@ import { PlatformBadge } from './platform-badge'
 import { SortIcon } from './sort-icon'
 import { VideoActionConfirmDialog } from './video-action-confirm-dialog'
 import { VideoKindBadge } from './video-kind-badge'
-import { VideoStatusBadge } from './video-status-badge'
 
 interface Props {
   videos: Video[]
