@@ -2,7 +2,7 @@
 
 このドキュメントでは、SHINJU DATE プロジェクトにおけるテストの実装方法とベストプラクティスを説明します。
 
-**最終更新日**: 2026-11-16
+**最終更新日**: 2026-11-17
 
 ## 📋 目次
 
@@ -30,7 +30,7 @@ SHINJU DATE プロジェクトでは、以下のテストフレームワーク�
 ```tsx
 import { render, screen } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
-import MyComponent from '../my-component'
+import MyComponent from './my-component'
 
 describe('MyComponent', () => {
   test('should render correctly', () => {
@@ -101,7 +101,7 @@ export default defineConfig({
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
-import MyComponent from '../my-component'
+import MyComponent from './my-component'
 
 describe('MyComponent', () => {
   test('should render', () => {
@@ -117,7 +117,7 @@ describe('MyComponent', () => {
 // React インポートなし
 import { render, screen } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
-import MyComponent from '../my-component'
+import MyComponent from './my-component'
 
 describe('MyComponent', () => {
   test('should render', () => {
@@ -185,16 +185,27 @@ pnpm vitest --coverage
 
 ### 1. テストファイルの配置
 
-テストファイルは以下の規則に従って配置します：
+`apps/admin` のテストファイルは、次の決まりに従って置きます。
 
-- コンポーネントと同じディレクトリに `__tests__` フォルダを作成
-- ファイル名は `*.test.ts` または `*.test.tsx`
+- **コンポーネントのテスト**は、コンポーネントの隣に `<名前>.test.tsx` として置く（`__tests__/` のフォルダーには置かない）
+  - テストのファイルの名前は、コンポーネントのファイルの名前と同じにし、そのコンポーネントを描画して確かめる。テストの中で作った値どうしを比べるだけのテストにしない
+  - 1つのコンポーネントのテストは1つのファイルにまとめ、`describe` で分ける
+  - 複数のコンポーネントにまたがるテスト（同じ表を使う、複数のウィジェットの判定など）は、確かめる内容を表す名前にする
+  - ページ（`page.tsx`）や `error.tsx` のテストも、隣に `page.test.tsx` / `error.test.tsx` として置く
+- **関数のテスト**（`lib/`、`_lib/`、`_actions/` の関数やフック）は、関数の隣に `<名前>.test.ts` として置くか、`__tests__/` のフォルダーに置く。`__tests__/` のフォルダーは、これらの関数のテストにだけ使う
+- JSX を含むテストの拡張子は `.test.tsx`、含まないものは `.test.ts` にする。コンポーネントのテストは、すべて `.test.tsx` にする
 
 ```
 components/
 ├── my-component.tsx
-└── __tests__/
-    └── my-component.test.tsx
+└── my-component.test.tsx
+lib/
+├── my-function.ts
+├── my-function.test.ts
+└── analytics/
+    ├── get-volume.ts
+    └── __tests__/
+        └── get-volume.test.ts
 ```
 
 ### 2. 適切なテストの粒度

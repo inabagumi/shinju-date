@@ -159,3 +159,55 @@ describe('VideoFilters search', () => {
     expect(mocks.replace).not.toHaveBeenCalled()
   })
 })
+
+describe('VideoFilters toggle', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mocks.pathname = '/videos'
+  })
+
+  it('collapses the filter options until the toggle is pressed', () => {
+    mocks.searchParams = new URLSearchParams()
+    render(<VideoFilters talents={[]} />)
+
+    const filterBar = screen.getByRole('group', { name: '絞り込み' })
+    const toggle = screen.getByRole('button', { name: /^絞り込み/ })
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(filterBar).toHaveAttribute('data-state', 'closed')
+
+    fireEvent.click(toggle)
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    expect(filterBar).toHaveAttribute('data-state', 'open')
+  })
+
+  it('keeps the search input outside the collapsed options', () => {
+    mocks.searchParams = new URLSearchParams()
+    render(<VideoFilters talents={[]} />)
+
+    expect(
+      screen.getByRole('group', { name: '絞り込み' }),
+    ).not.toContainElement(screen.getByLabelText('タイトルまたはIDで検索'))
+  })
+
+  it('shows the number of applied filters on the toggle', () => {
+    mocks.searchParams = new URLSearchParams(
+      'status=LIVE&status=UPCOMING&platform=youtube&search=test',
+    )
+    render(<VideoFilters talents={[]} />)
+
+    expect(
+      screen.getByRole('button', { name: /^絞り込み.*2件適用中/ }),
+    ).toBeInTheDocument()
+  })
+
+  it('does not show a count when no filters are applied', () => {
+    mocks.searchParams = new URLSearchParams('search=test')
+    render(<VideoFilters talents={[]} />)
+
+    expect(
+      screen.getByRole('button', { name: /^絞り込み/ }).textContent,
+    ).not.toMatch(/件適用中/)
+  })
+})
