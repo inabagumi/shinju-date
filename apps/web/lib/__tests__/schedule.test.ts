@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'vitest'
 import {
-  formatScheduleDay,
   formatWeekRange,
   getLengthMinutes,
   getSchedulePath,
@@ -162,13 +161,6 @@ describe('formatWeekRange', () => {
     expect(formatWeekRange(date('2026-11-08'), { withWeekdays: true })).toBe(
       '2026年11月8日（日）〜11月14日（土）',
     )
-  })
-})
-
-describe('formatScheduleDay', () => {
-  test('should write the month, the day and the weekday', () => {
-    expect(formatScheduleDay(date('2026-11-09'))).toBe('11/09（月）')
-    expect(formatScheduleDay(date('2026-11-15'))).toBe('11/15（日）')
   })
 })
 

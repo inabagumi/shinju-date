@@ -5,7 +5,7 @@ import {
   NavigationLink,
   NavigationLinkIcon,
 } from '@/components/navigation-link'
-import { WEEKDAYS } from '@/lib/date-heading'
+import { formatWeekday } from '@/lib/date-heading'
 import { fetchScheduleVideos, type ScheduleVideo } from '@/lib/fetchers'
 import { groupVideosByDate } from '@/lib/group-videos-by-date'
 import {
@@ -116,7 +116,7 @@ export async function ScheduleWeekdayBand({
               href={`#${getDayId(date)}`}
             >
               <span className="text-caption text-muted">
-                {WEEKDAYS[date.dayOfWeek - 1]}
+                {formatWeekday(date)}
               </span>
               <span className="font-semibold">{date.day}</span>
             </a>

@@ -1,42 +1,15 @@
 'use client'
 
 import { TIME_ZONE } from '@shinju-date/constants'
-import { formatDate } from '@shinju-date/temporal-fns'
 import { twMerge } from '@shinju-date/ui'
 import { type ReactNode, useId, useMemo } from 'react'
 import FormattedTime from '@/components/formatted-time'
 import { useToday } from '@/components/use-today'
 import VideoCard, { VideoCardSkeleton } from '@/components/video-card'
 import { VIDEO_CARD_LIST_CLASS_NAMES } from '@/components/video-card-list'
-import { WEEKDAYS } from '@/lib/date-heading'
+import { formatRelativeDate } from '@/lib/date-heading'
 import type { Video } from '@/lib/fetchers'
 import { groupVideosByDate } from '@/lib/group-videos-by-date'
-
-/**
- * 日付見出しの文言。「今日」「明日」は言葉で、それ以降は日付と曜日で表す。
- * `toLocaleString` はネイティブの Temporal とポリフィルで出力が異なり、
- * ハイドレーションエラーの原因になるため使わない。
- */
-export function formatTimelineDate(
-  date: Temporal.PlainDate,
-  today: Temporal.PlainDate,
-): string {
-  const days = today.until(date, { largestUnit: 'day' }).days
-
-  if (days === 0) {
-    return '今日'
-  }
-
-  if (days === 1) {
-    return '明日'
-  }
-
-  const monthAndDay = formatDate(date, {
-    includeYear: date.year !== today.year,
-  })
-
-  return `${monthAndDay}（${WEEKDAYS[date.dayOfWeek - 1]}）`
-}
 
 interface TimelineGroupProps {
   children: ReactNode
@@ -124,7 +97,7 @@ function TimelineSection({
         <>
           <h3 className="text-body leading-normal font-semibold" id={headingId}>
             <time dateTime={dateTime.toJSON()}>
-              {formatTimelineDate(dateTime, today)}
+              {formatRelativeDate(dateTime, today, { style: 'short' })}
             </time>
           </h3>
           <p className="text-meta text-muted tabular-nums">{items.length}件</p>

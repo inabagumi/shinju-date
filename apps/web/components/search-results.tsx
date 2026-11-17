@@ -5,7 +5,7 @@ import { twMerge } from '@shinju-date/ui'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect, useId, useMemo } from 'react'
 import { useInView } from 'react-intersection-observer'
-import { formatDateHeading } from '@/lib/date-heading'
+import { formatRelativeDate } from '@/lib/date-heading'
 import { fetchVideos, type Video } from '@/lib/fetchers'
 import { queryKeys } from '@/lib/query-keys'
 import { SEARCH_RESULT_COUNT } from '@/lib/site'
@@ -73,7 +73,9 @@ function DateSection({ date, today, values }: DateSectionProps) {
   return (
     <section aria-labelledby={headingId} data-testid="date-section">
       <h2 className={DATE_HEADING_CLASS_NAME} id={headingId}>
-        <time dateTime={date.toString()}>{formatDateHeading(date, today)}</time>
+        <time dateTime={date.toString()}>
+          {formatRelativeDate(date, today, { style: 'long', yesterday: true })}
+        </time>
       </h2>
 
       <VideoCardList
