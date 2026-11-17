@@ -5,15 +5,14 @@ import {
   type ActiveTwitchUser,
   getActiveTwitchUsers,
 } from '../internal/database/index.js'
-import { replaceThumbnail } from '../internal/thumbnails/index.js'
 import type { CrawlContext, WriteContext } from '../types.js'
+import { attachArchive } from './attach-archive.js'
 import type { TwitchFetcher } from './fetcher.js'
-import { createTwitchThumbnail, saveTwitchVideo } from './save-video.js'
+import { saveTwitchVideo } from './save-video.js'
 import {
   findSavedTwitchVideos,
   isLivePlaceholder,
   type SavedTwitchVideo,
-  updateTwitchVideo,
 } from './saved-video.js'
 import type { TwitchStream, TwitchVideo } from './types.js'
 import { toLiveFields, toVideoFields } from './video.js'
@@ -116,7 +115,6 @@ export async function applyNewVideoAction(
   action: NewVideoAction,
   userByTwitchId: ReadonlyMap<string, ActiveTwitchUser>,
 ): Promise<boolean> {
-  const { supabaseClient } = context
   const { liveStream, video } = action
 
   if (action.kind === 'insert') {
@@ -140,32 +138,9 @@ export async function applyNewVideoAction(
     })
   }
 
-  // Link first: should the next step fail, the row keeps its status and the
-  // live sync finishes the job on a later run.
-  await updateTwitchVideo(supabaseClient, action.saved.twitch_video.id, {
-    twitch_video_id: video.id,
-    type: video.type,
+  return attachArchive(context, action.saved, video, {
+    stillLive: liveStream !== undefined,
   })
-
-  if (liveStream) {
-    // Still on air: the live sync ends the row once the stream goes offline.
-    return false
-  }
-
-  // The preview of the stream gives way to the thumbnail of the archive. The
-  // preview is left for the cleanup of unused thumbnails, since cached pages
-  // may still show it.
-  await replaceThumbnail(context, {
-    create: () =>
-      createTwitchThumbnail(context, {
-        thumbnailUrl: video.thumbnail_url,
-        twitchVideoId: video.id,
-      }),
-    fields: toVideoFields(video),
-    videoId: action.saved.id,
-  })
-
-  return true
 }
 
 /**
