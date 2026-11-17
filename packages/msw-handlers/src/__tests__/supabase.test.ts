@@ -7,7 +7,7 @@ import {
   it,
   vi,
 } from 'vitest'
-import { MOCK_DELETED_TALENT_ID } from '../collections.js'
+import { MOCK_DELETED_TALENT_ID } from '../seeds/accounts.js'
 import { server } from '../server.js'
 
 describe('Supabase Handlers', () => {

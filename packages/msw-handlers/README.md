@@ -233,23 +233,36 @@ The videos, streams and clips come from the Twitch videos of the Supabase mock (
 
 ## Mock Data
 
-### Sample Videos
+The Supabase mock reads and writes the `@msw/data` collections of `src/collections.ts`, one for each table. Each collection has a Zod schema that is checked against the row type of the table (`satisfies z.ZodType<Tables<'terms'>>`), so a column that the database has and the schema lacks is a type error. The values of the enums come from `Constants.public.Enums` of `@shinju-date/database`.
+
+### Seed Data
+
+`seedCollections()` replaces the rows of the collections with the seed data. The data is made by the scenarios in `src/seeds/`, each of which takes the data that it needs (such as the talents) as arguments:
+
+| File                  | Scenario                                                                                                        |
+| --------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `accounts.ts`         | Talents (`MOCK_TALENT_IDS` and others), their YouTube channels, Twitch users and icons                          |
+| `videos.ts`           | Thumbnails, videos and streams of every status, shorts, finished streams of the first talent, and Twitch videos |
+| `schedule.ts`         | Streams of the schedule of the current week, the previous and the next weeks, and one on air now                |
+| `announcements.ts`    | An announcement shown now                                                                                       |
+| `terms.ts`            | Search terms with their readings and synonyms                                                                   |
+| `feature-requests.ts` | Feature requests from the feedback form                                                                         |
+| `backfills.ts`        | The history of backfill jobs, including a failed one                                                            |
+| `audit-logs.ts`       | Audit logs of the mock user                                                                                     |
+
+faker has a fixed seed, and the times are made from `now` (the current time when it is omitted), so the same `now` always gives the same data. The times are saved like the apps save them, with `toDBString()` of `@shinju-date/temporal-fns` (in seconds, without milliseconds).
 
 ```typescript
-;[
-  {
-    id: 'video-uuid-1',
-    title: 'Sample Video 1',
-    duration: 'PT10M30S',
-    talent_id: 'talent-uuid-1',
-    thumbnail_id: 'thumb-uuid-1',
-    visible: true,
-  },
-  // ...more videos
-]
+import { seedCollections, videos } from '@shinju-date/msw-handlers'
+
+await seedCollections({ now: Temporal.Instant.from('2026-11-15T12:00:00Z') })
+
+const visibleVideos = videos.findMany((q) => q.where({ visible: true }))
 ```
 
-### Sample Redis Data
+The handlers seed the collections once with the current time (`ensureCollectionsSeeded()`) when they are loaded.
+
+### Redis Data
 
 `createRedisDataFactory()` (`src/redis-factory.ts`) generates the click data of the last 7 days, up to today in `TIME_ZONE`. The date keys are made with `formatDateKey()` like the apps do. The members are the IDs of the visible videos and their talents in the Supabase mock, so the apps can look them up:
 
@@ -261,290 +274,50 @@ The videos, streams and clips come from the Twitch videos of the Supabase mock (
 
 The clicks of a talent are the sum of the clicks of their videos.
 
-## Mock Data Generation with @msw/data and @faker-js/faker
-
-This package uses **@msw/data** v1.1.2 for structured data modeling combined with **@faker-js/faker** for realistic data generation.
-
-### Why @msw/data?
-
-`@msw/data` provides:
-
-- **Structured Database Modeling**: Define schemas with relationships
-- **Built-in Query Methods**: `findMany`, `findFirst`, `update`, `delete`, etc.
-- **Native Relation API**: Automatic relation traversal using `.relate()` method
-- **Automatic Foreign Key Resolution**: No manual `find()` operations needed
-- **Type Safety**: Full TypeScript support with proper typing
-
-Combined with `@faker-js/faker`, you get:
-
-- **Realistic Data**: Diverse, random values for names, dates, UUIDs, etc.
-- **Dynamic Generation**: Each test run uses different data
-- **Maintainability**: Schema changes propagate automatically
-
-### Using the Database
-
-The package exports a pre-configured `@mswjs/data` database with all tables:
-
-```typescript
-import { db } from '@shinju-date/msw-handlers'
-
-// Query videos using findMany
-const visibleVideos = db.videos.findMany({
-  where: {
-    visible: { equals: true },
-    deleted_at: { equals: null },
-  },
-})
-
-// Find a specific talent
-const talent = db.talents.findFirst({
-  where: { id: { equals: 'some-talent-id' } },
-})
-
-// Create new data
-const newVideo = db.videos.create({
-  title: 'Custom Video',
-  status: 'PUBLISHED',
-  visible: true,
-})
-
-// Update existing data
-const updated = db.videos.update({
-  where: { id: { equals: videoId } },
-  data: { title: 'Updated Title' },
-})
-
-// Delete data
-db.videos.delete({
-  where: { id: { equals: videoId } },
-})
-
-// Get all records
-const allTalents = db.videos.getAll()
-```
-
-### Database Schema
-
-The database includes the following tables:
-
-- `talents`: Creator/talent information
-- `videos`: Video records with status and metadata
-- `thumbnails`: Thumbnail images with blur data
-- `youtube_channels`: YouTube channel information (all but one channel have a `profile_image_id`)
-- `twitch_users`: Twitch user information (two users, one of them with a `profile_image_id`)
-- `profile_images`: Square icons referenced by `youtube_channels.profile_image_id` and `twitch_users.profile_image_id`
-- `youtube_videos`: YouTube video relation mapping
-- `twitch_videos`: Twitch video relation mapping (upcoming, live, archive, clip, highlight and upload videos of both Twitch users)
-- `terms`: Search terms and synonyms
-- `announcements`: System announcements
-
-Each table is populated with realistic faker-generated data on initialization.
-
-### Resetting the Database
-
-To reset the database to its initial state:
-
-```typescript
-import { seedDatabase } from '@shinju-date/msw-handlers'
-
-// Clear and reseed all data
-seedDatabase()
-```
-
-### Using the Collections with Native Relations
-
-The package exports `@msw/data` collections with native relation support:
-
-```typescript
-import { videos, talents, seedCollections } from '@shinju-date/msw-handlers'
-
-// Initialize collections (automatically defines relations)
-await seedCollections()
-
-// Query videos
-const publishedVideos = await videos.findMany((q) => q.where({ visible: true }))
-
-// Access related data directly via native relation traversal
-const firstVideo = publishedVideos[0]
-console.log(firstVideo.talent.name) // Talent name - no manual find() needed!
-console.log(firstVideo.thumbnail.path) // Thumbnail path - automatic resolution!
-
-// Create new video (relations work automatically)
-const newVideo = await videos.create({
-  title: 'New Video',
-  talent_id: 'some-talent-id',
-  thumbnail_id: 'some-thumbnail-id',
-  // ... other fields
-})
-
-// Update video
-await videos.update((q) => q.where({ id: newVideo.id }), {
-  data(record) {
-    record.title = 'Updated Title'
-    return record
-  },
-})
-```
-
-### Relation Configuration
-
-Relations are automatically configured using `@msw/data`'s `.relate()` method:
-
-```typescript
-// Many-to-one relations
-videos.relate('talent', talents, {
-  field: 'talent_id',
-  foreignKey: 'id',
-  type: 'one-of',
-})
-
-videos.relate('thumbnail', thumbnails, {
-  field: 'thumbnail_id',
-  foreignKey: 'id',
-  type: 'one-of',
-})
-
-// One-to-many relations
-talents.relate('videos', videos, {
-  field: 'id',
-  foreignKey: 'talent_id',
-  type: 'many-of',
-})
-```
-
-Benefits:
-
-- **No Manual Lookups**: No need for `.find()` operations
-- **Type-Safe**: Relations maintain TypeScript types
-- **Automatic Resolution**: Foreign keys resolve automatically
-- **Bi-Directional**: Access relations from either side
-
-### Database Schema
-
-The database includes the following tables:
-
-- `talents`: Creator/talent information
-- `videos`: Video records with status and metadata
-- `thumbnails`: Thumbnail images with blur data
-- `youtubeChannels`: YouTube channel information
-- `youtubeVideos`: YouTube video relation mapping
-- `twitchVideos`: Twitch video relation mapping
-- `terms`: Search terms and synonyms
-- `announcements`: System announcements
-
-Each table is populated with realistic faker-generated data on initialization.
-
-### Available Collections
-
-The package exports the following `@msw/data` collections:
-
-#### Supabase Tables
-
-- `talents` - Talent/VTuber information
-- `videos` - Video records with metadata (relates to talent, thumbnail)
-- `thumbnails` - Thumbnail images with blur data
-- `youtubeChannels` - YouTube channel information (relates to talent)
-- `youtubeVideos` - YouTube video relations (relates to video)
-- `twitchUsers` - Twitch user information (relates to talent)
-- `twitchVideos` - Twitch video relations (relates to video and Twitch user)
-- `terms` - Search terms and synonyms
-- `announcements` - System announcements
-
-#### Seeding & Relations
-
-- `seedCollections()` - Initialize all collections with faker-generated data
-- `defineCollectionRelations()` - Configure relations (called automatically by seedCollections)
-
-#### Usage Example
-
-```typescript
-import { videos, talents, seedCollections } from '@shinju-date/msw-handlers'
-
-// Initialize collections (relations configured automatically)
-await seedCollections()
-
-// Query videos
-const publishedVideos = await videos.findMany((q) => q.where({ visible: true }))
-
-// Get first video by ID
-const video = await videos.findFirst((q) => q.where({ id: 'some-uuid' }))
-
-// Create new video
-await videos.create({
-  title: 'New Video',
-  duration: 'PT1H30M',
-  published_at: new Date().toISOString(),
-  status: 'PUBLISHED',
-  visible: true,
-  platform: 'YOUTUBE',
-  talent_id: 'talent-uuid',
-  thumbnail_id: null,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  deleted_at: null,
-})
-
-// Update video
-await videos.update((q) => q.where({ id: 'some-uuid' }), {
-  data(video) {
-    video.title = 'Updated Title'
-  },
-})
-
-// Delete video
-await videos.delete((q) => q.where({ id: 'some-uuid' }))
-```
-
-### Code Reduction Achieved
-
-By using `@msw/data` with Zod schemas, we've significantly reduced boilerplate:
-
-- **Supabase handlers**: Reduced by 470+ lines (from hardcoded arrays to collection queries)
-- **upstash.ts**: Reduced by 90+ lines (simplified with faker-based factory)
-- **Total**: 560+ lines of hardcoded mock data eliminated
-
 ## Adding New Mock Data
 
 ### Extending Supabase Mocks
 
 To add new tables or modify existing data:
 
-1. **Add Zod schema to collections** in `src/collections.ts`:
+1. **Add a collection** in `src/collections.ts`, with a Zod schema that satisfies the row type of the table:
 
 ```typescript
-import { Collection } from '@msw/data'
-import { z } from 'zod'
-import { faker } from '@faker-js/faker'
-
-// Define your collection
 export const myTable = new Collection({
   schema: z.object({
+    created_at: z.string(),
     id: z.string().uuid(),
     name: z.string(),
-    created_at: z.string(),
+    status: z.enum(Constants.public.Enums.my_status),
     updated_at: z.string(),
-  }),
+  }) satisfies z.ZodType<Tables<'my_table'>>,
 })
+```
 
-// Add seeding logic in seedCollections()
-export async function seedCollections() {
-  // ... existing seeds
+Add it to `COLLECTIONS` in the same file, so that `seedCollections()` empties it before seeding.
 
-  // Seed your table
-  await myTable.createMany(10, (index) => ({
-    id: faker.string.uuid(),
-    name: faker.person.fullName(),
-    created_at: faker.date.past().toISOString(),
-    updated_at: faker.date.recent().toISOString(),
-  }))
+2. **Add a scenario** in `src/seeds/`, which returns the rows from the context (faker with the fixed seed and `now`) and the data that it needs, and insert its rows in `seedCollections()`:
+
+```typescript
+export function createMyRows(
+  context: SeedContext,
+  { talents }: { talents: readonly Tables<'talents'>[] },
+): Tables<'my_table'>[] {
+  return talents.map((talent) => {
+    const createdAt = randomPast(context, 30)
+
+    return {
+      created_at: createdAt,
+      id: context.faker.string.uuid(),
+      name: talent.name,
+      status: 'active',
+      updated_at: createdAt,
+    }
+  })
 }
 ```
 
-2. **Export the collection** in `src/index.ts`:
-
-```typescript
-export { myTable } from './collections.js'
-```
+Make the times from `context.now` with `toDBString()` (or `randomPast()` and `randomFuture()` of `src/seeds/context.ts`), not from the current time or `Date`, so that the data stays the same for the same `now`.
 
 3. **Add a table definition** to `TABLES` in `src/handlers/supabase/tables.ts`. The table then gets the GET, HEAD, POST, PATCH and DELETE handlers:
 

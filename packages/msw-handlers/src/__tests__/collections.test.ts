@@ -1,49 +1,122 @@
-import { TIME_ZONE } from '@shinju-date/constants'
 import { describe, expect, it } from 'vitest'
-import { getLiveScheduleStart } from '../collections.js'
+import {
+  announcements,
+  auditLogs,
+  featureRequests,
+  profileImages,
+  seedCollections,
+  talents,
+  terms,
+  thumbnails,
+  twitchUsers,
+  twitchVideos,
+  videoBackfillJobs,
+  videos,
+  youtubeChannels,
+  youtubeVideos,
+} from '../collections.js'
 
-/** `time` on Sunday, 15 November 2026 in `TIME_ZONE` */
-function at(time: string) {
-  return Temporal.PlainDate.from('2026-11-15').toZonedDateTime({
-    plainTime: Temporal.PlainTime.from(time),
-    timeZone: TIME_ZONE,
-  })
+const COLLECTIONS = {
+  announcements,
+  auditLogs,
+  featureRequests,
+  profileImages,
+  talents,
+  terms,
+  thumbnails,
+  twitchUsers,
+  twitchVideos,
+  videoBackfillJobs,
+  videos,
+  youtubeChannels,
+  youtubeVideos,
 }
 
-describe('getLiveScheduleStart', () => {
-  it('should start 30 minutes before now', () => {
-    expect(getLiveScheduleStart(at('21:00')).equals(at('20:30'))).toBe(true)
-  })
-
-  it.each([
-    '00:00',
-    '00:06',
-    '00:29:59',
-    '00:30',
-    '12:00',
-    '23:00',
-    '23:30',
-    '23:52',
-    '23:59:59.999',
-  ])('should keep the hour from the start within the day at %s', (time) => {
-    const now = at(time)
-    const start = getLiveScheduleStart(now)
-
-    expect(Temporal.ZonedDateTime.compare(start, now)).toBeLessThanOrEqual(0)
-    expect(start.toPlainDate().equals(now.toPlainDate())).toBe(true)
-    expect(
-      Temporal.ZonedDateTime.compare(
-        start.add({ hours: 1 }),
-        now.startOfDay().add({ days: 1 }),
+/** The rows of every collection, as plain JSON. */
+function dumpCollections(): Record<string, unknown[]> {
+  return JSON.parse(
+    JSON.stringify(
+      Object.fromEntries(
+        Object.entries(COLLECTIONS).map(([name, collection]) => [
+          name,
+          collection.findMany(),
+        ]),
       ),
-    ).toBeLessThanOrEqual(0)
+    ),
+  )
+}
+
+/** The values of every row that look like a time (an ISO 8601 string). */
+function getTimestamps(dump: Record<string, unknown[]>): string[] {
+  return Object.values(dump)
+    .flat()
+    .flatMap((row) => Object.values(row as Record<string, unknown>))
+    .filter(
+      (value): value is string =>
+        typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value),
+    )
+}
+
+const NOW = Temporal.Instant.from('2026-11-15T12:34:56.789Z')
+
+describe('seedCollections', () => {
+  it('seeds the same data for the same now', async () => {
+    await seedCollections({ now: NOW })
+    const first = dumpCollections()
+
+    await seedCollections({ now: NOW })
+    const second = dumpCollections()
+
+    expect(second).toEqual(first)
   })
 
-  it('should start at the start of the day right after midnight', () => {
-    expect(getLiveScheduleStart(at('00:06')).equals(at('00:00'))).toBe(true)
+  it('seeds every collection', async () => {
+    await seedCollections({ now: NOW })
+
+    for (const [name, rows] of Object.entries(dumpCollections())) {
+      expect(rows.length, name).toBeGreaterThan(0)
+    }
   })
 
-  it('should start at 23:00 late at night', () => {
-    expect(getLiveScheduleStart(at('23:52')).equals(at('23:00'))).toBe(true)
+  it('seeds data around the given now', async () => {
+    await seedCollections({ now: NOW })
+    const first = dumpCollections()
+
+    await seedCollections({ now: NOW.add({ hours: 24 * 7 }) })
+
+    expect(dumpCollections()).not.toEqual(first)
+  })
+
+  it('saves the times in seconds, without milliseconds', async () => {
+    await seedCollections({ now: NOW })
+
+    const timestamps = getTimestamps(dumpCollections())
+
+    expect(timestamps.length).toBeGreaterThan(0)
+
+    for (const timestamp of timestamps) {
+      expect(timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/)
+    }
+  })
+
+  it('links every video on YouTube to the channel of its talent', async () => {
+    await seedCollections({ now: NOW })
+
+    const channels = new Map(
+      youtubeChannels.findMany().map((channel) => [channel.id, channel]),
+    )
+    const savedVideos = new Map(
+      videos.findMany().map((video) => [video.id, video]),
+    )
+
+    for (const youtubeVideo of youtubeVideos.findMany()) {
+      expect(channels.get(youtubeVideo.youtube_channel_id)?.talent_id).toBe(
+        savedVideos.get(youtubeVideo.video_id)?.talent_id,
+      )
+    }
+
+    expect(youtubeVideos.findMany()).toHaveLength(
+      videos.findMany().filter((video) => video.platform === 'youtube').length,
+    )
   })
 })
