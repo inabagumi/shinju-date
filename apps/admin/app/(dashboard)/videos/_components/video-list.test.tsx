@@ -31,6 +31,10 @@ interface WrapperProps {
   children: ReactNode
 }
 
+function Wrapper({ children }: WrapperProps) {
+  return <ActionToastProvider>{children}</ActionToastProvider>
+}
+
 function createVideo(overrides: Partial<Video> = {}): Video {
   return {
     clicks: 0,
@@ -181,10 +185,6 @@ describe('VideoList', () => {
       id: '00000000-0000-4000-8000-00000000000e',
       title: 'Deleted Video',
     })
-
-    function Wrapper({ children }: WrapperProps) {
-      return <ActionToastProvider>{children}</ActionToastProvider>
-    }
 
     function select(title: string) {
       fireEvent.click(screen.getByLabelText(`「${title}」を選択`))
