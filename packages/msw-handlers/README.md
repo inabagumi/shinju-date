@@ -231,6 +231,16 @@ The package mocks the app access tokens (`POST https://id.twitch.tv/oauth2/token
 
 The videos, streams and clips come from the Twitch videos of the Supabase mock (`twitch_videos` with their `videos` and `twitch_users`): the archives, highlights and uploads are videos, the `LIVE` video is a stream, and the clip is a clip. The thumbnails and the icons that they link to are served as well.
 
+### YouTube Data API
+
+The package mocks these endpoints of the YouTube Data API v3:
+
+- `GET /youtube/v3/channels` - By `id`, or by `forHandle` (or `forUsername`)
+- `GET /youtube/v3/playlistItems` - The uploads of a channel (`UU` and the channel ID without `UC`), newest first, with `maxResults` and `pageToken`
+- `GET /youtube/v3/videos` - By `id` (the videos that do not exist are left out, like on YouTube)
+
+The channels and the videos come from the YouTube channels and videos of the Supabase mock (`youtube_channels`, and `youtube_videos` with their `videos`). The `liveStreamingDetails` of a video follow its status: an `UPCOMING` video has only the scheduled start, a `LIVE` one has started, an `ENDED` one has ended after its duration, and a `PUBLISHED` one has none. Deleted videos are left out. Any other ID in the format of a channel ID (`UC` and 22 characters) gets a generated channel without videos, so that a new channel can be added in the admin app. The channel icons (with the ETag of the `profile_images` of the channels) and the thumbnails that they link to are served as well.
+
 ## Mock Data
 
 The Supabase mock reads and writes the `@msw/data` collections of `src/collections.ts`, one for each table. Each collection has a Zod schema that is checked against the row type of the table (`satisfies z.ZodType<Tables<'terms'>>`), so a column that the database has and the schema lacks is a type error. The values of the enums come from `Constants.public.Enums` of `@shinju-date/database`.
