@@ -32,8 +32,9 @@ const changed = await scraper.addNewVideos()
 | `syncAccounts()`            | 保存済みアカウントの名前・ハンドル・アイコンをプラットフォームに合わせる             |
 | `syncTalentAccounts(id)`    | タレント 1 人のアカウントについて、`syncAccounts()` と同じ同期をする                 |
 | `addPastVideos(options)`    | 1 アカウントの全履歴を 1 ページ読み、未保存の動画を保存する（バックフィル）          |
+| `cleanUpImages()`           | どこからも使われなくなったサムネイルとアイコンを削除する（全プラットフォーム）       |
 
-- `addPastVideos`、`refreshVideo`、`syncTalentAccounts` 以外の操作は「公開サイトに見える変更があったか」を `boolean` で返します（キャッシュ再検証の判断に使えます）。
+- `addPastVideos`、`refreshVideo`、`syncTalentAccounts`、`cleanUpImages` 以外の操作は「公開サイトに見える変更があったか」を `boolean` で返します（キャッシュ再検証の判断に使えます）。
 - 引数に実行時刻（`Temporal.Instant`）を渡すと、その実行で書き込む行のタイムスタンプが揃います。省略時は現在時刻です。
 
 ### 過去動画の取り込み（`addPastVideos`）
@@ -103,9 +104,24 @@ for (const result of results) {
 - 結果は、タレントの保存済みのアカウントごとに 1 件です。アカウントがないタレントや、削除済みのタレントでは空になります（引退したタレントは対象です）。
 - `not-found` はプラットフォームがアカウントを返さなかった場合、`failed` は名前・ハンドルを書き込めなかった場合です（失敗は `onError` に渡します）。Twitch は名前とアイコンを独立して同期するので、`failed` でも `iconUpdated` が `true` になることがあります。
 - 1 人だけを扱うので、プラットフォームやデータベースを読めなければ reject します。
-- 使われなくなったアイコンの削除は行いません（定期の `syncAccounts` が行います）。
+- 使われなくなったアイコンの削除は行いません（`cleanUpImages` が行います）。
 
 型 `SyncAccountResult` は `@shinju-date/scraper` から import できます。
+
+### 使われなくなった画像の削除（`cleanUpImages`）
+
+サムネイルとアイコンは、差し替えたときにすぐには削除しません。どの動画・アカウントからも使われなくなった画像は、この操作でまとめて削除します。画像はプラットフォームを問わず同じテーブルにあるので、どのスクレイパーから呼んでも、すべてのプラットフォームの画像が対象です。
+
+```ts
+await scraper.cleanUpImages()
+```
+
+- **サムネイル**: どの動画（削除扱いの動画を含む）からも使われず、`updated_at` から 1 週間以上たったものを削除します。1 回の実行で最大 500 件、古いものからです。
+  - 動画のサムネイルを差し替えると、古いサムネイルの `updated_at` を差し替えた時刻にします。公開サイトは動画の一覧をサムネイルのパスごとキャッシュしており（`cacheLife('days')`、最長で 1 週間）、キャッシュに残ったページが古い画像を表示できるようにするためです。
+  - 作ってから動画に結び付けるまでの間のサムネイルも、1 週間は削除しません。
+- **アイコン**: どのチャンネル・ユーザーからも使われず、作ってから 1 時間以上たったものを削除します。
+- 行を削除してから画像を削除します。削除の間に使われ始めた画像は、データベースが削除を拒むので残ります。
+- 使われていない画像は表示されないので、失敗は `onError` に `operation: 'removeUnusedThumbnails'` / `'removeUnusedProfileImages'` 付きで渡すだけで、reject しません。片方が失敗しても、もう片方は削除します。
 
 ### 失敗の扱い
 
@@ -137,7 +153,7 @@ for (const result of results) {
 - `snippet.thumbnails` から、256px 以上で最小の正方形画像を選びます（`selectYouTubeChannelIconUrl`）。該当がなければ最大の正方形画像、正方形のサイズが分からなければ最大の画像を使います（保存時に正方形へ切り抜かれます）
 - 元画像の URL・ETag が変わっていなければダウンロードも保存もしません。変わったときだけ新しいアイコンを保存して差し替えます
 - アイコンの取得・保存に失敗しても、名前・ハンドルの同期は止めません。失敗は `onError` に `operation: 'syncProfileImage'` 付きで渡されます
-- 最後に、どのチャンネル・ユーザーにも使われなくなったアイコン（削除したチャンネルのものなど）を削除します
+- どのチャンネル・ユーザーにも使われなくなったアイコン（削除したチャンネルのものなど）は、`cleanUpImages` が削除します
 
 ### アイコンの同期（Twitch）
 
@@ -146,7 +162,7 @@ for (const result of results) {
 - Helix API の `profile_image_url`（300x300）をそのまま使います（`selectTwitchUserIconUrl`）。空の URL、HTTPS 以外の URL、Twitch の既定アイコン（`/user-default-pictures*/`）はアイコンなしとして扱い、保存済みのアイコンがあれば外します
 - 元画像の URL・ETag が変わっていなければダウンロードも保存もしません。変わったときだけ新しいアイコンを保存して差し替えます
 - 表示名・login の更新とアイコンの同期は独立しています。どちらかが失敗しても、もう一方は同期されます。アイコンの失敗は `onError` に `operation: 'syncProfileImage'` 付きで渡されます
-- 使われなくなったアイコンの削除は YouTube の同期がプラットフォームを問わずに行うため、Twitch 側では行いません
+- 使われなくなったアイコンは、`cleanUpImages` が削除します
 
 アイコンの書き込みには service role の Supabase クライアントが必要です。管理画面からのチャンネル（ユーザー）追加では、`@shinju-date/scraper/youtube` の `syncYouTubeChannelIcon`、`@shinju-date/scraper/twitch` の `syncTwitchUserIcon` を直接使います。
 

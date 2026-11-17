@@ -3,7 +3,6 @@ import { diffAccountFields } from '../internal/account-fields.js'
 import { countChanges } from '../internal/concurrency.js'
 import { WRITE_CONCURRENCY } from '../internal/constants.js'
 import { DatabaseError } from '../internal/errors.js'
-import { removeUnusedProfileImages } from '../internal/profile-images/index.js'
 import type {
   AccountChanges,
   CrawlContext,
@@ -162,31 +161,9 @@ async function syncChannel(
 }
 
 /**
- * Deletes icons no channel or user uses any more, e.g. those of deleted
- * channels. Unused icons are never served, so a failure is only reported.
- */
-async function cleanUpProfileImages({
-  logger,
-  now,
-  reportError,
-  supabaseClient,
-}: CrawlContext<YouTubeFetcher>): Promise<void> {
-  try {
-    const removedCount = await removeUnusedProfileImages(supabaseClient, {
-      now,
-    })
-
-    if (removedCount > 0) {
-      logger.info('使われていないアイコンを削除しました', { removedCount })
-    }
-  } catch (error) {
-    reportError(error, { operation: 'removeUnusedProfileImages' })
-  }
-}
-
-/**
  * Brings the name, handle and icon of saved YouTube channels in line with
- * YouTube, then deletes icons that are no longer used.
+ * YouTube. Icons that are no longer used are deleted by
+ * `Scraper#cleanUpImages`.
  *
  * Channels of retired talents are included (deleted talents are not), and
  * `talents.name` is deliberately left alone: it is managed independently of
@@ -204,7 +181,7 @@ export async function syncYouTubeChannels(
   )
   const channels = await fetcher.getAccounts([...savedByYouTubeId.keys()])
 
-  const changedCount = await countChanges(
+  return countChanges(
     channels,
     WRITE_CONCURRENCY,
     async (channel) => {
@@ -224,10 +201,6 @@ export async function syncYouTubeChannels(
     },
     (error, channel) => reportError(error, { youtubeChannelId: channel.id }),
   )
-
-  await cleanUpProfileImages(context)
-
-  return changedCount
 }
 
 /**
@@ -235,7 +208,7 @@ export async function syncYouTubeChannels(
  * line with YouTube, with the same functions as {@link syncYouTubeChannels}:
  * a channel is written only when something changed.
  *
- * Unused icons are not deleted here; the scheduled sync picks them up.
+ * Unused icons are not deleted here; `Scraper#cleanUpImages` picks them up.
  *
  * @returns One result per saved channel of the talent; empty when the talent
  *   has none or was deleted.
