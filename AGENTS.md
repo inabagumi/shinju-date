@@ -137,7 +137,7 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 - 画面に見せてよい失敗は `ActionError` を投げる。それ以外の例外の文は画面に返さない（ラッパーが記録し、決まった文を返す）
 - Supabase のクライアントは `handler` に渡される `supabaseClient` を使う（`createSupabaseServerClient()` を別に呼ばない）
 - サービスロールキーのクライアント（`@/lib/supabase/admin`）や Redis を使う Action は RLS で守られないので、特に忘れない
-- Action を追加したら、`apps/admin/app/(dashboard)/_lib/server-actions-auth.test.ts` にも追加し、未認証のときに副作用がないことを確かめる
+- Action は `_actions/` に置く。`app/(dashboard)/` の `_actions/` のモジュールが公開する関数は、`apps/admin/app/(dashboard)/_lib/server-actions-auth.test.ts` の対象に自動でなり、未認証のときに副作用がないことを確かめられる（`_actions/` の外に `'use server'` のファイルを置くと、このテストが失敗する）
 
 ## 管理者のロールと RLS
 
