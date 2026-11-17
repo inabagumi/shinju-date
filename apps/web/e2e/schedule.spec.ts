@@ -148,7 +148,9 @@ test.describe('Schedule page', () => {
         }),
       })
 
-    // 64px for an hour
+    // 64px for an hour. The mock starts the live stream within today, so the
+    // hour is not cut at the end of the day whenever the test runs (the cut
+    // is checked by the unit tests of `layoutDay`)
     expect(Math.round((await live.boundingBox())?.height ?? 0)).toBe(64)
   })
 

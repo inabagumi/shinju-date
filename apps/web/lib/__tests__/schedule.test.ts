@@ -267,6 +267,23 @@ describe('layoutDay', () => {
     )
   })
 
+  test('should cut a live stream at the end of the day', () => {
+    // A live stream is drawn for an hour, so the part after 24:00 is cut
+    expect(summarize(layoutDay([video('a', '23:30', 'P0D', 'LIVE')]))).toEqual({
+      a: { column: 0, columns: 1, length: 30, start: 23 * 60 + 30 },
+    })
+    // Even shorter than `MIN_LENGTH_MINUTES`, as the day has no more room
+    expect(layoutDay([video('a', '23:52', 'P0D', 'LIVE')])[0]?.length).toBe(8)
+  })
+
+  test('should draw a live stream for an hour until the end of the day', () => {
+    expect(layoutDay([video('a', '23:00', 'P0D', 'LIVE')])[0]?.length).toBe(60)
+    expect(layoutDay([video('a', '00:00', 'P0D', 'LIVE')])[0]).toMatchObject({
+      length: 60,
+      start: 0,
+    })
+  })
+
   test('should put the videos that overlap side by side', () => {
     expect(
       summarize(

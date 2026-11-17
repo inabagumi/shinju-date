@@ -244,6 +244,32 @@ export const MOCK_DELETED_TALENT_ID = '00000000-0000-4000-8000-000000000006'
 export const MOCK_TALENT_WITHOUT_VIDEOS_ID =
   '00000000-0000-4000-8000-000000000007'
 
+/**
+ * When the seeded stream on the schedule that is on air now starts: 30
+ * minutes before `now`, but within the day of `now`, so that the hour the
+ * schedule draws it for (from its start) does not cross the end of the day.
+ * It is never later than `now`, and is in the current week even right after
+ * the week starts on Sunday.
+ */
+export function getLiveScheduleStart(
+  now: Temporal.ZonedDateTime,
+): Temporal.ZonedDateTime {
+  const dayStart = now.startOfDay()
+  // The latest start whose hour ends by the end of the day
+  const latestStart = dayStart.add({ days: 1 }).subtract({ hours: 1 })
+  const start = now.subtract({ minutes: 30 })
+
+  if (Temporal.ZonedDateTime.compare(start, dayStart) < 0) {
+    return dayStart
+  }
+
+  if (Temporal.ZonedDateTime.compare(start, latestStart) > 0) {
+    return latestStart
+  }
+
+  return start
+}
+
 let seeding: Promise<void> | undefined
 
 /**
@@ -446,9 +472,10 @@ export async function seedCollections() {
 
   // Streams for the schedule of the public site: 2 on each day of the current
   // week (from Sunday to Saturday in Japan), 1 in each of the previous and the
-  // next weeks, and 1 on air now. They are created before the YouTube videos
-  // below, so they get youtube_videos rows. Their status follows the start:
-  // `ENDED` before now and `UPCOMING` after it.
+  // next weeks, and 1 on air now (`getLiveScheduleStart`, so that the hour it
+  // is drawn for stays within today). They are created before the YouTube
+  // videos below, so they get youtube_videos rows. Their status follows the
+  // start: `ENDED` before now and `UPCOMING` after it.
   const scheduleNow = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
   const weekStart = scheduleNow
     .toPlainDate()
@@ -481,7 +508,7 @@ export async function seedCollections() {
           : ('UPCOMING' as const),
     })),
     {
-      publishedAt: scheduleNow.subtract({ minutes: 30 }).toInstant(),
+      publishedAt: getLiveScheduleStart(scheduleNow).toInstant(),
       status: 'LIVE' as const,
     },
   ]
