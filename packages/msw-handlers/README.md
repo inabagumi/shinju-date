@@ -227,7 +227,9 @@ The package mocks the app access tokens (`POST https://id.twitch.tv/oauth2/token
 - `GET /helix/streams` - The broadcasts on air, by `user_id` or `user_login`
 - `GET /helix/clips` - By `id` (the clips that do not exist are left out) or by `broadcaster_id`
 
-The videos, streams and clips come from the Twitch videos of the Supabase mock (`twitch_videos` with their `videos` and `twitch_users`): the archives, highlights and uploads are videos, the `LIVE` video is a stream, and the clip is a clip. The thumbnails and the icons that they link to are served as well.
+The users come from the Twitch users of the Supabase mock (`twitch_users`): a user with an icon (`profile_image_id`) has the icon that its `profile_images` was downloaded from, and one without an icon has the default icon of Twitch. Only these users can be found by `login`. Any other numeric ID gets a generated user without videos, so that a new user can be added in the admin app.
+
+The videos, streams and clips come from the Twitch videos of the Supabase mock (`twitch_videos` with their `videos` and `twitch_users`): the archives, highlights and uploads are videos, the `LIVE` video is a stream, and the clip is a clip. The user icons (with the ETag of the `profile_images` of the users) and the thumbnails that they link to are served as well.
 
 ### YouTube Data API
 

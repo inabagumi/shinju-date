@@ -1,4 +1,5 @@
 import type { Tables } from '@shinju-date/database'
+import { getTwitchUserIconName, getTwitchUserIconUrl } from '../twitch-urls.js'
 import {
   getYouTubeChannelIconName,
   getYouTubeChannelIconUrl,
@@ -166,12 +167,13 @@ export function createAccounts(context: SeedContext): SeedAccounts {
     .slice(0, 2)
     .map((talent, index): Tables<'twitch_users'> => {
       const twitchUserId = faker.string.numeric(9)
+      // Saved like the batch app saves the icon that the Twitch mock serves
       const profileImage =
         index === 0
           ? createProfileImage({
-              etag: `"${faker.string.alphanumeric(32)}"`,
+              etag: `"${getTwitchUserIconName(twitchUserId)}"`,
               path: `twitch/${twitchUserId}/${faker.string.alphanumeric(21)}.webp`,
-              source_url: `https://static-cdn.jtvnw.net/jtv_user_pictures/${faker.string.uuid()}-profile_image-300x300.png`,
+              source_url: getTwitchUserIconUrl(twitchUserId),
             })
           : null
 

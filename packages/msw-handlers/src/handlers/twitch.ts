@@ -6,16 +6,14 @@ import {
   twitchVideos,
   videos,
 } from '../collections.js'
+import {
+  getTwitchUserIconUrl,
+  TWITCH_DEFAULT_ICON_DIRECTORY,
+  TWITCH_DEFAULT_ICON_URL,
+  TWITCH_ICON_HOST,
+  TWITCH_USER_ICON_DIRECTORY,
+} from '../twitch-urls.js'
 import { createIconResponse } from './icon.js'
-
-/** Host Twitch serves user icons (and its default icons) from. */
-const TWITCH_ICON_HOST = 'https://static-cdn.jtvnw.net'
-
-/** Directory of the icons users upload themselves. */
-const USER_ICON_DIRECTORY = 'jtv_user_pictures'
-
-/** Directory of the icons Twitch gives users without one of their own. */
-const DEFAULT_ICON_DIRECTORY = 'user-default-pictures-uv'
 
 /** A user as returned by the Helix API (`GET /helix/users`). */
 interface HelixUser {
@@ -31,13 +29,13 @@ interface HelixUser {
   view_count: number
 }
 
-function createUser({
-  defaultIcon = false,
+function toHelixUser({
+  defaultIcon,
   displayName,
   id,
   login,
 }: {
-  defaultIcon?: boolean
+  defaultIcon: boolean
   displayName: string
   id: string
   login: string
@@ -51,44 +49,64 @@ function createUser({
     login,
     offline_image_url: '',
     profile_image_url: defaultIcon
-      ? `${TWITCH_ICON_HOST}/${DEFAULT_ICON_DIRECTORY}/294c98b5-e34d-42cd-a8f0-140b72fba9b0-profile_image-300x300.png`
-      : `${TWITCH_ICON_HOST}/${USER_ICON_DIRECTORY}/mock-${id}-profile_image-300x300.png`,
+      ? TWITCH_DEFAULT_ICON_URL
+      : getTwitchUserIconUrl(id),
     type: '',
     view_count: 0,
   }
 }
 
 /**
- * Users that can also be looked up by login. The second one has no icon of
- * its own, so the default icon fallback can be checked as well.
+ * A user of the Supabase mock as the Helix API returns it. A user without an
+ * icon (`profile_image_id`) has the default icon of Twitch, so that syncing
+ * the user keeps it without one.
  */
-const mockTwitchUsers: HelixUser[] = [
-  createUser({
-    displayName: 'Test User 1',
-    id: '100000001',
-    login: 'testuser1',
-  }),
-  createUser({
-    defaultIcon: true,
-    displayName: 'Test User 2',
-    id: '100000002',
-    login: 'testuser2',
-  }),
-]
+function toSavedHelixUser(user: Tables<'twitch_users'>): HelixUser {
+  return toHelixUser({
+    defaultIcon: user.profile_image_id === null,
+    displayName: user.name ?? '',
+    id: user.twitch_user_id,
+    login: user.twitch_login_name ?? '',
+  })
+}
+
+/** The format of the ID of a user: digits only. */
+const USER_ID_PATTERN = /^\d+$/
 
 /**
- * Finds a user by ID. Any other numeric ID is answered with a generated
- * user, so that the randomly generated `twitch_users` of the seed data can be
- * synced as well.
+ * The users of the Supabase mock (`twitch_users`), so that the apps find the
+ * users that they saved.
  */
-function findUserById(id: string): HelixUser | undefined {
-  const user = mockTwitchUsers.find((candidate) => candidate.id === id)
+async function getSavedUsers(): Promise<Tables<'twitch_users'>[]> {
+  await ensureCollectionsSeeded()
 
-  if (user || !/^\d+$/.test(id)) {
-    return user
+  return twitchUsers.findMany()
+}
+
+/**
+ * Finds a user by ID. A user of the Supabase mock is answered as it is
+ * saved, and any other ID in the format of a user ID is answered with a
+ * generated user without videos, so that a new user can be added in the
+ * admin app.
+ */
+function findUserById(
+  savedUsers: readonly Tables<'twitch_users'>[],
+  id: string,
+): HelixUser | null {
+  const user = savedUsers.find((candidate) => candidate.twitch_user_id === id)
+
+  if (user) {
+    return toSavedHelixUser(user)
   }
 
-  return createUser({ displayName: `User ${id}`, id, login: `user${id}` })
+  return USER_ID_PATTERN.test(id)
+    ? toHelixUser({
+        defaultIcon: false,
+        displayName: `User ${id}`,
+        id,
+        login: `user${id}`,
+      })
+    : null
 }
 
 /** The most items that a page of the Helix API has (`first`). */
@@ -288,7 +306,7 @@ export const twitchHandlers = [
   ),
 
   // Helix API - Get Users
-  http.get('https://api.twitch.tv/helix/users', ({ request }) => {
+  http.get('https://api.twitch.tv/helix/users', async ({ request }) => {
     const { searchParams } = new URL(request.url)
     const ids = searchParams.getAll('id')
     const logins = searchParams
@@ -306,9 +324,17 @@ export const twitchHandlers = [
       )
     }
 
+    const savedUsers = await getSavedUsers()
     const data = [
-      ...ids.flatMap((id) => findUserById(id) ?? []),
-      ...mockTwitchUsers.filter((user) => logins.includes(user.login)),
+      ...ids.flatMap((id) => findUserById(savedUsers, id) ?? []),
+      // Only the users of the Supabase mock can be found by login.
+      ...savedUsers
+        .filter(
+          (user) =>
+            user.twitch_login_name !== null &&
+            logins.includes(user.twitch_login_name.toLowerCase()),
+        )
+        .map(toSavedHelixUser),
     ]
 
     return HttpResponse.json({ data })
@@ -453,12 +479,12 @@ export const twitchHandlers = [
 
   // User icon downloads. Conditional requests get 304 like on Twitch.
   http.get(
-    `${TWITCH_ICON_HOST}/${USER_ICON_DIRECTORY}/:icon`,
+    `${TWITCH_ICON_HOST}/${TWITCH_USER_ICON_DIRECTORY}/:icon`,
     ({ params, request }) =>
       createIconResponse(request, String(params['icon'])),
   ),
   http.get(
-    `${TWITCH_ICON_HOST}/${DEFAULT_ICON_DIRECTORY}/:icon`,
+    `${TWITCH_ICON_HOST}/${TWITCH_DEFAULT_ICON_DIRECTORY}/:icon`,
     ({ params, request }) =>
       createIconResponse(request, String(params['icon'])),
   ),

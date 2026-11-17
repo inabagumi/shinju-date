@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import {
   ensureCollectionsSeeded,
+  profileImages,
   twitchUsers,
   twitchVideos,
   videos,
@@ -47,39 +48,90 @@ describe('Twitch Handlers', () => {
   })
 
   describe('users', () => {
-    it('returns users by ID with their icons', async () => {
-      const [user] = await getUsers('id=100000001')
+    /** The Twitch users of the Supabase mock, with their icons. */
+    async function getSavedUsers() {
+      await ensureCollectionsSeeded()
 
-      expect(user).toMatchObject({
-        display_name: 'Test User 1',
-        id: '100000001',
-        login: 'testuser1',
-        profile_image_url:
-          'https://static-cdn.jtvnw.net/jtv_user_pictures/mock-100000001-profile_image-300x300.png',
-      })
+      const images = profileImages.findMany()
+
+      return twitchUsers.findMany().map((user) => ({
+        profileImage: images.find(
+          (image) => image.id === user.profile_image_id,
+        ),
+        user,
+      }))
+    }
+
+    it('returns the users of the Supabase mock by ID', async () => {
+      const saved = await getSavedUsers()
+
+      expect(saved.length).toBeGreaterThan(1)
+
+      const users = await getUsers(
+        saved.map(({ user }) => `id=${user.twitch_user_id}`).join('&'),
+      )
+
+      expect(users).toEqual(
+        saved.map(({ user }) =>
+          expect.objectContaining({
+            display_name: user.name,
+            id: user.twitch_user_id,
+            login: user.twitch_login_name,
+          }),
+        ),
+      )
     })
 
-    it('returns a default icon for a user without one', async () => {
-      const [user] = await getUsers('id=100000002')
+    it('returns the users of the Supabase mock by login, ignoring case', async () => {
+      const [saved] = await getSavedUsers()
+      const login = saved?.user.twitch_login_name ?? ''
 
-      expect(user?.profile_image_url).toMatch(
+      expect(login).not.toBe('')
+      expect(await getUsers(`login=${login.toUpperCase()}`)).toEqual([
+        expect.objectContaining({ id: saved?.user.twitch_user_id }),
+      ])
+    })
+
+    it('serves the icons that are saved in the Supabase mock', async () => {
+      const saved = (await getSavedUsers()).filter(
+        ({ profileImage }) => profileImage,
+      )
+
+      expect(saved.length).toBeGreaterThan(0)
+
+      for (const { profileImage, user } of saved) {
+        const [helixUser] = await getUsers(`id=${user.twitch_user_id}`)
+        const response = await fetch(helixUser?.profile_image_url ?? '')
+
+        expect(helixUser?.profile_image_url).toBe(profileImage?.source_url)
+        expect(response.headers.get('ETag')).toBe(profileImage?.etag)
+      }
+    })
+
+    it('returns the default icon for a user of the Supabase mock without one', async () => {
+      const [saved] = (await getSavedUsers()).filter(
+        ({ user }) => user.profile_image_id === null,
+      )
+
+      expect(saved).toBeDefined()
+
+      const [helixUser] = await getUsers(`id=${saved?.user.twitch_user_id}`)
+
+      expect(helixUser?.profile_image_url).toMatch(
         /^https:\/\/static-cdn\.jtvnw\.net\/user-default-pictures-uv\//,
       )
     })
 
-    it('answers any other numeric ID, e.g. of seeded users', async () => {
-      const users = await getUsers('id=123456789&id=not-a-number')
+    it('generates a user for any other numeric ID', async () => {
+      const users = await getUsers('id=999999999&id=not-a-number')
 
       expect(users).toEqual([
-        expect.objectContaining({ id: '123456789', login: 'user123456789' }),
+        expect.objectContaining({ id: '999999999', login: 'user999999999' }),
       ])
     })
 
-    it('returns users by login', async () => {
-      expect(await getUsers('login=TestUser2')).toEqual([
-        expect.objectContaining({ id: '100000002' }),
-      ])
-      expect(await getUsers('login=unknown')).toEqual([])
+    it('finds no user for a login that is not saved', async () => {
+      expect(await getUsers('login=not-a-saved-login')).toEqual([])
     })
 
     it('rejects a request without IDs or logins', async () => {
@@ -91,7 +143,7 @@ describe('Twitch Handlers', () => {
 
   describe('user icons', () => {
     const iconUrl =
-      'https://static-cdn.jtvnw.net/jtv_user_pictures/mock-100000001-profile_image-300x300.png'
+      'https://static-cdn.jtvnw.net/jtv_user_pictures/mock-999999999-profile_image-300x300.png'
 
     it('serves a PNG with an ETag', async () => {
       const response = await fetch(iconUrl)
