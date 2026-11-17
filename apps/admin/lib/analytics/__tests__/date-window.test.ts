@@ -5,6 +5,7 @@ import {
   getToday,
   MAX_RANGE_DAYS,
   parseDate,
+  parseDateFormat,
   validateDate,
   validateRange,
 } from '../date-window'
@@ -63,6 +64,26 @@ describe('date-window', () => {
         endDate: '2026-11-14',
         startDate: '2026-11-08',
       })
+    })
+  })
+
+  describe('parseDateFormat', () => {
+    it('returns the date for a valid string', () => {
+      expect(parseDateFormat('2026-11-10')?.toString()).toBe('2026-11-10')
+    })
+
+    it('returns dates outside the window', () => {
+      expect(parseDateFormat('2026-11-15')?.toString()).toBe('2026-11-15')
+      expect(parseDateFormat('2000-01-01')?.toString()).toBe('2000-01-01')
+    })
+
+    it.each([
+      ['an empty string', ''],
+      ['words', 'invalid-date'],
+      ['a date with slashes', '2026/11/10'],
+      ['a day that does not exist', '2026-09-31'],
+    ])('rejects %s', (_, value) => {
+      expect(parseDateFormat(value)).toBeNull()
     })
   })
 
