@@ -1,7 +1,10 @@
 // Node.js provides Temporal natively on the server, so the polyfill is only
 // needed in the browser. It installs itself only when Temporal is missing.
 import 'temporal-polyfill/global'
+import { initClient } from '@shinju-date/instrumentation/client'
 import { initBotId } from 'botid/client/core'
+
+export { onRouterTransitionStart } from '@shinju-date/instrumentation/client'
 
 // Protect Server Actions invoked from public form pages.
 // Path is the page route (not the action module path).
@@ -25,47 +28,11 @@ initBotId({
   ],
 })
 
-const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
-
-if (dsn) {
-  import('@sentry/nextjs')
-    .then((Sentry) => {
-      const environment =
-        process.env['VERCEL_ENV'] ??
-        process.env['NEXT_PUBLIC_VERCEL_ENV'] ??
-        'development'
-
-      Sentry.init({
-        dsn,
-        enabled: environment === 'production',
-        environment,
-        integrations: [
-          Sentry.browserTracingIntegration(),
-          Sentry.browserProfilingIntegration(),
-          Sentry.replayIntegration(),
-        ],
-        profileLifecycle: 'trace',
-        profileSessionSampleRate: 0.333,
-        replaysOnErrorSampleRate: 1.0,
-        replaysSessionSampleRate: 0.1,
-        tracesSampleRate: 0.333,
-      })
-    })
-    .catch((error) => {
-      console.error('Failed to initialize Sentry:', error)
-      throw error
-    })
-}
-
-export async function onRouterTransitionStart(
-  href: string,
-  navigationType: string,
-) {
-  const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
-
-  if (dsn) {
-    const Sentry = await import('@sentry/nextjs')
-
-    Sentry.captureRouterTransitionStart(href, navigationType)
-  }
-}
+initClient({
+  profileSessionSampleRate: 0.333,
+  replay: {
+    onErrorSampleRate: 1.0,
+    sessionSampleRate: 0.1,
+  },
+  tracesSampleRate: 0.333,
+})

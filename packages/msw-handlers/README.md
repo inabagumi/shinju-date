@@ -61,16 +61,14 @@ pnpm --filter @shinju-date/web build:msw
 
 ### Next.js Apps (Server Side)
 
-`apps/web`, `apps/admin`, and `apps/batch` start MSW from `instrumentation.ts` when `ENABLE_MSW=true`:
+`apps/web`, `apps/admin`, and `apps/batch` start MSW from `instrumentation.ts` when `ENABLE_MSW=true`, through `registerServer()` of [`@shinju-date/instrumentation`](../instrumentation/), which runs the following on the Node.js runtime:
 
 ```typescript
-// instrumentation.ts
-export async function register() {
-  if (process.env['ENABLE_MSW'] === 'true') {
-    if (process.env['NEXT_RUNTIME'] === 'nodejs') {
-      const { startServer } = await import('@shinju-date/msw-handlers/server')
-      startServer()
-    }
+// packages/instrumentation/src/server.ts
+if (enableMsw) {
+  if (process.env['NEXT_RUNTIME'] === 'nodejs') {
+    const { startServer } = await import('@shinju-date/msw-handlers/server')
+    startServer()
   }
 }
 ```

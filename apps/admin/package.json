@@ -12,6 +12,7 @@
     "@shinju-date/dashboard-stats": "workspace:*",
     "@shinju-date/health-checkers": "workspace:*",
     "@shinju-date/helpers": "workspace:*",
+    "@shinju-date/instrumentation": "workspace:*",
     "@shinju-date/logger": "workspace:*",
     "@shinju-date/scraper": "workspace:*",
     "@shinju-date/tailwind-config": "workspace:*",

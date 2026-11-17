@@ -1,5 +1,5 @@
 import createMDX from '@next/mdx'
-import { withSentryConfig } from '@sentry/nextjs/config'
+import { withSentry } from '@shinju-date/instrumentation/next-config'
 import { withBotId } from 'botid/next/config'
 // import rehypeExternalLinks from 'rehype-external-links'
 // import remarkGfm from 'remark-gfm'
@@ -124,21 +124,7 @@ function withPlugins(config: NextConfig): NextConfig {
   // always registered.
   const configWithBotId = withBotId(config)
 
-  if (process.env['NEXT_PUBLIC_SENTRY_DSN']) {
-    return withSentryConfig(withMDX(configWithBotId), {
-      bundleSizeOptimizations: {
-        excludeDebugStatements: true,
-      },
-      reactComponentAnnotation: {
-        enabled: true,
-      },
-      silent: true,
-      tunnelRoute: '/monitoring',
-      widenClientFileUpload: true,
-    })
-  }
-
-  return withMDX(configWithBotId)
+  return withSentry(withMDX(configWithBotId))
 }
 
 export default withPlugins(nextConfig)

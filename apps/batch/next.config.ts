@@ -1,4 +1,4 @@
-import { withSentryConfig } from '@sentry/nextjs/config'
+import { withSentry } from '@shinju-date/instrumentation/next-config'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
@@ -23,22 +23,4 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['@sentry/profiling-node'],
 }
 
-function withPlugins(nextConfig: NextConfig): NextConfig {
-  if (process.env['NEXT_PUBLIC_SENTRY_DSN']) {
-    return withSentryConfig(nextConfig, {
-      bundleSizeOptimizations: {
-        excludeDebugStatements: true,
-      },
-      reactComponentAnnotation: {
-        enabled: true,
-      },
-      silent: true,
-      tunnelRoute: '/monitoring',
-      widenClientFileUpload: true,
-    })
-  }
-
-  return nextConfig
-}
-
-export default withPlugins(nextConfig)
+export default withSentry(nextConfig)
