@@ -1,0 +1,11 @@
+name: Setup
+description: Set up pnpm and Node.js, and install the dependencies (run actions/checkout first)
+
+runs:
+  using: composite
+  steps:
+    # Installs pnpm and the Node.js version in devEngines, then runs pnpm install
+    - name: Setup pnpm
+      uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+      with:
+        cache: true

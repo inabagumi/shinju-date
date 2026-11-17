@@ -7,25 +7,6 @@ on:
     branches: [main]
 
 jobs:
-  # Install dependencies job (shared cache for all Node.js jobs)
-  install:
-    name: Install Dependencies
-    runs-on: ubuntu-26.04
-    permissions:
-      contents: read
-    env:
-      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
-      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 2
-      - name: Setup pnpm
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
-
   # Detect whether the database job needs to run
   changes:
     name: Detect Changes
@@ -75,7 +56,6 @@ jobs:
   test:
     name: Test (${{ matrix.package.name }})
     runs-on: ubuntu-26.04
-    needs: install
     permissions:
       contents: read
     strategy:
@@ -125,11 +105,8 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Setup pnpm
+      - uses: ./.github/actions/setup
         if: matrix.package.language == 'node'
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
 
       # Node.js test execution
       - name: Run Node.js tests
@@ -140,7 +117,6 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-26.04
-    needs: install
     permissions:
       contents: read
     env:
@@ -152,11 +128,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      # Node.js linting
-      - name: Setup pnpm
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
+      - uses: ./.github/actions/setup
 
       - name: Run Node.js lint
         run: pnpm biome ci --reporter=github .
@@ -169,7 +141,6 @@ jobs:
   typecheck:
     name: Typecheck
     runs-on: ubuntu-26.04
-    needs: install
     permissions:
       contents: read
     env:
@@ -181,10 +152,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Setup pnpm
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
+      - uses: ./.github/actions/setup
 
       - name: Run type check
         run: pnpm typecheck
@@ -193,7 +161,6 @@ jobs:
   build:
     name: Build (Node.js)
     runs-on: ubuntu-26.04
-    needs: install
     permissions:
       contents: read
     env:
@@ -205,10 +172,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Setup pnpm
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
+      - uses: ./.github/actions/setup
 
       - run: pnpm build --filter=!@shinju-date/admin --filter=!@shinju-date/batch --filter=!@shinju-date/web
 
@@ -216,7 +180,6 @@ jobs:
   build-msw:
     name: Build with MSW (${{ matrix.package }})
     runs-on: ubuntu-26.04
-    needs: install
     permissions:
       contents: read
     strategy:
@@ -234,10 +197,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Setup pnpm
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
+      - uses: ./.github/actions/setup
 
       - name: Build dependencies
         run: pnpm build --filter=${{ matrix.package }}^...
@@ -277,10 +237,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Setup pnpm
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
+      - uses: ./.github/actions/setup
 
       # Build dependencies for apps only
       - name: Build dependencies
@@ -339,7 +296,7 @@ jobs:
   database:
     name: Database
     runs-on: ubuntu-26.04
-    needs: [install, changes]
+    needs: changes
     if: needs.changes.outputs.database == 'true'
     permissions:
       contents: read
@@ -347,10 +304,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Setup pnpm
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
+      - uses: ./.github/actions/setup
 
       # Applies all migrations and the seed to an empty database
       - name: Start local database
