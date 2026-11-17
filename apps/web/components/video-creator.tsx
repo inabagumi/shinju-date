@@ -1,7 +1,7 @@
 import { twMerge } from '@shinju-date/ui'
 import type { ProfileImage, Video } from '@/lib/fetchers'
 import { findFirstNonBlank } from '@/lib/talent-links'
-import Avatar from './avatar'
+import { Avatar, AvatarFallback, AvatarImage } from './avatar'
 
 export interface VideoCreatorInfo {
   name: string
@@ -70,11 +70,13 @@ export default function VideoCreator({ className, value }: VideoCreatorProps) {
        * The icon is decorative: the name is always shown next to it, so
        * screen readers do not need to announce it twice.
        */}
-      <Avatar
-        fallbackTestId="video-creator-default-icon"
-        image={creator.profileImage}
-        size={20}
-      />
+      <Avatar aria-hidden="true" size={20}>
+        {creator.profileImage ? (
+          <AvatarImage image={creator.profileImage} sizes="20px" />
+        ) : (
+          <AvatarFallback data-testid="video-creator-default-icon" />
+        )}
+      </Avatar>
       <span className="min-w-0 truncate" title={creator.name}>
         {creator.name}
       </span>

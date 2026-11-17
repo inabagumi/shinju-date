@@ -1,5 +1,5 @@
 import type { ProfileImage, TalentListItem } from '@/lib/fetchers'
-import Avatar from './avatar'
+import { Avatar, AvatarFallback, AvatarImage } from './avatar'
 
 /** `TalentDetail` and `TalentListItem` both have the accounts */
 type TalentAccounts = Pick<TalentListItem, 'twitch_users' | 'youtube_channels'>
@@ -40,17 +40,23 @@ interface TalentIconProps {
 export default function TalentIcon({
   className,
   size,
-  sizes,
+  sizes = size ? `${size}px` : undefined,
   talent,
 }: TalentIconProps) {
+  const profileImage = getTalentProfileImage(talent)
+
   return (
     <Avatar
+      aria-hidden="true"
       className={className}
-      fallbackTestId="talent-default-icon"
-      image={getTalentProfileImage(talent)}
-      imageTestId="talent-icon"
+      data-testid={profileImage ? 'talent-icon' : 'talent-default-icon'}
       size={size}
-      sizes={sizes}
-    />
+    >
+      {profileImage ? (
+        <AvatarImage image={profileImage} sizes={sizes} />
+      ) : (
+        <AvatarFallback />
+      )}
+    </Avatar>
   )
 }

@@ -1,13 +1,15 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
-import Avatar from '../avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '../avatar'
 
 const IMAGE = { blur_data_url: 'data:image/png;base64,AAAA', id: 'icon' }
 
 describe('Avatar', () => {
   test('should show the image as a decoration by default', () => {
     const { container } = render(
-      <Avatar image={IMAGE} imageTestId="avatar" size={20} />,
+      <Avatar data-testid="avatar" size={20}>
+        <AvatarImage image={IMAGE} sizes="20px" />
+      </Avatar>,
     )
     const image = container.querySelector('img')
 
@@ -21,19 +23,36 @@ describe('Avatar', () => {
   })
 
   test('should leave the size to the class names without a size', () => {
-    render(<Avatar className="size-20" image={IMAGE} imageTestId="avatar" />)
+    render(
+      <Avatar className="size-20" data-testid="avatar">
+        <AvatarImage image={IMAGE} sizes="80px" />
+      </Avatar>,
+    )
     const avatar = screen.getByTestId('avatar')
 
     expect(avatar).toHaveClass('size-20', 'rounded-full')
     expect(avatar).not.toHaveAttribute('style')
   })
 
-  test('should show the default icon without an image', () => {
+  test('should announce the alternative text of the image', () => {
+    render(
+      <Avatar>
+        <AvatarImage alt="朝霧ミオ" image={IMAGE} sizes="20px" />
+      </Avatar>,
+    )
+
+    expect(screen.getByRole('img', { name: '朝霧ミオ' })).toBeInTheDocument()
+  })
+
+  test('should show the default icon as a decoration', () => {
     const { container } = render(
-      <Avatar fallbackTestId="fallback" image={null} size={20} />,
+      <Avatar size={20}>
+        <AvatarFallback data-testid="fallback" />
+      </Avatar>,
     )
 
     expect(container.querySelector('img')).toBeNull()
+    expect(container.querySelector('svg')).not.toBeNull()
     expect(screen.getByTestId('fallback')).toHaveAttribute(
       'aria-hidden',
       'true',
@@ -41,18 +60,12 @@ describe('Avatar', () => {
   })
 
   test('should show the given fallback', () => {
-    render(<Avatar fallback="A" fallbackTestId="fallback" image={null} />)
+    render(
+      <Avatar>
+        <AvatarFallback data-testid="fallback">A</AvatarFallback>
+      </Avatar>,
+    )
 
     expect(screen.getByTestId('fallback')).toHaveTextContent('A')
-  })
-
-  test('should announce the alternative text', () => {
-    const { rerender } = render(<Avatar alt="朝霧ミオ" image={IMAGE} />)
-
-    expect(screen.getByRole('img', { name: '朝霧ミオ' })).toBeInTheDocument()
-
-    rerender(<Avatar alt="朝霧ミオ" image={null} />)
-
-    expect(screen.getByRole('img', { name: '朝霧ミオ' })).toBeInTheDocument()
   })
 })
