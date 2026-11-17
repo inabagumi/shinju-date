@@ -1,4 +1,4 @@
-import formatDateKey from './format-date.js'
+import { formatDateKey } from './format-date-key.js'
 
 /**
  * Get the Monday of the week for a given date.
@@ -9,7 +9,7 @@ import formatDateKey from './format-date.js'
  *
  * @example
  * ```typescript
- * import getMondayOfWeek from '@shinju-date/temporal-fns/get-monday-of-week'
+ * import { getMondayOfWeek } from '@shinju-date/temporal-fns'
  *
  * const tuesday = Temporal.ZonedDateTime.from({
  *   year: 2025,
@@ -21,9 +21,7 @@ import formatDateKey from './format-date.js'
  * const monday = getMondayOfWeek(tuesday) // '20251013'
  * ```
  */
-export default function getMondayOfWeek(
-  dateTime: Temporal.ZonedDateTime,
-): string {
+export function getMondayOfWeek(dateTime: Temporal.ZonedDateTime): string {
   const dayOfWeek = dateTime.dayOfWeek // 1 = Monday, 7 = Sunday
   const daysToSubtract = dayOfWeek - 1
   const monday = dateTime.subtract({ days: daysToSubtract })

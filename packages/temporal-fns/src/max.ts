@@ -1,4 +1,4 @@
-export default function max(
+export function max(
   ...values: Temporal.ZonedDateTime[]
 ): Temporal.ZonedDateTime {
   if (!values[0]) {

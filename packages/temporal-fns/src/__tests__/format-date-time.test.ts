@@ -1,12 +1,13 @@
 // biome-ignore lint/style/noRestrictedImports: this test compares the native Temporal with the polyfill, so it needs the polyfill's implementation.
 import { Temporal as PolyfillTemporal } from 'temporal-polyfill/implementation'
 import { describe, expect, it } from 'vitest'
-import formatDateTime, {
-  formatDate,
+import { formatDate } from '../format-date.js'
+import {
+  formatDateTime,
   formatDateTimeFromISO,
   formatDateTimeWithSeconds,
-  formatTime,
 } from '../format-date-time.js'
+import { formatTime } from '../format-time.js'
 
 // The server uses the native Temporal while some browsers use
 // temporal-polyfill. Both must produce the same strings to avoid hydration
@@ -73,15 +74,21 @@ describe.each(implementations)('with %s Temporal', (_name, TemporalImpl) => {
 })
 
 describe('formatDateTimeFromISO', () => {
-  it('should format an ISO 8601 string in JST', () => {
-    expect(formatDateTimeFromISO('2026-03-25T16:22:03Z')).toBe(
-      '2026/03/26 01:22:03',
-    )
+  it('should format an ISO 8601 string in the given time zone', () => {
+    expect(
+      formatDateTimeFromISO('2026-03-25T16:22:03Z', { timeZone: 'Asia/Tokyo' }),
+    ).toBe('2026/03/26 01:22:03')
+    expect(
+      formatDateTimeFromISO('2026-03-25T16:22:03Z', { timeZone: 'UTC' }),
+    ).toBe('2026/03/25 16:22:03')
   })
 
   it('should omit seconds when includeSeconds is false', () => {
     expect(
-      formatDateTimeFromISO('2026-03-25T16:22:03Z', { includeSeconds: false }),
+      formatDateTimeFromISO('2026-03-25T16:22:03Z', {
+        includeSeconds: false,
+        timeZone: 'Asia/Tokyo',
+      }),
     ).toBe('2026/03/26 01:22')
   })
 })

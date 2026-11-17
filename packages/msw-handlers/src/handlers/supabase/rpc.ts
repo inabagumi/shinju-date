@@ -1,3 +1,4 @@
+import type { Tables } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { HttpResponse } from 'msw'
 import {
@@ -332,8 +333,8 @@ export const rpcHandlers = [
 
   rest.post(`${REST_URL}/rpc/insert_audit_log`, async ({ request }) => {
     const params = (await request.json()) as {
-      p_action: string
-      p_details?: unknown
+      p_action: Tables<'audit_logs'>['action']
+      p_details?: Tables<'audit_logs'>['details']
       p_target_record_id?: string
       p_target_table: string
     }
@@ -354,8 +355,8 @@ export const rpcHandlers = [
   rest.post(`${REST_URL}/rpc/insert_audit_logs`, async ({ request }) => {
     const { p_entries: entries } = (await request.json()) as {
       p_entries: {
-        action: string
-        details?: unknown
+        action: Tables<'audit_logs'>['action']
+        details?: Tables<'audit_logs'>['details']
         target_record_id?: string | null
         target_table: string
       }[]

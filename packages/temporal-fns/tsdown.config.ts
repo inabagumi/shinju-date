@@ -2,15 +2,7 @@ import { defineConfig } from 'tsdown'
 
 export default defineConfig({
   dts: true,
-  entry: [
-    './src/index.ts',
-    './src/format-date.ts',
-    './src/get-monday-of-week.ts',
-    './src/max.ts',
-    './src/min.ts',
-    './src/start-of-hour.ts',
-    './src/to-db-string.ts',
-  ],
+  entry: ['./src/index.ts'],
   fixedExtension: false,
   format: 'esm',
   sourcemap: true,

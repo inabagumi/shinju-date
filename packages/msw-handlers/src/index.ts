@@ -19,46 +19,23 @@ export const allHandlers = [
 ]
 
 /**
- * Export the @msw/data collections for advanced usage
+ * The `@msw/data` collections of the mock database, which the Supabase mock
+ * reads and writes. `seedCollections()` replaces their rows with the seed
+ * data, which is the same for the same `now`:
  *
- * Collections provide:
- * - findMany/findFirst for querying data
- * - create/createMany for generating data
- * - update/delete for CRUD operations
- * - Native relation traversal (e.g., video.talent, video.thumbnail)
- * - Zod schema validation
- *
- * Example:
  * ```ts
- * import { videos, seedCollections } from '@shinju-date/msw-handlers'
+ * import { seedCollections, videos } from '@shinju-date/msw-handlers'
  *
- * // Initialize collections (automatically defines relations)
- * await seedCollections()
+ * await seedCollections({ now: Temporal.Instant.from('2026-11-15T12:00:00Z') })
  *
- * // Find videos with relation traversal
- * const allVideos = await videos.findMany((q) =>
- *   q.where({ visible: true })
- * )
- * // Access related data directly
- * const firstVideo = allVideos[0]
- * console.log(firstVideo.talent.name)  // Native relation traversal
- *
- * // Create a new video
- * await videos.create({
- *   title: 'New Video',
- *   // ... other fields
- * })
+ * const visibleVideos = videos.findMany((q) => q.where({ visible: true }))
  * ```
  */
 export {
   announcements,
-  defineCollectionRelations,
   ensureCollectionsSeeded,
-  MOCK_DELETED_TALENT_ID,
-  MOCK_RETIRED_TALENT_ID,
-  MOCK_TALENT_IDS,
-  MOCK_TALENT_WITHOUT_VIDEOS_ID,
   profileImages,
+  type SeedCollectionsOptions,
   seedCollections,
   talents,
   terms,
@@ -70,6 +47,12 @@ export {
   youtubeChannels,
   youtubeVideos,
 } from './collections.js'
+export {
+  MOCK_DELETED_TALENT_ID,
+  MOCK_RETIRED_TALENT_ID,
+  MOCK_TALENT_IDS,
+  MOCK_TALENT_WITHOUT_VIDEOS_ID,
+} from './seeds/accounts.js'
 export {
   googleFontsHandlers,
   resendHandlers,

@@ -6,7 +6,7 @@ import sharp from 'sharp'
 import type { TypedSupabaseClient, WriteContext } from '../../types.js'
 import { DatabaseError, StorageError } from '../errors.js'
 
-const BUCKET = 'thumbnails'
+export const THUMBNAILS_BUCKET = 'thumbnails'
 
 /** One year: stored objects are immutable because every upload gets a new path. */
 const CACHE_CONTROL_MAX_AGE_SECONDS = 365 * 24 * 60 * 60
@@ -89,7 +89,7 @@ export async function createThumbnail({
   }
 
   const { error: uploadError } = await supabaseClient.storage
-    .from(BUCKET)
+    .from(THUMBNAILS_BUCKET)
     .upload(thumbnail.path, image, {
       cacheControl: CACHE_CONTROL_MAX_AGE_SECONDS.toString(10),
       contentType,
@@ -113,7 +113,9 @@ export async function createThumbnail({
     })
 
   if (insertError) {
-    await supabaseClient.storage.from(BUCKET).remove([thumbnail.path])
+    await supabaseClient.storage
+      .from(THUMBNAILS_BUCKET)
+      .remove([thumbnail.path])
 
     throw new DatabaseError('Failed to insert a thumbnail', insertError)
   }
@@ -143,7 +145,7 @@ export async function removeThumbnail(
     }
 
     const { error: removeError } = await supabaseClient.storage
-      .from(BUCKET)
+      .from(THUMBNAILS_BUCKET)
       .remove([thumbnail.path])
 
     if (removeError) {

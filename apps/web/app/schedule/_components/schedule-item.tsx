@@ -12,6 +12,12 @@ import TalentIcon from '@/components/talent-icon'
 import type { ScheduleVideo } from '@/lib/fetchers'
 import { parseThemeColor } from '@/lib/theme-color'
 import { getVideoTitleParts } from '@/lib/video-title'
+import {
+  HOUR_HEIGHT_REM,
+  ITEM_CHROME_HEIGHT,
+  ROOT_FONT_SIZE,
+  TITLE_LINE_HEIGHT,
+} from '../_lib/layout'
 
 /**
  * 項目のリンク先。`VideoCard` と同じく `getVideoExternalUrl` で作る。
@@ -54,25 +60,13 @@ function getVideoAccounts(video: ScheduleVideo) {
 const ITEM_CLASS_NAME =
   'block rounded-control border border-l-4 border-border bg-surface py-1 pr-1 pl-2'
 
-/** 1時間の高さ（`--hour`、px）。`schedule-week.tsx` の値と合わせる */
-const HOUR_HEIGHT = 64
-
-/**
- * タイトルより上の高さ（px）: 上下の余白（8）、上下の枠（2）、項目の間の余白
- * （2）、1行目（20）、タイトルとの間（2）。ラベルとハッシュタグの行は、1024px
- * 以上で広げていないときは出さないので含めない
- */
-const ITEM_CHROME_HEIGHT = 34
-
-/** タイトルの1行の高さ（px）。`text-meta` の 14px × 1.6 */
-const TITLE_LINE_HEIGHT = 22.4
-
 /**
  * 1024px 以上で、長さ（分）ぶんの高さの項目に入るタイトルの行数。行の途中で
  * 切れないよう、入りきる行数だけ出す。0 のときはタイトルを出さない
  */
 export function getTitleLines(lengthMinutes: number): number {
-  const height = (HOUR_HEIGHT * lengthMinutes) / 60
+  const hourHeight = HOUR_HEIGHT_REM * ROOT_FONT_SIZE
+  const height = (hourHeight * lengthMinutes) / 60
 
   return Math.max(
     0,

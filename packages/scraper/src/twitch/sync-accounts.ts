@@ -11,8 +11,7 @@ import type { TwitchFetcher } from './fetcher.js'
  * with Twitch. Accounts of retired talents are included (deleted talents are
  * not).
  *
- * Icons that are no longer used are deleted by the YouTube sync, which cleans
- * up icons of every platform.
+ * Icons that are no longer used are deleted by `Scraper#cleanUpImages`.
  *
  * @returns The number of accounts updated.
  */

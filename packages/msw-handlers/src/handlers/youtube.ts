@@ -1,402 +1,240 @@
-// biome-ignore-all lint/suspicious/noExplicitAny: Mocking YouTube API with any type for simplicity
-
+import type { Tables } from '@shinju-date/database'
 import { HttpResponse, http } from 'msw'
+import {
+  ensureCollectionsSeeded,
+  videos,
+  youtubeChannels,
+  youtubeVideos,
+} from '../collections.js'
+import {
+  getYouTubeChannelIconUrl,
+  getYouTubeUploadsPlaylistId,
+  YOUTUBE_ICON_HOST,
+} from '../youtube-urls.js'
 import { createIconResponse } from './icon.js'
-
-/** Host the YouTube Data API serves channel icons from. */
-const YOUTUBE_ICON_HOST = 'https://yt3.ggpht.com'
 
 /**
  * `snippet.thumbnails` of a channel, in the sizes the YouTube Data API
  * returns for channels.
  */
 function createChannelThumbnails(channelId: string) {
-  const url = (size: number) =>
-    `${YOUTUBE_ICON_HOST}/mock-${channelId}=s${size}-c-k-c0x00ffffff-no-rj`
-
   return {
-    default: { height: 88, url: url(88), width: 88 },
-    high: { height: 800, url: url(800), width: 800 },
-    medium: { height: 240, url: url(240), width: 240 },
+    default: {
+      height: 88,
+      url: getYouTubeChannelIconUrl(channelId, 88),
+      width: 88,
+    },
+    high: {
+      height: 800,
+      url: getYouTubeChannelIconUrl(channelId, 800),
+      width: 800,
+    },
+    medium: {
+      height: 240,
+      url: getYouTubeChannelIconUrl(channelId, 240),
+      width: 240,
+    },
   }
 }
 
-// Mock YouTube channels data
-const mockYouTubeChannels: any[] = [
-  {
-    contentDetails: {
-      relatedPlaylists: {
-        uploads: 'UUtest123_uploads',
-      },
-    },
-    id: 'UCtest123',
-    snippet: {
-      customUrl: '@testchannel123',
-      thumbnails: createChannelThumbnails('UCtest123'),
-      title: 'Test Channel 123',
-    },
-  },
-  {
-    contentDetails: {
-      relatedPlaylists: {
-        uploads: 'UUtest456_uploads',
-      },
-    },
-    id: 'UCtest456',
-    snippet: {
-      customUrl: '@testchannel456',
-      thumbnails: createChannelThumbnails('UCtest456'),
-      title: 'Test Channel 456',
-    },
-  },
-  {
-    contentDetails: {
-      relatedPlaylists: {
-        uploads: 'UUtest789_uploads',
-      },
-    },
-    id: 'UCtest789',
-    snippet: {
-      customUrl: '@testchannel789',
-      thumbnails: createChannelThumbnails('UCtest789'),
-      title: 'Test Channel 789',
-    },
-  },
-  {
-    contentDetails: {
-      relatedPlaylists: {
-        uploads: 'UUtest012_uploads',
-      },
-    },
-    id: 'UCtest012',
-    snippet: {
-      customUrl: '@testchannel012',
-      thumbnails: createChannelThumbnails('UCtest012'),
-      title: 'Test Channel 012',
-    },
-  },
-]
-
-// Mock YouTube playlist items (videos in a channel's uploads playlist)
-const mockYouTubePlaylistItems: Record<string, any[]> = {
-  UUtest012_uploads: [
-    {
-      contentDetails: {
-        videoId: 'YT_video4jkl',
-      },
-      id: 'playlist_item_4',
-    },
-    {
-      contentDetails: {
-        videoId: 'YT_testVideo1',
-      },
-      id: 'playlist_item_10',
-    },
-  ],
-  UUtest123_uploads: [
-    {
-      contentDetails: {
-        videoId: 'YT_video1abc',
-      },
-      id: 'playlist_item_1',
-    },
-    {
-      contentDetails: {
-        videoId: 'YT_video5mno',
-      },
-      id: 'playlist_item_5',
-    },
-    {
-      contentDetails: {
-        videoId: 'YT_newVideo03',
-      },
-      id: 'playlist_item_9',
-    },
-  ],
-  UUtest456_uploads: [
-    {
-      contentDetails: {
-        videoId: 'YT_video2def',
-      },
-      id: 'playlist_item_2',
-    },
-    {
-      contentDetails: {
-        videoId: 'YT_video6pqr',
-      },
-      id: 'playlist_item_6',
-    },
-    {
-      contentDetails: {
-        videoId: 'YT_newVideo02',
-      },
-      id: 'playlist_item_8',
-    },
-  ],
-  UUtest789_uploads: [
-    {
-      contentDetails: {
-        videoId: 'YT_video3ghi',
-      },
-      id: 'playlist_item_3',
-    },
-    {
-      contentDetails: {
-        videoId: 'YT_newVideo01',
-      },
-      id: 'playlist_item_7',
-    },
-  ],
+/** A channel as returned by the YouTube Data API (`channels.list`). */
+interface YouTubeChannel {
+  contentDetails: { relatedPlaylists: { uploads: string } }
+  id: string
+  kind: 'youtube#channel'
+  snippet: {
+    customUrl?: string
+    thumbnails: ReturnType<typeof createChannelThumbnails>
+    title: string
+  }
 }
 
-// Mock YouTube videos data
-const mockYouTubeVideos: Record<string, any> = {
-  YT_newVideo01: {
+function toYouTubeChannel({
+  handle,
+  id,
+  title,
+}: {
+  handle: string | null
+  id: string
+  title: string
+}): YouTubeChannel {
+  return {
     contentDetails: {
-      duration: 'PT14M22S',
+      relatedPlaylists: { uploads: getYouTubeUploadsPlaylistId(id) },
     },
-    id: 'YT_newVideo01',
+    id,
+    kind: 'youtube#channel',
     snippet: {
-      publishedAt: '2023-01-07T12:00:00.000Z',
-      thumbnails: {
-        high: {
-          height: 360,
-          url: 'https://i.ytimg.com/vi/YT_newVideo01/hqdefault.jpg',
-          width: 480,
-        },
-        maxres: {
-          height: 720,
-          url: 'https://i.ytimg.com/vi/YT_newVideo01/maxresdefault.jpg',
-          width: 1280,
-        },
-      },
-      title: 'New Content Video #7',
+      ...(handle ? { customUrl: handle } : {}),
+      thumbnails: createChannelThumbnails(id),
+      title,
     },
-  },
-  YT_newVideo02: {
-    contentDetails: {
-      duration: 'PT9M45S',
-    },
-    id: 'YT_newVideo02',
-    snippet: {
-      publishedAt: '2023-01-08T12:00:00.000Z',
-      thumbnails: {
-        high: {
-          height: 360,
-          url: 'https://i.ytimg.com/vi/YT_newVideo02/hqdefault.jpg',
-          width: 480,
-        },
-        maxres: {
-          height: 720,
-          url: 'https://i.ytimg.com/vi/YT_newVideo02/maxresdefault.jpg',
-          width: 1280,
-        },
-      },
-      title: 'Tutorial Video #8',
-    },
-  },
-  YT_newVideo03: {
-    contentDetails: {
-      duration: 'PT22M10S',
-    },
-    id: 'YT_newVideo03',
-    snippet: {
-      publishedAt: '2023-01-09T12:00:00.000Z',
-      thumbnails: {
-        high: {
-          height: 360,
-          url: 'https://i.ytimg.com/vi/YT_newVideo03/hqdefault.jpg',
-          width: 480,
-        },
-        maxres: {
-          height: 720,
-          url: 'https://i.ytimg.com/vi/YT_newVideo03/maxresdefault.jpg',
-          width: 1280,
-        },
-      },
-      title: 'Analytics Deep Dive #9',
-    },
-  },
-  YT_testVideo1: {
-    contentDetails: {
-      duration: 'PT16M33S',
-    },
-    id: 'YT_testVideo1',
-    snippet: {
-      publishedAt: '2023-01-10T12:00:00.000Z',
-      thumbnails: {
-        high: {
-          height: 360,
-          url: 'https://i.ytimg.com/vi/YT_testVideo1/hqdefault.jpg',
-          width: 480,
-        },
-        maxres: {
-          height: 720,
-          url: 'https://i.ytimg.com/vi/YT_testVideo1/maxresdefault.jpg',
-          width: 1280,
-        },
-      },
-      title: 'Trending Topics #10',
-    },
-  },
-  YT_video1abc: {
-    contentDetails: {
-      duration: 'PT10M30S',
-    },
-    id: 'YT_video1abc',
-    snippet: {
-      publishedAt: '2023-01-01T12:00:00.000Z',
-      thumbnails: {
-        high: {
-          height: 360,
-          url: 'https://i.ytimg.com/vi/YT_video1abc/hqdefault.jpg',
-          width: 480,
-        },
-        maxres: {
-          height: 720,
-          url: 'https://i.ytimg.com/vi/YT_video1abc/maxresdefault.jpg',
-          width: 1280,
-        },
-      },
-      title: 'Analytics Test Video #1',
-    },
-  },
-  YT_video2def: {
-    contentDetails: {
-      duration: 'PT15M45S',
-    },
-    id: 'YT_video2def',
-    snippet: {
-      publishedAt: '2023-01-02T12:00:00.000Z',
-      thumbnails: {
-        high: {
-          height: 360,
-          url: 'https://i.ytimg.com/vi/YT_video2def/hqdefault.jpg',
-          width: 480,
-        },
-        maxres: {
-          height: 720,
-          url: 'https://i.ytimg.com/vi/YT_video2def/maxresdefault.jpg',
-          width: 1280,
-        },
-      },
-      title: 'Trending Test Video #2',
-    },
-  },
-  YT_video3ghi: {
-    contentDetails: {
-      duration: 'PT8M15S',
-    },
-    id: 'YT_video3ghi',
-    snippet: {
-      publishedAt: '2023-01-03T12:00:00.000Z',
-      thumbnails: {
-        high: {
-          height: 360,
-          url: 'https://i.ytimg.com/vi/YT_video3ghi/hqdefault.jpg',
-          width: 480,
-        },
-        maxres: {
-          height: 720,
-          url: 'https://i.ytimg.com/vi/YT_video3ghi/maxresdefault.jpg',
-          width: 1280,
-        },
-      },
-      title: 'Popular Test Video #3',
-    },
-  },
-  YT_video4jkl: {
-    contentDetails: {
-      duration: 'PT12M30S',
-    },
-    id: 'YT_video4jkl',
-    snippet: {
-      publishedAt: '2023-01-04T12:00:00.000Z',
-      thumbnails: {
-        high: {
-          height: 360,
-          url: 'https://i.ytimg.com/vi/YT_video4jkl/hqdefault.jpg',
-          width: 480,
-        },
-        maxres: {
-          height: 720,
-          url: 'https://i.ytimg.com/vi/YT_video4jkl/maxresdefault.jpg',
-          width: 1280,
-        },
-      },
-      title: 'Test Video #4',
-    },
-  },
-  YT_video5mno: {
-    contentDetails: {
-      duration: 'PT20M45S',
-    },
-    id: 'YT_video5mno',
-    snippet: {
-      publishedAt: '2023-01-05T12:00:00.000Z',
-      thumbnails: {
-        high: {
-          height: 360,
-          url: 'https://i.ytimg.com/vi/YT_video5mno/hqdefault.jpg',
-          width: 480,
-        },
-        maxres: {
-          height: 720,
-          url: 'https://i.ytimg.com/vi/YT_video5mno/maxresdefault.jpg',
-          width: 1280,
-        },
-      },
-      title: 'Daily Test Video #5',
-    },
-  },
-  YT_video6pqr: {
-    contentDetails: {
-      duration: 'PT18M20S',
-    },
-    id: 'YT_video6pqr',
-    snippet: {
-      publishedAt: '2023-01-06T12:00:00.000Z',
-      thumbnails: {
-        high: {
-          height: 360,
-          url: 'https://i.ytimg.com/vi/YT_video6pqr/hqdefault.jpg',
-          width: 480,
-        },
-        maxres: {
-          height: 720,
-          url: 'https://i.ytimg.com/vi/YT_video6pqr/maxresdefault.jpg',
-          width: 1280,
-        },
-      },
-      title: 'Deleted Video 2',
-    },
-  },
+  }
+}
+
+/** The format of the ID of a channel: `UC` and 22 characters. */
+const CHANNEL_ID_PATTERN = /^UC[\w-]{22}$/
+
+/**
+ * The channels of the Supabase mock (`youtube_channels`), so that the apps
+ * find the channels that they saved.
+ */
+async function getSavedChannels(): Promise<Tables<'youtube_channels'>[]> {
+  await ensureCollectionsSeeded()
+
+  return youtubeChannels.findMany()
 }
 
 /**
- * Parse YouTube Data API query parameters
+ * Finds a channel by ID. A channel of the Supabase mock is answered as it is
+ * saved, and any other ID in the format of a channel ID is answered with a
+ * generated channel without videos, so that a new channel can be added in
+ * the admin app.
  */
-function parseYouTubeQuery(url: URL) {
-  const id = url.searchParams.get('id')
-  const forHandle = url.searchParams.get('forHandle')
-  const forUsername = url.searchParams.get('forUsername')
-  const playlistId = url.searchParams.get('playlistId')
-  const part = url.searchParams.get('part')?.split(',') || []
-  const maxResults = Number.parseInt(
-    url.searchParams.get('maxResults') || '50',
-    10,
+async function findChannelById(id: string): Promise<YouTubeChannel | null> {
+  const channel = (await getSavedChannels()).find(
+    (candidate) => candidate.youtube_channel_id === id,
   )
-  const pageToken = url.searchParams.get('pageToken')
+
+  if (channel) {
+    return toYouTubeChannel({
+      handle: channel.youtube_handle,
+      id,
+      title: channel.name ?? '',
+    })
+  }
+
+  return CHANNEL_ID_PATTERN.test(id)
+    ? toYouTubeChannel({ handle: null, id, title: `Channel ${id}` })
+    : null
+}
+
+/** A video of the Supabase mock on YouTube, with its video and its channel. */
+interface MockYouTubeVideo {
+  channel: Tables<'youtube_channels'>
+  video: Tables<'videos'>
+  youtubeVideo: Tables<'youtube_videos'>
+}
+
+/**
+ * The videos of the Supabase mock on YouTube (`youtube_videos` with their
+ * `videos` and `youtube_channels`), newest first like the uploads of a
+ * channel. Deleted videos are left out, as they are no longer on YouTube.
+ */
+async function getMockYouTubeVideos(): Promise<MockYouTubeVideo[]> {
+  const channelsById = new Map(
+    (await getSavedChannels()).map((channel) => [channel.id, channel]),
+  )
+  const videosById = new Map(
+    videos.findMany().map((video) => [video.id, video]),
+  )
+
+  return youtubeVideos
+    .findMany()
+    .flatMap((youtubeVideo) => {
+      const channel = channelsById.get(youtubeVideo.youtube_channel_id)
+      const video = videosById.get(youtubeVideo.video_id)
+
+      return channel && video && video.deleted_at === null
+        ? [{ channel, video, youtubeVideo }]
+        : []
+    })
+    .sort((a, b) =>
+      Temporal.Instant.compare(b.video.published_at, a.video.published_at),
+    )
+}
+
+/** A timestamp as the YouTube Data API returns it, such as `2026-01-01T00:00:00Z`. */
+function toYouTubeTimestamp(instant: Temporal.Instant | string): string {
+  return Temporal.Instant.from(instant).toString({ smallestUnit: 'second' })
+}
+
+/**
+ * `liveStreamingDetails` of a video, which follows its status like on
+ * YouTube: an upcoming stream has only the scheduled start, a stream on air
+ * has started, and a finished stream has ended after its duration. Videos
+ * that are not streams have none.
+ */
+function toLiveStreamingDetails({
+  duration,
+  published_at,
+  status,
+}: Tables<'videos'>) {
+  const start = toYouTubeTimestamp(published_at)
+
+  switch (status) {
+    case 'UPCOMING':
+      return { scheduledStartTime: start }
+    case 'LIVE':
+      return { actualStartTime: start, scheduledStartTime: start }
+    case 'ENDED':
+      return {
+        actualEndTime: toYouTubeTimestamp(
+          Temporal.Instant.from(published_at).add({
+            seconds: Temporal.Duration.from(duration).total('seconds'),
+          }),
+        ),
+        actualStartTime: start,
+        scheduledStartTime: start,
+      }
+    default:
+      return undefined
+  }
+}
+
+/** A video as returned by the YouTube Data API (`videos.list`). */
+function toYouTubeVideo({ channel, video, youtubeVideo }: MockYouTubeVideo) {
+  const id = youtubeVideo.youtube_video_id
+  const liveStreamingDetails = toLiveStreamingDetails(video)
 
   return {
-    forHandle,
-    forUsername,
+    contentDetails: { duration: video.duration },
     id,
-    maxResults,
-    pageToken,
-    part,
-    playlistId,
+    kind: 'youtube#video',
+    ...(liveStreamingDetails ? { liveStreamingDetails } : {}),
+    snippet: {
+      channelId: channel.youtube_channel_id,
+      channelTitle: channel.name ?? '',
+      publishedAt: toYouTubeTimestamp(video.published_at),
+      thumbnails: {
+        high: {
+          height: 360,
+          url: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+          width: 480,
+        },
+        maxres: {
+          height: 720,
+          url: `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`,
+          width: 1280,
+        },
+      },
+      title: video.title,
+    },
   }
+}
+
+/** An item of the uploads of a channel (`playlistItems.list`). */
+function toPlaylistItem({ video, youtubeVideo }: MockYouTubeVideo) {
+  return {
+    contentDetails: {
+      videoId: youtubeVideo.youtube_video_id,
+      videoPublishedAt: toYouTubeTimestamp(video.published_at),
+    },
+    id: `mock-playlist-item-${youtubeVideo.id}`,
+    kind: 'youtube#playlistItem',
+  }
+}
+
+/**
+ * The values of a parameter that can be given several times or separated
+ * with commas, such as `id`.
+ */
+function getListParameter(url: URL, name: string): string[] {
+  return url.searchParams
+    .getAll(name)
+    .flatMap((value) => value.split(','))
+    .map((value) => value.trim())
+    .filter(Boolean)
 }
 
 function normalizeHandle(handle: string): string {
@@ -405,42 +243,42 @@ function normalizeHandle(handle: string): string {
     : handle.toLowerCase()
 }
 
+function badRequest(message: string): Response {
+  return HttpResponse.json({ error: { code: 400, message } }, { status: 400 })
+}
+
 export const youtubeHandlers = [
-  // YouTube Data API - channels.list
-  http.get('*/youtube/v3/channels', ({ request }) => {
+  // YouTube Data API - channels.list, by `id` or by `forHandle` (or
+  // `forUsername`)
+  http.get('*/youtube/v3/channels', async ({ request }) => {
     const url = new URL(request.url)
-    const { id, forHandle, forUsername } = parseYouTubeQuery(url)
+    const ids = getListParameter(url, 'id')
+    const handle =
+      url.searchParams.get('forHandle') ?? url.searchParams.get('forUsername')
+    let items: YouTubeChannel[]
 
-    let items: typeof mockYouTubeChannels = []
-
-    if (id) {
-      const channelIds = id.split(',')
-      items = channelIds
-        .map((channelId) =>
-          mockYouTubeChannels.find(
-            (channel) => channel.id === channelId.trim(),
-          ),
-        )
-        .filter(Boolean)
-    } else if (forHandle || forUsername) {
-      const handleKey = normalizeHandle(forHandle || forUsername || '')
-      items = mockYouTubeChannels.filter((channel) => {
-        const customUrl = channel.snippet?.customUrl as string | undefined
-        if (!customUrl) {
-          return false
-        }
-        return normalizeHandle(customUrl) === handleKey
-      })
-    } else {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 400,
-            message: 'Required parameter: id, forHandle, or forUsername',
-          },
-        },
-        { status: 400 },
+    if (ids.length > 0) {
+      items = (await Promise.all(ids.map(findChannelById))).filter(
+        (channel) => channel !== null,
       )
+    } else if (handle) {
+      const handleKey = normalizeHandle(handle)
+
+      items = (await getSavedChannels())
+        .filter(
+          (channel) =>
+            channel.youtube_handle !== null &&
+            normalizeHandle(channel.youtube_handle) === handleKey,
+        )
+        .map((channel) =>
+          toYouTubeChannel({
+            handle: channel.youtube_handle,
+            id: channel.youtube_channel_id,
+            title: channel.name ?? '',
+          }),
+        )
+    } else {
+      return badRequest('Required parameter: id, forHandle, or forUsername')
     }
 
     return HttpResponse.json({
@@ -453,19 +291,28 @@ export const youtubeHandlers = [
     })
   }),
 
-  // YouTube Data API - playlistItems.list
-  http.get('*/youtube/v3/playlistItems', ({ request }) => {
+  // YouTube Data API - playlistItems.list: the uploads of a channel, newest
+  // first
+  http.get('*/youtube/v3/playlistItems', async ({ request }) => {
     const url = new URL(request.url)
-    const { playlistId, maxResults, pageToken } = parseYouTubeQuery(url)
+    const playlistId = url.searchParams.get('playlistId')
 
     if (!playlistId) {
-      return HttpResponse.json(
-        { error: { code: 400, message: 'Required parameter: playlistId' } },
-        { status: 400 },
-      )
+      return badRequest('Required parameter: playlistId')
     }
 
-    const items = mockYouTubePlaylistItems[playlistId] || []
+    const maxResults = Number.parseInt(
+      url.searchParams.get('maxResults') ?? '50',
+      10,
+    )
+    const pageToken = url.searchParams.get('pageToken')
+    const items = (await getMockYouTubeVideos())
+      .filter(
+        ({ channel }) =>
+          getYouTubeUploadsPlaylistId(channel.youtube_channel_id) ===
+          playlistId,
+      )
+      .map(toPlaylistItem)
     const startIndex = pageToken ? Number.parseInt(pageToken, 10) : 0
     const paginatedItems = items.slice(startIndex, startIndex + maxResults)
     const nextPageToken =
@@ -484,22 +331,23 @@ export const youtubeHandlers = [
     })
   }),
 
-  // YouTube Data API - videos.list
-  http.get('*/youtube/v3/videos', ({ request }) => {
-    const url = new URL(request.url)
-    const { id } = parseYouTubeQuery(url)
+  // YouTube Data API - videos.list. Videos that do not exist (or were
+  // deleted) are left out, like on YouTube.
+  http.get('*/youtube/v3/videos', async ({ request }) => {
+    const ids = getListParameter(new URL(request.url), 'id')
 
-    if (!id) {
-      return HttpResponse.json(
-        { error: { code: 400, message: 'Required parameter: id' } },
-        { status: 400 },
-      )
+    if (ids.length === 0) {
+      return badRequest('Required parameter: id')
     }
 
-    const videoIds = id.split(',')
-    const items = videoIds
-      .map((videoId) => mockYouTubeVideos[videoId.trim()])
-      .filter(Boolean)
+    const mockVideos = await getMockYouTubeVideos()
+    const items = ids.flatMap((id) => {
+      const mockVideo = mockVideos.find(
+        ({ youtubeVideo }) => youtubeVideo.youtube_video_id === id,
+      )
+
+      return mockVideo ? [toYouTubeVideo(mockVideo)] : []
+    })
 
     return HttpResponse.json({
       items,
