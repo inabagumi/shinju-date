@@ -147,6 +147,7 @@ jobs:
         package:
           - "@shinju-date/web"
           - "@shinju-date/admin"
+          - "@shinju-date/batch"
     env:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -164,6 +165,7 @@ jobs:
       - name: Build app with MSW
         run: pnpm --filter ${{ matrix.package }} build:msw
         env:
+          GOOGLE_API_KEY: fake
           NEXT_PUBLIC_BASE_URL: http://localhost:3000
           NEXT_PUBLIC_SUPABASE_ANON_KEY: fake
           NEXT_PUBLIC_SUPABASE_URL: https://fake.supabase.test
