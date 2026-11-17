@@ -8,13 +8,26 @@ export type ParseFormDataResult<T> =
 
 const INDEXED_KEY_PATTERN = /^(.+)\[(\d+)\]$/
 
+export interface ZodErrorToFormStateOptions {
+  /**
+   * 画面に入力欄がない項目（隠しフィールドなど）の名前。これらの項目のエラーは、
+   * 対応する `ErrorMessage` がなく表示されないため、項目に結び付かないエラー
+   * （`generic`）にする。
+   */
+  hiddenFields?: readonly string[]
+}
+
 /**
  * zod の検証エラーを、項目ごとのエラーの `FormState` に直す
  */
-export function zodErrorToFormState(error: z.ZodError): FormState {
+export function zodErrorToFormState(
+  error: z.ZodError,
+  { hiddenFields = [] }: ZodErrorToFormStateOptions = {},
+): FormState {
   return error.issues.reduce<FormState>(
     ({ errors: previousErrors = {} }, issue) => {
-      const name = issue.path.join('.')
+      const path = issue.path.join('.')
+      const name = hiddenFields.includes(path) ? 'generic' : path
       const previousMessages = previousErrors[name] ?? []
 
       return {
