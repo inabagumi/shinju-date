@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
-import { getVideosUpdateJob } from '@/lib/crawler-jobs'
 import { runCronJob } from '@/lib/cron'
+import { getVideosUpdateJob } from '@/lib/jobs'
 import { providerQuerySchema } from '@/lib/provider'
 import { parseQuery } from '@/lib/query'
 import { createScraper } from '@/lib/scraper'

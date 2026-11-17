@@ -7,8 +7,12 @@ const createScraper = vi.fn(() => scraper)
 const revalidateTags = vi.fn()
 
 vi.mock('@/lib/ratelimit', () => ({
+  recommendationQueriesUpdate: { limit: vi.fn() },
+  statsSnapshot: { limit: vi.fn() },
   talentsUpdate: { limit },
+  termsPopularityUpdate: { limit: vi.fn() },
   videosBackfill: { limit: vi.fn() },
+  videosCascadeFromTalents: { limit: vi.fn() },
   videosCheck: { limit: vi.fn() },
   videosCheckAll: { limit: vi.fn() },
   videosCheckRecent: { limit: vi.fn() },

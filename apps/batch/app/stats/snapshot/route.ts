@@ -1,65 +1,20 @@
-import * as Sentry from '@sentry/nextjs'
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
-import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
+import { logger } from '@shinju-date/logger'
 import {
   formatDateKey,
   startOfDay,
   toDBString,
 } from '@shinju-date/temporal-fns'
-import { after } from 'next/server'
-import { serverEnv } from '@/lib/env'
-import { statsSnapshot as ratelimit } from '@/lib/ratelimit'
+import { runCronJob } from '@/lib/cron'
+import { STATS_SNAPSHOT_JOB } from '@/lib/jobs'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
 import { getAnalyticsSummary, getSummaryStats } from './_lib/stats'
 
-const MONITOR_SLUG = '/stats/snapshot'
-
 export const maxDuration = 60
 
 export async function POST(request: Request): Promise<Response> {
-  const cronSecure = serverEnv.CRON_SECRET
-  if (
-    cronSecure &&
-    !verifyCronRequest(request, {
-      cronSecure,
-    })
-  ) {
-    Sentry.logger.warn('CRON_SECRET did not match.')
-
-    return createErrorResponse('Unauthorized', {
-      status: 401,
-    })
-  }
-
-  const { success } = await ratelimit.limit('stats:snapshot')
-
-  if (!success) {
-    Sentry.logger.warn('There has been no interval since the last run.')
-
-    return createErrorResponse(
-      'There has been no interval since the last run.',
-      {
-        status: 429,
-      },
-    )
-  }
-
-  const checkInId = Sentry.captureCheckIn(
-    {
-      monitorSlug: MONITOR_SLUG,
-      status: 'in_progress',
-    },
-    {
-      schedule: {
-        type: 'crontab',
-        value: '10 15 * * *',
-      },
-      timezone: 'Etc/UTC',
-    },
-  )
-
-  try {
+  return runCronJob(request, STATS_SNAPSHOT_JOB, async () => {
     const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
     // Calculate previous day
     const previousDay = now.subtract({ days: 1 })
@@ -89,45 +44,12 @@ export async function POST(request: Request): Promise<Response> {
       ),
     ])
 
-    Sentry.logger.info('Statistics snapshot saved successfully', {
+    logger.info('統計のスナップショットを保存しました', {
       analyticsSummary,
       date: targetDateKey,
       summaryStats,
     })
-
-    after(async () => {
-      Sentry.captureCheckIn({
-        checkInId,
-        monitorSlug: MONITOR_SLUG,
-        status: 'ok',
-      })
-
-      await Sentry.flush(10_000)
-    })
-
-    return new Response(null, {
-      status: 204,
-    })
-  } catch (error) {
-    after(async () => {
-      Sentry.captureException(error)
-
-      Sentry.captureCheckIn({
-        checkInId,
-        monitorSlug: MONITOR_SLUG,
-        status: 'error',
-      })
-
-      await Sentry.flush(10_000)
-    })
-
-    return createErrorResponse(
-      error instanceof Error ? error.message : 'Unknown error',
-      {
-        status: 500,
-      },
-    )
-  }
+  })
 }
 
 export const GET = POST
