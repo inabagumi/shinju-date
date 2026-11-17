@@ -239,20 +239,65 @@ describe('Supabase filters', () => {
       )
     })
 
-    it('matches patterns with like and regular expressions with match', async () => {
+    it('matches patterns with like and ilike', async () => {
       const [talent] = await getJson<{ id: string; name: string }[]>(
         'talents?select=id,name&limit=1',
       )
       const name = talent?.name ?? ''
-      const liked = await getJson<{ id: string }[]>(
-        `talents?select=id&name=like.${encodeURIComponent(`${name.slice(0, 1)}*`)}`,
-      )
-      const matched = await getJson<{ id: string }[]>(
-        `talents?select=id&name=match.${encodeURIComponent(`^${name}$`)}`,
+      const matching = [
+        `${name.slice(0, 1)}*`,
+        `*${name.slice(-1)}`,
+        `${name.slice(0, 1)}%${name.slice(-1)}`,
+        `_${name.slice(1)}`,
+        name,
+      ]
+
+      for (const pattern of matching) {
+        const rows = await getJson<{ id: string }[]>(
+          `talents?select=id&name=like.${encodeURIComponent(pattern)}`,
+        )
+
+        expect(
+          rows.map(({ id }) => id),
+          pattern,
+        ).toContain(talent?.id)
+      }
+
+      const notMatching = await getJson<{ id: string }[]>(
+        `talents?select=id&name=like.${encodeURIComponent(`_${name}`)}`,
       )
 
-      expect(liked.map(({ id }) => id)).toContain(talent?.id)
-      expect(matched.map(({ id }) => id)).toEqual([talent?.id])
+      expect(notMatching.map(({ id }) => id)).not.toContain(talent?.id)
+    })
+
+    it('matches patterns case-insensitively with ilike', async () => {
+      const [term] = await getJson<{ id: string; term: string }[]>(
+        `terms?select=id,term&term=eq.ASMR`,
+      )
+      const rows = await getJson<{ id: string }[]>(
+        'terms?select=id&term=ilike.*smr',
+      )
+      const caseSensitive = await getJson<{ id: string }[]>(
+        'terms?select=id&term=like.*smr',
+      )
+
+      expect(term).toBeDefined()
+      expect(rows.map(({ id }) => id)).toContain(term?.id)
+      expect(caseSensitive.map(({ id }) => id)).not.toContain(term?.id)
+    })
+
+    it('does not take the value of a filter as a regular expression', async () => {
+      // The patterns of `like` are not regular expressions, and `match` is
+      // not supported, so a pattern that backtracks exponentially in a
+      // regular expression is harmless.
+      const pattern = `${'*a'.repeat(30)}b`
+      const rows = await getJson<unknown[]>(
+        `talents?select=id&name=like.${encodeURIComponent(pattern)}`,
+      )
+      const response = await get('talents?select=id&name=match.(a%2B)%2B%24')
+
+      expect(rows).toEqual([])
+      expect(response.status).toBe(400)
     })
   })
 

@@ -147,8 +147,6 @@ The filters follow the three-valued logic of SQL: a comparison with `NULL` is ne
 | `lt`, `lte`  | Less than (or equal)                                         |
 | `like`       | Pattern (`*` or `%` for any characters, `_` for one)         |
 | `ilike`      | Pattern, case-insensitive                                    |
-| `match`      | Regular expression                                           |
-| `imatch`     | Regular expression, case-insensitive                         |
 | `in`         | One of a list, such as `in.(1,2,"a,b")`                      |
 | `is`         | `null`, `not_null`, `true`, `false` or `unknown`             |
 | `isdistinct` | `IS DISTINCT FROM`, which treats `NULL` as a value           |
@@ -159,13 +157,13 @@ PATCH and DELETE change only the rows that match all the filters (filters on emb
 
 The mock does not ignore what it does not support, so that a query does not silently get a result that differs from PostgREST. It returns the errors of PostgREST (`{ code, message, details, hint }`) instead:
 
-| Code       | Status | When                                                                                                                                                                                                                                |
-| ---------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PGRST100` | 400    | An operator that is not in the table above (the message names it, such as `fts` or `cs`), a modifier such as `eq(any)`, a filter of another form, a spread (`...talents(name)`) in `select`, and an `order` by an embedded resource |
-| `PGRST108` | 400    | A filter on a resource that is not embedded in `select`                                                                                                                                                                             |
-| `PGRST200` | 400    | An embedded resource that the table definition has no relation to                                                                                                                                                                   |
-| `PGRST202` | 404    | A function without a handler                                                                                                                                                                                                        |
-| `PGRST205` | 404    | A table without a definition                                                                                                                                                                                                        |
+| Code       | Status | When                                                                                                                                                                                                                                                                                                              |
+| ---------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PGRST100` | 400    | An operator that is not in the table above (the message names it, such as `fts`, `cs` or `match`: the mock does not take a value of a request as a regular expression), a modifier such as `eq(any)`, a filter of another form, a spread (`...talents(name)`) in `select`, and an `order` by an embedded resource |
+| `PGRST108` | 400    | A filter on a resource that is not embedded in `select`                                                                                                                                                                                                                                                           |
+| `PGRST200` | 400    | An embedded resource that the table definition has no relation to                                                                                                                                                                                                                                                 |
+| `PGRST202` | 404    | A function without a handler                                                                                                                                                                                                                                                                                      |
+| `PGRST205` | 404    | A table without a definition                                                                                                                                                                                                                                                                                      |
 
 When an app needs one of them, implement it in `src/handlers/supabase/query.ts` (filters and `order`) or `src/handlers/supabase/select.ts` (`select`).
 

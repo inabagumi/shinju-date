@@ -7,7 +7,7 @@
  * result that differs from PostgREST.
  */
 
-import { PostgrestError, parseError } from './errors.js'
+import { parseError } from './errors.js'
 
 /** The parameters that are not filters. */
 const RESERVED_PARAMETERS = new Set([
@@ -30,8 +30,6 @@ export const SUPPORTED_OPERATORS = [
   'lte',
   'like',
   'ilike',
-  'match',
-  'imatch',
   'in',
   'is',
   'isdistinct',
@@ -422,28 +420,50 @@ function parseListValues(list: string): string[] {
 }
 
 /**
- * A regular expression for a pattern of `like` and `ilike`, where `*` (or
- * `%`) matches any characters and `_` matches one.
+ * Whether a text matches a pattern of `like`, where `*` (or `%`) matches any
+ * characters and `_` matches one. It does not build a regular expression from
+ * the pattern, which comes from the request, and takes linear time for each
+ * wildcard instead of backtracking exponentially.
  */
-function likePattern(pattern: string, flags: string): RegExp {
-  const source = pattern
-    .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
-    .replace(/[*%]/g, '.*')
-    .replace(/_/g, '.')
+function matchesLike(text: string, pattern: string): boolean {
+  const characters = [...text]
+  const tokens = [...pattern]
+  const isWildcard = (token: string | undefined) =>
+    token === '*' || token === '%'
+  let textIndex = 0
+  let tokenIndex = 0
+  // The last wildcard, and the position in the text where it started
+  let wildcardIndex = -1
+  let wildcardTextIndex = 0
 
-  return new RegExp(`^${source}$`, `s${flags}`)
-}
+  while (textIndex < characters.length) {
+    const token = tokens[tokenIndex]
 
-/** A regular expression for `match` and `imatch`. */
-function toRegExp(pattern: string, flags: string): RegExp {
-  try {
-    return new RegExp(pattern, flags)
-  } catch {
-    throw new PostgrestError(400, {
-      code: '2201B',
-      message: `invalid regular expression: ${pattern}`,
-    })
+    if (isWildcard(token)) {
+      wildcardIndex = tokenIndex
+      wildcardTextIndex = textIndex
+      tokenIndex += 1
+    } else if (
+      token !== undefined &&
+      (token === '_' || token === characters[textIndex])
+    ) {
+      textIndex += 1
+      tokenIndex += 1
+    } else if (wildcardIndex !== -1) {
+      // Let the last wildcard match one more character
+      tokenIndex = wildcardIndex + 1
+      wildcardTextIndex += 1
+      textIndex = wildcardTextIndex
+    } else {
+      return false
+    }
   }
+
+  while (isWildcard(tokens[tokenIndex])) {
+    tokenIndex += 1
+  }
+
+  return tokenIndex === tokens.length
 }
 
 /**
@@ -498,14 +518,9 @@ function evaluateCondition(
       return COMPARISON_OPERATORS[operator](compareFilterValue(value, operand))
     case 'like':
     case 'ilike':
-      return likePattern(operand, operator === 'ilike' ? 'i' : '').test(
-        String(value),
-      )
-    case 'match':
-    case 'imatch':
-      return toRegExp(operand, operator === 'imatch' ? 'i' : '').test(
-        String(value),
-      )
+      return operator === 'ilike'
+        ? matchesLike(String(value).toLowerCase(), operand.toLowerCase())
+        : matchesLike(String(value), operand)
     case 'in':
       return parseListValues(operand.slice(1, -1)).some((text) =>
         matchesValue(value, text),
