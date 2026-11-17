@@ -579,6 +579,44 @@ describe('YouTubeScraper', () => {
     })
   })
 
+  describe('syncTalentAccounts', () => {
+    it('syncs the channels of one talent and returns what changed', async () => {
+      supabase.respond(({ method }) =>
+        method === 'GET'
+          ? [
+              {
+                id: 'talent-1',
+                youtube_channels: [
+                  {
+                    id: 'channel-row-1',
+                    name: 'Old name',
+                    youtube_channel_id: 'UCaaa',
+                    youtube_handle: '@handle',
+                  },
+                ],
+              },
+            ]
+          : [],
+      )
+      const { scraper } = createScraper({ channels: { UCaaa: 'Alice' } })
+
+      await expect(scraper.syncTalentAccounts('talent-1')).resolves.toEqual([
+        {
+          accountId: 'channel-row-1',
+          changes: { after: { name: 'Alice' }, before: { name: 'Old name' } },
+          iconUpdated: false,
+          name: 'Alice',
+          status: 'updated',
+        },
+      ])
+      expect(supabase.requests[0]?.query).toMatchObject({ id: 'eq.talent-1' })
+      expect(supabase.written('PATCH', 'youtube_channels')[0]).toMatchObject({
+        body: { name: 'Alice', youtube_handle: '@handle' },
+        query: { id: 'eq.channel-row-1' },
+      })
+    })
+  })
+
   describe('addPastVideos', () => {
     const channelRow = {
       id: 'channel-row-1',

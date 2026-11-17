@@ -665,6 +665,61 @@ describe('TwitchScraper', () => {
     })
   })
 
+  describe('syncTalentAccounts', () => {
+    it('syncs the accounts of one talent and returns what changed', async () => {
+      supabase.respond(({ method }) =>
+        method === 'GET'
+          ? [
+              {
+                id: 'talent-1',
+                twitch_users: [
+                  {
+                    id: 'user-row-1',
+                    name: 'Alice',
+                    twitch_login_name: 'alice_old',
+                    twitch_user_id: 'twitch-user-1',
+                  },
+                ],
+              },
+            ]
+          : [],
+      )
+      const { scraper } = createScraper({
+        users: [
+          {
+            broadcaster_type: '',
+            created_at: '2020-01-01T00:00:00Z',
+            description: '',
+            display_name: 'Alice',
+            id: 'twitch-user-1',
+            login: 'alice',
+            offline_image_url: '',
+            profile_image_url: '',
+            type: '',
+          },
+        ],
+      })
+
+      await expect(scraper.syncTalentAccounts('talent-1')).resolves.toEqual([
+        {
+          accountId: 'user-row-1',
+          changes: {
+            after: { twitch_login_name: 'alice' },
+            before: { twitch_login_name: 'alice_old' },
+          },
+          iconUpdated: false,
+          name: 'Alice',
+          status: 'updated',
+        },
+      ])
+      expect(supabase.requests[0]?.query).toMatchObject({ id: 'eq.talent-1' })
+      expect(supabase.written('PATCH', 'twitch_users')[0]).toMatchObject({
+        body: { name: 'Alice', twitch_login_name: 'alice' },
+        query: { id: 'eq.user-row-1' },
+      })
+    })
+  })
+
   describe('addPastVideos', () => {
     const twitchUserRow = {
       id: 'user-row-1',
