@@ -1,3 +1,4 @@
+import { HttpResponse, http } from 'msw'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../../internal/testing/context.js'
 import {
@@ -248,12 +249,31 @@ describe('syncTwitchLive', () => {
     })
   }
 
+  let removedImages: unknown[]
+
+  function deletedThumbnailIds(): (string | undefined)[] {
+    return supabase
+      .written('DELETE', 'thumbnails')
+      .map(({ query }) => query['id'])
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(createThumbnail).mockResolvedValue({
       id: 'thumb-new',
       path: 'x/y.jpg',
     })
+    removedImages = []
+    supabase.server.use(
+      http.delete(
+        'https://fake.supabase.test/storage/v1/object/thumbnails',
+        async ({ request }) => {
+          removedImages.push(await request.json())
+
+          return HttpResponse.json([])
+        },
+      ),
+    )
   })
 
   it('adds a LIVE row for a stream that just went on air', async () => {
@@ -362,6 +382,31 @@ describe('syncTwitchLive', () => {
       title: 'Archive',
       updated_at: '2024-05-01T12:00:00Z',
     })
+    // The preview of the stream is no longer used by any video.
+    expect(deletedThumbnailIds()).toEqual(['eq.thumb-live'])
+    expect(removedImages).toEqual([{ prefixes: ['live:stream-1/preview.jpg'] }])
+    expect(reportError).not.toHaveBeenCalled()
+  })
+
+  it('removes the new thumbnail when the broadcast cannot be ended', async () => {
+    mockDatabase({
+      savedLiveVideos: [createLiveVideo()],
+      write: ({ table }) =>
+        table === 'videos' ? postgresError('57014', 'statement timeout') : [],
+    })
+    const { fetcher } = createFetcher({ archives: [createVideo()] })
+
+    const changed = await syncTwitchLive(createContext(fetcher))
+
+    expect(changed).toBe(0)
+    expect(deletedThumbnailIds()).toEqual(['eq.thumb-new'])
+    expect(removedImages).toEqual([{ prefixes: ['x/y.jpg'] }])
+    expect(reportError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('statement timeout'),
+      }),
+      { videoId: 'video-1' },
+    )
   })
 
   it('keeps the live thumbnail while the archive has none', async () => {
@@ -376,6 +421,7 @@ describe('syncTwitchLive', () => {
     expect(supabase.written('PATCH', 'videos')[0]?.body).not.toHaveProperty(
       'thumbnail_id',
     )
+    expect(deletedThumbnailIds()).toEqual([])
   })
 
   it('ends a broadcast whose archive was attached while on air', async () => {

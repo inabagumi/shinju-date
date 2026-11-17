@@ -11,6 +11,7 @@ import {
   getActiveTwitchUsers,
   updateVideo,
 } from '../internal/database/index.js'
+import { replaceThumbnail } from '../internal/thumbnails/index.js'
 import type {
   CrawlContext,
   TypedSupabaseClient,
@@ -126,7 +127,7 @@ export function planLiveSync({
 
 /** Selects a saved row together with the Helix ID of its broadcaster. */
 export const SAVED_LIVE_VIDEO_SELECT =
-  'id, deleted_at, duration, published_at, status, thumbnail_id, title, twitch_video:twitch_videos!inner(id, stream_id, twitch_video_id, type, twitch_user:twitch_users(twitch_user_id))'
+  'id, deleted_at, duration, published_at, status, thumbnail_id, title, thumbnails(id, path), twitch_video:twitch_videos!inner(id, stream_id, twitch_video_id, type, twitch_user:twitch_users(twitch_user_id))'
 
 interface SavedLiveVideoRow extends Omit<SavedTwitchVideo, 'twitch_video'> {
   twitch_video: SavedTwitchVideo['twitch_video'] & {
@@ -202,15 +203,16 @@ async function endBroadcast(
     })
   }
 
-  const thumbnail = await createTwitchThumbnail(context, {
-    thumbnailUrl: archive.thumbnail_url,
-    twitchVideoId: archive.id,
-  })
-
-  await updateVideo(supabaseClient, saved.id, {
-    ...toVideoFields(archive),
-    updated_at: timestamp,
-    ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
+  // The preview of the stream gives way to the thumbnail of the archive.
+  await replaceThumbnail(context, {
+    create: () =>
+      createTwitchThumbnail(context, {
+        thumbnailUrl: archive.thumbnail_url,
+        twitchVideoId: archive.id,
+      }),
+    fields: toVideoFields(archive),
+    previous: saved.thumbnails,
+    videoId: saved.id,
   })
 }
 

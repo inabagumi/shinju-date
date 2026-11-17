@@ -1,3 +1,4 @@
+import { HttpResponse, http } from 'msw'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../../internal/testing/context.js'
 import {
@@ -224,12 +225,25 @@ describe('addNewTwitchVideos', () => {
     })
   }
 
+  let removedImages: unknown[]
+
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(createThumbnail).mockResolvedValue({
       id: 'thumb-new',
       path: 'vod-1/x.jpg',
     })
+    removedImages = []
+    supabase.server.use(
+      http.delete(
+        'https://fake.supabase.test/storage/v1/object/thumbnails',
+        async ({ request }) => {
+          removedImages.push(await request.json())
+
+          return HttpResponse.json([])
+        },
+      ),
+    )
   })
 
   it('adds archives and uploads that are not saved yet', async () => {
@@ -315,6 +329,33 @@ describe('addNewTwitchVideos', () => {
       },
       query: { id: 'eq.video-1' },
     })
+    // The preview of the stream is no longer used by any video.
+    expect(
+      supabase.written('DELETE', 'thumbnails').map(({ query }) => query['id']),
+    ).toEqual(['eq.thumb-live'])
+    expect(removedImages).toEqual([{ prefixes: ['live:stream-1/preview.jpg'] }])
+    expect(reportError).not.toHaveBeenCalled()
+  })
+
+  it('removes the new thumbnail when the placeholder cannot be updated', async () => {
+    mockDatabase([createSavedVideo({ status: 'ENDED' })], ({ table }) =>
+      table === 'videos' ? postgresError('57014', 'statement timeout') : [],
+    )
+    const { fetcher } = createFetcher({ archives: [createVideo()] })
+
+    const added = await addNewTwitchVideos(createContext(fetcher))
+
+    expect(added).toBe(0)
+    expect(
+      supabase.written('DELETE', 'thumbnails').map(({ query }) => query['id']),
+    ).toEqual(['eq.thumb-new'])
+    expect(removedImages).toEqual([{ prefixes: ['vod-1/x.jpg'] }])
+    expect(reportError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('statement timeout'),
+      }),
+      { twitchVideoId: 'vod-1' },
+    )
   })
 
   it('keeps a broadcast LIVE when its archive shows up while on air', async () => {

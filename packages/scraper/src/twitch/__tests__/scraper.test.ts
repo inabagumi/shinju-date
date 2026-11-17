@@ -517,9 +517,12 @@ describe('TwitchScraper', () => {
       respondWithSavedVideo(createSavedVideo())
       await createScraper(fake).scraper.refreshLiveVideos(TEST_NOW)
 
+      // The preview of the stream is removed once the archive's thumbnail
+      // replaces it.
       expect(single.map(({ table }) => table)).toEqual([
         'twitch_videos',
         'videos',
+        'thumbnails',
       ])
       expect(writes()).toEqual(single)
     })

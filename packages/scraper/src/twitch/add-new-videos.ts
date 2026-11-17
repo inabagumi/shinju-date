@@ -1,11 +1,10 @@
-import { toDBString } from '@shinju-date/temporal-fns'
 import { getArchivedStreamId } from '@shinju-date/twitch-api-client'
 import { countChanges } from '../internal/concurrency.js'
 import {
   type ActiveTwitchUser,
   getActiveTwitchUsers,
-  updateVideo,
 } from '../internal/database/index.js'
+import { replaceThumbnail } from '../internal/thumbnails/index.js'
 import type { CrawlContext, WriteContext } from '../types.js'
 import type { TwitchFetcher } from './fetcher.js'
 import { createTwitchThumbnail, saveTwitchVideo } from './save-video.js'
@@ -119,7 +118,7 @@ export async function applyNewVideoAction(
   action: NewVideoAction,
   userByTwitchId: ReadonlyMap<string, ActiveTwitchUser>,
 ): Promise<boolean> {
-  const { now, supabaseClient } = context
+  const { supabaseClient } = context
   const { liveStream, video } = action
 
   if (action.kind === 'insert') {
@@ -155,15 +154,16 @@ export async function applyNewVideoAction(
     return false
   }
 
-  const thumbnail = await createTwitchThumbnail(context, {
-    thumbnailUrl: video.thumbnail_url,
-    twitchVideoId: video.id,
-  })
-
-  await updateVideo(supabaseClient, action.saved.id, {
-    ...toVideoFields(video),
-    updated_at: toDBString(now),
-    ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
+  // The preview of the stream gives way to the thumbnail of the archive.
+  await replaceThumbnail(context, {
+    create: () =>
+      createTwitchThumbnail(context, {
+        thumbnailUrl: video.thumbnail_url,
+        twitchVideoId: video.id,
+      }),
+    fields: toVideoFields(video),
+    previous: action.saved.thumbnails,
+    videoId: action.saved.id,
   })
 
   return true
