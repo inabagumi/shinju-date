@@ -1,20 +1,19 @@
 import type { SVGProps } from 'react'
+import {
+  SEARCH_ICON_CIRCLE,
+  SEARCH_ICON_PATH,
+  SEARCH_ICON_VIEW_BOX,
+} from './svg-symbols'
 
 export default function SearchIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg aria-hidden="true" viewBox="0 0 256 256" {...props}>
+    <svg aria-hidden="true" viewBox={SEARCH_ICON_VIEW_BOX} {...props}>
       <circle
-        cx="97.5"
-        cy="100.5"
+        {...SEARCH_ICON_CIRCLE}
         fill="transparent"
-        r="52"
         stroke="currentColor"
-        strokeWidth="21"
       />
-      <path
-        d="M146.14 137l58.34 58.34a5 5 0 010 7.07l-7.07 7.07a5 5 0 01-7.07 0L132 151.14 146.14 137z"
-        fill="currentColor"
-      />
+      <path d={SEARCH_ICON_PATH} fill="currentColor" />
     </svg>
   )
 }
