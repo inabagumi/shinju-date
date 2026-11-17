@@ -73,15 +73,21 @@ describe.each(implementations)('with %s Temporal', (_name, TemporalImpl) => {
 })
 
 describe('formatDateTimeFromISO', () => {
-  it('should format an ISO 8601 string in JST', () => {
-    expect(formatDateTimeFromISO('2026-03-25T16:22:03Z')).toBe(
-      '2026/03/26 01:22:03',
-    )
+  it('should format an ISO 8601 string in the given time zone', () => {
+    expect(
+      formatDateTimeFromISO('2026-03-25T16:22:03Z', { timeZone: 'Asia/Tokyo' }),
+    ).toBe('2026/03/26 01:22:03')
+    expect(
+      formatDateTimeFromISO('2026-03-25T16:22:03Z', { timeZone: 'UTC' }),
+    ).toBe('2026/03/25 16:22:03')
   })
 
   it('should omit seconds when includeSeconds is false', () => {
     expect(
-      formatDateTimeFromISO('2026-03-25T16:22:03Z', { includeSeconds: false }),
+      formatDateTimeFromISO('2026-03-25T16:22:03Z', {
+        includeSeconds: false,
+        timeZone: 'Asia/Tokyo',
+      }),
     ).toBe('2026/03/26 01:22')
   })
 })

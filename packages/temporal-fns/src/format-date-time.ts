@@ -75,18 +75,30 @@ export function formatDateTimeWithSeconds(
   return formatDateTime(timestamp, { includeSeconds: true })
 }
 
+interface FormatDateTimeFromISOOptions extends FormatDateTimeOptions {
+  timeZone: string
+}
+
 /**
- * Formats an ISO 8601 string in JST as `YYYY/MM/DD HH:mm:ss` (or
- * `YYYY/MM/DD HH:mm` with `includeSeconds: false`).
+ * Formats an ISO 8601 string in the given time zone as `YYYY/MM/DD HH:mm:ss`
+ * (or `YYYY/MM/DD HH:mm` with `includeSeconds: false`).
+ *
+ * @example
+ * ```typescript
+ * import { TIME_ZONE } from '@shinju-date/constants'
+ * import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
+ *
+ * formatDateTimeFromISO('2026-03-25T16:22:03Z', { timeZone: TIME_ZONE })
+ * // "2026/03/26 01:22:03"
+ * ```
  */
 export function formatDateTimeFromISO(
   isoString: string,
-  options: FormatDateTimeOptions = {},
+  options: FormatDateTimeFromISOOptions,
 ): string {
-  const { includeSeconds = true } = options
-  const instant = Temporal.Instant.from(isoString)
-  // Use JST timezone
-  // biome-ignore lint/plugin/no-hardcoded-time-zone: TIME_ZONE を使うよう #7100 で直す
-  const zonedDateTime = instant.toZonedDateTimeISO('Asia/Tokyo')
+  const { includeSeconds = true, timeZone } = options
+  const zonedDateTime =
+    Temporal.Instant.from(isoString).toZonedDateTimeISO(timeZone)
+
   return formatDateTime(zonedDateTime, { includeSeconds })
 }

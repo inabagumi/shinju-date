@@ -1,7 +1,6 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import { Skeleton } from '@shinju-date/ui'
 import Form, {
   FormField,
@@ -13,6 +12,7 @@ import Form, {
 } from '@/components/form'
 import { Markdown } from '@/components/markdown'
 import { Panel, PanelSkeleton } from '@/components/panel'
+import { formatDateTimeFromISO } from '@/lib/format'
 import {
   markFeatureRequestAsRead,
   updateFeatureRequestMemo,

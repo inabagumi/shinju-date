@@ -1,5 +1,4 @@
 import { range } from '@shinju-date/helpers'
-import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import { Alert, EmptyState, PageHeader, Skeleton } from '@shinju-date/ui'
 import { Video } from 'lucide-react'
 import type { Metadata } from 'next'
@@ -17,6 +16,7 @@ import {
 import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
 import { WidgetErrorBoundary } from '@/components/widget-error-boundary'
+import { formatDateTimeFromISO } from '@/lib/format'
 import { TalentStatusBadge } from '../_components/talent-status-badge'
 import { getRecentVideosForTalent } from '../_lib/get-recent-videos'
 import { getTalent } from '../_lib/get-talent'

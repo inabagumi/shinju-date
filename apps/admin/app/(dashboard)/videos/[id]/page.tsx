@@ -1,8 +1,5 @@
 import { formatNumber } from '@shinju-date/helpers'
-import {
-  formatDateTimeFromISO,
-  formatDuration,
-} from '@shinju-date/temporal-fns'
+import { formatDuration } from '@shinju-date/temporal-fns'
 import { Alert, Button, PageHeader, Skeleton } from '@shinju-date/ui'
 import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
@@ -24,6 +21,7 @@ import {
 import { PlatformBadge } from '@/components/platform-badge'
 import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
+import { formatDateTimeFromISO } from '@/lib/format'
 import { VideoKindBadge } from '../_components/video-kind-badge'
 import getVideo from '../_lib/get-video'
 import {
