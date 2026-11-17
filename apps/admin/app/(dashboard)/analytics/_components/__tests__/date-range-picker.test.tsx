@@ -98,4 +98,72 @@ describe('DateRangePicker', () => {
     expect(screen.getByLabelText('開始日')).toHaveValue('2026-11-03')
     expect(screen.getByLabelText('終了日')).toHaveValue('2026-11-10')
   })
+
+  describe('custom period', () => {
+    function applyCustomPeriod(startDate: string, endDate: string) {
+      const onChange = vi.fn()
+
+      render(
+        <DateRangePicker
+          onChange={onChange}
+          value={{ endDate: '2026-11-10', startDate: '2026-11-03' }}
+        />,
+      )
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'カスタム期間を選択' }),
+      )
+      fireEvent.change(screen.getByLabelText('開始日'), {
+        target: { value: startDate },
+      })
+      fireEvent.change(screen.getByLabelText('終了日'), {
+        target: { value: endDate },
+      })
+      fireEvent.click(screen.getByRole('button', { name: '適用' }))
+
+      return onChange
+    }
+
+    it('applies a period within the window', () => {
+      const onChange = applyCustomPeriod('2026-08-17', '2026-11-14')
+
+      expect(onChange).toHaveBeenCalledWith({
+        endDate: '2026-11-14',
+        startDate: '2026-08-17',
+      })
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it.each([
+      [
+        'a start after the end',
+        '2026-11-10',
+        '2026-11-09',
+        '開始日は終了日より前である必要があります',
+      ],
+      [
+        'a period longer than 90 days',
+        '2026-08-16',
+        '2026-11-14',
+        '期間は最大90日間まで選択できます',
+      ],
+      [
+        'a start before the window',
+        '2026-08-16',
+        '2026-11-13',
+        '開始日は2026/08/17以降である必要があります',
+      ],
+      [
+        'an end after today',
+        '2026-11-10',
+        '2026-11-15',
+        '終了日は今日以降にできません',
+      ],
+    ])('rejects %s', (_, startDate, endDate, message) => {
+      const onChange = applyCustomPeriod(startDate, endDate)
+
+      expect(onChange).not.toHaveBeenCalled()
+      expect(screen.getByRole('alert')).toHaveTextContent(message)
+    })
+  })
 })

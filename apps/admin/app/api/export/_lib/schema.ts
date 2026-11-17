@@ -1,29 +1,21 @@
 import { z } from 'zod'
+import {
+  MAX_RANGE_DAYS,
+  parseDate,
+  validateRange,
+} from '@/lib/analytics/date-window'
 
 /**
- * Validate a date string and ensure it's within allowed range
+ * A date parameter. A value that is not a selectable date becomes `null` and
+ * is treated like a missing parameter
  */
-function validateDateString(dateStr: string): string | null {
-  try {
-    const date = Temporal.PlainDate.from(dateStr)
-    const today = Temporal.Now.zonedDateTimeISO('Asia/Tokyo').toPlainDate()
-
-    // Date cannot be in the future
-    if (Temporal.PlainDate.compare(date, today) > 0) {
-      return null
-    }
-
-    // Date cannot be more than 90 days old (retention limit)
-    const maxPastDate = today.subtract({ days: 89 })
-    if (Temporal.PlainDate.compare(date, maxPastDate) < 0) {
-      return null
-    }
-
-    return date.toString()
-  } catch {
-    return null
-  }
-}
+const dateParamSchema = z
+  .string()
+  .optional()
+  .transform((val) => {
+    if (!val) return undefined
+    return parseDate(val)
+  })
 
 /**
  * Schema for CSV export API parameters
@@ -32,21 +24,9 @@ function validateDateString(dateStr: string): string | null {
 export const exportSearchParamsSchema = z
   .object({
     // Specific date for single-day data (date parameter)
-    date: z
-      .string()
-      .optional()
-      .transform((val) => {
-        if (!val) return undefined
-        return validateDateString(val)
-      }),
+    date: dateParamSchema,
     // Start date of the range (from parameter)
-    from: z
-      .string()
-      .optional()
-      .transform((val) => {
-        if (!val) return undefined
-        return validateDateString(val)
-      }),
+    from: dateParamSchema,
 
     // Optional limit for number of records
     limit: z
@@ -59,13 +39,7 @@ export const exportSearchParamsSchema = z
       }),
 
     // End date of the range (to parameter)
-    to: z
-      .string()
-      .optional()
-      .transform((val) => {
-        if (!val) return undefined
-        return validateDateString(val)
-      }),
+    to: dateParamSchema,
   })
   .refine(
     (data) => {
@@ -84,18 +58,17 @@ export const exportSearchParamsSchema = z
       return {
         endDate: null,
         limit,
-        selectedDate: date,
-        startDate: date,
+        selectedDate: date.toString(),
+        startDate: date.toString(),
       }
     }
 
     // If from/to are provided, validate the range
     if (from && to) {
-      const start = Temporal.PlainDate.from(from)
-      const end = Temporal.PlainDate.from(to)
+      const rangeError = validateRange(from, to)
 
       // Start date must be before or equal to end date
-      if (Temporal.PlainDate.compare(start, end) > 0) {
+      if (rangeError === 'reversed') {
         throw new z.ZodError([
           {
             code: z.ZodIssueCode.custom,
@@ -105,23 +78,22 @@ export const exportSearchParamsSchema = z
         ])
       }
 
-      // Maximum period constraint (90 days)
-      const daysDifference = end.since(start).days + 1
-      if (daysDifference > 90) {
+      // Maximum period constraint
+      if (rangeError === 'too-long') {
         throw new z.ZodError([
           {
             code: z.ZodIssueCode.custom,
-            message: 'Date range cannot exceed 90 days',
+            message: `Date range cannot exceed ${MAX_RANGE_DAYS} days`,
             path: ['from'],
           },
         ])
       }
 
       return {
-        endDate: to,
+        endDate: to.toString(),
         limit,
         selectedDate: null,
-        startDate: from,
+        startDate: from.toString(),
       }
     }
 
@@ -140,8 +112,8 @@ export const exportSearchParamsSchema = z
     return {
       endDate: null,
       limit,
-      selectedDate: singleDate,
-      startDate: singleDate,
+      selectedDate: singleDate.toString(),
+      startDate: singleDate.toString(),
     }
   })
 
