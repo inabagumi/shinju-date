@@ -10,7 +10,7 @@ import {
 const test = setupActionTest()
 const { supabase } = test
 
-const ID = '70000000-0000-4000-8000-000000000001'
+const ID = '70000000-0000-0000-0000-000000000001'
 const MEMO = '検索の絞り込みと合わせて、次の四半期に対応する。'
 
 function statusForm(status: string, id = ID): FormData {

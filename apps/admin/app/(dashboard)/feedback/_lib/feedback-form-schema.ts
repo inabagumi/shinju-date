@@ -1,7 +1,11 @@
 import * as z from 'zod'
 import { FEATURE_REQUEST_STATUSES } from './feature-request-status'
 
-const feedbackIdSchema = z.uuid()
+/**
+ * フィードバックの ID。DB の `uuid` 型と同じく、RFC 9562 のバージョンとバリアントを
+ * 問わず 8-4-4-4-12 桁の16進数を受け付ける（シードの ID は、バージョンの桁が `0`）
+ */
+const feedbackIdSchema = z.guid()
 
 /** 状態の変更のフォーム（`status` は、DB の enum の値） */
 export const feedbackStatusFormSchema = z.object({

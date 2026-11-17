@@ -16,7 +16,7 @@ vi.mock('../../_actions/update-feedback', () => ({
 
 const { FeatureRequestDetail } = await import('./feedback-detail')
 
-const FEEDBACK_ID = '70000000-0000-4000-8000-000000000001'
+const FEEDBACK_ID = '70000000-0000-0000-0000-000000000001'
 
 const featureRequest: Tables<'feature_requests'> = {
   admin_memo: '担当者に確認する。',
