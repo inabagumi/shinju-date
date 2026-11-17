@@ -73,7 +73,7 @@ export async function createTermAction(
 
     revalidatePath('/terms')
     await revalidateTags([CACHE_TAGS.VIDEOS])
-    return {}
+    return { success: true }
   } catch (error) {
     logger.error('用語の追加に失敗しました', { error, term: term.trim() })
     return {
@@ -149,7 +149,7 @@ export async function updateTermAction(
 
     revalidatePath('/terms')
     await revalidateTags([CACHE_TAGS.VIDEOS])
-    return {}
+    return { success: true }
   } catch (error) {
     logger.error('用語の更新に失敗しました', { error, id, term: term.trim() })
     return {

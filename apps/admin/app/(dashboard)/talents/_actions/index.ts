@@ -217,7 +217,7 @@ export async function createTalentAction(
 
     revalidatePath('/talents')
     await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
-    return {}
+    return { success: true }
   } catch (error) {
     logger.error('タレントの追加に失敗しました', {
       error,
