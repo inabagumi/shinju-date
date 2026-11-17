@@ -16,9 +16,11 @@ import { usePolledResource } from '@/lib/use-polled-resource'
 import {
   getVideoBackfillHistoryAction,
   retryFailedVideoBackfillJobsAction,
-  type VideoBackfillHistory,
-  type VideoBackfillHistoryEntry,
 } from '../_actions/video-backfill-history'
+import type {
+  VideoBackfillHistory,
+  VideoBackfillHistoryEntry,
+} from '../_lib/get-video-backfill-history'
 
 /**
  * How often the history is refreshed while failed accounts are retried, so

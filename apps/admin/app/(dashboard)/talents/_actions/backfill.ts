@@ -4,91 +4,16 @@ import { logger } from '@shinju-date/logger'
 import {
   type BackfillProvider,
   BackfillQueue,
-  type BackfillRunJobStatus,
-  getBackfillJobId,
-  getBackfillRunJobStatus,
 } from '@shinju-date/video-backfill'
 import { PLATFORM_LABELS } from '@/components/platform-badge'
 import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 import { getRedisClient } from '@/lib/redis'
-import type { TypedSupabaseClient } from '@/lib/supabase'
-
-/** Progress of the backfill of one account of a talent. */
-export interface VideoBackfillAccount {
-  /** Primary key of the account row (`youtube_channels` / `twitch_users`). */
-  accountId: string
-  /** Whether a job is queued or being read, so it cannot be requested again. */
-  active: boolean
-  /** Videos saved so far. */
-  added: number
-  error: string | null
-  finishedAt: string | null
-  name: string
-  /** Pages read so far. */
-  pages: number
-  provider: BackfillProvider
-  requestedAt: string | null
-  /**
-   * `interrupted` when the job stopped without finishing; `null` when the
-   * account was never backfilled (or it was long ago).
-   */
-  status: BackfillRunJobStatus | null
-  updatedAt: string | null
-}
-
-/** The accounts of a talent, with the progress of their backfills. */
-export interface VideoBackfillStatus {
-  accounts: VideoBackfillAccount[]
-  success: true
-}
-
-interface TalentAccounts {
-  accounts: Pick<VideoBackfillAccount, 'accountId' | 'name' | 'provider'>[]
-  name: string
-}
-
-/**
- * Loads a talent that is not deleted, with its YouTube channels and Twitch
- * accounts.
- */
-async function getTalentAccounts(
-  supabaseClient: TypedSupabaseClient,
-  talentId: string,
-): Promise<TalentAccounts | null> {
-  const { data, error } = await supabaseClient
-    .from('talents')
-    .select(
-      'name, youtube_channels(id, name, youtube_channel_id), twitch_users(id, name, twitch_login_name, twitch_user_id)',
-    )
-    .eq('id', talentId)
-    .is('deleted_at', null)
-    .maybeSingle()
-
-  if (error) {
-    throw error
-  }
-
-  if (!data) {
-    return null
-  }
-
-  return {
-    accounts: [
-      ...data.youtube_channels.map((channel) => ({
-        accountId: channel.id,
-        name: channel.name ?? channel.youtube_channel_id,
-        provider: 'youtube' as const,
-      })),
-      ...data.twitch_users.map((user) => ({
-        accountId: user.id,
-        name: user.name ?? user.twitch_login_name ?? user.twitch_user_id,
-        provider: 'twitch' as const,
-      })),
-    ],
-    name: data.name,
-  }
-}
+import {
+  getTalentAccounts,
+  readVideoBackfillStatus,
+  type VideoBackfillStatus,
+} from '../_lib/get-video-backfill-status'
 
 /**
  * タレントの過去動画の取り込み（バックフィル）をキューに追加する。
@@ -238,39 +163,13 @@ export async function getVideoBackfillStatusAction(
   }
 
   try {
-    const talent = await getTalentAccounts(auth.supabaseClient, talentId)
+    const status = await readVideoBackfillStatus(auth.supabaseClient, talentId)
 
-    if (!talent) {
+    if (!status) {
       return { error: 'タレントが見つかりませんでした。', success: false }
     }
 
-    const queue = new BackfillQueue(getRedisClient())
-    const states = await queue.getJobs(
-      talent.accounts.map((account) =>
-        getBackfillJobId(account.provider, account.accountId),
-      ),
-    )
-
-    return {
-      accounts: talent.accounts.map((account, index) => {
-        const state = states[index]
-
-        return {
-          ...account,
-          active: state?.active ?? false,
-          added: state?.job.added ?? 0,
-          error: state?.job.error ?? null,
-          finishedAt: state?.job.finishedAt ?? null,
-          pages: state?.job.pages ?? 0,
-          requestedAt: state?.job.requestedAt ?? null,
-          status: state
-            ? getBackfillRunJobStatus(state.job.status, state.active)
-            : null,
-          updatedAt: state?.job.updatedAt ?? null,
-        }
-      }),
-      success: true,
-    }
+    return status
   } catch (error) {
     logger.error('過去動画の取り込み状況の取得に失敗しました', {
       error,

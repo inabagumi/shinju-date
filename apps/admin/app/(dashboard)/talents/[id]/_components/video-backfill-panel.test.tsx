@@ -7,7 +7,7 @@ import {
 } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ActionToastProvider } from '@/components/action-toast'
-import type { VideoBackfillAccount } from '../../_actions/backfill'
+import type { VideoBackfillAccount } from '../../_lib/get-video-backfill-status'
 
 const mocks = vi.hoisted(() => ({
   getVideoBackfillStatusAction: vi.fn(),

@@ -5,7 +5,7 @@ import type {
   VideoBackfillFailure,
   VideoBackfillHistory,
   VideoBackfillHistoryEntry,
-} from '../_actions/video-backfill-history'
+} from '../_lib/get-video-backfill-history'
 
 const mocks = vi.hoisted(() => ({
   getVideoBackfillHistoryAction: vi.fn(),

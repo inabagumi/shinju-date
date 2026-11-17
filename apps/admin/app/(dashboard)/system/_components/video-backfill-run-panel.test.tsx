@@ -5,7 +5,7 @@ import type {
   VideoBackfillRun,
   VideoBackfillRunAccount,
   VideoBackfillRunState,
-} from '../_actions/video-backfill-run'
+} from '../_lib/get-video-backfill-run'
 
 const mocks = vi.hoisted(() => ({
   getVideoBackfillRunAction: vi.fn(),

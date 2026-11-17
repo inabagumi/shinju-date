@@ -19,8 +19,8 @@ import { usePolledResource } from '@/lib/use-polled-resource'
 import {
   getVideoBackfillStatusAction,
   requestVideoBackfillAction,
-  type VideoBackfillStatus,
 } from '../../_actions/backfill'
+import type { VideoBackfillStatus } from '../../_lib/get-video-backfill-status'
 
 /** How often progress is refreshed while a job is queued or running. */
 const POLL_INTERVAL_MS = 5_000

@@ -19,10 +19,12 @@ import { usePolledResource } from '@/lib/use-polled-resource'
 import {
   getVideoBackfillRunAction,
   requestVideoBackfillRunAction,
-  type VideoBackfillRun,
-  type VideoBackfillRunAccount,
-  type VideoBackfillRunState,
 } from '../_actions/video-backfill-run'
+import type {
+  VideoBackfillRun,
+  VideoBackfillRunAccount,
+  VideoBackfillRunState,
+} from '../_lib/get-video-backfill-run'
 
 type Status = VideoBackfillRunAccount['status']
 

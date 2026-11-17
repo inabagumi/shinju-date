@@ -5,7 +5,6 @@ import { Video } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { connection } from 'next/server'
 import { Suspense } from 'react'
 import { BackLink } from '@/components/back-link'
 import {
@@ -18,10 +17,10 @@ import {
 import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
 import { WidgetErrorBoundary } from '@/components/widget-error-boundary'
-import { getVideoBackfillStatusAction } from '../_actions/backfill'
 import { TalentStatusBadge } from '../_components/talent-status-badge'
 import { getRecentVideosForTalent } from '../_lib/get-recent-videos'
 import { getTalent } from '../_lib/get-talent'
+import { getVideoBackfillStatus } from '../_lib/get-video-backfill-status'
 import { ChannelManager } from './_components/channel-manager'
 import { EditTalentForm } from './_components/edit-talent-form'
 import { SyncTalentButton } from './_components/sync-talent-button'
@@ -55,23 +54,17 @@ interface VideoBackfillProps {
   talentName: string
 }
 
-/**
- * 過去動画の取り込みの最初の状況をサーバーで取得して、パネルに渡す。状況は刻々と変わる
- * ので、キャッシュせずにリクエストのたびに取得する（`connection()`）。取得できなかったら
- * 例外を投げ、外側の `WidgetErrorBoundary` に任せる
- */
+/** 過去動画の取り込みの最初の状況をサーバーで取得して、パネルに渡す */
 async function VideoBackfill({ talentId, talentName }: VideoBackfillProps) {
-  await connection()
+  const initialData = await getVideoBackfillStatus(talentId)
 
-  const result = await getVideoBackfillStatusAction(talentId)
-
-  if (!result.success) {
-    throw new Error(result.error)
+  if (!initialData) {
+    return null
   }
 
   return (
     <VideoBackfillPanel
-      initialData={result}
+      initialData={initialData}
       talentId={talentId}
       talentName={talentName}
     />

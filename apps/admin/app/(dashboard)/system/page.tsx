@@ -1,6 +1,5 @@
 import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
-import { connection } from 'next/server'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/widget-error-boundary'
 import {
@@ -11,8 +10,6 @@ import {
   RecentActivity,
   RecentActivitySkeleton,
 } from '../_components/recent-activity'
-import { getVideoBackfillHistoryAction } from './_actions/video-backfill-history'
-import { getVideoBackfillRunAction } from './_actions/video-backfill-run'
 import {
   VideoBackfillHistoryPanel,
   VideoBackfillHistoryPanelSkeleton,
@@ -21,39 +18,25 @@ import {
   VideoBackfillRunPanel,
   VideoBackfillRunPanelSkeleton,
 } from './_components/video-backfill-run-panel'
+import { getVideoBackfillHistory } from './_lib/get-video-backfill-history'
+import { getVideoBackfillRun } from './_lib/get-video-backfill-run'
 
 export const metadata: Metadata = {
   title: 'システム',
 }
 
-/**
- * 取得漏れチェックの最初の進捗をサーバーで取得して、パネルに渡す。進捗は刻々と変わる
- * ので、キャッシュせずにリクエストのたびに取得する（`connection()`）。取得できなかったら
- * 例外を投げ、外側の `WidgetErrorBoundary` に任せる
- */
+/** 取得漏れチェックの最初の進捗をサーバーで取得して、パネルに渡す */
 async function VideoBackfillRun() {
-  await connection()
+  const initialData = await getVideoBackfillRun()
 
-  const result = await getVideoBackfillRunAction()
-
-  if (!result.success) {
-    throw new Error(result.error)
-  }
-
-  return <VideoBackfillRunPanel initialData={result} />
+  return <VideoBackfillRunPanel initialData={initialData} />
 }
 
 /** 過去動画の取り込みの最初の履歴をサーバーで取得して、パネルに渡す */
 async function VideoBackfillHistory() {
-  await connection()
+  const initialData = await getVideoBackfillHistory()
 
-  const result = await getVideoBackfillHistoryAction()
-
-  if (!result.success) {
-    throw new Error(result.error)
-  }
-
-  return <VideoBackfillHistoryPanel initialData={result} />
+  return <VideoBackfillHistoryPanel initialData={initialData} />
 }
 
 export default function SystemPage() {
