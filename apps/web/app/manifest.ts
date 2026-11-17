@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { SITE_NAME, SITE_THEME_COLOR } from '@/lib/site'
 
-export default function robots(): MetadataRoute.Manifest {
+export default function manifest(): MetadataRoute.Manifest {
   return {
     background_color: '#ffffff', // var(--color-background) のライトの値
     display: 'standalone',
