@@ -10,7 +10,7 @@ import { groupVideosByDate } from '@/lib/group-videos-by-date'
 import { queryKeys } from '@/lib/query-keys'
 import { SEARCH_RESULT_COUNT } from '@/lib/site'
 import type { VideoKindFilter } from '@/lib/video-kind-filter'
-import { useNow } from './timer'
+import { useToday } from './use-today'
 import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
 /** PC 4列、タブレット 2列、モバイルは横型のカードで1列 */
@@ -91,6 +91,11 @@ interface SearchResultsProps {
   kind?: VideoKindFilter
   prefetchedData?: Video[][]
   query?: string
+  /**
+   * サーバーで描画したときの日付（`YYYY-MM-DD`）。ハイドレーションまでの
+   * 「今日」の基準で、その後はブラウザの現在時刻を使う
+   */
+  referenceDate: string
   /** 絞り込むタレントの ID。空のときはすべてのタレントが対象になる */
   talentIds?: string[]
 }
@@ -101,6 +106,7 @@ export default function SearchResults({
   kind = 'all',
   prefetchedData,
   query = '',
+  referenceDate,
   talentIds = NO_TALENT_IDS,
 }: SearchResultsProps) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
@@ -148,7 +154,7 @@ export default function SearchResults({
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage])
 
-  const today = useNow().toPlainDate()
+  const today = useToday(referenceDate)
   const items = useMemo(() => data?.pages.flat() ?? [], [data])
   // 新しい順に並んでいるので、並べ替えずに日付ごとにまとめる
   const groups = useMemo(

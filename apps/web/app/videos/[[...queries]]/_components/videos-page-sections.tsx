@@ -13,6 +13,7 @@ import {
   type Talent,
 } from '@/lib/fetchers'
 import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
+import { getReferenceDate } from '@/lib/reference-date'
 import { parseTalentIds, TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
 import { parseQueries } from '@/lib/url'
 import {
@@ -180,7 +181,10 @@ async function getNoResultsProps({
 export async function VideosPageResults(props: VideosPageSectionProps) {
   const options = await getVideosPageOptions(props)
   const { kind, query, talentIds } = options
-  const videos = await fetchVideos({ kind, query, talentIds })
+  const [videos, referenceDate] = await Promise.all([
+    fetchVideos({ kind, query, talentIds }),
+    getReferenceDate(),
+  ])
   const noResultsProps =
     videos.length > 0 ? undefined : await getNoResultsProps(options)
   // タレントで絞り込んでいるときは、人気のキーワードと結果が0件のキーワードの
@@ -202,6 +206,7 @@ export async function VideosPageResults(props: VideosPageSectionProps) {
           kind={kind}
           prefetchedData={[videos]}
           query={query}
+          referenceDate={referenceDate}
           talentIds={talentIds}
         />
       )}
