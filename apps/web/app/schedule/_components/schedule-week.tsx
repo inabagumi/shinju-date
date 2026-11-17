@@ -1,7 +1,10 @@
 import { twMerge } from '@shinju-date/ui'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import Link from 'next/link'
 import type { CSSProperties } from 'react'
+import {
+  NavigationLink,
+  NavigationLinkIcon,
+} from '@/components/navigation-link'
 import { WEEKDAYS } from '@/lib/date-heading'
 import { fetchScheduleVideos, type ScheduleVideo } from '@/lib/fetchers'
 import { groupVideosByDate } from '@/lib/group-videos-by-date'
@@ -33,9 +36,6 @@ function getDayId(date: Temporal.PlainDate): string {
   return `day-${date.toString()}`
 }
 
-const LINK_CLASS_NAME =
-  'inline-flex items-center gap-0.5 rounded-control font-semibold text-accent hover:underline focus-ring'
-
 /** 週の範囲と、前の週・今週・次の週へのリンク */
 const WEEK_NAVIGATION_CLASS_NAME =
   'mb-6 flex min-h-[1lh] flex-wrap items-center justify-between gap-x-6 gap-y-3 text-heading'
@@ -60,29 +60,25 @@ export async function ScheduleWeekNavigation({
           {/* 表示できない週へのリンクは出さない */}
           {isWeekInRange(previousWeek, range) && (
             <li>
-              <Link
-                className={LINK_CLASS_NAME}
-                href={getSchedulePath(previousWeek)}
-              >
-                <ChevronLeft aria-hidden="true" className="size-4" />
+              <NavigationLink href={getSchedulePath(previousWeek)}>
+                <NavigationLinkIcon>
+                  <ChevronLeft />
+                </NavigationLinkIcon>
                 前の週
-              </Link>
+              </NavigationLink>
             </li>
           )}
           <li>
-            <Link className={LINK_CLASS_NAME} href={getSchedulePath()}>
-              今週
-            </Link>
+            <NavigationLink href={getSchedulePath()}>今週</NavigationLink>
           </li>
           {isWeekInRange(nextWeek, range) && (
             <li>
-              <Link
-                className={LINK_CLASS_NAME}
-                href={getSchedulePath(nextWeek)}
-              >
+              <NavigationLink href={getSchedulePath(nextWeek)}>
                 次の週
-                <ChevronRight aria-hidden="true" className="size-4" />
-              </Link>
+                <NavigationLinkIcon>
+                  <ChevronRight />
+                </NavigationLinkIcon>
+              </NavigationLink>
             </li>
           )}
         </ul>

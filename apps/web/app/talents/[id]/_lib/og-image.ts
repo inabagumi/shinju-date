@@ -3,8 +3,7 @@ import { logger } from '@shinju-date/logger'
 import sharp from 'sharp'
 import type { ProfileImage } from '@/lib/fetchers'
 import { getSupabaseAdminClient, supabaseClient } from '@/lib/supabase'
-
-const THEME_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/
+import { parseThemeColor } from '@/lib/theme-color'
 
 /**
  * The color of the band of a talent's Open Graph image: the theme color of
@@ -14,9 +13,7 @@ const THEME_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/
 export function getTalentThemeColor(
   themeColor: string | null | undefined,
 ): string {
-  return themeColor && THEME_COLOR_PATTERN.test(themeColor)
-    ? themeColor
-    : SITE_THEME_COLOR
+  return parseThemeColor(themeColor) ?? SITE_THEME_COLOR
 }
 
 /**

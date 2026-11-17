@@ -3,16 +3,11 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 const fetchers = vi.hoisted(() => ({
   fetchTalentList: vi.fn(),
-  fetchTalentStreamStatuses: vi.fn(),
+  fetchTalentStreamStatusesSafe: vi.fn(),
 }))
 
 vi.mock('@/lib/fetchers', () => fetchers)
 
-vi.mock('@shinju-date/logger', () => ({
-  logger: { error: vi.fn() },
-}))
-
-import { logger } from '@shinju-date/logger'
 import { TalentListGrid } from '../talent-list-sections'
 
 const TALENT_ID = '00000000-0000-4000-8000-000000000001'
@@ -32,7 +27,7 @@ describe('TalentListGrid', () => {
   })
 
   test('should show the talents with their stream statuses', async () => {
-    fetchers.fetchTalentStreamStatuses.mockResolvedValue({
+    fetchers.fetchTalentStreamStatusesSafe.mockResolvedValue({
       [TALENT_ID]: { isLive: true, nextStreamAt: null },
     })
 
@@ -43,8 +38,8 @@ describe('TalentListGrid', () => {
     ).toHaveAccessibleDescription('配信中')
   })
 
-  test('should still show the talents when the stream statuses fail', async () => {
-    fetchers.fetchTalentStreamStatuses.mockRejectedValue(new Error('failed'))
+  test('should still show the talents without the stream statuses', async () => {
+    fetchers.fetchTalentStreamStatusesSafe.mockResolvedValue({})
 
     render(await TalentListGrid())
 
@@ -53,6 +48,5 @@ describe('TalentListGrid', () => {
     expect(link).not.toHaveAttribute('aria-describedby')
     expect(screen.getByTestId('talent-default-icon')).toBeInTheDocument()
     expect(screen.queryByText('配信中')).not.toBeInTheDocument()
-    expect(logger.error).toHaveBeenCalled()
   })
 })

@@ -1,5 +1,6 @@
 import { twMerge } from '@shinju-date/ui'
 import Link from 'next/link'
+import LiveBadge from '@/components/live-badge'
 import TalentIcon from '@/components/talent-icon'
 import {
   LIVE_RING_CLASS_NAME,
@@ -46,12 +47,10 @@ export default function TalentCard({ streamStatus, talent }: TalentCardProps) {
           talent={talent}
         />
         {isLive && (
-          <span
-            className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-control bg-live px-1.5 py-0.5 text-caption font-semibold whitespace-nowrap text-live-foreground"
+          <LiveBadge
+            className="absolute -bottom-1 left-1/2 -translate-x-1/2"
             id={statusId}
-          >
-            配信中
-          </span>
+          />
         )}
       </span>
       <span className="flex w-full flex-col items-center gap-0.5">
