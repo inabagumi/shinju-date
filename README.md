@@ -49,13 +49,13 @@
 
 ```bash
 # 依存関係のインストール、Supabase と Redis の起動、.env.local の作成
-pnpm run setup
+./scripts/setup-dev.sh
 
 # 開発サーバーの起動
 pnpm dev
 ```
 
-[GitHub Codespaces](https://github.com/features/codespaces) と [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers) では、`pnpm run setup` と同じ初期設定が自動で実行されます。
+[GitHub Codespaces](https://github.com/features/codespaces) と [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers) では、`./scripts/setup-dev.sh` と同じ初期設定が自動で実行されます。
 
 ## コマンド
 

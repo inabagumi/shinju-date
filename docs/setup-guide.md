@@ -50,12 +50,10 @@ pnpm（v11 以降）は `package.json` の `devEngines.packageManager` に指定
 Docker を起動してから、リポジトリのルートで次のコマンドを実行します。
 
 ```bash
-pnpm run setup
+./scripts/setup-dev.sh
 ```
 
-`pnpm setup` ではなく、`pnpm run setup` と入力してください（`pnpm setup` は、pnpm 自身の設定をする別のコマンドです）。
-
-このコマンドは `scripts/setup-dev.sh` を実行し、次のことを順に行います。初回は Docker イメージを取得するため、数分かかる場合があります。
+このスクリプトは、次のことを順に行います。初回は Docker イメージを取得するため、数分かかる場合があります。
 
 | 順  | 行うこと                                                  | 実行するコマンド              | 説明                                                    |
 | --- | --------------------------------------------------------- | ----------------------------- | ------------------------------------------------------- |
@@ -68,8 +66,10 @@ pnpm run setup
 何度実行しても、同じ結果になります。Supabase と Redis が起動済みなら何もせず、すでにある `.env.local` は上書きしません。`.env.local` をサンプルから作り直すときは、`--force` を付けます。
 
 ```bash
-pnpm run setup --force
+./scripts/setup-dev.sh --force
 ```
+
+Supabase や Redis の起動、型定義の生成に失敗しても、スクリプトは警告を出して先に進み、最後に失敗したことをまとめて表示します（開発に Supabase や Redis が要らない場合もあり、Dev Container では、立ち上げたコンテナの中で原因を直すためです）。原因を直してから、もう一度実行してください。Supabase が起動していない間は、`.env.local` を作りません。
 
 Dev Container（`.devcontainer/post-create.sh`）と、GitHub Copilot のエージェントの環境（`.github/workflows/copilot-setup-steps.yml`）も、同じスクリプトを実行します。
 
@@ -87,7 +87,7 @@ pnpm run dev --filter=@shinju-date/web
 
 `pnpm run dev` は `turbo watch dev` で、`dev` の前に依存するパッケージをビルドし（`dependsOn: ["^build"]`）、パッケージのソースが変わると、そのパッケージを再ビルドします。
 
-これで開発環境のセットアップは完了です。以降の章は、`pnpm run setup` が用意した環境の説明です。
+これで開発環境のセットアップは完了です。以降の章は、`./scripts/setup-dev.sh` が用意した環境の説明です。
 
 ## 3. ローカルSupabase環境
 
@@ -95,7 +95,7 @@ pnpm run dev --filter=@shinju-date/web
 
 ### 3.1. Supabaseサービスの起動
 
-`pnpm run setup` が、Supabase CLIでローカルのSupabaseサービスを起動します。停止したあとに、Supabase だけを起動する場合は、次のコマンドを実行します。
+`./scripts/setup-dev.sh` が、Supabase CLIでローカルのSupabaseサービスを起動します。停止したあとに、Supabase だけを起動する場合は、次のコマンドを実行します。
 
 ```bash
 pnpm exec supabase start
@@ -220,7 +220,7 @@ Upstash Redisの機能を完全にテストするため、ローカルのRedis�
 
 ### 4.1. Redisサービスの起動
 
-`pnpm run setup` が、Docker ComposeでRedisサービスを起動します（Supabaseとは独立して起動します）。Redis だけを起動する場合は、次のコマンドを実行します。
+`./scripts/setup-dev.sh` が、Docker ComposeでRedisサービスを起動します（Supabaseとは独立して起動します）。Redis だけを起動する場合は、次のコマンドを実行します。
 
 ```bash
 docker compose up -d --wait
@@ -260,7 +260,7 @@ Docker Composeが動作しない場合は、MSW（Mock Service Worker）を使�
 
 ### 5.1. `.env.local` ファイル
 
-`pnpm run setup` は、3つのアプリ（`apps/web`、`apps/admin`、`apps/batch`）のそれぞれで、`.env.local.sample` を元に `.env.local` を作り、次の変数に、ローカルの Supabase と Redis の値を入れます。
+`./scripts/setup-dev.sh` は、3つのアプリ（`apps/web`、`apps/admin`、`apps/batch`）のそれぞれで、`.env.local.sample` を元に `.env.local` を作り、次の変数に、ローカルの Supabase と Redis の値を入れます。
 
 | 変数                            | 入れる値                                                 |
 | ------------------------------- | -------------------------------------------------------- |
@@ -270,8 +270,9 @@ Docker Composeが動作しない場合は、MSW（Mock Service Worker）を使�
 | `UPSTASH_REDIS_REST_TOKEN`      | `config/dev-secrets.env` の `SRH_TOKEN`                  |
 
 - サンプルにない変数は足しません（`apps/batch` のサンプルには、`NEXT_PUBLIC_SUPABASE_ANON_KEY` がありません）。
-- ほかの変数は、サンプルの値のままです（Redis の URL は `http://localhost:8079`）。YouTube や Twitch の API キーなど、サンプルで空の変数は、使うときに `.env.local` を編集して設定してください。
-- すでに `.env.local` があるアプリでは、何もしません。サンプルから作り直すときは、`pnpm run setup --force` を実行します（編集した内容は消えます）。
+- `apps/admin` と `apps/batch` では、`ENABLE_MSW=true` も有効にします。この2つのアプリは、YouTube と Twitch の API キー（`GOOGLE_API_KEY`、`TWITCH_CLIENT_ID`、`TWITCH_CLIENT_SECRET`）がないと、`ENABLE_MSW=true` でない限り起動しないためです。MSW が Supabase と Redis を模擬するのは、偽の URL（`https://fake.supabase.test`、`https://fake.upstash.test`）に送った通信だけなので、ローカルの Supabase と Redis にはそのままつながり、YouTube と Twitch の API だけがモックになります。本物の API キーを使うときは、キーを設定し、`ENABLE_MSW=true` の行を消してください。
+- ほかの変数は、サンプルの値のままです（Redis の URL は `http://localhost:8079`）。サンプルで空の変数は、使うときに `.env.local` を編集して設定してください。
+- すでに `.env.local` があるアプリでは、何もしません。サンプルから作り直すときは、`./scripts/setup-dev.sh --force` を実行します（編集した内容は消えます）。
 - サンプルの Redis のトークンが `config/dev-secrets.env` の `SRH_TOKEN` と一致しているかは、CIの `pnpm run check:dev-secrets` が確かめます。
 - MSWモックを使用したい場合は、サンプルのコメントを参照して設定を変更してください。
 - Dev Container では、`.devcontainer/compose.override.yml` が設定するコンテナの環境変数（Redis の URL など）が、`.env.local` の値より優先されます。
