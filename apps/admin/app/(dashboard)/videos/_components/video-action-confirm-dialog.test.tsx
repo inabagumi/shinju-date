@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { VideoActionConfirmDialog } from './video-action-confirm-dialog'
 
@@ -42,7 +42,7 @@ describe('VideoActionConfirmDialog', () => {
     )
 
     expect(
-      screen.getByText('続行するには「DELETE」と入力してください:'),
+      screen.getByText('続行するには「DELETE」と入力してください'),
     ).toBeInTheDocument()
 
     // Button should be disabled initially
@@ -66,7 +66,7 @@ describe('VideoActionConfirmDialog', () => {
 
     // Should show keyword input for single video
     expect(
-      screen.getByText('続行するには「DELETE」と入力してください:'),
+      screen.getByText('続行するには「DELETE」と入力してください'),
     ).toBeInTheDocument()
 
     rerender(
@@ -81,7 +81,7 @@ describe('VideoActionConfirmDialog', () => {
 
     // Should show keyword input for multiple videos
     expect(
-      screen.getByText('続行するには「DELETE」と入力してください:'),
+      screen.getByText('続行するには「DELETE」と入力してください'),
     ).toBeInTheDocument()
   })
 
@@ -189,11 +189,10 @@ describe('VideoActionConfirmDialog', () => {
     ).toBeInTheDocument()
   })
 
-  it('displays icons from lucide-react', () => {
-    const onConfirm = vi.fn()
+  it('runs delete only after DELETE is entered', async () => {
+    const onConfirm = vi.fn().mockResolvedValue(undefined)
     const onOpenChange = vi.fn()
 
-    // Just verify that icons are rendered without checking specific emoji
     render(
       <VideoActionConfirmDialog
         action="delete"
@@ -204,6 +203,42 @@ describe('VideoActionConfirmDialog', () => {
       />,
     )
 
-    expect(screen.getByText('動画を削除')).toBeInTheDocument()
+    const confirmButton = screen.getByRole('button', { name: '削除する' })
+    const keywordInput = screen.getByLabelText(
+      '続行するには「DELETE」と入力してください',
+    )
+
+    fireEvent.change(keywordInput, { target: { value: 'delete' } })
+    expect(confirmButton).toBeDisabled()
+
+    fireEvent.change(keywordInput, { target: { value: 'DELETE' } })
+    expect(confirmButton).toBeEnabled()
+
+    fireEvent.click(confirmButton)
+
+    expect(onConfirm).toHaveBeenCalledTimes(1)
+    await waitFor(() => {
+      expect(onOpenChange).toHaveBeenCalledWith(false)
+    })
+  })
+
+  it('does not require a keyword to restore or toggle', () => {
+    const onConfirm = vi.fn().mockResolvedValue(undefined)
+    const onOpenChange = vi.fn()
+
+    render(
+      <VideoActionConfirmDialog
+        action="restore"
+        onConfirm={onConfirm}
+        onOpenChange={onOpenChange}
+        open={true}
+        videos={[firstMockVideo]}
+      />,
+    )
+
+    expect(
+      screen.queryByLabelText('続行するには「DELETE」と入力してください'),
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '復元する' })).toBeEnabled()
   })
 })
