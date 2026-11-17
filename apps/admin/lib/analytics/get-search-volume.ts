@@ -6,6 +6,7 @@ import { formatDateKey } from '@shinju-date/temporal-fns'
 import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 import { listDatesInRange } from './list-dates-in-range'
+import { type PeriodQuery, toDateRange } from './period'
 
 export interface DailySearchVolume {
   count: number
@@ -14,23 +15,19 @@ export interface DailySearchVolume {
 
 /**
  * Get daily search volume for a date range
- * @param startDate - Start date in ISO 8601 format (YYYY-MM-DD)
- * @param endDate - End date in ISO 8601 format (YYYY-MM-DD)
+ * @param query.range - The date range (both ends inclusive)
  */
-export async function getSearchVolume(
-  startDate: string,
-  endDate: string,
-): Promise<DailySearchVolume[]> {
+export async function getSearchVolume({
+  range,
+}: PeriodQuery): Promise<DailySearchVolume[]> {
   'use cache: private'
 
   cacheLife('minutes')
 
   try {
     const redisClient = getRedisClient()
-    const dates = listDatesInRange(
-      Temporal.PlainDate.from(startDate),
-      Temporal.PlainDate.from(endDate),
-    )
+    const { end, start } = toDateRange(range)
+    const dates = listDatesInRange(start, end)
 
     if (dates.length === 0) {
       return []
@@ -55,9 +52,9 @@ export async function getSearchVolume(
     return volumes
   } catch (error) {
     logger.error('Redisから検索ボリュームの取得に失敗しました', {
-      endDate,
+      endDate: range.end,
       error,
-      startDate,
+      startDate: range.start,
     })
     return []
   }

@@ -1,10 +1,7 @@
 import { createErrorResponse } from '@shinju-date/helpers'
 import { stringify } from 'csv-stringify/sync'
 import { connection, type NextRequest, NextResponse } from 'next/server'
-import {
-  getPopularTalents,
-  type PopularTalent,
-} from '@/lib/analytics/get-popular-talents'
+import { getPopularTalents } from '@/lib/analytics/get-popular-talents'
 import { exportSearchParamsSchema } from '../_lib/schema'
 
 /**
@@ -20,25 +17,11 @@ export async function GET(request: NextRequest) {
     )
     const validatedParams = exportSearchParamsSchema.parse(searchParams)
 
-    // Fetch data based on parameters
-    let talents: PopularTalent[]
-    if (validatedParams.selectedDate) {
-      talents = await getPopularTalents(
-        validatedParams.limit,
-        validatedParams.selectedDate,
-      )
-    } else if (validatedParams.endDate) {
-      talents = await getPopularTalents(
-        validatedParams.limit,
-        validatedParams.startDate,
-        validatedParams.endDate,
-      )
-    } else {
-      talents = await getPopularTalents(
-        validatedParams.limit,
-        validatedParams.startDate,
-      )
-    }
+    // Fetch data for the period of the parameters
+    const talents = await getPopularTalents({
+      limit: validatedParams.limit,
+      range: validatedParams.range,
+    })
 
     // Check if data is available
     if (talents.length === 0) {

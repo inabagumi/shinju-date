@@ -10,8 +10,8 @@ interface Props {
 /** 最もクリックされている動画のランキング */
 export async function PopularVideosWidget({ searchParams }: Props) {
   const { dateRange, selectedDate } = await searchParams
-  const { start, end } = resolvePeriod({ dateRange, selectedDate })
-  const videos = await getPopularVideos(20, start, end)
+  const range = resolvePeriod({ dateRange, selectedDate })
+  const videos = await getPopularVideos({ limit: 20, range })
 
   return (
     <RankingWidget

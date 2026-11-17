@@ -4,12 +4,6 @@ import { connection, type NextRequest, NextResponse } from 'next/server'
 import { getSearchExitRates } from '@/lib/analytics/get-search-quality-metrics'
 import { exportSearchParamsSchema } from '../_lib/schema'
 
-interface SearchExitRate {
-  keyword: string
-  exitRate: number
-  searchCount: number
-}
-
 /**
  * Export search exit rates data as CSV
  */
@@ -24,27 +18,11 @@ export async function GET(request: NextRequest) {
     )
     const validatedParams = exportSearchParamsSchema.parse(searchParams)
 
-    // Fetch data based on parameters
-    let exitRates: SearchExitRate[]
-    if (validatedParams.selectedDate) {
-      exitRates = await getSearchExitRates(
-        validatedParams.selectedDate,
-        undefined,
-        validatedParams.limit,
-      )
-    } else if (validatedParams.endDate) {
-      exitRates = await getSearchExitRates(
-        validatedParams.startDate,
-        validatedParams.endDate,
-        validatedParams.limit,
-      )
-    } else {
-      exitRates = await getSearchExitRates(
-        validatedParams.startDate,
-        undefined,
-        validatedParams.limit,
-      )
-    }
+    // Fetch data for the period of the parameters
+    const exitRates = await getSearchExitRates({
+      limit: validatedParams.limit,
+      range: validatedParams.range,
+    })
 
     // Check if data is available
     if (exitRates.length === 0) {

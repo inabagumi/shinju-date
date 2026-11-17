@@ -102,10 +102,9 @@ describe('VolumeChart', () => {
       await VolumeChart({ kind: 'click', searchParams: createSearchParams() }),
     )
 
-    expect(mocks.getClickVolume).toHaveBeenCalledWith(
-      DATE_RANGE.startDate,
-      DATE_RANGE.endDate,
-    )
+    expect(mocks.getClickVolume).toHaveBeenCalledWith({
+      range: { end: DATE_RANGE.endDate, start: DATE_RANGE.startDate },
+    })
     expect(mocks.getSearchVolume).not.toHaveBeenCalled()
     expect(screen.getByText('総クリック数')).toBeInTheDocument()
     expect(screen.getByText('1,201')).toBeInTheDocument()
@@ -132,10 +131,9 @@ describe('VolumeChart', () => {
       await VolumeChart({ kind: 'search', searchParams: createSearchParams() }),
     )
 
-    expect(mocks.getSearchVolume).toHaveBeenCalledWith(
-      DATE_RANGE.startDate,
-      DATE_RANGE.endDate,
-    )
+    expect(mocks.getSearchVolume).toHaveBeenCalledWith({
+      range: { end: DATE_RANGE.endDate, start: DATE_RANGE.startDate },
+    })
     expect(mocks.getClickVolume).not.toHaveBeenCalled()
     expect(screen.getByText('総検索数')).toBeInTheDocument()
     expect(screen.getByText('4,530')).toBeInTheDocument()

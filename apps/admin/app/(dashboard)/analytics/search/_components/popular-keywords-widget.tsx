@@ -11,8 +11,8 @@ interface Props {
 /** 最も検索されたキーワードのランキング */
 export async function PopularKeywordsWidget({ searchParams }: Props) {
   const { dateRange, selectedDate } = await searchParams
-  const { start, end } = resolvePeriod({ dateRange, selectedDate })
-  const keywords = await getPopularKeywords(20, start, end)
+  const range = resolvePeriod({ dateRange, selectedDate })
+  const keywords = await getPopularKeywords({ limit: 20, range })
 
   return (
     <RankingWidget

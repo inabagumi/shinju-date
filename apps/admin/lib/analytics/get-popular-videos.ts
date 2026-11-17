@@ -9,6 +9,7 @@ import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
 } from '@/lib/supabase'
+import { DEFAULT_RANKING_LIMIT, type RankingQuery, toDateRange } from './period'
 import { getPopularItems } from './popular-items'
 
 const POPULAR_VIDEO_SELECT = `
@@ -41,21 +42,18 @@ export interface PopularVideo extends PopularVideoRow {
   clicks: number
 }
 
-export async function getPopularVideos(
-  limit: number,
-  startDate: string,
-  endDate?: string,
-): Promise<PopularVideo[]> {
+export async function getPopularVideos({
+  limit = DEFAULT_RANKING_LIMIT,
+  range,
+}: RankingQuery): Promise<PopularVideo[]> {
   'use cache: private'
 
   cacheLife('minutes')
 
-  const videoScores = await getPopularItems(
-    REDIS_KEYS.CLICK_VIDEO_PREFIX,
+  const videoScores = await getPopularItems(REDIS_KEYS.CLICK_VIDEO_PREFIX, {
     limit,
-    Temporal.PlainDate.from(startDate),
-    endDate ? Temporal.PlainDate.from(endDate) : undefined,
-  )
+    range: toDateRange(range),
+  })
 
   if (videoScores.length === 0) {
     return []

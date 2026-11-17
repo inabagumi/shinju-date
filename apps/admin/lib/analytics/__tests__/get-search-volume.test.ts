@@ -40,7 +40,9 @@ describe('getSearchVolume', async () => {
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(3)
 
-    const result = await getSearchVolume('2024-01-30', '2024-02-01')
+    const result = await getSearchVolume({
+      range: { end: '2024-02-01', start: '2024-01-30' },
+    })
 
     expect(result).toEqual([
       { count: 12, date: '2024-01-30' },
@@ -56,7 +58,9 @@ describe('getSearchVolume', async () => {
   })
 
   it('should return an empty array without calling Redis for an empty range', async () => {
-    const result = await getSearchVolume('2024-02-01', '2024-01-31')
+    const result = await getSearchVolume({
+      range: { end: '2024-01-31', start: '2024-02-01' },
+    })
 
     expect(result).toEqual([])
     expect(redisClient.pipeline).not.toHaveBeenCalled()
@@ -65,7 +69,9 @@ describe('getSearchVolume', async () => {
   it('should return an empty array when Redis fails', async () => {
     vi.mocked(redisClient.get).mockRejectedValue(new Error('Redis error'))
 
-    const result = await getSearchVolume('2024-01-30', '2024-02-01')
+    const result = await getSearchVolume({
+      range: { end: '2024-02-01', start: '2024-01-30' },
+    })
 
     expect(result).toEqual([])
   })
