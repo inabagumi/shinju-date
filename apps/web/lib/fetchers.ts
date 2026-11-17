@@ -91,9 +91,10 @@ export type Video = Pick<
   } | null
 }
 
-function hasPlatformSource(
-  video: Pick<Video, 'twitch_video' | 'youtube_video'>,
-): boolean {
+function hasPlatformSource(video: {
+  twitch_video: object | null
+  youtube_video: object | null
+}): boolean {
   return video.youtube_video != null || video.twitch_video != null
 }
 
@@ -359,6 +360,96 @@ export const countVideos = async ({
   }
 
   return count
+}
+
+const CALENDAR_SELECT = `
+  duration,
+  id,
+  platform,
+  published_at,
+  status,
+  talent:talents!inner (name),
+  title,
+  youtube_video:youtube_videos (youtube_video_id),
+  twitch_video:twitch_videos (
+    twitch_video_id,
+    type,
+    twitch_user:twitch_users (twitch_login_name)
+  )
+`
+
+/** A video of the calendars (`/videos.ics` and `/talents/[id].ics`) */
+export type CalendarVideo = Pick<
+  Video,
+  'duration' | 'id' | 'platform' | 'published_at' | 'status' | 'title'
+> & {
+  talent: Pick<Talent, 'name'>
+  youtube_video: Pick<
+    NonNullable<Video['youtube_video']>,
+    'youtube_video_id'
+  > | null
+  twitch_video: {
+    twitch_video_id: string
+    type: Tables<'twitch_videos'>['type']
+    twitch_user: Pick<TwitchUser, 'twitch_login_name'> | null
+  } | null
+}
+
+interface FetchCalendarVideosOptions {
+  /** 動画の種別。`all` では絞り込まない */
+  kind?: VideoKindFilter
+  /**
+   * タレントの ID。空のときは絞り込まない。同じ条件でキャッシュが分かれない
+   * よう、並べ替えて重複を除いてから渡す
+   */
+  talentIds?: readonly string[]
+}
+
+/**
+ * Fetch up to 100 videos published until a week later, from the latest, for
+ * the calendars.
+ *
+ * The calendar also has the past videos, so there is no lower bound. They are
+ * sorted from the latest, so the oldest ones are dropped at the limit.
+ */
+export const fetchCalendarVideos = async ({
+  kind = 'all',
+  talentIds = [],
+}: FetchCalendarVideosOptions = {}): Promise<CalendarVideo[]> => {
+  'use cache: remote'
+
+  cacheLife('hours')
+  cacheTag(CACHE_TAGS.VIDEOS)
+
+  const until = startOfHour(Temporal.Now.zonedDateTimeISO(TIME_ZONE)).add({
+    days: 7,
+  })
+  let query = supabaseClient
+    .from('videos')
+    .select<string, CalendarVideo>(CALENDAR_SELECT)
+    .lt('published_at', toDBString(until))
+
+  if (talentIds.length > 0) {
+    query = query.in('talent_id', [...talentIds])
+  }
+
+  if (kind !== 'all') {
+    query = query.eq('video_kind', kind)
+  }
+
+  const { data: videos, error } = await query
+    .order('published_at', {
+      ascending: false,
+    })
+    .limit(100)
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  return videos.filter(hasPlatformSource)
 }
 
 /**

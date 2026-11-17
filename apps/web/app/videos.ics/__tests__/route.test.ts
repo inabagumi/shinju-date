@@ -13,14 +13,47 @@ const mocks = vi.hoisted(() => {
   }
 
   return {
+    // Entries of the `'use cache'` functions, keyed by their arguments
+    cacheEntries: new Map<string, unknown>(),
     client: { from: vi.fn(() => query) },
+    logger: { error: vi.fn() },
     query,
   }
 })
 
+vi.mock('next/cache', () => ({
+  cacheLife: vi.fn(),
+  cacheTag: vi.fn(),
+}))
+
+vi.mock('@shinju-date/logger', () => ({
+  logger: mocks.logger,
+}))
+
 vi.mock('@/lib/supabase', () => ({
   supabaseClient: mocks.client,
 }))
+
+// Vitest does not run `'use cache'`, so serve the second call with the same
+// arguments from the entry of the first, as Next.js does
+vi.mock('@/lib/fetchers', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/fetchers')>()
+
+  return {
+    ...actual,
+    fetchCalendarVideos: (
+      ...args: Parameters<typeof actual.fetchCalendarVideos>
+    ) => {
+      const key = JSON.stringify(args)
+
+      if (!mocks.cacheEntries.has(key)) {
+        mocks.cacheEntries.set(key, actual.fetchCalendarVideos(...args))
+      }
+
+      return mocks.cacheEntries.get(key)
+    },
+  }
+})
 
 import { GET } from '../route'
 
@@ -46,6 +79,7 @@ function get(search = ''): Promise<Response> {
 describe('GET /videos.ics', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.cacheEntries.clear()
     vi.spyOn(Temporal.Now, 'zonedDateTimeISO').mockImplementation((timeZone) =>
       Temporal.Instant.from('2026-11-15T03:20:00Z').toZonedDateTimeISO(
         timeZone ?? 'UTC',
@@ -65,6 +99,9 @@ describe('GET /videos.ics', () => {
     expect(response.status).toBe(200)
     expect(response.headers.get('Content-Type')).toBe(
       'text/calendar; charset=UTF-8',
+    )
+    expect(response.headers.get('Cache-Control')).toBe(
+      'public, max-age=300, s-maxage=900, stale-while-revalidate=3600',
     )
 
     const body = await response.text()
@@ -100,6 +137,40 @@ describe('GET /videos.ics', () => {
       TALENT_A,
       TALENT_B,
     ])
+  })
+
+  it('does not query Supabase again for the same conditions', async () => {
+    await get(`?kind=short&talent=${TALENT_B}&talent=${TALENT_A}`)
+    const response = await get(
+      `?talent=${TALENT_A.toUpperCase()}&talent=${TALENT_B}&kind=short&talent=${TALENT_A}`,
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.text()).toContain('UID:video-1@shinju.date')
+    expect(mocks.client.from).toHaveBeenCalledOnce()
+    expect(mocks.query.limit).toHaveBeenCalledOnce()
+  })
+
+  it('queries Supabase again for other conditions', async () => {
+    await get(`?talent=${TALENT_A}`)
+    await get(`?talent=${TALENT_B}`)
+
+    expect(mocks.client.from).toHaveBeenCalledTimes(2)
+  })
+
+  it('leaves out the videos without a platform source', async () => {
+    mocks.query.limit.mockResolvedValue({
+      data: [
+        VIDEO,
+        { ...VIDEO, id: 'video-2', twitch_video: null, youtube_video: null },
+      ],
+      error: null,
+    })
+
+    const body = await (await get()).text()
+
+    expect(body).toContain('UID:video-1@shinju.date')
+    expect(body).not.toContain('UID:video-2@shinju.date')
   })
 
   it.each(['standard', 'short'])(
@@ -152,11 +223,14 @@ describe('GET /videos.ics', () => {
   it('answers 500 when the videos cannot be fetched', async () => {
     mocks.query.limit.mockResolvedValue({
       data: null,
-      error: { message: 'failed' },
+      error: { message: 'relation "videos" does not exist' },
     })
 
     const response = await get()
 
     expect(response.status).toBe(500)
+    expect(response.headers.get('Cache-Control')).toBe('no-store')
+    expect(await response.text()).not.toContain('relation')
+    expect(mocks.logger.error).toHaveBeenCalledOnce()
   })
 })

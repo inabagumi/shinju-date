@@ -1,5 +1,6 @@
 import { createErrorResponse } from '@shinju-date/helpers'
-import { supabaseClient } from '@/lib/supabase'
+import { logger } from '@shinju-date/logger'
+import { fetchTalent, type TalentDetail } from '@/lib/fetchers'
 import { createVideosCalendarResponse } from '@/lib/videos-calendar'
 
 export async function GET(
@@ -13,27 +14,29 @@ export async function GET(
   }>,
 ): Promise<Response> {
   const { id } = await params
-  const { count, error } = await supabaseClient
-    .from('talents')
-    .select('*', {
-      count: 'exact',
-      head: true,
-    })
-    .eq('id', id)
+  let talent: TalentDetail | null
 
-  if (error) {
-    return createErrorResponse(error.message, {
+  try {
+    talent = await fetchTalent(id)
+  } catch (error) {
+    logger.error('カレンダーのタレントの取得に失敗しました', {
+      error,
+      talentId: id,
+    })
+
+    return createErrorResponse('Internal Server Error', {
       status: 500,
     })
   }
 
-  if (!count || count < 1) {
+  // Not a UUID, or a talent that does not exist or is not shown
+  if (!talent) {
     return createErrorResponse('Not Found', {
       status: 404,
     })
   }
 
   return createVideosCalendarResponse({
-    talentIds: [id],
+    talentIds: [talent.id],
   })
 }
