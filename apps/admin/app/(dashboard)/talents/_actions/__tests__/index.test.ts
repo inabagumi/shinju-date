@@ -1,9 +1,9 @@
 import { resolveYouTubeChannel } from '@shinju-date/youtube-api-client'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AuditAction } from '@/lib/audit-log'
 import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
 import { setupActionTest } from '@/test/action-harness'
-import { createTalent } from '@/test/factories'
+import { createTalent, createYouTubeChannel } from '@/test/factories'
 import { postgresError } from '@/test/supabase'
 import {
   activateTalentAction,
@@ -473,6 +473,138 @@ describe('createTalentAction', () => {
       id: 'channel-row-1',
       profile_images: null,
       youtube_channel_id: youtubeChannel.id,
+    })
+  })
+
+  describe('with a YouTube channel', () => {
+    const youtubeChannel = {
+      contentDetails: {
+        relatedPlaylists: { uploads: 'UUabcdefghijklmnopqrstuv' },
+      },
+      id: 'UCabcdefghijklmnopqrstuv',
+      snippet: { customUrl: '@example', title: 'Example Channel' },
+    }
+
+    function channelFormData(): FormData {
+      const formData = new FormData()
+      formData.append('name', 'New Talent')
+      formData.append('youtube_channel_id', youtubeChannel.id)
+      return formData
+    }
+
+    function expectNothingCompleted(): void {
+      test.expectNoAuditLog()
+      test.expectNotRevalidated()
+      expect(syncYouTubeChannelIconSafely).not.toHaveBeenCalled()
+    }
+
+    beforeEach(() => {
+      vi.mocked(resolveYouTubeChannel).mockResolvedValue(
+        youtubeChannel as never,
+      )
+    })
+
+    it('should not create the talent when the channel is already registered', async () => {
+      supabase.on(
+        'select',
+        'youtube_channels',
+        createYouTubeChannel({
+          talent_id: 'other-talent-id',
+          youtube_channel_id: youtubeChannel.id,
+        }),
+      )
+
+      const result = await createTalentAction({}, channelFormData())
+
+      expect(result).toEqual({
+        errors: {
+          youtube_channel_id: [
+            'このチャンネルは別のタレントに既に登録されています。',
+          ],
+        },
+      })
+      expect(
+        supabase.calls('select', 'youtube_channels')[0]?.query[
+          'youtube_channel_id'
+        ],
+      ).toBe(`eq.${youtubeChannel.id}`)
+      expect(supabase.calls('insert', 'talents')).toHaveLength(0)
+      expect(supabase.calls('insert', 'youtube_channels')).toHaveLength(0)
+      expectNothingCompleted()
+    })
+
+    it('should delete the created talent when the channel was registered in the meantime', async () => {
+      supabase.on(
+        'insert',
+        'talents',
+        createTalent({ id: TALENT_ID, name: 'New Talent' }),
+      )
+      supabase.on(
+        'insert',
+        'youtube_channels',
+        postgresError('23505', 'duplicate key value'),
+      )
+
+      const result = await createTalentAction({}, channelFormData())
+
+      expect(result).toEqual({
+        errors: {
+          youtube_channel_id: [
+            'このチャンネルは別のタレントに既に登録されています。',
+          ],
+        },
+      })
+      expect(supabase.calls('delete', 'talents')).toHaveLength(1)
+      expect(supabase.calls('delete', 'talents')[0]?.query['id']).toBe(
+        `eq.${TALENT_ID}`,
+      )
+      expectNothingCompleted()
+    })
+
+    it('should delete the created talent when the channel cannot be added', async () => {
+      supabase.on(
+        'insert',
+        'talents',
+        createTalent({ id: TALENT_ID, name: 'New Talent' }),
+      )
+      supabase.on('insert', 'youtube_channels', databaseErrorResponse())
+
+      const result = await createTalentAction({}, channelFormData())
+
+      expect(result).toEqual({
+        errors: {
+          youtube_channel_id: [
+            'YouTubeチャンネルの登録に失敗しました。しばらくしてから再度お試しください。',
+          ],
+        },
+      })
+      expect(supabase.calls('delete', 'talents')[0]?.query['id']).toBe(
+        `eq.${TALENT_ID}`,
+      )
+      expect(test.logger.error).toHaveBeenCalledWith(
+        'youtube_channelsテーブルへの書き込みに失敗しました',
+        { error: DATABASE_ERROR, youtube_channel_id: youtubeChannel.id },
+      )
+      expectNothingCompleted()
+    })
+
+    it('should log when the created talent cannot be deleted', async () => {
+      supabase.on(
+        'insert',
+        'talents',
+        createTalent({ id: TALENT_ID, name: 'New Talent' }),
+      )
+      supabase.on('insert', 'youtube_channels', databaseErrorResponse())
+      supabase.on('delete', 'talents', databaseErrorResponse())
+
+      const result = await createTalentAction({}, channelFormData())
+
+      expect(result.errors?.['youtube_channel_id']).toBeDefined()
+      expect(test.logger.error).toHaveBeenCalledWith(
+        '作成したタレントの削除に失敗しました',
+        { error: DATABASE_ERROR, id: TALENT_ID },
+      )
+      expectNothingCompleted()
     })
   })
 
