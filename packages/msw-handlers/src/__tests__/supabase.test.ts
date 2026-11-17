@@ -2097,6 +2097,41 @@ describe('Supabase Handlers', () => {
         }),
       )
     })
+
+    it('should record several audit logs with one call', async () => {
+      const targetRecordIds = [crypto.randomUUID(), crypto.randomUUID()]
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/rpc/insert_audit_logs',
+        {
+          body: JSON.stringify({
+            p_entries: targetRecordIds.map((id, index) => ({
+              action: 'VIDEO_DELETE',
+              details: { entityName: `動画${index + 1}` },
+              target_record_id: id,
+              target_table: 'videos',
+            })),
+          }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        },
+      )
+
+      expect(response.status).toBe(204)
+
+      const recorded = await getAuditLogs({})
+
+      for (const [index, id] of targetRecordIds.entries()) {
+        expect(recorded).toContainEqual(
+          expect.objectContaining({
+            action: 'VIDEO_DELETE',
+            details: { entityName: `動画${index + 1}` },
+            target_record_id: id,
+            target_table: 'videos',
+            user_email: 'admin@example.com',
+          }),
+        )
+      }
+    })
   })
 
   describe('Query parameter parsing', () => {
