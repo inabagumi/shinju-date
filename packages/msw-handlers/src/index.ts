@@ -2,7 +2,7 @@ import { googleFontsHandlers } from './handlers/google-fonts.js'
 import { resendHandlers } from './handlers/resend.js'
 import { supabaseHandlers } from './handlers/supabase/index.js'
 import { twitchHandlers } from './handlers/twitch.js'
-import { upstashHandlers } from './handlers/upstash.js'
+import { upstashHandlers } from './handlers/upstash/index.js'
 import { youtubeHandlers } from './handlers/youtube.js'
 
 /**
