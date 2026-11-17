@@ -19,10 +19,18 @@ export type YouTubePlatformAdapter = PlatformAdapter<
 export function createYouTubePlatform(
   fetcher: YouTubeFetcher,
 ): YouTubePlatformAdapter {
+  const getPlatformVideoId = (saved: SavedYouTubeVideo) =>
+    saved.youtube_video.youtube_video_id
+
   return {
-    getPlatformVideoId: (saved) => saved.youtube_video.youtube_video_id,
-    async lookUp(ids) {
-      const { missingIds, videos } = await fetcher.getVideos(ids)
+    // Asks for the `id` part only, which keeps full sweeps cheap.
+    findMissing: (savedVideos) =>
+      fetcher.findMissingVideoIds(savedVideos.map(getPlatformVideoId)),
+    getPlatformVideoId,
+    async lookUp(savedVideos) {
+      const { missingIds, videos } = await fetcher.getVideos(
+        savedVideos.map(getPlatformVideoId),
+      )
 
       return {
         fetchedById: new Map(videos.map((video) => [video.id, video])),

@@ -37,8 +37,17 @@ export interface PlatformAdapter<TVideo, TSaved extends SavedVideoBase> {
   savedVideoColumns: string
   /** The ID of the saved video on the platform. */
   getPlatformVideoId(saved: TSaved): string
-  /** Looks up videos on the platform by platform video ID. */
-  lookUp(ids: readonly string[]): Promise<PlatformLookupResult<TVideo>>
+  /**
+   * Looks up saved videos on the platform. Videos the platform cannot be
+   * asked about (e.g. placeholders of Twitch broadcasts) are neither returned
+   * nor reported missing.
+   */
+  lookUp(savedVideos: readonly TSaved[]): Promise<PlatformLookupResult<TVideo>>
+  /**
+   * Returns the platform video IDs of the saved videos the platform no longer
+   * returns, when the platform offers a cheaper way than {@link lookUp}.
+   */
+  findMissing?(savedVideos: readonly TSaved[]): Promise<string[]>
   /** Maps a platform video to the columns kept in line with the platform. */
   toFields(video: TVideo, now: Temporal.Instant): VideoFields
 }
