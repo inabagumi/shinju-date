@@ -6,14 +6,20 @@ import {
   BackfillQueue,
 } from '@shinju-date/video-backfill'
 import { PLATFORM_LABELS } from '@/components/platform-badge'
+import { ActionError, type ActionResult, adminAction } from '@/lib/action'
 import { createAuditLog } from '@/lib/audit-log'
-import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 import { getRedisClient } from '@/lib/redis'
 import {
   getTalentAccounts,
   readVideoBackfillStatus,
   type VideoBackfillStatus,
 } from '../_lib/get-video-backfill-status'
+
+/** 過去動画の取り込みをキューに追加できたときに、画面に知らせること */
+interface BackfillRequestSummary {
+  /** 成功のトーストに出す文 */
+  message: string
+}
 
 /**
  * タレントの過去動画の取り込み（バックフィル）をキューに追加する。
@@ -24,34 +30,24 @@ import {
  * - 待機中・処理中のジョブがあるアカウントは二重に追加しない
  * - 失敗・中断したジョブは続きから、完了したジョブは最新の動画から読み直す
  * - 1 件以上追加したら監査ログ（`VIDEO_BACKFILL`）に依頼者を残す
+ * - 一部のアカウントだけを追加できなかったときは、成功として返し、`warnings` で知らせる
  */
-export async function requestVideoBackfillAction(
-  talentId: string,
-  provider: BackfillProvider,
-): Promise<{
-  success: boolean
-  error?: string
-  message?: string
-}> {
-  const auth = await requireAuthenticatedUser()
+export const requestVideoBackfillAction = adminAction(
+  'requestVideoBackfillAction',
+  async (
+    { supabaseClient, user },
+    talentId: string,
+    provider: BackfillProvider,
+  ): Promise<ActionResult<BackfillRequestSummary>> => {
+    if (provider !== 'youtube' && provider !== 'twitch') {
+      throw new ActionError('不明なプラットフォームです。')
+    }
 
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  const { supabaseClient, user } = auth
-
-  if (provider !== 'youtube' && provider !== 'twitch') {
-    return { error: '不明なプラットフォームです。', success: false }
-  }
-
-  const label = PLATFORM_LABELS[provider]
-
-  try {
+    const label = PLATFORM_LABELS[provider]
     const talent = await getTalentAccounts(supabaseClient, talentId)
 
     if (!talent) {
-      return { error: 'タレントが見つかりませんでした。', success: false }
+      throw new ActionError('タレントが見つかりませんでした。')
     }
 
     const accounts = talent.accounts.filter(
@@ -59,16 +55,14 @@ export async function requestVideoBackfillAction(
     )
 
     if (accounts.length === 0) {
-      return {
-        error: `このタレントに紐づく${label}アカウントはありません。`,
-        success: false,
-      }
+      throw new ActionError(
+        `このタレントに紐づく${label}アカウントはありません。`,
+      )
     }
 
     const queue = new BackfillQueue(getRedisClient())
     const enqueued: typeof accounts = []
     let failed = 0
-    let lastError: unknown
 
     // One account that cannot be queued does not stop the others, and the
     // ones that were queued are recorded in any case.
@@ -86,7 +80,6 @@ export async function requestVideoBackfillAction(
         }
       } catch (error) {
         failed++
-        lastError = error
         logger.error('過去動画の取り込みをキューに追加できませんでした', {
           accountId: account.accountId,
           error,
@@ -104,84 +97,53 @@ export async function requestVideoBackfillAction(
       })
     }
 
-    if (failed > 0) {
-      const reason =
-        lastError instanceof Error ? lastError.message : '不明なエラー'
-
-      return {
-        error:
-          enqueued.length > 0
-            ? `${label}の過去動画の取り込みを${enqueued.length}件キューに追加しましたが、${failed}件は追加できませんでした（${reason}）。`
-            : `${label}の過去動画の取り込みをキューに追加できませんでした（${reason}）。`,
-        success: false,
-      }
+    if (failed > 0 && enqueued.length === 0) {
+      throw new ActionError(
+        `${label}の過去動画の取り込みをキューに追加できませんでした。`,
+      )
     }
 
     if (enqueued.length === 0) {
-      return {
-        error: `${label}の過去動画の取り込みは既に実行中です。`,
-        success: false,
-      }
+      throw new ActionError(`${label}の過去動画の取り込みは既に実行中です。`)
     }
 
-    const skipped = accounts.length - enqueued.length
+    const skipped = accounts.length - enqueued.length - failed
+    const message =
+      skipped > 0
+        ? `${label}の過去動画の取り込みを${enqueued.length}件キューに追加しました（実行中の${skipped}件は除く）。`
+        : failed > 0
+          ? `${label}の過去動画の取り込みを${enqueued.length}件キューに追加しました。`
+          : `${label}の過去動画の取り込みをキューに追加しました。数分以内に開始されます。`
 
     return {
-      message:
-        skipped > 0
-          ? `${label}の過去動画の取り込みを${enqueued.length}件キューに追加しました（実行中の${skipped}件は除く）。`
-          : `${label}の過去動画の取り込みをキューに追加しました。数分以内に開始されます。`,
+      data: { message },
       success: true,
+      ...(failed > 0
+        ? {
+            warnings: [
+              `${label}の過去動画の取り込みのうち、${failed}件はキューに追加できませんでした。`,
+            ],
+          }
+        : {}),
     }
-  } catch (error) {
-    logger.error('過去動画の取り込みの依頼に失敗しました', {
-      error,
-      provider,
-      talentId,
-    })
-
-    return {
-      error:
-        error instanceof Error
-          ? error.message
-          : '予期しないエラーが発生しました。',
-      success: false,
-    }
-  }
-}
+  },
+)
 
 /**
- * タレントの各アカウントの過去動画の取り込み状況を返す。
+ * タレントの各アカウントの過去動画の取り込み状況を返す。定期的な再取得に使う。
  */
-export async function getVideoBackfillStatusAction(
-  talentId: string,
-): Promise<VideoBackfillStatus | { error: string; success: false }> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  try {
-    const status = await readVideoBackfillStatus(auth.supabaseClient, talentId)
+export const getVideoBackfillStatusAction = adminAction(
+  'getVideoBackfillStatusAction',
+  async (
+    { supabaseClient },
+    talentId: string,
+  ): Promise<ActionResult<VideoBackfillStatus>> => {
+    const status = await readVideoBackfillStatus(supabaseClient, talentId)
 
     if (!status) {
-      return { error: 'タレントが見つかりませんでした。', success: false }
+      throw new ActionError('タレントが見つかりませんでした。')
     }
 
-    return status
-  } catch (error) {
-    logger.error('過去動画の取り込み状況の取得に失敗しました', {
-      error,
-      talentId,
-    })
-
-    return {
-      error:
-        error instanceof Error
-          ? error.message
-          : '予期しないエラーが発生しました。',
-      success: false,
-    }
-  }
-}
+    return { data: status, success: true }
+  },
+)

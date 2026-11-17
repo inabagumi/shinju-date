@@ -15,7 +15,10 @@ import { Panel, PanelSkeleton } from '@/components/panel'
 import { PLATFORM_LABELS } from '@/components/platform-badge'
 import { formatDateTimeFromISO } from '@/lib/format'
 import { useBackfillRequest } from '@/lib/use-backfill-request'
-import { usePolledResource } from '@/lib/use-polled-resource'
+import {
+  type PolledResourceFailure,
+  usePolledResource,
+} from '@/lib/use-polled-resource'
 import {
   getVideoBackfillStatusAction,
   requestVideoBackfillAction,
@@ -30,6 +33,19 @@ const DESCRIPTION =
   'プラットフォーム上にあってデータベースにない過去の動画を、すべての履歴をさかのぼって取り込みます。登録済みの動画はそのまま残ります。'
 
 const PROVIDERS = ['youtube', 'twitch'] as const
+
+/** 取り込み状況を取り直す。アクションの `data` を、`usePolledResource` が受け取る形にする */
+async function fetchVideoBackfillStatus(
+  talentId: string,
+): Promise<VideoBackfillStatus | PolledResourceFailure> {
+  const result = await getVideoBackfillStatusAction(talentId)
+
+  if (!result.success) {
+    return result
+  }
+
+  return result.data ?? { success: false }
+}
 
 interface VideoBackfillPanelProps {
   /** サーバーコンポーネントで取得した、アカウントごとの取り込み状況 */
@@ -49,7 +65,7 @@ export function VideoBackfillPanel({
 }: VideoBackfillPanelProps) {
   const router = useRouter()
   const { data, error, reload } = usePolledResource({
-    fetcher: () => getVideoBackfillStatusAction(talentId),
+    fetcher: () => fetchVideoBackfillStatus(talentId),
     initialData,
     intervalMs: POLL_INTERVAL_MS,
     isActive: ({ accounts }) => accounts.some((account) => account.active),

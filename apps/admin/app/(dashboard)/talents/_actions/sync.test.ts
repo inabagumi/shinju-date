@@ -4,9 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { setupActionTest } from '@/test/action-harness'
 import { postgresError } from '@/test/supabase'
 import {
-  syncTalentAccounts,
-  syncTalentWithTwitch,
-  syncTalentWithYouTube,
+  syncTalentAccountsAction,
+  syncTalentWithTwitchAction,
+  syncTalentWithYouTubeAction,
 } from './sync'
 
 const scraper = vi.hoisted(() => ({
@@ -18,6 +18,14 @@ const scraper = vi.hoisted(() => ({
 vi.mock('@/lib/scraper', () => ({ createScraper: scraper.createScraper }))
 
 const test = setupActionTest()
+
+/**
+ * 予期しない例外のときに画面に出る文（`@/lib/action` の `ACTION_FAILED_ERROR_MESSAGE`）。
+ * `@/lib/action` を読み込むと、`@/test/action-harness` のモックより先に `@/lib/auth` が
+ * 読み込まれてしまうため、ここに書く。
+ */
+const ACTION_FAILED_ERROR =
+  '処理に失敗しました。時間をおいて、もう一度お試しください。'
 const { supabase } = test
 
 const now = Temporal.Instant.from('2024-11-24T17:00:00Z')
@@ -103,11 +111,11 @@ beforeEach(() => {
   supabase.on('select', 'talents', [{ id: talentId, name: 'Talent Name' }])
 })
 
-describe('syncTalentWithYouTube', () => {
+describe('syncTalentWithYouTubeAction', () => {
   it('syncs the channels of a talent that is not deleted with the YouTube scraper', async () => {
     syncTo({ youtube: [account('unchanged')] })
 
-    await syncTalentWithYouTube(talentId)
+    await syncTalentWithYouTubeAction(talentId)
 
     expect(scraper.createScraper).toHaveBeenCalledWith('youtube')
     expect(scraper.youtube).toHaveBeenCalledWith(talentId, now)
@@ -121,9 +129,9 @@ describe('syncTalentWithYouTube', () => {
   it('touches the talent, records the changes and revalidates when a channel was updated', async () => {
     syncTo({ youtube: [updatedChannel, account('unchanged')] })
 
-    const result = await syncTalentWithYouTube(talentId)
+    const result = await syncTalentWithYouTubeAction(talentId)
 
-    expect(result).toEqual({ success: true })
+    expect(result).toEqual({ data: { unchanged: false }, success: true })
     expect(talentUpdates()[0]?.body).toEqual({
       updated_at: '2024-11-24T17:00:00Z',
     })
@@ -146,9 +154,9 @@ describe('syncTalentWithYouTube', () => {
       youtube: [account('updated', { accountId: 'row', iconUpdated: true })],
     })
 
-    const result = await syncTalentWithYouTube(talentId)
+    const result = await syncTalentWithYouTubeAction(talentId)
 
-    expect(result).toEqual({ success: true })
+    expect(result).toEqual({ data: { unchanged: false }, success: true })
     test.expectAuditLog('CHANNEL_SYNC', talentId, {
       accounts: [{ iconUpdated: true, id: 'row', name: 'Name' }],
       entityName: 'Talent Name',
@@ -159,12 +167,11 @@ describe('syncTalentWithYouTube', () => {
   it('reports up to date without touching anything when no channel changed', async () => {
     syncTo({ youtube: [account('unchanged'), account('not-found')] })
 
-    const result = await syncTalentWithYouTube(talentId)
+    const result = await syncTalentWithYouTubeAction(talentId)
 
     expect(result).toEqual({
-      message: 'チャンネル情報は既に最新です。',
+      data: { message: 'チャンネル情報は既に最新です。', unchanged: true },
       success: true,
-      unchanged: true,
     })
     expect(talentUpdates()).toHaveLength(0)
     test.expectNoAuditLog()
@@ -174,7 +181,8 @@ describe('syncTalentWithYouTube', () => {
   it('still reports the updated channels when another one is missing on YouTube', async () => {
     syncTo({ youtube: [updatedChannel, account('not-found')] })
 
-    await expect(syncTalentWithYouTube(talentId)).resolves.toEqual({
+    await expect(syncTalentWithYouTubeAction(talentId)).resolves.toEqual({
+      data: { unchanged: false },
       success: true,
     })
   })
@@ -185,7 +193,7 @@ describe('syncTalentWithYouTube', () => {
   ] as const)('fails when every channel is %s', async (_, status) => {
     syncTo({ youtube: [account(status)] })
 
-    const result = await syncTalentWithYouTube(talentId)
+    const result = await syncTalentWithYouTubeAction(talentId)
 
     expect(result).toEqual({
       error: YOUTUBE_CHANNEL_NOT_FOUND_ERROR,
@@ -194,12 +202,20 @@ describe('syncTalentWithYouTube', () => {
     test.expectNoAuditLog()
   })
 
-  it('fails with the error when YouTube cannot be read', async () => {
-    syncTo({ youtube: new Error('quota exceeded') })
+  it('fails without the message of the error when YouTube cannot be read', async () => {
+    const error = new Error('quota exceeded')
+    syncTo({ youtube: error })
 
-    const result = await syncTalentWithYouTube(talentId)
+    const result = await syncTalentWithYouTubeAction(talentId)
 
-    expect(result).toEqual({ error: 'quota exceeded', success: false })
+    expect(result).toEqual({
+      error: ACTION_FAILED_ERROR,
+      success: false,
+    })
+    expect(test.logger.error).toHaveBeenCalledWith(
+      'タレントの同期に失敗しました',
+      { error, platform: 'youtube', talentId },
+    )
     test.expectNoAuditLog()
   })
 
@@ -211,10 +227,10 @@ describe('syncTalentWithYouTube', () => {
       postgresError('42501', 'permission denied'),
     )
 
-    const result = await syncTalentWithYouTube(talentId)
+    const result = await syncTalentWithYouTubeAction(talentId)
 
     expect(result).toEqual({
-      error: '予期しないエラーが発生しました。',
+      error: ACTION_FAILED_ERROR,
       success: false,
     })
     test.expectNoAuditLog()
@@ -223,7 +239,7 @@ describe('syncTalentWithYouTube', () => {
   it('returns an error when the talent has no YouTube channels', async () => {
     syncTo({ youtube: [] })
 
-    await expect(syncTalentWithYouTube(talentId)).resolves.toEqual({
+    await expect(syncTalentWithYouTubeAction(talentId)).resolves.toEqual({
       error: 'このタレントに紐づくYouTubeチャンネルはありません。',
       success: false,
     })
@@ -232,7 +248,7 @@ describe('syncTalentWithYouTube', () => {
   it('returns an error without syncing when the talent is not found', async () => {
     supabase.on('select', 'talents', [])
 
-    await expect(syncTalentWithYouTube(talentId)).resolves.toEqual({
+    await expect(syncTalentWithYouTubeAction(talentId)).resolves.toEqual({
       error: 'タレントが見つかりませんでした。',
       success: false,
     })
@@ -240,13 +256,13 @@ describe('syncTalentWithYouTube', () => {
   })
 })
 
-describe('syncTalentWithTwitch', () => {
+describe('syncTalentWithTwitchAction', () => {
   it('syncs the users with the Twitch scraper and records the changes', async () => {
     syncTo({ twitch: [updatedUser] })
 
-    const result = await syncTalentWithTwitch(talentId)
+    const result = await syncTalentWithTwitchAction(talentId)
 
-    expect(result).toEqual({ success: true })
+    expect(result).toEqual({ data: { unchanged: false }, success: true })
     expect(scraper.createScraper).toHaveBeenCalledWith('twitch')
     expect(scraper.twitch).toHaveBeenCalledWith(talentId, now)
     test.expectAuditLog('CHANNEL_SYNC', talentId, {
@@ -262,10 +278,9 @@ describe('syncTalentWithTwitch', () => {
   it('reports up to date when no user changed', async () => {
     syncTo({ twitch: [account('unchanged')] })
 
-    await expect(syncTalentWithTwitch(talentId)).resolves.toEqual({
-      message: 'Twitchユーザー情報は既に最新です。',
+    await expect(syncTalentWithTwitchAction(talentId)).resolves.toEqual({
+      data: { message: 'Twitchユーザー情報は既に最新です。', unchanged: true },
       success: true,
-      unchanged: true,
     })
     test.expectNoAuditLog()
   })
@@ -275,9 +290,9 @@ describe('syncTalentWithTwitch', () => {
       twitch: [account('failed', { accountId: 'row', iconUpdated: true })],
     })
 
-    const result = await syncTalentWithTwitch(talentId)
+    const result = await syncTalentWithTwitchAction(talentId)
 
-    expect(result).toEqual({ success: true })
+    expect(result).toEqual({ data: { unchanged: false }, success: true })
     test.expectAuditLog('CHANNEL_SYNC', talentId, {
       accounts: [{ iconUpdated: true, id: 'row', name: 'Name' }],
       entityName: 'Talent Name',
@@ -288,7 +303,7 @@ describe('syncTalentWithTwitch', () => {
   it('fails when the name could not be written and the icon is unchanged', async () => {
     syncTo({ twitch: [account('failed')] })
 
-    await expect(syncTalentWithTwitch(talentId)).resolves.toEqual({
+    await expect(syncTalentWithTwitchAction(talentId)).resolves.toEqual({
       error: TWITCH_USER_NOT_FOUND_ERROR,
       success: false,
     })
@@ -298,24 +313,26 @@ describe('syncTalentWithTwitch', () => {
   it('returns an error when the talent has no Twitch users', async () => {
     syncTo({ twitch: [] })
 
-    await expect(syncTalentWithTwitch(talentId)).resolves.toEqual({
+    await expect(syncTalentWithTwitchAction(talentId)).resolves.toEqual({
       error: 'このタレントに紐づくTwitchユーザーはありません。',
       success: false,
     })
   })
 })
 
-describe('syncTalentAccounts', () => {
+describe('syncTalentAccountsAction', () => {
   it('syncs both platforms and reports each of them', async () => {
     syncTo({ twitch: [updatedUser], youtube: [updatedChannel] })
 
-    const result = await syncTalentAccounts(talentId)
+    const result = await syncTalentAccountsAction(talentId)
 
     expect(result).toEqual({
-      message:
-        'YouTube: チャンネル情報を同期しました。\nTwitch: ユーザー情報を同期しました。',
+      data: {
+        message:
+          'YouTube: チャンネル情報を同期しました。\nTwitch: ユーザー情報を同期しました。',
+        unchanged: false,
+      },
       success: true,
-      unchanged: false,
     })
     expect(test.createAuditLog).toHaveBeenCalledTimes(2)
     test.expectAuditLog(
@@ -333,23 +350,27 @@ describe('syncTalentAccounts', () => {
   it('reports only the platforms the talent has accounts on', async () => {
     syncTo({ twitch: [updatedUser] })
 
-    await expect(syncTalentAccounts(talentId)).resolves.toEqual({
-      message: 'Twitch: ユーザー情報を同期しました。',
+    await expect(syncTalentAccountsAction(talentId)).resolves.toEqual({
+      data: {
+        message: 'Twitch: ユーザー情報を同期しました。',
+        unchanged: false,
+      },
       success: true,
-      unchanged: false,
     })
   })
 
-  it('keeps the Twitch result when YouTube fails and reports which one failed', async () => {
+  it('keeps the Twitch result when YouTube fails and warns which one failed', async () => {
     syncTo({ twitch: [updatedUser], youtube: new Error('quota exceeded') })
 
-    const result = await syncTalentAccounts(talentId)
+    const result = await syncTalentAccountsAction(talentId)
 
     expect(result).toEqual({
-      error:
-        'YouTube: 同期に失敗しました。quota exceeded\nTwitch: ユーザー情報を同期しました。',
-      success: false,
-      unchanged: false,
+      data: {
+        message: 'Twitch: ユーザー情報を同期しました。',
+        unchanged: false,
+      },
+      success: true,
+      warnings: ['YouTube: 同期に失敗しました。'],
     })
     expect(test.createAuditLog).toHaveBeenCalledTimes(1)
     test.expectAuditLog(
@@ -359,26 +380,46 @@ describe('syncTalentAccounts', () => {
     )
   })
 
-  it('reports a platform whose accounts were all missing as failed', async () => {
+  it('warns about a platform whose accounts were all missing', async () => {
     syncTo({ twitch: [account('unchanged')], youtube: [account('not-found')] })
 
-    await expect(syncTalentAccounts(talentId)).resolves.toEqual({
-      error: `YouTube: 同期に失敗しました。${YOUTUBE_CHANNEL_NOT_FOUND_ERROR}\nTwitch: ユーザー情報は既に最新です。`,
-      success: false,
-      unchanged: true,
+    await expect(syncTalentAccountsAction(talentId)).resolves.toEqual({
+      data: {
+        message: 'Twitch: ユーザー情報は既に最新です。',
+        unchanged: true,
+      },
+      success: true,
+      warnings: [
+        `YouTube: 同期に失敗しました。${YOUTUBE_CHANNEL_NOT_FOUND_ERROR}`,
+      ],
     })
+  })
+
+  it('fails when every platform fails', async () => {
+    syncTo({
+      twitch: [account('not-found')],
+      youtube: new Error('quota exceeded'),
+    })
+
+    await expect(syncTalentAccountsAction(talentId)).resolves.toEqual({
+      error: `YouTube: 同期に失敗しました。\nTwitch: 同期に失敗しました。${TWITCH_USER_NOT_FOUND_ERROR}`,
+      success: false,
+    })
+    test.expectNoAuditLog()
   })
 
   it('reports each platform when everything is up to date', async () => {
     syncTo({ twitch: [account('unchanged')], youtube: [account('unchanged')] })
 
-    const result = await syncTalentAccounts(talentId)
+    const result = await syncTalentAccountsAction(talentId)
 
     expect(result).toEqual({
-      message:
-        'YouTube: チャンネル情報は既に最新です。\nTwitch: ユーザー情報は既に最新です。',
+      data: {
+        message:
+          'YouTube: チャンネル情報は既に最新です。\nTwitch: ユーザー情報は既に最新です。',
+        unchanged: true,
+      },
       success: true,
-      unchanged: true,
     })
     test.expectNoAuditLog()
     test.expectNotRevalidated()
@@ -387,7 +428,7 @@ describe('syncTalentAccounts', () => {
   it('returns an error when the talent has no accounts', async () => {
     syncTo({})
 
-    await expect(syncTalentAccounts(talentId)).resolves.toEqual({
+    await expect(syncTalentAccountsAction(talentId)).resolves.toEqual({
       error:
         'このタレントに紐づくYouTubeチャンネル・Twitchユーザーはありません。',
       success: false,
@@ -401,10 +442,10 @@ describe('syncTalentAccounts', () => {
       postgresError('42501', 'permission denied'),
     )
 
-    const result = await syncTalentAccounts(talentId)
+    const result = await syncTalentAccountsAction(talentId)
 
     expect(result).toEqual({
-      error: '予期しないエラーが発生しました。',
+      error: ACTION_FAILED_ERROR,
       success: false,
     })
     expect(scraper.createScraper).not.toHaveBeenCalled()

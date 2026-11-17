@@ -7,28 +7,24 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
 import * as z from 'zod'
-import type { FormState } from '@/components/form'
-import { ActionError } from '@/lib/action'
-import { type AuditAction, createAuditLog } from '@/lib/audit-log'
 import {
-  requireAuthenticatedUser,
-  unauthenticatedFormState,
-  unauthenticatedResult,
-} from '@/lib/auth'
-import { actionErrorToFormState, zodErrorToFormState } from '@/lib/form'
+  ActionError,
+  type ActionResult,
+  adminAction,
+  adminFormAction,
+} from '@/lib/action'
+import { type AuditAction, createAuditLog } from '@/lib/audit-log'
+import type { AuthenticatedContext } from '@/lib/auth'
 import { uuidSchema } from '@/lib/schemas'
 import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 import { isNotFoundError } from '@/lib/supabase/query'
-import {
-  linkAccount,
-  type ResolvedAccount,
-  resolveAccount,
-} from '@/lib/talent-accounts'
+import { linkAccount, resolveAccount } from '@/lib/talent-accounts'
 import { talentNameSchema, talentReadingSchema } from '../_lib/talent-schema'
 
 const createTalentSchema = z.object({
   name: talentNameSchema,
   reading: talentReadingSchema,
+  youtube_channel_id: z.string().optional(),
 })
 
 const updateTalentSchema = z.object({
@@ -49,39 +45,21 @@ const updateTalentSchema = z.object({
     }),
 })
 
-export async function createTalentAction(
-  _currentState: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedFormState()
-  }
-
-  const { supabaseClient } = auth
-
-  const parsed = createTalentSchema.safeParse({
-    name: formData.get('name'),
-    reading: formData.get('reading'),
-  })
-
-  if (!parsed.success) {
-    return zodErrorToFormState(parsed.error)
-  }
-
-  const { name, reading } = parsed.data
-  const channelInput = String(formData.get('youtube_channel_id') ?? '')
-  let account: ResolvedAccount<'youtube'> | null = null
-
-  try {
+export const createTalentAction = adminFormAction(
+  'createTalentAction',
+  createTalentSchema,
+  async (
+    { supabaseClient },
+    { name, reading, youtube_channel_id: channelInput = '' },
+  ) => {
     // タレントを作る前に、チャンネルを解決し、登録済みでないことを確かめる
-    if (channelInput.trim() !== '') {
-      account = await resolveAccount('youtube', {
-        input: channelInput,
-        supabaseClient,
-      })
-    }
+    const account =
+      channelInput.trim() !== ''
+        ? await resolveAccount('youtube', {
+            input: channelInput,
+            supabaseClient,
+          })
+        : null
 
     const { data: newTalent, error } = await supabaseClient
       .from('talents')
@@ -115,13 +93,10 @@ export async function createTalentAction(
           youtube_channel_id: account.remote.id,
         })
 
-        return {
-          errors: {
-            youtube_channel_id: [
-              'YouTubeチャンネルの登録に失敗しました。しばらくしてから再度お試しください。',
-            ],
-          },
-        }
+        throw new ActionError(
+          'YouTubeチャンネルの登録に失敗しました。しばらくしてから再度お試しください。',
+          { field: 'youtube_channel_id' },
+        )
       }
     }
 
@@ -132,29 +107,8 @@ export async function createTalentAction(
 
     revalidatePath('/talents')
     await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
-    return { success: true }
-  } catch (error) {
-    if (error instanceof ActionError) {
-      return actionErrorToFormState(error)
-    }
-
-    logger.error('タレントの追加に失敗しました', {
-      error,
-      name,
-      reading,
-      youtube_channel_id: account?.remote.id,
-    })
-    return {
-      errors: {
-        generic: [
-          error instanceof Error
-            ? error.message
-            : 'タレントの追加に失敗しました。',
-        ],
-      },
-    }
-  }
-}
+  },
+)
 
 /**
  * チャンネルを結び付けられなかったタレントを削除し、作成をなかったことにする。
@@ -171,33 +125,10 @@ async function deleteTalentSafely(id: string): Promise<void> {
   }
 }
 
-export async function updateTalentAction(
-  _currentState: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedFormState()
-  }
-
-  const { supabaseClient } = auth
-
-  const parsed = updateTalentSchema.safeParse({
-    id: formData.get('id'),
-    name: formData.get('name'),
-    reading: formData.get('reading'),
-    theme_color: formData.get('theme_color'),
-  })
-
-  if (!parsed.success) {
-    // `id` は隠しフィールドで、画面に対応する入力欄がない
-    return zodErrorToFormState(parsed.error, { hiddenFields: ['id'] })
-  }
-
-  const validatedData = parsed.data
-
-  try {
+export const updateTalentAction = adminFormAction(
+  'updateTalentAction',
+  updateTalentSchema,
+  async ({ supabaseClient }, validatedData) => {
     // Update talents table (name, reading and theme_color)
     const { data: talent, error } = await supabaseClient
       .from('talents')
@@ -218,14 +149,12 @@ export async function updateTalentAction(
         logger.warn('更新対象のタレントが見つかりませんでした', {
           id: validatedData.id,
         })
-        return {
-          errors: {
-            generic: [
-              '指定されたタレントが見つかりません。既に削除されているか、存在しないIDが指定されています。',
-            ],
-          },
-        }
+
+        throw new ActionError(
+          '指定されたタレントが見つかりません。既に削除されているか、存在しないIDが指定されています。',
+        )
       }
+
       throw error
     }
 
@@ -239,31 +168,10 @@ export async function updateTalentAction(
 
     revalidatePath('/talents')
     await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
-    return {}
-  } catch (error) {
-    logger.error('タレントの更新に失敗しました', {
-      error,
-      id: validatedData.id,
-      name: validatedData.name,
-      reading: validatedData.reading,
-      theme_color: validatedData.theme_color,
-    })
-    return {
-      errors: {
-        generic: [
-          error instanceof Error
-            ? error.message
-            : 'タレントの更新に失敗しました。',
-        ],
-      },
-    }
-  }
-}
-
-interface LifecycleActionResult {
-  success: boolean
-  error?: string
-}
+  },
+  // `id` は隠しフィールドで、画面に対応する入力欄がない
+  { hiddenFields: ['id'] },
+)
 
 interface TalentLifecycleTransition {
   /** 監査ログに記録するアクション */
@@ -319,96 +227,88 @@ const TALENT_LIFECYCLE_TRANSITIONS = {
  * 遷移前の状態を条件に含めて更新し、監査ログの記録とキャッシュの再検証を行う。
  */
 async function transitionTalentLifecycle(
+  { supabaseClient }: AuthenticatedContext,
   id: string,
   transition: TalentLifecycleTransition,
-): Promise<LifecycleActionResult> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  const { supabaseClient } = auth
-
+): Promise<ActionResult> {
   if (!id) {
-    return { error: 'IDが指定されていません。', success: false }
+    throw new ActionError('IDが指定されていません。')
   }
 
-  try {
-    const now = toDBString(Temporal.Now.instant())
+  const now = toDBString(Temporal.Now.instant())
 
-    let query = supabaseClient
-      .from('talents')
-      .update({
-        ...transition.values(now),
-        updated_at: now,
-      })
-      .eq('id', id)
-
-    if (transition.from.status) {
-      query = query.eq('status', transition.from.status)
-    }
-
-    query = transition.from.deleted
-      ? query.not('deleted_at', 'is', null)
-      : query.is('deleted_at', null)
-
-    const { data: talent, error } = await query.select('name').single()
-
-    if (error) {
-      // 条件に一致する行がない（存在しない、または既に遷移済み）
-      if (isNotFoundError(error)) {
-        logger.warn(`${transition.label}対象のタレントが見つかりませんでした`, {
-          id,
-        })
-        return {
-          error: `指定されたタレントが見つかりません。${transition.notFoundReason}か、存在しないIDが指定されています。`,
-          success: false,
-        }
-      }
-      throw error
-    }
-
-    await createAuditLog(supabaseClient, transition.auditAction, id, {
-      entityName: talent.name,
+  let query = supabaseClient
+    .from('talents')
+    .update({
+      ...transition.values(now),
+      updated_at: now,
     })
+    .eq('id', id)
 
-    revalidatePath('/talents')
-    revalidatePath(`/talents/${id}`)
-    await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
-    return { success: true }
-  } catch (error) {
-    logger.error(`タレントの${transition.label}に失敗しました`, { error, id })
-    return {
-      error:
-        error instanceof Error
-          ? error.message
-          : `タレントの${transition.label}に失敗しました。`,
-      success: false,
-    }
+  if (transition.from.status) {
+    query = query.eq('status', transition.from.status)
   }
+
+  query = transition.from.deleted
+    ? query.not('deleted_at', 'is', null)
+    : query.is('deleted_at', null)
+
+  const { data: talent, error } = await query.select('name').single()
+
+  if (error) {
+    // 条件に一致する行がない（存在しない、または既に遷移済み）
+    if (isNotFoundError(error)) {
+      logger.warn(`${transition.label}対象のタレントが見つかりませんでした`, {
+        id,
+      })
+
+      throw new ActionError(
+        `指定されたタレントが見つかりません。${transition.notFoundReason}か、存在しないIDが指定されています。`,
+      )
+    }
+
+    throw error
+  }
+
+  await createAuditLog(supabaseClient, transition.auditAction, id, {
+    entityName: talent.name,
+  })
+
+  revalidatePath('/talents')
+  revalidatePath(`/talents/${id}`)
+  await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
+
+  return { success: true }
 }
 
-export async function deleteTalentAction(
-  id: string,
-): Promise<LifecycleActionResult> {
-  return transitionTalentLifecycle(id, TALENT_LIFECYCLE_TRANSITIONS.delete)
-}
+export const deleteTalentAction = adminAction(
+  'deleteTalentAction',
+  (context, id: string) =>
+    transitionTalentLifecycle(context, id, TALENT_LIFECYCLE_TRANSITIONS.delete),
+)
 
-export async function restoreTalentAction(
-  id: string,
-): Promise<LifecycleActionResult> {
-  return transitionTalentLifecycle(id, TALENT_LIFECYCLE_TRANSITIONS.restore)
-}
+export const restoreTalentAction = adminAction(
+  'restoreTalentAction',
+  (context, id: string) =>
+    transitionTalentLifecycle(
+      context,
+      id,
+      TALENT_LIFECYCLE_TRANSITIONS.restore,
+    ),
+)
 
-export async function retireTalentAction(
-  id: string,
-): Promise<LifecycleActionResult> {
-  return transitionTalentLifecycle(id, TALENT_LIFECYCLE_TRANSITIONS.retire)
-}
+export const retireTalentAction = adminAction(
+  'retireTalentAction',
+  (context, id: string) =>
+    transitionTalentLifecycle(context, id, TALENT_LIFECYCLE_TRANSITIONS.retire),
+)
 
-export async function activateTalentAction(
-  id: string,
-): Promise<LifecycleActionResult> {
-  return transitionTalentLifecycle(id, TALENT_LIFECYCLE_TRANSITIONS.activate)
-}
+export const activateTalentAction = adminAction(
+  'activateTalentAction',
+  (context, id: string) =>
+    transitionTalentLifecycle(
+      context,
+      id,
+      TALENT_LIFECYCLE_TRANSITIONS.activate,
+    ),
+)

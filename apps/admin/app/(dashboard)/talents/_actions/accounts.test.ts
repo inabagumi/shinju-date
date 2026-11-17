@@ -30,6 +30,14 @@ vi.mock('@/lib/twitch-user-icon', () => ({
 }))
 
 const test = setupActionTest()
+
+/**
+ * 予期しない例外のときに画面に出る文（`@/lib/action` の `ACTION_FAILED_ERROR_MESSAGE`）。
+ * `@/lib/action` を読み込むと、`@/test/action-harness` のモックより先に `@/lib/auth` が
+ * 読み込まれてしまうため、ここに書く。
+ */
+const ACTION_FAILED_ERROR =
+  '処理に失敗しました。時間をおいて、もう一度お試しください。'
 const { supabase } = test
 
 vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
@@ -73,8 +81,6 @@ const twitchUser = {
 /** What differs between the platforms: the actions, the names and the wording. */
 interface PlatformCase {
   addAction: (state: FormState, formData: FormData) => Promise<FormState>
-  /** What the screen shows when the account cannot be added or removed. */
-  failures: { add: string; remove: string }
   /** Name of the input of the add form, which the errors are attached to. */
   field: string
   /** Inputs that are understood, with the identifier the API is asked for. */
@@ -114,10 +120,6 @@ interface PlatformCase {
 const platformCases: PlatformCase[] = [
   {
     addAction: addYouTubeChannelAction,
-    failures: {
-      add: 'YouTubeチャンネルの追加に失敗しました。',
-      remove: 'YouTubeチャンネルの削除に失敗しました。',
-    },
     field: 'youtube_channel_id',
     inputs: [
       {
@@ -173,11 +175,6 @@ const platformCases: PlatformCase[] = [
   },
   {
     addAction: addTwitchUserAction,
-    failures: {
-      add: 'Twitchユーザーの追加に失敗しました。しばらくしてから再度お試しください。',
-      remove:
-        'Twitchユーザーの削除に失敗しました。しばらくしてから再度お試しください。',
-    },
     field: 'twitch_user',
     inputs: [
       {
@@ -487,7 +484,7 @@ describe.each(platformCases)('$platform accounts', (platformCase) => {
       const result = await addValidAccount()
 
       expect(result).toEqual({
-        errors: { generic: [platformCase.failures.add] },
+        error: ACTION_FAILED_ERROR,
       })
       expect(test.logger.error).toHaveBeenCalled()
       expect(platformCase.syncIcon).not.toHaveBeenCalled()
@@ -579,7 +576,7 @@ describe.each(platformCases)('$platform accounts', (platformCase) => {
       const result = await platformCase.removeAction(accountId, talentId)
 
       expect(result).toEqual({
-        error: platformCase.failures.remove,
+        error: ACTION_FAILED_ERROR,
         success: false,
       })
       expect(test.logger.error).toHaveBeenCalled()
