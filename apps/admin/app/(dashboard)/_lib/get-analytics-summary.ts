@@ -1,35 +1,26 @@
 'use server'
 
-import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { TIME_ZONE } from '@shinju-date/constants'
+import {
+  type AnalyticsSummary,
+  collectAnalyticsSummary,
+  readAnalyticsSnapshot,
+  type WithTrends,
+  withTrends,
+} from '@shinju-date/dashboard-stats'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { cacheLife } from 'next/cache'
-import { sumScores } from '@/lib/analytics/redis'
 import { getRedisClient } from '@/lib/redis'
 
-export interface AnalyticsSummary {
-  recentSearches: number
-  totalPopularKeywords: number
-  recentClicks: number
-}
-
-export interface AnalyticsTrendValue {
-  current: number
-  dayChange: number | null
-  weekChange: number | null
-}
-
-export interface AnalyticsSummaryWithTrends {
-  recentSearches: AnalyticsTrendValue
-  totalPopularKeywords: AnalyticsTrendValue
-  recentClicks: AnalyticsTrendValue
-}
-
 /**
- * Get summary analytics data for the dashboard with trend indicators
- * (day-over-day and week-over-week)
+ * Get the searches and clicks of today and the number of the popular
+ * keywords, each with its changes from the snapshots of the day before and
+ * the week before (saved by the daily job `/stats/snapshot` of batch).
  */
-export async function getAnalyticsSummary(): Promise<AnalyticsSummaryWithTrends> {
+export async function getAnalyticsSummary(): Promise<
+  WithTrends<AnalyticsSummary>
+> {
   'use cache: private'
 
   cacheLife('minutes')
@@ -37,116 +28,28 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummaryWithTrends>
   try {
     const redisClient = getRedisClient()
     const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-    const dateKey = formatDateKey(today)
 
-    // Get today's search volume
-    const recentSearches = await redisClient.get<number>(
-      `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${dateKey}`,
-    )
-
-    // Get count of unique popular keywords (all-time ranking written by the
-    // search analytics of web)
-    const totalPopularKeywords = await redisClient.zcard(
-      REDIS_KEYS.SEARCH_POPULAR_ALL_TIME,
-    )
-
-    // Get today's click volume
-    const clickKey = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`
-    const clickResults = await redisClient.zrange<unknown[]>(clickKey, 0, -1, {
-      rev: false,
-      withScores: true,
-    })
-
-    const recentClicks = sumScores(clickResults)
-
-    const currentAnalytics: AnalyticsSummary = {
-      recentClicks,
-      recentSearches: recentSearches ?? 0,
-      totalPopularKeywords: totalPopularKeywords ?? 0,
-    }
-
-    // Get yesterday's and last week's snapshots for trends
-    // Note: Snapshots are now saved by the daily batch job (/stats/snapshot)
-    // so we only read them here, not write them
-    const yesterday = today.subtract({ days: 1 })
-    const lastWeek = today.subtract({ days: 7 })
-
-    const yesterdayKey = formatDateKey(yesterday)
-    const lastWeekKey = formatDateKey(lastWeek)
-
-    const [yesterdayAnalytics, lastWeekAnalytics] = await Promise.all([
-      redisClient.get<AnalyticsSummary>(
-        `${REDIS_KEYS.SUMMARY_ANALYTICS_PREFIX}${yesterdayKey}`,
+    const [current, yesterday, lastWeek] = await Promise.all([
+      collectAnalyticsSummary(redisClient, formatDateKey(today)),
+      readAnalyticsSnapshot(
+        redisClient,
+        formatDateKey(today.subtract({ days: 1 })),
       ),
-      redisClient.get<AnalyticsSummary>(
-        `${REDIS_KEYS.SUMMARY_ANALYTICS_PREFIX}${lastWeekKey}`,
+      readAnalyticsSnapshot(
+        redisClient,
+        formatDateKey(today.subtract({ days: 7 })),
       ),
     ])
 
-    // Calculate trends
-    const calculateTrend = (
-      current: number,
-      previous: number | undefined,
-    ): number | null => {
-      if (previous === undefined) return null
-      return current - previous
-    }
-
-    return {
-      recentClicks: {
-        current: currentAnalytics.recentClicks,
-        dayChange: calculateTrend(
-          currentAnalytics.recentClicks,
-          yesterdayAnalytics?.recentClicks,
-        ),
-        weekChange: calculateTrend(
-          currentAnalytics.recentClicks,
-          lastWeekAnalytics?.recentClicks,
-        ),
-      },
-      recentSearches: {
-        current: currentAnalytics.recentSearches,
-        dayChange: calculateTrend(
-          currentAnalytics.recentSearches,
-          yesterdayAnalytics?.recentSearches,
-        ),
-        weekChange: calculateTrend(
-          currentAnalytics.recentSearches,
-          lastWeekAnalytics?.recentSearches,
-        ),
-      },
-      totalPopularKeywords: {
-        current: currentAnalytics.totalPopularKeywords,
-        dayChange: calculateTrend(
-          currentAnalytics.totalPopularKeywords,
-          yesterdayAnalytics?.totalPopularKeywords,
-        ),
-        weekChange: calculateTrend(
-          currentAnalytics.totalPopularKeywords,
-          lastWeekAnalytics?.totalPopularKeywords,
-        ),
-      },
-    }
+    return withTrends(current, yesterday, lastWeek)
   } catch (error) {
     logger.error('分析サマリーの取得に失敗しました', { error })
 
-    // Return with null trends on error
-    return {
-      recentClicks: {
-        current: 0,
-        dayChange: null,
-        weekChange: null,
-      },
-      recentSearches: {
-        current: 0,
-        dayChange: null,
-        weekChange: null,
-      },
-      totalPopularKeywords: {
-        current: 0,
-        dayChange: null,
-        weekChange: null,
-      },
-    }
+    // Show zeros without changes when Redis cannot be read
+    return withTrends(
+      { recentClicks: 0, recentSearches: 0, totalPopularKeywords: 0 },
+      null,
+      null,
+    )
   }
 }
