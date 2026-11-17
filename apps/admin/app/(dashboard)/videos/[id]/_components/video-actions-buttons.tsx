@@ -3,18 +3,12 @@
 import type { Tables } from '@shinju-date/database'
 import { Button } from '@shinju-date/ui'
 import { Loader2, Trash2 } from 'lucide-react'
-import { useState } from 'react'
-import { useActionToast } from '@/components/action-toast'
+import { createContext, type ReactNode, use } from 'react'
 import { useServerAction } from '@/lib/use-server-action'
-import {
-  restoreAction,
-  softDeleteAction,
-  toggleVisibilityAction,
-} from '../../_actions'
 import { syncVideoAction } from '../../_actions/sync'
 import { VideoActionConfirmDialog } from '../../_components/video-action-confirm-dialog'
-
-type VideoInfo = Pick<Tables<'videos'>, 'id' | 'title'>
+import { useVideoAction } from '../../_lib/use-video-action'
+import type { VideoAction } from '../../_lib/video-actions'
 
 interface SyncVideoButtonProps {
   videoId: string
@@ -47,8 +41,6 @@ function SyncVideoButton({ videoId, platform }: SyncVideoButtonProps) {
   )
 }
 
-type VideoAction = 'toggle' | 'delete' | 'restore'
-
 interface VideoActionsProps {
   video: Pick<
     Tables<'videos'>,
@@ -56,112 +48,83 @@ interface VideoActionsProps {
   >
 }
 
+/** 詳細のページの操作のボタンから、確認のダイアログを開く関数 */
+const VideoActionContext = createContext<
+  ((action: VideoAction) => void) | null
+>(null)
+
+function useOpenVideoActionDialog() {
+  const openDialog = use(VideoActionContext)
+
+  if (!openDialog) {
+    throw new Error(
+      'VideoActionsButtons と VideoDeleteButton は VideoActionsProvider の中に置いてください。',
+    )
+  }
+
+  return openDialog
+}
+
+interface VideoActionsProviderProps extends VideoActionsProps {
+  children: ReactNode
+}
+
 /**
- * 動画への操作（表示の切り替え・削除・復元）を確認ダイアログ付きで実行する。
- * 通常の操作と危険な操作を別の場所に置けるよう、ボタンとは分けている。
+ * 動画への操作（表示の切り替え・削除・復元）の確認ダイアログを1つだけ描き、
+ * 中のボタンから開けるようにする。通常の操作と危険な操作を別の場所に置けるよう、
+ * ボタンとは分けている。
  */
-function useVideoAction(video: VideoActionsProps['video']) {
-  const { showToast } = useActionToast()
-  const [confirmDialog, setConfirmDialog] = useState<{
-    action: VideoAction
-    open: boolean
-  }>({ action: 'toggle', open: false })
+export function VideoActionsProvider({
+  children,
+  video,
+}: VideoActionsProviderProps) {
+  const { dialogProps, openDialog } = useVideoAction()
 
-  const videoInfo: VideoInfo = { id: video.id, title: video.title }
-
-  const openDialog = (action: VideoAction) => {
-    setConfirmDialog({ action, open: true })
+  const openVideoActionDialog = (action: VideoAction) => {
+    openDialog(action, [
+      { id: video.id, title: video.title, visible: video.visible },
+    ])
   }
 
-  const handleConfirm = async () => {
-    const { action } = confirmDialog
-
-    try {
-      if (action === 'toggle') {
-        const result = await toggleVisibilityAction([video.id])
-        if (result.success) {
-          showToast(
-            'success',
-            `動画を${video.visible ? '非表示' : '表示'}に変更しました。`,
-          )
-        } else {
-          showToast('danger', result.error || '操作に失敗しました。')
-        }
-      } else if (action === 'delete') {
-        const result = await softDeleteAction([video.id])
-        if (result.success) {
-          showToast('success', '動画を削除しました。')
-        } else {
-          showToast('danger', result.error || '削除に失敗しました。')
-        }
-      } else if (action === 'restore') {
-        const result = await restoreAction([video.id])
-        if (result.success) {
-          showToast('success', '動画を復元しました。')
-        } else {
-          showToast('danger', result.error || '復元に失敗しました。')
-        }
-      }
-    } catch (error) {
-      showToast(
-        'danger',
-        error instanceof Error
-          ? error.message
-          : '予期しないエラーが発生しました。',
-      )
-    }
-  }
-
-  const dialog = (
-    <VideoActionConfirmDialog
-      action={confirmDialog.action}
-      onConfirm={handleConfirm}
-      onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
-      open={confirmDialog.open}
-      videos={[videoInfo]}
-    />
+  return (
+    <VideoActionContext value={openVideoActionDialog}>
+      {children}
+      <VideoActionConfirmDialog {...dialogProps} />
+    </VideoActionContext>
   )
-
-  return { dialog, openDialog }
 }
 
 /** 見出しの右端に置く通常の操作（同期・表示の切り替え・復元） */
 export function VideoActionsButtons({ video }: VideoActionsProps) {
-  const { dialog, openDialog } = useVideoAction(video)
+  const openDialog = useOpenVideoActionDialog()
   const isDeleted = video.deleted_at !== null
+
+  if (isDeleted) {
+    return (
+      <Button onClick={() => openDialog('restore')} variant="primary">
+        復元
+      </Button>
+    )
+  }
 
   return (
     <>
-      {isDeleted ? (
-        <Button onClick={() => openDialog('restore')} variant="primary">
-          復元
-        </Button>
-      ) : (
-        <>
-          <Button onClick={() => openDialog('toggle')} variant="secondary">
-            {video.visible ? '非表示にする' : '表示する'}
-          </Button>
-          <SyncVideoButton platform={video.platform} videoId={video.id} />
-        </>
-      )}
-
-      {dialog}
+      <Button onClick={() => openDialog('toggle')} variant="secondary">
+        {video.visible ? '非表示にする' : '表示する'}
+      </Button>
+      <SyncVideoButton platform={video.platform} videoId={video.id} />
     </>
   )
 }
 
 /** ページの末尾に、通常の操作と離して置く削除のボタン */
-export function VideoDeleteButton({ video }: VideoActionsProps) {
-  const { dialog, openDialog } = useVideoAction(video)
+export function VideoDeleteButton() {
+  const openDialog = useOpenVideoActionDialog()
 
   return (
-    <>
-      <Button onClick={() => openDialog('delete')} variant="danger">
-        <Trash2 aria-hidden="true" className="mr-1.5 size-4" />
-        動画を削除
-      </Button>
-
-      {dialog}
-    </>
+    <Button onClick={() => openDialog('delete')} variant="danger">
+      <Trash2 aria-hidden="true" className="mr-1.5 size-4" />
+      動画を削除
+    </Button>
   )
 }
