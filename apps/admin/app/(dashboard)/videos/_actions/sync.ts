@@ -24,6 +24,47 @@ import { revalidatePath } from 'next/cache'
 import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 
+type SyncedVideoFields = Pick<
+  Tables<'videos'>,
+  'duration' | 'published_at' | 'status' | 'title'
+>
+
+interface SyncedChanges {
+  after: Partial<SyncedVideoFields>
+  before: Partial<SyncedVideoFields>
+}
+
+/**
+ * 同期で変わった項目だけを、監査ログの `details.changes` の形で返す。
+ * 操作履歴（`log-item.tsx`）は、この形を読んで変更前と変更後を表示する。
+ */
+function syncedChanges(
+  video: SyncedVideoFields,
+  updateData: TablesUpdate<'videos'>,
+): SyncedChanges {
+  const after: Partial<SyncedVideoFields> = {}
+  const before: Partial<SyncedVideoFields> = {}
+
+  if (updateData.title !== undefined) {
+    after.title = updateData.title
+    before.title = video.title
+  }
+  if (updateData.duration !== undefined) {
+    after.duration = updateData.duration
+    before.duration = video.duration
+  }
+  if (updateData.published_at !== undefined) {
+    after.published_at = updateData.published_at
+    before.published_at = video.published_at
+  }
+  if (updateData.status !== undefined) {
+    after.status = updateData.status
+    before.status = video.status
+  }
+
+  return { after, before }
+}
+
 export async function syncVideoWithYouTube(videoId: string): Promise<{
   success: boolean
   error?: string
@@ -155,30 +196,9 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
       throw updateError
     }
 
-    // Log audit entry with before/after details
-    const beforeData: TablesUpdate<'videos'> = {}
-    const afterData: TablesUpdate<'videos'> = {}
-
-    if ('title' in updateData) {
-      beforeData.title = video.title
-      afterData.title = updateData.title
-    }
-    if ('duration' in updateData) {
-      beforeData.duration = video.duration
-      afterData.duration = updateData.duration
-    }
-    if ('published_at' in updateData) {
-      beforeData.published_at = video.published_at
-      afterData.published_at = updateData.published_at
-    }
-    if ('status' in updateData) {
-      beforeData.status = video.status
-      afterData.status = updateData.status
-    }
-
     await createAuditLog('VIDEO_SYNC', 'videos', videoId, {
-      after: afterData,
-      before: beforeData,
+      changes: syncedChanges(video, updateData),
+      entityName: updateData.title ?? video.title,
     })
 
     revalidatePath(`/videos/${videoId}`)
@@ -434,29 +454,9 @@ export async function syncVideoWithTwitch(videoId: string): Promise<{
       }
     }
 
-    const beforeData: TablesUpdate<'videos'> = {}
-    const afterData: TablesUpdate<'videos'> = {}
-
-    if ('title' in updateData) {
-      beforeData.title = video.title
-      afterData.title = updateData.title
-    }
-    if ('duration' in updateData) {
-      beforeData.duration = video.duration
-      afterData.duration = updateData.duration
-    }
-    if ('published_at' in updateData) {
-      beforeData.published_at = video.published_at
-      afterData.published_at = updateData.published_at
-    }
-    if ('status' in updateData) {
-      beforeData.status = video.status
-      afterData.status = updateData.status
-    }
-
     await createAuditLog('VIDEO_SYNC', 'videos', videoId, {
-      after: afterData,
-      before: beforeData,
+      changes: syncedChanges(video, updateData),
+      entityName: updateData.title ?? video.title,
       platform: 'twitch',
       ...(typeChanged
         ? {

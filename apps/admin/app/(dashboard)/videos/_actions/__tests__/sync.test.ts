@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { setupActionTest } from '@/test/action-harness'
-import { syncVideoWithTwitch } from '../sync'
+import { syncVideoWithTwitch, syncVideoWithYouTube } from '../sync'
 
 const test = setupActionTest()
 const { supabase } = test
@@ -82,14 +82,22 @@ describe('syncVideoWithTwitch', () => {
         }),
       }),
     ])
-    test.expectAuditLog(
-      'VIDEO_SYNC',
-      'videos',
-      videoId,
-      expect.objectContaining({
-        platform: 'twitch',
-      }),
-    )
+    test.expectAuditLog('VIDEO_SYNC', 'videos', videoId, {
+      changes: {
+        after: {
+          duration: 'PT1H',
+          published_at: '2024-06-01T12:00:00Z',
+          title: 'New Archive Title',
+        },
+        before: {
+          duration: 'PT3H',
+          published_at: '2024-01-01T00:00:00Z',
+          title: 'Old Title',
+        },
+      },
+      entityName: 'New Archive Title',
+      platform: 'twitch',
+    })
   })
 
   it('should sync clip metadata from Helix Clips API', async () => {
@@ -326,8 +334,11 @@ describe('syncVideoWithTwitch for broadcasts', () => {
     ])
     expect(supabase.calls('update', 'twitch_videos')).toHaveLength(0)
     test.expectAuditLog('VIDEO_SYNC', 'videos', videoId, {
-      after: { title: 'New Stream Title' },
-      before: { title: 'Old Stream Title' },
+      changes: {
+        after: { title: 'New Stream Title' },
+        before: { title: 'Old Stream Title' },
+      },
+      entityName: 'New Stream Title',
       platform: 'twitch',
     })
   })
@@ -417,8 +428,11 @@ describe('syncVideoWithTwitch for broadcasts', () => {
       'videos',
       videoId,
       expect.objectContaining({
-        after: expect.objectContaining({ status: 'ENDED' }),
-        before: expect.objectContaining({ status: 'LIVE' }),
+        changes: {
+          after: expect.objectContaining({ status: 'ENDED' }),
+          before: expect.objectContaining({ status: 'LIVE' }),
+        },
+        entityName: 'Archive Title',
         twitch_type: { after: 'archive', before: null },
         twitch_video_id: { after: '901', before: placeholderId },
       }),
@@ -462,8 +476,12 @@ describe('syncVideoWithTwitch for broadcasts', () => {
       },
     ])
     test.expectAuditLog('VIDEO_SYNC', 'videos', videoId, {
-      after: { status: 'ENDED' },
-      before: { status: 'LIVE' },
+      changes: {
+        after: { status: 'ENDED' },
+        before: { status: 'LIVE' },
+      },
+      // The title is unchanged, so the saved one names the video.
+      entityName: 'Stream Title',
       platform: 'twitch',
     })
   })
@@ -538,5 +556,77 @@ describe('syncVideoWithTwitch for broadcasts', () => {
         }),
       }),
     ])
+  })
+})
+
+describe('syncVideoWithYouTube', () => {
+  const youtubeVideoId = 'YT_video_1'
+
+  async function answerYouTubeVideo(title: string): Promise<void> {
+    const { getPublishedAt, getVideoStatus, getVideos } = await import(
+      '@shinju-date/youtube-api-client'
+    )
+
+    async function* mockGetVideos() {
+      yield {
+        contentDetails: { duration: 'PT1H' },
+        id: youtubeVideoId,
+        snippet: { title },
+      }
+    }
+
+    vi.mocked(getVideos).mockReturnValue(mockGetVideos() as never)
+    vi.mocked(getPublishedAt).mockReturnValue(
+      Temporal.Instant.from('2024-06-01T12:00:00Z'),
+    )
+    vi.mocked(getVideoStatus).mockReturnValue('ENDED')
+  }
+
+  it('logs the synced title as the entity name with the changed fields', async () => {
+    supabase.on('select', 'videos', {
+      duration: 'PT1H',
+      id: videoId,
+      published_at: '2024-06-01T12:00:00Z',
+      status: 'LIVE',
+      title: 'Old Title',
+      visible: true,
+      youtube_video: { youtube_video_id: youtubeVideoId },
+    })
+    await answerYouTubeVideo('New Title')
+
+    const result = await syncVideoWithYouTube(videoId)
+
+    expect(result).toEqual({ success: true })
+    test.expectAuditLog('VIDEO_SYNC', 'videos', videoId, {
+      changes: {
+        after: { status: 'ENDED', title: 'New Title' },
+        before: { status: 'LIVE', title: 'Old Title' },
+      },
+      entityName: 'New Title',
+    })
+  })
+
+  it('names the video by its saved title when the title is unchanged', async () => {
+    supabase.on('select', 'videos', {
+      duration: 'PT3H',
+      id: videoId,
+      published_at: '2024-06-01T12:00:00Z',
+      status: 'ENDED',
+      title: 'Same Title',
+      visible: true,
+      youtube_video: { youtube_video_id: youtubeVideoId },
+    })
+    await answerYouTubeVideo('Same Title')
+
+    const result = await syncVideoWithYouTube(videoId)
+
+    expect(result).toEqual({ success: true })
+    test.expectAuditLog('VIDEO_SYNC', 'videos', videoId, {
+      changes: {
+        after: { duration: 'PT1H' },
+        before: { duration: 'PT3H' },
+      },
+      entityName: 'Same Title',
+    })
   })
 })
