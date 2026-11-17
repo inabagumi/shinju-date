@@ -8,8 +8,26 @@ const profileImage = {
   id: '00000000-0000-4000-8000-000000000001',
 }
 
+type YouTubeChannel = NonNullable<Video['youtube_video']>['youtube_channel']
+
+type TwitchUser = NonNullable<Video['twitch_video']>['twitch_user']
+
+/** A YouTube channel without a name or a handle, whose video shows the talent */
+const unnamedYouTubeChannel: YouTubeChannel = {
+  name: null,
+  profile_image: null,
+  youtube_handle: null,
+}
+
+/** A Twitch user without a name or a login, whose video shows the talent */
+const unnamedTwitchUser: TwitchUser = {
+  name: null,
+  profile_image: null,
+  twitch_login_name: null,
+}
+
 function createYouTubeVideo(
-  youtubeChannel: NonNullable<Video['youtube_video']>['youtube_channel'],
+  youtubeChannel: YouTubeChannel = unnamedYouTubeChannel,
 ): Video {
   return {
     duration: 'PT10M',
@@ -29,9 +47,7 @@ function createYouTubeVideo(
   }
 }
 
-function createTwitchVideo(
-  twitchUser: NonNullable<Video['twitch_video']>['twitch_user'],
-): Video {
+function createTwitchVideo(twitchUser: TwitchUser = unnamedTwitchUser): Video {
   return {
     duration: 'PT1H',
     id: 'twitch-video',
@@ -137,13 +153,13 @@ describe('VideoCard', () => {
       'twitch_login',
     ],
     [
-      'the talent name for a missing YouTube channel',
-      createYouTubeVideo(null),
+      'the talent name for a YouTube channel without a name',
+      createYouTubeVideo(),
       'タレント名',
     ],
     [
-      'the talent name for a missing Twitch user',
-      { ...createTwitchVideo(null), status: 'UPCOMING' } satisfies Video,
+      'the talent name for a Twitch user without a name',
+      { ...createTwitchVideo(), status: 'UPCOMING' } satisfies Video,
       'タレント名',
     ],
   ])('should fall back to %s', (_, video, expectedName) => {
@@ -154,12 +170,10 @@ describe('VideoCard', () => {
   })
 
   test('should still render the card without any creator data', () => {
-    const video = createYouTubeVideo(null)
+    const video = createYouTubeVideo()
 
     render(
-      <VideoCard
-        value={{ ...video, talent: null as unknown as Video['talent'] }}
-      />,
+      <VideoCard value={{ ...video, talent: { id: 'talent-1', name: '' } }} />,
     )
 
     expect(screen.getByRole('link')).toHaveTextContent('YouTubeの動画')
@@ -186,7 +200,7 @@ describe('VideoCard', () => {
   })
 
   test('should wrap the title at word boundaries when possible', () => {
-    render(<VideoCard value={createYouTubeVideo(null)} />)
+    render(<VideoCard value={createYouTubeVideo()} />)
 
     // `break-all` splits words such as "#shorts" in the middle.
     const title = screen.getByRole('heading')
@@ -215,7 +229,7 @@ describe('VideoCard', () => {
   })
 
   test('should keep the height of two lines for the title', () => {
-    render(<VideoCard value={createYouTubeVideo(null)} />)
+    render(<VideoCard value={createYouTubeVideo()} />)
 
     const title = screen.getByRole('heading')
 
@@ -261,7 +275,7 @@ describe('VideoCard', () => {
   })
 
   test('should use the given heading level for the title', () => {
-    render(<VideoCard titleAs="h4" value={createYouTubeVideo(null)} />)
+    render(<VideoCard titleAs="h4" value={createYouTubeVideo()} />)
 
     expect(
       screen.getByRole('heading', { level: 4, name: 'YouTubeの動画' }),
@@ -269,19 +283,17 @@ describe('VideoCard', () => {
   })
 
   test('should not show the separator without a creator', () => {
-    const video = createYouTubeVideo(null)
+    const video = createYouTubeVideo()
 
     render(
-      <VideoCard
-        value={{ ...video, talent: null as unknown as Video['talent'] }}
-      />,
+      <VideoCard value={{ ...video, talent: { id: 'talent-1', name: '' } }} />,
     )
 
     expect(screen.queryByText('・')).not.toBeInTheDocument()
   })
 
   test('should show the duration on the thumbnail', () => {
-    render(<VideoCard value={createYouTubeVideo(null)} />)
+    render(<VideoCard value={createYouTubeVideo()} />)
 
     const duration = within(
       screen.getByTestId('video-card-thumbnail'),
@@ -292,7 +304,7 @@ describe('VideoCard', () => {
   })
 
   test('should show the live badge only for live videos', () => {
-    const video = createYouTubeVideo(null)
+    const video = createYouTubeVideo()
     const { rerender } = render(<VideoCard value={video} />)
 
     expect(screen.queryByText('配信中')).not.toBeInTheDocument()
@@ -313,7 +325,7 @@ describe('VideoCard', () => {
   ] as const)(
     'should show the short badge on the %s variant: %s',
     (variant, expected) => {
-      const video = createYouTubeVideo(null)
+      const video = createYouTubeVideo()
       const { rerender } = render(<VideoCard value={video} variant={variant} />)
 
       expect(screen.queryByText('ショート')).not.toBeInTheDocument()
@@ -338,7 +350,7 @@ describe('VideoCard', () => {
   )
 
   test('should label the start time of upcoming videos only when asked', () => {
-    const video = { ...createYouTubeVideo(null), status: 'UPCOMING' as const }
+    const video = { ...createYouTubeVideo(), status: 'UPCOMING' as const }
     const { rerender } = render(<VideoCard value={video} />)
 
     expect(screen.queryByText('予定')).not.toBeInTheDocument()
@@ -355,8 +367,8 @@ describe('VideoCard', () => {
   })
 
   test.each([
-    ['Twitch', createTwitchVideo(null), true],
-    ['YouTube', createYouTubeVideo(null), false],
+    ['Twitch', createTwitchVideo(), true],
+    ['YouTube', createYouTubeVideo(), false],
   ])('should show the platform badge for %s: %s', (name, video, expected) => {
     render(<VideoCard value={video} />)
 
@@ -370,7 +382,7 @@ describe('VideoCard', () => {
   })
 
   test('should show a focus ring around the whole card', () => {
-    render(<VideoCard value={createYouTubeVideo(null)} />)
+    render(<VideoCard value={createYouTubeVideo()} />)
 
     expect(screen.getByRole('link')).toHaveClass(
       'focus-visible:outline-2',
@@ -382,7 +394,7 @@ describe('VideoCard', () => {
     const title =
       '【雀魂】指示厨が泡吹いて倒れない麻雀【タレント名 / ななしいんく】'
 
-    render(<VideoCard value={{ ...createYouTubeVideo(null), title }} />)
+    render(<VideoCard value={{ ...createYouTubeVideo(), title }} />)
 
     const heading = screen.getByRole('heading')
 
@@ -396,7 +408,7 @@ describe('VideoCard', () => {
     render(
       <VideoCard
         value={{
-          ...createYouTubeVideo(null),
+          ...createYouTubeVideo(),
           title: 'YMCAになるポポティア #shorts #タレント名 #ymcaダンス',
         }}
       />,
@@ -418,7 +430,7 @@ describe('VideoCard', () => {
     render(
       <VideoCard
         value={{
-          ...createYouTubeVideo(null),
+          ...createYouTubeVideo(),
           title: '【Minecraft】【雑談】最終日！ #一 #二 #三 #四',
         }}
       />,
@@ -431,7 +443,7 @@ describe('VideoCard', () => {
   })
 
   test('should keep the height of one line without labels and hashtags', () => {
-    render(<VideoCard value={createYouTubeVideo(null)} />)
+    render(<VideoCard value={createYouTubeVideo()} />)
 
     const tags = screen.getByTestId('video-card-tags')
 
@@ -448,7 +460,7 @@ describe('VideoCard', () => {
     render(
       <VideoCard
         value={{
-          ...createYouTubeVideo(null),
+          ...createYouTubeVideo(),
           title:
             '【 #踊ってみた 】Magic / 3SKM【 タレント名 / ななしいんく 】#shorts #3skm',
           video_kind: 'short',
@@ -466,7 +478,7 @@ describe('VideoCard', () => {
     ['row', ['flex-row', 'sm:flex-col'], 'w-2/5'],
     ['short', ['flex-col'], 'aspect-9/16'],
   ] as const)('should lay out the %s variant', (variant, layout, thumbnail) => {
-    render(<VideoCard value={createYouTubeVideo(null)} variant={variant} />)
+    render(<VideoCard value={createYouTubeVideo()} variant={variant} />)
 
     expect(screen.getByRole('link')).toHaveClass(...layout)
     expect(screen.getByTestId('video-card-thumbnail')).toHaveClass(thumbnail)

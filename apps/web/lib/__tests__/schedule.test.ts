@@ -195,15 +195,13 @@ describe('getLengthMinutes', () => {
   })
 
   test('should use 1 hour without a duration', () => {
-    for (const duration of [null, 'P0D']) {
-      expect(
-        getLengthMinutes({
-          duration,
-          published_at: '2026-11-09T12:00:00Z',
-          status: 'ENDED',
-        }),
-      ).toBe(60)
-    }
+    expect(
+      getLengthMinutes({
+        duration: 'P0D',
+        published_at: '2026-11-09T12:00:00Z',
+        status: 'ENDED',
+      }),
+    ).toBe(60)
   })
 })
 
@@ -212,7 +210,7 @@ describe('layoutDay', () => {
   function video(
     id: string,
     time: string,
-    duration: string | null = null,
+    duration = 'P0D',
     status = 'UPCOMING',
   ) {
     const [hour = 0, minute = 0] = time.split(':').map(Number)

@@ -43,13 +43,11 @@ function createTwitchVideo(
     platform: 'twitch',
     status: 'ENDED',
     twitch_video: {
-      twitch_user: twitchLoginName
-        ? {
-            name: '朝霧ミオ',
-            profile_image: null,
-            twitch_login_name: twitchLoginName,
-          }
-        : null,
+      twitch_user: {
+        name: '朝霧ミオ',
+        profile_image: null,
+        twitch_login_name: twitchLoginName,
+      },
       twitch_video_id: '1234567890',
       type: 'archive',
     },
@@ -341,7 +339,11 @@ describe('getScheduleVideoUrl', () => {
       getScheduleVideoUrl({
         ...video,
         twitch_video: {
-          twitch_user: null,
+          twitch_user: {
+            name: '朝霧ミオ',
+            profile_image: null,
+            twitch_login_name: null,
+          },
           twitch_video_id: 'live:12345678901',
           type: null,
         },
