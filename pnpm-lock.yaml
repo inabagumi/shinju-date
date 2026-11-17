@@ -509,6 +509,9 @@ importers:
       '@shinju-date/helpers':
         specifier: workspace:*
         version: link:../../packages/helpers
+      '@shinju-date/instrumentation':
+        specifier: workspace:*
+        version: link:../../packages/instrumentation
       '@shinju-date/logger':
         specifier: workspace:*
         version: link:../../packages/logger
