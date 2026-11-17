@@ -2,9 +2,14 @@ name: CI
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
   push:
     branches: [main]
+
+# A new push to a pull request cancels the older run; pushes to main run to the end
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # Detect whether the database job needs to run
