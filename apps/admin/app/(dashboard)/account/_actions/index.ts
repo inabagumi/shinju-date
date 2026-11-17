@@ -6,7 +6,7 @@ import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedFormState } from '@/lib/auth'
 import { publicEnv } from '@/lib/env'
-import { zodErrorToFormState } from '../_lib/form-helpers'
+import { zodErrorToFormState } from '@/lib/form'
 
 const emailSchema = z.object({
   email: z.email({

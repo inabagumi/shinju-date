@@ -18,9 +18,9 @@ import {
   unauthenticatedFormState,
   unauthenticatedResult,
 } from '@/lib/auth'
+import { zodErrorToFormState } from '@/lib/form'
 import { isNotFoundError } from '@/lib/supabase/query'
 import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
-import { zodErrorToFormState } from '../_lib/form-helpers'
 import { talentNameSchema, talentReadingSchema } from '../_lib/talent-schema'
 
 const createTalentSchema = z.object({
