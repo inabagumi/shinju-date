@@ -67,6 +67,12 @@ export default withSentry(nextConfig)
 
 ほかのプラグイン（`withMDX` など）を使うときは、`withSentry()` を最後に適用します。
 
+ページを持たず、ルートハンドラーだけのアプリ（`apps/batch`）では、`browser: false` を渡します。ブラウザ向けのオプション（`reactComponentAnnotation`、`tunnelRoute`、`widenClientFileUpload`）を付けません。このようなアプリには `instrumentation-client.ts` を置きません。
+
+```typescript
+export default withSentry(nextConfig, { browser: false })
+```
+
 ## テスト
 
 ```bash
