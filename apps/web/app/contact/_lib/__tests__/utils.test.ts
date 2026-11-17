@@ -14,8 +14,8 @@ import { getContactFormConfig, isContactFormEnabled } from '../utils'
 
 function setEnv(values: Partial<typeof serverEnv>): void {
   Object.assign(serverEnv, {
-    ADMIN_EMAIL: 'contact@shinju.date',
-    FROM_EMAIL: 'noreply@shinju.date',
+    ADMIN_EMAIL: 'contact@example.org',
+    FROM_EMAIL: 'noreply@example.org',
     RESEND_API_KEY: 're_test',
     ...values,
   })
@@ -32,8 +32,8 @@ describe('getContactFormConfig', () => {
     setEnv({})
 
     expect(getContactFormConfig()).toEqual({
-      adminEmail: 'contact@shinju.date',
-      fromEmail: 'noreply@shinju.date',
+      adminEmail: 'contact@example.org',
+      fromEmail: 'noreply@example.org',
       resendApiKey: 're_test',
     })
     expect(isContactFormEnabled()).toBe(true)

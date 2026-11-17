@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
-const DEFAULT_ADMIN_EMAIL = 'contact@shinju.date'
+const DEFAULT_ADMIN_EMAIL = 'contact@example.org'
 
 const { sendEmail, serverEnv } = vi.hoisted(() => ({
   sendEmail: vi.fn(),
   serverEnv: {
-    ADMIN_EMAIL: 'contact@shinju.date' as string | undefined,
-    FROM_EMAIL: 'noreply@shinju.date',
+    ADMIN_EMAIL: 'contact@example.org' as string | undefined,
+    FROM_EMAIL: 'noreply@example.org',
     RESEND_API_KEY: 're_test',
   },
 }))
@@ -36,9 +36,9 @@ function createFormData(values: Record<string, string>): FormData {
 }
 
 const SUBMITTED_VALUES = {
-  email: 'haneru@example.com',
+  email: 'hanako@example.com',
   message: '不具合があります',
-  name: '因幡はねる',
+  name: '山田花子',
   type: 'bug',
   wantsReply: 'on',
 }
@@ -142,10 +142,10 @@ describe('submitContactForm', () => {
     })
     expect(sendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
-        from: 'noreply@shinju.date',
-        replyTo: '因幡はねる <haneru@example.com>',
-        text: expect.stringContaining('■ お名前\n因幡はねる\n'),
-        to: 'contact@shinju.date',
+        from: 'noreply@example.org',
+        replyTo: '山田花子 <hanako@example.com>',
+        text: expect.stringContaining('■ お名前\n山田花子\n'),
+        to: 'contact@example.org',
       }),
     )
   })
@@ -161,7 +161,7 @@ describe('submitContactForm', () => {
       null,
       createFormData({
         message: '不具合があります',
-        name: '因幡はねる',
+        name: '山田花子',
         type: 'bug',
       }),
     )
@@ -171,7 +171,7 @@ describe('submitContactForm', () => {
     const [options] = sendEmail.mock.calls[0] ?? []
 
     expect(options).not.toHaveProperty('replyTo')
-    expect(options.text).toContain('■ お名前\n因幡はねる\n')
+    expect(options.text).toContain('■ お名前\n山田花子\n')
   })
 
   test('marks the name as not entered when it is empty', async () => {
