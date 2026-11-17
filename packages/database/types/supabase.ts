@@ -284,6 +284,9 @@ isOneToOne: false
 "insert_audit_log":
 { Args: { "p_action": Database["public"]['Enums']["audit_action"],"p_details"?: Json,"p_target_record_id"?: string,"p_target_table": string }; Returns: undefined
                            },
+"insert_audit_logs":
+{ Args: { "p_entries": Json }; Returns: undefined
+                           },
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
