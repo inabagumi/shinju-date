@@ -36,7 +36,6 @@ describe('Form', () => {
 
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent('保存に失敗しました。')
-
     expect(alert.closest('form')?.firstElementChild).toBe(alert)
   })
 
@@ -72,6 +71,19 @@ describe('Form', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
+  it('shows the success message when `success` is true', async () => {
+    renderForm(() => ({ success: true }))
+
+    submit()
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      '更新が完了しました。',
+    )
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+})
+
+describe('ErrorMessage', () => {
   it('shows the error of a field next to the field', async () => {
     renderForm(() => ({
       errors: { email: ['メールアドレスを入力してください。'] },
@@ -86,17 +98,6 @@ describe('Form', () => {
     const input = screen.getByLabelText('メールアドレス')
     expect(input).toHaveAttribute('aria-invalid', 'true')
     expect(input).toHaveAttribute('aria-describedby', alert.id)
-  })
-
-  it('shows the success message when `success` is true', async () => {
-    renderForm(() => ({ success: true }))
-
-    submit()
-
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      '更新が完了しました。',
-    )
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 })
 

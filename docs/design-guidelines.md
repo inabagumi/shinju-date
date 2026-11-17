@@ -148,7 +148,7 @@ const example = (
 - **入力欄（`Input`・`Select`・`Textarea`）の文字は 16px 未満にしない。** iOS の Safari は、16px 未満の入力欄にフォーカスすると画面を拡大します。小さい入力欄（`inputSize="sm"`）も文字は 16px のままで、余白で小ささを出します
 - **時刻・再生時間・件数は `tabular-nums` にする。** 桁がそろい、数字が変わっても幅が揺れません
 - **文章の行長は1行40〜45文字程度に抑える。** 説明文やお知らせなど、まとまった文章は `max-w-text`（44rem）の中に置きます
-- **管理画面の `useActionState` のフォームは、`apps/admin/components/form.tsx` の部品で組む。** `Label` と `ErrorMessage` が上の表のクラス（`Label` は入力欄との間の `mb-2`、`ErrorMessage` は入力欄との間の `mt-1` も）を持つので、使う側でクラスを書かないでください。違う並べ方が要るときだけ、`className` で上書きします（`twMerge` で既定のクラスとまとめます）。項目に結び付かないエラー（`FormState` の `error` と `errors.generic`）は、`Form` がフォームの先頭に出します
+- **管理画面の `useActionState` のフォームは、`apps/admin/components/form.tsx` の部品で組む。** `Label` と `ErrorMessage` が上の表のクラス（`Label` は入力欄との間の `mb-2`、`ErrorMessage` は入力欄との間の `mt-1` も）を持つので、使う側でクラスを書かないでください。違う並べ方が要るときだけ、`className` で上書きします（`twMerge` で既定のクラスとまとめます）。項目に結び付かないエラー（`FormState` の `error` と `errors.generic`）は、`Form` がフォームの先頭に `Alert`（`tone="danger"`）で出します
 - **管理画面の枠で囲んだ区画は `Panel`（`apps/admin/components/panel.tsx`）にする。** 枠（`rounded-container border border-border bg-surface p-6`）と見出し（`title`）、補足（`description`）、見出しの右の操作（`actions`）をまとめて持ちます。クラスの文字列を手で書かないでください。詳細ページの項目名と値の一覧は、`Panel` の中に `DetailList` と `DetailRow` で置きます
 
 ```tsx

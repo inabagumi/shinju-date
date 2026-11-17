@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Alert,
   twMerge,
   Button as UIButton,
   type ButtonProps as UIButtonProps,
@@ -91,12 +92,9 @@ function FormError() {
 
   return (
     messages.length > 0 && (
-      <p
-        className="rounded-control bg-danger/10 p-3 text-meta text-danger"
-        role="alert"
-      >
+      <Alert tone="danger">
         <MessageLines messages={messages} />
-      </p>
+      </Alert>
     )
   )
 }
