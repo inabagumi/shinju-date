@@ -1,14 +1,9 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import {
-  FilterBar,
-  Input,
-  MultiSelect,
-  type MultiSelectOption,
-} from '@shinju-date/ui'
+import { FilterBar, MultiSelect, type MultiSelectOption } from '@shinju-date/ui'
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { SearchInput } from '@/components/search-input'
 import { useUpdateSearchParams } from '@/lib/use-update-search-params'
 
 type Talent = Pick<
@@ -39,9 +34,6 @@ interface Props {
 export function VideoFilters({ talents }: Props) {
   const updateSearchParams = useUpdateSearchParams()
   const searchParams = useSearchParams()
-  const [searchInput, setSearchInput] = useState(
-    searchParams.get('search') || '',
-  )
 
   // Get current filter values from URL (support arrays)
   const currentTalentIds = searchParams.getAll('talentId')
@@ -50,23 +42,6 @@ export function VideoFilters({ talents }: Props) {
   const currentStatus = searchParams.getAll('status')
   const currentPlatform = searchParams.getAll('platform')
   const currentVideoKind = searchParams.getAll('videoKind')
-
-  // Debounce search input
-  useEffect(() => {
-    const currentSearch = searchParams.get('search') || ''
-
-    // Only trigger navigation if the search input actually changed from URL
-    if (searchInput === currentSearch) {
-      return
-    }
-
-    // Removes `page` so that the results start from page 1
-    const timer = setTimeout(() => {
-      updateSearchParams({ search: searchInput })
-    }, 500) // 500ms debounce
-
-    return () => clearTimeout(timer)
-  }, [searchInput, searchParams, updateSearchParams])
 
   // Removes `page` so that the results start from page 1
   const handleMultiSelectChange = (key: FilterKey, values: string[]) => {
@@ -161,13 +136,10 @@ export function VideoFilters({ talents }: Props) {
         >
           タイトルまたはIDで検索
         </label>
-        <Input
+        <SearchInput
           id="search-filter"
           inputSize="md"
-          onChange={(e) => setSearchInput(e.target.value)}
           placeholder="検索..."
-          type="search"
-          value={searchInput}
           variant="default"
         />
       </div>
