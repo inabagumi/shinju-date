@@ -1,9 +1,7 @@
-import { TIME_ZONE } from '@shinju-date/constants'
 import { formatNumber } from '@shinju-date/helpers'
 import { Button, EmptyState } from '@shinju-date/ui'
 import { ExternalLink } from 'lucide-react'
 import Link from 'next/link'
-import { connection } from 'next/server'
 import {
   ExternalVideoLink,
   getExternalVideoUrl,
@@ -12,6 +10,7 @@ import { Panel } from '@/components/panel'
 import { PopularVideosListSkeleton } from '@/components/skeletons'
 import { VideoThumbnail } from '@/components/video-thumbnail'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
+import { getToday } from '../_lib/get-today'
 
 export function DashboardPopularVideosSkeleton() {
   return (
@@ -27,10 +26,7 @@ export function DashboardPopularVideosSkeleton() {
  * This is an async Server Component that fetches its own data
  */
 export async function DashboardPopularVideos() {
-  // 現在の日付で期間を決めるため、リクエストの時点で描く
-  await connection()
-
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
+  const today = Temporal.PlainDate.from(await getToday())
   const startDate = today.subtract({ days: 29 })
   const popularVideos = await getPopularVideos(
     10,
