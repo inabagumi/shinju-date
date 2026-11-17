@@ -25,7 +25,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useMemo, useState } from 'react'
-import { ActionToast, useActionToast } from '@/components/action-toast'
+import { useActionToast } from '@/components/action-toast'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -92,7 +92,7 @@ export default function VideoList({ videos }: Props) {
     open: false,
     videos: [],
   })
-  const { showToast, toastProps } = useActionToast()
+  const { showToast } = useActionToast()
 
   // ページ送り・絞り込み・並べ替えで一覧が変わったら、選択を現在の一覧に
   // 含まれる動画だけに絞る（ページをまたぐ選択は持たない）
@@ -493,8 +493,6 @@ export default function VideoList({ videos }: Props) {
           )}
         </TableBody>
       </Table>
-
-      <ActionToast {...toastProps} />
 
       {/* Confirmation modal */}
       <VideoActionConfirmDialog

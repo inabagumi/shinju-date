@@ -6,6 +6,7 @@ import {
   within,
 } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ActionToastProvider } from '@/components/action-toast'
 import type { VideoBackfillAccount } from '../../_actions/backfill'
 
 const mocks = vi.hoisted(() => ({
@@ -52,6 +53,7 @@ function renderPanel() {
       talentId="talent-1"
       talentName="Talent"
     />,
+    { wrapper: ActionToastProvider },
   )
 }
 

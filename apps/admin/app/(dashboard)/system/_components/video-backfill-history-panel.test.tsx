@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ActionToastProvider } from '@/components/action-toast'
 import type {
   VideoBackfillFailure,
   VideoBackfillHistoryEntry,
@@ -81,7 +82,7 @@ describe('VideoBackfillHistoryPanel', () => {
       success: true,
     })
 
-    render(<VideoBackfillHistoryPanel />)
+    render(<VideoBackfillHistoryPanel />, { wrapper: ActionToastProvider })
 
     expect(
       await screen.findByText(
@@ -119,7 +120,7 @@ describe('VideoBackfillHistoryPanel', () => {
       success: true,
     })
 
-    render(<VideoBackfillHistoryPanel />)
+    render(<VideoBackfillHistoryPanel />, { wrapper: ActionToastProvider })
 
     expect(
       await screen.findByText(/最後の取り込みが失敗したアカウント: 2件/),
@@ -165,7 +166,7 @@ describe('VideoBackfillHistoryPanel', () => {
           success: true,
         })
 
-      render(<VideoBackfillHistoryPanel />)
+      render(<VideoBackfillHistoryPanel />, { wrapper: ActionToastProvider })
 
       expect(await screen.findByText('再試行中')).toBeTruthy()
 
@@ -192,7 +193,7 @@ describe('VideoBackfillHistoryPanel', () => {
         success: true,
       })
 
-    render(<VideoBackfillHistoryPanel />)
+    render(<VideoBackfillHistoryPanel />, { wrapper: ActionToastProvider })
 
     fireEvent.click(await screen.findByRole('button', { name: '再試行' }))
 

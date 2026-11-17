@@ -2,9 +2,7 @@
 
 import { Button } from '@shinju-date/ui'
 import { Loader2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
-import { ActionToast, useActionToast } from '@/components/action-toast'
+import { useServerAction } from '@/lib/use-server-action'
 import {
   syncTalentWithTwitch,
   syncTalentWithYouTube,
@@ -21,47 +19,23 @@ export function SyncTalentButton({
   hasYouTubeChannels,
   hasTwitchUsers,
 }: Props) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-  const [pendingPlatform, setPendingPlatform] = useState<
-    'youtube' | 'twitch' | null
-  >(null)
-  const { showToast, toastProps } = useActionToast()
-
-  const runSync = (platform: 'youtube' | 'twitch') => {
-    setPendingPlatform(platform)
-    startTransition(async () => {
-      try {
-        const result =
-          platform === 'youtube'
-            ? await syncTalentWithYouTube(talentId)
-            : await syncTalentWithTwitch(talentId)
-
-        if (result.success) {
-          showToast(
-            'success',
-            result.message ??
-              (result.unchanged
-                ? platform === 'youtube'
-                  ? 'チャンネル情報は既に最新です。'
-                  : 'Twitchユーザー情報は既に最新です。'
-                : platform === 'youtube'
-                  ? 'チャンネル情報を同期しました。'
-                  : 'Twitchユーザー情報を同期しました。'),
-          )
-          if (!result.unchanged) {
-            router.refresh()
-          }
-        } else {
-          showToast('danger', result.error || '同期に失敗しました。')
-        }
-      } catch (_error) {
-        showToast('danger', '予期しないエラーが発生しました。')
-      } finally {
-        setPendingPlatform(null)
-      }
-    })
-  }
+  const youtube = useServerAction(syncTalentWithYouTube, {
+    errorText: '同期に失敗しました。',
+    successText: (result) =>
+      result.message ??
+      (result.unchanged
+        ? 'チャンネル情報は既に最新です。'
+        : 'チャンネル情報を同期しました。'),
+  })
+  const twitch = useServerAction(syncTalentWithTwitch, {
+    errorText: '同期に失敗しました。',
+    successText: (result) =>
+      result.message ??
+      (result.unchanged
+        ? 'Twitchユーザー情報は既に最新です。'
+        : 'Twitchユーザー情報を同期しました。'),
+  })
+  const isPending = youtube.isPending || twitch.isPending
 
   if (!hasYouTubeChannels && !hasTwitchUsers) {
     return null
@@ -73,29 +47,28 @@ export function SyncTalentButton({
         <Button
           className="gap-2 whitespace-nowrap"
           disabled={isPending}
-          onClick={() => runSync('youtube')}
+          onClick={() => youtube.run(talentId)}
           variant="secondary"
         >
-          {pendingPlatform === 'youtube' && (
+          {youtube.isPending && (
             <Loader2 aria-hidden="true" className="size-4 animate-spin" />
           )}
-          {pendingPlatform === 'youtube' ? '同期中...' : 'YouTubeと同期'}
+          {youtube.isPending ? '同期中...' : 'YouTubeと同期'}
         </Button>
       )}
       {hasTwitchUsers && (
         <Button
           className="gap-2 whitespace-nowrap"
           disabled={isPending}
-          onClick={() => runSync('twitch')}
+          onClick={() => twitch.run(talentId)}
           variant="secondary"
         >
-          {pendingPlatform === 'twitch' && (
+          {twitch.isPending && (
             <Loader2 aria-hidden="true" className="size-4 animate-spin" />
           )}
-          {pendingPlatform === 'twitch' ? '同期中...' : 'Twitchと同期'}
+          {twitch.isPending ? '同期中...' : 'Twitchと同期'}
         </Button>
       )}
-      <ActionToast {...toastProps} />
     </>
   )
 }

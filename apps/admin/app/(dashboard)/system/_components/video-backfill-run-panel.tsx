@@ -16,8 +16,9 @@ import {
 } from '@shinju-date/ui'
 import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { useCallback, useEffect, useState, useTransition } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Panel } from '@/components/panel'
+import { useServerAction } from '@/lib/use-server-action'
 import {
   getVideoBackfillRunAction,
   requestVideoBackfillRunAction,
@@ -197,11 +198,6 @@ export function VideoBackfillRunPanel() {
     targets: VideoBackfillTargets
   } | null>(null)
   const [open, setOpen] = useState(false)
-  const [isPending, startTransition] = useTransition()
-  const [message, setMessage] = useState<{
-    type: 'success' | 'error'
-    text: string
-  } | null>(null)
   // Why the progress could not be loaded; shown with a retry button.
   const [loadError, setLoadError] = useState<string | null>(null)
 
@@ -243,30 +239,18 @@ export function VideoBackfillRunPanel() {
     return () => clearInterval(timer)
   }, [isActive, refresh])
 
-  const request = () => {
-    setMessage(null)
-    startTransition(async () => {
-      try {
-        const result = await requestVideoBackfillRunAction()
+  const { isPending, run: runRequest } = useServerAction(
+    requestVideoBackfillRunAction,
+    {
+      errorText: 'キューへの追加に失敗しました。',
+      successText: (result) => result.message ?? 'キューに追加しました。',
+    },
+  )
 
-        setMessage(
-          result.success
-            ? {
-                text: result.message ?? 'キューに追加しました。',
-                type: 'success',
-              }
-            : {
-                text: result.error ?? 'キューへの追加に失敗しました。',
-                type: 'error',
-              },
-        )
-        await refresh()
-      } catch {
-        setMessage({ text: '予期しないエラーが発生しました。', type: 'error' })
-      } finally {
-        setOpen(false)
-      }
-    })
+  const request = async () => {
+    await runRequest()
+    setOpen(false)
+    await refresh()
   }
 
   const targets = state?.targets
@@ -333,18 +317,6 @@ export function VideoBackfillRunPanel() {
           role="alert"
         >
           {loadError}
-        </div>
-      )}
-      {message && (
-        <div
-          className={`mb-4 rounded-control p-3 text-meta ${
-            message.type === 'success'
-              ? 'bg-success/10 text-success'
-              : 'bg-danger/10 text-danger'
-          }`}
-          role={message.type === 'success' ? 'status' : 'alert'}
-        >
-          {message.text}
         </div>
       )}
       <div className="-mx-6 -mb-6">

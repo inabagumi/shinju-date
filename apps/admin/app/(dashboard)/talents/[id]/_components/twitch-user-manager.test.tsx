@@ -1,6 +1,6 @@
-import { ToastProvider, ToastViewport } from '@shinju-date/ui'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ActionToastProvider } from '@/components/action-toast'
 
 const mocks = vi.hoisted(() => ({
   addTwitchUserAction: vi.fn(),
@@ -16,7 +16,7 @@ const { TwitchUserManager } = await import('./twitch-user-manager')
 
 function renderManager() {
   return render(
-    <ToastProvider>
+    <ActionToastProvider>
       <TwitchUserManager
         isDeleted={false}
         talentId="talent-1"
@@ -29,8 +29,7 @@ function renderManager() {
           },
         ]}
       />
-      <ToastViewport />
-    </ToastProvider>,
+    </ActionToastProvider>,
   )
 }
 

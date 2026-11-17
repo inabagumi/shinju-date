@@ -11,7 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from '@shinju-date/ui'
-import { useMemo, useState, useTransition } from 'react'
+import { useMemo, useState } from 'react'
+import { useServerAction } from '@/lib/use-server-action'
 import { addQueryAction, deleteQueryAction } from '../_actions'
 
 interface QueriesListProps {
@@ -22,8 +23,16 @@ interface QueriesListProps {
 export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [newQuery, setNewQuery] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+  const addQuery = useServerAction(addQueryAction, {
+    errorText: '追加に失敗しました。',
+    onSuccess: () => setNewQuery(''),
+    successText: 'クエリを追加しました。',
+  })
+  const deleteQuery = useServerAction(deleteQueryAction, {
+    errorText: '削除に失敗しました。',
+    successText: 'クエリを削除しました。',
+  })
+  const isPending = addQuery.isPending || deleteQuery.isPending
 
   // Filter queries based on search query
   const filteredManualQueries = useMemo(() => {
@@ -43,25 +52,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
   }, [autoQueries, searchQuery])
 
   const handleAddQuery = () => {
-    setError(null)
-    startTransition(async () => {
-      const result = await addQueryAction(newQuery)
-      if (result.success) {
-        setNewQuery('')
-      } else {
-        setError(result.error ?? '追加に失敗しました。')
-      }
-    })
-  }
-
-  const handleDeleteQuery = (query: string) => {
-    setError(null)
-    startTransition(async () => {
-      const result = await deleteQueryAction(query)
-      if (!result.success) {
-        setError(result.error ?? '削除に失敗しました。')
-      }
-    })
+    void addQuery.run(newQuery)
   }
 
   return (
@@ -95,19 +86,9 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
             onClick={handleAddQuery}
             type="button"
           >
-            {isPending ? '追加中...' : '追加'}
+            {addQuery.isPending ? '追加中...' : '追加'}
           </Button>
         </div>
-
-        {/* Error Message */}
-        {error && (
-          <p
-            className="rounded-control bg-danger/10 p-3 text-meta text-danger"
-            role="alert"
-          >
-            {error}
-          </p>
-        )}
 
         {/* Search */}
         <Input
@@ -153,7 +134,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
                     <Button
                       aria-label={`「${query}」を削除`}
                       disabled={isPending}
-                      onClick={() => handleDeleteQuery(query)}
+                      onClick={() => deleteQuery.run(query)}
                       size="sm"
                       type="button"
                       variant="danger"
