@@ -1,4 +1,4 @@
-import { FOCUS_RING, Input, Select, Textarea, twMerge } from '@shinju-date/ui'
+import { Input, Select, Textarea, twMerge } from '@shinju-date/ui'
 
 function getErrorId(inputId: string | undefined): string | undefined {
   return inputId ? `${inputId}-error` : undefined
@@ -189,7 +189,7 @@ export function CheckboxField({
           {...props}
           aria-describedby={errorId}
           aria-invalid={error ? true : undefined}
-          className={twMerge(`size-4 accent-accent ${FOCUS_RING}`, className)}
+          className={twMerge('size-4 accent-accent focus-ring', className)}
           id={inputId}
           type="checkbox"
         />

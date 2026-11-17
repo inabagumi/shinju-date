@@ -1,6 +1,5 @@
 'use client'
 
-import { FOCUS_RING } from '@shinju-date/ui'
 import { useQuery } from '@tanstack/react-query'
 import {
   CircleAlert,
@@ -53,7 +52,8 @@ function getBannerTone(level: string): BannerTone {
   }
 }
 
-const ICON_BUTTON_CLASS_NAME = `cursor-pointer rounded-control p-1 text-muted hover:bg-muted hover:text-foreground ${FOCUS_RING}`
+const ICON_BUTTON_CLASS_NAME =
+  'cursor-pointer rounded-control p-1 text-muted hover:bg-muted hover:text-foreground focus-ring'
 
 /**
  * Site-wide announcement banner that sticks to the bottom of the viewport.
@@ -137,7 +137,7 @@ export function AnnouncementBanner({
           <button
             aria-expanded={false}
             aria-label="お知らせを表示"
-            className={`pointer-events-auto flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-meta font-semibold text-foreground shadow-overlay hover:bg-muted ${FOCUS_RING}`}
+            className="pointer-events-auto flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-meta font-semibold text-foreground shadow-overlay focus-ring hover:bg-muted"
             data-testid="announcement-banner-minimized"
             onClick={toggleMinimized}
             ref={restoreButtonRef}
@@ -175,7 +175,7 @@ export function AnnouncementBanner({
             </p>
             <button
               aria-expanded={isExpanded}
-              className={`min-w-0 flex-1 cursor-pointer rounded-control text-left ${FOCUS_RING}`}
+              className="min-w-0 flex-1 cursor-pointer rounded-control text-left focus-ring"
               onClick={() => setIsExpanded(!isExpanded)}
               type="button"
             >

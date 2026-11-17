@@ -4,7 +4,7 @@ import {
   formatDateTimeWithSeconds,
   formatTime,
 } from '@shinju-date/temporal-fns'
-import { FOCUS_RING, twMerge } from '@shinju-date/ui'
+import { twMerge } from '@shinju-date/ui'
 import type { CSSProperties } from 'react'
 import LiveNow from '@/components/live-now'
 import PlatformBadge from '@/components/platform-badge'
@@ -129,7 +129,7 @@ export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
     <a
       className={twMerge(
         ITEM_CLASS_NAME,
-        `group min-w-0 ${FOCUS_RING} lg:min-h-0 lg:flex-1 lg:overflow-hidden`,
+        'group min-w-0 focus-ring lg:min-h-0 lg:flex-1 lg:overflow-hidden',
         // 広げたときは、浮いて見えるよう影を付ける（地の色は変えない）。影は
         // 項目そのものに付け、項目と影の大きさをそろえる
         'lg:group-focus-within/item:shadow-overlay lg:group-hover/item:shadow-overlay',

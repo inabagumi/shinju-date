@@ -1,4 +1,3 @@
-import { FOCUS_RING } from '@shinju-date/ui'
 import { CalendarPlus, X } from 'lucide-react'
 import Link from 'next/link'
 import type { Talent } from '@/lib/fetchers'
@@ -51,7 +50,7 @@ function SelectedTalentList({
       {selectedTalents.length > 1 && (
         <li className="inline-flex h-8 items-center">
           <Link
-            className={`rounded-control px-1 text-meta text-accent hover:underline ${FOCUS_RING}`}
+            className="rounded-control px-1 text-meta text-accent focus-ring hover:underline"
             href={getVideosPath(query, kind)}
             scroll={false}
           >
@@ -101,7 +100,7 @@ export default function VideoFilters({
         {!query && (
           // カレンダーはページではないので、`next/link` のリンクにしない
           <a
-            className={`inline-flex h-9 items-center gap-1 rounded-control px-1 text-meta font-semibold text-accent underline-offset-4 hover:underline ${FOCUS_RING}`}
+            className="inline-flex h-9 items-center gap-1 rounded-control px-1 text-meta font-semibold text-accent underline-offset-4 focus-ring hover:underline"
             href={getVideosCalendarPath(kind, selectedIds)}
           >
             <CalendarPlus aria-hidden="true" className="size-4" />

@@ -1,4 +1,3 @@
-import { FOCUS_RING } from '@shinju-date/ui'
 import { Hash } from 'lucide-react'
 import Link from 'next/link'
 import { getVideosPath } from '@/lib/video-kind-filter'
@@ -63,7 +62,7 @@ export default function RecommendedQueries({
           <li key={query}>
             <Link
               aria-label={`『${query}』の検索結果`}
-              className={`inline-flex h-9 items-center rounded-full border border-border px-4 text-meta text-foreground hover:bg-muted ${FOCUS_RING}`}
+              className="inline-flex h-9 items-center rounded-full border border-border px-4 text-meta text-foreground focus-ring hover:bg-muted"
               href={getVideosPath(query, 'all', talentIds)}
               title={`『${query}』の検索結果`}
               {...(onClickLink ? { onClick: onClickLink } : {})}

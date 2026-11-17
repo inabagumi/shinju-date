@@ -1,4 +1,4 @@
-import { FOCUS_RING, twMerge } from '@shinju-date/ui'
+import { twMerge } from '@shinju-date/ui'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
@@ -33,7 +33,8 @@ function getDayId(date: Temporal.PlainDate): string {
   return `day-${date.toString()}`
 }
 
-const LINK_CLASS_NAME = `inline-flex items-center gap-0.5 rounded-control font-semibold text-accent hover:underline ${FOCUS_RING}`
+const LINK_CLASS_NAME =
+  'inline-flex items-center gap-0.5 rounded-control font-semibold text-accent hover:underline focus-ring'
 
 /** 週の範囲と、前の週・今週・次の週へのリンク */
 const WEEK_NAVIGATION_CLASS_NAME =
@@ -115,7 +116,7 @@ export async function ScheduleWeekdayBand({
         {getWeekDays(weekStart).map((date) => (
           <li key={date.toString()}>
             <a
-              className={`flex flex-col items-center rounded-control py-1 text-meta tabular-nums hover:bg-muted ${FOCUS_RING}`}
+              className="flex flex-col items-center rounded-control py-1 text-meta tabular-nums focus-ring hover:bg-muted"
               href={`#${getDayId(date)}`}
             >
               <span className="text-caption text-muted">
