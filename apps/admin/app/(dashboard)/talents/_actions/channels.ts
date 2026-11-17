@@ -138,7 +138,7 @@ export async function addYouTubeChannelAction(
         youtube_channel_id: youtubeChannelId,
         youtube_handle: youtubeHandle,
       })
-      .select('id')
+      .select('id, talent:talents (name)')
       .single()
 
     if (error) {
@@ -159,11 +159,14 @@ export async function addYouTubeChannelAction(
       })
       .eq('id', talentId)
 
-    await createAuditLog('YOUTUBE_CHANNEL_CREATE', newChannel.id, {
-      name: channelName,
-      talent_id: talentId,
-      youtube_channel_id: youtubeChannelId,
-      youtube_handle: youtubeHandle,
+    await createAuditLog('YOUTUBE_CHANNEL_CREATE', talentId, {
+      account: {
+        id: newChannel.id,
+        name: channelName,
+        youtube_channel_id: youtubeChannelId,
+        youtube_handle: youtubeHandle,
+      },
+      entityName: newChannel.talent.name,
     })
 
     revalidatePath(`/talents/${talentId}`)
@@ -215,7 +218,7 @@ export async function removeYouTubeChannelAction(
     // Get channel info before deletion for audit log
     const { data: channel, error: fetchError } = await supabaseClient
       .from('youtube_channels')
-      .select('youtube_channel_id')
+      .select('name, youtube_channel_id, youtube_handle, talent:talents (name)')
       .eq('id', channelId)
       .eq('talent_id', talentId)
       .single()
@@ -256,9 +259,14 @@ export async function removeYouTubeChannelAction(
       .eq('id', talentId)
 
     // Log audit entry
-    await createAuditLog('YOUTUBE_CHANNEL_DELETE', channelId, {
-      talent_id: talentId,
-      youtube_channel_id: channel.youtube_channel_id,
+    await createAuditLog('YOUTUBE_CHANNEL_DELETE', talentId, {
+      account: {
+        id: channelId,
+        name: channel.name,
+        youtube_channel_id: channel.youtube_channel_id,
+        youtube_handle: channel.youtube_handle,
+      },
+      entityName: channel.talent.name,
     })
 
     revalidatePath(`/talents/${talentId}`)

@@ -35,6 +35,24 @@ describe('createAuditLog', () => {
     })
   })
 
+  it.each([
+    'CHANNEL_ACTIVATE',
+    'CHANNEL_CREATE',
+    'CHANNEL_DELETE',
+    'CHANNEL_RESTORE',
+    'CHANNEL_RETIRE',
+    'CHANNEL_UPDATE',
+  ] as const)('records %s against the talent', async (action) => {
+    await createAuditLog(action, 'talent-1', { entityName: 'Talent' })
+
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith('insert_audit_log', {
+      p_action: action,
+      p_details: { entityName: 'Talent' },
+      p_target_record_id: 'talent-1',
+      p_target_table: 'talents',
+    })
+  })
+
   it('records a sync of a talent against the talent', async () => {
     await createAuditLog('CHANNEL_SYNC', 'talent-1', {
       accounts: [{ id: 'account-1', name: 'Account' }],
@@ -48,6 +66,52 @@ describe('createAuditLog', () => {
     )
   })
 
+  it.each(['TWITCH_USER_CREATE', 'TWITCH_USER_DELETE'] as const)(
+    'records %s against the talent of the Twitch user',
+    async (action) => {
+      await createAuditLog(action, 'talent-1', {
+        account: {
+          id: 'twitch-user-1',
+          name: 'Account',
+          twitch_login_name: 'account',
+          twitch_user_id: '12345678',
+        },
+        entityName: 'Talent',
+      })
+
+      expect(mocks.rpc).toHaveBeenCalledWith(
+        'insert_audit_log',
+        expect.objectContaining({
+          p_target_record_id: 'talent-1',
+          p_target_table: 'talents',
+        }),
+      )
+    },
+  )
+
+  it.each(['YOUTUBE_CHANNEL_CREATE', 'YOUTUBE_CHANNEL_DELETE'] as const)(
+    'records %s against the talent of the YouTube channel',
+    async (action) => {
+      await createAuditLog(action, 'talent-1', {
+        account: {
+          id: 'channel-1',
+          name: 'Account',
+          youtube_channel_id: 'UC1234567890123456789012',
+          youtube_handle: '@account',
+        },
+        entityName: 'Talent',
+      })
+
+      expect(mocks.rpc).toHaveBeenCalledWith(
+        'insert_audit_log',
+        expect.objectContaining({
+          p_target_record_id: 'talent-1',
+          p_target_table: 'talents',
+        }),
+      )
+    },
+  )
+
   it('records a backfill of a talent against the talent', async () => {
     await createAuditLog('VIDEO_BACKFILL', 'talent-1', {
       accounts: [{ accountId: 'account-1', name: 'Account' }],
@@ -57,7 +121,7 @@ describe('createAuditLog', () => {
 
     expect(mocks.rpc).toHaveBeenCalledWith(
       'insert_audit_log',
-      expect.objectContaining({ p_target_table: 'channels' }),
+      expect.objectContaining({ p_target_table: 'talents' }),
     )
   })
 

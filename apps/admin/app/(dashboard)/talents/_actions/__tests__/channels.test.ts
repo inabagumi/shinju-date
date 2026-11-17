@@ -35,6 +35,7 @@ vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
 const talentId = '123e4567-e89b-12d3-a456-426614174000'
 const youtubeChannelId = 'UCabcdefghijklmnopqrstuv'
 const newChannelId = 'channel-123'
+const talent = { name: 'Example Talent' }
 
 const mockYouTubeChannel = {
   contentDetails: {
@@ -59,9 +60,9 @@ function createFormData(fields: Record<string, string>): FormData {
   return formData
 }
 
-/** Lets the insert of the new channel succeed and return its id. */
+/** Lets the insert of the new channel succeed and return it with its talent. */
 function answerInsert(): void {
-  supabase.on('insert', 'youtube_channels', { id: newChannelId })
+  supabase.on('insert', 'youtube_channels', { id: newChannelId, talent })
 }
 
 /** The rows the action inserted into `youtube_channels`. */
@@ -102,11 +103,14 @@ describe('addYouTubeChannelAction', () => {
         youtube_handle: '@example_handle',
       },
     ])
-    test.expectAuditLog('YOUTUBE_CHANNEL_CREATE', newChannelId, {
-      name: 'Example Channel',
-      talent_id: talentId,
-      youtube_channel_id: youtubeChannelId,
-      youtube_handle: '@example_handle',
+    test.expectAuditLog('YOUTUBE_CHANNEL_CREATE', talentId, {
+      account: {
+        id: newChannelId,
+        name: 'Example Channel',
+        youtube_channel_id: youtubeChannelId,
+        youtube_handle: '@example_handle',
+      },
+      entityName: 'Example Talent',
     })
     test.expectRevalidated({
       paths: [`/talents/${talentId}`, '/talents'],
@@ -320,18 +324,26 @@ describe('addYouTubeChannelAction', () => {
 
 describe('removeYouTubeChannelAction', () => {
   it('should successfully remove YouTube channel', async () => {
-    supabase.on(
-      'select',
-      'youtube_channels',
-      createYouTubeChannel({ youtube_channel_id: youtubeChannelId }),
-    )
+    supabase.on('select', 'youtube_channels', {
+      ...createYouTubeChannel({
+        name: 'Example Channel',
+        youtube_channel_id: youtubeChannelId,
+        youtube_handle: '@example_handle',
+      }),
+      talent,
+    })
 
     const result = await removeYouTubeChannelAction('channel-123', talentId)
 
     expect(result).toEqual({ success: true })
-    test.expectAuditLog('YOUTUBE_CHANNEL_DELETE', 'channel-123', {
-      talent_id: talentId,
-      youtube_channel_id: youtubeChannelId,
+    test.expectAuditLog('YOUTUBE_CHANNEL_DELETE', talentId, {
+      account: {
+        id: 'channel-123',
+        name: 'Example Channel',
+        youtube_channel_id: youtubeChannelId,
+        youtube_handle: '@example_handle',
+      },
+      entityName: 'Example Talent',
     })
     test.expectRevalidated({
       paths: [`/talents/${talentId}`, '/talents'],
