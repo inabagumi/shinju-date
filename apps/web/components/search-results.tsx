@@ -1,12 +1,12 @@
 'use client'
 
-import { TIME_ZONE } from '@shinju-date/constants'
 import { twMerge } from '@shinju-date/ui'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect, useId, useMemo } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { formatRelativeDate } from '@/lib/date-heading'
 import { fetchVideos, type Video } from '@/lib/fetchers'
+import { groupVideosByDate } from '@/lib/group-videos-by-date'
 import { queryKeys } from '@/lib/query-keys'
 import { SEARCH_RESULT_COUNT } from '@/lib/site'
 import type { VideoKindFilter } from '@/lib/video-kind-filter'
@@ -150,15 +150,9 @@ export default function SearchResults({
 
   const today = useNow().toPlainDate()
   const items = useMemo(() => data?.pages.flat() ?? [], [data])
-  // 新しい順に並んでいるので、同じ日付の動画は続けて現れる
+  // 新しい順に並んでいるので、並べ替えずに日付ごとにまとめる
   const groups = useMemo(
-    () =>
-      Map.groupBy(items, (item) =>
-        Temporal.Instant.from(item.published_at)
-          .toZonedDateTimeISO(TIME_ZONE)
-          .toPlainDate()
-          .toString(),
-      ),
+    () => groupVideosByDate(items, { sort: false }),
     [items],
   )
 
