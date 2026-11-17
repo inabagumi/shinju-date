@@ -33,7 +33,16 @@ vi.mock('@/lib/env', () => ({
 }))
 
 vi.mock('@/lib/ratelimit', () => ({
+  recommendationQueriesUpdate: { limit: vi.fn() },
+  statsSnapshot: { limit: vi.fn() },
+  talentsUpdate: { limit: vi.fn() },
   termsPopularityUpdate: mockRatelimit,
+  videosBackfill: { limit: vi.fn() },
+  videosCascadeFromTalents: { limit: vi.fn() },
+  videosCheck: { limit: vi.fn() },
+  videosCheckAll: { limit: vi.fn() },
+  videosCheckRecent: { limit: vi.fn() },
+  videosUpdate: { limit: vi.fn() },
 }))
 
 vi.mock('../_lib/update-term-popularity', () => ({
@@ -44,10 +53,10 @@ vi.mock('@sentry/nextjs', () => ({
   captureCheckIn: vi.fn(() => 'mock-check-in-id'),
   captureException: vi.fn(),
   flush: vi.fn(),
-  logger: {
-    info: vi.fn(),
-    warn: vi.fn(),
-  },
+}))
+
+vi.mock('@shinju-date/logger', () => ({
+  logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
 }))
 
 vi.mock('next/server', () => ({
@@ -125,9 +134,12 @@ describe('POST /terms/popularity/update', () => {
   })
 
   it('should return 500 when update fails', async () => {
+    const Sentry = await import('@sentry/nextjs')
+    const error = new Error('Database error')
+
     // Setup
     mockRatelimit.limit.mockResolvedValue({ success: true })
-    mockUpdateTermPopularity.mockRejectedValue(new Error('Database error'))
+    mockUpdateTermPopularity.mockRejectedValue(error)
 
     // Execute
     const request = new Request(
@@ -140,6 +152,12 @@ describe('POST /terms/popularity/update', () => {
 
     // Verify
     expect(response.status).toBe(500)
+    expect(Sentry.captureException).toHaveBeenCalledWith(error)
+    expect(Sentry.captureCheckIn).toHaveBeenLastCalledWith({
+      checkInId: 'mock-check-in-id',
+      monitorSlug: '/terms/popularity/update',
+      status: 'error',
+    })
   })
 
   it('should verify CRON_SECRET when provided', async () => {

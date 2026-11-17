@@ -21,6 +21,9 @@ export const REDIS_KEYS = {
   CLICK_VIDEO_PREFIX: 'videos:clicked:',
   LAST_VIDEO_SYNC: 'status:last_video_sync',
   MAINTENANCE_MODE: 'maintenance_mode',
+  // Union of the daily rankings over a date range, cached by admin
+  // (format: prefix + `<ranking prefix without trailing colon>:<YYYYMMDD>/<YYYYMMDD>`)
+  POPULAR_ITEMS_CACHE_PREFIX: 'cache:popular_items:',
   QUERIES_AUTO_RECOMMENDED: 'queries:auto_recommended',
   QUERIES_MANUAL_RECOMMENDED: 'queries:manual_recommended',
   // Runs of the batch cron jobs, counted per fixed window

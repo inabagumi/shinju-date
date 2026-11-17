@@ -18,10 +18,10 @@ import {
   unauthenticatedFormState,
   unauthenticatedResult,
 } from '@/lib/auth'
+import { zodErrorToFormState } from '@/lib/form'
 import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 import { isNotFoundError } from '@/lib/supabase/query'
 import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
-import { zodErrorToFormState } from '../_lib/form-helpers'
 import { talentNameSchema, talentReadingSchema } from '../_lib/talent-schema'
 
 /** 一意制約（`youtube_channels.youtube_channel_id` など）に違反したときの PostgreSQL のエラーコード */
