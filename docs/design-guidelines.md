@@ -228,6 +228,45 @@ const button = (
 )
 ```
 
+### 読み込み中の表示（スケルトン）
+
+`Suspense` の `fallback` には、読み込み後の部品と同じ形のスケルトンを置き、読み込みの前後で画面が動かないようにします。
+
+- 四角は `@shinju-date/ui` の `Skeleton` で描き、大きさを `className` で指定する。`rounded-control bg-muted` と `animate-pulse` を手で書かない
+  - 角丸は既定で `rounded-control`。サムネイルなど入れ物の形は `rounded-container`、丸は `rounded-full` を指定する
+  - `<span>` を `block` で描くので、見出しや段落の中にも置ける。文字の行に並べるときは `inline-block` を指定する
+  - `Skeleton` は `aria-hidden` を持つ。四角のほかに枠や見出しを描くときは、全体を `aria-hidden="true"` の要素で囲む
+- スケルトンは、対応する部品と同じファイルか、隣のファイルに置き、`〇〇Skeleton` と名付ける（`VideoList` なら `VideoListSkeleton`）。形の違う画面には使い回さない
+- 列の数・タイルの数・グラフの高さ・絞り込みの帯の有無は、読み込み後の画面に合わせる。行の数は、読み込み後に並ぶおおよその数にする（1ページの件数が決まっている一覧は、その件数の定数をスケルトンと共有する）
+- 見出しなど、読み込みの前後で変わらない文字は、`Skeleton` にせずそのまま描く
+- 管理画面では、形を引数で決める次の部品を組み合わせる
+
+| 部品                                                                       | 使う場面                                                                                  |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `PanelSkeleton`・`DetailListSkeleton`（`apps/admin/components/panel.tsx`） | `Panel` と `DetailList`。見出し（`title`・`description`）は読み込み後と同じ文言を渡す     |
+| `TableSkeleton`（`apps/admin/components/table-skeleton.tsx`）              | `Table`。列の定義（`columns`）、行の数（`rows`）、表の上の帯（`filterBar`）を呼ぶ側が渡す |
+| `FilterBarSkeleton`・`FieldSkeleton`（同上）                               | `FilterBar` と、見出し付きの入力欄                                                        |
+| `StatTileSkeleton`（`apps/admin/components/stat-tile-skeleton.tsx`）       | `StatTile`                                                                                |
+
+```tsx
+export function TalentsListSkeleton() {
+  return (
+    <TableSkeleton
+      columns={[
+        { cell: <Skeleton className="h-5 w-32" />, id: 'name' },
+        { cell: <Skeleton className="h-5 w-16" />, id: 'status' },
+        {
+          align: 'end',
+          cell: <Skeleton className="size-7" />,
+          header: false,
+          id: 'actions',
+        },
+      ]}
+    />
+  )
+}
+```
+
 ### 動画カードのタイトル
 
 動画のタイトルは、`@shinju-date/helpers` の `parseVideoTitle` で「本文・ラベル（【】と〖〗の中身）・末尾のハッシュタグ」に分けて表示します。【】の中の出演者の表記（所属の名前 `TALENT_AFFILIATION_NAME` を含む部分と、タレントの名前）は出しません。`title` 属性には元のタイトルを入れます。
@@ -309,6 +348,7 @@ import { twMerge } from '@shinju-date/ui'
 - [ ] 時刻・再生時間・件数に `tabular-nums` を付けている
 - [ ] 角丸は `rounded-control` / `rounded-container` / `rounded-full` のいずれか
 - [ ] 影は重なるものだけに `shadow-overlay` を使っている
-- [ ] `packages/ui` にある部品（Button・Badge・Card・Dialog・Input・Select・Table・PageHeader・EmptyState・StatTile・FilterBar・Alert など）を使っている
+- [ ] `packages/ui` にある部品（Button・Badge・Card・Dialog・Input・Select・Table・PageHeader・EmptyState・StatTile・FilterBar・Alert・Skeleton など）を使っている
 - [ ] Badge の色と Alert の `tone` は状態の意味で選んでいる（成功は `success`、注意は `warning`、危険は `danger`、中立は `neutral`）
 - [ ] 管理画面の操作の結果は、[操作の結果の知らせ](#操作の結果の知らせ管理画面)に沿って出している
+- [ ] `Suspense` の `fallback` に、読み込み後と同じ形のスケルトン（[読み込み中の表示](#読み込み中の表示スケルトン)）を、部品の隣に置いている
