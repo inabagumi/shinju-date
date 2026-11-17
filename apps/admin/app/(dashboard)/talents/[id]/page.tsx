@@ -118,16 +118,16 @@ async function TalentProfile({
 
         {/* YouTube Channel Management */}
         <ChannelManager
-          channels={talent.youtube_channels}
+          accounts={talent.youtube_channels}
           isDeleted={isDeleted}
           talentId={talent.id}
         />
 
         {/* Twitch User Management */}
         <TwitchUserManager
+          accounts={talent.twitch_users}
           isDeleted={isDeleted}
           talentId={talent.id}
-          users={talent.twitch_users}
         />
 
         {/* Backfill of past videos */}
