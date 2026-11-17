@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/nextjs'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { after } from 'next/server'
+import { serverEnv } from './env'
 
 /** How long to wait for Sentry to send buffered events after the response. */
 const SENTRY_FLUSH_TIMEOUT_MS = 10_000
@@ -37,7 +38,7 @@ export async function runCronJob(
   job: CronJob,
   run: () => Promise<void>,
 ): Promise<Response> {
-  const cronSecure = process.env['CRON_SECRET']
+  const cronSecure = serverEnv.CRON_SECRET
 
   if (cronSecure && !verifyCronRequest(request, { cronSecure })) {
     logger.warn('CRON_SECRETが一致しませんでした', { path: job.path })

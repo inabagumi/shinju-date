@@ -1,14 +1,19 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const captureCheckIn = vi.fn(() => 'check-in-id')
 const captureException = vi.fn()
 const flush = vi.fn()
+const serverEnv: { CRON_SECRET: string | undefined } = {
+  CRON_SECRET: undefined,
+}
 
 vi.mock('@sentry/nextjs', () => ({ captureCheckIn, captureException, flush }))
 
 vi.mock('@shinju-date/logger', () => ({
   logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
 }))
+
+vi.mock('../env', () => ({ serverEnv }))
 
 vi.mock('next/server', () => ({
   after: vi.fn((callback: () => unknown) => callback()),
@@ -35,10 +40,7 @@ describe('runCronJob', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     limit.mockResolvedValue({ success: true })
-  })
-
-  afterEach(() => {
-    vi.unstubAllEnvs()
+    serverEnv.CRON_SECRET = undefined
   })
 
   it('runs the job and reports it as ok', async () => {
@@ -93,7 +95,7 @@ describe('runCronJob', () => {
   })
 
   it('rejects requests without the cron secret', async () => {
-    vi.stubEnv('CRON_SECRET', 'secret')
+    serverEnv.CRON_SECRET = 'secret'
     const run = vi.fn()
 
     const response = await runCronJob(createRequest(), job, run)
@@ -104,7 +106,7 @@ describe('runCronJob', () => {
   })
 
   it('accepts requests with the cron secret', async () => {
-    vi.stubEnv('CRON_SECRET', 'secret')
+    serverEnv.CRON_SECRET = 'secret'
     const run = vi.fn().mockResolvedValue(undefined)
 
     const response = await runCronJob(

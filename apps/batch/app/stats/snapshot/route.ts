@@ -7,6 +7,7 @@ import {
   toDBString,
 } from '@shinju-date/temporal-fns'
 import { after } from 'next/server'
+import { serverEnv } from '@/lib/env'
 import { statsSnapshot as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
@@ -17,7 +18,7 @@ const MONITOR_SLUG = '/stats/snapshot'
 export const maxDuration = 60
 
 export async function POST(request: Request): Promise<Response> {
-  const cronSecure = process.env['CRON_SECRET']
+  const cronSecure = serverEnv.CRON_SECRET
   if (
     cronSecure &&
     !verifyCronRequest(request, {
