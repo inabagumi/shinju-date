@@ -12,7 +12,7 @@ export async function AnalyticsWidget() {
 
   cacheLife('minutes')
 
-  const analytics = await getAnalyticsSummary(true)
+  const analytics = await getAnalyticsSummary()
 
   return (
     <Panel title="アナリティクス">

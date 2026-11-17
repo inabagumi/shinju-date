@@ -20,7 +20,7 @@ export async function VideoSummaryWidget() {
   cacheLife('minutes')
 
   const [stats, historicalStats] = await Promise.all([
-    getSummaryStats(true),
+    getSummaryStats(),
     getHistoricalStats(7),
   ])
 
@@ -77,7 +77,7 @@ export async function ContentSummaryWidget() {
 
   cacheLife('minutes')
 
-  const stats = await getSummaryStats(true)
+  const stats = await getSummaryStats()
 
   return (
     <Panel title="コンテンツサマリー">

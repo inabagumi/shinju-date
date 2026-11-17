@@ -1,10 +1,12 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
+const DEFAULT_ADMIN_EMAIL = 'contact@example.org'
+
 const { sendEmail, serverEnv } = vi.hoisted(() => ({
   sendEmail: vi.fn(),
-  // The Resend client is created when the module is imported.
   serverEnv: {
-    ADMIN_EMAIL: undefined as string | undefined,
+    ADMIN_EMAIL: 'contact@example.org' as string | undefined,
+    FROM_EMAIL: 'noreply@example.org',
     RESEND_API_KEY: 're_test',
   },
 }))
@@ -21,10 +23,6 @@ vi.mock('botid/server', () => ({
   checkBotId: vi.fn().mockResolvedValue({ isBot: false }),
 }))
 
-vi.mock('../utils', () => ({
-  isContactFormEnabled: () => true,
-}))
-
 import { submitContactForm } from '../actions'
 
 function createFormData(values: Record<string, string>): FormData {
@@ -38,9 +36,9 @@ function createFormData(values: Record<string, string>): FormData {
 }
 
 const SUBMITTED_VALUES = {
-  email: 'haneru@example.com',
+  email: 'hanako@example.com',
   message: '不具合があります',
-  name: '因幡はねる',
+  name: '山田花子',
   type: 'bug',
   wantsReply: 'on',
 }
@@ -51,7 +49,7 @@ describe('submitContactForm', () => {
   })
 
   afterEach(() => {
-    serverEnv.ADMIN_EMAIL = undefined
+    serverEnv.ADMIN_EMAIL = DEFAULT_ADMIN_EMAIL
     vi.restoreAllMocks()
   })
 
@@ -104,24 +102,29 @@ describe('submitContactForm', () => {
     )
   })
 
-  test('returns the submitted values when the email cannot be sent', async () => {
-    serverEnv.ADMIN_EMAIL = undefined
+  test.each([
+    ['not set', undefined],
+    ['the sample value', 'admin@example.com'],
+  ])(
+    'does not send the email when ADMIN_EMAIL is %s',
+    async (_, adminEmail) => {
+      serverEnv.ADMIN_EMAIL = adminEmail
 
-    const result = await submitContactForm(
-      null,
-      createFormData(SUBMITTED_VALUES),
-    )
+      const result = await submitContactForm(
+        null,
+        createFormData(SUBMITTED_VALUES),
+      )
 
-    expect(result).toEqual({
-      error: 'メール送信設定が完了していません。',
-      success: false,
-      values: SUBMITTED_VALUES,
-    })
-    expect(sendEmail).not.toHaveBeenCalled()
-  })
+      expect(result).toEqual({
+        error: 'お問い合わせ機能は現在ご利用いただけません。',
+        success: false,
+        values: SUBMITTED_VALUES,
+      })
+      expect(sendEmail).not.toHaveBeenCalled()
+    },
+  )
 
   test('reports success when the email is sent', async () => {
-    serverEnv.ADMIN_EMAIL = 'contact@shinju.date'
     sendEmail.mockResolvedValue({
       data: { id: 'email-id' },
       error: null,
@@ -139,14 +142,58 @@ describe('submitContactForm', () => {
     })
     expect(sendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
-        replyTo: '因幡はねる <haneru@example.com>',
-        to: 'contact@shinju.date',
+        from: 'noreply@example.org',
+        replyTo: '山田花子 <hanako@example.com>',
+        text: expect.stringContaining('■ お名前\n山田花子\n'),
+        to: 'contact@example.org',
+      }),
+    )
+  })
+
+  test('includes the name in the body when no reply is requested', async () => {
+    sendEmail.mockResolvedValue({
+      data: { id: 'email-id' },
+      error: null,
+      headers: null,
+    })
+
+    const result = await submitContactForm(
+      null,
+      createFormData({
+        message: '不具合があります',
+        name: '山田花子',
+        type: 'bug',
+      }),
+    )
+
+    expect(result.success).toBe(true)
+
+    const [options] = sendEmail.mock.calls[0] ?? []
+
+    expect(options).not.toHaveProperty('replyTo')
+    expect(options.text).toContain('■ お名前\n山田花子\n')
+  })
+
+  test('marks the name as not entered when it is empty', async () => {
+    sendEmail.mockResolvedValue({
+      data: { id: 'email-id' },
+      error: null,
+      headers: null,
+    })
+
+    await submitContactForm(
+      null,
+      createFormData({ message: '不具合があります', name: '', type: 'bug' }),
+    )
+
+    expect(sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        text: expect.stringContaining('■ お名前\n（未入力）\n'),
       }),
     )
   })
 
   test('reports a failure when Resend returns an error', async () => {
-    serverEnv.ADMIN_EMAIL = 'contact@shinju.date'
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     const sendError = {
       message: 'Internal server error',

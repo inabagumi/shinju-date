@@ -3,10 +3,14 @@ import { formatNumber } from '@shinju-date/helpers'
 import { Button, EmptyState } from '@shinju-date/ui'
 import { ExternalLink } from 'lucide-react'
 import { cacheLife } from 'next/cache'
-import Image from 'next/image'
 import Link from 'next/link'
+import {
+  ExternalVideoLink,
+  getExternalVideoUrl,
+} from '@/components/external-video-link'
 import { Panel } from '@/components/panel'
 import { PopularVideosListSkeleton } from '@/components/skeletons'
+import { VideoThumbnail } from '@/components/video-thumbnail'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
 
 export function DashboardPopularVideosSkeleton() {
@@ -40,21 +44,7 @@ export async function DashboardPopularVideos() {
               <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-meta font-semibold text-muted tabular-nums">
                 {index + 1}
               </div>
-              {video.thumbnail ? (
-                <div className="relative h-16 w-28 shrink-0">
-                  <Image
-                    alt=""
-                    blurDataURL={video.thumbnail.blur_data_url}
-                    className="rounded-container object-cover"
-                    fill
-                    placeholder="blur"
-                    sizes="112px"
-                    src={`/images/thumbnails/${video.thumbnail.id}`}
-                  />
-                </div>
-              ) : (
-                <div className="h-16 w-28 shrink-0 rounded-container bg-muted" />
-              )}
+              <VideoThumbnail size="md" thumbnail={video.thumbnail} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-body leading-normal font-semibold">
                   {video.title}
@@ -67,16 +57,18 @@ export async function DashboardPopularVideos() {
                 <Button asChild size="sm" variant="secondary">
                   <Link href={`/videos/${video.id}`}>詳細</Link>
                 </Button>
-                {video.youtube_video?.youtube_video_id && (
-                  <a
+                {getExternalVideoUrl(video) && (
+                  <ExternalVideoLink
                     className="flex items-center justify-center rounded-control border border-border bg-surface p-1 text-muted transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                    href={`https://www.youtube.com/watch?v=${video.youtube_video.youtube_video_id}`}
-                    rel="noopener noreferrer"
-                    target="_blank"
+                    video={video}
                   >
                     <ExternalLink aria-hidden="true" className="size-5" />
-                    <span className="sr-only">YouTubeで視聴</span>
-                  </a>
+                    <span className="sr-only">
+                      {video.platform === 'twitch'
+                        ? 'Twitchで視聴'
+                        : 'YouTubeで視聴'}
+                    </span>
+                  </ExternalVideoLink>
                 )}
               </div>
             </li>

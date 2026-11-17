@@ -88,8 +88,9 @@ const { data } = await supabase
 - `SADD` / `SMEMBERS` - セットへの追加と取得
 - `LPUSH` / `RPOP` - リストへの追加と取り出し
 - `GET` / `MGET` / `SET` / `DEL` - 値の取得、設定、削除
-- `EXPIRE` - 有効期限の設定
-- `EVAL` - スクリプトの実行（`@upstash/ratelimit` のレート制限用）
+- `INCR` - 数値の加算（batch の cron のレート制限用）
+- `EXPIRE` - 有効期限の設定（キーの有無だけを返し、期限切れで消しはしない）
+- `EVAL` - スクリプトの実行（過去の動画の取得のキューで使う既知のスクリプトだけを模擬する）
 - `PING` - 接続確認
 
 パイプラインサポート：

@@ -6,16 +6,6 @@ import { formatDateKey } from '@shinju-date/temporal-fns'
 import { getRedisClient } from '@/lib/redis'
 import { listDatesInRange } from './list-dates-in-range'
 
-export interface SearchQualityMetrics {
-  searchEngagementRate: number | null
-  searchExitRates: Array<{
-    keyword: string
-    exitRate: number
-    searchCount: number
-  }>
-  repeatSearchRate: number | null
-}
-
 /**
  * Calculate search engagement rate for a single date or date range
  * @param startDate - Start date as Temporal.PlainDate
@@ -224,26 +214,5 @@ export async function getRepeatSearchRate(
   } catch (error) {
     logger.error('リピート検索率の計算に失敗しました', { error })
     return null
-  }
-}
-
-/**
- * Get all search quality metrics for a date range
- */
-export async function getSearchQualityMetrics(
-  startDate: Temporal.PlainDate,
-  endDate?: Temporal.PlainDate,
-): Promise<SearchQualityMetrics> {
-  const [searchEngagementRate, searchExitRates, repeatSearchRate] =
-    await Promise.all([
-      getSearchEngagementRate(startDate, endDate),
-      getSearchExitRates(startDate, endDate),
-      getRepeatSearchRate(startDate, endDate),
-    ])
-
-  return {
-    repeatSearchRate,
-    searchEngagementRate,
-    searchExitRates,
   }
 }

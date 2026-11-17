@@ -245,6 +245,29 @@ describe('Upstash Redis Handlers', () => {
     })
   })
 
+  describe('INCR/EXPIRE commands', () => {
+    const redis = new Redis({
+      token: 'fake-token',
+      url: 'https://fake.upstash.test',
+    })
+
+    it('counts up in a transaction, like the rate limits of batch', async () => {
+      const key = `test:incr:${crypto.randomUUID()}`
+
+      const first = await redis.multi().incr(key).expire(key, 30).exec()
+      const second = await redis.multi().incr(key).expire(key, 30).exec()
+
+      expect(first).toEqual([1, 1])
+      expect(second).toEqual([2, 1])
+    })
+
+    it('does not set the expiry of a missing key', async () => {
+      await expect(
+        redis.expire(`test:expire:${crypto.randomUUID()}`, 30),
+      ).resolves.toBe(0)
+    })
+  })
+
   describe('commands of the backfill queue', () => {
     async function send(command: unknown[]) {
       const response = await fetch('https://fake.upstash.test/', {

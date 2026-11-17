@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
-import type { Announcement } from '../_lib/actions'
+import type { Announcement } from '@/lib/fetchers'
 
 /**
  * お知らせを、バナー（クライアントコンポーネント）に渡す形にしたもの。
