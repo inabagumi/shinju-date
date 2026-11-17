@@ -27,7 +27,6 @@ import {
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useMemo, useState } from 'react'
-import { useActionToast } from '@/components/action-toast'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,26 +45,15 @@ import {
 import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
 import { useSearchParamsHref } from '@/lib/use-update-search-params'
-import {
-  restoreAction,
-  softDeleteAction,
-  toggleVisibilityAction,
-} from '../_actions'
 import type { Video } from '../_lib/get-videos'
+import { useVideoAction } from '../_lib/use-video-action'
+import type { VideoAction, VideoActionTarget } from '../_lib/video-actions'
 import { SortIcon } from './sort-icon'
 import { VideoActionConfirmDialog } from './video-action-confirm-dialog'
 import { VideoKindBadge } from './video-kind-badge'
 
 interface Props {
   videos: Video[]
-}
-
-type VideoAction = 'toggle' | 'delete' | 'restore'
-
-interface ConfirmDialogState {
-  action: VideoAction
-  open: boolean
-  videos: Pick<Video, 'id' | 'title'>[]
 }
 
 /**
@@ -76,7 +64,7 @@ function getTargetVideos(
   videos: Video[],
   action: VideoAction,
   ids: readonly string[],
-): Pick<Video, 'id' | 'title'>[] {
+): VideoActionTarget[] {
   const idSet = new Set(ids)
 
   return videos
@@ -100,12 +88,9 @@ export default function VideoList({ videos }: Props) {
   const createSortHref = useSearchParamsHref()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [prevVideos, setPrevVideos] = useState(videos)
-  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>({
-    action: 'toggle',
-    open: false,
-    videos: [],
+  const { dialogProps, openDialog } = useVideoAction({
+    onSuccess: () => setSelectedIds([]),
   })
-  const { showToast } = useActionToast()
 
   // ページ送り・絞り込み・並べ替えで一覧が変わったら、選択を現在の一覧に
   // 含まれる動画だけに絞る（ページをまたぐ選択は持たない）
@@ -132,67 +117,11 @@ export default function VideoList({ videos }: Props) {
   }
 
   const handleBulkAction = (action: VideoAction) => {
-    setConfirmDialog({
-      action,
-      open: true,
-      videos: getTargetVideos(videos, action, selectedIds),
-    })
+    openDialog(action, getTargetVideos(videos, action, selectedIds))
   }
 
   const handleSingleAction = (action: VideoAction, id: string) => {
-    setConfirmDialog({
-      action,
-      open: true,
-      videos: getTargetVideos(videos, action, [id]),
-    })
-  }
-
-  const handleConfirm = async () => {
-    const { action } = confirmDialog
-    // 確認ダイアログに表示した動画だけを更新する
-    const videoIds = confirmDialog.videos.map((v) => v.id)
-
-    if (videoIds.length === 0) {
-      throw new Error('動画が選択されていません。')
-    }
-
-    try {
-      if (action === 'toggle') {
-        const result = await toggleVisibilityAction(videoIds)
-        if (result.success) {
-          setSelectedIds([])
-          showToast(
-            'success',
-            `${result.updatedCount ?? videoIds.length} 件の動画の表示状態を更新しました。`,
-          )
-        } else {
-          showToast('danger', result.error || '更新に失敗しました。')
-        }
-      } else if (action === 'delete') {
-        const result = await softDeleteAction(videoIds)
-        if (result.success) {
-          setSelectedIds([])
-          showToast('success', '動画を削除しました。')
-        } else {
-          showToast('danger', result.error || '削除に失敗しました。')
-        }
-      } else if (action === 'restore') {
-        const result = await restoreAction(videoIds)
-        if (result.success) {
-          setSelectedIds([])
-          showToast('success', '動画を復元しました。')
-        } else {
-          showToast('danger', result.error || '復元に失敗しました。')
-        }
-      }
-    } catch (error) {
-      showToast(
-        'danger',
-        error instanceof Error
-          ? error.message
-          : '予期しないエラーが発生しました。',
-      )
-    }
+    openDialog(action, getTargetVideos(videos, action, [id]))
   }
 
   // Toggle sort order if clicking the same field, otherwise default to desc.
@@ -469,13 +398,7 @@ export default function VideoList({ videos }: Props) {
       </Table>
 
       {/* Confirmation modal */}
-      <VideoActionConfirmDialog
-        action={confirmDialog.action}
-        onConfirm={handleConfirm}
-        onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
-        open={confirmDialog.open}
-        videos={confirmDialog.videos}
-      />
+      <VideoActionConfirmDialog {...dialogProps} />
     </div>
   )
 }
