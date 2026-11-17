@@ -66,6 +66,23 @@ export function validateDate(
 }
 
 /**
+ * 文字列の形式（`YYYY-MM-DD`）だけを確かめる。選べる範囲にあるかは確かめない。
+ * 問題がなければ日付、あれば（空の文字列を含む）`null` を返す
+ */
+export function parseDateFormat(value: string): Temporal.PlainDate | null {
+  if (!DATE_FORMAT.test(value)) {
+    return null
+  }
+
+  try {
+    return Temporal.PlainDate.from(value)
+  } catch {
+    // 2月30日のような、実在しない日付
+    return null
+  }
+}
+
+/**
  * 文字列の形式（`YYYY-MM-DD`）と、選べる範囲にあるかを確かめる。
  * 問題がなければ日付、あれば `null` を返す
  */
@@ -73,16 +90,9 @@ export function parseDate(
   value: string,
   today: Temporal.PlainDate = getToday(),
 ): Temporal.PlainDate | null {
-  if (!DATE_FORMAT.test(value)) {
-    return null
-  }
+  const date = parseDateFormat(value)
 
-  let date: Temporal.PlainDate
-
-  try {
-    date = Temporal.PlainDate.from(value)
-  } catch {
-    // 2月30日のような、実在しない日付
+  if (!date) {
     return null
   }
 

@@ -159,6 +159,9 @@ describe('DateRangePicker', () => {
         '2026-11-15',
         '終了日は今日以降にできません',
       ],
+      ['an empty start', '', '2026-11-10', '開始日を入力してください'],
+      ['an empty end', '2026-11-03', '', '終了日を入力してください'],
+      ['empty start and end', '', '', '開始日を入力してください'],
     ])('rejects %s', (_, startDate, endDate, message) => {
       const onChange = applyCustomPeriod(startDate, endDate)
 

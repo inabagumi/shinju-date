@@ -7,6 +7,7 @@ import {
   getEarliestDate,
   getToday,
   MAX_RANGE_DAYS,
+  parseDateFormat,
   validateDate,
   validateRange,
 } from '@/lib/analytics/date-window'
@@ -123,8 +124,18 @@ export default function DateRangePicker({
   }
 
   const handleCustomApply = () => {
-    const startDate = Temporal.PlainDate.from(customStart)
-    const endDate = Temporal.PlainDate.from(customEnd)
+    // An `<input type="date">` gives an empty string once its value is cleared
+    const startDate = parseDateFormat(customStart)
+    if (!startDate) {
+      setValidationError('開始日を入力してください')
+      return
+    }
+
+    const endDate = parseDateFormat(customEnd)
+    if (!endDate) {
+      setValidationError('終了日を入力してください')
+      return
+    }
 
     const rangeError = validateRange(startDate, endDate)
 
