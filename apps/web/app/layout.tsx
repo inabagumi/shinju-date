@@ -3,6 +3,7 @@ import { Analytics } from '@vercel/analytics/react'
 import type { Metadata, Viewport } from 'next'
 import { Suspense } from 'react'
 import PageVisitTracker from '@/components/page-visit-tracker'
+import SearchExitObserver from '@/components/search-exit-observer'
 import SkipLink from '@/components/skip-link'
 import { TimerProvider } from '@/components/timer'
 import { publicEnv } from '@/lib/env'
@@ -45,6 +46,10 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
       <body className="grid min-h-svh grid-rows-[auto_1fr_auto] bg-background text-foreground antialiased">
         <SkipLink />
         <PageVisitTracker />
+        {/* `usePathname()` は動的なルートで Suspense の中に置く */}
+        <Suspense fallback={null}>
+          <SearchExitObserver />
+        </Suspense>
         <QueryProvider>
           <SearchModalProvider>
             <SVGSymbols />
