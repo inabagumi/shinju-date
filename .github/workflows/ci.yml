@@ -2,31 +2,17 @@ name: CI
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
   push:
     branches: [main]
 
+# A new push to a pull request cancels the older run; pushes to main run to the end
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  # Install dependencies job (shared cache for all Node.js jobs)
-  install:
-    name: Install Dependencies
-    runs-on: ubuntu-26.04
-    permissions:
-      contents: read
-    env:
-      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
-      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 2
-      - name: Setup pnpm
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
-
-  # Detect whether the database job needs to run
+  # Detect whether the database and Terraform jobs need to run
   changes:
     name: Detect Changes
     runs-on: ubuntu-26.04
@@ -34,13 +20,14 @@ jobs:
       contents: read
     outputs:
       database: ${{ steps.filter.outputs.database }}
+      terraform: ${{ steps.filter.outputs.terraform }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
 
-      - name: Detect database changes
+      - name: Detect database and Terraform changes
         id: filter
         env:
           BEFORE_SHA: ${{ github.event.before }}
@@ -56,8 +43,9 @@ jobs:
           fi
 
           if [ -z "$base" ]; then
-            echo "Could not find the base commit, so the database job runs"
+            echo "Could not find the base commit, so the database and Terraform jobs run"
             database=true
+            terraform=true
           else
             changed_files=$(git diff --name-only "$base" HEAD)
             # The Supabase CLI version is in package.json, and it can change the generated types
@@ -66,56 +54,25 @@ jobs:
             else
               database=false
             fi
+
+            if grep -qE '^(terraform/|\.github/workflows/ci\.yml$)' <<< "$changed_files"; then
+              terraform=true
+            else
+              terraform=false
+            fi
           fi
 
           echo "database=$database"
           echo "database=$database" >> "$GITHUB_OUTPUT"
+          echo "terraform=$terraform"
+          echo "terraform=$terraform" >> "$GITHUB_OUTPUT"
 
-  # Matrix job for all unit tests (Node.js packages)
+  # Unit tests of all packages (turbo skips the packages whose inputs did not change)
   test:
-    name: Test (${{ matrix.package.name }})
+    name: Test
     runs-on: ubuntu-26.04
-    needs: install
     permissions:
       contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        package:
-          # Node.js packages with tests (excluding UI browser tests)
-          - name: "@shinju-date/database"
-            language: "node"
-          - name: "@shinju-date/health-checkers"
-            language: "node"
-          - name: "@shinju-date/helpers"
-            language: "node"
-          - name: "@shinju-date/logger"
-            language: "node"
-          - name: "@shinju-date/msw-handlers"
-            language: "node"
-          - name: "@shinju-date/retryable-fetch"
-            language: "node"
-          - name: "@shinju-date/temporal-fns"
-            language: "node"
-          - name: "@shinju-date/ui"
-            language: "node"
-          - name: "@shinju-date/scraper"
-            language: "node"
-          - name: "@shinju-date/twitch-api-client"
-            language: "node"
-          - name: "@shinju-date/video-backfill"
-            language: "node"
-          - name: "@shinju-date/web-cache"
-            language: "node"
-          - name: "@shinju-date/youtube-api-client"
-            language: "node"
-          # Node.js apps with unit tests
-          - name: "@shinju-date/admin"
-            language: "node"
-          - name: "@shinju-date/batch"
-            language: "node"
-          - name: "@shinju-date/web"
-            language: "node"
     env:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -125,22 +82,15 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Setup pnpm
-        if: matrix.package.language == 'node'
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
+      - uses: ./.github/actions/setup
 
-      # Node.js test execution
-      - name: Run Node.js tests
-        if: matrix.package.language == 'node'
-        run: pnpm test --filter ${{ matrix.package.name }} -- --reporter=github-actions
+      - name: Run tests
+        run: pnpm test -- --reporter=github-actions
 
   # Lint job for Node.js
   lint:
     name: Lint
     runs-on: ubuntu-26.04
-    needs: install
     permissions:
       contents: read
     env:
@@ -152,11 +102,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      # Node.js linting
-      - name: Setup pnpm
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
+      - uses: ./.github/actions/setup
 
       - name: Run Node.js lint
         run: pnpm biome ci --reporter=github .
@@ -169,7 +115,6 @@ jobs:
   typecheck:
     name: Typecheck
     runs-on: ubuntu-26.04
-    needs: install
     permissions:
       contents: read
     env:
@@ -181,10 +126,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Setup pnpm
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
+      - uses: ./.github/actions/setup
 
       - name: Run type check
         run: pnpm typecheck
@@ -193,7 +135,6 @@ jobs:
   build:
     name: Build (Node.js)
     runs-on: ubuntu-26.04
-    needs: install
     permissions:
       contents: read
     env:
@@ -205,10 +146,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Setup pnpm
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
+      - uses: ./.github/actions/setup
 
       - run: pnpm build --filter=!@shinju-date/admin --filter=!@shinju-date/batch --filter=!@shinju-date/web
 
@@ -216,7 +154,6 @@ jobs:
   build-msw:
     name: Build with MSW (${{ matrix.package }})
     runs-on: ubuntu-26.04
-    needs: install
     permissions:
       contents: read
     strategy:
@@ -225,6 +162,7 @@ jobs:
         package:
           - "@shinju-date/web"
           - "@shinju-date/admin"
+          - "@shinju-date/batch"
     env:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -234,10 +172,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Setup pnpm
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
+      - uses: ./.github/actions/setup
 
       - name: Build dependencies
         run: pnpm build --filter=${{ matrix.package }}^...
@@ -245,6 +180,7 @@ jobs:
       - name: Build app with MSW
         run: pnpm --filter ${{ matrix.package }} build:msw
         env:
+          GOOGLE_API_KEY: fake
           NEXT_PUBLIC_BASE_URL: http://localhost:3000
           NEXT_PUBLIC_SUPABASE_ANON_KEY: fake
           NEXT_PUBLIC_SUPABASE_URL: https://fake.supabase.test
@@ -277,17 +213,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Setup pnpm
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
-
-      # Build dependencies for apps only
-      - name: Build dependencies
-        if: matrix.package != '@shinju-date/ui'
-        run: |
-          pnpm build --filter=@shinju-date/msw-handlers
-          pnpm build --filter=${{ matrix.package }}^...
+      - uses: ./.github/actions/setup
 
       # Get Playwright version
       - name: Get Playwright version
@@ -310,9 +236,9 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm --filter ${{ matrix.package }} exec playwright install --with-deps chromium
 
-      # Run E2E tests
+      # Runs through turbo, which builds the dependencies first (dependsOn in turbo.json)
       - name: Run E2E tests
-        run: pnpm --filter ${{ matrix.package }} test:e2e
+        run: pnpm test:e2e --filter=${{ matrix.package }}
         env:
           CI: true
 
@@ -339,7 +265,7 @@ jobs:
   database:
     name: Database
     runs-on: ubuntu-26.04
-    needs: [install, changes]
+    needs: changes
     if: needs.changes.outputs.database == 'true'
     permissions:
       contents: read
@@ -347,10 +273,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Setup pnpm
-        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
-        with:
-          cache: true
+      - uses: ./.github/actions/setup
 
       # Applies all migrations and the seed to an empty database
       - name: Start local database
@@ -368,43 +291,60 @@ jobs:
             exit 1
           fi
 
+  # Format and validate the Terraform configuration (only when it changes)
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-26.04
+    needs: changes
+    if: needs.changes.outputs.terraform == 'true'
+    permissions:
+      contents: read
+    env:
+      # Uses the official image rather than a third-party setup action
+      TERRAFORM_IMAGE: hashicorp/terraform:1.17.2
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check format
+        run: docker run --rm -v "$PWD/terraform:/workspace" -w /workspace "$TERRAFORM_IMAGE" fmt -check -recursive
+
+      # Skips HCP Terraform, which needs a token, and only downloads the providers
+      - name: Initialize
+        run: docker run --rm -v "$PWD/terraform:/workspace" -w /workspace "$TERRAFORM_IMAGE" init -backend=false -input=false
+
+      - name: Validate
+        run: docker run --rm -v "$PWD/terraform:/workspace" -w /workspace "$TERRAFORM_IMAGE" validate
+
   # Summary job - this is the only required status check
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-26.04
-    needs: [lint, typecheck, build-msw, e2e, changes, database]
+    needs:
+      [
+        changes,
+        test,
+        lint,
+        typecheck,
+        build,
+        build-msw,
+        e2e,
+        database,
+        terraform,
+      ]
     if: always()
     steps:
-      - name: Check lint results
-        if: needs.lint.result != 'success'
+      # The database and Terraform jobs are skipped when they do not change
+      - name: Check job results
+        env:
+          FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+          RESULTS: ${{ toJSON(needs.*.result) }}
         run: |
-          echo "Lint job failed"
-          exit 1
+          echo "Job results: $RESULTS"
 
-      - name: Check typecheck results
-        if: needs.typecheck.result != 'success'
-        run: |
-          echo "Typecheck job failed"
-          exit 1
+          if [ "$FAILED" = "true" ]; then
+            echo "Some jobs failed or were cancelled"
+            exit 1
+          fi
 
-      - name: Check MSW build results
-        if: needs.build-msw.result != 'success'
-        run: |
-          echo "MSW build job failed"
-          exit 1
-
-      - name: Check E2E results
-        if: needs.e2e.result != 'success'
-        run: |
-          echo "E2E job failed"
-          exit 1
-
-      # The database job is skipped when the database does not change
-      - name: Check database results
-        if: needs.changes.result != 'success' || (needs.database.result != 'success' && needs.database.result != 'skipped')
-        run: |
-          echo "Database job failed"
-          exit 1
-
-      - name: All jobs passed
-        run: echo "All jobs passed successfully!"
+          echo "All jobs passed successfully!"

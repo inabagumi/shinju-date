@@ -177,7 +177,7 @@ afterAll(() => server.close())
 
 ### クイックスタート
 
-`apps/web` と `apps/admin` には、MSWを有効にして本番ビルドを行う `build:msw` スクリプトが用意されています。依存パッケージをビルドしてから実行してください。
+`apps/web`、`apps/admin`、`apps/batch` には、MSWを有効にして本番ビルドを行う `build:msw` スクリプトが用意されています。依存パッケージをビルドしてから実行してください。
 
 ```bash
 pnpm build --filter=@shinju-date/web^...
@@ -186,7 +186,7 @@ pnpm --filter @shinju-date/web build:msw
 
 `build:msw` は `NODE_OPTIONS="--import @shinju-date/msw-handlers/register"` と `ENABLE_MSW=true` を付けて `next build` を実行します。後述の[環境変数](#環境変数設定)（MSW用のフェイク値）を `.env.local` などで設定しておく必要があります。
 
-CIでも同じスクリプトで `apps/web` と `apps/admin` のビルドを確認しています（`.github/workflows/ci.yml` の `build-msw` ジョブ）。
+CIでも同じスクリプトで `apps/web`、`apps/admin`、`apps/batch` のビルドを確認しています（`.github/workflows/ci.yml` の `build-msw` ジョブ）。
 
 > [!NOTE]
 > `ENABLE_MSW=true` だけでは、ビルド時にMSWが起動しません。`instrumentation.ts` の `register()` はリクエスト処理時にのみ呼ばれ、静的生成のワーカーでは実行されないためです（[仕組み](#仕組み)を参照）。
@@ -211,7 +211,7 @@ UPSTASH_REDIS_REST_URL="https://fake.upstash.test"
 
 ### package.jsonスクリプト
 
-`apps/web` と `apps/admin` の `package.json` には、次のスクリプトが定義されています：
+`apps/web`、`apps/admin`、`apps/batch` の `package.json` には、次のスクリプトが定義されています：
 
 ```json
 {
