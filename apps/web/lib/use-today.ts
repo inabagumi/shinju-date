@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useSyncExternalStore } from 'react'
-import { useNow } from './timer'
+import { useNow } from '@/components/timer'
 
 function subscribeNothing() {
   return () => {}

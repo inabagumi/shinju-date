@@ -21,11 +21,11 @@ import { ListOption, ListOptionIcon } from '@/components/list-option'
 import TalentChip, {
   TALENT_CHIP_REMOVE_CLASS_NAME,
 } from '@/components/talent-chip'
-import { useDebouncedValue } from '@/components/use-debounced-value'
 import type { Talent } from '@/lib/fetchers'
 import { queryKeys } from '@/lib/query-keys'
 import { parseTalentIds, TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
 import { findMatchingTalents } from '@/lib/talent-match'
+import { useDebouncedValue } from '@/lib/use-debounced-value'
 import { getVideosPath } from '@/lib/video-kind-filter'
 import { SearchModalRecommendedQueries } from './search-modal-recommended-queries'
 import { SearchModalSectionHeading } from './search-modal-section-heading'

@@ -58,7 +58,7 @@ async function HomeShorts({ dashboardVideos }: DashboardSectionProps) {
   return <ShortsSection prefetchedData={await dashboardVideos} />
 }
 
-export default function SchedulePage() {
+export default function HomePage() {
   // 配信中・新着動画・ショートは1回の取得を3つのセクションで分け合う
   const dashboardVideos = fetchDashboardVideos()
 

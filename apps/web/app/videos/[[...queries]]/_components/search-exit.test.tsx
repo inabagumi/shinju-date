@@ -69,7 +69,9 @@ describe('search exit tracking', () => {
   beforeEach(async () => {
     // 状態はタブに1つだけ持つので、テストごとに読み込み直す
     vi.resetModules()
-    SearchExitObserver = (await import('./search-exit-observer')).default
+    SearchExitObserver = (
+      await import('@/app/_components/search-exit-observer')
+    ).default
     SearchExitTracker = (await import('./search-exit-tracker')).default
 
     sendBeacon = vi.fn(() => true)
