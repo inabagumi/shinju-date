@@ -28,7 +28,7 @@ export function SearchModalDialog() {
       <DialogPortal>
         <DialogOverlay className="z-50 backdrop-blur-sm" />
 
-        <DialogContent className="data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[20%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[20%] top-[20%] left-[50%] z-50 w-full max-w-2xl translate-x-[-50%] translate-y-[-20%] border border-border p-0 sm:max-w-3xl">
+        <DialogContent className="top-[20%] left-[50%] z-50 w-full max-w-2xl translate-x-[-50%] translate-y-[-20%] border border-border p-0 sm:max-w-3xl">
           <DialogTitle className="sr-only">検索</DialogTitle>
 
           <Suspense
