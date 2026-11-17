@@ -9,6 +9,7 @@ import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
 } from '@/lib/supabase'
+import { unwrapOrNull } from '@/lib/supabase/query'
 import { VIDEO_SELECT } from './video-select'
 
 const VIDEO_DETAIL_SELECT = `${VIDEO_SELECT}, created_at` as const
@@ -35,25 +36,7 @@ const getVideo = cache(async function getVideo(
 ): Promise<VideoDetail | null> {
   const supabaseClient = await createSupabaseServerClient()
 
-  const { data: video, error } = await selectVideo(supabaseClient, id)
-
-  if (error) {
-    if (error.code === 'PGRST116') {
-      // Row not found
-      return null
-    }
-    // Check for invalid UUID format error
-    if (
-      error.message?.includes('invalid input syntax for type uuid') ||
-      error.code === '22P02'
-    ) {
-      // Invalid UUID format - treat as not found
-      return null
-    }
-    throw new TypeError(error.message, {
-      cause: error,
-    })
-  }
+  const video = unwrapOrNull(await selectVideo(supabaseClient, id), 'getVideo')
 
   if (!video) {
     return null

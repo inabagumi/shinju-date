@@ -401,4 +401,22 @@ test.describe('Admin App - Not Found', () => {
     ).toBeVisible()
     await expect(page.getByText('This page could not be found.')).toHaveCount(0)
   })
+
+  for (const section of ['videos', 'talents', 'feedback']) {
+    for (const { id, name } of [
+      { id: '00000000-0000-0000-0000-000000000000', name: 'a missing ID' },
+      { id: 'not-a-uuid', name: 'an ID that is not a UUID' },
+    ]) {
+      test(`should display not found for the ${section} detail page of ${name}`, async ({
+        page,
+      }) => {
+        await page.goto(`http://localhost:4000/${section}/${id}`)
+
+        await expect(
+          page.getByRole('heading', { name: 'ページが見つかりません' }),
+        ).toBeVisible()
+        await expect(page.getByText('Application error')).toHaveCount(0)
+      })
+    }
+  }
 })

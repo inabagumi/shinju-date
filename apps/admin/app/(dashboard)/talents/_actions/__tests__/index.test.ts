@@ -84,8 +84,8 @@ describe('updateTalentAction', () => {
     })
   })
 
-  it('should return error when talent is not found (PGRST116)', async () => {
-    // No row matches, so `.single()` fails with PGRST116
+  it('should return error when talent is not found', async () => {
+    // No row matches, so `.single()` fails
     supabase.on('update', 'talents', [])
 
     const formData = new FormData()
@@ -234,7 +234,7 @@ describe('updateTalentAction', () => {
     expect(talentUpdates()).toHaveLength(0)
   })
 
-  it('should handle database errors other than PGRST116', async () => {
+  it('should handle database errors other than a missing row', async () => {
     supabase.on('update', 'talents', databaseErrorResponse())
 
     const formData = new FormData()
@@ -362,8 +362,8 @@ describe.each(lifecycleActionCases)('$name', (testCase) => {
     expect(filters).toHaveLength(expectedFilters.length)
   })
 
-  it('should return error when talent is not found (PGRST116)', async () => {
-    // No row matches, so `.single()` fails with PGRST116
+  it('should return error when talent is not found', async () => {
+    // No row matches, so `.single()` fails
     supabase.on('update', 'talents', [])
 
     const result = await testCase.action(TALENT_ID)
@@ -393,7 +393,7 @@ describe.each(lifecycleActionCases)('$name', (testCase) => {
     test.expectNoAuditLog()
   })
 
-  it('should handle database errors other than PGRST116', async () => {
+  it('should handle database errors other than a missing row', async () => {
     supabase.on('update', 'talents', databaseErrorResponse())
 
     const result = await testCase.action(TALENT_ID)

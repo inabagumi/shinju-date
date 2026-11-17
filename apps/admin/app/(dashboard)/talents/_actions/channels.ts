@@ -16,6 +16,7 @@ import {
   unauthenticatedFormState,
   unauthenticatedResult,
 } from '@/lib/auth'
+import { isNotFoundError } from '@/lib/supabase/query'
 import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
 
 function youtubeApiErrorFormState(error: unknown): FormState {
@@ -225,8 +226,8 @@ export async function removeYouTubeChannelAction(
       .single()
 
     if (fetchError) {
-      // Handle PGRST116 error: No rows found (channel doesn't exist)
-      if (fetchError.code === 'PGRST116') {
+      // No row matched: the channel doesn't exist
+      if (isNotFoundError(fetchError)) {
         logger.warn('削除対象のチャンネルが見つかりませんでした', {
           channel_id: channelId,
           talent_id: talentId,

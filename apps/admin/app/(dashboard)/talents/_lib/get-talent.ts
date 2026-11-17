@@ -4,6 +4,7 @@ import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
 } from '@/lib/supabase'
+import { unwrapOrNull } from '@/lib/supabase/query'
 
 const TALENT_SELECT = `
   id,
@@ -35,25 +36,5 @@ export async function getTalent(id: string): Promise<Talent | null> {
 
   const supabaseClient = await createSupabaseServerClient()
 
-  const { data: talent, error } = await selectTalent(supabaseClient, id)
-
-  if (error) {
-    if (error.code === 'PGRST116') {
-      // Row not found
-      return null
-    }
-    // Check for invalid UUID format error
-    if (
-      error.message?.includes('invalid input syntax for type uuid') ||
-      error.code === '22P02'
-    ) {
-      // Invalid UUID format - treat as not found
-      return null
-    }
-    throw new TypeError(error.message, {
-      cause: error,
-    })
-  }
-
-  return talent
+  return unwrapOrNull(await selectTalent(supabaseClient, id), 'getTalent')
 }

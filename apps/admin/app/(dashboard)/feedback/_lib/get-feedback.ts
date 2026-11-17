@@ -1,6 +1,7 @@
 import type { Tables } from '@shinju-date/database'
 import { cache } from 'react'
 import { getSupabaseAdminClient } from '@/lib/supabase/admin'
+import { unwrap, unwrapOrNull } from '@/lib/supabase/query'
 
 export interface FeatureRequestFilters {
   status?: Tables<'feature_requests'>['status']
@@ -23,41 +24,18 @@ export async function getFeatureRequests(
     query = query.eq('is_read', filters.isRead)
   }
 
-  const { data, error } = await query
-
-  if (error) {
-    throw error
-  }
-
-  return data || []
+  return unwrap(await query, 'getFeatureRequests') ?? []
 }
 
 export const getFeatureRequestById = cache(async function getFeatureRequestById(
   id: string,
 ): Promise<Tables<'feature_requests'> | null> {
-  const { data, error } = await getSupabaseAdminClient()
-    .from('feature_requests')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (error) {
-    if (error.code === 'PGRST116') {
-      // Row not found
-      return null
-    }
-    // Check for invalid UUID format error
-    if (
-      error.message?.includes('invalid input syntax for type uuid') ||
-      error.code === '22P02'
-    ) {
-      // Invalid UUID format - treat as not found
-      return null
-    }
-    throw new TypeError(error.message, {
-      cause: error,
-    })
-  }
-
-  return data
+  return unwrapOrNull(
+    await getSupabaseAdminClient()
+      .from('feature_requests')
+      .select('*')
+      .eq('id', id)
+      .single(),
+    'getFeatureRequestById',
+  )
 })

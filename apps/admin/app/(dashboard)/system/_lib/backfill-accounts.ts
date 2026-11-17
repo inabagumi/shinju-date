@@ -3,6 +3,7 @@ import {
   getBackfillJobId,
 } from '@shinju-date/video-backfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
+import { unwrap } from '@/lib/supabase/query'
 
 /** A YouTube channel or Twitch account that can be backfilled. */
 export interface BackfillAccount extends BackfillRunRequest {
@@ -26,17 +27,16 @@ export interface BackfillAccounts {
 export async function getBackfillAccounts(
   supabaseClient: TypedSupabaseClient,
 ): Promise<BackfillAccounts> {
-  const { data, error } = await supabaseClient
-    .from('talents')
-    .select(
-      'id, name, status, youtube_channels(id, name, youtube_channel_id), twitch_users(id, name, twitch_login_name, twitch_user_id)',
-    )
-    .is('deleted_at', null)
-    .order('name', { ascending: true })
-
-  if (error) {
-    throw error
-  }
+  const data = unwrap(
+    await supabaseClient
+      .from('talents')
+      .select(
+        'id, name, status, youtube_channels(id, name, youtube_channel_id), twitch_users(id, name, twitch_login_name, twitch_user_id)',
+      )
+      .is('deleted_at', null)
+      .order('name', { ascending: true }),
+    'getBackfillAccounts',
+  )
 
   const all = new Map<string, BackfillAccount>()
   const targets: BackfillAccount[] = []
