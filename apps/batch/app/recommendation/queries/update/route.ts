@@ -1,16 +1,13 @@
-import * as Sentry from '@sentry/nextjs'
 import { CACHE_TAGS, REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
-import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
+import { logger } from '@shinju-date/logger'
 import { formatDateKey, getMondayOfWeek } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
-import { after, type NextRequest } from 'next/server'
-import { serverEnv } from '@/lib/env'
-import { recommendationQueriesUpdate as ratelimit } from '@/lib/ratelimit'
+import type { NextRequest } from 'next/server'
+import { runCronJob } from '@/lib/cron'
+import { RECOMMENDATION_QUERIES_UPDATE_JOB } from '@/lib/jobs'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
 import { getAllTerms } from './_lib/get-all-terms'
-
-const MONITOR_SLUG = '/recommendation/queries/update'
 
 // Weights for different time periods
 const WEIGHT_DAILY = 10.0
@@ -19,49 +16,8 @@ const WEIGHT_ALL_TIME = 1.0
 
 export const maxDuration = 120
 
-export async function POST(request: NextRequest) {
-  const cronSecure = serverEnv.CRON_SECRET
-  if (
-    cronSecure &&
-    !verifyCronRequest(request, {
-      cronSecure,
-    })
-  ) {
-    Sentry.logger.warn('CRON_SECRET did not match.')
-
-    return createErrorResponse('Unauthorized', {
-      status: 401,
-    })
-  }
-
-  const { success } = await ratelimit.limit('recommendation:queries:update')
-
-  if (!success) {
-    Sentry.logger.warn('There has been no interval since the last run.')
-
-    return createErrorResponse(
-      'There has been no interval since the last run.',
-      {
-        status: 429,
-      },
-    )
-  }
-
-  const checkInId = Sentry.captureCheckIn(
-    {
-      monitorSlug: MONITOR_SLUG,
-      status: 'in_progress',
-    },
-    {
-      schedule: {
-        type: 'crontab',
-        value: '17 1 * * *',
-      },
-      timezone: 'Etc/UTC',
-    },
-  )
-
-  try {
+export async function POST(request: NextRequest): Promise<Response> {
+  return runCronJob(request, RECOMMENDATION_QUERIES_UPDATE_JOB, async () => {
     const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
     const today = formatDateKey(now)
     const mondayOfWeek = getMondayOfWeek(now)
@@ -95,9 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (keysToUnion.length === 0) {
-      Sentry.logger.info(
-        'No search data available to generate recommendations.',
-      )
+      logger.info('検索のデータがないため、おすすめの検索語を空にしました')
 
       // Clear the auto_recommended key if no data available
       await redisClient.del(REDIS_KEYS.QUERIES_AUTO_RECOMMENDED)
@@ -106,19 +60,7 @@ export async function POST(request: NextRequest) {
         signal: request.signal,
       })
 
-      after(async () => {
-        Sentry.captureCheckIn({
-          checkInId,
-          monitorSlug: MONITOR_SLUG,
-          status: 'ok',
-        })
-
-        await Sentry.flush(10_000)
-      })
-
-      return new Response(null, {
-        status: 204,
-      })
+      return
     }
 
     // Perform ZUNIONSTORE with weights
@@ -200,43 +142,13 @@ export async function POST(request: NextRequest) {
       signal: request.signal,
     })
 
-    Sentry.logger.info('Updated auto-recommended queries.', {
+    logger.info('おすすめの検索語を更新しました', {
       count: matchingQueries.length,
       topQueries: matchingQueries.slice(0, 10).map(({ query, score }) => ({
         query,
         score,
       })),
     })
-  } catch (error) {
-    Sentry.logger.error('Failed to update auto-recommended queries.', {
-      error,
-    })
-
-    after(async () => {
-      Sentry.captureCheckIn({
-        checkInId,
-        monitorSlug: MONITOR_SLUG,
-        status: 'error',
-      })
-
-      await Sentry.flush(10_000)
-    })
-
-    throw error
-  }
-
-  after(async () => {
-    Sentry.captureCheckIn({
-      checkInId,
-      monitorSlug: MONITOR_SLUG,
-      status: 'ok',
-    })
-
-    await Sentry.flush(10_000)
-  })
-
-  return new Response(null, {
-    status: 204,
   })
 }
 
