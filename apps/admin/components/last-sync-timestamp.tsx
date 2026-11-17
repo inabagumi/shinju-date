@@ -1,3 +1,4 @@
+import { TIME_ZONE } from '@shinju-date/constants'
 import { formatDateTime } from '@shinju-date/temporal-fns'
 import { cacheLife } from 'next/cache'
 import { getLastVideoSync } from '@/lib/get-last-sync'
@@ -27,6 +28,8 @@ export async function LastSyncTimestamp() {
     return <SyncLabel>N/A</SyncLabel>
   }
 
-  const formatted = formatDateTime(lastSync)
+  const formatted = formatDateTime(
+    Temporal.Instant.from(lastSync).toZonedDateTimeISO(TIME_ZONE),
+  )
   return <SyncLabel>{formatted}</SyncLabel>
 }

@@ -5,17 +5,6 @@ import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 import { getRedisClient } from '@/lib/redis'
 
-export async function getMaintenanceModeStatus(): Promise<boolean> {
-  try {
-    const redisClient = getRedisClient()
-    const value = await redisClient.get<boolean>(REDIS_KEYS.MAINTENANCE_MODE)
-    return value === true
-  } catch (error) {
-    console.error('Failed to get maintenance mode status:', error)
-    return false
-  }
-}
-
 export async function enableMaintenanceMode(): Promise<{
   success: boolean
   error?: string
