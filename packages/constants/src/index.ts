@@ -24,6 +24,9 @@ export const REDIS_KEYS = {
   POPULAR_VIDEOS_PREFIX: 'videos:popular:cache:',
   QUERIES_AUTO_RECOMMENDED: 'queries:auto_recommended',
   QUERIES_MANUAL_RECOMMENDED: 'queries:manual_recommended',
+  // Runs of the batch cron jobs, counted per fixed window
+  // (format: prefix + `<job identifier>:<window number>`)
+  RATELIMIT_CRON_PREFIX: 'ratelimit:cron:',
   SEARCH_EXIT_WITHOUT_CLICK_PREFIX: 'search:exit_without_click:',
   SEARCH_POPULAR_ALL_TIME: 'search:popular:all_time',
   SEARCH_POPULAR_DAILY_PREFIX: 'search:popular:daily:',
