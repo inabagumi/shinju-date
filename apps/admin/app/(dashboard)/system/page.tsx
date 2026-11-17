@@ -1,10 +1,15 @@
 import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { CardSkeleton } from '@/components/skeletons'
 import { WidgetErrorBoundary } from '@/components/widget-error-boundary'
-import { MaintenanceModePanel } from '../_components/maintenance-mode-panel'
-import { RecentActivity } from '../_components/recent-activity'
+import {
+  MaintenanceModePanel,
+  MaintenanceModePanelSkeleton,
+} from '../_components/maintenance-mode-panel'
+import {
+  RecentActivity,
+  RecentActivitySkeleton,
+} from '../_components/recent-activity'
 import { VideoBackfillHistoryPanel } from './_components/video-backfill-history-panel'
 import { VideoBackfillRunPanel } from './_components/video-backfill-run-panel'
 
@@ -19,12 +24,12 @@ export default function SystemPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <WidgetErrorBoundary title="メンテナンスモード">
-          <Suspense fallback={<CardSkeleton />}>
+          <Suspense fallback={<MaintenanceModePanelSkeleton />}>
             <MaintenanceModePanel />
           </Suspense>
         </WidgetErrorBoundary>
         <WidgetErrorBoundary title="最近のアクティビティ">
-          <Suspense fallback={<CardSkeleton />}>
+          <Suspense fallback={<RecentActivitySkeleton />}>
             <RecentActivity />
           </Suspense>
         </WidgetErrorBoundary>

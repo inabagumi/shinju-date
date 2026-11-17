@@ -1,3 +1,4 @@
+import { Skeleton } from '@shinju-date/ui'
 import Form, {
   ErrorMessage,
   FormField,
@@ -6,7 +7,7 @@ import Form, {
   SubmitButton,
   SuccessMessage,
 } from '@/components/form'
-import { Panel } from '@/components/panel'
+import { Panel, PanelSkeleton } from '@/components/panel'
 import { updateUserEmail } from '../_actions'
 
 interface Props {
@@ -40,5 +41,21 @@ export function EmailUpdateForm({ currentEmail }: Props) {
         <SubmitButton>メールアドレスを更新</SubmitButton>
       </Form>
     </Panel>
+  )
+}
+
+/** 読み込み中の `EmailUpdateForm`。現在のメールアドレス、入力欄、更新のボタンを並べる */
+export function EmailUpdateFormSkeleton() {
+  return (
+    <PanelSkeleton className="max-w-text" title="メールアドレスの変更">
+      <div className="space-y-4">
+        <Skeleton className="h-12 w-full" />
+        <div className="space-y-1">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <Skeleton className="h-9 w-44" />
+      </div>
+    </PanelSkeleton>
   )
 }

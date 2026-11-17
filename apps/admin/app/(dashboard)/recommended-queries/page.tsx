@@ -1,8 +1,7 @@
 import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { ManagementTableSkeleton } from '@/components/skeletons'
-import { QueriesList } from './_components/queries-list'
+import { QueriesList, QueriesListSkeleton } from './_components/queries-list'
 import getRecommendedQueries from './_lib/get-recommended-queries'
 
 export const metadata: Metadata = {
@@ -22,7 +21,7 @@ export default function RecommendedQueriesPage() {
       <PageHeader title="おすすめクエリ管理" />
 
       {/* Dynamic content with Suspense */}
-      <Suspense fallback={<ManagementTableSkeleton rows={8} />}>
+      <Suspense fallback={<QueriesListSkeleton />}>
         <QueriesListData />
       </Suspense>
     </div>

@@ -2,8 +2,10 @@ import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
-import { FormCardSkeleton } from '@/components/skeletons'
-import { EmailUpdateForm } from './_components/email-update-form'
+import {
+  EmailUpdateForm,
+  EmailUpdateFormSkeleton,
+} from './_components/email-update-form'
 import { PasswordUpdateForm } from './_components/password-update-form'
 import { getCurrentUserEmail } from './_lib/get-current-user-email'
 
@@ -32,7 +34,7 @@ export default function AccountPage() {
 
       <div className="space-y-8">
         {/* Email form - requires user data */}
-        <Suspense fallback={<FormCardSkeleton />}>
+        <Suspense fallback={<EmailUpdateFormSkeleton />}>
           <UserEmailData />
         </Suspense>
 

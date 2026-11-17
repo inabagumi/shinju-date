@@ -1,5 +1,6 @@
 import {
   EmptyState,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -7,7 +8,11 @@ import {
   TableHeader,
   TableRow,
 } from '@shinju-date/ui'
-import { WidgetHeader } from '../../_components/widget-header'
+import { TableSkeleton } from '@/components/table-skeleton'
+import {
+  WidgetHeader,
+  WidgetHeaderSkeleton,
+} from '../../_components/widget-header'
 import { getZeroResultKeywords } from '../_lib/get-zero-result-keywords'
 
 /**
@@ -55,4 +60,17 @@ export async function ZeroResultKeywordsWidget() {
   const zeroResultKeywords = await getZeroResultKeywords()
 
   return <ZeroResultKeywordsWidgetComponent keywords={zeroResultKeywords} />
+}
+
+/** 読み込み中の `ZeroResultKeywordsWidget`。見出しと、1列の表を並べる */
+export function ZeroResultKeywordsWidgetSkeleton() {
+  return (
+    <div aria-hidden="true">
+      <WidgetHeaderSkeleton period={false} title="検索結果ゼロのキーワード" />
+      <TableSkeleton
+        columns={[{ cell: <Skeleton className="h-4 w-40" />, id: 'keyword' }]}
+        rows={10}
+      />
+    </div>
+  )
 }

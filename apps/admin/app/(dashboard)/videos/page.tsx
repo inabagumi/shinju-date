@@ -1,11 +1,11 @@
 import { formatNumber } from '@shinju-date/helpers'
-import { PageHeader } from '@shinju-date/ui'
+import { PageHeader, Skeleton } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { TableSkeleton } from '@/components/skeletons'
 import { getTalents } from '../talents/_lib/get-talents'
 import Pagination from './_components/pagination'
-import { VideoFilters } from './_components/video-filters'
+import { VideoFilters, VideoFiltersSkeleton } from './_components/video-filters'
+import { VideoListSkeleton } from './_components/video-list'
 import { VideoTable } from './_components/video-table'
 import {
   getVideos,
@@ -20,6 +20,9 @@ import {
 export const metadata: Metadata = {
   title: '動画管理',
 }
+
+/** 1ページに表示する動画の件数 */
+const PER_PAGE = 20
 
 async function VideoFiltersData() {
   const talents = await getTalents()
@@ -46,7 +49,7 @@ async function VideoTableData({
   }
 
   const currentPage = validatedParams.page
-  const perPage = 20
+  const perPage = PER_PAGE
 
   // Build filters from validated parameters
   const filters: VideoFiltersType = {}
@@ -110,7 +113,7 @@ async function VideoCountData({
   }
 
   const currentPage = validatedParams.page
-  const perPage = 20
+  const perPage = PER_PAGE
 
   const filters: VideoFiltersType = {}
   if (validatedParams.talentId !== undefined) {
@@ -156,10 +159,7 @@ export default function VideosPage({ searchParams }: PageProps<'/'>) {
         description={
           <Suspense
             fallback={
-              <span
-                aria-hidden="true"
-                className="inline-block h-4 w-32 animate-pulse rounded-control bg-muted align-middle"
-              />
+              <Skeleton className="inline-block h-4 w-32 align-middle" />
             }
           >
             <VideoCountData searchParams={searchParams} />
@@ -169,23 +169,12 @@ export default function VideosPage({ searchParams }: PageProps<'/'>) {
       />
 
       {/* Filters with independent Suspense */}
-      <Suspense
-        fallback={
-          <div aria-hidden="true" className="mb-4 animate-pulse space-y-3">
-            <div className="h-16 w-full rounded-control bg-muted sm:max-w-md" />
-            <div className="hidden gap-3 md:flex">
-              <div className="h-16 w-48 rounded-control bg-muted" />
-              <div className="h-16 w-48 rounded-control bg-muted" />
-              <div className="h-16 w-48 rounded-control bg-muted" />
-            </div>
-          </div>
-        }
-      >
+      <Suspense fallback={<VideoFiltersSkeleton />}>
         <VideoFiltersData />
       </Suspense>
 
       {/* Video table with independent Suspense */}
-      <Suspense fallback={<TableSkeleton rows={8} />}>
+      <Suspense fallback={<VideoListSkeleton rows={PER_PAGE} />}>
         <VideoTableData searchParams={searchParams} />
       </Suspense>
     </div>

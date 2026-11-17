@@ -1,6 +1,7 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
+import { range } from '@shinju-date/helpers'
 import {
   FilterBar,
   Input,
@@ -9,6 +10,7 @@ import {
 } from '@shinju-date/ui'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { FieldSkeleton, FilterBarSkeleton } from '@/components/table-skeleton'
 import { useUpdateSearchParams } from '@/lib/use-update-search-params'
 
 type Talent = Pick<
@@ -191,6 +193,23 @@ export function VideoFilters({ talents }: Props) {
           </div>
         ))}
       </FilterBar>
+    </div>
+  )
+}
+
+/** 読み込み中の `VideoFilters`。検索欄と、6つの絞り込み（`filters`）を並べる */
+export function VideoFiltersSkeleton() {
+  return (
+    <div aria-hidden="true" className="mb-4 flex flex-col gap-3">
+      <FieldSkeleton className="w-full sm:max-w-md" />
+      <FilterBarSkeleton>
+        {range(6).map((filter) => (
+          <FieldSkeleton
+            className="md:w-48"
+            key={`video-filter-skeleton-${filter}`}
+          />
+        ))}
+      </FilterBarSkeleton>
     </div>
   )
 }

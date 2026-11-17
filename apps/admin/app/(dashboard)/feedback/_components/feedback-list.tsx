@@ -1,13 +1,13 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import { range } from '@shinju-date/helpers'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import {
   Badge,
   EmptyState,
   FilterBar,
   Select,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -18,6 +18,11 @@ import {
 import { Inbox } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
+import {
+  FieldSkeleton,
+  FilterBarSkeleton,
+  TableSkeleton,
+} from '@/components/table-skeleton'
 import {
   FEATURE_REQUEST_STATUS_LABELS,
   FEATURE_REQUEST_STATUSES,
@@ -150,26 +155,30 @@ export function FeatureRequestList({
   )
 }
 
+/** 読み込み中の `FeatureRequestList`。2つの絞り込みと、3列の表を並べる */
 export function FeatureRequestListSkeleton() {
   return (
-    <div aria-hidden="true" className="animate-pulse space-y-4">
-      <div className="flex flex-wrap gap-4">
-        <div className="h-16 w-48 rounded-control bg-muted" />
-        <div className="h-16 w-48 rounded-control bg-muted" />
-      </div>
-      <div className="overflow-hidden rounded-container border border-border">
-        <div className="h-10 bg-muted" />
-        {range(5).map((row) => (
-          <div
-            className="flex h-16 items-center gap-4 border-t border-border px-4"
-            key={`feature-request-row-skeleton-${row}`}
-          >
-            <div className="h-5 w-16 rounded-control bg-muted" />
-            <div className="h-4 flex-1 rounded-control bg-muted" />
-            <div className="h-4 w-32 rounded-control bg-muted" />
-          </div>
-        ))}
-      </div>
-    </div>
+    <TableSkeleton
+      columns={[
+        { cell: <Skeleton className="h-5 w-16" />, id: 'status' },
+        {
+          cell: (
+            <div className="w-full max-w-text min-w-64 space-y-1">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+          ),
+          className: 'w-full',
+          id: 'message',
+        },
+        { align: 'end', cell: <Skeleton className="h-4 w-32" />, id: 'date' },
+      ]}
+      filterBar={
+        <FilterBarSkeleton className="mb-4">
+          <FieldSkeleton className="md:w-48" />
+          <FieldSkeleton className="md:w-48" />
+        </FilterBarSkeleton>
+      }
+    />
   )
 }

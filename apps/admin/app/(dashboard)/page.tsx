@@ -1,15 +1,19 @@
 import { PageHeader } from '@shinju-date/ui'
 import { Suspense } from 'react'
-import { CardSkeleton } from '@/components/skeletons'
 import { WidgetErrorBoundary } from '@/components/widget-error-boundary'
-import { AnalyticsWidget } from './_components/analytics-widget'
+import {
+  AnalyticsWidget,
+  AnalyticsWidgetSkeleton,
+} from './_components/analytics-widget'
 import {
   DashboardPopularVideos,
   DashboardPopularVideosSkeleton,
 } from './_components/dashboard-popular-videos'
 import {
   ContentSummaryWidget,
+  ContentSummaryWidgetSkeleton,
   VideoSummaryWidget,
+  VideoSummaryWidgetSkeleton,
 } from './_components/summary-widget'
 import { VideoBackfillFailureAlert } from './_components/video-backfill-failure-alert'
 
@@ -27,7 +31,7 @@ export default function DashboardPage() {
 
         {/* Video Summary - Full width */}
         <WidgetErrorBoundary title="動画サマリー">
-          <Suspense fallback={<CardSkeleton />}>
+          <Suspense fallback={<VideoSummaryWidgetSkeleton />}>
             <VideoSummaryWidget />
           </Suspense>
         </WidgetErrorBoundary>
@@ -36,14 +40,14 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Content Summary Widget */}
           <WidgetErrorBoundary title="コンテンツサマリー">
-            <Suspense fallback={<CardSkeleton />}>
+            <Suspense fallback={<ContentSummaryWidgetSkeleton />}>
               <ContentSummaryWidget />
             </Suspense>
           </WidgetErrorBoundary>
 
           {/* Analytics Summary Widget */}
           <WidgetErrorBoundary title="アナリティクス">
-            <Suspense fallback={<CardSkeleton />}>
+            <Suspense fallback={<AnalyticsWidgetSkeleton />}>
               <AnalyticsWidget />
             </Suspense>
           </WidgetErrorBoundary>

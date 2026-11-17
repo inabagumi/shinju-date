@@ -1,6 +1,12 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { DetailList, DetailRow, Panel } from '../panel'
+import {
+  DetailList,
+  DetailListSkeleton,
+  DetailRow,
+  Panel,
+  PanelSkeleton,
+} from '../panel'
 
 describe('Panel', () => {
   it('renders the title as a heading with the description and actions', () => {
@@ -68,5 +74,41 @@ describe('DetailList', () => {
 
     expect(screen.getByRole('term')).toHaveTextContent('タレント名')
     expect(screen.getByRole('definition')).toHaveTextContent('あいうえお')
+  })
+})
+
+describe('PanelSkeleton', () => {
+  it('draws the same heading as Panel and hides itself from assistive technology', () => {
+    const { container } = render(
+      <PanelSkeleton description="補足" title="タレント情報">
+        <span data-testid="content" />
+      </PanelSkeleton>,
+    )
+    const panel = container.firstElementChild
+
+    expect(panel).toHaveAttribute('aria-hidden', 'true')
+    expect(panel).toHaveClass(
+      'rounded-container',
+      'border',
+      'bg-surface',
+      'p-6',
+    )
+    expect(
+      screen.getByRole('heading', {
+        hidden: true,
+        level: 2,
+        name: 'タレント情報',
+      }),
+    ).toHaveClass('text-heading', 'font-bold')
+    expect(screen.getByText('補足')).toBeInTheDocument()
+    expect(screen.getByTestId('content')).toBeInTheDocument()
+  })
+})
+
+describe('DetailListSkeleton', () => {
+  it('draws as many rows as given', () => {
+    const { container } = render(<DetailListSkeleton rows={4} />)
+
+    expect(container.firstElementChild?.children).toHaveLength(4)
   })
 })

@@ -4,10 +4,12 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { BackLink } from '@/components/back-link'
-import { StackedDetailSkeleton } from '@/components/skeletons'
 import { createTitleFromMessage } from '../_lib/create-title-from-message'
 import { getFeatureRequestById } from '../_lib/get-feedback'
-import { FeatureRequestDetail } from './_components/feedback-detail'
+import {
+  FeatureRequestDetail,
+  FeatureRequestDetailSkeleton,
+} from './_components/feedback-detail'
 
 interface Props {
   params: Promise<{
@@ -52,7 +54,7 @@ export default function FeedbackDetailPage({ params }: Props) {
 
       <PageHeader title="機能要望詳細" />
 
-      <Suspense fallback={<StackedDetailSkeleton />}>
+      <Suspense fallback={<FeatureRequestDetailSkeleton />}>
         {params.then(({ id }) => (
           <FeatureRequestDetailData id={id} />
         ))}

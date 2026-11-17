@@ -1,8 +1,7 @@
 import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { ManagementTableSkeleton } from '@/components/skeletons'
-import { TalentsList } from './_components/talents-list'
+import { TalentsList, TalentsListSkeleton } from './_components/talents-list'
 import { getTalents } from './_lib/get-talents'
 
 export const metadata: Metadata = {
@@ -23,7 +22,7 @@ export default function TalentsPage() {
         title="タレント管理"
       />
 
-      <Suspense fallback={<ManagementTableSkeleton />}>
+      <Suspense fallback={<TalentsListSkeleton />}>
         <TalentsListData />
       </Suspense>
     </div>
