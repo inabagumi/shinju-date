@@ -272,6 +272,16 @@ describe('Supabase filters', () => {
       expect(firstReadings).toEqual(firstReadings.toSorted())
     })
 
+    it('rejects a long invalid JSON path quickly', async () => {
+      const started = performance.now()
+      const response = await get(
+        `terms?select=term&readings${'->0'.repeat(40)}!=eq.a`,
+      )
+
+      expect(response.status).toBe(400)
+      expect(performance.now() - started).toBeLessThan(1000)
+    })
+
     it('filters by a JSON path as text', async () => {
       const [term] = await getJson<Term[]>('terms?select=term,readings&limit=1')
       const rows = await getJson<Term[]>(

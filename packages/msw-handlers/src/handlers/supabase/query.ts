@@ -43,7 +43,9 @@ export type FilterOperator = (typeof SUPPORTED_OPERATORS)[number]
  * A column, optionally followed by a JSON path such as `readings->0` or
  * `data->>name` (keys and array indexes).
  */
-const COLUMN_PATTERN = /^[A-Za-z_]\w*(?:->>?(?:-?\d+|\w+))*$/
+// A key starts with a letter or `_` and an index with a digit or `-`, so the
+// two do not overlap and the pattern does not backtrack exponentially.
+const COLUMN_PATTERN = /^[A-Za-z_]\w*(?:->>?(?:-?\d+|[A-Za-z_]\w*))*$/
 
 /** The values that `is` accepts. */
 const IS_VALUES = new Set(['false', 'not_null', 'null', 'true', 'unknown'])
