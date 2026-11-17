@@ -1,10 +1,12 @@
 'use client'
 
 import * as Popover from '@radix-ui/react-popover'
+import { Slot } from '@radix-ui/react-slot'
 import { twMerge } from '@shinju-date/ui'
 import {
   type ComponentPropsWithoutRef,
   createContext,
+  type MouseEvent,
   type ReactNode,
   useContext,
   useState,
@@ -97,10 +99,16 @@ export function DropdownMenuContent({
 }
 
 interface DropdownMenuItemProps extends ComponentPropsWithoutRef<'button'> {
+  /**
+   * 子の要素（リンクなど）を項目として描く。新しいタブで開くリンクなど、
+   * ボタンではなく `<a>` にしたい項目に使う。
+   */
+  asChild?: boolean
   variant?: 'default' | 'danger'
 }
 
 export function DropdownMenuItem({
+  asChild = false,
   children,
   className,
   onClick,
@@ -111,7 +119,7 @@ export function DropdownMenuItem({
   if (!context)
     throw new Error('DropdownMenuItem must be used within DropdownMenu')
 
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
     onClick?.(e)
     context.setIsOpen(false)
   }
@@ -121,8 +129,10 @@ export function DropdownMenuItem({
     default: 'text-foreground hover:bg-muted focus-visible:bg-muted',
   }
 
+  const Comp = asChild ? Slot : 'button'
+
   return (
-    <button
+    <Comp
       className={twMerge(
         'flex w-full items-center gap-2 rounded-control px-3 py-2 text-left text-meta whitespace-nowrap transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
         variantClasses[variant],
@@ -130,10 +140,10 @@ export function DropdownMenuItem({
       )}
       onClick={handleClick}
       role="menuitem"
-      type="button"
+      {...(asChild ? {} : { type: 'button' as const })}
       {...props}
     >
       {children}
-    </button>
+    </Comp>
   )
 }
