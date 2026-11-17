@@ -75,7 +75,7 @@ describe('updateTalentAction', () => {
       theme_color: '#FF5733',
       updated_at: NOW,
     })
-    test.expectAuditLog('CHANNEL_UPDATE', 'channels', TALENT_ID, {
+    test.expectAuditLog('CHANNEL_UPDATE', TALENT_ID, {
       entityName: 'Updated Talent',
     })
     test.expectRevalidated({
@@ -328,7 +328,7 @@ describe.each(lifecycleActionCases)('$name', (testCase) => {
     expect(talentUpdates()).toHaveLength(1)
     expect(talentUpdates()[0]?.body).toEqual(testCase.expectedUpdate)
     expect(talentUpdates()[0]?.query['select']).toBe('name')
-    test.expectAuditLog(testCase.auditAction, 'channels', TALENT_ID, {
+    test.expectAuditLog(testCase.auditAction, TALENT_ID, {
       entityName: 'Test Talent',
     })
     test.expectRevalidated({
@@ -429,7 +429,7 @@ describe('createTalentAction', () => {
       name: 'New Talent',
       reading: null,
     })
-    test.expectAuditLog('CHANNEL_CREATE', 'channels', TALENT_ID, {
+    test.expectAuditLog('CHANNEL_CREATE', TALENT_ID, {
       entityName: 'New Talent',
     })
     test.expectRevalidated({

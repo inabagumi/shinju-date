@@ -95,6 +95,9 @@ const serverEnvSchema = z
     { when: () => true },
   )
 
+/** The names of every variable in the schema, for checking `turbo.json`. */
+export const ENV_NAMES: readonly string[] = Object.keys(serverEnvSchema.shape)
+
 export type ServerEnv = z.output<typeof serverEnvSchema>
 
 /** The variables read from `process.env`, by name. */

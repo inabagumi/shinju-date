@@ -28,13 +28,13 @@ export interface Video extends Omit<VideoRow, 'talent'> {
 }
 
 export interface VideoFilters {
-  talentId?: string[]
-  deleted?: boolean[]
-  visible?: boolean[]
-  search?: string
-  status?: Tables<'videos'>['status'][]
-  platform?: Tables<'videos'>['platform'][]
-  videoKind?: Tables<'videos'>['video_kind'][]
+  talentId?: string[] | undefined
+  deleted?: boolean[] | undefined
+  visible?: boolean[] | undefined
+  search?: string | undefined
+  status?: Tables<'videos'>['status'][] | undefined
+  platform?: Tables<'videos'>['platform'][] | undefined
+  videoKind?: Tables<'videos'>['video_kind'][] | undefined
 }
 
 export type VideoSortField = 'published_at' | 'updated_at'

@@ -69,7 +69,7 @@ describe('syncVideoAction', () => {
       message: '動画情報を同期しました。',
       success: true,
     })
-    test.expectAuditLog('VIDEO_SYNC', 'videos', videoId, {
+    test.expectAuditLog('VIDEO_SYNC', videoId, {
       changes: {
         after: { title: 'New Title', video_kind: 'short' },
         before: { title: 'Saved Title', video_kind: 'standard' },
@@ -109,7 +109,7 @@ describe('syncVideoAction', () => {
         message: `${label}で動画が見つからなかったため、動画を削除しました。`,
         success: true,
       })
-      test.expectAuditLog('VIDEO_SYNC', 'videos', videoId, {
+      test.expectAuditLog('VIDEO_SYNC', videoId, {
         changes: {
           after: {
             deleted_at: toDBString(now),

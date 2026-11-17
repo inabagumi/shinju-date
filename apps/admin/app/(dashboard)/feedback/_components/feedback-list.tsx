@@ -17,16 +17,24 @@ import {
 } from '@shinju-date/ui'
 import { Inbox } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useUpdateSearchParams } from '@/lib/use-update-search-params'
 import {
   FEATURE_REQUEST_STATUS_LABELS,
   FEATURE_REQUEST_STATUSES,
   type FeatureRequestStatus,
 } from '../_lib/feature-request-status'
+import type { FeedbackSearchParams } from '../_lib/search-params-schema'
 
 interface FeatureRequestListProps {
   featureRequests: Tables<'feature_requests'>[]
+  /** URL の `read`。`undefined` はすべて */
+  readFilter: FeedbackSearchParams['read']
+  /** URL の `status`。`undefined` はすべて */
+  statusFilter: FeedbackSearchParams['status']
 }
+
+/** 「すべて」の選択肢の値。URL にはパラメータを付けない */
+const ALL = 'all'
 
 const statusColors: Record<
   FeatureRequestStatus,
@@ -40,21 +48,24 @@ const statusColors: Record<
 
 export function FeatureRequestList({
   featureRequests,
+  readFilter,
+  statusFilter,
 }: FeatureRequestListProps) {
-  const [statusFilter, setStatusFilter] = useState<
-    FeatureRequestStatus | 'all'
-  >('all')
-  const [readFilter, setReadFilter] = useState<'all' | 'read' | 'unread'>('all')
+  const updateSearchParams = useUpdateSearchParams()
 
   const filteredRequests = featureRequests.filter((item) => {
-    if (statusFilter !== 'all' && item.status !== statusFilter) return false
+    if (statusFilter !== undefined && item.status !== statusFilter) return false
     if (readFilter === 'read' && !item.is_read) return false
     if (readFilter === 'unread' && item.is_read) return false
     return true
   })
 
   const activeCount =
-    (statusFilter === 'all' ? 0 : 1) + (readFilter === 'all' ? 0 : 1)
+    (statusFilter === undefined ? 0 : 1) + (readFilter === undefined ? 0 : 1)
+
+  const changeFilter = (name: 'read' | 'status', value: string) => {
+    updateSearchParams({ [name]: value === ALL ? null : value })
+  }
 
   return (
     <div className="space-y-4">
@@ -65,12 +76,10 @@ export function FeatureRequestList({
           </label>
           <Select
             id="status-filter"
-            onChange={(e) =>
-              setStatusFilter(e.target.value as FeatureRequestStatus | 'all')
-            }
-            value={statusFilter}
+            onChange={(e) => changeFilter('status', e.target.value)}
+            value={statusFilter ?? ALL}
           >
-            <option value="all">すべて</option>
+            <option value={ALL}>すべて</option>
             {FEATURE_REQUEST_STATUSES.map((status) => (
               <option key={status} value={status}>
                 {FEATURE_REQUEST_STATUS_LABELS[status]}
@@ -84,12 +93,10 @@ export function FeatureRequestList({
           </label>
           <Select
             id="read-filter"
-            onChange={(e) =>
-              setReadFilter(e.target.value as 'all' | 'read' | 'unread')
-            }
-            value={readFilter}
+            onChange={(e) => changeFilter('read', e.target.value)}
+            value={readFilter ?? ALL}
           >
-            <option value="all">すべて</option>
+            <option value={ALL}>すべて</option>
             <option value="unread">未読</option>
             <option value="read">既読</option>
           </Select>

@@ -1,12 +1,14 @@
 import { HttpResponse, http } from 'msw'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../../internal/testing/context.js'
+import { createFakeTwitchFetcher } from '../../internal/testing/fetcher.js'
 import {
   postgresError,
   setupSupabase,
 } from '../../internal/testing/supabase.js'
 import {
   createClip,
+  createSavedArchive,
   createSavedVideo,
   createVideo,
 } from '../../internal/testing/twitch.js'
@@ -15,8 +17,6 @@ import {
   refreshRecentTwitchVideos,
   removeUnavailableTwitchVideos,
 } from '../check-videos.js'
-import type { TwitchFetcher } from '../fetcher.js'
-import type { SavedTwitchVideo } from '../saved-video.js'
 
 vi.mock('../../internal/thumbnails/index.js', async (importOriginal) => ({
   ...(await importOriginal<
@@ -37,49 +37,6 @@ const createContext = <T>(fetcher: T) =>
     supabaseClient: supabase.supabaseClient,
   })
 
-/** A saved archive that matches `createVideo()` exactly. */
-function createSavedArchive(
-  overrides: Parameters<typeof createSavedVideo>[0] = {},
-): SavedTwitchVideo {
-  const { twitch_video: twitchVideo, ...video } = overrides
-
-  return createSavedVideo({
-    duration: 'PT2H',
-    status: 'ENDED',
-    thumbnail_id: 'thumb-1',
-    title: 'Archive',
-    ...video,
-    twitch_video: {
-      twitch_video_id: 'vod-1',
-      type: 'archive',
-      ...twitchVideo,
-    },
-  })
-}
-
-interface FetcherOptions {
-  clips?: ReturnType<typeof createClip>[]
-  missingClipIds?: string[]
-  missingVideoIds?: string[]
-  videos?: ReturnType<typeof createVideo>[]
-}
-
-function createFetcher({
-  clips = [],
-  missingClipIds = [],
-  missingVideoIds = [],
-  videos = [],
-}: FetcherOptions) {
-  const getClips = vi.fn(async () => ({ clips, missingIds: missingClipIds }))
-  const getVideos = vi.fn(async () => ({ missingIds: missingVideoIds, videos }))
-
-  return {
-    fetcher: { getClips, getVideos } as unknown as TwitchFetcher,
-    getClips,
-    getVideos,
-  }
-}
-
 describe('refreshRecentTwitchVideos', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -91,7 +48,7 @@ describe('refreshRecentTwitchVideos', () => {
 
   it('loads the newest finished videos of active talents', async () => {
     supabase.respond(() => [])
-    const { getVideos, fetcher } = createFetcher({})
+    const { getVideos, fetcher } = createFakeTwitchFetcher()
 
     const changed = await refreshRecentTwitchVideos(createContext(fetcher))
 
@@ -111,7 +68,7 @@ describe('refreshRecentTwitchVideos', () => {
     supabase.respond(({ method }) =>
       method === 'GET' ? [createSavedArchive()] : [],
     )
-    const { fetcher } = createFetcher({
+    const { fetcher } = createFakeTwitchFetcher({
       videos: [createVideo({ duration: 'PT2H30M', title: 'Renamed' })],
     })
 
@@ -135,7 +92,7 @@ describe('refreshRecentTwitchVideos', () => {
     supabase.respond(({ method }) =>
       method === 'GET' ? [createSavedArchive()] : [],
     )
-    const { fetcher } = createFetcher({
+    const { fetcher } = createFakeTwitchFetcher({
       videos: [createVideo({ type: 'highlight' })],
     })
 
@@ -169,7 +126,7 @@ describe('refreshRecentTwitchVideos', () => {
           ]
         : [],
     )
-    const { getClips, getVideos, fetcher } = createFetcher({
+    const { getClips, getVideos, fetcher } = createFakeTwitchFetcher({
       clips: [createClip()],
       videos: [createVideo()],
     })
@@ -190,7 +147,7 @@ describe('refreshRecentTwitchVideos', () => {
     supabase.respond(({ method }) =>
       method === 'GET' ? [createSavedArchive({ thumbnail_id: null })] : [],
     )
-    const { fetcher } = createFetcher({ videos: [createVideo()] })
+    const { fetcher } = createFakeTwitchFetcher({ videos: [createVideo()] })
 
     const changed = await refreshRecentTwitchVideos(createContext(fetcher))
 
@@ -225,7 +182,7 @@ describe('refreshRecentTwitchVideos', () => {
         () => HttpResponse.json([]),
       ),
     )
-    const { fetcher } = createFetcher({ videos: [createVideo()] })
+    const { fetcher } = createFakeTwitchFetcher({ videos: [createVideo()] })
 
     const changed = await refreshRecentTwitchVideos(createContext(fetcher))
 
@@ -246,7 +203,7 @@ describe('refreshRecentTwitchVideos', () => {
     supabase.respond(({ method }) =>
       method === 'GET' ? [createSavedArchive()] : [],
     )
-    const { fetcher } = createFetcher({ videos: [createVideo()] })
+    const { fetcher } = createFakeTwitchFetcher({ videos: [createVideo()] })
 
     const changed = await refreshRecentTwitchVideos(createContext(fetcher))
 
@@ -262,7 +219,7 @@ describe('refreshRecentTwitchVideos', () => {
 
       return table === 'videos' ? [{ id: 'video-1' }] : []
     })
-    const { fetcher } = createFetcher({ missingVideoIds: ['vod-1'] })
+    const { fetcher } = createFakeTwitchFetcher({ missingVideoIds: ['vod-1'] })
 
     const changed = await refreshRecentTwitchVideos(createContext(fetcher))
 
@@ -280,7 +237,7 @@ describe('refreshRecentTwitchVideos', () => {
     supabase.respond(({ method }) =>
       method === 'GET' ? [createSavedVideo({ status: 'ENDED' })] : [],
     )
-    const { getVideos, fetcher } = createFetcher({})
+    const { getVideos, fetcher } = createFakeTwitchFetcher()
 
     const changed = await refreshRecentTwitchVideos(createContext(fetcher))
 
@@ -319,7 +276,7 @@ describe('removeUnavailableTwitchVideos', () => {
         createSavedVideo({ id: 'video-3', status: 'ENDED' }),
       ]
     })
-    const { getClips, getVideos, fetcher } = createFetcher({
+    const { getClips, getVideos, fetcher } = createFakeTwitchFetcher({
       missingClipIds: ['clip-1'],
       videos: [createVideo()],
     })
@@ -347,7 +304,7 @@ describe('removeUnavailableTwitchVideos', () => {
     supabase.respond(({ method, query }) =>
       method === 'GET' && !query['id'] ? [createSavedArchive()] : [],
     )
-    const { fetcher } = createFetcher({ videos: [createVideo()] })
+    const { fetcher } = createFakeTwitchFetcher({ videos: [createVideo()] })
 
     const changed = await removeUnavailableTwitchVideos(createContext(fetcher))
 

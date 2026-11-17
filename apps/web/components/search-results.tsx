@@ -7,6 +7,7 @@ import { useEffect, useId, useMemo } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { formatDateHeading } from '@/lib/date-heading'
 import { fetchVideos, type Video } from '@/lib/fetchers'
+import { queryKeys } from '@/lib/query-keys'
 import type { VideoKindFilter } from '@/lib/video-kind-filter'
 import { useNow } from './timer'
 import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
@@ -130,7 +131,7 @@ export default function SearchResults({
           until: pageParam,
         })
       },
-      queryKey: ['videos', { kind, query, talentIds }],
+      queryKey: queryKeys.videos({ kind, query, talentIds }),
     })
 
   const { ref: loadMoreRef, inView } = useInView({

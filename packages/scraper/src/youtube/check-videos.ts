@@ -33,7 +33,7 @@ const SWEEP_PAGE_SIZE = 1000
  */
 export type YouTubeRefreshScope = 'live' | 'recent'
 
-interface SavedYouTubeVideo extends YouTubeVideoFields {
+export interface SavedYouTubeVideo extends YouTubeVideoFields {
   id: string
   thumbnail_id: string | null
   youtube_video: {

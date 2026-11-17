@@ -24,6 +24,16 @@ export type SupabaseResponder = (
 ) => unknown | Promise<unknown>
 
 /**
+ * How the database answers each kind of request, keyed by method and table
+ * (e.g. `GET talents`, `PATCH videos`): the rows to return, or a responder
+ * for answers that depend on the request.
+ */
+export type SupabaseRoutes = Record<
+  `${string} ${string}`,
+  unknown[] | SupabaseResponder
+>
+
+/**
  * Builds the response PostgREST sends when a statement fails.
  */
 export function postgresError(code: string, message: string): Response {
@@ -36,9 +46,9 @@ export function postgresError(code: string, message: string): Response {
 /**
  * Starts a mock Supabase for the current test file.
  *
- * Tests describe the database with `respond` and inspect `requests` to assert
- * on what was written. Requests to anything else fail the test, so nothing
- * can reach the network by accident.
+ * Tests describe the database with `respondWith` (or `respond`) and inspect
+ * `requests` to assert on what was written. Requests to anything else fail
+ * the test, so nothing can reach the network by accident.
  */
 export function setupSupabase() {
   const server = setupServer()
@@ -57,33 +67,46 @@ export function setupSupabase() {
     server.close()
   })
 
+  /** Defines how the database answers during the current test. */
+  function respond(responder: SupabaseResponder): void {
+    server.use(
+      http.all(
+        `${SUPABASE_URL}/rest/v1/:table`,
+        async ({ params, request }) => {
+          const text = await request.text()
+          const recorded: SupabaseRequest = {
+            body: text ? JSON.parse(text) : undefined,
+            method: request.method,
+            query: Object.fromEntries(new URL(request.url).searchParams),
+            table: String(params['table']),
+          }
+
+          requests.push(recorded)
+
+          const result = await responder(recorded)
+
+          return result instanceof Response
+            ? result
+            : HttpResponse.json(result ?? [])
+        },
+      ),
+    )
+  }
+
   return {
     /** Every PostgREST request made so far in the current test. */
     requests,
-    /** Defines how the database answers during the current test. */
-    respond(responder: SupabaseResponder): void {
-      server.use(
-        http.all(
-          `${SUPABASE_URL}/rest/v1/:table`,
-          async ({ params, request }) => {
-            const text = await request.text()
-            const recorded: SupabaseRequest = {
-              body: text ? JSON.parse(text) : undefined,
-              method: request.method,
-              query: Object.fromEntries(new URL(request.url).searchParams),
-              table: String(params['table']),
-            }
+    respond,
+    /**
+     * Defines how the database answers by method and table. Requests without
+     * a route succeed and return no rows.
+     */
+    respondWith(routes: SupabaseRoutes): void {
+      respond((request) => {
+        const route = routes[`${request.method} ${request.table}`]
 
-            requests.push(recorded)
-
-            const result = await responder(recorded)
-
-            return result instanceof Response
-              ? result
-              : HttpResponse.json(result ?? [])
-          },
-        ),
-      )
+        return typeof route === 'function' ? route(request) : (route ?? [])
+      })
     },
     /** The underlying MSW server, for non-database endpoints. */
     server,

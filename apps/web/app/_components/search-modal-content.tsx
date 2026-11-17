@@ -1,12 +1,12 @@
 'use client'
 
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Search, UserRound, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
   type KeyboardEvent,
   useCallback,
-  useEffect,
   useId,
   useMemo,
   useRef,
@@ -16,12 +16,13 @@ import {
   fetchRecommendedQueries,
   fetchSearchModalTalents,
   fetchSuggestions,
-  type Suggestion,
 } from '@/app/_lib/actions'
 import TalentChip, {
   TALENT_CHIP_REMOVE_CLASS_NAME,
 } from '@/components/talent-chip'
+import { useDebouncedValue } from '@/components/use-debounced-value'
 import type { Talent } from '@/lib/fetchers'
+import { queryKeys } from '@/lib/query-keys'
 import { parseTalentIds, TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
 import { findMatchingTalents } from '@/lib/talent-match'
 import { getVideosPath } from '@/lib/video-kind-filter'
@@ -33,6 +34,17 @@ const OPTION_SELECTOR = '[data-search-modal-option]'
 
 const OPTION_CLASS_NAME =
   'flex w-full items-center gap-3 rounded-control px-4 py-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent'
+
+/** サジェストを取得するまでに、入力を待つ時間（ミリ秒） */
+const SUGGESTION_DEBOUNCE_MS = 300
+
+/**
+ * おすすめの検索キーワードとタレントの一覧は、モーダルを開き直すたびには
+ * 取り直さない
+ */
+const SEARCH_MODAL_STALE_TIME = 5 * 60 * 1000
+
+const NO_TALENTS: Talent[] = []
 
 function isVideosPath(pathname: string): boolean {
   return pathname === '/videos' || pathname.startsWith('/videos/')
@@ -50,19 +62,48 @@ export function SearchModalContent({ onClose }: SearchModalContentProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const optionsRef = useRef<HTMLDivElement>(null)
   const [query, setQuery] = useState('')
-  const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null)
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
-  // `null` means the recommended queries are still loading
-  const [recommendedQueries, setRecommendedQueries] = useState<string[] | null>(
-    null,
-  )
-  const [talents, setTalents] = useState<Talent[]>([])
-  const [selectedTalents, setSelectedTalents] = useState<Talent[]>([])
+  // `null` until the chips are changed. Until then, the chips of the talent
+  // filter of the video list are shown
+  const [changedTalents, setChangedTalents] = useState<Talent[] | null>(null)
   // タレントで絞り込んだ動画一覧で開いたときは、そのタレントをチップにする。
   // 種別（`kind`）は引き継がない
   const [initialTalentIds] = useState(() =>
     isVideosPath(pathname) ? searchParams.getAll(TALENT_SEARCH_PARAM) : [],
   )
+
+  const { data: recommendedQueries, isError: isRecommendedQueriesError } =
+    useQuery({
+      queryFn: () => fetchRecommendedQueries(),
+      queryKey: queryKeys.searchModalRecommendedQueries(),
+      staleTime: SEARCH_MODAL_STALE_TIME,
+    })
+
+  // The talents are matched against the input here
+  const { data: talents = NO_TALENTS } = useQuery({
+    queryFn: () => fetchSearchModalTalents(),
+    queryKey: queryKeys.searchModalTalents(),
+    staleTime: SEARCH_MODAL_STALE_TIME,
+  })
+
+  const debouncedQuery = useDebouncedValue(query, SUGGESTION_DEBOUNCE_MS)
+  const { data: suggestions, isError: isSuggestionsError } = useQuery({
+    enabled: debouncedQuery !== '',
+    // Keep showing the previous suggestions while fetching the new ones
+    placeholderData: keepPreviousData,
+    queryFn: () => fetchSuggestions(debouncedQuery),
+    queryKey: queryKeys.searchModalSuggestions(debouncedQuery),
+  })
+  const isLoadingSuggestions = !suggestions && !isSuggestionsError
+
+  const initialTalents = useMemo(() => {
+    const ids = parseTalentIds(
+      initialTalentIds,
+      talents.map((talent) => talent.id),
+    )
+
+    return talents.filter((talent) => ids.includes(talent.id))
+  }, [initialTalentIds, talents])
+  const selectedTalents = changedTalents ?? initialTalents
 
   const selectedTalentIds = useMemo(
     () => selectedTalents.map((talent) => talent.id),
@@ -73,72 +114,6 @@ export function SearchModalContent({ onClose }: SearchModalContentProps) {
     [talents, query, selectedTalentIds],
   )
 
-  // Fetch recommended queries on mount
-  useEffect(() => {
-    fetchRecommendedQueries()
-      .then(setRecommendedQueries)
-      .catch((err) => {
-        console.debug('Failed to fetch recommended queries', err)
-        setRecommendedQueries([])
-      })
-  }, [])
-
-  // Fetch the talents on mount. They are matched against the input here
-  useEffect(() => {
-    let ignore = false
-
-    fetchSearchModalTalents()
-      .then((data) => {
-        if (ignore) return
-
-        setTalents(data)
-
-        const ids = parseTalentIds(
-          initialTalentIds,
-          data.map((talent) => talent.id),
-        )
-
-        if (ids.length > 0) {
-          setSelectedTalents(data.filter((talent) => ids.includes(talent.id)))
-        }
-      })
-      .catch((err) => {
-        console.debug('Failed to fetch talents', err)
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [initialTalentIds])
-
-  // Fetch suggestions when query changes
-  useEffect(() => {
-    if (!query) {
-      setSuggestions(null)
-      setIsLoadingSuggestions(false)
-      return
-    }
-
-    setIsLoadingSuggestions(true)
-
-    const getSuggestions = async () => {
-      try {
-        const data = await fetchSuggestions(query)
-        setSuggestions(data)
-      } catch (err) {
-        console.debug('Failed to fetch suggestions', err)
-        setSuggestions([])
-      } finally {
-        setIsLoadingSuggestions(false)
-      }
-    }
-
-    // Debounce the search
-    const timeoutId = setTimeout(getSuggestions, 300)
-
-    return () => clearTimeout(timeoutId)
-  }, [query])
-
   const getOptions = useCallback(
     () =>
       Array.from(
@@ -148,24 +123,30 @@ export function SearchModalContent({ onClose }: SearchModalContentProps) {
     [],
   )
 
-  const selectTalent = useCallback((talent: Talent) => {
-    setSelectedTalents((prev) => [...prev, talent])
-    setQuery('')
-    inputRef.current?.focus()
-  }, [])
+  const selectTalent = useCallback(
+    (talent: Talent) => {
+      setChangedTalents([...selectedTalents, talent])
+      setQuery('')
+      inputRef.current?.focus()
+    },
+    [selectedTalents],
+  )
 
-  const removeTalent = useCallback((talentId: string) => {
-    setSelectedTalents((prev) =>
-      prev.filter((talent) => talent.id !== talentId),
-    )
-    inputRef.current?.focus()
-  }, [])
+  const removeTalent = useCallback(
+    (talentId: string) => {
+      setChangedTalents(
+        selectedTalents.filter((talent) => talent.id !== talentId),
+      )
+      inputRef.current?.focus()
+    },
+    [selectedTalents],
+  )
 
   const handleInputKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Backspace' && !query && selectedTalents.length > 0) {
         e.preventDefault()
-        setSelectedTalents((prev) => prev.slice(0, -1))
+        setChangedTalents(selectedTalents.slice(0, -1))
       } else if (e.key === 'ArrowDown') {
         const [firstOption] = getOptions()
 
@@ -175,7 +156,7 @@ export function SearchModalContent({ onClose }: SearchModalContentProps) {
         }
       }
     },
-    [getOptions, query, selectedTalents.length],
+    [getOptions, query, selectedTalents],
   )
 
   const handleOptionKeyDown = useCallback(
@@ -353,7 +334,9 @@ export function SearchModalContent({ onClose }: SearchModalContentProps) {
             )}
             <SearchModalRecommendedQueries
               onClickLink={handleSuggestionClick}
-              queries={recommendedQueries}
+              queries={
+                isRecommendedQueriesError ? [] : (recommendedQueries ?? null)
+              }
               talentIds={selectedTalentIds}
             />
           </>

@@ -12,6 +12,7 @@ import {
   type UpcomingVideos,
   type Video,
 } from '@/lib/fetchers'
+import { queryKeys } from '@/lib/query-keys'
 import { getSchedulePath } from '@/lib/schedule'
 import HomeSection, {
   HomeSectionCount,
@@ -44,7 +45,7 @@ function useDashboardVideos(prefetchedData: DashboardVideos): DashboardVideos {
   const { data = prefetchedData } = useQuery({
     initialData: prefetchedData,
     queryFn: () => fetchDashboardVideos(),
-    queryKey: ['dashboard-videos'],
+    queryKey: queryKeys.dashboardVideos(),
     refetchInterval: REFETCH_INTERVAL,
   })
 
@@ -115,7 +116,7 @@ export function ScheduleSection({ prefetchedData }: ScheduleSectionProps) {
   const { data: { today, videos } = prefetchedData } = useQuery({
     initialData: prefetchedData,
     queryFn: () => fetchUpcomingVideos(),
-    queryKey: ['upcoming-videos'],
+    queryKey: queryKeys.upcomingVideos(),
     refetchInterval: REFETCH_INTERVAL,
   })
 

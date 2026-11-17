@@ -31,7 +31,16 @@ vi.mock('@/lib/redis', () => ({
 }))
 
 vi.mock('@/lib/ratelimit', () => ({
+  recommendationQueriesUpdate: { limit: vi.fn() },
   statsSnapshot: mockRatelimit,
+  talentsUpdate: { limit: vi.fn() },
+  termsPopularityUpdate: { limit: vi.fn() },
+  videosBackfill: { limit: vi.fn() },
+  videosCascadeFromTalents: { limit: vi.fn() },
+  videosCheck: { limit: vi.fn() },
+  videosCheckAll: { limit: vi.fn() },
+  videosCheckRecent: { limit: vi.fn() },
+  videosUpdate: { limit: vi.fn() },
 }))
 
 vi.mock('../_lib/stats', () => ({
@@ -43,10 +52,10 @@ vi.mock('@sentry/nextjs', () => ({
   captureCheckIn: vi.fn(() => 'mock-check-in-id'),
   captureException: vi.fn(),
   flush: vi.fn(),
-  logger: {
-    info: vi.fn(),
-    warn: vi.fn(),
-  },
+}))
+
+vi.mock('@shinju-date/logger', () => ({
+  logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
 }))
 
 vi.mock('next/server', () => ({
@@ -181,17 +190,47 @@ describe('stats/snapshot route', () => {
     })
   })
 
-  describe('cron schedule validation', () => {
-    it('should be scheduled to run at 0:10 AM JST (15:10 UTC)', async () => {
-      // The cron expression should be "10 15 * * *" which means:
-      // - minute: 10
-      // - hour: 15 (3:10 PM UTC = 0:10 AM JST next day)
-      // - day of month: * (every day)
-      // - month: * (every month)
-      // - day of week: * (every day of week)
+  describe('reporting', () => {
+    it('responds with 204 and reports the run as ok', async () => {
+      const Sentry = await import('@sentry/nextjs')
+      const { POST } = await import('../route')
 
-      const expectedCronExpression = '10 15 * * *'
-      expect(expectedCronExpression).toBe('10 15 * * *')
+      const response = await POST(
+        new Request('http://localhost:3000/stats/snapshot', {
+          method: 'POST',
+        }),
+      )
+
+      expect(response.status).toBe(204)
+      expect(mockRatelimit.limit).toHaveBeenCalledWith('stats:snapshot')
+      expect(Sentry.captureCheckIn).toHaveBeenLastCalledWith({
+        checkInId: 'mock-check-in-id',
+        monitorSlug: '/stats/snapshot',
+        status: 'ok',
+      })
+    })
+
+    it('responds with 500 and reports the error when the snapshot fails', async () => {
+      const Sentry = await import('@sentry/nextjs')
+      const { POST } = await import('../route')
+      const error = new Error('Database error')
+
+      mockGetSummaryStats.mockRejectedValue(error)
+
+      const response = await POST(
+        new Request('http://localhost:3000/stats/snapshot', {
+          method: 'POST',
+        }),
+      )
+
+      expect(response.status).toBe(500)
+      expect(mockRedisClient.set).not.toHaveBeenCalled()
+      expect(Sentry.captureException).toHaveBeenCalledWith(error)
+      expect(Sentry.captureCheckIn).toHaveBeenLastCalledWith({
+        checkInId: 'mock-check-in-id',
+        monitorSlug: '/stats/snapshot',
+        status: 'error',
+      })
     })
   })
 })

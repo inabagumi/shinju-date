@@ -50,7 +50,7 @@ export async function getPopularVideos(
 
   cacheLife('minutes')
 
-  const videoScores = await _getPopularItemsFromRedis<string>(
+  const videoScores = await _getPopularItemsFromRedis(
     REDIS_KEYS.CLICK_VIDEO_PREFIX,
     limit,
     Temporal.PlainDate.from(startDate),

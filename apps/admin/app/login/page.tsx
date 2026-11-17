@@ -16,16 +16,14 @@ export const metadata: Metadata = {
   title: 'ログイン',
 }
 
-interface Props {
-  searchParams: Promise<Record<string, string | string[] | undefined>>
-}
-
 /**
  * ログイン後の戻り先をフォームと一緒に送るための hidden input。
  * `searchParams` はリクエスト時にしか分からないため、フォームの外枠とは
  * 分けて `Suspense` の中で描画する。
  */
-async function RedirectPathInput({ searchParams }: Props) {
+async function RedirectPathInput({
+  searchParams,
+}: Pick<PageProps<'/login'>, 'searchParams'>) {
   const { [REDIRECT_PARAM]: value } = await searchParams
   const redirectPath = getSafeRedirectPath(value)
 
@@ -36,7 +34,7 @@ async function RedirectPathInput({ searchParams }: Props) {
   return <input name={REDIRECT_PARAM} type="hidden" value={redirectPath} />
 }
 
-export default function Login({ searchParams }: Props) {
+export default function Login({ searchParams }: PageProps<'/login'>) {
   return (
     <div className="grid min-h-svh place-items-center bg-background p-4">
       <div className="grid w-full max-w-md gap-6">

@@ -2,33 +2,20 @@ import { describe, expect, it, vi } from 'vitest'
 import vercelConfig from '../../vercel.json' with { type: 'json' }
 
 vi.mock('../ratelimit', () => ({
+  recommendationQueriesUpdate: { limit: vi.fn() },
+  statsSnapshot: { limit: vi.fn() },
   talentsUpdate: { limit: vi.fn() },
+  termsPopularityUpdate: { limit: vi.fn() },
   videosBackfill: { limit: vi.fn() },
+  videosCascadeFromTalents: { limit: vi.fn() },
   videosCheck: { limit: vi.fn() },
   videosCheckAll: { limit: vi.fn() },
   videosCheckRecent: { limit: vi.fn() },
   videosUpdate: { limit: vi.fn() },
 }))
 
-const {
-  CRAWLER_JOBS,
-  getTalentsUpdateJob,
-  getVideosCheckJob,
-  getVideosUpdateJob,
-} = await import('../crawler-jobs')
-
-const CRAWLER_ROUTES = [
-  '/talents/update',
-  '/videos/backfill',
-  '/videos/check',
-  '/videos/update',
-]
-
-function isCrawlerPath(path: string): boolean {
-  return CRAWLER_ROUTES.some(
-    (route) => path === route || path.startsWith(`${route}?`),
-  )
-}
+const { JOBS, getTalentsUpdateJob, getVideosCheckJob, getVideosUpdateJob } =
+  await import('../jobs')
 
 /** Compares query strings regardless of parameter order. */
 function normalize(path: string): string {
@@ -39,22 +26,26 @@ function normalize(path: string): string {
   return `${url.pathname}${url.search}`
 }
 
-describe('crawler jobs', () => {
+describe('jobs', () => {
   it('stay in sync with the schedules in vercel.json', () => {
     const scheduled = Object.fromEntries(
-      vercelConfig.crons
-        .filter((cron) => isCrawlerPath(cron.path))
-        .map((cron) => [normalize(cron.path), cron.schedule]),
+      vercelConfig.crons.map((cron) => [normalize(cron.path), cron.schedule]),
     )
     const defined = Object.fromEntries(
-      CRAWLER_JOBS.map((job) => [normalize(job.path), job.schedule]),
+      JOBS.map((job) => [normalize(job.path), job.schedule]),
     )
 
     expect(defined).toEqual(scheduled)
   })
 
+  it('define each path only once', () => {
+    const paths = JOBS.map((job) => normalize(job.path))
+
+    expect(new Set(paths).size).toBe(paths.length)
+  })
+
   it('count each job separately so providers never block each other', () => {
-    const keys = CRAWLER_JOBS.map((job) => job.ratelimitKey)
+    const keys = JOBS.map((job) => job.ratelimitKey)
 
     expect(new Set(keys).size).toBe(keys.length)
   })

@@ -27,12 +27,9 @@ export async function addQueryAction(query: string): Promise<{
     await redisClient.sadd(REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED, trimmedQuery)
 
     // Log audit entry
-    await createAuditLog(
-      'RECOMMENDED_QUERY_CREATE',
-      'redis:recommended_queries',
-      null,
-      { entityName: trimmedQuery },
-    )
+    await createAuditLog('RECOMMENDED_QUERY_CREATE', null, {
+      entityName: trimmedQuery,
+    })
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')
@@ -65,12 +62,9 @@ export async function deleteQueryAction(query: string): Promise<{
     await redisClient.srem(REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED, query)
 
     // Log audit entry
-    await createAuditLog(
-      'RECOMMENDED_QUERY_DELETE',
-      'redis:recommended_queries',
-      null,
-      { entityName: query },
-    )
+    await createAuditLog('RECOMMENDED_QUERY_DELETE', null, {
+      entityName: query,
+    })
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')

@@ -106,12 +106,16 @@ async function getYouTubeVideoByURL(url: URL): Promise<Video> {
     .from('videos')
     .select<string, Video>(VIDEO_SELECT_YOUTUBE_INNER)
     .eq('youtube_video.youtube_video_id', videoID)
-    .single()
+    .maybeSingle()
 
   if (error) {
     throw new TypeError(error.message, {
       cause: error,
     })
+  }
+
+  if (!video) {
+    throw new TypeError('Video does not exist.')
   }
 
   return video
@@ -124,12 +128,16 @@ async function getTwitchVideoByPlatformId(
     .from('videos')
     .select<string, Video>(VIDEO_SELECT_TWITCH_INNER)
     .eq('twitch_video.twitch_video_id', twitchVideoId)
-    .single()
+    .maybeSingle()
 
   if (error) {
     throw new TypeError(error.message, {
       cause: error,
     })
+  }
+
+  if (!video) {
+    throw new TypeError('Video does not exist.')
   }
 
   return video
@@ -164,16 +172,23 @@ async function getTwitchVideoByURL(url: URL): Promise<Video> {
     throw new TypeError('Twitch video identifier is unknown.')
   }
 
+  // Logins are stored in lowercase, as the Twitch API returns them (a check
+  // constraint keeps them so), so an exact match finds the user. `ilike` would
+  // read the `_` that logins may contain as a wildcard and match other users.
   const { data: twitchUser, error: userError } = await supabaseClient
     .from('twitch_users')
     .select('id')
-    .ilike('twitch_login_name', login)
-    .single()
+    .eq('twitch_login_name', login)
+    .maybeSingle()
 
   if (userError) {
     throw new TypeError(userError.message, {
       cause: userError,
     })
+  }
+
+  if (!twitchUser) {
+    throw new TypeError('Twitch user does not exist.')
   }
 
   const { data: linkedVideos, error: linkedError } = await supabaseClient

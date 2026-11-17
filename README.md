@@ -17,6 +17,7 @@
 ### 共有パッケージ (`packages/`)
 
 - **[constants](packages/constants/)** - 共通の定数
+- **[dashboard-stats](packages/dashboard-stats/)** - 管理画面のダッシュボードの統計の型・集計・スナップショット
 - **[database](packages/database/)** - Supabase のクライアントとデータベースの型定義
 - **[health-checkers](packages/health-checkers/)** - ヘルスチェック機能
 - **[helpers](packages/helpers/)** - 汎用のユーティリティ関数

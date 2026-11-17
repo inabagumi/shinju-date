@@ -138,7 +138,7 @@ export async function requestVideoBackfillRunAction(): Promise<{
 
     const { failed, run, skipped } = result
 
-    await createAuditLog('VIDEO_BACKFILL', 'redis:video-backfill', run.id, {
+    await createAuditLog('VIDEO_BACKFILL', run.id, {
       accounts: run.jobs.length,
       entityName: `全タレントの取得漏れチェック（${run.jobs.length}件）`,
       failed,

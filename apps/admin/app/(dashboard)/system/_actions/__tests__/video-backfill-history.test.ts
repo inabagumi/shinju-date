@@ -264,7 +264,6 @@ describe('retryFailedVideoBackfillJobsAction', () => {
     ])
     expect(test.createAuditLog).toHaveBeenCalledExactlyOnceWith(
       'VIDEO_BACKFILL',
-      'redis:video-backfill',
       null,
       expect.objectContaining({
         accounts: [

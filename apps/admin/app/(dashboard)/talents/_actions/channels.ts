@@ -159,17 +159,12 @@ export async function addYouTubeChannelAction(
       })
       .eq('id', talentId)
 
-    await createAuditLog(
-      'YOUTUBE_CHANNEL_CREATE',
-      'youtube_channels',
-      newChannel.id,
-      {
-        name: channelName,
-        talent_id: talentId,
-        youtube_channel_id: youtubeChannelId,
-        youtube_handle: youtubeHandle,
-      },
-    )
+    await createAuditLog('YOUTUBE_CHANNEL_CREATE', newChannel.id, {
+      name: channelName,
+      talent_id: talentId,
+      youtube_channel_id: youtubeChannelId,
+      youtube_handle: youtubeHandle,
+    })
 
     revalidatePath(`/talents/${talentId}`)
     revalidatePath('/talents')
@@ -261,15 +256,10 @@ export async function removeYouTubeChannelAction(
       .eq('id', talentId)
 
     // Log audit entry
-    await createAuditLog(
-      'YOUTUBE_CHANNEL_DELETE',
-      'youtube_channels',
-      channelId,
-      {
-        talent_id: talentId,
-        youtube_channel_id: channel.youtube_channel_id,
-      },
-    )
+    await createAuditLog('YOUTUBE_CHANNEL_DELETE', channelId, {
+      talent_id: talentId,
+      youtube_channel_id: channel.youtube_channel_id,
+    })
 
     revalidatePath(`/talents/${talentId}`)
     revalidatePath('/talents')

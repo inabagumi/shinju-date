@@ -1,6 +1,7 @@
 import { HttpResponse, http } from 'msw'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../../internal/testing/context.js'
+import { createFakeTwitchFetcher } from '../../internal/testing/fetcher.js'
 import {
   postgresError,
   setupSupabase,
@@ -9,11 +10,11 @@ import {
   createSavedVideo,
   createStream,
   createVideo,
+  findSavedVideos,
+  TWITCH_TALENTS,
 } from '../../internal/testing/twitch.js'
 import { createThumbnail } from '../../internal/thumbnails/index.js'
 import { addNewTwitchVideos, planNewVideos } from '../add-new-videos.js'
-import type { TwitchFetcher } from '../fetcher.js'
-import type { SavedTwitchVideo } from '../saved-video.js'
 
 vi.mock('../../internal/thumbnails/index.js', async (importOriginal) => ({
   ...(await importOriginal<
@@ -165,66 +166,6 @@ describe('addNewTwitchVideos', () => {
       supabaseClient: supabase.supabaseClient,
     })
 
-  interface FetcherOptions {
-    archives?: ReturnType<typeof createVideo>[]
-    failures?: { accountId: string; error: unknown }[]
-    liveStreams?: ReturnType<typeof createStream>[]
-    uploads?: ReturnType<typeof createVideo>[]
-  }
-
-  function createFetcher({
-    archives = [],
-    failures = [],
-    liveStreams = [],
-    uploads = [],
-  }: FetcherOptions) {
-    const getLiveStreams = vi.fn(async () => liveStreams)
-    const getRecentVideos = vi.fn(
-      async (_userIds: readonly string[], options: { type: string }) =>
-        options.type === 'archive'
-          ? { failures, missingAccountIds: [], videos: archives }
-          : { failures: [], missingAccountIds: [], videos: uploads },
-    )
-
-    return {
-      fetcher: { getLiveStreams, getRecentVideos } as unknown as TwitchFetcher,
-      getLiveStreams,
-      getRecentVideos,
-    }
-  }
-
-  /** Describes the saved rows the lookups by video ID / stream ID return. */
-  function mockDatabase(
-    savedVideos: SavedTwitchVideo[] = [],
-    write: Parameters<typeof supabase.respond>[0] = () => [],
-  ) {
-    supabase.respond((request) => {
-      if (request.method !== 'GET') {
-        return write(request)
-      }
-
-      if (request.table === 'talents') {
-        return [
-          {
-            id: 'talent-1',
-            twitch_users: [
-              { id: 'user-row-1', twitch_user_id: 'twitch-user-1' },
-            ],
-          },
-        ]
-      }
-
-      const column = request.query['stream_id']
-        ? 'stream_id'
-        : 'twitch_video_id'
-      const ids = (request.query[column] ?? '').slice(4, -1).split(',')
-
-      return savedVideos
-        .filter((saved) => ids.includes(String(saved.twitch_video[column])))
-        .map(({ twitch_video, ...video }) => ({ ...twitch_video, video }))
-    })
-  }
-
   let removedImages: unknown[]
 
   beforeEach(() => {
@@ -247,7 +188,7 @@ describe('addNewTwitchVideos', () => {
   })
 
   it('adds archives and uploads that are not saved yet', async () => {
-    mockDatabase()
+    supabase.respondWith({ 'GET talents': TWITCH_TALENTS })
     const upload = createVideo({
       duration: 'PT5M',
       id: 'upload-1',
@@ -255,7 +196,7 @@ describe('addNewTwitchVideos', () => {
       title: 'Upload',
       type: 'upload',
     })
-    const { getRecentVideos, fetcher } = createFetcher({
+    const { getRecentVideos, fetcher } = createFakeTwitchFetcher({
       archives: [createVideo()],
       uploads: [upload],
     })
@@ -307,8 +248,13 @@ describe('addNewTwitchVideos', () => {
   })
 
   it('turns the placeholder of an ended broadcast into its archive', async () => {
-    mockDatabase([createSavedVideo({ status: 'ENDED' })])
-    const { fetcher } = createFetcher({ archives: [createVideo()] })
+    supabase.respondWith({
+      'GET talents': TWITCH_TALENTS,
+      'GET twitch_videos': findSavedVideos([
+        createSavedVideo({ status: 'ENDED' }),
+      ]),
+    })
+    const { fetcher } = createFakeTwitchFetcher({ archives: [createVideo()] })
 
     const added = await addNewTwitchVideos(createContext(fetcher))
 
@@ -335,10 +281,14 @@ describe('addNewTwitchVideos', () => {
   })
 
   it('removes the new thumbnail when the placeholder cannot be updated', async () => {
-    mockDatabase([createSavedVideo({ status: 'ENDED' })], ({ table }) =>
-      table === 'videos' ? postgresError('57014', 'statement timeout') : [],
-    )
-    const { fetcher } = createFetcher({ archives: [createVideo()] })
+    supabase.respondWith({
+      'GET talents': TWITCH_TALENTS,
+      'GET twitch_videos': findSavedVideos([
+        createSavedVideo({ status: 'ENDED' }),
+      ]),
+      'PATCH videos': () => postgresError('57014', 'statement timeout'),
+    })
+    const { fetcher } = createFakeTwitchFetcher({ archives: [createVideo()] })
 
     const added = await addNewTwitchVideos(createContext(fetcher))
 
@@ -356,8 +306,11 @@ describe('addNewTwitchVideos', () => {
   })
 
   it('keeps a broadcast LIVE when its archive shows up while on air', async () => {
-    mockDatabase([createSavedVideo()])
-    const { fetcher } = createFetcher({
+    supabase.respondWith({
+      'GET talents': TWITCH_TALENTS,
+      'GET twitch_videos': findSavedVideos([createSavedVideo()]),
+    })
+    const { fetcher } = createFakeTwitchFetcher({
       archives: [createVideo({ duration: 'PT10M', thumbnail_url: '' })],
       liveStreams: [createStream()],
     })
@@ -374,8 +327,8 @@ describe('addNewTwitchVideos', () => {
   })
 
   it('adds a broadcast that is on air as LIVE when it has no row yet', async () => {
-    mockDatabase()
-    const { fetcher } = createFetcher({
+    supabase.respondWith({ 'GET talents': TWITCH_TALENTS })
+    const { fetcher } = createFakeTwitchFetcher({
       archives: [createVideo({ duration: 'PT10M', thumbnail_url: '' })],
       liveStreams: [createStream()],
     })
@@ -403,8 +356,8 @@ describe('addNewTwitchVideos', () => {
   })
 
   it('adds a video without a thumbnail while Twitch is still processing it', async () => {
-    mockDatabase()
-    const { fetcher } = createFetcher({
+    supabase.respondWith({ 'GET talents': TWITCH_TALENTS })
+    const { fetcher } = createFakeTwitchFetcher({
       archives: [
         createVideo({
           thumbnail_url:
@@ -422,13 +375,16 @@ describe('addNewTwitchVideos', () => {
   })
 
   it('leaves saved videos alone', async () => {
-    mockDatabase([
-      createSavedVideo({
-        status: 'ENDED',
-        twitch_video: { twitch_video_id: 'vod-1', type: 'archive' },
-      }),
-    ])
-    const { fetcher } = createFetcher({ archives: [createVideo()] })
+    supabase.respondWith({
+      'GET talents': TWITCH_TALENTS,
+      'GET twitch_videos': findSavedVideos([
+        createSavedVideo({
+          status: 'ENDED',
+          twitch_video: { twitch_video_id: 'vod-1', type: 'archive' },
+        }),
+      ]),
+    })
+    const { fetcher } = createFakeTwitchFetcher({ archives: [createVideo()] })
 
     const added = await addNewTwitchVideos(createContext(fetcher))
 
@@ -439,12 +395,11 @@ describe('addNewTwitchVideos', () => {
   })
 
   it('quietly skips a video another run saved first', async () => {
-    mockDatabase([], ({ method, table }) =>
-      method === 'POST' && table === 'twitch_videos'
-        ? postgresError('23505', 'duplicate key value')
-        : [],
-    )
-    const { fetcher } = createFetcher({ archives: [createVideo()] })
+    supabase.respondWith({
+      'GET talents': TWITCH_TALENTS,
+      'POST twitch_videos': () => postgresError('23505', 'duplicate key value'),
+    })
+    const { fetcher } = createFakeTwitchFetcher({ archives: [createVideo()] })
 
     const added = await addNewTwitchVideos(createContext(fetcher))
 
@@ -455,8 +410,8 @@ describe('addNewTwitchVideos', () => {
 
   it('reports accounts that could not be read and handles the rest', async () => {
     const error = new Error('helix unavailable')
-    mockDatabase()
-    const { fetcher } = createFetcher({
+    supabase.respondWith({ 'GET talents': TWITCH_TALENTS })
+    const { fetcher } = createFakeTwitchFetcher({
       archives: [createVideo()],
       failures: [{ accountId: 'twitch-user-9', error }],
     })
@@ -471,7 +426,7 @@ describe('addNewTwitchVideos', () => {
 
   it('does not call Twitch when no account is registered', async () => {
     supabase.respond(() => [])
-    const { getLiveStreams, fetcher } = createFetcher({})
+    const { getLiveStreams, fetcher } = createFakeTwitchFetcher()
 
     const added = await addNewTwitchVideos(createContext(fetcher))
 

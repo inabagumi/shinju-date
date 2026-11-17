@@ -12,7 +12,16 @@ vi.mock('@/lib/supabase', () => ({
 }))
 
 vi.mock('@/lib/ratelimit', () => ({
+  recommendationQueriesUpdate: { limit: vi.fn() },
+  statsSnapshot: { limit: vi.fn() },
+  talentsUpdate: { limit: vi.fn() },
+  termsPopularityUpdate: { limit: vi.fn() },
+  videosBackfill: { limit: vi.fn() },
   videosCascadeFromTalents: mockRatelimit,
+  videosCheck: { limit: vi.fn() },
+  videosCheckAll: { limit: vi.fn() },
+  videosCheckRecent: { limit: vi.fn() },
+  videosUpdate: { limit: vi.fn() },
 }))
 
 vi.mock('../_lib/cascade-from-talents', async (importOriginal) => {
@@ -119,8 +128,11 @@ describe('POST /videos/cascade-from-talents', () => {
   })
 
   it('returns 500 when cascade fails', async () => {
+    const Sentry = await import('@sentry/nextjs')
+    const error = new Error('boom')
+
     mockRatelimit.limit.mockResolvedValue({ success: true })
-    mockCascadeVideosFromTalents.mockRejectedValue(new Error('boom'))
+    mockCascadeVideosFromTalents.mockRejectedValue(error)
 
     const response = await POST(
       new Request('http://localhost:5000/videos/cascade-from-talents', {
@@ -129,6 +141,40 @@ describe('POST /videos/cascade-from-talents', () => {
     )
 
     expect(response.status).toBe(500)
+    expect(mockRevalidateTags).not.toHaveBeenCalled()
+    expect(Sentry.captureException).toHaveBeenCalledWith(error)
+    expect(Sentry.captureCheckIn).toHaveBeenLastCalledWith({
+      checkInId: 'mock-check-in-id',
+      monitorSlug: '/videos/cascade-from-talents',
+      status: 'error',
+    })
+  })
+
+  it('returns 500 even when the revalidation after a partial failure fails', async () => {
+    const { CascadePhaseError } = await import('../_lib/cascade-from-talents')
+    const Sentry = await import('@sentry/nextjs')
+    const error = new CascadePhaseError('partial failure', {
+      restored: 2,
+      softDeleted: 0,
+    })
+
+    mockRatelimit.limit.mockResolvedValue({ success: true })
+    mockCascadeVideosFromTalents.mockRejectedValue(error)
+    mockRevalidateTags.mockRejectedValue(new Error('web is down'))
+
+    const response = await POST(
+      new Request('http://localhost:5000/videos/cascade-from-talents', {
+        method: 'POST',
+      }),
+    )
+
+    expect(response.status).toBe(500)
+    expect(Sentry.captureException).toHaveBeenCalledWith(error)
+    expect(Sentry.captureCheckIn).toHaveBeenLastCalledWith({
+      checkInId: 'mock-check-in-id',
+      monitorSlug: '/videos/cascade-from-talents',
+      status: 'error',
+    })
   })
 
   it('revalidates and logs partial counts when CascadePhaseError is thrown', async () => {
