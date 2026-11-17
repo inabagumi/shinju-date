@@ -1,7 +1,8 @@
 // @vitest-environment node
-import { SITE_THEME_COLOR } from '@shinju-date/constants'
+
 import sharp from 'sharp'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { SITE_THEME_COLOR } from '@/lib/site'
 
 const mocks = vi.hoisted(() => {
   const query = {

@@ -1,5 +1,5 @@
-import { SITE_NAME as siteName } from '@shinju-date/constants'
 import Link from 'next/link'
+import { SITE_NAME as siteName } from '@/lib/site'
 import { MainNavigationItems } from './main-navigation-items'
 import { MobileMenu } from './mobile-menu'
 import { SearchButton } from './search-button'

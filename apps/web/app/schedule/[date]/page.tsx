@@ -1,6 +1,6 @@
-import { SITE_NAME as siteName } from '@shinju-date/constants'
 import type { Metadata } from 'next'
 import { formatWeekRange, getSchedulePath } from '@/lib/schedule'
+import { SITE_NAME as siteName } from '@/lib/site'
 import SchedulePageContent from '../_components/schedule-page-content'
 import { resolveScheduleWeek } from '../_lib/resolve-schedule-week'
 

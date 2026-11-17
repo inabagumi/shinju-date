@@ -1,8 +1,8 @@
-import { SITE_NAME as siteName } from '@shinju-date/constants'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import PageHeader from '@/components/page-header'
 import { MAIN_CONTENT_ID } from '@/components/skip-link'
+import { SITE_NAME as siteName } from '@/lib/site'
 import { TalentGridSkeleton } from './_components/talent-grid'
 import {
   TalentCount,

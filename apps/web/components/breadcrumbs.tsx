@@ -1,6 +1,6 @@
-import { SITE_NAME as siteName } from '@shinju-date/constants'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { SITE_NAME as siteName } from '@/lib/site'
 
 export interface BreadcrumbItem {
   /** 省略すると現在のページとして、リンクにせずに表示する */

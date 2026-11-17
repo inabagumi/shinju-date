@@ -1,10 +1,10 @@
 'use server'
 
 import { REDIS_KEYS } from '@shinju-date/constants'
-import { isNonNullable } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import type { QueryData } from '@supabase/supabase-js'
 import { cacheLife } from 'next/cache'
+import { isNonNullable } from '@/lib/is-non-nullable'
 import {
   createSupabaseServerClient,
   type TypedSupabaseClient,

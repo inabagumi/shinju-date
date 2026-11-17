@@ -1,4 +1,3 @@
-import { SITE_NAME as siteName } from '@shinju-date/constants'
 import { getVideoExternalUrl } from '@shinju-date/helpers'
 import { max, min } from '@shinju-date/temporal-fns'
 import {
@@ -7,6 +6,7 @@ import {
   type EventAttributes,
 } from 'ics'
 import type { CalendarVideo } from './fetchers'
+import { SITE_NAME as siteName } from './site'
 
 /**
  * The calendar apps fetch the subscribed URLs periodically, so let the CDN
