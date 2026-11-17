@@ -9,7 +9,8 @@ import type { QueryData } from '@supabase/supabase-js'
 import { countChanges } from '../internal/concurrency.js'
 import { WRITE_CONCURRENCY } from '../internal/constants.js'
 import {
-  getActiveTwitchUsers,
+  getActiveAccounts,
+  TWITCH_USERS,
   updateVideo,
 } from '../internal/database/index.js'
 import { DatabaseError } from '../internal/errors.js'
@@ -283,10 +284,10 @@ export async function syncTwitchLive(
 ): Promise<number> {
   const { fetcher, logger, now, reportError, supabaseClient } = context
   const [users, savedLiveVideos] = await Promise.all([
-    getActiveTwitchUsers(supabaseClient),
+    getActiveAccounts(supabaseClient, TWITCH_USERS),
     getSavedLiveVideos(supabaseClient),
   ])
-  const userByTwitchId = new Map(users.map((user) => [user.twitchUserId, user]))
+  const userByTwitchId = new Map(users.map((user) => [user.platformId, user]))
 
   // Rows of accounts that are no longer crawled still need their stream state.
   const liveStreams = await fetcher.getLiveStreams([

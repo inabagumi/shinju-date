@@ -1,5 +1,5 @@
 import { BACKFILL_SAVE_CONCURRENCY } from '../internal/concurrency.js'
-import { findYouTubeChannel } from '../internal/database/index.js'
+import { findAccount, YOUTUBE_CHANNELS } from '../internal/database/index.js'
 import {
   AccountNotFoundError,
   StalledPaginationError,
@@ -30,13 +30,13 @@ export async function addPastYouTubeVideos(
   { accountId, cursor }: Pick<AddPastVideosOptions, 'accountId' | 'cursor'>,
 ): Promise<AddPastVideosResult> {
   const { fetcher, supabaseClient } = context
-  const channel = await findYouTubeChannel(supabaseClient, accountId)
+  const channel = await findAccount(supabaseClient, YOUTUBE_CHANNELS, accountId)
 
   if (!channel) {
     throw new AccountNotFoundError(accountId)
   }
 
-  const page = await fetcher.getUploadPage(channel.youtubeChannelId, {
+  const page = await fetcher.getUploadPage(channel.platformId, {
     cursor,
   })
 

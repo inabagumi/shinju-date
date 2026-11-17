@@ -50,7 +50,7 @@ async function syncPlatform(
       return { status: 'no_accounts' }
     }
 
-    // Twitch は名前を書き込めなくてもアイコンを同期するので、`failed` でもアイコンの変更は残す
+    // 名前を書き込めなくてもアイコンは同期されるので、`failed` でもアイコンの変更は残す
     const changed = results.filter(
       (result) => result.status === 'updated' || result.iconUpdated,
     )

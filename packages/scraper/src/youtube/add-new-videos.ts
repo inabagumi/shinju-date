@@ -2,10 +2,11 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import { countChanges } from '../internal/concurrency.js'
 import { WRITE_CONCURRENCY } from '../internal/constants.js'
 import {
-  type ActiveYouTubeChannel,
   findSavedYouTubeVideoIds,
-  getActiveYouTubeChannels,
+  getActiveAccounts,
   insertVideo,
+  type TalentAccount,
+  YOUTUBE_CHANNELS,
 } from '../internal/database/index.js'
 import {
   createThumbnail,
@@ -47,7 +48,7 @@ async function createVideoThumbnail(
  */
 async function saveVideo(
   context: WriteContext,
-  channel: ActiveYouTubeChannel,
+  channel: TalentAccount,
   video: YouTubeVideo,
 ): Promise<boolean> {
   const { now, supabaseClient } = context
@@ -107,7 +108,7 @@ export async function addNewYouTubeVideos(
   context: CrawlContext<YouTubeFetcher>,
 ): Promise<number> {
   const { fetcher, logger, reportError, supabaseClient } = context
-  const channels = await getActiveYouTubeChannels(supabaseClient)
+  const channels = await getActiveAccounts(supabaseClient, YOUTUBE_CHANNELS)
 
   if (channels.length === 0) {
     return 0
@@ -115,7 +116,7 @@ export async function addNewYouTubeVideos(
 
   const { accounts, failures, missingAccountIds } =
     await fetcher.getRecentVideoIds(
-      channels.map((channel) => channel.youtubeChannelId),
+      channels.map((channel) => channel.platformId),
     )
 
   for (const { accountId, error } of failures) {
@@ -129,9 +130,9 @@ export async function addNewYouTubeVideos(
   }
 
   const channelById = new Map(
-    channels.map((channel) => [channel.youtubeChannelId, channel]),
+    channels.map((channel) => [channel.platformId, channel]),
   )
-  const channelByVideoId = new Map<string, ActiveYouTubeChannel>()
+  const channelByVideoId = new Map<string, TalentAccount>()
 
   for (const { accountId, videoIds } of accounts) {
     const channel = channelById.get(accountId)
@@ -160,7 +161,7 @@ export async function addNewYouTubeVideos(
  */
 export async function saveNewYouTubeVideos(
   context: CrawlContext<YouTubeFetcher>,
-  channelByVideoId: ReadonlyMap<string, ActiveYouTubeChannel>,
+  channelByVideoId: ReadonlyMap<string, TalentAccount>,
   concurrency = WRITE_CONCURRENCY,
 ): Promise<number> {
   const { fetcher, logger, reportError, supabaseClient } = context

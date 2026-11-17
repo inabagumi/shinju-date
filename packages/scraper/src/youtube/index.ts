@@ -12,6 +12,7 @@ export type {
   TypedSupabaseClient,
   VideoFields,
 } from '../types.js'
+export type { YouTubeChannelFields } from './accounts.js'
 export type {
   SavedProfileImageRow,
   SavedYouTubeChannelIcon,
@@ -22,5 +23,4 @@ export {
   syncYouTubeChannelIcon,
 } from './profile-image.js'
 export { YouTubeScraper } from './scraper.js'
-export type { YouTubeChannelFields } from './sync-accounts.js'
 export type { YouTubeScraperOptions } from './types.js'

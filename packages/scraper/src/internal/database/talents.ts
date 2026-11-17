@@ -1,128 +1,99 @@
 import type { TypedSupabaseClient } from '../../types.js'
 import { DatabaseError } from '../errors.js'
 
-/** A YouTube channel owned by an active talent. */
-export interface ActiveYouTubeChannel {
-  /** Primary key of the `youtube_channels` row */
+/**
+ * A table of platform accounts, with the column that holds the ID of an
+ * account on the platform.
+ */
+export type AccountTable =
+  | { platformIdColumn: 'twitch_user_id'; table: 'twitch_users' }
+  | { platformIdColumn: 'youtube_channel_id'; table: 'youtube_channels' }
+
+export const YOUTUBE_CHANNELS = {
+  platformIdColumn: 'youtube_channel_id',
+  table: 'youtube_channels',
+} as const satisfies AccountTable
+
+export const TWITCH_USERS = {
+  platformIdColumn: 'twitch_user_id',
+  table: 'twitch_users',
+} as const satisfies AccountTable
+
+/** A platform account owned by a talent. */
+export interface TalentAccount {
+  /** Primary key of the account row */
   id: string
+  /** The ID of the account on the platform: `UC...` or a Helix user ID */
+  platformId: string
   talentId: string
-  /** YouTube channel ID (`UC...`) */
-  youtubeChannelId: string
 }
 
-/** A Twitch account owned by an active talent. */
-export interface ActiveTwitchUser {
-  /** Primary key of the `twitch_users` row */
-  id: string
-  talentId: string
-  /** Helix user ID */
-  twitchUserId: string
-}
+/** A row of an account table, keyed by column. */
+type AccountRow = Record<string, string>
+
+/** A row of `talents` with the rows of one account table. */
+type TalentRow = { id: string } & Partial<
+  Record<AccountTable['table'], AccountRow[]>
+>
 
 /**
- * Gets the YouTube channels to crawl: those of active, non-deleted talents.
+ * Gets the accounts to crawl: those of active, non-deleted talents.
  */
-export async function getActiveYouTubeChannels(
+export async function getActiveAccounts(
   supabaseClient: TypedSupabaseClient,
-): Promise<ActiveYouTubeChannel[]> {
+  { platformIdColumn, table }: AccountTable,
+): Promise<TalentAccount[]> {
   const { data, error } = await supabaseClient
     .from('talents')
-    .select('id, youtube_channels!inner(id, youtube_channel_id)')
+    .select(`id, ${table}!inner(id, ${platformIdColumn})`)
     .eq('status', 'active')
     .is('deleted_at', null)
 
   if (error) {
-    throw new DatabaseError('Failed to load YouTube channels', error)
+    throw new DatabaseError(`Failed to load ${table}`, error)
   }
 
-  return data.flatMap((talent) =>
-    talent.youtube_channels.map((channel) => ({
-      id: channel.id,
+  // The columns depend on `table`, so the rows cannot be typed from them.
+  const talents = data as unknown as TalentRow[]
+
+  return talents.flatMap((talent) =>
+    (talent[table] ?? []).map((account) => ({
+      id: account['id'] as string,
+      platformId: account[platformIdColumn] as string,
       talentId: talent.id,
-      youtubeChannelId: channel.youtube_channel_id,
     })),
   )
 }
 
 /**
- * Gets the Twitch accounts to crawl: those of active, non-deleted talents.
+ * Gets one account by the primary key of its row, provided its talent is not
+ * deleted. Retired talents are included: their past videos are still listed
+ * on the site.
  */
-export async function getActiveTwitchUsers(
+export async function findAccount(
   supabaseClient: TypedSupabaseClient,
-): Promise<ActiveTwitchUser[]> {
-  const { data, error } = await supabaseClient
-    .from('talents')
-    .select('id, twitch_users!inner(id, twitch_user_id)')
-    .eq('status', 'active')
-    .is('deleted_at', null)
-
-  if (error) {
-    throw new DatabaseError('Failed to load Twitch users', error)
-  }
-
-  return data.flatMap((talent) =>
-    talent.twitch_users.map((user) => ({
-      id: user.id,
-      talentId: talent.id,
-      twitchUserId: user.twitch_user_id,
-    })),
-  )
-}
-
-/**
- * Gets one YouTube channel by the primary key of its row, provided its talent
- * is not deleted. Retired talents are included: their past videos are still
- * listed on the site.
- */
-export async function findYouTubeChannel(
-  supabaseClient: TypedSupabaseClient,
+  { platformIdColumn, table }: AccountTable,
   id: string,
-): Promise<ActiveYouTubeChannel | null> {
+): Promise<TalentAccount | null> {
   const { data, error } = await supabaseClient
-    .from('youtube_channels')
-    .select('id, talent_id, youtube_channel_id, talents!inner(id)')
+    .from(table)
+    .select(`id, talent_id, ${platformIdColumn}, talents!inner(id)`)
     .eq('id', id)
     .is('talents.deleted_at', null)
     .maybeSingle()
 
   if (error) {
-    throw new DatabaseError('Failed to load a YouTube channel', error)
+    throw new DatabaseError(`Failed to load a row of ${table}`, error)
   }
 
-  return data
+  // The columns depend on `table`, so the row cannot be typed from them.
+  const account = data as unknown as AccountRow | null
+
+  return account
     ? {
-        id: data.id,
-        talentId: data.talent_id,
-        youtubeChannelId: data.youtube_channel_id,
-      }
-    : null
-}
-
-/**
- * Gets one Twitch account by the primary key of its row, provided its talent
- * is not deleted. Retired talents are included: their past videos are still
- * listed on the site.
- */
-export async function findTwitchUser(
-  supabaseClient: TypedSupabaseClient,
-  id: string,
-): Promise<ActiveTwitchUser | null> {
-  const { data, error } = await supabaseClient
-    .from('twitch_users')
-    .select('id, talent_id, twitch_user_id, talents!inner(id)')
-    .eq('id', id)
-    .is('talents.deleted_at', null)
-    .maybeSingle()
-
-  if (error) {
-    throw new DatabaseError('Failed to load a Twitch user', error)
-  }
-
-  return data
-    ? {
-        id: data.id,
-        talentId: data.talent_id,
-        twitchUserId: data.twitch_user_id,
+        id: account['id'] as string,
+        platformId: account[platformIdColumn] as string,
+        talentId: account['talent_id'] as string,
       }
     : null
 }

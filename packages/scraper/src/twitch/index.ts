@@ -15,6 +15,7 @@ export type {
   TypedSupabaseClient,
   VideoFields,
 } from '../types.js'
+export type { TwitchUserFields } from './accounts.js'
 export type {
   SavedTwitchUserIcon,
   SyncTwitchUserIconOptions,
@@ -24,5 +25,4 @@ export {
   syncTwitchUserIcon,
 } from './profile-image.js'
 export { TwitchScraper } from './scraper.js'
-export type { TwitchUserFields } from './sync-accounts.js'
 export type { TwitchApi, TwitchScraperOptions } from './types.js'
