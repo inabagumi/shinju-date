@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type AuditAction = Enums<'audit_action'>
 
-export type AuditDetails<T = unknown> = {
+export interface AuditDetails<T = unknown> {
   changes?: {
     before?: Partial<T>
     after?: Partial<T>
