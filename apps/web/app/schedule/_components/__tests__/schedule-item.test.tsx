@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, test } from 'vitest'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { ScheduleVideo } from '@/lib/fetchers'
 import ScheduleItem, {
   getScheduleVideoUrl,
@@ -300,6 +300,11 @@ describe('ScheduleItem (on a wide screen)', () => {
 })
 
 describe('getTitleLines', () => {
+  afterEach(() => {
+    vi.doUnmock('../../_lib/layout')
+    vi.resetModules()
+  })
+
   test.each([
     [30, 0],
     [60, 1],
@@ -309,6 +314,22 @@ describe('getTitleLines', () => {
     // The line of the labels and hashtags is not shown unless the item is
     // expanded, so it takes no room from the title
     expect(getTitleLines(minutes)).toBe(lines)
+  })
+
+  test('should follow the height of an hour in the layout', async () => {
+    vi.resetModules()
+    vi.doMock('../../_lib/layout', async (importOriginal) => ({
+      ...(await importOriginal<typeof import('../../_lib/layout')>()),
+      HOUR_HEIGHT_REM: 8,
+    }))
+    const { getTitleLines: getTitleLinesOfTallerHours } = await import(
+      '../schedule-item'
+    )
+
+    // An hour is 128px, twice as tall as the default
+    expect(getTitleLinesOfTallerHours(30)).toBe(1)
+    expect(getTitleLinesOfTallerHours(60)).toBe(4)
+    expect(getTitleLinesOfTallerHours(120)).toBe(9)
   })
 })
 
