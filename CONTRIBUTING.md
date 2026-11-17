@@ -36,7 +36,7 @@ Dev Container設定（`.devcontainer/`）を変更する場合は、`@devcontain
 pnpm run check --fix
 ```
 
-`pnpm run check` は、Biome に加えて、`'use cache'` の後の空行を `scripts/check-cache-directives.mjs` で確かめます。Biome の組み込みのルールで確かめられない決まりは、`config/biome/` に GritQL のプラグインとして置き、`biome.json` の `plugins` で有効にしています。プラグインと `scripts/` のスクリプトを変えたら、テストを実行してください。
+Biome の組み込みのルールで確かめられない決まりは、`config/biome/` に GritQL のプラグインとして置き、`biome.json` の `plugins` で有効にしています。プラグインと `scripts/` のスクリプトを変えたら、テストを実行してください。
 
 ```bash
 pnpm run test:scripts
@@ -57,6 +57,16 @@ pnpm run typecheck --filter=@shinju-date/msw-handlers
 - 各パッケージ・アプリケーションの `typecheck` スクリプト（`tsc --noEmit`）を Turborepo 経由で実行します
 - 依存パッケージのビルド（`^build`）と、Next.js のアプリケーションでは `next typegen` による型の生成（`PageProps`、`LayoutProps`、`RouteContext` など）を先に実行します
 - 新しいパッケージやアプリケーションを追加した場合は、`package.json` に `"typecheck": "tsc --noEmit"` を追加してください
+
+#### キャッシュのディレクティブの空行
+
+`'use cache'`、`cacheLife()`、`cacheTag()` を書いた後は、その後ろに空行があるかを確かめてください（[キャッシュのディレクティブ](docs/coding-guidelines.md#キャッシュのディレクティブ)）。
+
+```bash
+pnpm run check:cache-directives
+```
+
+- Biome のプラグインは空行を判定できないため、`scripts/check-cache-directives.mjs` で確かめます
 
 #### ドキュメントのリンク
 

@@ -25,7 +25,7 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
-    "check": "node scripts/check-cache-directives.mjs && biome check",
+    "check": "biome check",
     "check:cache-directives": "node scripts/check-cache-directives.mjs",
     "check:dev-secrets": "node scripts/check-dev-secrets.mjs",
     "check:docs": "node scripts/check-docs.mjs",

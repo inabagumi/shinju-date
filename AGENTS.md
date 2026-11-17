@@ -30,6 +30,7 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 - コードを変えたら、**必ず** `pnpm run check --fix` を実行する（Biome によるフォーマット、リント、未使用の import の削除）
 - TypeScript を変えたら、`pnpm run typecheck`（1つのパッケージなら `pnpm run typecheck --filter=<パッケージ名>`）も実行する
 - Markdown を変えたら、`pnpm run check:docs` も実行する（リポジトリの中へのリンクとファイルのパスが実在するかを確かめる。[ドキュメントのリンク](CONTRIBUTING.md#ドキュメントのリンク)）
+- `'use cache'`、`cacheLife()`、`cacheTag()` を書いたら、`pnpm run check:cache-directives` も実行する（後ろの空行を確かめる。[キャッシュのディレクティブの空行](CONTRIBUTING.md#キャッシュのディレクティブの空行)）
 
 理由: CI で同じものが実行され、失敗するとマージできません。Vitest はテストのファイルの型を検査しないため、[型チェック](CONTRIBUTING.md#型チェック)は別に要ります。
 
@@ -70,8 +71,8 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 
 **🚨 厳格なルール**（例外なく、すべてのファイルに適用する。[理由と例](docs/coding-guidelines.md#キャッシュのディレクティブ)）
 
-- `'use cache'`（`'use cache: remote'` / `'use cache: private'` を含む）の直後に、空行を1行入れる（`pnpm run check` が確かめる）
-- `cacheLife()` や `cacheTag()` などのキャッシュ設定の並びの後にも、空行を1行入れる（`pnpm run check` が確かめる）
+- `'use cache'`（`'use cache: remote'` / `'use cache: private'` を含む）の直後に、空行を1行入れる（`pnpm run check:cache-directives` が確かめる）
+- `cacheLife()` や `cacheTag()` などのキャッシュ設定の並びの後にも、空行を1行入れる（`pnpm run check:cache-directives` が確かめる）
 - キャッシュはコンポーネントではなく、データ取得関数に付ける（`generateMetadata` とページの部品の両方から同じキャッシュを使う）
 - `'use cache'` を持つ関数を呼ぶ側で、もう一度キャッシュのディレクティブを付けない
 - 公開データには `'use cache: remote'`、認証が必要なデータには `'use cache: private'`（ユーザーごと）を使う
