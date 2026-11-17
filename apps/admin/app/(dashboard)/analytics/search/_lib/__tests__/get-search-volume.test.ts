@@ -2,6 +2,9 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getSearchVolume } from '../get-search-volume'
 
+vi.mock('next/cache', () => ({
+  cacheLife: vi.fn(),
+}))
 vi.mock('@/lib/redis', async () => {
   const { createMockPipeline } = await import(
     '@/lib/analytics/__tests__/mock-redis-pipeline'

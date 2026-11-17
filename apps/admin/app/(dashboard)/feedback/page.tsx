@@ -1,6 +1,5 @@
 import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
-import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
 import {
   FeatureRequestList,
@@ -13,10 +12,6 @@ export const metadata: Metadata = {
 }
 
 async function FeatureRequestListData() {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const featureRequests = await getFeatureRequests()
 
   return <FeatureRequestList featureRequests={featureRequests} />

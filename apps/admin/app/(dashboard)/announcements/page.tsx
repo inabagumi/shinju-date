@@ -1,6 +1,5 @@
 import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
-import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
 import { AnnouncementModal } from './_components/announcement-modal'
 import {
@@ -14,10 +13,6 @@ export const metadata: Metadata = {
 }
 
 async function AnnouncementsListData() {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const announcements = await getAnnouncements()
 
   return <AnnouncementsList announcements={announcements} />

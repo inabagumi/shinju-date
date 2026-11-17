@@ -4,6 +4,7 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import { isNonNullable } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import type { QueryData } from '@supabase/supabase-js'
+import { cacheLife } from 'next/cache'
 import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
@@ -45,6 +46,10 @@ export async function getPopularTalents(
   startDate: string,
   endDate?: string,
 ): Promise<PopularTalent[]> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   const talentScores = await _getPopularItemsFromRedis<string>(
     REDIS_KEYS.CLICK_CHANNEL_PREFIX,
     limit,

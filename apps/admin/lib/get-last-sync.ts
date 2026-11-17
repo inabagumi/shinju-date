@@ -1,5 +1,6 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
+import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 
 /**
@@ -9,6 +10,10 @@ import { getRedisClient } from '@/lib/redis'
  * ではなく文字列にする
  */
 export async function getLastVideoSync(): Promise<string | null> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   try {
     const redisClient = getRedisClient()
     const timestamp = await redisClient.get<string>(REDIS_KEYS.LAST_VIDEO_SYNC)

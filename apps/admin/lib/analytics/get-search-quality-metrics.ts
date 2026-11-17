@@ -3,6 +3,7 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
+import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 import { listDatesInRange } from './list-dates-in-range'
 
@@ -17,6 +18,10 @@ export async function getSearchEngagementRate(
   startDate: string,
   endDate?: string,
 ): Promise<number | null> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   try {
     const redisClient = getRedisClient()
     const start = Temporal.PlainDate.from(startDate)
@@ -69,6 +74,10 @@ export async function getSearchExitRates(
   endDate?: string,
   limit = 20,
 ): Promise<Array<{ keyword: string; exitRate: number; searchCount: number }>> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   try {
     const redisClient = getRedisClient()
     const start = Temporal.PlainDate.from(startDate)
@@ -171,6 +180,10 @@ export async function getRepeatSearchRate(
   startDate: string,
   endDate?: string,
 ): Promise<number | null> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   try {
     const redisClient = getRedisClient()
     const start = Temporal.PlainDate.from(startDate)

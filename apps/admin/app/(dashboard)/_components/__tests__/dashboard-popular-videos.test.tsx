@@ -1,3 +1,4 @@
+import { TIME_ZONE } from '@shinju-date/constants'
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { PopularVideo } from '@/lib/analytics/get-popular-videos'
@@ -6,8 +7,8 @@ const mocks = vi.hoisted(() => ({
   getPopularVideos: vi.fn(),
 }))
 
-vi.mock('next/cache', () => ({
-  cacheLife: vi.fn(),
+vi.mock('next/server', () => ({
+  connection: vi.fn().mockResolvedValue(undefined),
 }))
 vi.mock('@/lib/analytics/get-popular-videos', () => ({
   getPopularVideos: mocks.getPopularVideos,
@@ -32,6 +33,24 @@ function popularVideo(
 describe('DashboardPopularVideos', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it('fetches the ranking of the past 30 days with the dates as strings', async () => {
+    vi.spyOn(Temporal.Now, 'zonedDateTimeISO').mockReturnValueOnce(
+      Temporal.Instant.from('2026-11-16T15:30:00Z').toZonedDateTimeISO(
+        TIME_ZONE,
+      ),
+    )
+    mocks.getPopularVideos.mockResolvedValue([])
+
+    render(await DashboardPopularVideos())
+
+    // 2026-11-17 in JST
+    expect(mocks.getPopularVideos).toHaveBeenCalledWith(
+      10,
+      '2026-10-19',
+      '2026-11-17',
+    )
   })
 
   it('links a Twitch video to Twitch and a YouTube video to YouTube', async () => {

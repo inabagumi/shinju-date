@@ -1,4 +1,3 @@
-import { cacheLife } from 'next/cache'
 import { Panel } from '@/components/panel'
 import { getHistoricalStats } from '../_lib/get-historical-stats'
 import { VideoStatsChartEmpty } from './video-stats-chart-empty'
@@ -9,10 +8,6 @@ import { VideoStatsChartUI } from './video-stats-chart-ui'
  * This is an async Server Component that fetches its own data
  */
 export async function VideoStatsChart() {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const historicalStats = await getHistoricalStats(7)
 
   return (

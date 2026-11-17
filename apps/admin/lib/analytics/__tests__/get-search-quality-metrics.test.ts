@@ -7,6 +7,9 @@ import {
 } from '../get-search-quality-metrics'
 
 // Mock Redis client
+vi.mock('next/cache', () => ({
+  cacheLife: vi.fn(),
+}))
 vi.mock('@/lib/redis', async () => {
   const { createMockPipeline } = await import('./mock-redis-pipeline')
   const mockedRedisClient = {

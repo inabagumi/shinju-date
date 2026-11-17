@@ -1,7 +1,12 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
+import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 
 export async function getMaintenanceModeStatus(): Promise<boolean> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   try {
     const redisClient = getRedisClient()
     const value = await redisClient.get<boolean>(REDIS_KEYS.MAINTENANCE_MODE)

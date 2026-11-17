@@ -3,6 +3,7 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
+import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 
 export interface AnalyticsSummary {
@@ -28,6 +29,10 @@ export interface AnalyticsSummaryWithTrends {
  * (day-over-day and week-over-week)
  */
 export async function getAnalyticsSummary(): Promise<AnalyticsSummaryWithTrends> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   try {
     const redisClient = getRedisClient()
     const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)

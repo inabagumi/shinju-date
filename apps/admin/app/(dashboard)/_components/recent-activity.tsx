@@ -1,14 +1,9 @@
 import { EmptyState } from '@shinju-date/ui'
-import { cacheLife } from 'next/cache'
 import { Panel } from '@/components/panel'
 import { getAuditLogs } from '../_lib/get-audit-logs'
 import { LogItem } from './log-item'
 
 export async function RecentActivity() {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const logs = await getAuditLogs(10)
 
   return (
