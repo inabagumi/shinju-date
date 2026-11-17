@@ -1,12 +1,11 @@
 'use client'
 
-import { TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
-import { formatDateTimeWithSeconds } from '@shinju-date/temporal-fns'
+import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import { Select, Textarea } from '@shinju-date/ui'
 import { useActionState } from 'react'
-import ReactMarkdown from 'react-markdown'
 import { SubmitButton } from '@/components/form'
+import { Markdown } from '@/components/markdown'
 import { Panel } from '@/components/panel'
 import {
   markFeatureRequestAsRead,
@@ -24,10 +23,6 @@ interface FeatureRequestDetailProps {
 }
 
 const labelClassName = 'block text-meta font-semibold'
-
-/** Markdown の本文。`prose` の色を両モードのセマンティックカラーに合わせる */
-const proseClassName =
-  'prose max-w-text text-foreground [--tw-prose-body:var(--color-foreground)] [--tw-prose-bold:var(--color-foreground)] [--tw-prose-bullets:var(--text-color-muted)] [--tw-prose-code:var(--color-foreground)] [--tw-prose-counters:var(--text-color-muted)] [--tw-prose-headings:var(--color-foreground)] [--tw-prose-hr:var(--color-border)] [--tw-prose-links:var(--color-accent)] [--tw-prose-quote-borders:var(--color-border)] [--tw-prose-quotes:var(--color-foreground)]'
 
 export function FeatureRequestDetail({
   featureRequest,
@@ -72,24 +67,15 @@ export function FeatureRequestDetail({
     null,
   )
 
-  // Format dates using Temporal
-  const createdAt = Temporal.Instant.from(featureRequest.created_at)
-  const updatedAt = Temporal.Instant.from(featureRequest.updated_at)
-  const createdAtFormatted = formatDateTimeWithSeconds(
-    createdAt.toZonedDateTimeISO(TIME_ZONE),
-  )
-  const updatedAtFormatted = formatDateTimeWithSeconds(
-    updatedAt.toZonedDateTimeISO(TIME_ZONE),
-  )
+  const createdAtFormatted = formatDateTimeFromISO(featureRequest.created_at)
+  const updatedAtFormatted = formatDateTimeFromISO(featureRequest.updated_at)
 
   return (
     <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
       <div className="space-y-6 lg:col-span-2">
         {/* Message */}
         <Panel title="機能要望内容">
-          <div className={proseClassName}>
-            <ReactMarkdown>{featureRequest.message}</ReactMarkdown>
-          </div>
+          <Markdown>{featureRequest.message}</Markdown>
         </Panel>
 
         {/* Admin Memo */}
@@ -118,9 +104,7 @@ export function FeatureRequestDetail({
               <h3 className="mb-2 text-body leading-normal font-semibold">
                 プレビュー
               </h3>
-              <div className={proseClassName}>
-                <ReactMarkdown>{featureRequest.admin_memo}</ReactMarkdown>
-              </div>
+              <Markdown>{featureRequest.admin_memo}</Markdown>
             </div>
           )}
         </Panel>

@@ -17,10 +17,10 @@ import {
 } from '@/components/external-video-link'
 import { DetailList, DetailRow, Panel } from '@/components/panel'
 import { DetailCardsSkeleton } from '@/components/skeletons'
+import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
 import { PlatformBadge } from '../_components/platform-badge'
 import { VideoKindBadge } from '../_components/video-kind-badge'
-import { VideoStatusBadge } from '../_components/video-status-badge'
 import getVideo from '../_lib/get-video'
 import {
   VideoActionsButtons,

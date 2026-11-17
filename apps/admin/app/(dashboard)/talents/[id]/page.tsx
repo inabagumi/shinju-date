@@ -1,5 +1,5 @@
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
-import { Alert, Badge, EmptyState, PageHeader } from '@shinju-date/ui'
+import { Alert, EmptyState, PageHeader } from '@shinju-date/ui'
 import { Video } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -8,6 +8,7 @@ import { Suspense } from 'react'
 import { BackLink } from '@/components/back-link'
 import { DetailList, DetailRow, Panel } from '@/components/panel'
 import { DetailCardsSkeleton, ListCardsSkeleton } from '@/components/skeletons'
+import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
 import { TalentStatusBadge } from '../_components/talent-status-badge'
 import { getRecentVideosForTalent } from '../_lib/get-recent-videos'
@@ -218,21 +219,7 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
                   </p>
                 </div>
                 <div className="shrink-0">
-                  <Badge
-                    variant={
-                      video.deleted_at
-                        ? 'danger'
-                        : video.visible
-                          ? 'success'
-                          : 'neutral'
-                    }
-                  >
-                    {video.deleted_at
-                      ? '削除済み'
-                      : video.visible
-                        ? '公開中'
-                        : '非表示'}
-                  </Badge>
+                  <VideoStatusBadge video={video} />
                 </div>
               </div>
             </li>

@@ -77,4 +77,10 @@ describe('formatDateTimeFromISO', () => {
       '2026/03/26 01:22:03',
     )
   })
+
+  it('should omit seconds when includeSeconds is false', () => {
+    expect(
+      formatDateTimeFromISO('2026-03-25T16:22:03Z', { includeSeconds: false }),
+    ).toBe('2026/03/26 01:22')
+  })
 })

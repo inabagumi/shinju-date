@@ -1,8 +1,10 @@
 'use client'
 
-import { TIME_ZONE } from '@shinju-date/constants'
 import { formatNumber } from '@shinju-date/helpers'
-import { formatDateTime, formatDuration } from '@shinju-date/temporal-fns'
+import {
+  formatDateTimeFromISO,
+  formatDuration,
+} from '@shinju-date/temporal-fns'
 import {
   Button,
   EmptyState,
@@ -35,6 +37,7 @@ import {
   ExternalVideoLink,
   getExternalVideoUrl,
 } from '@/components/external-video-link'
+import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
 import {
   restoreAction,
@@ -46,7 +49,6 @@ import { PlatformBadge } from './platform-badge'
 import { SortIcon } from './sort-icon'
 import { VideoActionConfirmDialog } from './video-action-confirm-dialog'
 import { VideoKindBadge } from './video-kind-badge'
-import { VideoStatusBadge } from './video-status-badge'
 
 interface Props {
   videos: Video[]
@@ -368,21 +370,17 @@ export default function VideoList({ videos }: Props) {
                       <dt>公開</dt>
                       <dd>
                         <time dateTime={video.published_at}>
-                          {formatDateTime(
-                            Temporal.Instant.from(
-                              video.published_at,
-                            ).toZonedDateTimeISO(TIME_ZONE),
-                          )}
+                          {formatDateTimeFromISO(video.published_at, {
+                            includeSeconds: false,
+                          })}
                         </time>
                       </dd>
                       <dt>更新</dt>
                       <dd>
                         <time dateTime={video.updated_at}>
-                          {formatDateTime(
-                            Temporal.Instant.from(
-                              video.updated_at,
-                            ).toZonedDateTimeISO(TIME_ZONE),
-                          )}
+                          {formatDateTimeFromISO(video.updated_at, {
+                            includeSeconds: false,
+                          })}
                         </time>
                       </dd>
                     </dl>

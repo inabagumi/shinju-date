@@ -1,3 +1,4 @@
+import { formatNumber } from '@shinju-date/helpers'
 import {
   Badge,
   type BadgeProps,
@@ -90,7 +91,7 @@ function SearchExitRateWidgetComponent({
                     {item.keyword}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {item.searchCount.toLocaleString('ja-JP')}
+                    {formatNumber(item.searchCount)}
                   </TableCell>
                   <TableCell className="text-right font-semibold tabular-nums">
                     {item.exitRate.toFixed(1)}%
