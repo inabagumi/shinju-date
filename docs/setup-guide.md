@@ -211,7 +211,7 @@ Redis HTTP APIが正常に動作しているか確認：
 
 ```bash
 curl -X POST http://localhost:8079 \
-  -H "Authorization: Bearer local_development_token" \
+  -H "Authorization: Bearer HQe-H5xQJO6ADYplIW-LYFZWRMGwpSjRfHneRw52aPI" \
   -H "Content-Type: application/json" \
   -d '["PING"]'
 
@@ -224,8 +224,10 @@ curl -X POST http://localhost:8079 \
 
 ```bash
 UPSTASH_REDIS_REST_URL=http://localhost:8079
-UPSTASH_REDIS_REST_TOKEN=local_development_token
+UPSTASH_REDIS_REST_TOKEN=HQe-H5xQJO6ADYplIW-LYFZWRMGwpSjRfHneRw52aPI
 ```
+
+トークンは、Redis HTTP APIが受け付ける `config/dev-secrets.env` の `SRH_TOKEN` と同じ値にします（開発専用の固定の値です）。サンプルの値が一致しているかは、CIの `pnpm run check:dev-secrets` が確かめます。
 
 ### 3.4. 動作しない場合
 
@@ -260,7 +262,7 @@ export NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3
 export SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
 
 # Upstash Redis (Docker Compose経由)
-export UPSTASH_REDIS_REST_TOKEN=local_development_token
+export UPSTASH_REDIS_REST_TOKEN=HQe-H5xQJO6ADYplIW-LYFZWRMGwpSjRfHneRw52aPI
 export UPSTASH_REDIS_REST_URL=http://localhost:8079
 
 # Next.js Turbopack (特定の環境向け)
