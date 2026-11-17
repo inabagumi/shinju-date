@@ -1,5 +1,10 @@
 import type { Enums } from '@shinju-date/database'
 import type { Logger } from './internal/logger.js'
+import { removeUnusedProfileImages } from './internal/profile-images/index.js'
+import {
+  removeUnusedThumbnails,
+  UNUSED_THUMBNAIL_GRACE_PERIOD,
+} from './internal/thumbnails/index.js'
 import type {
   AddPastVideosOptions,
   AddPastVideosResult,
@@ -29,6 +34,7 @@ const silentLogger: Logger = {
  * | ------------------------- | ----------------------------------------------- |
  * | `addNewVideos`            | saves videos that appeared on tracked accounts  |
  * | `addPastVideos`           | saves one page of an account's whole history    |
+ * | `cleanUpImages`           | deletes thumbnails and icons nothing uses       |
  * | `refreshLiveVideos`       | follows videos that are scheduled or on air     |
  * | `refreshRecentVideos`     | re-reads the newest finished videos             |
  * | `refreshVideo`            | re-reads one saved video                        |
@@ -46,7 +52,8 @@ const silentLogger: Logger = {
  * - An operation rejects only when the run as a whole cannot proceed (the
  *   platform or the database is unreachable). Nothing is deleted in that case.
  * - Each operation resolves to whether it changed anything the public site
- *   shows, so callers know when to refresh caches.
+ *   shows, so callers know when to refresh caches. `cleanUpImages` only
+ *   deletes what the site no longer shows, so it resolves to nothing.
  */
 export abstract class Scraper {
   /** Name of the platform, as stored in `videos.platform`. */
@@ -146,6 +153,50 @@ export abstract class Scraper {
     talentId: string,
     now?: Temporal.Instant,
   ): Promise<SyncAccountResult[]>
+
+  /**
+   * Deletes thumbnails no video uses and icons no account uses, once they
+   * have been unused for their grace period (a week for thumbnails, an hour
+   * for icons).
+   *
+   * Thumbnails and icons are shared by every platform, so this cleans up
+   * those of all platforms, whichever scraper it is called on.
+   *
+   * Unused images are never shown, so a failure is only reported, and a
+   * failure to clean up one kind does not keep the other from being cleaned
+   * up. This never rejects.
+   */
+  async cleanUpImages(
+    now: Temporal.Instant = Temporal.Now.instant(),
+  ): Promise<void> {
+    await this.#cleanUp('removeUnusedThumbnails', () =>
+      removeUnusedThumbnails(this.supabaseClient, {
+        now,
+        olderThan: UNUSED_THUMBNAIL_GRACE_PERIOD,
+      }),
+    )
+    await this.#cleanUp('removeUnusedProfileImages', () =>
+      removeUnusedProfileImages(this.supabaseClient, { now }),
+    )
+  }
+
+  async #cleanUp(
+    operation: 'removeUnusedProfileImages' | 'removeUnusedThumbnails',
+    remove: () => Promise<number>,
+  ): Promise<void> {
+    try {
+      const removedCount = await remove()
+
+      if (removedCount > 0) {
+        this.logger.info('使われていない画像を削除しました', {
+          operation,
+          removedCount,
+        })
+      }
+    } catch (error) {
+      this.reportError(error, { operation })
+    }
+  }
 
   /**
    * Reports a failure that does not stop the run.

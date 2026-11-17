@@ -55,8 +55,7 @@ const savedTalents = [
 ]
 
 /**
- * A database holding `savedTalents` and no unused icons, in which every write
- * succeeds.
+ * A database holding `savedTalents`, in which every write succeeds.
  */
 const routes = {
   'GET talents': savedTalents,
@@ -120,7 +119,7 @@ describe('syncYouTubeChannels', () => {
     expect(changed).toBe(0)
     expect(
       supabase.requests.map(({ method, table }) => `${method} ${table}`),
-    ).toEqual(['GET talents', 'GET profile_images'])
+    ).toEqual(['GET talents'])
   })
 
   it('loads the saved icon of every channel', async () => {
@@ -266,42 +265,6 @@ describe('syncYouTubeChannels', () => {
         operation: 'syncProfileImage',
         youtubeChannelId: 'UCbbb',
       })
-    })
-
-    it('deletes icons that are no longer used', async () => {
-      const storage = mockStorage(supabase)
-      supabase.respondWith({
-        ...routes,
-        'GET profile_images': [
-          { id: 'image-9', path: 'youtube/UCzzz/gone.webp' },
-        ],
-      })
-      const { fetcher } = createFakeFetcher<YouTubeFetcher>()
-
-      await syncYouTubeChannels(createContext(fetcher))
-
-      expect(supabase.written('DELETE', 'profile_images')[0]?.query).toEqual({
-        id: 'eq.image-9',
-      })
-      expect(storage.removed).toEqual([['youtube/UCzzz/gone.webp']])
-    })
-
-    it('reports a failed clean-up without failing the sync', async () => {
-      supabase.respondWith({
-        ...routes,
-        'GET profile_images': () => postgresError('42501', 'permission denied'),
-      })
-      const { fetcher } = createFakeFetcher<YouTubeFetcher>({
-        accounts: [
-          createChannel('UCbbb', { customUrl: '@bob', title: 'Bob Ch.' }),
-        ],
-      })
-
-      await expect(syncYouTubeChannels(createContext(fetcher))).resolves.toBe(1)
-      expect(reportError).toHaveBeenCalledWith(
-        expect.objectContaining({ message: expect.stringContaining('denied') }),
-        { operation: 'removeUnusedProfileImages' },
-      )
     })
   })
 })

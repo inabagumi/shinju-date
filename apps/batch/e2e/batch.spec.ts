@@ -100,6 +100,18 @@ test.describe('Batch App - API Endpoints', () => {
     expect([200, 204, 400, 401, 403, 500]).toContain(response.status())
   })
 
+  test('should have images cleanup endpoint', async ({ request }) => {
+    const response = await request.post(
+      'http://localhost:5000/images/cleanup',
+      {
+        failOnStatusCode: false,
+      },
+    )
+
+    expect(response.status()).not.toBe(404)
+    expect([200, 204, 400, 401, 403, 429, 500]).toContain(response.status())
+  })
+
   test('should have stats snapshot endpoint', async ({ request }) => {
     const response = await request.post(
       'http://localhost:5000/stats/snapshot',

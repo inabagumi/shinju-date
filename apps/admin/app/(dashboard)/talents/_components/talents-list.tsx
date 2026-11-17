@@ -1,7 +1,6 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import {
   EmptyState,
   FilterBar,
@@ -19,6 +18,7 @@ import Link from 'next/link'
 import { useMemo } from 'react'
 import { SearchInput } from '@/components/search-input'
 import { FilterBarSkeleton, TableSkeleton } from '@/components/table-skeleton'
+import { formatDateTimeFromISO } from '@/lib/format'
 import { useUpdateSearchParams } from '@/lib/use-update-search-params'
 import {
   DEFAULT_TALENT_LIST_FILTERS,

@@ -164,6 +164,21 @@ export const RECOMMENDATION_QUERIES_UPDATE_JOB: CronJob = {
   schedule: '17 1 * * *',
 }
 
+/**
+ * Deletes the thumbnails and icons that no video or account uses any more
+ * (`Scraper#cleanUpImages`). Images are shared by every platform, so one job
+ * cleans up all of them. Runs daily, apart from the video jobs, so that a
+ * slow clean-up never holds them up, and so that each run has little to do.
+ *
+ * `maxDuration`: 60 seconds. A run deletes at most 500 thumbnails, 100 at a
+ * time, and the icons of the accounts that no longer use them.
+ */
+export const IMAGES_CLEANUP_JOB: CronJob = {
+  maxDurationSeconds: 60,
+  path: '/images/cleanup',
+  schedule: '44 19 * * *',
+}
+
 export function getTalentsUpdateJob(provider: Enums<'platform_type'>): CronJob {
   return TALENTS_UPDATE_JOBS[provider]
 }
@@ -189,4 +204,5 @@ export const JOBS: readonly CronJob[] = [
   STATS_SNAPSHOT_JOB,
   TERMS_POPULARITY_UPDATE_JOB,
   RECOMMENDATION_QUERIES_UPDATE_JOB,
+  IMAGES_CLEANUP_JOB,
 ]

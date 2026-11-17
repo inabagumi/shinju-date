@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import getMondayOfWeek from '../get-monday-of-week.js'
+import { getMondayOfWeek } from '../get-monday-of-week.js'
 
 describe('getMondayOfWeek', () => {
   it('should return the Monday date for a Monday', () => {

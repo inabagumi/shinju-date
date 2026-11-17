@@ -1,8 +1,5 @@
 import { formatNumber } from '@shinju-date/helpers'
-import {
-  formatDateTimeFromISO,
-  formatDuration,
-} from '@shinju-date/temporal-fns'
+import { formatDuration } from '@shinju-date/temporal-fns'
 import {
   EmptyState,
   Skeleton,
@@ -28,6 +25,7 @@ import {
 } from '@/components/table-skeleton'
 import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
+import { formatDateTimeFromISO } from '@/lib/format'
 import type { Video, VideoSortField } from '../_lib/get-videos'
 import {
   getVideoSortHref,

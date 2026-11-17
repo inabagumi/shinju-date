@@ -304,7 +304,14 @@ describe('syncTwitchLive', () => {
       title: 'Archive',
       updated_at: '2024-05-01T12:00:00Z',
     })
-    // Cached pages may still show the preview, so the cleanup removes it later.
+    // Cached pages may still show the preview, so the cleanup removes it
+    // later, counting from the time it was replaced.
+    expect(supabase.written('PATCH', 'thumbnails')).toEqual([
+      expect.objectContaining({
+        body: { updated_at: '2024-05-01T12:00:00Z' },
+        query: { id: 'eq.thumb-live' },
+      }),
+    ])
     expect(deletedThumbnailIds()).toEqual([])
     expect(removedImages).toEqual([])
   })
@@ -341,6 +348,7 @@ describe('syncTwitchLive', () => {
     expect(supabase.written('PATCH', 'videos')[0]?.body).not.toHaveProperty(
       'thumbnail_id',
     )
+    expect(supabase.written('PATCH', 'thumbnails')).toEqual([])
     expect(deletedThumbnailIds()).toEqual([])
   })
 

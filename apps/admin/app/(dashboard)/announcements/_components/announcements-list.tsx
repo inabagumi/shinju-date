@@ -1,5 +1,4 @@
 import type { Tables } from '@shinju-date/database'
-import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import {
   Button,
   EmptyState,
@@ -15,6 +14,7 @@ import { Megaphone } from 'lucide-react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Markdown } from '@/components/markdown'
 import { TableSkeleton } from '@/components/table-skeleton'
+import { formatDateTimeFromISO } from '@/lib/format'
 import { deleteAnnouncementAction } from '../_actions'
 import { AnnouncementModal } from './announcement-modal'
 import { LevelBadge, StatusBadge } from './badges'
