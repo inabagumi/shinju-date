@@ -6,6 +6,7 @@
   },
   "description": "",
   "devDependencies": {
+    "@shinju-date/config": "workspace:*",
     "@tsconfig/node20": "catalog:",
     "@tsconfig/strictest": "catalog:",
     "@types/node": "catalog:",
@@ -16,12 +17,11 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "default": "./dist/index.js"
     }
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "main": "./dist/index.js",
   "name": "@shinju-date/helpers",
   "private": true,
   "repository": {
@@ -35,6 +35,5 @@
     "typecheck": "tsc --noEmit"
   },
   "type": "module",
-  "types": "./dist/index.d.ts",
   "version": "1.0.0"
 }

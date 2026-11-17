@@ -7,6 +7,7 @@
   },
   "description": "YouTube API client package for SHINJU DATE with Zod validation",
   "devDependencies": {
+    "@shinju-date/config": "workspace:*",
     "@tsconfig/node20": "catalog:",
     "@tsconfig/strictest": "catalog:",
     "tsdown": "catalog:",
@@ -15,13 +16,12 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "main": "./dist/index.js",
   "name": "@shinju-date/youtube-api-client",
   "private": true,
   "repository": {
@@ -35,6 +35,5 @@
     "typecheck": "tsc --noEmit"
   },
   "type": "module",
-  "types": "./dist/index.d.ts",
   "version": "1.0.0"
 }

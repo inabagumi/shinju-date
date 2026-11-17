@@ -6,6 +6,7 @@
   },
   "description": "Queue of video backfill jobs shared by the admin and batch apps",
   "devDependencies": {
+    "@shinju-date/config": "workspace:*",
     "@tsconfig/node20": "catalog:",
     "@tsconfig/strictest": "catalog:",
     "@types/node": "catalog:",
@@ -22,7 +23,6 @@
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "main": "./dist/index.js",
   "name": "@shinju-date/video-backfill",
   "peerDependencies": {
     "@upstash/redis": "^1.41.0"
@@ -39,6 +39,5 @@
     "typecheck": "tsc --noEmit"
   },
   "type": "module",
-  "types": "./dist/index.d.ts",
   "version": "1.0.0"
 }

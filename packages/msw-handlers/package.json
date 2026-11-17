@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "10.6.0",
+    "@shinju-date/config": "workspace:*",
     "@shinju-date/constants": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
     "@tsconfig/node20": "catalog:",
@@ -22,23 +23,23 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "default": "./dist/index.js"
     },
     "./server": {
       "types": "./dist/server.d.ts",
-      "import": "./dist/server.js"
+      "default": "./dist/server.js"
     },
     "./session": {
       "types": "./dist/session.d.ts",
-      "import": "./dist/session.js"
+      "default": "./dist/session.js"
     },
     "./register": {
-      "import": "./dist/register.js"
+      "types": "./dist/register.d.ts",
+      "default": "./dist/register.js"
     }
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "main": "./dist/index.js",
   "name": "@shinju-date/msw-handlers",
   "private": true,
   "repository": {
@@ -52,6 +53,5 @@
     "typecheck": "tsc --noEmit"
   },
   "type": "module",
-  "types": "./dist/index.d.ts",
   "version": "1.0.0"
 }

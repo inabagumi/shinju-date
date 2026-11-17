@@ -1,0 +1,34 @@
+{
+  "author": "Haneru Developers",
+  "description": "Shared build configuration for SHINJU DATE packages",
+  "devDependencies": {
+    "@tsconfig/node20": "catalog:",
+    "@tsconfig/strictest": "catalog:",
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  },
+  "exports": {
+    "./tsdown": {
+      "types": "./tsdown.ts",
+      "default": "./tsdown.ts"
+    }
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "name": "@shinju-date/config",
+  "peerDependencies": {
+    "tsdown": "^0.23.7"
+  },
+  "private": true,
+  "repository": {
+    "directory": "packages/config",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "type": "module",
+  "version": "1.0.0"
+}
