@@ -287,6 +287,7 @@ import { twMerge } from '@shinju-date/ui'
 
 - **`focus-visible` のときだけ出ます。** マウスでのクリックでは出ません
 - **薄い色の輪（`ring-accent/20` など）は使いません。** 背景との差が小さく、フォーカスの位置が見分けにくいためです。`accent` と `danger` は、ライトとダークの両方で、背景（`background`・`surface`・`muted`）とのコントラスト比 3:1 以上を `packages/ui/src/colors.test.ts` で確かめています
+- **`outline-none` と一緒に使いません。** `focus-ring` などは `outline-2` を `@apply` しているので、`outline-none` があると線の種類が `none` になり、線が出ません
 - 3つのクラスは `twMerge` に同じ組として登録しているので、`className` で渡すと部品のものと置き換わります。新しく足したときは、`packages/ui/src/tw-merge.ts` の `FOCUS_RINGS` にも足します
 - 次の場合だけ、`focus-ring` を使わずに `focus-visible:outline-*` を書きます
   - 地が `primary` のところ（管理画面のナビゲーション、フッター）: `accent` との差が小さいので、`focus-visible:outline-primary-foreground` にする
