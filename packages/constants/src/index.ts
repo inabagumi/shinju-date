@@ -16,6 +16,9 @@ export type CacheTag = (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS]
 export const REDIS_KEYS = {
   CLICK_CHANNEL_PREFIX: 'channels:clicked:',
   CLICK_VIDEO_PREFIX: 'videos:clicked:',
+  // Lock held while a batch cron job runs, so that runs never overlap
+  // (format: prefix + `<job identifier>`)
+  CRON_LOCK_PREFIX: 'cron:lock:',
   LAST_VIDEO_SYNC: 'status:last_video_sync',
   MAINTENANCE_MODE: 'maintenance_mode',
   // Union of the daily rankings over a date range, cached by admin
