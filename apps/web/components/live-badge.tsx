@@ -1,18 +1,11 @@
 import { twMerge } from '@shinju-date/ui'
 
-const SIZE_CLASS_NAMES = {
-  /** For a row of the fixed height of `h-5`, such as in the schedule */
-  compact: 'leading-4',
-  default: '',
-} as const
-
-type LiveBadgeSize = keyof typeof SIZE_CLASS_NAMES
-
 interface LiveBadgeProps {
   /** For the position. The look is given by the badge */
   className?: string | undefined
   id?: string | undefined
-  size?: LiveBadgeSize | undefined
+  /** `compact` fits a row of the fixed height of `h-5`, such as in the schedule */
+  size?: 'compact' | 'default' | undefined
 }
 
 /**
@@ -28,7 +21,7 @@ export default function LiveBadge({
     <span
       className={twMerge(
         'rounded-control bg-live px-1.5 py-0.5 text-caption font-semibold whitespace-nowrap text-live-foreground',
-        SIZE_CLASS_NAMES[size],
+        size === 'compact' && 'leading-4',
         className,
       )}
       id={id}
