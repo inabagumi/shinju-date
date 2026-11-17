@@ -148,25 +148,10 @@ async function filterMockVideos({
 }
 
 /**
- * Mirrors `search_videos_v2` and `search_videos_v3`: the videos of
- * `filterMockVideos`, newest first. `search_videos_v2` takes no
- * `video_kinds`, so its requests always search every kind.
+ * The videos of `filterMockVideos` that the site shows: the ones whose talent
+ * is not deleted and that have a YouTube or Twitch video.
  */
-async function searchMockVideos({
-  perpage = 10,
-  ...params
-}: SearchVideosParams) {
-  return (await filterMockVideos(params))
-    .sort((a, b) => Temporal.Instant.compare(b.published_at, a.published_at))
-    .slice(0, perpage)
-}
-
-/**
- * Mirrors `count_videos_v1`: the videos of `filterMockVideos` whose talent is
- * not deleted and that have a YouTube or Twitch video, as the site drops the
- * others from the results.
- */
-async function countMockVideos(params: SearchVideosParams) {
+async function filterShownMockVideos(params: SearchVideosParams) {
   const matchedVideos = await filterMockVideos(params)
   const visibleTalentIds = new Set(
     talents
@@ -183,7 +168,42 @@ async function countMockVideos(params: SearchVideosParams) {
   return matchedVideos.filter(
     (video) =>
       visibleTalentIds.has(video.talent_id) && videoIdsWithSource.has(video.id),
-  ).length
+  )
+}
+
+/** The first `perpage` of the given videos, newest first. */
+function pageMockVideos<T extends { published_at: string }>(
+  matchedVideos: T[],
+  perpage = 10,
+): T[] {
+  return matchedVideos
+    .sort((a, b) => Temporal.Instant.compare(b.published_at, a.published_at))
+    .slice(0, perpage)
+}
+
+/**
+ * Mirrors `search_videos_v2`: the videos of `filterMockVideos`, newest first.
+ * It takes no `video_kinds`, so its requests always search every kind.
+ */
+async function searchMockVideos({ perpage, ...params }: SearchVideosParams) {
+  return pageMockVideos(await filterMockVideos(params), perpage)
+}
+
+/**
+ * Mirrors `search_videos_v3`: the videos of `filterShownMockVideos`, newest
+ * first. The videos the site does not show are left out before the page size
+ * is applied.
+ */
+async function searchShownMockVideos({
+  perpage,
+  ...params
+}: SearchVideosParams) {
+  return pageMockVideos(await filterShownMockVideos(params), perpage)
+}
+
+/** Mirrors `count_videos_v1`: the number of the videos the site shows. */
+async function countMockVideos(params: SearchVideosParams) {
+  return (await filterShownMockVideos(params)).length
 }
 
 interface SuggestionsParams {
@@ -255,7 +275,12 @@ export const rpcHandlers = [
     return HttpResponse.json(await suggestMockTerms(body))
   }),
 
-  ...['search_videos_v2', 'search_videos_v3'].map((functionName) =>
+  ...(
+    [
+      ['search_videos_v2', searchMockVideos],
+      ['search_videos_v3', searchShownMockVideos],
+    ] as const
+  ).map(([functionName, search]) =>
     rest.post(`${REST_URL}/rpc/${functionName}`, async ({ request }) => {
       const body = (await request.json()) as SearchVideosParams
       // `.rpc(...).select(...)` embeds resources like a table query, so
@@ -265,7 +290,7 @@ export const rpcHandlers = [
         DEFAULT_SEARCH_VIDEOS_SELECT
 
       return HttpResponse.json(
-        await applySelect(await searchMockVideos(body), select, 'videos'),
+        await applySelect(await search(body), select, 'videos'),
       )
     }),
   ),

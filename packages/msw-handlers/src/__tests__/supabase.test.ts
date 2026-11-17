@@ -7,6 +7,7 @@ import {
   it,
   vi,
 } from 'vitest'
+import { MOCK_DELETED_TALENT_ID } from '../collections.js'
 import { server } from '../server.js'
 
 describe('Supabase Handlers', () => {
@@ -1621,6 +1622,88 @@ describe('Supabase Handlers', () => {
             body,
           ),
         ).toBe(shownVideos.length)
+      }
+    })
+
+    it('should leave out the videos the site does not show before the page size in search_videos_v3', async () => {
+      const restUrl = 'https://fake.supabase.test/rest/v1'
+      const select =
+        'id,talent:talents(deleted_at),youtube_video:youtube_videos(youtube_video_id),twitch_video:twitch_videos(twitch_video_id)'
+      const searchRows = async (functionName: string, perpage: number) => {
+        const response = await fetch(
+          `${restUrl}/rpc/${functionName}?select=${encodeURIComponent(select)}`,
+          {
+            body: JSON.stringify({ perpage, query: '' }),
+            headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
+          },
+        )
+
+        expect(response.ok).toBe(true)
+
+        return (await response.json()) as {
+          id: string
+          talent: { deleted_at: string | null } | null
+          twitch_video: unknown
+          youtube_video: unknown
+        }[]
+      }
+      const search = async (functionName: string, perpage: number) =>
+        (await searchRows(functionName, perpage)).map((video) => video.id)
+      const [shownVideo] = (await (
+        await fetch(`${restUrl}/videos?select=id,talent_id&limit=1`)
+      ).json()) as { id: string; talent_id: string }[]
+
+      expect(shownVideo).toBeDefined()
+
+      // The newest videos are a video of a deleted talent and a video with
+      // neither a YouTube nor a Twitch video
+      const hiddenVideoIds = [
+        '00000000-0000-4000-8000-0000000000f1',
+        '00000000-0000-4000-8000-0000000000f2',
+      ]
+      const created = await fetch(`${restUrl}/videos`, {
+        body: JSON.stringify(
+          [MOCK_DELETED_TALENT_ID, shownVideo?.talent_id].map(
+            (talentId, idx) => ({
+              duration: 'PT1H',
+              id: hiddenVideoIds[idx],
+              platform: 'youtube',
+              published_at: `2099-01-0${idx + 1}T00:00:00.000Z`,
+              talent_id: talentId,
+              title: 'Hidden video',
+            }),
+          ),
+        ),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      })
+
+      expect(created.status).toBe(201)
+
+      try {
+        // search_videos_v2 returns the videos before they are left out
+        const shownVideoIds = (await searchRows('search_videos_v2', 1000))
+          .filter(
+            (video) =>
+              video.talent?.deleted_at === null &&
+              (video.youtube_video !== null || video.twitch_video !== null),
+          )
+          .map((video) => video.id)
+
+        expect(shownVideoIds.length).toBeGreaterThan(2)
+
+        expect(await search('search_videos_v2', 2)).toEqual(
+          hiddenVideoIds.toReversed(),
+        )
+        expect(await search('search_videos_v3', 2)).toEqual(
+          shownVideoIds.slice(0, 2),
+        )
+        expect(await search('search_videos_v3', 1000)).toEqual(shownVideoIds)
+      } finally {
+        await fetch(`${restUrl}/videos?id=in.(${hiddenVideoIds.join(',')})`, {
+          method: 'DELETE',
+        })
       }
     })
   })
