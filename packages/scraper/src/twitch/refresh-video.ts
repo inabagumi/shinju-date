@@ -1,5 +1,5 @@
 import { DatabaseError } from '../internal/database/index.js'
-import { diffVideoFields } from '../internal/video-fields.js'
+import { compareVideoFields } from '../internal/operations/diff-video-fields.js'
 import type {
   CrawlContext,
   RefreshVideoResult,
@@ -72,7 +72,7 @@ export async function refreshTwitchVideo(
   // A broadcast may be written in several steps (its row, its link to the
   // archive, its thumbnail), so compare with what they left behind.
   const current = (await findSavedVideo(supabaseClient, videoId)) ?? saved
-  const diff = diffVideoFields(saved, current)
+  const diff = compareVideoFields(saved, current)
   const changed =
     Object.keys(diff.after).length > 0 ||
     current.thumbnail_id !== saved.thumbnail_id ||

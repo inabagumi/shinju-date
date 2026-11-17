@@ -1,4 +1,3 @@
-import type { TablesUpdate } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { countChanges } from '../internal/concurrency.js'
 import {
@@ -12,16 +11,24 @@ import {
   softDeleteUnavailableVideos,
   updateVideo,
 } from '../internal/database/index.js'
-import { diffVideoFields } from '../internal/video-fields.js'
+import {
+  compareVideoFields,
+  diffVideoFields,
+} from '../internal/operations/diff-video-fields.js'
 import type {
   CrawlContext,
   RefreshVideoResult,
   TypedSupabaseClient,
+  VideoFields,
   WriteContext,
 } from '../types.js'
 import type { YouTubeFetcher } from './fetcher.js'
+import {
+  SAVED_YOUTUBE_VIDEO_COLUMNS,
+  type SavedYouTubeVideo,
+} from './saved-video.js'
 import type { YouTubeVideo } from './types.js'
-import { getVideoChanges, type YouTubeVideoFields } from './video.js'
+import { toVideoFields } from './video.js'
 
 /**
  * Which saved videos a refresh looks at:
@@ -29,17 +36,6 @@ import { getVideoChanges, type YouTubeVideoFields } from './video.js'
  * - `recent`: the newest finished videos
  */
 export type YouTubeRefreshScope = 'live' | 'recent'
-
-export interface SavedYouTubeVideo extends YouTubeVideoFields {
-  id: string
-  thumbnail_id: string | null
-  youtube_video: {
-    youtube_video_id: string
-  }
-}
-
-const SAVED_VIDEO_SELECT =
-  'id, duration, published_at, status, thumbnail_id, title, video_kind, youtube_video:youtube_videos!inner(youtube_video_id)'
 
 /**
  * Loads the videos a refresh looks at, for active talents only.
@@ -50,7 +46,7 @@ async function getVideosToRefresh(
 ): Promise<SavedYouTubeVideo[]> {
   const query = supabaseClient
     .from('videos')
-    .select(`${SAVED_VIDEO_SELECT}, talent:talents!inner(id)`)
+    .select(`${SAVED_YOUTUBE_VIDEO_COLUMNS}, talent:talents!inner(id)`)
     .eq('platform', 'youtube')
     .is('deleted_at', null)
     .is('talent.deleted_at', null)
@@ -80,10 +76,10 @@ async function updateFromYouTube(
   { now, supabaseClient }: WriteContext,
   saved: SavedYouTubeVideo,
   video: YouTubeVideo,
-): Promise<TablesUpdate<'videos'> | null> {
-  const changes = getVideoChanges(saved, video, now)
+): Promise<Partial<VideoFields> | null> {
+  const changes = diffVideoFields(saved, toVideoFields(video, now))
 
-  if (!changes) {
+  if (Object.keys(changes).length === 0) {
     return null
   }
 
@@ -197,7 +193,7 @@ export async function refreshYouTubeVideo(
   const { fetcher, logger, supabaseClient } = context
   const { data: saved, error } = await supabaseClient
     .from('videos')
-    .select(SAVED_VIDEO_SELECT)
+    .select(SAVED_YOUTUBE_VIDEO_COLUMNS)
     .eq('id', videoId)
     .eq('platform', 'youtube')
     .is('deleted_at', null)
@@ -240,7 +236,7 @@ export async function refreshYouTubeVideo(
   })
 
   return {
-    ...diffVideoFields(saved, after),
+    ...compareVideoFields(saved, after),
     status: 'updated',
     title: after.title,
   }
