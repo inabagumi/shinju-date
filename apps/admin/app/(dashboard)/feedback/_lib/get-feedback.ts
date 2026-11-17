@@ -24,7 +24,7 @@ export async function getFeatureRequests(
     query = query.eq('is_read', filters.isRead)
   }
 
-  return unwrap(await query, 'getFeatureRequests')
+  return unwrap(await query, 'getFeatureRequests') ?? []
 }
 
 export const getFeatureRequestById = cache(async function getFeatureRequestById(

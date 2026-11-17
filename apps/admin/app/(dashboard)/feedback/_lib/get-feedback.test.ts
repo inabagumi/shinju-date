@@ -1,3 +1,4 @@
+import { HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
 import {
   INVALID_TEXT_REPRESENTATION_ERROR_CODE,
@@ -36,6 +37,16 @@ describe('getFeatureRequests', () => {
     supabase.on('select', 'feature_requests', [{ id: FEEDBACK_ID }])
 
     await expect(getFeatureRequests()).resolves.toEqual([{ id: FEEDBACK_ID }])
+  })
+
+  it('should return an empty list for a response without a body', async () => {
+    supabase.on(
+      'select',
+      'feature_requests',
+      new HttpResponse(null, { status: 404 }),
+    )
+
+    await expect(getFeatureRequests()).resolves.toEqual([])
   })
 
   it('should throw a QueryError naming the query when it fails', async () => {

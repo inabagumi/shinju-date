@@ -95,7 +95,7 @@ export async function getVideos(
   const result = await query
     .order(sortField, { ascending: sortOrder === 'asc' })
     .range(from, to)
-  const videos = unwrap(result, 'getVideos')
+  const videos = unwrap(result, 'getVideos') ?? []
   const { count } = result
 
   // Get last 7 days in JST timezone

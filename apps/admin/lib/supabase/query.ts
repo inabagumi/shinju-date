@@ -73,13 +73,15 @@ function fail(operation: string, error: PostgrestError): never {
 /**
  * Returns the data of a Supabase response, or throws a `QueryError` named
  * `operation` when the query failed.
+ *
+ * A response with an empty body (e.g. a 404 without one) has neither `data`
+ * nor `error`, so callers that read a list should fall back to `[]`.
  */
 export function unwrap<T>(result: QueryResult<T>, operation: string): T {
   if (result.error) {
     fail(operation, result.error)
   }
 
-  // Supabase returns `data` whenever it returns no `error`.
   return result.data as T
 }
 

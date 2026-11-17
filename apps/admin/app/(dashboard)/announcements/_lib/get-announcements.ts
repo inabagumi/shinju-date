@@ -7,11 +7,13 @@ export default async function getAnnouncements(): Promise<
 > {
   const supabase = await createSupabaseServerClient()
 
-  return unwrap(
-    await supabase
-      .from('announcements')
-      .select('*')
-      .order('created_at', { ascending: false }),
-    'getAnnouncements',
+  return (
+    unwrap(
+      await supabase
+        .from('announcements')
+        .select('*')
+        .order('created_at', { ascending: false }),
+      'getAnnouncements',
+    ) ?? []
   )
 }
