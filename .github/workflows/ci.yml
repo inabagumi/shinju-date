@@ -285,39 +285,20 @@ jobs:
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-26.04
-    needs: [lint, typecheck, build-msw, e2e, changes, database]
+    needs: [changes, test, lint, typecheck, build, build-msw, e2e, database]
     if: always()
     steps:
-      - name: Check lint results
-        if: needs.lint.result != 'success'
-        run: |
-          echo "Lint job failed"
-          exit 1
-
-      - name: Check typecheck results
-        if: needs.typecheck.result != 'success'
-        run: |
-          echo "Typecheck job failed"
-          exit 1
-
-      - name: Check MSW build results
-        if: needs.build-msw.result != 'success'
-        run: |
-          echo "MSW build job failed"
-          exit 1
-
-      - name: Check E2E results
-        if: needs.e2e.result != 'success'
-        run: |
-          echo "E2E job failed"
-          exit 1
-
       # The database job is skipped when the database does not change
-      - name: Check database results
-        if: needs.changes.result != 'success' || (needs.database.result != 'success' && needs.database.result != 'skipped')
+      - name: Check job results
+        env:
+          FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+          RESULTS: ${{ toJSON(needs.*.result) }}
         run: |
-          echo "Database job failed"
-          exit 1
+          echo "Job results: $RESULTS"
 
-      - name: All jobs passed
-        run: echo "All jobs passed successfully!"
+          if [ "$FAILED" = "true" ]; then
+            echo "Some jobs failed or were cancelled"
+            exit 1
+          fi
+
+          echo "All jobs passed successfully!"
