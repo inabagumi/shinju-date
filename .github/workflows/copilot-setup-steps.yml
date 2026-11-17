@@ -35,27 +35,41 @@ jobs:
       - name: Set Next.js Turbopack TLS environment variable
         run: echo 'NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1' >> $GITHUB_ENV
 
-      - name: Start Supabase services via Docker Compose
+      - name: Start Supabase
+        run: pnpm exec supabase start
+
+      - name: Start Redis
         run: docker compose up -d --wait
 
       - name: Set environment variables for Supabase and Upstash
         run: |
-          echo "NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8" >> $GITHUB_ENV
-          echo "SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg" >> $GITHUB_ENV
-          echo "UPSTASH_REDIS_REST_TOKEN=HQe-H5xQJO6ADYplIW-LYFZWRMGwpSjRfHneRw52aPI" >> $GITHUB_ENV
-          echo "UPSTASH_REDIS_REST_URL=http://localhost:8079" >> $GITHUB_ENV
+          # `supabase status -o env` prints the values as NAME="value" lines
+          status="$(pnpm exec supabase status -o env)"
+          eval "$(grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY)=' <<< "$status")"
 
-      - name: Reset Supabase database
+          # The Redis HTTP API of compose.yml accepts this token
+          redis_token="$(sed -n 's/^SRH_TOKEN=//p' config/dev-secrets.env)"
+
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=${API_URL:?}"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${ANON_KEY:?}"
+            echo "SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY:?}"
+            echo "UPSTASH_REDIS_REST_TOKEN=${redis_token:?}"
+            echo "UPSTASH_REDIS_REST_URL=http://localhost:8079"
+          } >> "$GITHUB_ENV"
+
+      - name: Verify Supabase and Redis
         run: |
-          # Try Supabase CLI first, fall back to psql-based migration import if it fails
-          if ! pnpm exec supabase db reset --db-url 'postgresql://supabase_admin:postgres@db:5432/postgres?sslmode=disable' --yes; then
-            echo "Supabase CLI reset failed, falling back to psql-based migration import..."
-            # In GitHub Actions, connect via localhost (not Docker network hostname)
-            export SUPABASE_DB_HOST=localhost
-            export SUPABASE_DB_PORT=54322
-            export SUPABASE_DB_NAME=postgres
-            export SUPABASE_DB_USER=supabase_admin
-            export SUPABASE_DB_PASS=postgres
-            ./scripts/apply-migrations.sh || echo "Warning: Migration import failed"
-          fi
+          # The migrations and the seed are applied: a seeded table has a row
+          curl --fail --silent --show-error \
+            -H "apikey: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}" \
+            "${NEXT_PUBLIC_SUPABASE_URL}/rest/v1/talents?select=id&limit=1" \
+            | jq --exit-status 'length > 0'
+
+          curl --fail --silent --show-error \
+            -X POST \
+            -H "Authorization: Bearer ${UPSTASH_REDIS_REST_TOKEN}" \
+            -H 'Content-Type: application/json' \
+            -d '["PING"]' \
+            "${UPSTASH_REDIS_REST_URL}" \
+            | jq --exit-status '.result == "PONG"'
