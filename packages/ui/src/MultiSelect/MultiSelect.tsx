@@ -4,6 +4,7 @@ import * as Checkbox from '@radix-ui/react-checkbox'
 import * as Popover from '@radix-ui/react-popover'
 import { Check, ChevronDown, Minus } from 'lucide-react'
 import type { ComponentPropsWithoutRef } from 'react'
+import { FIELD_FOCUS_RING } from '../focus.js'
 import { twMerge } from '../tw-merge.js'
 
 export interface MultiSelectOption {
@@ -65,7 +66,8 @@ export function MultiSelect({
       <Popover.Trigger asChild>
         <button
           className={twMerge(
-            'flex w-full items-center justify-between rounded-control border border-border bg-surface px-3 py-2 text-left text-foreground transition-colors hover:bg-muted focus:ring-2 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+            'flex w-full items-center justify-between rounded-control border border-border bg-surface px-3 py-2 text-left text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50',
+            FIELD_FOCUS_RING,
             className,
           )}
           type="button"

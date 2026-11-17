@@ -1,10 +1,14 @@
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentPropsWithRef } from 'react'
+import { FOCUS_RING } from '../focus.js'
 import { twMerge } from '../tw-merge.js'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center rounded-control font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50',
+  [
+    'inline-flex items-center justify-center rounded-control font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+    FOCUS_RING,
+  ],
   {
     defaultVariants: {
       size: 'md',
