@@ -140,9 +140,6 @@ describe('stats/snapshot route', () => {
         method: 'POST',
       })
 
-      // Skip CRON_SECRET check by not setting it
-      delete process.env['CRON_SECRET']
-
       await POST(request)
 
       // Verify that getSummaryStats was called with supabaseClient and targetDayEnd
@@ -167,8 +164,6 @@ describe('stats/snapshot route', () => {
       const request = new Request('http://localhost:3000/stats/snapshot', {
         method: 'POST',
       })
-
-      delete process.env['CRON_SECRET']
 
       await POST(request)
 

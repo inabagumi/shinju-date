@@ -1,13 +1,14 @@
 import type { default as DefaultDatabase } from '@shinju-date/database'
 import retryableFetch from '@shinju-date/retryable-fetch'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { serverEnv } from './env'
 
 export type TypedSupabaseClient<Database = DefaultDatabase> =
   SupabaseClient<Database>
 
 export function createSupabaseClient<Database = DefaultDatabase>(
-  url: string | undefined = process.env['NEXT_PUBLIC_SUPABASE_URL'],
-  key: string | undefined = process.env['SUPABASE_SERVICE_ROLE_KEY'],
+  url: string | undefined = serverEnv.NEXT_PUBLIC_SUPABASE_URL,
+  key: string | undefined = serverEnv.SUPABASE_SERVICE_ROLE_KEY,
   options?: NonNullable<Parameters<typeof createClient<Database>>[2]>,
 ): SupabaseClient<Database> {
   if (!url || !key) {

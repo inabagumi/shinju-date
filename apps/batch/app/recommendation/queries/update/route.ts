@@ -4,6 +4,7 @@ import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { formatDateKey, getMondayOfWeek } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { after, type NextRequest } from 'next/server'
+import { serverEnv } from '@/lib/env'
 import { recommendationQueriesUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
@@ -19,7 +20,7 @@ const WEIGHT_ALL_TIME = 1.0
 export const maxDuration = 120
 
 export async function POST(request: NextRequest) {
-  const cronSecure = process.env['CRON_SECRET']
+  const cronSecure = serverEnv.CRON_SECRET
   if (
     cronSecure &&
     !verifyCronRequest(request, {

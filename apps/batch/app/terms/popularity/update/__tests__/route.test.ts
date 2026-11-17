@@ -15,6 +15,10 @@ const mockRatelimit = {
 
 const mockUpdateTermPopularity = vi.fn()
 
+const mockServerEnv: { CRON_SECRET: string | undefined } = {
+  CRON_SECRET: undefined,
+}
+
 // Mock modules
 vi.mock('@/lib/supabase', () => ({
   supabaseClient: mockSupabaseClient,
@@ -22,6 +26,10 @@ vi.mock('@/lib/supabase', () => ({
 
 vi.mock('@/lib/redis', () => ({
   redisClient: mockRedisClient,
+}))
+
+vi.mock('@/lib/env', () => ({
+  serverEnv: mockServerEnv,
 }))
 
 vi.mock('@/lib/ratelimit', () => ({
@@ -63,6 +71,7 @@ describe('POST /terms/popularity/update', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
+    mockServerEnv.CRON_SECRET = undefined
   })
 
   it('should successfully update term popularity', async () => {
@@ -135,8 +144,7 @@ describe('POST /terms/popularity/update', () => {
 
   it('should verify CRON_SECRET when provided', async () => {
     // Setup
-    const originalEnv = process.env['CRON_SECRET']
-    process.env['CRON_SECRET'] = 'test-secret'
+    mockServerEnv.CRON_SECRET = 'test-secret'
 
     mockRatelimit.limit.mockResolvedValue({ success: true })
 
@@ -155,8 +163,5 @@ describe('POST /terms/popularity/update', () => {
     // Verify
     expect(response.status).toBe(401)
     expect(mockUpdateTermPopularity).not.toHaveBeenCalled()
-
-    // Cleanup
-    process.env['CRON_SECRET'] = originalEnv
   })
 })

@@ -4,6 +4,7 @@ import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { after } from 'next/server'
+import { serverEnv } from '@/lib/env'
 import { videosCascadeFromTalents as ratelimit } from '@/lib/ratelimit'
 import { supabaseClient } from '@/lib/supabase'
 import {
@@ -17,7 +18,7 @@ const CRON_SCHEDULE = '*/5 * * * *'
 export const maxDuration = 60
 
 export async function POST(request: Request): Promise<Response> {
-  const cronSecure = process.env['CRON_SECRET']
+  const cronSecure = serverEnv.CRON_SECRET
   if (
     cronSecure &&
     !verifyCronRequest(request, {

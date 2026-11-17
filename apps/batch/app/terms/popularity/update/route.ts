@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/nextjs'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { after } from 'next/server'
+import { serverEnv } from '@/lib/env'
 import { termsPopularityUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
@@ -12,7 +13,7 @@ const MONITOR_SLUG = '/terms/popularity/update'
 export const maxDuration = 60
 
 export async function POST(request: Request): Promise<Response> {
-  const cronSecure = process.env['CRON_SECRET']
+  const cronSecure = serverEnv.CRON_SECRET
   if (
     cronSecure &&
     !verifyCronRequest(request, {
