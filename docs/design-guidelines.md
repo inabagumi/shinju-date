@@ -207,12 +207,16 @@ const example = (
 | -------------------------------------------- | ---------------------------------------------------------------- |
 | 一覧の行・メニュー・ボタン                   | トースト                                                         |
 | 確認ダイアログ（`ConfirmDialog`）            | 失敗はダイアログの中に出す。成功したら閉じて、トーストで知らせる |
+| 作成・編集のダイアログ（`FormDialog`）       | 失敗はダイアログの中の、入力欄の近くに出す。成功したら閉じる     |
 | フォームの送信（`useActionState`）           | 入力欄の近くに出す                                               |
 | 画面の状態（削除済み・引退・読み込みの失敗） | `Alert`（[状態の知らせ](#状態の知らせalert)）                    |
 
 - フォームを使わずにアクションを呼ぶときは、`apps/admin/lib/use-server-action.ts` の `useServerAction` を使う。`useTransition` と try/catch を部品ごとに書かない
   - 成功なら `successText`、失敗なら `result.error`、`result.warnings` があれば1件ずつ警告のトーストを出す。例外のときは「処理に失敗しました。」を出す
   - 実行中の状態は `isPending` で受け取り、ボタンを無効にする
+- 作成と編集のダイアログは、`apps/admin/components/form-dialog.tsx` の `FormDialog` に入力欄を渡して作る。`Dialog` と `Form` を部品ごとに組み立てない
+  - アクションが `{ success: true }` を返したときだけ閉じる。検証のエラー（`errors`）と、項目に結び付かないエラー（`error`）は、ダイアログの中に出して開いたままにする
+  - 開くたびに、前回の入力とエラーを消す。送信中は、Escape と外側のクリックで閉じない
 - トーストは、ルートのレイアウトに置いた `ActionToastProvider` が1か所で描く。部品から直接トーストを出すときは `useActionToast()` の `showToast` を使い、`<Toast>` を部品ごとに置かない
 - トーストの色は、`success`（成功）、`warning`（成功したが一部に注意が要る）、`danger`（失敗）の3つ
 - 成功のあとに `router.refresh()` を呼ばない。表示の更新は、アクションの `revalidatePath` に任せる
