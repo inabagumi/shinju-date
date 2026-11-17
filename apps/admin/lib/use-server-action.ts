@@ -18,16 +18,32 @@ export interface ServerActionResult {
   warnings?: readonly string[] | undefined
 }
 
+/**
+ * 成功したときの戻り値。`ActionResult` のようなユニオンなら、成功の型だけが残る
+ */
+export type SuccessfulResult<TResult extends ServerActionResult> = TResult & {
+  success: true
+}
+
+function isSuccessful<TResult extends ServerActionResult>(
+  result: TResult,
+): result is SuccessfulResult<TResult> {
+  return result.success
+}
+
 export interface UseServerActionOptions<TResult extends ServerActionResult> {
   /**
    * 成功したときにトーストで出す文。戻り値から文を作る関数も渡せる。
    * 省略したときと、関数が `undefined` を返したときは、成功のトーストを出さない
    */
-  successText?: string | ((result: TResult) => string | undefined) | undefined
+  successText?:
+    | string
+    | ((result: SuccessfulResult<TResult>) => string | undefined)
+    | undefined
   /** 失敗したが `error` が空のときに出す文。省略時は「処理に失敗しました。」 */
   errorText?: string | undefined
   /** 成功したときに、トーストを出したあとで呼ばれる */
-  onSuccess?: ((result: TResult) => void) | undefined
+  onSuccess?: ((result: SuccessfulResult<TResult>) => void) | undefined
 }
 
 export interface UseServerActionReturn<
@@ -67,7 +83,7 @@ export function useServerAction<
   const { showToast } = useActionToast()
 
   const notify = (result: TResult) => {
-    if (result.success) {
+    if (isSuccessful(result)) {
       const text =
         typeof successText === 'function' ? successText(result) : successText
 
@@ -82,7 +98,7 @@ export function useServerAction<
       showToast('warning', warning)
     }
 
-    if (result.success) {
+    if (isSuccessful(result)) {
       onSuccess?.(result)
     }
   }
