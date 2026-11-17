@@ -1,7 +1,7 @@
-import type { default as Database, Tables } from '@shinju-date/database'
+import type { default as Database, Enums, Tables } from '@shinju-date/database'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
-export type AuditAction = Database['public']['Enums']['audit_action']
+export type AuditAction = Enums<'audit_action'>
 
 export type AuditDetails<T = unknown> = {
   changes?: {
