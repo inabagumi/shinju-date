@@ -1,24 +1,11 @@
 import { twMerge } from '@shinju-date/ui'
 import type { ProfileImage, Video } from '@/lib/fetchers'
+import { findFirstNonBlank } from '@/lib/talent-links'
 import Avatar from './avatar'
 
 export interface VideoCreatorInfo {
   name: string
   profileImage: ProfileImage | null
-}
-
-function findFirstNonBlank(
-  ...values: (string | null | undefined)[]
-): string | null {
-  for (const value of values) {
-    const trimmed = value?.trim()
-
-    if (trimmed) {
-      return trimmed
-    }
-  }
-
-  return null
 }
 
 /**

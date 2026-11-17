@@ -11,7 +11,8 @@ export interface TalentLink {
   label: string
 }
 
-function findFirstNonBlank(
+/** The first value that is not blank, trimmed, or `null` without any */
+export function findFirstNonBlank(
   ...values: (string | null | undefined)[]
 ): string | null {
   for (const value of values) {
