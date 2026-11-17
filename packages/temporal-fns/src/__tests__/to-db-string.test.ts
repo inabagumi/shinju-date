@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import toDBString from '../to-db-string.js'
+import { toDBString } from '../to-db-string.js'
 
 describe('toDBString', () => {
   it('Temporal.Instant with fractional seconds should be truncated to the second', () => {
