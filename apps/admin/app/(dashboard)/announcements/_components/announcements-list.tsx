@@ -12,19 +12,11 @@ import {
   TableRow,
 } from '@shinju-date/ui'
 import { Megaphone } from 'lucide-react'
-import ReactMarkdown from 'react-markdown'
-import rehypeExternalLinks from 'rehype-external-links'
-import remarkGfm from 'remark-gfm'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { Markdown } from '@/components/markdown'
 import { deleteAnnouncementAction } from '../_actions'
 import { AnnouncementModal } from './announcement-modal'
 import { LevelBadge, StatusBadge } from './badges'
-
-/**
- * Markdown の本文。`prose` の色を両モードのセマンティックカラーに合わせる。
- */
-const proseClassName =
-  'prose prose-sm max-w-text text-foreground [--tw-prose-body:var(--color-foreground)] [--tw-prose-bold:var(--color-foreground)] [--tw-prose-bullets:var(--text-color-muted)] [--tw-prose-code:var(--color-foreground)] [--tw-prose-counters:var(--text-color-muted)] [--tw-prose-headings:var(--color-foreground)] [--tw-prose-links:var(--color-accent)]'
 
 /** 削除の確認文に入れるため、本文を50文字までに切り詰める */
 function truncateMessage(message: string): string {
@@ -39,22 +31,7 @@ function AnnouncementRow({
   return (
     <TableRow>
       <TableCell className="min-w-64 whitespace-normal">
-        <div className={proseClassName}>
-          <ReactMarkdown
-            rehypePlugins={[
-              [
-                rehypeExternalLinks,
-                {
-                  rel: ['nofollow', 'noopener', 'noreferrer'],
-                  target: '_blank',
-                },
-              ],
-            ]}
-            remarkPlugins={[remarkGfm]}
-          >
-            {announcement.message}
-          </ReactMarkdown>
-        </div>
+        <Markdown size="sm">{announcement.message}</Markdown>
       </TableCell>
       <TableCell>
         <div className="flex flex-wrap gap-2">
