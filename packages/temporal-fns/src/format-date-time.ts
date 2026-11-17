@@ -1,5 +1,3 @@
-import parseISO8601 from './parse-iso8601.js'
-
 // These helpers build strings with `padStart` instead of `toLocaleString`
 // because the output of `hour: '2-digit'` differs between Temporal
 // implementations (the native one returns `1:22`, while temporal-polyfill
@@ -86,7 +84,7 @@ export function formatDateTimeFromISO(
   options: FormatDateTimeOptions = {},
 ): string {
   const { includeSeconds = true } = options
-  const instant = parseISO8601(isoString)
+  const instant = Temporal.Instant.from(isoString)
   // Use JST timezone
   // biome-ignore lint/plugin/no-hardcoded-time-zone: TIME_ZONE を使うよう #7100 で直す
   const zonedDateTime = instant.toZonedDateTimeISO('Asia/Tokyo')
