@@ -6,6 +6,7 @@ import PageVisitTracker from '@/components/page-visit-tracker'
 import SkipLink from '@/components/skip-link'
 import { TimerProvider } from '@/components/timer'
 import { publicEnv } from '@/lib/env'
+import { fetchCurrentTime } from '@/lib/fetchers'
 import { SITE_THEME_COLOR, SITE_NAME as siteName } from '@/lib/site'
 import { AnnouncementBannerWrapper } from './_components/announcement-banner-wrapper'
 import { QueryProvider } from './_components/query-client-provider'
@@ -29,7 +30,9 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 }
 
-export default function RootLayout({ children }: LayoutProps<'/'>) {
+export default async function RootLayout({ children }: LayoutProps<'/'>) {
+  const initialNow = await fetchCurrentTime()
+
   return (
     <html className={lato.variable} lang="ja">
       <head prefix="og: http://ogp.me/ns#">
@@ -53,7 +56,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             </Suspense>
 
             <div className="safe-area-px pb-20 md:pb-40">
-              <TimerProvider>{children}</TimerProvider>
+              <TimerProvider initialNow={initialNow}>{children}</TimerProvider>
             </div>
 
             <AnnouncementBannerWrapper />
