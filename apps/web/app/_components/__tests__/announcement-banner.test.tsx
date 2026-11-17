@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { queryKeys } from '@/lib/query-keys'
 import { AnnouncementBanner } from '../announcement-banner'
 import type { RenderedAnnouncement } from '../announcement-message'
 
@@ -73,7 +74,9 @@ describe('AnnouncementBanner', () => {
       '古いお知らせ',
     )
 
-    await act(() => queryClient.refetchQueries({ queryKey: ['announcement'] }))
+    await act(() =>
+      queryClient.refetchQueries({ queryKey: queryKeys.announcement() }),
+    )
 
     await waitFor(() => {
       expect(screen.getByTestId('announcement-banner')).toHaveTextContent(
@@ -92,7 +95,9 @@ describe('AnnouncementBanner', () => {
 
     expect(screen.getByTestId('announcement-banner')).toBeInTheDocument()
 
-    await act(() => queryClient.refetchQueries({ queryKey: ['announcement'] }))
+    await act(() =>
+      queryClient.refetchQueries({ queryKey: queryKeys.announcement() }),
+    )
 
     await waitFor(() => {
       expect(

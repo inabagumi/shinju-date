@@ -3,6 +3,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { describe, expect, test, vi } from 'vitest'
 import type { Video } from '@/lib/fetchers'
+import { queryKeys } from '@/lib/query-keys'
 import {
   type DashboardVideos,
   LiveSection,
@@ -102,7 +103,7 @@ describe('LiveSection', () => {
 
     act(() => {
       queryClient.setQueryData(
-        ['dashboard-videos'],
+        queryKeys.dashboardVideos(),
         createDashboardVideos({ live: 2 }),
       )
     })
@@ -110,7 +111,10 @@ describe('LiveSection', () => {
     expect(await screen.findByText('2件')).toBeInTheDocument()
 
     act(() => {
-      queryClient.setQueryData(['dashboard-videos'], createDashboardVideos())
+      queryClient.setQueryData(
+        queryKeys.dashboardVideos(),
+        createDashboardVideos(),
+      )
     })
 
     await waitFor(() => {
