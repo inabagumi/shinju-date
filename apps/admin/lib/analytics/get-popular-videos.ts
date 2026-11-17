@@ -4,6 +4,7 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import { isNonNullable } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import type { QueryData } from '@supabase/supabase-js'
+import { cacheLife } from 'next/cache'
 import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
@@ -42,14 +43,18 @@ export interface PopularVideo extends PopularVideoRow {
 
 export async function getPopularVideos(
   limit: number,
-  startDate: Temporal.PlainDate,
-  endDate?: Temporal.PlainDate,
+  startDate: string,
+  endDate?: string,
 ): Promise<PopularVideo[]> {
-  const videoScores = await _getPopularItemsFromRedis<string>(
+  'use cache: private'
+
+  cacheLife('minutes')
+
+  const videoScores = await _getPopularItemsFromRedis(
     REDIS_KEYS.CLICK_VIDEO_PREFIX,
     limit,
-    startDate,
-    endDate,
+    Temporal.PlainDate.from(startDate),
+    endDate ? Temporal.PlainDate.from(endDate) : undefined,
   )
 
   if (videoScores.length === 0) {

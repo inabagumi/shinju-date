@@ -1,34 +1,39 @@
 import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
-import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
-import { ManagementTableSkeleton } from '@/components/skeletons'
-import { QueriesList } from './_components/queries-list'
+import { QueriesList, QueriesListSkeleton } from './_components/queries-list'
 import getRecommendedQueries from './_lib/get-recommended-queries'
+import { recommendedQueriesSearchParamsSchema } from './_lib/search-params-schema'
 
 export const metadata: Metadata = {
   title: 'おすすめクエリ管理',
 }
 
-async function QueriesListData() {
-  'use cache: private'
+async function QueriesListData({
+  searchParams,
+}: Pick<PageProps<'/recommended-queries'>, 'searchParams'>) {
+  const [{ manual, auto }, rawParams] = await Promise.all([
+    getRecommendedQueries(),
+    searchParams,
+  ])
+  const { search } = recommendedQueriesSearchParamsSchema.parse(rawParams)
 
-  cacheLife('minutes')
-
-  const { manual, auto } = await getRecommendedQueries()
-
-  return <QueriesList autoQueries={auto} manualQueries={manual} />
+  return (
+    <QueriesList autoQueries={auto} manualQueries={manual} search={search} />
+  )
 }
 
-export default function RecommendedQueriesPage() {
+export default function RecommendedQueriesPage({
+  searchParams,
+}: PageProps<'/recommended-queries'>) {
   return (
     <div>
       {/* Static header */}
       <PageHeader title="おすすめクエリ管理" />
 
       {/* Dynamic content with Suspense */}
-      <Suspense fallback={<ManagementTableSkeleton rows={8} />}>
-        <QueriesListData />
+      <Suspense fallback={<QueriesListSkeleton />}>
+        <QueriesListData searchParams={searchParams} />
       </Suspense>
     </div>
   )

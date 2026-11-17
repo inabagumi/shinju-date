@@ -1,5 +1,6 @@
-import { cacheLife } from 'next/cache'
-import { Panel } from '@/components/panel'
+import { Skeleton } from '@shinju-date/ui'
+import { Panel, PanelSkeleton } from '@/components/panel'
+import { StatTileSkeleton } from '@/components/stat-tile-skeleton'
 import { getHistoricalStats } from '../_lib/get-historical-stats'
 import { getSummaryStats } from '../_lib/get-summary-stats'
 import {
@@ -15,10 +16,6 @@ import { VideoStatsChartUI } from './video-stats-chart-ui'
  * This is an async Server Component that fetches its own data
  */
 export async function VideoSummaryWidget() {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const [stats, historicalStats] = await Promise.all([
     getSummaryStats(),
     getHistoricalStats(7),
@@ -68,15 +65,31 @@ export async function VideoSummaryWidget() {
   )
 }
 
+/** 読み込み中の `VideoSummaryWidget`。4つのタイルと、7日間のグラフの高さを確保する */
+export function VideoSummaryWidgetSkeleton() {
+  return (
+    <PanelSkeleton title="動画サマリー">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatTileSkeleton change />
+        <StatTileSkeleton change />
+        <StatTileSkeleton change />
+        <StatTileSkeleton change />
+      </div>
+      <div className="mt-6">
+        <h3 className="mb-3 text-body leading-normal font-semibold">
+          動画数推移（7日間）
+        </h3>
+        <Skeleton className="h-80 w-full rounded-container" />
+      </div>
+    </PanelSkeleton>
+  )
+}
+
 /**
  * ContentSummaryWidget - Displays content statistics (terms and talents)
  * This is an async Server Component that fetches its own data
  */
 export async function ContentSummaryWidget() {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const stats = await getSummaryStats()
 
   return (
@@ -96,5 +109,17 @@ export async function ContentSummaryWidget() {
         />
       </div>
     </Panel>
+  )
+}
+
+/** 読み込み中の `ContentSummaryWidget` */
+export function ContentSummaryWidgetSkeleton() {
+  return (
+    <PanelSkeleton title="コンテンツサマリー">
+      <div className="grid grid-cols-2 gap-4">
+        <StatTileSkeleton change />
+        <StatTileSkeleton change />
+      </div>
+    </PanelSkeleton>
   )
 }

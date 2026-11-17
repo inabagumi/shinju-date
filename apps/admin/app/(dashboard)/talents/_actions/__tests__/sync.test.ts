@@ -1,8 +1,6 @@
-import { getUsers } from '@shinju-date/twitch-api-client'
-import { getChannels } from '@shinju-date/youtube-api-client'
-import { describe, expect, it, vi } from 'vitest'
-import { syncTwitchUserIconSafely } from '@/lib/twitch-user-icon'
-import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
+import { CACHE_TAGS } from '@shinju-date/constants'
+import type { SyncAccountResult } from '@shinju-date/scraper'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { setupActionTest } from '@/test/action-harness'
 import { postgresError } from '@/test/supabase'
 import {
@@ -11,416 +9,155 @@ import {
   syncTalentWithYouTube,
 } from '../sync'
 
+const scraper = vi.hoisted(() => ({
+  createScraper: vi.fn(),
+  twitch: vi.fn(),
+  youtube: vi.fn(),
+}))
+
+vi.mock('@/lib/scraper', () => ({ createScraper: scraper.createScraper }))
+
 const test = setupActionTest()
 const { supabase } = test
 
-vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
-  Temporal.Instant.from('2024-11-24T17:00:00Z'),
-)
+const now = Temporal.Instant.from('2024-11-24T17:00:00Z')
 
-vi.mock('@shinju-date/youtube-api-client', () => ({
-  getChannels: vi.fn(),
-}))
-
-vi.mock('@shinju-date/twitch-api-client', () => ({
-  getUsers: vi.fn(),
-}))
-
-// アイコンの同期は service role を使うため、ここではモックして呼び出し内容だけを確認する
-vi.mock('@/lib/youtube-channel-icon', () => ({
-  hasProfileImageChanged: (result: string | null) =>
-    result !== null && result !== 'unchanged',
-  syncYouTubeChannelIconSafely: vi.fn().mockResolvedValue('unchanged'),
-}))
-
-vi.mock('@/lib/twitch-user-icon', () => ({
-  syncTwitchUserIconSafely: vi.fn().mockResolvedValue('unchanged'),
-}))
+vi.spyOn(Temporal.Now, 'instant').mockReturnValue(now)
 
 const talentId = '123e4567-e89b-12d3-a456-426614174000'
-const channelRowId = 'channel-row-uuid'
-const channelRowId2 = 'channel-row-uuid-2'
-const youtubeChannelId = 'UCabcdefghijklmnopqrstuv'
-const youtubeChannelId2 = 'UCabcdefghijklmnopqrstuw'
-const twitchUserRowId = 'twitch-user-row-uuid'
-const twitchUserId = '141981764'
-
-// supabase-js removes the whitespace from `select()` before sending it
-const PROFILE_IMAGES_SELECT = 'profile_images(id,path,etag,source_url)'
 
 const YOUTUBE_CHANNEL_NOT_FOUND_ERROR =
   'YouTubeでチャンネルが見つかりませんでした。チャンネルIDが正しいか確認してください。'
 const TWITCH_USER_NOT_FOUND_ERROR =
   'Twitchでユーザーが見つかりませんでした。ユーザーIDが正しいか確認してください。'
 
-interface SavedProfileImage {
-  etag: string | null
-  id: string
-  path: string
-  source_url: string
+const revalidated = {
+  paths: [`/talents/${talentId}`, '/talents'],
+  tags: [[CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS]],
 }
 
-interface SavedChannel {
-  id: string
-  name: string | null
-  profile_images: SavedProfileImage | null
-  youtube_channel_id: string
-  youtube_handle: string | null
+/** A channel whose name changed. */
+const updatedChannel: SyncAccountResult = {
+  accountId: 'channel-row-1',
+  changes: { after: { name: 'New Name' }, before: { name: 'Old Name' } },
+  iconUpdated: false,
+  name: 'New Name',
+  status: 'updated',
 }
 
-interface SavedUser {
-  id: string
-  name: string | null
-  profile_images: SavedProfileImage | null
-  twitch_login_name: string | null
-  twitch_user_id: string
+/** A user whose login changed. */
+const updatedUser: SyncAccountResult = {
+  accountId: 'user-row-1',
+  changes: {
+    after: { twitch_login_name: 'newlogin' },
+    before: { twitch_login_name: 'oldlogin' },
+  },
+  iconUpdated: false,
+  name: 'User',
+  status: 'updated',
 }
 
-/** A `youtube_channels` row embedded in the talent. */
-function savedChannel(overrides: Partial<SavedChannel> = {}): SavedChannel {
+function account(
+  status: SyncAccountResult['status'],
+  overrides: Partial<SyncAccountResult> = {},
+): SyncAccountResult {
   return {
-    id: channelRowId,
-    name: null,
-    profile_images: null,
-    youtube_channel_id: youtubeChannelId,
-    youtube_handle: null,
+    accountId: 'account-row',
+    iconUpdated: false,
+    name: 'Name',
+    status,
     ...overrides,
   }
 }
 
-/** A `twitch_users` row embedded in the talent. */
-function savedUser(overrides: Partial<SavedUser> = {}): SavedUser {
-  return {
-    id: twitchUserRowId,
-    name: 'Old Name',
-    profile_images: null,
-    twitch_login_name: 'oldlogin',
-    twitch_user_id: twitchUserId,
-    ...overrides,
+/** Makes the scrapers return these results for the talent. */
+function syncTo({
+  twitch = [],
+  youtube = [],
+}: {
+  twitch?: SyncAccountResult[] | Error
+  youtube?: SyncAccountResult[] | Error
+}): void {
+  for (const [mock, results] of [
+    [scraper.youtube, youtube],
+    [scraper.twitch, twitch],
+  ] as const) {
+    if (results instanceof Error) {
+      mock.mockRejectedValue(results)
+    } else {
+      mock.mockResolvedValue(results)
+    }
   }
-}
-
-interface TalentAccounts {
-  twitch_users?: SavedUser[]
-  youtube_channels?: SavedChannel[]
-}
-
-/** Answers the talent query with these linked accounts. */
-function answerTalent(accounts: TalentAccounts): void {
-  supabase.on('select', 'talents', { id: talentId, ...accounts })
-}
-
-interface YouTubeThumbnail {
-  height: number
-  url: string
-  width: number
-}
-
-interface YouTubeChannelOptions {
-  customUrl?: string
-  id?: string
-  thumbnails?: Record<string, YouTubeThumbnail>
-  title?: string
-}
-
-function youtubeChannel({
-  customUrl,
-  id = youtubeChannelId,
-  thumbnails,
-  title,
-}: YouTubeChannelOptions) {
-  return {
-    contentDetails: {
-      relatedPlaylists: { uploads: `UU${id.slice(2)}` },
-    },
-    id,
-    snippet: { customUrl, thumbnails, title },
-  }
-}
-
-function helixUser(
-  displayName: string,
-  login: string,
-  profileImageUrl = '',
-): Record<string, string> {
-  return {
-    broadcaster_type: '',
-    created_at: '2011-08-08T20:45:44Z',
-    description: '',
-    display_name: displayName,
-    id: twitchUserId,
-    login,
-    offline_image_url: '',
-    profile_image_url: profileImageUrl,
-    type: '',
-  }
-}
-
-/** Makes the YouTube API return these channels. */
-function answerChannels(...channels: unknown[]): void {
-  vi.mocked(getChannels).mockReturnValue(
-    (async function* () {
-      yield* channels
-    })() as never,
-  )
-}
-
-/** Makes the Helix API return these users. */
-function answerUsers(...users: unknown[]): void {
-  vi.mocked(getUsers).mockReturnValue(
-    (async function* () {
-      yield* users
-    })() as never,
-  )
-}
-
-function talentSelect(): string | undefined {
-  return supabase.calls('select', 'talents')[0]?.query['select']
 }
 
 function talentUpdates() {
   return supabase.calls('update', 'talents')
 }
 
+beforeEach(() => {
+  scraper.createScraper.mockImplementation(
+    (platform: 'twitch' | 'youtube') => ({
+      syncTalentAccounts: scraper[platform],
+    }),
+  )
+  supabase.on('select', 'talents', [{ id: talentId, name: 'Talent Name' }])
+})
+
 describe('syncTalentWithYouTube', () => {
-  it('should update channel name and handle from YouTube snippet', async () => {
-    answerTalent({
-      youtube_channels: [
-        savedChannel({
-          name: 'Old Channel Name',
-          youtube_handle: '@oldhandle',
-        }),
-      ],
-    })
-    answerChannels(
-      youtubeChannel({ customUrl: '@newhandle', title: 'New Channel Name' }),
-    )
-
-    const result = await syncTalentWithYouTube(talentId)
-
-    expect(result).toEqual({ success: true })
-    expect(getChannels).toHaveBeenCalledWith({ ids: [youtubeChannelId] })
-    const upserts = supabase.calls('upsert', 'youtube_channels')
-    expect(upserts).toHaveLength(1)
-    expect(upserts[0]?.body).toEqual({
-      id: channelRowId,
-      name: 'New Channel Name',
-      talent_id: talentId,
-      youtube_channel_id: youtubeChannelId,
-      youtube_handle: '@newhandle',
-    })
-    expect(upserts[0]?.query['on_conflict']).toBe('id')
-    // Talent name is not updated; only updated_at is touched
-    expect(talentUpdates()[0]?.body).toEqual({
-      updated_at: '2024-11-24T17:00:00Z',
-    })
-    test.expectAuditLog('CHANNEL_SYNC', 'channels', talentId, {
-      channels: [
-        {
-          after: {
-            name: 'New Channel Name',
-            youtube_handle: '@newhandle',
-          },
-          before: {
-            name: 'Old Channel Name',
-            youtube_handle: '@oldhandle',
-          },
-          youtube_channel_id: youtubeChannelId,
-        },
-      ],
-    })
-    test.expectRevalidated({
-      paths: [`/talents/${talentId}`, '/talents'],
-      tags: [['talents', 'videos']],
-    })
-  })
-
-  it('should select the saved icon of each channel', async () => {
-    answerTalent({ youtube_channels: [] })
-    answerChannels()
+  it('syncs the channels of a talent that is not deleted with the YouTube scraper', async () => {
+    syncTo({ youtube: [account('unchanged')] })
 
     await syncTalentWithYouTube(talentId)
 
-    expect(talentSelect()).toEqual(
-      expect.stringContaining(PROFILE_IMAGES_SELECT),
-    )
+    expect(scraper.createScraper).toHaveBeenCalledWith('youtube')
+    expect(scraper.youtube).toHaveBeenCalledWith(talentId, now)
+    expect(scraper.twitch).not.toHaveBeenCalled()
+    expect(supabase.calls('select', 'talents')[0]?.query).toMatchObject({
+      deleted_at: 'is.null',
+      id: `eq.${talentId}`,
+    })
   })
 
-  it('should record a changed icon even when name and handle are unchanged', async () => {
-    const channel = savedChannel({
-      name: 'Same Name',
-      youtube_handle: '@same',
-    })
-    const apiChannel = youtubeChannel({
-      customUrl: '@same',
-      thumbnails: {
-        high: { height: 800, url: 'https://yt3.ggpht.com/a', width: 800 },
-      },
-      title: 'Same Name',
-    })
-    answerTalent({ youtube_channels: [channel] })
-    answerChannels(apiChannel)
-    vi.mocked(syncYouTubeChannelIconSafely).mockResolvedValueOnce('created')
+  it('touches the talent, records the changes and revalidates when a channel was updated', async () => {
+    syncTo({ youtube: [updatedChannel, account('unchanged')] })
 
     const result = await syncTalentWithYouTube(talentId)
 
     expect(result).toEqual({ success: true })
-    expect(syncYouTubeChannelIconSafely).toHaveBeenCalledWith(
-      apiChannel,
-      channel,
-    )
-    expect(talentUpdates()).not.toHaveLength(0)
-    test.expectAuditLog('CHANNEL_SYNC', 'channels', talentId, {
-      channels: [
+    expect(talentUpdates()[0]?.body).toEqual({
+      updated_at: '2024-11-24T17:00:00Z',
+    })
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
+      accounts: [
         {
-          after: { name: 'Same Name', youtube_handle: '@same' },
-          before: { name: 'Same Name', youtube_handle: '@same' },
-          profile_image: 'created',
-          youtube_channel_id: youtubeChannelId,
+          changes: updatedChannel.changes,
+          id: 'channel-row-1',
+          name: 'New Name',
         },
       ],
+      entityName: 'Talent Name',
+      platform: 'youtube',
     })
+    test.expectRevalidated(revalidated)
   })
 
-  it('should still sync name and handle when the icon cannot be synced', async () => {
-    answerTalent({
-      youtube_channels: [
-        savedChannel({ name: 'Old Name', youtube_handle: '@old' }),
-      ],
+  it('records a changed icon even when the name did not change', async () => {
+    syncTo({
+      youtube: [account('updated', { accountId: 'row', iconUpdated: true })],
     })
-    answerChannels(youtubeChannel({ customUrl: '@new', title: 'New Name' }))
-    // 失敗時はヘルパーがログに記録して null を返す
-    vi.mocked(syncYouTubeChannelIconSafely).mockResolvedValueOnce(null)
 
     const result = await syncTalentWithYouTube(talentId)
 
     expect(result).toEqual({ success: true })
-    expect(supabase.calls('upsert', 'youtube_channels')).not.toHaveLength(0)
-    test.expectAuditLog('CHANNEL_SYNC', 'channels', talentId, {
-      channels: [
-        {
-          after: { name: 'New Name', youtube_handle: '@new' },
-          before: { name: 'Old Name', youtube_handle: '@old' },
-          youtube_channel_id: youtubeChannelId,
-        },
-      ],
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
+      accounts: [{ iconUpdated: true, id: 'row', name: 'Name' }],
+      entityName: 'Talent Name',
+      platform: 'youtube',
     })
   })
 
-  it('should sync all linked YouTube channels', async () => {
-    answerTalent({
-      youtube_channels: [
-        savedChannel({ name: 'Channel A', youtube_handle: '@channela' }),
-        savedChannel({
-          id: channelRowId2,
-          youtube_channel_id: youtubeChannelId2,
-        }),
-      ],
-    })
-    answerChannels(
-      youtubeChannel({
-        customUrl: '@channela-updated',
-        title: 'Channel A Updated',
-      }),
-      youtubeChannel({
-        customUrl: '@channelb',
-        id: youtubeChannelId2,
-        title: 'Channel B',
-      }),
-    )
-
-    const result = await syncTalentWithYouTube(talentId)
-
-    expect(result).toEqual({ success: true })
-    expect(getChannels).toHaveBeenCalledWith({
-      ids: [youtubeChannelId, youtubeChannelId2],
-    })
-    const upserts = supabase.calls('upsert', 'youtube_channels')
-    expect(upserts).toHaveLength(2)
-    expect(upserts.map((request) => request.body)).toEqual([
-      {
-        id: channelRowId,
-        name: 'Channel A Updated',
-        talent_id: talentId,
-        youtube_channel_id: youtubeChannelId,
-        youtube_handle: '@channela-updated',
-      },
-      {
-        id: channelRowId2,
-        name: 'Channel B',
-        talent_id: talentId,
-        youtube_channel_id: youtubeChannelId2,
-        youtube_handle: '@channelb',
-      },
-    ])
-    expect(upserts.map((request) => request.query['on_conflict'])).toEqual([
-      'id',
-      'id',
-    ])
-    test.expectAuditLog('CHANNEL_SYNC', 'channels', talentId, {
-      channels: [
-        {
-          after: {
-            name: 'Channel A Updated',
-            youtube_handle: '@channela-updated',
-          },
-          before: {
-            name: 'Channel A',
-            youtube_handle: '@channela',
-          },
-          youtube_channel_id: youtubeChannelId,
-        },
-        {
-          after: {
-            name: 'Channel B',
-            youtube_handle: '@channelb',
-          },
-          before: {
-            name: null,
-            youtube_handle: null,
-          },
-          youtube_channel_id: youtubeChannelId2,
-        },
-      ],
-    })
-  })
-
-  it('should update found channels when some are missing on YouTube', async () => {
-    answerTalent({
-      youtube_channels: [
-        savedChannel({ name: 'Channel A', youtube_handle: '@channela' }),
-        savedChannel({
-          id: channelRowId2,
-          name: 'Missing Channel',
-          youtube_channel_id: youtubeChannelId2,
-          youtube_handle: '@missing',
-        }),
-      ],
-    })
-    answerChannels(
-      youtubeChannel({ customUrl: '@channela-new', title: 'Channel A New' }),
-    )
-
-    const result = await syncTalentWithYouTube(talentId)
-
-    expect(result).toEqual({ success: true })
-    expect(supabase.calls('upsert', 'youtube_channels')).toHaveLength(1)
-    expect(test.logger.warn).toHaveBeenCalledWith(
-      'YouTubeでチャンネルが見つかりませんでした',
-      {
-        talentId,
-        youtubeChannelId: youtubeChannelId2,
-      },
-    )
-  })
-
-  it('should return already up to date when channel data is unchanged', async () => {
-    answerTalent({
-      youtube_channels: [
-        savedChannel({ name: 'Same Name', youtube_handle: '@same' }),
-      ],
-    })
-    answerChannels(youtubeChannel({ customUrl: '@same', title: 'Same Name' }))
+  it('reports up to date without touching anything when no channel changed', async () => {
+    syncTo({ youtube: [account('unchanged'), account('not-found')] })
 
     const result = await syncTalentWithYouTube(talentId)
 
@@ -429,325 +166,182 @@ describe('syncTalentWithYouTube', () => {
       success: true,
       unchanged: true,
     })
-    // Still upserts (idempotent write) but does not touch talent or audit
-    expect(supabase.calls('upsert', 'youtube_channels')).not.toHaveLength(0)
     expect(talentUpdates()).toHaveLength(0)
     test.expectNoAuditLog()
+    test.expectNotRevalidated()
   })
 
-  it('should return channel not found when YouTube API returns no channels', async () => {
-    answerTalent({ youtube_channels: [savedChannel()] })
-    answerChannels()
+  it('still reports the updated channels when another one is missing on YouTube', async () => {
+    syncTo({ youtube: [updatedChannel, account('not-found')] })
 
-    const result = await syncTalentWithYouTube(talentId)
-
-    expect(result).toEqual({
-      error: YOUTUBE_CHANNEL_NOT_FOUND_ERROR,
-      success: false,
-    })
-  })
-
-  it('should return error when snippet title is missing for all channels', async () => {
-    answerTalent({ youtube_channels: [savedChannel()] })
-    answerChannels({ ...youtubeChannel({}), snippet: {} })
-
-    const result = await syncTalentWithYouTube(talentId)
-
-    expect(result).toEqual({
-      error: YOUTUBE_CHANNEL_NOT_FOUND_ERROR,
-      success: false,
-    })
-  })
-
-  it('should return error when talent has no linked YouTube channels', async () => {
-    answerTalent({ youtube_channels: [] })
-
-    const result = await syncTalentWithYouTube(talentId)
-
-    expect(result).toEqual({
-      error: 'このタレントに紐づくYouTubeチャンネルはありません。',
-      success: false,
-    })
-    expect(getChannels).not.toHaveBeenCalled()
-  })
-})
-
-describe('syncTalentWithTwitch', () => {
-  it('should update twitch user name and login from Helix API', async () => {
-    answerTalent({ twitch_users: [savedUser()] })
-    answerUsers(helixUser('New Name', 'newlogin'))
-
-    const result = await syncTalentWithTwitch(talentId)
-
-    expect(result).toEqual({ success: true })
-    expect(getUsers).toHaveBeenCalledWith({ ids: [twitchUserId] })
-    const upserts = supabase.calls('upsert', 'twitch_users')
-    expect(upserts).toHaveLength(1)
-    expect(upserts[0]?.body).toEqual({
-      id: twitchUserRowId,
-      name: 'New Name',
-      talent_id: talentId,
-      twitch_login_name: 'newlogin',
-      twitch_user_id: twitchUserId,
-    })
-    expect(upserts[0]?.query['on_conflict']).toBe('id')
-    expect(talentUpdates()[0]?.body).toEqual({
-      updated_at: '2024-11-24T17:00:00Z',
-    })
-    test.expectAuditLog('CHANNEL_SYNC', 'twitch_users', talentId, {
-      platform: 'twitch',
-      users: [
-        {
-          after: {
-            name: 'New Name',
-            twitch_login_name: 'newlogin',
-          },
-          before: {
-            name: 'Old Name',
-            twitch_login_name: 'oldlogin',
-          },
-          twitch_user_id: twitchUserId,
-        },
-      ],
-    })
-  })
-
-  it('should return already up to date when user data is unchanged', async () => {
-    answerTalent({
-      twitch_users: [
-        savedUser({ name: 'Same Name', twitch_login_name: 'samelogin' }),
-      ],
-    })
-    answerUsers(helixUser('Same Name', 'samelogin'))
-
-    const result = await syncTalentWithTwitch(talentId)
-
-    expect(result).toEqual({
-      message: 'Twitchユーザー情報は既に最新です。',
+    await expect(syncTalentWithYouTube(talentId)).resolves.toEqual({
       success: true,
-      unchanged: true,
-    })
-    expect(supabase.calls('upsert', 'twitch_users')).not.toHaveLength(0)
-    expect(talentUpdates()).toHaveLength(0)
-    test.expectNoAuditLog()
-  })
-
-  it('should select the saved icon of each Twitch user', async () => {
-    answerTalent({ twitch_users: [] })
-
-    await syncTalentWithTwitch(talentId)
-
-    expect(talentSelect()).toEqual(
-      expect.stringContaining(PROFILE_IMAGES_SELECT),
-    )
-  })
-
-  it('should record a changed icon even when name and login are unchanged', async () => {
-    const user = savedUser({
-      name: 'Same Name',
-      twitch_login_name: 'samelogin',
-    })
-    const twitchUser = helixUser(
-      'Same Name',
-      'samelogin',
-      'https://static-cdn.jtvnw.net/jtv_user_pictures/same-profile_image-300x300.png',
-    )
-    answerTalent({ twitch_users: [user] })
-    answerUsers(twitchUser)
-    vi.mocked(syncTwitchUserIconSafely).mockResolvedValueOnce('replaced')
-
-    const result = await syncTalentWithTwitch(talentId)
-
-    expect(result).toEqual({ success: true })
-    expect(syncTwitchUserIconSafely).toHaveBeenCalledWith(twitchUser, user)
-    expect(talentUpdates()).not.toHaveLength(0)
-    test.expectAuditLog('CHANNEL_SYNC', 'twitch_users', talentId, {
-      platform: 'twitch',
-      users: [
-        {
-          after: { name: 'Same Name', twitch_login_name: 'samelogin' },
-          before: { name: 'Same Name', twitch_login_name: 'samelogin' },
-          profile_image: 'replaced',
-          twitch_user_id: twitchUserId,
-        },
-      ],
-    })
-  })
-
-  it('should still sync name and login when the icon cannot be synced', async () => {
-    answerTalent({ twitch_users: [savedUser()] })
-    answerUsers(
-      helixUser(
-        'New Name',
-        'newlogin',
-        'https://static-cdn.jtvnw.net/jtv_user_pictures/new-profile_image-300x300.png',
-      ),
-    )
-    // 失敗時はヘルパーがログに記録して null を返す
-    vi.mocked(syncTwitchUserIconSafely).mockResolvedValueOnce(null)
-
-    const result = await syncTalentWithTwitch(talentId)
-
-    expect(result).toEqual({ success: true })
-    expect(supabase.calls('upsert', 'twitch_users')).not.toHaveLength(0)
-    test.expectAuditLog('CHANNEL_SYNC', 'twitch_users', talentId, {
-      platform: 'twitch',
-      users: [
-        {
-          after: { name: 'New Name', twitch_login_name: 'newlogin' },
-          before: { name: 'Old Name', twitch_login_name: 'oldlogin' },
-          twitch_user_id: twitchUserId,
-        },
-      ],
-    })
-  })
-
-  it('should still sync the icon when name and login cannot be written', async () => {
-    const user = savedUser()
-    const twitchUser = helixUser(
-      'New Name',
-      'newlogin',
-      'https://static-cdn.jtvnw.net/jtv_user_pictures/new-profile_image-300x300.png',
-    )
-    answerTalent({ twitch_users: [user] })
-    supabase.on(
-      'upsert',
-      'twitch_users',
-      postgresError('23505', 'duplicate key value'),
-    )
-    answerUsers(twitchUser)
-    vi.mocked(syncTwitchUserIconSafely).mockResolvedValueOnce('created')
-
-    const result = await syncTalentWithTwitch(talentId)
-
-    expect(result).toEqual({ success: true })
-    expect(syncTwitchUserIconSafely).toHaveBeenCalledWith(twitchUser, user)
-    expect(talentUpdates()).not.toHaveLength(0)
-    // name / login は書き込めていないので、監査ログにはアイコンの変更だけを残す
-    test.expectAuditLog('CHANNEL_SYNC', 'twitch_users', talentId, {
-      platform: 'twitch',
-      users: [{ profile_image: 'created', twitch_user_id: twitchUserId }],
     })
   })
 
   it.each([
-    ['cannot be synced', null],
-    ['is unchanged', 'unchanged'],
-  ] as const)(
-    'should fail when name and login cannot be written and the icon %s',
-    async (_, iconResult) => {
-      answerTalent({ twitch_users: [savedUser()] })
-      supabase.on(
-        'upsert',
-        'twitch_users',
-        postgresError('23505', 'duplicate key value'),
-      )
-      answerUsers(helixUser('New Name', 'newlogin'))
-      vi.mocked(syncTwitchUserIconSafely).mockResolvedValueOnce(iconResult)
+    ['missing on YouTube', 'not-found'],
+    ['failed to be written', 'failed'],
+  ] as const)('fails when every channel is %s', async (_, status) => {
+    syncTo({ youtube: [account(status)] })
 
-      const result = await syncTalentWithTwitch(talentId)
+    const result = await syncTalentWithYouTube(talentId)
 
-      // アイコンが変わっていなければ、書き込めなかった name / login を「最新」と報告しない
-      expect(result).toEqual({
-        error: TWITCH_USER_NOT_FOUND_ERROR,
-        success: false,
-      })
-      test.expectNoAuditLog()
-    },
-  )
+    expect(result).toEqual({
+      error: YOUTUBE_CHANNEL_NOT_FOUND_ERROR,
+      success: false,
+    })
+    test.expectNoAuditLog()
+  })
 
-  it('should return error when talent has no linked Twitch users', async () => {
-    answerTalent({ twitch_users: [] })
+  it('fails with the error when YouTube cannot be read', async () => {
+    syncTo({ youtube: new Error('quota exceeded') })
+
+    const result = await syncTalentWithYouTube(talentId)
+
+    expect(result).toEqual({ error: 'quota exceeded', success: false })
+    test.expectNoAuditLog()
+  })
+
+  it('fails when the talent cannot be touched', async () => {
+    syncTo({ youtube: [updatedChannel] })
+    supabase.on(
+      'update',
+      'talents',
+      postgresError('42501', 'permission denied'),
+    )
+
+    const result = await syncTalentWithYouTube(talentId)
+
+    expect(result).toEqual({
+      error: '予期しないエラーが発生しました。',
+      success: false,
+    })
+    test.expectNoAuditLog()
+  })
+
+  it('returns an error when the talent has no YouTube channels', async () => {
+    syncTo({ youtube: [] })
+
+    await expect(syncTalentWithYouTube(talentId)).resolves.toEqual({
+      error: 'このタレントに紐づくYouTubeチャンネルはありません。',
+      success: false,
+    })
+  })
+
+  it('returns an error without syncing when the talent is not found', async () => {
+    supabase.on('select', 'talents', [])
+
+    await expect(syncTalentWithYouTube(talentId)).resolves.toEqual({
+      error: 'タレントが見つかりませんでした。',
+      success: false,
+    })
+    expect(scraper.createScraper).not.toHaveBeenCalled()
+  })
+})
+
+describe('syncTalentWithTwitch', () => {
+  it('syncs the users with the Twitch scraper and records the changes', async () => {
+    syncTo({ twitch: [updatedUser] })
 
     const result = await syncTalentWithTwitch(talentId)
 
-    expect(result).toEqual({
+    expect(result).toEqual({ success: true })
+    expect(scraper.createScraper).toHaveBeenCalledWith('twitch')
+    expect(scraper.twitch).toHaveBeenCalledWith(talentId, now)
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
+      accounts: [
+        { changes: updatedUser.changes, id: 'user-row-1', name: 'User' },
+      ],
+      entityName: 'Talent Name',
+      platform: 'twitch',
+    })
+    test.expectRevalidated(revalidated)
+  })
+
+  it('reports up to date when no user changed', async () => {
+    syncTo({ twitch: [account('unchanged')] })
+
+    await expect(syncTalentWithTwitch(talentId)).resolves.toEqual({
+      message: 'Twitchユーザー情報は既に最新です。',
+      success: true,
+      unchanged: true,
+    })
+    test.expectNoAuditLog()
+  })
+
+  it('records the icon of a user whose name could not be written', async () => {
+    syncTo({
+      twitch: [account('failed', { accountId: 'row', iconUpdated: true })],
+    })
+
+    const result = await syncTalentWithTwitch(talentId)
+
+    expect(result).toEqual({ success: true })
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
+      accounts: [{ iconUpdated: true, id: 'row', name: 'Name' }],
+      entityName: 'Talent Name',
+      platform: 'twitch',
+    })
+  })
+
+  it('fails when the name could not be written and the icon is unchanged', async () => {
+    syncTo({ twitch: [account('failed')] })
+
+    await expect(syncTalentWithTwitch(talentId)).resolves.toEqual({
+      error: TWITCH_USER_NOT_FOUND_ERROR,
+      success: false,
+    })
+    test.expectNoAuditLog()
+  })
+
+  it('returns an error when the talent has no Twitch users', async () => {
+    syncTo({ twitch: [] })
+
+    await expect(syncTalentWithTwitch(talentId)).resolves.toEqual({
       error: 'このタレントに紐づくTwitchユーザーはありません。',
       success: false,
     })
-    expect(getUsers).not.toHaveBeenCalled()
   })
 })
 
 describe('syncTalentAccounts', () => {
-  it('should include the saved YouTube icon when syncing both platforms', async () => {
-    const channel = savedChannel({
-      name: 'Same Name',
-      profile_images: {
-        etag: 'etag',
-        id: 'image-id',
-        path: 'image-path',
-        source_url: 'https://example.com/image',
-      },
-      youtube_handle: '@same',
-    })
-    answerTalent({ twitch_users: [savedUser()], youtube_channels: [channel] })
-    answerChannels(youtubeChannel({ customUrl: '@same', title: 'Same Name' }))
-    answerUsers(helixUser('New Name', 'newlogin'))
-    vi.mocked(syncYouTubeChannelIconSafely).mockResolvedValueOnce('replaced')
+  it('syncs both platforms and reports each of them', async () => {
+    syncTo({ twitch: [updatedUser], youtube: [updatedChannel] })
 
     const result = await syncTalentAccounts(talentId)
 
-    expect(talentSelect()).toEqual(
-      expect.stringContaining(PROFILE_IMAGES_SELECT),
-    )
-    expect(syncYouTubeChannelIconSafely).toHaveBeenCalledWith(
-      expect.objectContaining({ id: youtubeChannelId }),
-      channel,
-    )
-    expect(supabase.calls('upsert', 'twitch_users')).not.toHaveLength(0)
     expect(result).toEqual({
       message:
         'YouTube: チャンネル情報を同期しました。\nTwitch: ユーザー情報を同期しました。',
       success: true,
       unchanged: false,
     })
-  })
-
-  it('should sync a talent that only has a Twitch user', async () => {
-    answerTalent({ twitch_users: [savedUser()], youtube_channels: [] })
-    answerUsers(helixUser('New Name', 'newlogin'))
-
-    const result = await syncTalentAccounts(talentId)
-
-    expect(result).toEqual({
-      message: 'Twitch: ユーザー情報を同期しました。',
-      success: true,
-      unchanged: false,
-    })
-    expect(getChannels).not.toHaveBeenCalled()
-    const upserts = supabase.calls('upsert', 'twitch_users')
-    expect(upserts).toContainEqual(
-      expect.objectContaining({
-        body: expect.objectContaining({
-          name: 'New Name',
-          twitch_login_name: 'newlogin',
-        }),
-        query: expect.objectContaining({ on_conflict: 'id' }),
-      }),
+    expect(test.createAuditLog).toHaveBeenCalledTimes(2)
+    test.expectAuditLog(
+      'CHANNEL_SYNC',
+      talentId,
+      expect.objectContaining({ platform: 'youtube' }),
     )
     test.expectAuditLog(
       'CHANNEL_SYNC',
-      'twitch_users',
       talentId,
       expect.objectContaining({ platform: 'twitch' }),
     )
   })
 
-  it('should keep the Twitch result when YouTube fails and report which one failed', async () => {
-    answerTalent({
-      twitch_users: [savedUser()],
-      youtube_channels: [
-        savedChannel({ name: 'Channel', youtube_handle: '@channel' }),
-      ],
+  it('reports only the platforms the talent has accounts on', async () => {
+    syncTo({ twitch: [updatedUser] })
+
+    await expect(syncTalentAccounts(talentId)).resolves.toEqual({
+      message: 'Twitch: ユーザー情報を同期しました。',
+      success: true,
+      unchanged: false,
     })
-    vi.mocked(getChannels).mockReturnValue(
-      // biome-ignore lint/correctness/useYield: throws before yielding
-      (async function* (): AsyncGenerator<never> {
-        throw new Error('quota exceeded')
-      })() as never,
-    )
-    answerUsers(helixUser('New Name', 'newlogin'))
+  })
+
+  it('keeps the Twitch result when YouTube fails and reports which one failed', async () => {
+    syncTo({ twitch: [updatedUser], youtube: new Error('quota exceeded') })
 
     const result = await syncTalentAccounts(talentId)
 
@@ -757,28 +351,26 @@ describe('syncTalentAccounts', () => {
       success: false,
       unchanged: false,
     })
-    expect(supabase.calls('upsert', 'youtube_channels')).toHaveLength(0)
-    expect(supabase.calls('upsert', 'twitch_users')).not.toHaveLength(0)
     expect(test.createAuditLog).toHaveBeenCalledTimes(1)
     test.expectAuditLog(
       'CHANNEL_SYNC',
-      'twitch_users',
       talentId,
-      expect.anything(),
+      expect.objectContaining({ platform: 'twitch' }),
     )
   })
 
-  it('should report each platform when everything is up to date', async () => {
-    answerTalent({
-      twitch_users: [
-        savedUser({ name: 'Same Name', twitch_login_name: 'samelogin' }),
-      ],
-      youtube_channels: [
-        savedChannel({ name: 'Same Name', youtube_handle: '@same' }),
-      ],
+  it('reports a platform whose accounts were all missing as failed', async () => {
+    syncTo({ twitch: [account('unchanged')], youtube: [account('not-found')] })
+
+    await expect(syncTalentAccounts(talentId)).resolves.toEqual({
+      error: `YouTube: 同期に失敗しました。${YOUTUBE_CHANNEL_NOT_FOUND_ERROR}\nTwitch: ユーザー情報は既に最新です。`,
+      success: false,
+      unchanged: true,
     })
-    answerChannels(youtubeChannel({ customUrl: '@same', title: 'Same Name' }))
-    answerUsers(helixUser('Same Name', 'samelogin'))
+  })
+
+  it('reports each platform when everything is up to date', async () => {
+    syncTo({ twitch: [account('unchanged')], youtube: [account('unchanged')] })
 
     const result = await syncTalentAccounts(talentId)
 
@@ -789,19 +381,32 @@ describe('syncTalentAccounts', () => {
       unchanged: true,
     })
     test.expectNoAuditLog()
+    test.expectNotRevalidated()
   })
 
-  it('should return error when the talent has no accounts', async () => {
-    answerTalent({ twitch_users: [], youtube_channels: [] })
+  it('returns an error when the talent has no accounts', async () => {
+    syncTo({})
 
-    const result = await syncTalentAccounts(talentId)
-
-    expect(result).toEqual({
+    await expect(syncTalentAccounts(talentId)).resolves.toEqual({
       error:
         'このタレントに紐づくYouTubeチャンネル・Twitchユーザーはありません。',
       success: false,
     })
-    expect(getChannels).not.toHaveBeenCalled()
-    expect(getUsers).not.toHaveBeenCalled()
+  })
+
+  it('returns an error without syncing when the talent cannot be loaded', async () => {
+    supabase.on(
+      'select',
+      'talents',
+      postgresError('42501', 'permission denied'),
+    )
+
+    const result = await syncTalentAccounts(talentId)
+
+    expect(result).toEqual({
+      error: '予期しないエラーが発生しました。',
+      success: false,
+    })
+    expect(scraper.createScraper).not.toHaveBeenCalled()
   })
 })

@@ -1,5 +1,5 @@
-import { cacheLife } from 'next/cache'
-import { Panel } from '@/components/panel'
+import { Panel, PanelSkeleton } from '@/components/panel'
+import { StatTileSkeleton } from '@/components/stat-tile-skeleton'
 import { getAnalyticsSummary } from '../_lib/get-analytics-summary'
 import { StatTileLink } from './trend-indicator'
 
@@ -8,10 +8,6 @@ import { StatTileLink } from './trend-indicator'
  * This is an async Server Component that fetches its own data
  */
 export async function AnalyticsWidget() {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const analytics = await getAnalyticsSummary()
 
   return (
@@ -38,5 +34,18 @@ export async function AnalyticsWidget() {
         />
       </div>
     </Panel>
+  )
+}
+
+/** 読み込み中の `AnalyticsWidget` */
+export function AnalyticsWidgetSkeleton() {
+  return (
+    <PanelSkeleton title="アナリティクス">
+      <div className="grid grid-cols-2 gap-4">
+        <StatTileSkeleton change />
+        <StatTileSkeleton change />
+        <StatTileSkeleton change className="col-span-2" />
+      </div>
+    </PanelSkeleton>
   )
 }

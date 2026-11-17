@@ -1,6 +1,7 @@
 import { formatNumber } from '@shinju-date/helpers'
 import {
   EmptyState,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -9,6 +10,7 @@ import {
   TableRow,
 } from '@shinju-date/ui'
 import type { ReactNode } from 'react'
+import { TableSkeleton } from '@/components/table-skeleton'
 
 export interface RankingItem {
   key: string
@@ -59,5 +61,29 @@ export function RankingTable({
         ))}
       </TableBody>
     </Table>
+  )
+}
+
+/** 読み込み中の `RankingTable`。順位・名前・回数の3列を並べる */
+export function RankingTableSkeleton() {
+  return (
+    <TableSkeleton
+      columns={[
+        {
+          align: 'end',
+          cell: <Skeleton className="h-4 w-5" />,
+          className: 'w-16',
+          id: 'rank',
+        },
+        { cell: <Skeleton className="h-4 w-48" />, id: 'label' },
+        {
+          align: 'end',
+          cell: <Skeleton className="h-4 w-10" />,
+          className: 'w-24',
+          id: 'value',
+        },
+      ]}
+      rows={10}
+    />
   )
 }

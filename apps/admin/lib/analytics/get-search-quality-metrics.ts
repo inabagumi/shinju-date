@@ -3,24 +3,30 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
+import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 import { listDatesInRange } from './list-dates-in-range'
+import { dailyKeys, parseScoredMembers } from './redis'
 
 /**
  * Calculate search engagement rate for a single date or date range
- * @param startDate - Start date as Temporal.PlainDate
- * @param endDate - End date as Temporal.PlainDate. If undefined, gets data for single date
+ * @param startDate - Start date in ISO 8601 format (YYYY-MM-DD)
+ * @param endDate - End date in ISO 8601 format (YYYY-MM-DD). If undefined, gets data for single date
  * @returns The rate in percent, or `null` when there is no session to
  * measure it against (or it could not be calculated)
  */
 export async function getSearchEngagementRate(
-  startDate: Temporal.PlainDate,
-  endDate?: Temporal.PlainDate,
+  startDate: string,
+  endDate?: string,
 ): Promise<number | null> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   try {
     const redisClient = getRedisClient()
-    const start = startDate
-    const end = endDate ?? startDate
+    const start = Temporal.PlainDate.from(startDate)
+    const end = endDate ? Temporal.PlainDate.from(endDate) : start
 
     const dates = listDatesInRange(start, end)
 
@@ -60,27 +66,36 @@ export async function getSearchEngagementRate(
 
 /**
  * Calculate search exit rates by keyword for a single date or date range
- * @param startDate - Start date as Temporal.PlainDate
- * @param endDate - End date as Temporal.PlainDate. If undefined, gets data for single date
+ * @param startDate - Start date in ISO 8601 format (YYYY-MM-DD)
+ * @param endDate - End date in ISO 8601 format (YYYY-MM-DD). If undefined, gets data for single date
  * @param limit - Maximum number of keywords to return
  */
 export async function getSearchExitRates(
-  startDate: Temporal.PlainDate,
-  endDate?: Temporal.PlainDate,
+  startDate: string,
+  endDate?: string,
   limit = 20,
 ): Promise<Array<{ keyword: string; exitRate: number; searchCount: number }>> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   try {
     const redisClient = getRedisClient()
-    const start = startDate
-    const end = endDate ?? startDate
+    const start = Temporal.PlainDate.from(startDate)
+    const end = endDate ? Temporal.PlainDate.from(endDate) : start
 
     // Aggregate search counts and exit counts across the date range
     const searchCounts = new Map<string, number>()
     const exitCounts = new Map<string, number>()
 
-    const dates = listDatesInRange(start, end)
+    const range = { end, start }
+    const searchKeys = dailyKeys(REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX, range)
+    const exitKeys = dailyKeys(
+      REDIS_KEYS.SEARCH_EXIT_WITHOUT_CLICK_PREFIX,
+      range,
+    )
 
-    if (dates.length === 0) {
+    if (searchKeys.length === 0) {
       return []
     }
 
@@ -88,22 +103,15 @@ export async function getSearchExitRates(
     // parallel) instead of one round trip per day
     const searchPipeline = redisClient.pipeline()
     const exitPipeline = redisClient.pipeline()
-    for (const date of dates) {
-      const dateKey = formatDateKey(date)
-
+    for (const key of searchKeys) {
       // Get search counts from popular searches
-      searchPipeline.zrange(
-        `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${dateKey}`,
-        0,
-        -1,
-        { withScores: true },
-      )
-      exitPipeline.hgetall(
-        `${REDIS_KEYS.SEARCH_EXIT_WITHOUT_CLICK_PREFIX}${dateKey}`,
-      )
+      searchPipeline.zrange(key, 0, -1, { withScores: true })
+    }
+    for (const key of exitKeys) {
+      exitPipeline.hgetall(key)
     }
     const [dailySearchResults, dailyExitResults] = await Promise.all([
-      searchPipeline.exec<string[][]>(),
+      searchPipeline.exec<unknown[][]>(),
       exitPipeline.exec<(Record<string, string> | null)[]>(),
     ])
 
@@ -111,9 +119,9 @@ export async function getSearchExitRates(
       const exitResults = dailyExitResults[index]
 
       // Process search counts
-      for (let i = 0; i < searchResults.length; i += 2) {
-        const keyword = searchResults[i]
-        const count = Number(searchResults[i + 1])
+      for (const { member: keyword, score: count } of parseScoredMembers(
+        searchResults,
+      )) {
         if (keyword) {
           searchCounts.set(keyword, (searchCounts.get(keyword) ?? 0) + count)
         }
@@ -162,19 +170,23 @@ export async function getSearchExitRates(
 
 /**
  * Calculate repeat search rate (average searches per session) for a single date or date range
- * @param startDate - Start date as Temporal.PlainDate
- * @param endDate - End date as Temporal.PlainDate. If undefined, gets data for single date
+ * @param startDate - Start date in ISO 8601 format (YYYY-MM-DD)
+ * @param endDate - End date in ISO 8601 format (YYYY-MM-DD). If undefined, gets data for single date
  * @returns The average number of searches per session, or `null` when there
  * is no search session to measure it against (or it could not be calculated)
  */
 export async function getRepeatSearchRate(
-  startDate: Temporal.PlainDate,
-  endDate?: Temporal.PlainDate,
+  startDate: string,
+  endDate?: string,
 ): Promise<number | null> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   try {
     const redisClient = getRedisClient()
-    const start = startDate
-    const end = endDate ?? startDate
+    const start = Temporal.PlainDate.from(startDate)
+    const end = endDate ? Temporal.PlainDate.from(endDate) : start
 
     const dates = listDatesInRange(start, end)
 

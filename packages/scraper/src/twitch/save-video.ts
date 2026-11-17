@@ -101,14 +101,14 @@ export async function saveTwitchVideo(
     }
   } catch (error) {
     if (thumbnail) {
-      await removeThumbnail(supabaseClient, thumbnail)
+      await removeThumbnail(context, thumbnail)
     }
 
     throw error
   }
 
   if (thumbnail) {
-    await removeThumbnail(supabaseClient, thumbnail)
+    await removeThumbnail(context, thumbnail)
   }
 
   return false

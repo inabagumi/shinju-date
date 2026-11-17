@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { ExportLink, type ExportType } from './export-link'
-import { RankingTable } from './ranking-table'
-import { WidgetHeader } from './widget-header'
+import { RankingTable, RankingTableSkeleton } from './ranking-table'
+import { WidgetHeader, WidgetHeaderSkeleton } from './widget-header'
 
 interface RankingWidgetProps<T> {
   dateRange: { startDate: string; endDate: string }
@@ -75,6 +75,21 @@ export function RankingWidget<T>({
         labelHeading={labelHeading}
         valueHeading={valueHeading}
       />
+    </div>
+  )
+}
+
+interface RankingWidgetSkeletonProps {
+  /** 見出し。読み込み後と同じ文言を渡す */
+  title: ReactNode
+}
+
+/** 読み込み中の `RankingWidget`。見出しとエクスポートのボタン、ランキングの表を並べる */
+export function RankingWidgetSkeleton({ title }: RankingWidgetSkeletonProps) {
+  return (
+    <div aria-hidden="true">
+      <WidgetHeaderSkeleton actions title={title} />
+      <RankingTableSkeleton />
     </div>
   )
 }

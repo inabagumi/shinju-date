@@ -4,6 +4,7 @@ import { range } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import type { QueryData } from '@supabase/supabase-js'
+import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 import {
   createSupabaseServerClient,
@@ -27,13 +28,13 @@ export interface Video extends Omit<VideoRow, 'talent'> {
 }
 
 export interface VideoFilters {
-  talentId?: string[]
-  deleted?: boolean[]
-  visible?: boolean[]
-  search?: string
-  status?: Tables<'videos'>['status'][]
-  platform?: Tables<'videos'>['platform'][]
-  videoKind?: Tables<'videos'>['video_kind'][]
+  talentId?: string[] | undefined
+  deleted?: boolean[] | undefined
+  visible?: boolean[] | undefined
+  search?: string | undefined
+  status?: Tables<'videos'>['status'][] | undefined
+  platform?: Tables<'videos'>['platform'][] | undefined
+  videoKind?: Tables<'videos'>['video_kind'][] | undefined
 }
 
 export type VideoSortField = 'published_at' | 'updated_at'
@@ -49,6 +50,10 @@ export async function getVideos(
   videos: Video[]
   total: number
 }> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   const supabaseClient = await createSupabaseServerClient()
 
   const from = (page - 1) * perPage

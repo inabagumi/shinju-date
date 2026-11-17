@@ -1,6 +1,6 @@
 import { HttpResponse, http } from 'msw'
 import sharp from 'sharp'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { postgresError, setupSupabase } from '../../testing/supabase.js'
 import { createThumbnail, removeThumbnail } from '../thumbnail.js'
 
@@ -139,28 +139,80 @@ describe('createThumbnail', () => {
 })
 
 describe('removeThumbnail', () => {
-  it('removes the row and the stored image', async () => {
+  const STORAGE_DELETE_URL =
+    'https://fake.supabase.test/storage/v1/object/thumbnails'
+  const thumbnail = { id: 'thumb-1', path: 'yt-1/abc.jpg' }
+
+  function mockStorageRemoval(
+    respond: () => Response = () => HttpResponse.json([]),
+  ): unknown[] {
     const removed: unknown[] = []
     supabase.server.use(
-      http.delete(
-        'https://fake.supabase.test/storage/v1/object/thumbnails',
-        async ({ request }) => {
-          removed.push(await request.json())
+      http.delete(STORAGE_DELETE_URL, async ({ request }) => {
+        removed.push(await request.json())
 
-          return HttpResponse.json([])
-        },
-      ),
+        return respond()
+      }),
     )
+
+    return removed
+  }
+
+  it('removes the row and the stored image', async () => {
+    const reportError = vi.fn()
+    const removed = mockStorageRemoval()
     supabase.respond(() => [])
 
-    await removeThumbnail(supabase.supabaseClient, {
-      id: 'thumb-1',
-      path: 'yt-1/abc.jpg',
-    })
+    await removeThumbnail(
+      { reportError, supabaseClient: supabase.supabaseClient },
+      thumbnail,
+    )
 
     expect(supabase.written('DELETE', 'thumbnails')[0]?.query['id']).toBe(
       'eq.thumb-1',
     )
     expect(removed).toEqual([{ prefixes: ['yt-1/abc.jpg'] }])
+    expect(reportError).not.toHaveBeenCalled()
+  })
+
+  it('reports a row that cannot be deleted and keeps its image', async () => {
+    const reportError = vi.fn()
+    const removed = mockStorageRemoval()
+    supabase.respond(() => postgresError('23503', 'foreign key violation'))
+
+    await removeThumbnail(
+      { reportError, supabaseClient: supabase.supabaseClient },
+      thumbnail,
+    )
+
+    expect(removed).toHaveLength(0)
+    expect(reportError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('foreign key violation'),
+      }),
+      { thumbnailId: 'thumb-1', thumbnailPath: 'yt-1/abc.jpg' },
+    )
+  })
+
+  it('reports an image that cannot be removed', async () => {
+    const reportError = vi.fn()
+    mockStorageRemoval(() =>
+      HttpResponse.json(
+        { error: 'Internal', message: 'storage is down', statusCode: '500' },
+        { status: 500 },
+      ),
+    )
+    supabase.respond(() => [])
+
+    await removeThumbnail(
+      { reportError, supabaseClient: supabase.supabaseClient },
+      thumbnail,
+    )
+
+    expect(supabase.written('DELETE', 'thumbnails')).toHaveLength(1)
+    expect(reportError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'storage is down' }),
+      { thumbnailId: 'thumb-1', thumbnailPath: 'yt-1/abc.jpg' },
+    )
   })
 })

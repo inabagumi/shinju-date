@@ -111,7 +111,6 @@ describe('requestVideoBackfillRunAction', () => {
     )
     expect(test.createAuditLog).toHaveBeenCalledExactlyOnceWith(
       'VIDEO_BACKFILL',
-      'redis:video-backfill',
       runId,
       {
         accounts: 2,
@@ -170,7 +169,6 @@ describe('requestVideoBackfillRunAction', () => {
     })
     expect(test.createAuditLog).toHaveBeenCalledWith(
       'VIDEO_BACKFILL',
-      'redis:video-backfill',
       runId,
       expect.objectContaining({ failed: 1, skipped: 3 }),
     )

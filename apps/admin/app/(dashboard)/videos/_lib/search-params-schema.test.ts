@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_VALUES, videoSearchParamsSchema } from './search-params-schema'
+import {
+  defaultVideoSearchParams,
+  videoSearchParamsSchema,
+} from './search-params-schema'
 
 describe('videoSearchParamsSchema', () => {
   it('should parse valid parameters with all fields', () => {
@@ -55,18 +58,33 @@ describe('videoSearchParamsSchema', () => {
     const result = videoSearchParamsSchema.parse(input)
 
     expect(result).toEqual({
-      page: DEFAULT_VALUES.page,
-      sortField: DEFAULT_VALUES.sortField,
-      sortOrder: DEFAULT_VALUES.sortOrder,
+      page: 1,
+      sortField: 'updated_at',
+      sortOrder: 'desc',
     })
   })
+
+  it('should derive the defaults from the schema', () => {
+    expect(defaultVideoSearchParams).toEqual({
+      page: 1,
+      sortField: 'updated_at',
+      sortOrder: 'desc',
+    })
+  })
+
+  it.each(['abc', '1.5', 'Infinity', '1e400'])(
+    'should fall back to the first page for page=%s',
+    (page) => {
+      expect(videoSearchParamsSchema.parse({ page }).page).toBe(1)
+    },
+  )
 
   it('should coerce page to number and apply minimum constraint', () => {
     const input = { page: '0' }
 
     const result = videoSearchParamsSchema.parse(input)
 
-    expect(result.page).toBe(DEFAULT_VALUES.page) // Should be coerced to minimum of 1
+    expect(result.page).toBe(1) // Should be coerced to minimum of 1
   })
 
   it('should handle boolean transformation for visible field', () => {
@@ -100,7 +118,7 @@ describe('videoSearchParamsSchema', () => {
 
     const result = videoSearchParamsSchema.parse(input)
 
-    expect(result.sortField).toBe(DEFAULT_VALUES.sortField) // Should fallback to default
+    expect(result.sortField).toBe('updated_at') // Should fallback to default
   })
 
   it('should fallback to default for invalid sortOrder values', () => {
@@ -108,7 +126,7 @@ describe('videoSearchParamsSchema', () => {
 
     const result = videoSearchParamsSchema.parse(input)
 
-    expect(result.sortOrder).toBe(DEFAULT_VALUES.sortOrder) // Should fallback to default
+    expect(result.sortOrder).toBe('desc') // Should fallback to default
   })
 
   it('should handle array inputs (URLSearchParams may provide arrays)', () => {
@@ -130,7 +148,7 @@ describe('videoSearchParamsSchema', () => {
 
     const result = videoSearchParamsSchema.parse(input)
 
-    expect(result.page).toBe(DEFAULT_VALUES.page) // Should be coerced to minimum of 1
+    expect(result.page).toBe(1) // Should be coerced to minimum of 1
   })
 
   it('should coerce talentId to number correctly', () => {
@@ -150,9 +168,9 @@ describe('videoSearchParamsSchema', () => {
     const result = videoSearchParamsSchema.parse(input)
 
     expect(result).toEqual({
-      page: DEFAULT_VALUES.page,
-      sortField: DEFAULT_VALUES.sortField,
-      sortOrder: DEFAULT_VALUES.sortOrder,
+      page: 1,
+      sortField: 'updated_at',
+      sortOrder: 'desc',
       // Optional fields should not be present
     })
     expect('search' in result).toBe(false)

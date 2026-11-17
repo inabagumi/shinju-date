@@ -1,35 +1,10 @@
-import { Constants, type Enums } from '@shinju-date/database'
+import { Constants } from '@shinju-date/database'
 import { z } from 'zod'
 import type { VideoSortField, VideoSortOrder } from './get-videos'
 
 // Define the valid sort field and order values based on the types
 const VALID_SORT_FIELDS: VideoSortField[] = ['published_at', 'updated_at']
 const VALID_SORT_ORDERS: VideoSortOrder[] = ['asc', 'desc']
-
-// Default values - shared constants to avoid duplication
-export const DEFAULT_VALUES = {
-  deleted: undefined,
-  page: 1,
-  platform: undefined,
-  search: undefined,
-  sortField: 'updated_at' as const,
-  sortOrder: 'desc' as const,
-  status: undefined,
-  talentId: undefined,
-  videoKind: undefined,
-  visible: undefined,
-} satisfies {
-  deleted: boolean[] | undefined
-  page: number
-  platform: Enums<'platform_type'>[] | undefined
-  search: string | undefined
-  sortField: VideoSortField
-  sortOrder: VideoSortOrder
-  status: Enums<'video_status'>[] | undefined
-  talentId: string[] | undefined
-  videoKind: Enums<'video_kind'>[] | undefined
-  visible: boolean[] | undefined
-}
 
 /**
  * 1つまたは複数の値を受け取り、enum の値だけを残すスキーマ。
@@ -74,7 +49,7 @@ export const videoSearchParamsSchema = z.object({
       return boolValues.length > 0 ? boolValues : undefined
     }),
 
-  // Page number with default of 1, coerced to number, clamped to minimum 1
+  // Page number with default of 1. Anything but a positive integer falls back to 1
   page: z
     .union([z.string(), z.array(z.string())])
     .optional()
@@ -82,9 +57,9 @@ export const videoSearchParamsSchema = z.object({
       if (Array.isArray(val)) {
         val = val[0] // Take first element if array
       }
-      if (!val) return DEFAULT_VALUES.page
+      if (!val) return 1
       const num = Number(val)
-      return Number.isNaN(num) || num < 1 ? DEFAULT_VALUES.page : num
+      return Number.isSafeInteger(num) && num >= 1 ? num : 1
     }),
 
   // Platform filter - support multiple values for multi-select
@@ -111,7 +86,7 @@ export const videoSearchParamsSchema = z.object({
       }
       return VALID_SORT_FIELDS.includes(val as VideoSortField)
         ? (val as VideoSortField)
-        : DEFAULT_VALUES.sortField
+        : 'updated_at'
     }),
 
   // Sort order - only allow valid values, handle arrays
@@ -124,7 +99,7 @@ export const videoSearchParamsSchema = z.object({
       }
       return VALID_SORT_ORDERS.includes(val as VideoSortOrder)
         ? (val as VideoSortOrder)
-        : DEFAULT_VALUES.sortOrder
+        : 'desc'
     }),
 
   // Video status filter - support multiple values for multi-select
@@ -163,3 +138,9 @@ export const videoSearchParamsSchema = z.object({
 })
 
 export type VideoSearchParams = z.infer<typeof videoSearchParamsSchema>
+
+/**
+ * 検索のパラメータがないときの値。スキーマの既定値から導く
+ */
+export const defaultVideoSearchParams: VideoSearchParams =
+  videoSearchParamsSchema.parse({})

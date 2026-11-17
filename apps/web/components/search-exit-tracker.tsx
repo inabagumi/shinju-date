@@ -2,14 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef } from 'react'
-
-// Import the server action for tracking search exits
-async function trackSearchExitAction(query: string) {
-  const { trackSearchExitWithoutClick } = await import(
-    '@/lib/session-analytics'
-  )
-  return trackSearchExitWithoutClick(query)
-}
+import { trackSearchExitWithoutClick } from '@/lib/session-analytics'
 
 /**
  * Client-side component that tracks when users leave a search page without clicking any results.
@@ -45,7 +38,7 @@ export default function SearchExitTracker({
       if (!hasClickedRef.current && !hasTrackedRef.current) {
         hasTrackedRef.current = true
         // Use sendBeacon for reliable tracking on page unload
-        trackSearchExitAction(query).catch(() => {
+        trackSearchExitWithoutClick(query).catch(() => {
           // Silently fail if tracking fails
         })
       }
@@ -55,7 +48,7 @@ export default function SearchExitTracker({
     const handleRouteChange = () => {
       if (!hasClickedRef.current && !hasTrackedRef.current) {
         hasTrackedRef.current = true
-        trackSearchExitAction(query).catch(() => {
+        trackSearchExitWithoutClick(query).catch(() => {
           // Silently fail if tracking fails
         })
       }

@@ -7,6 +7,9 @@ const mocks = vi.hoisted(() => ({
   createSupabaseServerClient: vi.fn(),
 }))
 
+vi.mock('next/cache', () => ({
+  cacheLife: vi.fn(),
+}))
 vi.mock('@/lib/supabase', () => ({
   createSupabaseServerClient: mocks.createSupabaseServerClient,
 }))

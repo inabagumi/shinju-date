@@ -211,7 +211,7 @@ Redis HTTP APIが正常に動作しているか確認：
 
 ```bash
 curl -X POST http://localhost:8079 \
-  -H "Authorization: Bearer local_development_token" \
+  -H "Authorization: Bearer HQe-H5xQJO6ADYplIW-LYFZWRMGwpSjRfHneRw52aPI" \
   -H "Content-Type: application/json" \
   -d '["PING"]'
 
@@ -224,8 +224,10 @@ curl -X POST http://localhost:8079 \
 
 ```bash
 UPSTASH_REDIS_REST_URL=http://localhost:8079
-UPSTASH_REDIS_REST_TOKEN=local_development_token
+UPSTASH_REDIS_REST_TOKEN=HQe-H5xQJO6ADYplIW-LYFZWRMGwpSjRfHneRw52aPI
 ```
+
+トークンは、Redis HTTP APIが受け付ける `config/dev-secrets.env` の `SRH_TOKEN` と同じ値にします（開発専用の固定の値です）。サンプルの値が一致しているかは、CIの `pnpm run check:dev-secrets` が確かめます。
 
 ### 3.4. 動作しない場合
 
@@ -260,7 +262,7 @@ export NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3
 export SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
 
 # Upstash Redis (Docker Compose経由)
-export UPSTASH_REDIS_REST_TOKEN=local_development_token
+export UPSTASH_REDIS_REST_TOKEN=HQe-H5xQJO6ADYplIW-LYFZWRMGwpSjRfHneRw52aPI
 export UPSTASH_REDIS_REST_URL=http://localhost:8079
 
 # Next.js Turbopack (特定の環境向け)
@@ -269,21 +271,7 @@ export NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1
 
 ### 4.3. AIエージェントおよびCI環境（MSW使用時）
 
-AIエージェントやCI環境でMSWを使用する場合は、以下の環境変数を設定します：
-
-```bash
-# MSW
-export ENABLE_MSW=true
-
-# Supabase (MSWモック)
-export NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test
-export NEXT_PUBLIC_SUPABASE_ANON_KEY=fake-anon-key
-export SUPABASE_SERVICE_ROLE_KEY=fake-service-role-key
-
-# Upstash Redis (MSWモック)
-export UPSTASH_REDIS_REST_TOKEN=fake-upstash-token
-export UPSTASH_REDIS_REST_URL=https://fake.upstash.test
-```
+AIエージェントやCI環境でMSWを使用する場合は、`ENABLE_MSW=true` と、Supabase や Upstash のための fake の値を設定します。設定する値は、各アプリの `playwright.config.ts` の `webServer.env` にあります（E2E テストでは、Playwright がこの値で開発サーバーを起動します。[E2E テストの環境設定](e2e-testing.md#2-環境設定)）。
 
 MSW（Mock Service Worker）はサーバー側でだけ動くため、サービスワーカーのファイル（`mockServiceWorker.js`）を用意する必要はありません。詳細は [MSWガイド](msw-guide.md) を参照してください。
 

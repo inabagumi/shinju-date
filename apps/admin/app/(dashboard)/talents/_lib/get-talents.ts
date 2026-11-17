@@ -1,4 +1,5 @@
 import type { QueryData } from '@supabase/supabase-js'
+import { cacheLife } from 'next/cache'
 import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
@@ -27,6 +28,10 @@ function selectTalents(supabaseClient: TypedSupabaseClient) {
 export type TalentListItem = QueryData<ReturnType<typeof selectTalents>>[number]
 
 export async function getTalents(): Promise<TalentListItem[]> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   const supabaseClient = await createSupabaseServerClient()
 
   // Admin can read deleted talents via RLS; include all for filter UI

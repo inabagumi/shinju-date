@@ -4,6 +4,7 @@ import {
   Button,
   EmptyState,
   Input,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -14,16 +15,27 @@ import {
 import { useMemo, useState } from 'react'
 import { useActionToast } from '@/components/action-toast'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { SearchInput } from '@/components/search-input'
+import { TableSkeleton } from '@/components/table-skeleton'
 import { useServerAction } from '@/lib/use-server-action'
 import { addQueryAction, deleteQueryAction } from '../_actions'
+
+const AUTO_QUERIES_DESCRIPTION =
+  '検索トレンドに基づいて自動的に選出されたクエリです。スコアは時間減衰を考慮した重み付けスコアです。'
 
 interface QueriesListProps {
   manualQueries: string[]
   autoQueries: Array<{ query: string; score: number }>
+  /** URL の `search`。前後の空白を取り除いたもの */
+  search: string | undefined
 }
 
-export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
-  const [searchQuery, setSearchQuery] = useState('')
+export function QueriesList({
+  manualQueries,
+  autoQueries,
+  search,
+}: QueriesListProps) {
+  const searchQuery = search ?? ''
   const [newQuery, setNewQuery] = useState('')
   const addQuery = useServerAction(addQueryAction, {
     errorText: '追加に失敗しました。',
@@ -101,13 +113,10 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
         </div>
 
         {/* Search */}
-        <Input
+        <SearchInput
           aria-label="クエリを検索"
           className="sm:max-w-md"
-          onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="クエリを検索..."
-          type="text"
-          value={searchQuery}
         />
       </div>
 
@@ -177,7 +186,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
             </span>
           </h2>
           <p className="max-w-text text-meta text-muted">
-            検索トレンドに基づいて自動的に選出されたクエリです。スコアは時間減衰を考慮した重み付けスコアです。
+            {AUTO_QUERIES_DESCRIPTION}
           </p>
         </div>
         {filteredAutoQueries.length === 0 ? (
@@ -209,6 +218,62 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
             </TableBody>
           </Table>
         )}
+      </section>
+    </div>
+  )
+}
+
+/**
+ * 読み込み中の `QueriesList`。追加のフォームと検索欄、手動追加と自動選出の2つの表
+ * （それぞれ2列）を並べる
+ */
+export function QueriesListSkeleton() {
+  return (
+    <div aria-hidden="true" className="space-y-8">
+      <div className="space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="flex-1 space-y-2 sm:max-w-md">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <Skeleton className="h-9 w-16" />
+        </div>
+        <Skeleton className="h-10 w-full sm:max-w-md" />
+      </div>
+
+      <section className="space-y-3">
+        <h2 className="text-heading font-bold">手動追加クエリ</h2>
+        <TableSkeleton
+          columns={[
+            { cell: <Skeleton className="h-4 w-48" />, id: 'query' },
+            {
+              align: 'end',
+              cell: <Skeleton className="h-7 w-14" />,
+              className: 'w-24',
+              id: 'actions',
+            },
+          ]}
+        />
+      </section>
+
+      <section className="space-y-3">
+        <div className="space-y-1">
+          <h2 className="text-heading font-bold">自動選出クエリ</h2>
+          <p className="max-w-text text-meta text-muted">
+            {AUTO_QUERIES_DESCRIPTION}
+          </p>
+        </div>
+        <TableSkeleton
+          columns={[
+            { cell: <Skeleton className="h-4 w-48" />, id: 'query' },
+            {
+              align: 'end',
+              cell: <Skeleton className="h-4 w-10" />,
+              className: 'w-32',
+              id: 'score',
+            },
+          ]}
+        />
       </section>
     </div>
   )

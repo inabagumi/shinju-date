@@ -3,20 +3,26 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { Panel } from '@/components/panel'
 import {
-  ChartSkeleton,
+  DateRangePickerClient,
   DateRangePickerSkeleton,
-  ListCardsSkeleton,
+} from '../_components/date-range-picker-client'
+import { RankingWidgetSkeleton } from '../_components/ranking-widget'
+import {
+  TabNavigation,
   TabNavigationSkeleton,
-} from '@/components/skeletons'
-import { DateRangePickerClient } from '../_components/date-range-picker-client'
-import { TabNavigation } from '../_components/tab-navigation'
-import { VolumeChart } from '../_components/volume-chart'
+} from '../_components/tab-navigation'
+import { VolumeChart, VolumeChartSkeleton } from '../_components/volume-chart'
 import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
 import { PopularRankingsTabs } from './_components/popular-rankings-tabs'
 
 export const metadata: Metadata = {
   title: 'クリックアナリティクス',
 }
+
+const RANKING_TABS = [
+  { id: 'videos', label: '人気動画' },
+  { id: 'talents', label: '人気タレント' },
+]
 
 export default function ClickAnalyticsPage({
   searchParams,
@@ -38,7 +44,7 @@ export default function ClickAnalyticsPage({
       <section className="mb-8">
         <h2 className="mb-4 text-heading font-bold">クリックボリューム</h2>
         <Panel>
-          <Suspense fallback={<ChartSkeleton />}>
+          <Suspense fallback={<VolumeChartSkeleton />}>
             <VolumeChart kind="click" searchParams={parsedSearchParams} />
           </Suspense>
         </Panel>
@@ -47,18 +53,17 @@ export default function ClickAnalyticsPage({
       <section>
         <h2 className="mb-4 text-heading font-bold">人気ランキング</h2>
         <Panel>
-          <Suspense fallback={<TabNavigationSkeleton />}>
+          <Suspense fallback={<TabNavigationSkeleton tabs={RANKING_TABS} />}>
             <TabNavigation
               defaultTab="videos"
               searchParams={parsedSearchParams}
-              tabs={[
-                { id: 'videos', label: '人気動画' },
-                { id: 'talents', label: '人気タレント' },
-              ]}
+              tabs={RANKING_TABS}
             />
           </Suspense>
           <div className="mt-6">
-            <Suspense fallback={<ListCardsSkeleton rows={5} />}>
+            <Suspense
+              fallback={<RankingWidgetSkeleton title="人気動画ランキング" />}
+            >
               <PopularRankingsTabs searchParams={parsedSearchParams} />
             </Suspense>
           </div>

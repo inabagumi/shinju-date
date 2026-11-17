@@ -486,6 +486,18 @@ CREATE POLICY "Enable update for admins"
     WITH CHECK ((SELECT "public"."is_admin"()));
 ```
 
+## 一覧の絞り込み・検索・並べ替え
+
+管理画面の一覧の絞り込み・検索・並べ替え・ページは、`useState` ではなく、URL のパラメータで持ちます。再読み込みしても残り、URL を共有でき、詳細ページからブラウザの「戻る」で同じ絞り込みに戻れるようにするためです。
+
+- 一覧ごとに、`_lib/search-params-schema.ts` に zod のスキーマを置き、ページ（Suspense の中の部品）で `searchParams` を解釈して、一覧の部品に渡す。正しくない値は、既定の値として扱う
+  - 検索語と決まった値のパラメータには、`apps/admin/lib/search-params-schema.ts` の `searchTextParamSchema()` と `enumParamSchema()` を使う
+  - クライアントコンポーネントは、スキーマのファイルから型だけを読み込む（zod をクライアントのバンドルに入れない）。既定の値などが要るときは、zod を使わないファイルに置く（例: `talents/_lib/talent-list-filters.ts`）
+- URL の書き換えは、`apps/admin/lib/use-update-search-params.ts` の `useUpdateSearchParams()` で行う。絞り込み・検索・並べ替えは `replace` で、`page` を消す（フックの既定）
+- 既定の値のときは、パラメータを付けない（`null` を渡して消す）
+- 検索ボックスには、`apps/admin/components/search-input.tsx` の `SearchInput` を使う。入力をやめてから少し待って URL に反映し、「戻る」などで URL が変わったら入力欄を合わせる
+- フォームの入力中の値（追加のフォームなど）は、URL に入れない
+
 ## 色
 
 色・文字サイズ・角丸・影の決まりは、[デザインガイドライン](design-guidelines.md)にまとめています。色は [design-guidelines.md の「色」](design-guidelines.md#色)を参照してください。

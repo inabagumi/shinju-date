@@ -3,6 +3,7 @@ import type {
   AddPastVideosOptions,
   AddPastVideosResult,
   RefreshVideoResult,
+  SyncAccountResult,
 } from '../types.js'
 import { addNewTwitchVideos } from './add-new-videos.js'
 import { addPastTwitchVideos } from './add-past-videos.js'
@@ -12,7 +13,11 @@ import {
 } from './check-videos.js'
 import { TwitchFetcher } from './fetcher.js'
 import { refreshTwitchVideo } from './refresh-video.js'
-import { syncTwitchUsers } from './sync-accounts.js'
+import {
+  syncTwitchUsers,
+  syncTwitchUsersOfTalent,
+  type TwitchUserFields,
+} from './sync-accounts.js'
 import { syncTwitchLive } from './sync-live.js'
 import type { TwitchScraperOptions } from './types.js'
 
@@ -77,6 +82,13 @@ export class TwitchScraper extends Scraper {
 
   async syncAccounts(now?: Temporal.Instant): Promise<boolean> {
     return (await syncTwitchUsers(this.#context(now))) > 0
+  }
+
+  syncTalentAccounts(
+    talentId: string,
+    now?: Temporal.Instant,
+  ): Promise<SyncAccountResult<TwitchUserFields>[]> {
+    return syncTwitchUsersOfTalent(this.#context(now), talentId)
   }
 
   addPastVideos({

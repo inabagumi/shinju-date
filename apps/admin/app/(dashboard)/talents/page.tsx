@@ -1,26 +1,31 @@
 import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
-import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
-import { ManagementTableSkeleton } from '@/components/skeletons'
-import { TalentsList } from './_components/talents-list'
+import { TalentsList, TalentsListSkeleton } from './_components/talents-list'
 import { getTalents } from './_lib/get-talents'
+import { talentSearchParamsSchema } from './_lib/search-params-schema'
 
 export const metadata: Metadata = {
   title: 'タレント管理',
 }
 
-async function TalentsListData() {
-  'use cache: private'
+async function TalentsListData({
+  searchParams,
+}: Pick<PageProps<'/talents'>, 'searchParams'>) {
+  const [talents, rawParams] = await Promise.all([getTalents(), searchParams])
+  const { search, sort, status } = talentSearchParamsSchema.parse(rawParams)
 
-  cacheLife('minutes')
-
-  const talents = await getTalents()
-
-  return <TalentsList talents={talents} />
+  return (
+    <TalentsList
+      search={search}
+      sortOrder={sort}
+      statusFilter={status}
+      talents={talents}
+    />
+  )
 }
 
-export default function TalentsPage() {
+export default function TalentsPage({ searchParams }: PageProps<'/talents'>) {
   return (
     <div>
       <PageHeader
@@ -28,8 +33,8 @@ export default function TalentsPage() {
         title="タレント管理"
       />
 
-      <Suspense fallback={<ManagementTableSkeleton />}>
-        <TalentsListData />
+      <Suspense fallback={<TalentsListSkeleton />}>
+        <TalentsListData searchParams={searchParams} />
       </Suspense>
     </div>
   )

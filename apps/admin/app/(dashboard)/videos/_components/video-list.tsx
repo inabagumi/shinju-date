@@ -8,6 +8,7 @@ import {
 import {
   Button,
   EmptyState,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -37,6 +38,10 @@ import {
   ExternalVideoLink,
   getExternalVideoUrl,
 } from '@/components/external-video-link'
+import {
+  TableSkeleton,
+  type TableSkeletonColumn,
+} from '@/components/table-skeleton'
 import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
 import { useSearchParamsHref } from '@/lib/use-update-search-params'
@@ -472,5 +477,64 @@ export default function VideoList({ videos }: Props) {
         videos={confirmDialog.videos}
       />
     </div>
+  )
+}
+
+/** 動画の一覧の10列（選択、サムネイル、タイトル、タレント、日時、再生時間、クリック数、種別、ステータス、操作） */
+const VIDEO_LIST_SKELETON_COLUMNS: TableSkeletonColumn[] = [
+  { cell: <Skeleton className="size-4" />, header: false, id: 'select' },
+  {
+    cell: <Skeleton className="aspect-video w-28 rounded-container" />,
+    id: 'thumbnail',
+  },
+  {
+    cell: (
+      <div className="w-full min-w-64 space-y-1">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-2/3" />
+      </div>
+    ),
+    className: 'w-full',
+    id: 'title',
+  },
+  { cell: <Skeleton className="h-4 w-20" />, id: 'talent' },
+  {
+    cell: (
+      <div className="space-y-1">
+        <Skeleton className="h-4 w-36" />
+        <Skeleton className="h-4 w-36" />
+      </div>
+    ),
+    id: 'date',
+  },
+  { align: 'end', cell: <Skeleton className="h-4 w-14" />, id: 'duration' },
+  { align: 'end', cell: <Skeleton className="h-4 w-10" />, id: 'clicks' },
+  {
+    cell: (
+      <div className="space-y-1">
+        <Skeleton className="h-5 w-16" />
+        <Skeleton className="h-5 w-16" />
+      </div>
+    ),
+    id: 'kind',
+  },
+  { cell: <Skeleton className="h-5 w-16" />, id: 'status' },
+  { cell: <Skeleton className="size-7" />, header: false, id: 'actions' },
+]
+
+interface VideoListSkeletonProps {
+  /** 1ページの件数 */
+  rows: number
+}
+
+/** 読み込み中の `VideoList`。一括操作のバーと、同じ列の表を並べる */
+export function VideoListSkeleton({ rows }: VideoListSkeletonProps) {
+  return (
+    <TableSkeleton
+      columns={VIDEO_LIST_SKELETON_COLUMNS}
+      filterBar={<Skeleton className="mb-4 h-14 w-full rounded-container" />}
+      rows={rows}
+      tableClassName="min-w-5xl"
+    />
   )
 }

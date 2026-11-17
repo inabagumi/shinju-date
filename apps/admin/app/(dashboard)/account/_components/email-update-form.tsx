@@ -1,13 +1,13 @@
+import { Skeleton } from '@shinju-date/ui'
 import Form, {
   ErrorMessage,
   FormField,
-  GenericErrorMessage,
   Input,
   Label,
   SubmitButton,
   SuccessMessage,
 } from '@/components/form'
-import { Panel } from '@/components/panel'
+import { Panel, PanelSkeleton } from '@/components/panel'
 import { updateUserEmail } from '../_actions'
 
 interface Props {
@@ -32,18 +32,30 @@ export function EmailUpdateForm({ currentEmail }: Props) {
           message="確認メールを送信しました。新しいメールアドレスに届いたリンクをクリックして変更を完了してください。"
         />
 
-        <GenericErrorMessage className="rounded-control bg-danger/10 p-3 text-meta text-danger" />
-
-        <FormField className="flex flex-col gap-2" name="email">
-          <Label className="text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50">
-            新しいメールアドレス
-          </Label>
+        <FormField name="email">
+          <Label>新しいメールアドレス</Label>
           <Input placeholder="new-email@example.com" required type="email" />
-          <ErrorMessage className="text-meta text-danger" />
+          <ErrorMessage />
         </FormField>
 
-        <SubmitButton type="submit">メールアドレスを更新</SubmitButton>
+        <SubmitButton>メールアドレスを更新</SubmitButton>
       </Form>
     </Panel>
+  )
+}
+
+/** 読み込み中の `EmailUpdateForm`。現在のメールアドレス、入力欄、更新のボタンを並べる */
+export function EmailUpdateFormSkeleton() {
+  return (
+    <PanelSkeleton className="max-w-text" title="メールアドレスの変更">
+      <div className="space-y-4">
+        <Skeleton className="h-12 w-full" />
+        <div className="space-y-1">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <Skeleton className="h-9 w-44" />
+      </div>
+    </PanelSkeleton>
   )
 }

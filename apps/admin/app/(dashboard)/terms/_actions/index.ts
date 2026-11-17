@@ -67,7 +67,7 @@ export async function createTermAction(
     }
 
     // Log audit entry
-    await createAuditLog('TERM_CREATE', 'terms', newTerm.id, {
+    await createAuditLog('TERM_CREATE', newTerm.id, {
       entityName: newTerm.term,
     })
 
@@ -143,7 +143,7 @@ export async function updateTermAction(
     }
 
     // Log audit entry
-    await createAuditLog('TERM_UPDATE', 'terms', id, {
+    await createAuditLog('TERM_UPDATE', id, {
       entityName: newTerm.term,
     })
 
@@ -191,7 +191,7 @@ export async function deleteTermAction(id: string): Promise<{
     }
 
     // Log audit entry
-    await createAuditLog('TERM_DELETE', 'terms', id, {
+    await createAuditLog('TERM_DELETE', id, {
       entityName: deletedTerm.term,
     })
 

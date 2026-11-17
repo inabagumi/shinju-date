@@ -1,7 +1,12 @@
+import { cacheLife } from 'next/cache'
 import { createSupabaseServerClient } from '@/lib/supabase'
 import { unwrap } from '@/lib/supabase/query'
 
 export default async function getTerms() {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   const supabaseClient = await createSupabaseServerClient()
 
   return unwrap(

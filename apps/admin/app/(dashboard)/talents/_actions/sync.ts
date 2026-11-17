@@ -1,16 +1,10 @@
 'use server'
 
 import { CACHE_TAGS } from '@shinju-date/constants'
+import type { Enums, Tables } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
-import type { SavedTwitchUserIcon } from '@shinju-date/scraper/twitch'
-import type {
-  ProfileImageSyncResult,
-  SavedYouTubeChannelIcon,
-} from '@shinju-date/scraper/youtube'
 import { toDBString } from '@shinju-date/temporal-fns'
-import { getUsers } from '@shinju-date/twitch-api-client'
 import { revalidateTags } from '@shinju-date/web-cache'
-import { getChannels } from '@shinju-date/youtube-api-client'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog } from '@/lib/audit-log'
 import {
@@ -18,60 +12,18 @@ import {
   requireAuthenticatedUser,
   unauthenticatedResult,
 } from '@/lib/auth'
-import { syncTwitchUserIconSafely } from '@/lib/twitch-user-icon'
+import { createScraper } from '@/lib/scraper'
 import {
-  hasProfileImageChanged,
-  syncYouTubeChannelIconSafely,
-} from '@/lib/youtube-channel-icon'
+  accountsNotFoundError,
+  type PlatformSyncOutcome,
+  type SyncResult,
+  toSyncResult,
+  toSyncSummary,
+} from '../_lib/sync-result'
 
-type SupabaseClient = AuthenticatedContext['supabaseClient']
+type Platform = Enums<'platform_type'>
 
-interface SyncResult {
-  success: boolean
-  error?: string
-  message?: string
-  unchanged?: boolean
-}
-
-interface SavedYouTubeChannel extends SavedYouTubeChannelIcon {
-  name: string | null
-  youtube_handle: string | null
-}
-
-interface SavedTwitchUser extends SavedTwitchUserIcon {
-  name: string | null
-  twitch_login_name: string | null
-}
-
-/** The result of syncing the accounts of one platform. */
-type PlatformSyncOutcome =
-  /** The talent has no account on the platform. */
-  | { status: 'no_accounts' }
-  | { status: 'unchanged' }
-  | { status: 'updated' }
-  | { status: 'failed'; error: string }
-
-const YOUTUBE_CHANNEL_NOT_FOUND_ERROR =
-  'YouTubeでチャンネルが見つかりませんでした。チャンネルIDが正しいか確認してください。'
-const TWITCH_USER_NOT_FOUND_ERROR =
-  'Twitchでユーザーが見つかりませんでした。ユーザーIDが正しいか確認してください。'
-
-const NO_YOUTUBE_CHANNELS_ERROR =
-  'このタレントに紐づくYouTubeチャンネルはありません。'
-const NO_TWITCH_USERS_ERROR = 'このタレントに紐づくTwitchユーザーはありません。'
-const NO_ACCOUNTS_ERROR =
-  'このタレントに紐づくYouTubeチャンネル・Twitchユーザーはありません。'
-const TALENT_NOT_FOUND_ERROR = 'タレントが見つかりませんでした。'
-
-const YOUTUBE_UNCHANGED_MESSAGE = 'チャンネル情報は既に最新です。'
-const TWITCH_UNCHANGED_MESSAGE = 'Twitchユーザー情報は既に最新です。'
-
-/** Normalizes an embedded one-to-many relation to an array. */
-function toList<T>(relation: T | T[] | null | undefined): NonNullable<T>[] {
-  const list = Array.isArray(relation) ? relation : relation ? [relation] : []
-
-  return list.filter((item): item is NonNullable<T> => item != null)
-}
+type Talent = Pick<Tables<'talents'>, 'id' | 'name'>
 
 function toErrorMessage(error: unknown): string {
   return error instanceof Error
@@ -79,338 +31,106 @@ function toErrorMessage(error: unknown): string {
     : '予期しないエラーが発生しました。'
 }
 
-/** Marks the talent as changed and refreshes the pages that show it. */
-async function touchTalent(
-  supabaseClient: SupabaseClient,
-  talentId: string,
-): Promise<void> {
-  // Touch talent.updated_at so list views reflect that channel data changed
-  const { error: updateError } = await supabaseClient
-    .from('talents')
-    .update({
-      updated_at: toDBString(Temporal.Now.instant()),
-    })
-    .eq('id', talentId)
-
-  if (updateError) {
-    throw updateError
-  }
-}
-
-async function revalidateTalent(talentId: string): Promise<void> {
-  revalidatePath(`/talents/${talentId}`)
-  revalidatePath('/talents')
-  await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
-}
-
 /**
- * Syncs the given YouTube channels of a talent with the YouTube API.
- * Never throws: failures are returned as `failed`.
+ * タレントの1つのプラットフォームのアカウントを、scraper の `syncTalentAccounts` で同期する。
+ * 変更があれば、タレントの更新日時を進め、監査ログを残し、再検証する。
+ * 例外は投げず、失敗は `failed` として返す。
  */
-async function syncYouTubeChannels(
-  supabaseClient: SupabaseClient,
-  talentId: string,
-  channels: readonly SavedYouTubeChannel[],
+async function syncPlatform(
+  { supabaseClient }: AuthenticatedContext,
+  talent: Talent,
+  platform: Platform,
 ): Promise<PlatformSyncOutcome> {
-  if (channels.length === 0) {
-    return { status: 'no_accounts' }
-  }
-
   try {
-    const youtubeChannels = await Array.fromAsync(
-      getChannels({
-        ids: channels.map((channel) => channel.youtube_channel_id),
-      }),
+    const now = Temporal.Now.instant()
+    const scraper = createScraper(platform)
+    const results = await scraper.syncTalentAccounts(talent.id, now)
+
+    if (results.length === 0) {
+      return { status: 'no_accounts' }
+    }
+
+    // Twitch は名前を書き込めなくてもアイコンを同期するので、`failed` でもアイコンの変更は残す
+    const changed = results.filter(
+      (result) => result.status === 'updated' || result.iconUpdated,
     )
 
-    if (youtubeChannels.length === 0) {
-      return { error: YOUTUBE_CHANNEL_NOT_FOUND_ERROR, status: 'failed' }
+    if (changed.length === 0) {
+      return results.some((result) => result.status === 'unchanged')
+        ? { status: 'unchanged' }
+        : { error: accountsNotFoundError(platform), status: 'failed' }
     }
 
-    const youtubeChannelById = new Map(
-      youtubeChannels.map((youtubeChannel) => [
-        youtubeChannel.id,
-        youtubeChannel,
-      ]),
-    )
+    // 一覧の並びに反映するため、タレントの更新日時を進める
+    const { error } = await supabaseClient
+      .from('talents')
+      .update({ updated_at: toDBString(now) })
+      .eq('id', talent.id)
 
-    const channelChanges: {
-      youtube_channel_id: string
-      before: { name: string | null; youtube_handle: string | null }
-      after: { name: string; youtube_handle: string | null }
-      profile_image?: Exclude<ProfileImageSyncResult, 'unchanged'>
-    }[] = []
-
-    let syncedCount = 0
-
-    for (const channel of channels) {
-      const youtubeChannel = youtubeChannelById.get(channel.youtube_channel_id)
-
-      if (!youtubeChannel) {
-        logger.warn('YouTubeでチャンネルが見つかりませんでした', {
-          talentId,
-          youtubeChannelId: channel.youtube_channel_id,
-        })
-        continue
-      }
-
-      if (!youtubeChannel.snippet?.title) {
-        logger.warn('YouTubeからチャンネル情報を取得できませんでした', {
-          talentId,
-          youtubeChannelId: channel.youtube_channel_id,
-        })
-        continue
-      }
-
-      const channelName = youtubeChannel.snippet.title
-      const youtubeHandle = youtubeChannel.snippet.customUrl || null
-
-      const { error: youtubeError } = await supabaseClient
-        .from('youtube_channels')
-        .upsert(
-          {
-            id: channel.id,
-            name: channelName,
-            talent_id: talentId,
-            youtube_channel_id: channel.youtube_channel_id,
-            youtube_handle: youtubeHandle,
-          },
-          { onConflict: 'id' },
-        )
-
-      if (youtubeError) {
-        logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
-          error: youtubeError,
-          talentId,
-          youtubeChannelId: channel.youtube_channel_id,
-        })
-        continue
-      }
-
-      syncedCount++
-
-      const profileImageResult = await syncYouTubeChannelIconSafely(
-        youtubeChannel,
-        channel,
-      )
-      const profileImageChanged = hasProfileImageChanged(profileImageResult)
-
-      if (
-        channelName !== channel.name ||
-        youtubeHandle !== channel.youtube_handle ||
-        profileImageChanged
-      ) {
-        channelChanges.push({
-          after: {
-            name: channelName,
-            youtube_handle: youtubeHandle,
-          },
-          before: {
-            name: channel.name,
-            youtube_handle: channel.youtube_handle,
-          },
-          ...(profileImageChanged ? { profile_image: profileImageResult } : {}),
-          youtube_channel_id: channel.youtube_channel_id,
-        })
-      }
+    if (error) {
+      throw error
     }
 
-    if (syncedCount === 0) {
-      return { error: YOUTUBE_CHANNEL_NOT_FOUND_ERROR, status: 'failed' }
-    }
-
-    if (channelChanges.length === 0) {
-      return { status: 'unchanged' }
-    }
-
-    await touchTalent(supabaseClient, talentId)
-
-    await createAuditLog('CHANNEL_SYNC', 'channels', talentId, {
-      channels: channelChanges,
+    await createAuditLog('CHANNEL_SYNC', talent.id, {
+      accounts: changed.map(({ accountId, changes, iconUpdated, name }) => ({
+        id: accountId,
+        name,
+        ...(changes ? { changes } : {}),
+        ...(iconUpdated ? { iconUpdated } : {}),
+      })),
+      entityName: talent.name,
+      platform,
     })
 
-    await revalidateTalent(talentId)
+    revalidatePath(`/talents/${talent.id}`)
+    revalidatePath('/talents')
+    await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
 
     return { status: 'updated' }
+  } catch (error) {
+    logger.error('タレントの同期に失敗しました', {
+      error,
+      platform,
+      talentId: talent.id,
+    })
+
+    return { error: toErrorMessage(error), status: 'failed' }
+  }
+}
+
+/** 削除されていないタレントを読み、`run` で同期して結果を返す。例外は投げない。 */
+async function syncTalent(
+  { supabaseClient }: AuthenticatedContext,
+  talentId: string,
+  run: (talent: Talent) => Promise<SyncResult>,
+): Promise<SyncResult> {
+  try {
+    const { data: talent, error } = await supabaseClient
+      .from('talents')
+      .select('id, name')
+      .eq('id', talentId)
+      .is('deleted_at', null)
+      .maybeSingle()
+
+    if (error) {
+      throw error
+    }
+
+    return talent
+      ? await run(talent)
+      : { error: 'タレントが見つかりませんでした。', success: false }
   } catch (error) {
     logger.error('タレントの同期に失敗しました', { error, talentId })
 
-    return { error: toErrorMessage(error), status: 'failed' }
+    return { error: toErrorMessage(error), success: false }
   }
 }
 
 /**
- * Syncs the given Twitch users of a talent with the Helix API.
- * Never throws: failures are returned as `failed`.
- */
-async function syncTwitchUsers(
-  supabaseClient: SupabaseClient,
-  talentId: string,
-  users: readonly SavedTwitchUser[],
-): Promise<PlatformSyncOutcome> {
-  if (users.length === 0) {
-    return { status: 'no_accounts' }
-  }
-
-  try {
-    const twitchUsers = await Array.fromAsync(
-      getUsers({
-        ids: users.map((user) => user.twitch_user_id),
-      }),
-    )
-
-    if (twitchUsers.length === 0) {
-      return { error: TWITCH_USER_NOT_FOUND_ERROR, status: 'failed' }
-    }
-
-    const twitchUserById = new Map(
-      twitchUsers.map((twitchUser) => [twitchUser.id, twitchUser]),
-    )
-
-    const userChanges: {
-      twitch_user_id: string
-      /** Omitted when the name and login could not be written. */
-      before?: { name: string | null; twitch_login_name: string | null }
-      after?: { name: string; twitch_login_name: string }
-      profile_image?: Exclude<ProfileImageSyncResult, 'unchanged'>
-    }[] = []
-
-    let syncedCount = 0
-
-    for (const user of users) {
-      const twitchUser = twitchUserById.get(user.twitch_user_id)
-
-      if (!twitchUser) {
-        logger.warn('Twitchでユーザーが見つかりませんでした', {
-          talentId,
-          twitchUserId: user.twitch_user_id,
-        })
-        continue
-      }
-
-      const displayName = twitchUser.display_name
-      const loginName = twitchUser.login
-
-      const { error: upsertError } = await supabaseClient
-        .from('twitch_users')
-        .upsert(
-          {
-            id: user.id,
-            name: displayName,
-            talent_id: talentId,
-            twitch_login_name: loginName,
-            twitch_user_id: user.twitch_user_id,
-          },
-          { onConflict: 'id' },
-        )
-
-      if (upsertError) {
-        logger.error('twitch_usersテーブルへの書き込みに失敗しました', {
-          error: upsertError,
-          talentId,
-          twitchUserId: user.twitch_user_id,
-        })
-      }
-
-      // The icon is synced even when the name and login could not be written,
-      // so that neither failure keeps the other from being synced.
-      const profileImageResult = await syncTwitchUserIconSafely(
-        twitchUser,
-        user,
-      )
-      const profileImageChanged = hasProfileImageChanged(profileImageResult)
-
-      // A failed write of the name and login only counts as synced when the
-      // icon was actually written: an unchanged icon would otherwise report
-      // the account as up to date although its changes were never saved.
-      if (upsertError && !profileImageChanged) {
-        continue
-      }
-
-      syncedCount++
-
-      const detailsChanged =
-        !upsertError &&
-        (displayName !== user.name || loginName !== user.twitch_login_name)
-
-      if (detailsChanged || profileImageChanged) {
-        userChanges.push({
-          ...(upsertError
-            ? {}
-            : {
-                after: {
-                  name: displayName,
-                  twitch_login_name: loginName,
-                },
-                before: {
-                  name: user.name,
-                  twitch_login_name: user.twitch_login_name,
-                },
-              }),
-          ...(profileImageChanged ? { profile_image: profileImageResult } : {}),
-          twitch_user_id: user.twitch_user_id,
-        })
-      }
-    }
-
-    if (syncedCount === 0) {
-      return { error: TWITCH_USER_NOT_FOUND_ERROR, status: 'failed' }
-    }
-
-    if (userChanges.length === 0) {
-      return { status: 'unchanged' }
-    }
-
-    await touchTalent(supabaseClient, talentId)
-
-    await createAuditLog('CHANNEL_SYNC', 'twitch_users', talentId, {
-      platform: 'twitch',
-      users: userChanges,
-    })
-
-    await revalidateTalent(talentId)
-
-    return { status: 'updated' }
-  } catch (error) {
-    logger.error('タレントのTwitch同期に失敗しました', { error, talentId })
-
-    return { error: toErrorMessage(error), status: 'failed' }
-  }
-}
-
-function toSyncResult(
-  outcome: PlatformSyncOutcome,
-  {
-    noAccountsError,
-    unchangedMessage,
-  }: {
-    noAccountsError: string
-    unchangedMessage: string
-  },
-): SyncResult {
-  switch (outcome.status) {
-    case 'no_accounts':
-      return { error: noAccountsError, success: false }
-    case 'failed':
-      return { error: outcome.error, success: false }
-    case 'unchanged':
-      return { message: unchangedMessage, success: true, unchanged: true }
-    case 'updated':
-      return { success: true }
-  }
-}
-
-/**
- * タレントに紐づく YouTube チャンネル情報を YouTube API から同期する。
+ * タレントに紐づく YouTube チャンネルを YouTube に合わせる（名前、ハンドル、アイコン）。
  *
- * ## 仕様
- * - **全チャンネルを同期する**: 先頭 1 件に限らず、紐づく `youtube_channels` をすべて対象にする
- * - **更新対象**: 各チャンネルの `name`（YouTube の title）と `youtube_handle`（customUrl）、
- *   およびアイコン（`snippet.thumbnails`）。アイコンは元画像が変わった場合のみ差し替える
- * - **アイコンの失敗では止めない**: アイコンの取得・保存に失敗しても、name / handle の同期は続ける
- * - **タレント名は更新しない**: `talents.name` とチャンネル名は分離されている（#5622）。
- *   バッチの `/talents/update`（`syncAccounts`）と同じ方針
- * - 単一チャンネルの場合も、チャンネルの name / handle が更新される（既存のチャンネル同期としては同等）
+ * 同期は `@shinju-date/scraper` の `syncTalentAccounts` が、定期の同期と同じ関数で行う
+ * （変更があったアカウントだけを更新する）。タレント名（`talents.name`）は更新しない（#5622）。
  */
 export async function syncTalentWithYouTube(
   talentId: string,
@@ -421,51 +141,14 @@ export async function syncTalentWithYouTube(
     return unauthenticatedResult()
   }
 
-  const { supabaseClient } = auth
-
-  try {
-    const { data: talent, error: fetchError } = await supabaseClient
-      .from('talents')
-      .select(
-        'id, youtube_channels(id, name, youtube_channel_id, youtube_handle, profile_images(id, path, etag, source_url))',
-      )
-      .eq('id', talentId)
-      .single()
-
-    if (fetchError) {
-      throw fetchError
-    }
-
-    if (!talent) {
-      return { error: TALENT_NOT_FOUND_ERROR, success: false }
-    }
-
-    const outcome = await syncYouTubeChannels(
-      supabaseClient,
-      talent.id,
-      toList(talent.youtube_channels),
-    )
-
-    return toSyncResult(outcome, {
-      noAccountsError: NO_YOUTUBE_CHANNELS_ERROR,
-      unchangedMessage: YOUTUBE_UNCHANGED_MESSAGE,
-    })
-  } catch (error) {
-    logger.error('タレントの同期に失敗しました', { error, talentId })
-    return { error: toErrorMessage(error), success: false }
-  }
+  return syncTalent(auth, talentId, async (talent) =>
+    toSyncResult('youtube', await syncPlatform(auth, talent, 'youtube')),
+  )
 }
 
 /**
- * タレントに紐づく Twitch ユーザー情報を Helix API から同期する。
- *
- * ## 仕様
- * - 紐づく `twitch_users` をすべて対象にする
- * - 更新対象: `name`（display_name）と `twitch_login_name`（login）、
- *   およびアイコン（`profile_image_url`）。アイコンは元画像が変わった場合のみ差し替える
- * - name / login とアイコンは独立して同期する: どちらかの書き込みに失敗しても、
- *   もう一方は同期する
- * - タレント名は更新しない（YouTube 同期と同様）
+ * タレントに紐づく Twitch ユーザーを Twitch に合わせる（表示名、login、アイコン）。
+ * 同期の仕方は {@link syncTalentWithYouTube} と同じ。
  */
 export async function syncTalentWithTwitch(
   talentId: string,
@@ -476,64 +159,14 @@ export async function syncTalentWithTwitch(
     return unauthenticatedResult()
   }
 
-  const { supabaseClient } = auth
-
-  try {
-    const { data: talent, error: fetchError } = await supabaseClient
-      .from('talents')
-      .select(
-        'id, twitch_users(id, name, twitch_user_id, twitch_login_name, profile_images(id, path, etag, source_url))',
-      )
-      .eq('id', talentId)
-      .single()
-
-    if (fetchError) {
-      throw fetchError
-    }
-
-    if (!talent) {
-      return { error: TALENT_NOT_FOUND_ERROR, success: false }
-    }
-
-    const outcome = await syncTwitchUsers(
-      supabaseClient,
-      talent.id,
-      toList(talent.twitch_users),
-    )
-
-    return toSyncResult(outcome, {
-      noAccountsError: NO_TWITCH_USERS_ERROR,
-      unchangedMessage: TWITCH_UNCHANGED_MESSAGE,
-    })
-  } catch (error) {
-    logger.error('タレントのTwitch同期に失敗しました', { error, talentId })
-    return { error: toErrorMessage(error), success: false }
-  }
+  return syncTalent(auth, talentId, async (talent) =>
+    toSyncResult('twitch', await syncPlatform(auth, talent, 'twitch')),
+  )
 }
 
-const PLATFORM_MESSAGES = {
-  twitch: {
-    label: 'Twitch',
-    unchanged: 'ユーザー情報は既に最新です。',
-    updated: 'ユーザー情報を同期しました。',
-  },
-  youtube: {
-    label: 'YouTube',
-    unchanged: 'チャンネル情報は既に最新です。',
-    updated: 'チャンネル情報を同期しました。',
-  },
-} as const
-
 /**
- * タレントに紐づく YouTube チャンネルと Twitch ユーザーをまとめて同期する
- * （タレント一覧の「同期」）。
- *
- * ## 仕様
- * - 紐づいているプラットフォームだけを同期する（Twitch だけのタレントでもエラーにしない）
- * - プラットフォームごとに独立して同期し、片方が失敗してももう片方の結果は反映する
- * - 結果のメッセージにはプラットフォームごとの結果を 1 行ずつ含める。
- *   どれかが失敗した場合は `success: false` とし、`error` に同じ内容を入れる
- * - `unchanged` はどのプラットフォームも更新されなかったときに `true`
+ * タレントに紐づく YouTube チャンネルと Twitch ユーザーをまとめて同期する（タレント一覧の「同期」）。
+ * プラットフォームごとに独立して同期するので、片方の失敗でもう片方を止めない。
  */
 export async function syncTalentAccounts(
   talentId: string,
@@ -544,72 +177,14 @@ export async function syncTalentAccounts(
     return unauthenticatedResult()
   }
 
-  const { supabaseClient } = auth
-
-  try {
-    const { data: talent, error: fetchError } = await supabaseClient
-      .from('talents')
-      .select(
-        'id, youtube_channels(id, name, youtube_channel_id, youtube_handle, profile_images(id, path, etag, source_url)), twitch_users(id, name, twitch_user_id, twitch_login_name, profile_images(id, path, etag, source_url))',
-      )
-      .eq('id', talentId)
-      .single()
-
-    if (fetchError) {
-      throw fetchError
-    }
-
-    if (!talent) {
-      return { error: TALENT_NOT_FOUND_ERROR, success: false }
-    }
-
-    // Each platform reports its own failure, so one cannot stop the other.
-    const [youtube, twitch] = await Promise.all([
-      syncYouTubeChannels(
-        supabaseClient,
-        talent.id,
-        toList(talent.youtube_channels),
+  return syncTalent(auth, talentId, async (talent) =>
+    toSyncSummary(
+      await Promise.all(
+        (['youtube', 'twitch'] as const).map(
+          async (platform) =>
+            [platform, await syncPlatform(auth, talent, platform)] as const,
+        ),
       ),
-      syncTwitchUsers(supabaseClient, talent.id, toList(talent.twitch_users)),
-    ])
-    const outcomes = { twitch, youtube }
-
-    const lines: string[] = []
-    let hasFailure = false
-    let hasUpdates = false
-
-    for (const platform of ['youtube', 'twitch'] as const) {
-      const outcome = outcomes[platform]
-      const messages = PLATFORM_MESSAGES[platform]
-
-      switch (outcome.status) {
-        case 'no_accounts':
-          continue
-        case 'failed':
-          hasFailure = true
-          lines.push(`${messages.label}: 同期に失敗しました。${outcome.error}`)
-          break
-        case 'unchanged':
-          lines.push(`${messages.label}: ${messages.unchanged}`)
-          break
-        case 'updated':
-          hasUpdates = true
-          lines.push(`${messages.label}: ${messages.updated}`)
-          break
-      }
-    }
-
-    if (lines.length === 0) {
-      return { error: NO_ACCOUNTS_ERROR, success: false }
-    }
-
-    const text = lines.join('\n')
-
-    return hasFailure
-      ? { error: text, success: false, unchanged: !hasUpdates }
-      : { message: text, success: true, unchanged: !hasUpdates }
-  } catch (error) {
-    logger.error('タレントの同期に失敗しました', { error, talentId })
-    return { error: toErrorMessage(error), success: false }
-  }
+    ),
+  )
 }

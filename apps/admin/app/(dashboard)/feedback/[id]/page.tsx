@@ -1,26 +1,19 @@
 import { PageHeader } from '@shinju-date/ui'
 
 import type { Metadata } from 'next'
-import { cacheLife } from 'next/cache'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { BackLink } from '@/components/back-link'
-import { StackedDetailSkeleton } from '@/components/skeletons'
 import { createTitleFromMessage } from '../_lib/create-title-from-message'
 import { getFeatureRequestById } from '../_lib/get-feedback'
-import { FeatureRequestDetail } from './_components/feedback-detail'
+import {
+  FeatureRequestDetail,
+  FeatureRequestDetailSkeleton,
+} from './_components/feedback-detail'
 
-interface Props {
-  params: Promise<{
-    id: string
-  }>
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  'use cache: private'
-
-  cacheLife('minutes')
-
+export async function generateMetadata({
+  params,
+}: Pick<PageProps<'/feedback/[id]'>, 'params'>): Promise<Metadata> {
   const { id } = await params
 
   const featureRequest = await getFeatureRequestById(id)
@@ -38,10 +31,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-async function CachedFeatureRequestDetail({ id }: { id: string }) {
-  'use cache: private'
-
-  cacheLife('minutes')
+async function FeatureRequestDetailData({
+  params,
+}: Pick<PageProps<'/feedback/[id]'>, 'params'>) {
+  const { id } = await params
 
   const featureRequest = await getFeatureRequestById(id)
 
@@ -52,7 +45,9 @@ async function CachedFeatureRequestDetail({ id }: { id: string }) {
   return <FeatureRequestDetail featureRequest={featureRequest} />
 }
 
-export default function FeedbackDetailPage({ params }: Props) {
+export default function FeedbackDetailPage({
+  params,
+}: PageProps<'/feedback/[id]'>) {
   return (
     <div>
       <div className="mb-4">
@@ -61,10 +56,8 @@ export default function FeedbackDetailPage({ params }: Props) {
 
       <PageHeader title="機能要望詳細" />
 
-      <Suspense fallback={<StackedDetailSkeleton />}>
-        {params.then(({ id }) => (
-          <CachedFeatureRequestDetail id={id} />
-        ))}
+      <Suspense fallback={<FeatureRequestDetailSkeleton />}>
+        <FeatureRequestDetailData params={params} />
       </Suspense>
     </div>
   )

@@ -7,6 +7,12 @@ const mocks = vi.hoisted(() => ({
   deleteQueryAction: vi.fn(),
 }))
 
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/recommended-queries',
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}))
+
 vi.mock('../_actions', () => ({
   addQueryAction: mocks.addQueryAction,
   deleteQueryAction: mocks.deleteQueryAction,
@@ -16,7 +22,11 @@ const { QueriesList } = await import('./queries-list')
 
 function renderList() {
   return render(
-    <QueriesList autoQueries={[]} manualQueries={['ホロライブ', '歌枠']} />,
+    <QueriesList
+      autoQueries={[]}
+      manualQueries={['ホロライブ', '歌枠']}
+      search={undefined}
+    />,
     { wrapper: ActionToastProvider },
   )
 }

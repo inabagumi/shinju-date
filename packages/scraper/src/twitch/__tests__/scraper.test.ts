@@ -13,6 +13,7 @@ import {
   createSavedVideo,
   createStream,
   createVideo,
+  TWITCH_TALENTS,
 } from '../../internal/testing/twitch.js'
 import type { SavedTwitchVideo } from '../saved-video.js'
 import { TwitchScraper } from '../scraper.js'
@@ -107,7 +108,7 @@ function respondWithSavedVideo(
 
     switch (request) {
       case 'GET talents':
-        return activeTalents
+        return TWITCH_TALENTS
       case 'GET videos':
         return [
           {
@@ -146,13 +147,6 @@ function writes() {
   return supabase.requests.filter(({ method }) => method !== 'GET')
 }
 
-const activeTalents = [
-  {
-    id: 'talent-1',
-    twitch_users: [{ id: 'user-row-1', twitch_user_id: 'twitch-user-1' }],
-  },
-]
-
 describe('TwitchScraper', () => {
   const onError = vi.fn()
 
@@ -180,7 +174,7 @@ describe('TwitchScraper', () => {
   describe('refreshLiveVideos', () => {
     it('adds a LIVE row when a stream goes on air', async () => {
       supabase.respond(({ method, table }) =>
-        method === 'GET' && table === 'talents' ? activeTalents : [],
+        method === 'GET' && table === 'talents' ? TWITCH_TALENTS : [],
       )
       const { scraper } = createScraper({ liveStreams: [createStream()] })
 
@@ -211,7 +205,7 @@ describe('TwitchScraper', () => {
 
         switch (table) {
           case 'talents':
-            return activeTalents
+            return TWITCH_TALENTS
           case 'videos':
             return [
               {
@@ -243,7 +237,7 @@ describe('TwitchScraper', () => {
 
     it('reports no change while nothing is on air', async () => {
       supabase.respond(({ method, table }) =>
-        method === 'GET' && table === 'talents' ? activeTalents : [],
+        method === 'GET' && table === 'talents' ? TWITCH_TALENTS : [],
       )
       const { scraper } = createScraper({})
 
@@ -254,7 +248,7 @@ describe('TwitchScraper', () => {
   describe('addNewVideos', () => {
     it('saves archives and uploads that are not in the database yet', async () => {
       supabase.respond(({ method, table }) =>
-        method === 'GET' && table === 'talents' ? activeTalents : [],
+        method === 'GET' && table === 'talents' ? TWITCH_TALENTS : [],
       )
       const { client, scraper } = createScraper({
         archives: [createVideo()],
@@ -282,7 +276,7 @@ describe('TwitchScraper', () => {
     it('reports an account that cannot be read and handles the rest', async () => {
       const error = new Error('helix unavailable')
       supabase.respond(({ method, table }) =>
-        method === 'GET' && table === 'talents' ? activeTalents : [],
+        method === 'GET' && table === 'talents' ? TWITCH_TALENTS : [],
       )
       const { client, scraper } = createScraper({})
       vi.mocked(client.getVideosByUser).mockImplementation(({ type }) => {
@@ -658,6 +652,61 @@ describe('TwitchScraper', () => {
 
       await expect(scraper.syncAccounts()).resolves.toBe(true)
 
+      expect(supabase.written('PATCH', 'twitch_users')[0]).toMatchObject({
+        body: { name: 'Alice', twitch_login_name: 'alice' },
+        query: { id: 'eq.user-row-1' },
+      })
+    })
+  })
+
+  describe('syncTalentAccounts', () => {
+    it('syncs the accounts of one talent and returns what changed', async () => {
+      supabase.respond(({ method }) =>
+        method === 'GET'
+          ? [
+              {
+                id: 'talent-1',
+                twitch_users: [
+                  {
+                    id: 'user-row-1',
+                    name: 'Alice',
+                    twitch_login_name: 'alice_old',
+                    twitch_user_id: 'twitch-user-1',
+                  },
+                ],
+              },
+            ]
+          : [],
+      )
+      const { scraper } = createScraper({
+        users: [
+          {
+            broadcaster_type: '',
+            created_at: '2020-01-01T00:00:00Z',
+            description: '',
+            display_name: 'Alice',
+            id: 'twitch-user-1',
+            login: 'alice',
+            offline_image_url: '',
+            profile_image_url: '',
+            type: '',
+          },
+        ],
+      })
+
+      await expect(scraper.syncTalentAccounts('talent-1')).resolves.toEqual([
+        {
+          accountId: 'user-row-1',
+          changes: {
+            after: { twitch_login_name: 'alice' },
+            before: { twitch_login_name: 'alice_old' },
+          },
+          iconUpdated: false,
+          name: 'Alice',
+          status: 'updated',
+        },
+      ])
+      expect(supabase.requests[0]?.query).toMatchObject({ id: 'eq.talent-1' })
       expect(supabase.written('PATCH', 'twitch_users')[0]).toMatchObject({
         body: { name: 'Alice', twitch_login_name: 'alice' },
         query: { id: 'eq.user-row-1' },

@@ -1,24 +1,43 @@
-import { TIME_ZONE } from '@shinju-date/constants'
-import { formatNumber } from '@shinju-date/helpers'
-import { Button, EmptyState } from '@shinju-date/ui'
+import { formatNumber, range } from '@shinju-date/helpers'
+import { Button, EmptyState, Skeleton } from '@shinju-date/ui'
 import { ExternalLink } from 'lucide-react'
-import { cacheLife } from 'next/cache'
 import Link from 'next/link'
 import {
   ExternalVideoLink,
   getExternalVideoUrl,
 } from '@/components/external-video-link'
-import { Panel } from '@/components/panel'
-import { PopularVideosListSkeleton } from '@/components/skeletons'
+import { Panel, PanelSkeleton } from '@/components/panel'
 import { VideoThumbnail } from '@/components/video-thumbnail'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
+import { getToday } from '../_lib/get-today'
 
+/** 表示する動画の件数 */
+const POPULAR_VIDEOS_LIMIT = 10
+
+/** 読み込み中の `DashboardPopularVideos`。取得する件数ぶんの行を並べる */
 export function DashboardPopularVideosSkeleton() {
   return (
-    <Panel>
-      <div className="mb-4 h-7 w-64 animate-pulse rounded-control bg-muted" />
-      <PopularVideosListSkeleton />
-    </Panel>
+    <PanelSkeleton title="人気動画ランキング (過去30日間)">
+      <div className="divide-y divide-border">
+        {range(POPULAR_VIDEOS_LIMIT).map((row) => (
+          <div
+            className="flex items-center gap-4 py-3"
+            key={`popular-video-skeleton-${row}`}
+          >
+            <Skeleton className="size-8 shrink-0 rounded-full" />
+            <Skeleton className="aspect-video w-28 shrink-0 rounded-container" />
+            <div className="min-w-0 flex-1 space-y-1">
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-5 w-24" />
+            </div>
+            <div className="flex shrink-0 gap-2">
+              <Skeleton className="h-7 w-12" />
+              <Skeleton className="size-7" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </PanelSkeleton>
   )
 }
 
@@ -27,13 +46,13 @@ export function DashboardPopularVideosSkeleton() {
  * This is an async Server Component that fetches its own data
  */
 export async function DashboardPopularVideos() {
-  'use cache: private'
-
-  cacheLife('minutes')
-
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
+  const today = Temporal.PlainDate.from(await getToday())
   const startDate = today.subtract({ days: 29 })
-  const popularVideos = await getPopularVideos(10, startDate, today)
+  const popularVideos = await getPopularVideos(
+    POPULAR_VIDEOS_LIMIT,
+    startDate.toString(),
+    today.toString(),
+  )
 
   return (
     <Panel title="人気動画ランキング (過去30日間)">

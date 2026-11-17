@@ -1,3 +1,5 @@
+export type { ReplaceThumbnailOptions } from './replace.js'
+export { replaceThumbnail } from './replace.js'
 export {
   DEFAULT_THUMBNAIL_HEIGHT,
   DEFAULT_THUMBNAIL_WIDTH,
@@ -6,6 +8,7 @@ export {
 export type {
   CreateThumbnailOptions,
   Thumbnail,
+  ThumbnailRemovalContext,
   ThumbnailSource,
 } from './thumbnail.js'
 export { createThumbnail, removeThumbnail } from './thumbnail.js'

@@ -3,7 +3,6 @@ import { Suspense } from 'react'
 import Form, {
   ErrorMessage,
   FormField,
-  GenericErrorMessage,
   Input,
   Label,
   SubmitButton,
@@ -17,16 +16,14 @@ export const metadata: Metadata = {
   title: 'ログイン',
 }
 
-interface Props {
-  searchParams: Promise<Record<string, string | string[] | undefined>>
-}
-
 /**
  * ログイン後の戻り先をフォームと一緒に送るための hidden input。
  * `searchParams` はリクエスト時にしか分からないため、フォームの外枠とは
  * 分けて `Suspense` の中で描画する。
  */
-async function RedirectPathInput({ searchParams }: Props) {
+async function RedirectPathInput({
+  searchParams,
+}: Pick<PageProps<'/login'>, 'searchParams'>) {
   const { [REDIRECT_PARAM]: value } = await searchParams
   const redirectPath = getSafeRedirectPath(value)
 
@@ -37,7 +34,7 @@ async function RedirectPathInput({ searchParams }: Props) {
   return <input name={REDIRECT_PARAM} type="hidden" value={redirectPath} />
 }
 
-export default function Login({ searchParams }: Props) {
+export default function Login({ searchParams }: PageProps<'/login'>) {
   return (
     <div className="grid min-h-svh place-items-center bg-background p-4">
       <div className="grid w-full max-w-md gap-6">
@@ -53,33 +50,25 @@ export default function Login({ searchParams }: Props) {
               <RedirectPathInput searchParams={searchParams} />
             </Suspense>
 
-            <GenericErrorMessage className="rounded-control bg-danger/10 p-3 text-meta text-danger" />
-
             <div className="space-y-4">
-              <FormField className="flex flex-col gap-2" name="email">
-                <Label className="text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50">
-                  メールアドレス
-                </Label>
+              <FormField name="email">
+                <Label>メールアドレス</Label>
                 <Input placeholder="admin@example.com" required type="email" />
-                <ErrorMessage className="text-meta text-danger" />
+                <ErrorMessage />
               </FormField>
-              <FormField className="flex flex-col gap-2" name="password">
-                <Label className="text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50">
-                  パスワード
-                </Label>
+              <FormField name="password">
+                <Label>パスワード</Label>
                 <Input
                   minLength={8}
                   placeholder="••••••••"
                   required
                   type="password"
                 />
-                <ErrorMessage className="text-meta text-danger" />
+                <ErrorMessage />
               </FormField>
             </div>
 
-            <SubmitButton className="w-full" type="submit">
-              ログイン
-            </SubmitButton>
+            <SubmitButton className="w-full">ログイン</SubmitButton>
           </Form>
         </Panel>
       </div>

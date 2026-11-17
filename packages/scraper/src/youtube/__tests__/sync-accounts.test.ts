@@ -1,6 +1,6 @@
-import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../../internal/testing/context.js'
+import { createFakeFetcher } from '../../internal/testing/fetcher.js'
 import {
   createImage,
   mockStorage,
@@ -8,12 +8,15 @@ import {
 } from '../../internal/testing/profile-images.js'
 import {
   postgresError,
-  type SupabaseRequest,
+  type SupabaseRoutes,
   setupSupabase,
 } from '../../internal/testing/supabase.js'
+import { createChannel } from '../../internal/testing/youtube.js'
 import type { YouTubeFetcher } from '../fetcher.js'
-import { syncYouTubeChannels } from '../sync-accounts.js'
-import type { YouTubeChannel } from '../types.js'
+import {
+  syncYouTubeChannels,
+  syncYouTubeChannelsOfTalent,
+} from '../sync-accounts.js'
 
 const supabase = setupSupabase()
 const reportError = vi.fn()
@@ -23,33 +26,6 @@ const createContext = <T>(fetcher: T) =>
     reportError,
     supabaseClient: supabase.supabaseClient,
   })
-
-function createChannel(
-  id: string,
-  title: string,
-  customUrl?: string,
-  thumbnails?: youtube.Schema$ThumbnailDetails,
-): YouTubeChannel {
-  return {
-    contentDetails: { relatedPlaylists: { uploads: `UU${id.slice(2)}` } },
-    id,
-    snippet: {
-      title,
-      ...(customUrl ? { customUrl } : {}),
-      ...(thumbnails ? { thumbnails } : {}),
-    },
-  }
-}
-
-function createThumbnails(url: string): youtube.Schema$ThumbnailDetails {
-  return { high: { height: 800, url, width: 800 } }
-}
-
-function createFetcher(channels: YouTubeChannel[]) {
-  const getAccounts = vi.fn(async () => channels)
-
-  return { fetcher: { getAccounts } as unknown as YouTubeFetcher, getAccounts }
-}
 
 const savedTalents = [
   {
@@ -82,27 +58,10 @@ const savedTalents = [
  * A database holding `savedTalents` and no unused icons, in which every write
  * succeeds.
  */
-function respondWithSavedTalents(
-  override?: (request: SupabaseRequest) => unknown,
-): void {
-  supabase.respond((request) => {
-    const overridden = override?.(request)
-
-    if (overridden !== undefined) {
-      return overridden
-    }
-
-    const { method, table } = request
-
-    if (method === 'GET') {
-      return table === 'talents' ? savedTalents : []
-    }
-
-    return method === 'PATCH' && table === 'youtube_channels'
-      ? [{ id: 'channel-row' }]
-      : []
-  })
-}
+const routes = {
+  'GET talents': savedTalents,
+  'PATCH youtube_channels': [{ id: 'channel-row' }],
+} satisfies SupabaseRoutes
 
 describe('syncYouTubeChannels', () => {
   beforeEach(() => {
@@ -110,11 +69,13 @@ describe('syncYouTubeChannels', () => {
   })
 
   it('updates only the channels whose name or handle changed', async () => {
-    respondWithSavedTalents()
-    const { getAccounts, fetcher } = createFetcher([
-      createChannel('UCaaa', 'Alice', '@alice'),
-      createChannel('UCbbb', 'Bob Ch.', '@bob'),
-    ])
+    supabase.respondWith(routes)
+    const { getAccounts, fetcher } = createFakeFetcher<YouTubeFetcher>({
+      accounts: [
+        createChannel('UCaaa', { customUrl: '@alice', title: 'Alice' }),
+        createChannel('UCbbb', { customUrl: '@bob', title: 'Bob Ch.' }),
+      ],
+    })
 
     const changed = await syncYouTubeChannels(createContext(fetcher))
 
@@ -129,10 +90,12 @@ describe('syncYouTubeChannels', () => {
   })
 
   it('notices a handle that changed on its own', async () => {
-    respondWithSavedTalents()
-    const { fetcher } = createFetcher([
-      createChannel('UCaaa', 'Alice', '@alice_new'),
-    ])
+    supabase.respondWith(routes)
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      accounts: [
+        createChannel('UCaaa', { customUrl: '@alice_new', title: 'Alice' }),
+      ],
+    })
 
     const changed = await syncYouTubeChannels(createContext(fetcher))
 
@@ -144,11 +107,13 @@ describe('syncYouTubeChannels', () => {
   })
 
   it('writes nothing when every channel is up to date', async () => {
-    respondWithSavedTalents()
-    const { fetcher } = createFetcher([
-      createChannel('UCaaa', 'Alice', '@alice'),
-      createChannel('UCbbb', 'Bob'),
-    ])
+    supabase.respondWith(routes)
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      accounts: [
+        createChannel('UCaaa', { customUrl: '@alice', title: 'Alice' }),
+        createChannel('UCbbb', { title: 'Bob' }),
+      ],
+    })
 
     const changed = await syncYouTubeChannels(createContext(fetcher))
 
@@ -159,8 +124,8 @@ describe('syncYouTubeChannels', () => {
   })
 
   it('loads the saved icon of every channel', async () => {
-    respondWithSavedTalents()
-    const { fetcher } = createFetcher([])
+    supabase.respondWith(routes)
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>()
 
     await syncYouTubeChannels(createContext(fetcher))
 
@@ -171,7 +136,7 @@ describe('syncYouTubeChannels', () => {
 
   it('includes retired talents but not deleted ones', async () => {
     supabase.respond(() => [])
-    const { fetcher } = createFetcher([])
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>()
 
     await syncYouTubeChannels(createContext(fetcher))
 
@@ -181,7 +146,7 @@ describe('syncYouTubeChannels', () => {
 
   it('fails when the channels cannot be loaded', async () => {
     supabase.respond(() => postgresError('42501', 'permission denied'))
-    const { fetcher } = createFetcher([])
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>()
 
     await expect(syncYouTubeChannels(createContext(fetcher))).rejects.toThrow(
       'permission denied',
@@ -190,6 +155,7 @@ describe('syncYouTubeChannels', () => {
 
   describe('icons', () => {
     const ICON_URL = 'https://yt3.ggpht.com/alice=s800-c-k-c0x00ffffff-no-rj'
+    const thumbnails = { high: { height: 800, url: ICON_URL, width: 800 } }
 
     let image: Buffer
 
@@ -200,10 +166,16 @@ describe('syncYouTubeChannels', () => {
     it('stores the icon of a channel that has none yet', async () => {
       serveImage(supabase, ICON_URL, { body: image })
       const storage = mockStorage(supabase)
-      respondWithSavedTalents()
-      const { fetcher } = createFetcher([
-        createChannel('UCaaa', 'Alice', '@alice', createThumbnails(ICON_URL)),
-      ])
+      supabase.respondWith(routes)
+      const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+        accounts: [
+          createChannel('UCaaa', {
+            customUrl: '@alice',
+            thumbnails,
+            title: 'Alice',
+          }),
+        ],
+      })
 
       const changed = await syncYouTubeChannels(createContext(fetcher))
 
@@ -227,29 +199,34 @@ describe('syncYouTubeChannels', () => {
     it('leaves an icon alone when YouTube serves the same one', async () => {
       const requests = serveImage(supabase, ICON_URL, { body: image })
       const storage = mockStorage(supabase)
-      respondWithSavedTalents(({ method, table }) =>
-        method === 'GET' && table === 'talents'
-          ? [
+      supabase.respondWith({
+        ...routes,
+        'GET talents': [
+          {
+            id: 'talent-1',
+            youtube_channels: [
               {
-                id: 'talent-1',
-                youtube_channels: [
-                  {
-                    ...savedTalents[0]?.youtube_channels[0],
-                    profile_images: {
-                      etag: '"etag-1"',
-                      id: 'image-1',
-                      path: 'youtube/UCaaa/icon.webp',
-                      source_url: ICON_URL,
-                    },
-                  },
-                ],
+                ...savedTalents[0]?.youtube_channels[0],
+                profile_images: {
+                  etag: '"etag-1"',
+                  id: 'image-1',
+                  path: 'youtube/UCaaa/icon.webp',
+                  source_url: ICON_URL,
+                },
               },
-            ]
-          : undefined,
-      )
-      const { fetcher } = createFetcher([
-        createChannel('UCaaa', 'Alice', '@alice', createThumbnails(ICON_URL)),
-      ])
+            ],
+          },
+        ],
+      })
+      const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+        accounts: [
+          createChannel('UCaaa', {
+            customUrl: '@alice',
+            thumbnails,
+            title: 'Alice',
+          }),
+        ],
+      })
 
       const changed = await syncYouTubeChannels(createContext(fetcher))
 
@@ -265,10 +242,16 @@ describe('syncYouTubeChannels', () => {
         contentType: 'text/plain',
       })
       mockStorage(supabase)
-      respondWithSavedTalents()
-      const { fetcher } = createFetcher([
-        createChannel('UCbbb', 'Bob Ch.', '@bob', createThumbnails(ICON_URL)),
-      ])
+      supabase.respondWith(routes)
+      const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+        accounts: [
+          createChannel('UCbbb', {
+            customUrl: '@bob',
+            thumbnails,
+            title: 'Bob Ch.',
+          }),
+        ],
+      })
 
       const changed = await syncYouTubeChannels(createContext(fetcher))
 
@@ -287,12 +270,13 @@ describe('syncYouTubeChannels', () => {
 
     it('deletes icons that are no longer used', async () => {
       const storage = mockStorage(supabase)
-      respondWithSavedTalents(({ method, table }) =>
-        method === 'GET' && table === 'profile_images'
-          ? [{ id: 'image-9', path: 'youtube/UCzzz/gone.webp' }]
-          : undefined,
-      )
-      const { fetcher } = createFetcher([])
+      supabase.respondWith({
+        ...routes,
+        'GET profile_images': [
+          { id: 'image-9', path: 'youtube/UCzzz/gone.webp' },
+        ],
+      })
+      const { fetcher } = createFakeFetcher<YouTubeFetcher>()
 
       await syncYouTubeChannels(createContext(fetcher))
 
@@ -303,14 +287,15 @@ describe('syncYouTubeChannels', () => {
     })
 
     it('reports a failed clean-up without failing the sync', async () => {
-      respondWithSavedTalents(({ method, table }) =>
-        method === 'GET' && table === 'profile_images'
-          ? postgresError('42501', 'permission denied')
-          : undefined,
-      )
-      const { fetcher } = createFetcher([
-        createChannel('UCbbb', 'Bob Ch.', '@bob'),
-      ])
+      supabase.respondWith({
+        ...routes,
+        'GET profile_images': () => postgresError('42501', 'permission denied'),
+      })
+      const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+        accounts: [
+          createChannel('UCbbb', { customUrl: '@bob', title: 'Bob Ch.' }),
+        ],
+      })
 
       await expect(syncYouTubeChannels(createContext(fetcher))).resolves.toBe(1)
       expect(reportError).toHaveBeenCalledWith(
@@ -318,5 +303,225 @@ describe('syncYouTubeChannels', () => {
         { operation: 'removeUnusedProfileImages' },
       )
     })
+  })
+})
+
+describe('syncYouTubeChannelsOfTalent', () => {
+  const ICON_URL = 'https://yt3.ggpht.com/bob=s800-c-k-c0x00ffffff-no-rj'
+  const thumbnails = { high: { height: 800, url: ICON_URL, width: 800 } }
+
+  /** A database holding the channels of `talent-2` only. */
+  const talentRoutes = {
+    ...routes,
+    'GET talents': [
+      {
+        id: 'talent-2',
+        youtube_channels: [
+          ...(savedTalents[1]?.youtube_channels ?? []),
+          {
+            id: 'channel-row-3',
+            name: 'Bob Sub',
+            profile_images: null,
+            youtube_channel_id: 'UCccc',
+            youtube_handle: '@bob_sub',
+          },
+        ],
+      },
+    ],
+  } satisfies SupabaseRoutes
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('syncs only the channels of the talent and returns what changed', async () => {
+    supabase.respondWith(talentRoutes)
+    const { fetcher, getAccounts } = createFakeFetcher<YouTubeFetcher>({
+      accounts: [
+        createChannel('UCbbb', { customUrl: '@bob', title: 'Bob Ch.' }),
+        createChannel('UCccc', { customUrl: '@bob_sub', title: 'Bob Sub' }),
+      ],
+    })
+
+    const results = await syncYouTubeChannelsOfTalent(
+      createContext(fetcher),
+      'talent-2',
+    )
+
+    expect(supabase.requests[0]?.query).toMatchObject({
+      deleted_at: 'is.null',
+      id: 'eq.talent-2',
+    })
+    expect(getAccounts).toHaveBeenCalledWith(['UCbbb', 'UCccc'])
+    expect(results).toEqual([
+      {
+        accountId: 'channel-row-2',
+        changes: {
+          after: { name: 'Bob Ch.', youtube_handle: '@bob' },
+          before: { name: 'Bob', youtube_handle: null },
+        },
+        iconUpdated: false,
+        name: 'Bob Ch.',
+        status: 'updated',
+      },
+      {
+        accountId: 'channel-row-3',
+        iconUpdated: false,
+        name: 'Bob Sub',
+        status: 'unchanged',
+      },
+    ])
+    expect(supabase.written('PATCH', 'youtube_channels')).toEqual([
+      expect.objectContaining({
+        body: { name: 'Bob Ch.', youtube_handle: '@bob' },
+        query: { id: 'eq.channel-row-2' },
+      }),
+    ])
+  })
+
+  it('keeps only the columns that changed in the changes', async () => {
+    supabase.respondWith(talentRoutes)
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      accounts: [createChannel('UCbbb', { customUrl: '@bob', title: 'Bob' })],
+    })
+
+    const [result] = await syncYouTubeChannelsOfTalent(
+      createContext(fetcher),
+      'talent-2',
+    )
+
+    expect(result?.changes).toEqual({
+      after: { youtube_handle: '@bob' },
+      before: { youtube_handle: null },
+    })
+  })
+
+  it('writes nothing when every channel is up to date', async () => {
+    supabase.respondWith(talentRoutes)
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      accounts: [
+        createChannel('UCbbb', { title: 'Bob' }),
+        createChannel('UCccc', { customUrl: '@bob_sub', title: 'Bob Sub' }),
+      ],
+    })
+
+    const results = await syncYouTubeChannelsOfTalent(
+      createContext(fetcher),
+      'talent-2',
+    )
+
+    expect(results.map(({ status }) => status)).toEqual([
+      'unchanged',
+      'unchanged',
+    ])
+    // Unused icons are left to the scheduled sync
+    expect(
+      supabase.requests.map(({ method, table }) => `${method} ${table}`),
+    ).toEqual(['GET talents'])
+  })
+
+  it('reports a channel YouTube does not return as not found', async () => {
+    supabase.respondWith(talentRoutes)
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      accounts: [
+        createChannel('UCccc', { customUrl: '@bob_sub', title: 'Bob Sub' }),
+      ],
+    })
+
+    const results = await syncYouTubeChannelsOfTalent(
+      createContext(fetcher),
+      'talent-2',
+    )
+
+    expect(results[0]).toEqual({
+      accountId: 'channel-row-2',
+      iconUpdated: false,
+      name: 'Bob',
+      status: 'not-found',
+    })
+  })
+
+  it('reports a channel that cannot be updated as failed and syncs the rest', async () => {
+    supabase.respondWith({
+      ...talentRoutes,
+      'PATCH youtube_channels': ({ query }) =>
+        query['id'] === 'eq.channel-row-2'
+          ? postgresError('23505', 'duplicate key value')
+          : talentRoutes['PATCH youtube_channels'],
+    })
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      accounts: [
+        createChannel('UCbbb', { customUrl: '@bob', title: 'Bob Ch.' }),
+        createChannel('UCccc', { customUrl: '@bob_sub', title: 'Bob Sub!' }),
+      ],
+    })
+
+    const results = await syncYouTubeChannelsOfTalent(
+      createContext(fetcher),
+      'talent-2',
+    )
+
+    expect(results.map(({ name, status }) => ({ name, status }))).toEqual([
+      { name: 'Bob', status: 'failed' },
+      { name: 'Bob Sub!', status: 'updated' },
+    ])
+    expect(reportError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('duplicate key value'),
+      }),
+      { youtubeChannelId: 'UCbbb' },
+    )
+  })
+
+  it('reports an icon that changed although the name did not', async () => {
+    serveImage(supabase, ICON_URL, { body: await createImage(800, 800) })
+    mockStorage(supabase)
+    supabase.respondWith(talentRoutes)
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      accounts: [createChannel('UCbbb', { thumbnails, title: 'Bob' })],
+    })
+
+    const [result] = await syncYouTubeChannelsOfTalent(
+      createContext(fetcher),
+      'talent-2',
+    )
+
+    expect(result).toEqual({
+      accountId: 'channel-row-2',
+      iconUpdated: true,
+      name: 'Bob',
+      status: 'updated',
+    })
+    expect(supabase.written('POST', 'profile_images')).toHaveLength(1)
+  })
+
+  it('returns nothing without asking YouTube when the talent has no channels', async () => {
+    supabase.respond(() => [])
+    const { fetcher, getAccounts } = createFakeFetcher<YouTubeFetcher>()
+
+    await expect(
+      syncYouTubeChannelsOfTalent(createContext(fetcher), 'talent-9'),
+    ).resolves.toEqual([])
+    expect(getAccounts).not.toHaveBeenCalled()
+  })
+
+  it('fails when the channels cannot be loaded', async () => {
+    supabase.respond(() => postgresError('42501', 'permission denied'))
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>()
+
+    await expect(
+      syncYouTubeChannelsOfTalent(createContext(fetcher), 'talent-2'),
+    ).rejects.toThrow('permission denied')
+  })
+
+  it('fails when YouTube cannot be read', async () => {
+    supabase.respondWith(talentRoutes)
+    const { fetcher, getAccounts } = createFakeFetcher<YouTubeFetcher>()
+    getAccounts.mockRejectedValue(new Error('quota exceeded'))
+
+    await expect(
+      syncYouTubeChannelsOfTalent(createContext(fetcher), 'talent-2'),
+    ).rejects.toThrow('quota exceeded')
+    expect(supabase.written('PATCH', 'youtube_channels')).toHaveLength(0)
   })
 })

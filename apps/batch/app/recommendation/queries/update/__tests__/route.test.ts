@@ -20,15 +20,31 @@ const getAllTerms = vi.fn()
 
 vi.mock('@/lib/ratelimit', () => ({
   recommendationQueriesUpdate: { limit },
+  statsSnapshot: { limit: vi.fn() },
+  talentsUpdate: { limit: vi.fn() },
+  termsPopularityUpdate: { limit: vi.fn() },
+  videosBackfill: { limit: vi.fn() },
+  videosCascadeFromTalents: { limit: vi.fn() },
+  videosCheck: { limit: vi.fn() },
+  videosCheckAll: { limit: vi.fn() },
+  videosCheckRecent: { limit: vi.fn() },
+  videosUpdate: { limit: vi.fn() },
 }))
 vi.mock('@/lib/redis', () => ({ redisClient }))
 vi.mock('@/lib/supabase', () => ({ supabaseClient: {} }))
 vi.mock('../_lib/get-all-terms', () => ({ getAllTerms }))
 vi.mock('@shinju-date/web-cache', () => ({ revalidateTags }))
 
+const captureCheckIn = vi.fn(() => 'check-in-id')
+const captureException = vi.fn()
+
 vi.mock('@sentry/nextjs', () => ({
-  captureCheckIn: vi.fn(() => 'check-in-id'),
+  captureCheckIn,
+  captureException,
   flush: vi.fn(),
+}))
+
+vi.mock('@shinju-date/logger', () => ({
   logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
 }))
 
@@ -106,13 +122,24 @@ describe('POST /recommendation/queries/update', () => {
     )
   })
 
-  it('does not revalidate when the update fails', async () => {
+  it('reports the error and does not revalidate when the update fails', async () => {
+    const error = new Error('Redis is down')
+
     redisClient.exists.mockResolvedValue(1)
     redisClient.zrange.mockResolvedValue(['ほげ', '30'])
-    multi.exec.mockRejectedValueOnce(new Error('Redis is down'))
+    multi.exec.mockRejectedValueOnce(error)
 
-    await expect(POST(createRequest())).rejects.toThrow('Redis is down')
+    const response = await POST(createRequest())
+
+    expect(response.status).toBe(500)
+    await expect(response.json()).resolves.toEqual({ error: 'Redis is down' })
     expect(revalidateTags).not.toHaveBeenCalled()
+    expect(captureException).toHaveBeenCalledWith(error)
+    expect(captureCheckIn).toHaveBeenLastCalledWith({
+      checkInId: 'check-in-id',
+      monitorSlug: '/recommendation/queries/update',
+      status: 'error',
+    })
   })
 
   it('does not run within the rate limit window', async () => {

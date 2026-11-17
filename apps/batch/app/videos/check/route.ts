@@ -1,7 +1,7 @@
 import type { Scraper } from '@shinju-date/scraper'
 import type { NextRequest } from 'next/server'
-import { getVideosCheckJob, type VideosCheckMode } from '@/lib/crawler-jobs'
 import { runCronJob } from '@/lib/cron'
+import { getVideosCheckJob, type VideosCheckMode } from '@/lib/jobs'
 import { parseQuery } from '@/lib/query'
 import { createScraper } from '@/lib/scraper'
 import { finishVideoSync } from '@/lib/video-sync'

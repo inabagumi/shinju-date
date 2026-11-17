@@ -1,5 +1,6 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { formatDateKey } from '@shinju-date/temporal-fns'
+import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
 import { unwrapCount } from '@/lib/supabase/query'
@@ -40,6 +41,10 @@ export interface SummaryStatsWithTrends {
  * (day-over-day and week-over-week)
  */
 export async function getSummaryStats(): Promise<SummaryStatsWithTrends> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   const supabaseClient = await createSupabaseServerClient()
 
   const countVideos = async (tile: VideoSummaryTile) =>

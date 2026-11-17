@@ -128,6 +128,8 @@ Lato は 300・400・700 を読み込んでいます（Lato には 600 があり
 | 補助情報（日時・タレント名・説明）            | `text-meta text-muted`                   | 14px               | 400                 | 1.6  |
 | バッジ・注記                                  | `text-caption font-semibold`             | 12px               | 600                 | 1.4  |
 | 状態の知らせ（[`Alert`](#状態の知らせalert)） | `text-meta`（見出しは `font-semibold`）  | 14px               | 400（見出しは 600） | 1.6  |
+| フォームのラベル                              | `text-meta font-semibold`                | 14px               | 600                 | 1.6  |
+| フォームのエラーの文                          | `text-meta text-danger`                  | 14px               | 400                 | 1.6  |
 | 入力欄（すべての大きさ）、大きいボタン        | `text-body leading-normal`               | 16px               | —                   | 1.5  |
 | ボタン（標準と小）、メニューの項目、トースト  | `text-meta leading-5`                    | 14px               | —                   | 20px |
 
@@ -146,6 +148,7 @@ const example = (
 - **入力欄（`Input`・`Select`・`Textarea`）の文字は 16px 未満にしない。** iOS の Safari は、16px 未満の入力欄にフォーカスすると画面を拡大します。小さい入力欄（`inputSize="sm"`）も文字は 16px のままで、余白で小ささを出します
 - **時刻・再生時間・件数は `tabular-nums` にする。** 桁がそろい、数字が変わっても幅が揺れません
 - **文章の行長は1行40〜45文字程度に抑える。** 説明文やお知らせなど、まとまった文章は `max-w-text`（44rem）の中に置きます
+- **管理画面の `useActionState` のフォームは、`apps/admin/components/form.tsx` の部品で組む。** `Label` と `ErrorMessage` が上の表のクラス（`Label` は入力欄との間の `mb-2`、`ErrorMessage` は入力欄との間の `mt-1` も）を持つので、使う側でクラスを書かないでください。違う並べ方が要るときだけ、`className` で上書きします（`twMerge` で既定のクラスとまとめます）。項目に結び付かないエラー（`FormState` の `error` と `errors.generic`）は、`Form` がフォームの先頭に `Alert`（`tone="danger"`）で出します
 - **管理画面の枠で囲んだ区画は `Panel`（`apps/admin/components/panel.tsx`）にする。** 枠（`rounded-container border border-border bg-surface p-6`）と見出し（`title`）、補足（`description`）、見出しの右の操作（`actions`）をまとめて持ちます。クラスの文字列を手で書かないでください。詳細ページの項目名と値の一覧は、`Panel` の中に `DetailList` と `DetailRow` で置きます
 
 ```tsx
@@ -223,6 +226,45 @@ const button = (
     表示を切り替える
   </Button>
 )
+```
+
+### 読み込み中の表示（スケルトン）
+
+`Suspense` の `fallback` には、読み込み後の部品と同じ形のスケルトンを置き、読み込みの前後で画面が動かないようにします。
+
+- 四角は `@shinju-date/ui` の `Skeleton` で描き、大きさを `className` で指定する。`rounded-control bg-muted` と `animate-pulse` を手で書かない
+  - 角丸は既定で `rounded-control`。サムネイルなど入れ物の形は `rounded-container`、丸は `rounded-full` を指定する
+  - `<span>` を `block` で描くので、見出しや段落の中にも置ける。文字の行に並べるときは `inline-block` を指定する
+  - `Skeleton` は `aria-hidden` を持つ。四角のほかに枠や見出しを描くときは、全体を `aria-hidden="true"` の要素で囲む
+- スケルトンは、対応する部品と同じファイルか、隣のファイルに置き、`〇〇Skeleton` と名付ける（`VideoList` なら `VideoListSkeleton`）。形の違う画面には使い回さない
+- 列の数・タイルの数・グラフの高さ・絞り込みの帯の有無は、読み込み後の画面に合わせる。行の数は、読み込み後に並ぶおおよその数にする（1ページの件数が決まっている一覧は、その件数の定数をスケルトンと共有する）
+- 見出しなど、読み込みの前後で変わらない文字は、`Skeleton` にせずそのまま描く
+- 管理画面では、形を引数で決める次の部品を組み合わせる
+
+| 部品                                                                       | 使う場面                                                                                  |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `PanelSkeleton`・`DetailListSkeleton`（`apps/admin/components/panel.tsx`） | `Panel` と `DetailList`。見出し（`title`・`description`）は読み込み後と同じ文言を渡す     |
+| `TableSkeleton`（`apps/admin/components/table-skeleton.tsx`）              | `Table`。列の定義（`columns`）、行の数（`rows`）、表の上の帯（`filterBar`）を呼ぶ側が渡す |
+| `FilterBarSkeleton`・`FieldSkeleton`（同上）                               | `FilterBar` と、見出し付きの入力欄                                                        |
+| `StatTileSkeleton`（`apps/admin/components/stat-tile-skeleton.tsx`）       | `StatTile`                                                                                |
+
+```tsx
+export function TalentsListSkeleton() {
+  return (
+    <TableSkeleton
+      columns={[
+        { cell: <Skeleton className="h-5 w-32" />, id: 'name' },
+        { cell: <Skeleton className="h-5 w-16" />, id: 'status' },
+        {
+          align: 'end',
+          cell: <Skeleton className="size-7" />,
+          header: false,
+          id: 'actions',
+        },
+      ]}
+    />
+  )
+}
 ```
 
 ### 動画カードのタイトル
@@ -329,6 +371,7 @@ import { twMerge } from '@shinju-date/ui'
 - [ ] 角丸は `rounded-control` / `rounded-container` / `rounded-full` のいずれか
 - [ ] 影は重なるものだけに `shadow-overlay` を使っている
 - [ ] フォーカスの見た目は、`focus-ring` / `field-focus-ring` を使っている
-- [ ] `packages/ui` にある部品（Button・Badge・Card・Dialog・Input・Select・Table・PageHeader・EmptyState・StatTile・FilterBar・Alert など）を使っている
+- [ ] `packages/ui` にある部品（Button・Badge・Card・Dialog・Input・Select・Table・PageHeader・EmptyState・StatTile・FilterBar・Alert・Skeleton など）を使っている
 - [ ] Badge の色と Alert の `tone` は状態の意味で選んでいる（成功は `success`、注意は `warning`、危険は `danger`、中立は `neutral`）
 - [ ] 管理画面の操作の結果は、[操作の結果の知らせ](#操作の結果の知らせ管理画面)に沿って出している
+- [ ] `Suspense` の `fallback` に、読み込み後と同じ形のスケルトン（[読み込み中の表示](#読み込み中の表示スケルトン)）を、部品の隣に置いている
