@@ -16,6 +16,7 @@ import {
   unauthenticatedResult,
 } from '@/lib/auth'
 import { actionErrorToFormState, zodErrorToFormState } from '@/lib/form'
+import { uuidSchema } from '@/lib/schemas'
 import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 import { isNotFoundError } from '@/lib/supabase/query'
 import {
@@ -31,7 +32,7 @@ const createTalentSchema = z.object({
 })
 
 const updateTalentSchema = z.object({
-  id: z.string().uuid({ message: '有効なIDではありません。' }),
+  id: uuidSchema,
   name: talentNameSchema,
   reading: talentReadingSchema,
   theme_color: z
@@ -182,26 +183,19 @@ export async function updateTalentAction(
 
   const { supabaseClient } = auth
 
-  let validatedData: z.infer<typeof updateTalentSchema>
+  const parsed = updateTalentSchema.safeParse({
+    id: formData.get('id'),
+    name: formData.get('name'),
+    reading: formData.get('reading'),
+    theme_color: formData.get('theme_color'),
+  })
 
-  try {
-    validatedData = updateTalentSchema.parse({
-      id: formData.get('id'),
-      name: formData.get('name'),
-      reading: formData.get('reading'),
-      theme_color: formData.get('theme_color'),
-    })
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return zodErrorToFormState(error)
-    }
-
-    return {
-      errors: {
-        generic: ['入力された値が正しくありません。'],
-      },
-    }
+  if (!parsed.success) {
+    // `id` は隠しフィールドで、画面に対応する入力欄がない
+    return zodErrorToFormState(parsed.error, { hiddenFields: ['id'] })
   }
+
+  const validatedData = parsed.data
 
   try {
     // Update talents table (name, reading and theme_color)
