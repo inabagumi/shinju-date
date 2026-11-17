@@ -18,10 +18,17 @@ import {
   unauthenticatedFormState,
   unauthenticatedResult,
 } from '@/lib/auth'
+import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 import { isNotFoundError } from '@/lib/supabase/query'
 import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
 import { zodErrorToFormState } from '../_lib/form-helpers'
 import { talentNameSchema, talentReadingSchema } from '../_lib/talent-schema'
+
+/** 一意制約（`youtube_channels.youtube_channel_id` など）に違反したときの PostgreSQL のエラーコード */
+const UNIQUE_VIOLATION_ERROR_CODE = '23505'
+
+const CHANNEL_ALREADY_REGISTERED_MESSAGE =
+  'このチャンネルは別のタレントに既に登録されています。'
 
 const createTalentSchema = z.object({
   name: talentNameSchema,
@@ -129,6 +136,28 @@ export async function createTalentAction(
   }
 
   try {
+    if (resolvedChannel) {
+      // youtube_channel_id は全タレントで一意なので、タレントを作る前に確かめる
+      const { data: existingChannel, error: existingChannelError } =
+        await supabaseClient
+          .from('youtube_channels')
+          .select('id')
+          .eq('youtube_channel_id', resolvedChannel.id)
+          .maybeSingle()
+
+      if (existingChannelError) {
+        throw existingChannelError
+      }
+
+      if (existingChannel) {
+        return {
+          errors: {
+            youtube_channel_id: [CHANNEL_ALREADY_REGISTERED_MESSAGE],
+          },
+        }
+      }
+    }
+
     const { data: newTalent, error } = await supabaseClient
       .from('talents')
       .insert({
@@ -159,14 +188,26 @@ export async function createTalentAction(
           error: youtubeError,
           youtube_channel_id: resolvedChannel.id,
         })
-      } else {
-        // アイコンの取得に失敗してもタレントの追加は成功扱いにする（次回の同期で再取得される）
-        await syncYouTubeChannelIconSafely(resolvedChannel.channel, {
-          id: newChannel.id,
-          profile_images: null,
-          youtube_channel_id: resolvedChannel.id,
-        })
+
+        await deleteTalentSafely(newTalent.id)
+
+        return {
+          errors: {
+            youtube_channel_id: [
+              youtubeError.code === UNIQUE_VIOLATION_ERROR_CODE
+                ? CHANNEL_ALREADY_REGISTERED_MESSAGE
+                : 'YouTubeチャンネルの登録に失敗しました。しばらくしてから再度お試しください。',
+            ],
+          },
+        }
       }
+
+      // アイコンの取得に失敗してもタレントの追加は成功扱いにする（次回の同期で再取得される）
+      await syncYouTubeChannelIconSafely(resolvedChannel.channel, {
+        id: newChannel.id,
+        profile_images: null,
+        youtube_channel_id: resolvedChannel.id,
+      })
     }
 
     // Log audit entry
@@ -193,6 +234,21 @@ export async function createTalentAction(
         ],
       },
     }
+  }
+}
+
+/**
+ * チャンネルを結び付けられなかったタレントを削除し、作成をなかったことにする。
+ * `talents` には管理者向けの DELETE のポリシーがないため、サービスロールのクライアントを使う。
+ */
+async function deleteTalentSafely(id: string): Promise<void> {
+  const { error } = await getSupabaseAdminClient()
+    .from('talents')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    logger.error('作成したタレントの削除に失敗しました', { error, id })
   }
 }
 
