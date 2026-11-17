@@ -107,14 +107,37 @@ describe('updateTalentAction', () => {
     )
   })
 
-  it('should return validation error for invalid UUID', async () => {
+  it('should update the talent whose ID has the same form as the seed', async () => {
+    // supabase/seed.sql のタレントの ID。RFC 9562 のバージョンとバリアントの桁が 0 でも、
+    // DB の uuid 型は受け付ける
+    const seedTalentId = '00000000-0000-0000-0000-000000000001'
+    mockTalentUpdate()
+
+    const formData = new FormData()
+    formData.append('id', seedTalentId)
+    formData.append('name', 'Updated Talent')
+
+    const result = await updateTalentAction({}, formData)
+
+    expect(result).toEqual({})
+    expect(talentUpdates()).toHaveLength(1)
+    test.expectAuditLog('CHANNEL_UPDATE', seedTalentId, {
+      entityName: 'Updated Talent',
+    })
+  })
+
+  it('should return a generic error for an invalid ID', async () => {
     const formData = new FormData()
     formData.append('id', 'invalid-uuid')
     formData.append('name', 'Updated Talent')
 
     const result = await updateTalentAction({}, formData)
 
-    expect(result.errors?.['id']).toBeDefined()
+    // 隠しフィールドのエラーは、画面に出るよう項目に結び付けない
+    expect(result).toEqual({
+      errors: { generic: ['有効なIDではありません。'] },
+    })
+    expect(talentUpdates()).toHaveLength(0)
   })
 
   it('should return validation error for empty name', async () => {
