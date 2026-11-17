@@ -269,21 +269,7 @@ export NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1
 
 ### 4.3. AIエージェントおよびCI環境（MSW使用時）
 
-AIエージェントやCI環境でMSWを使用する場合は、以下の環境変数を設定します：
-
-```bash
-# MSW
-export ENABLE_MSW=true
-
-# Supabase (MSWモック)
-export NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test
-export NEXT_PUBLIC_SUPABASE_ANON_KEY=fake-anon-key
-export SUPABASE_SERVICE_ROLE_KEY=fake-service-role-key
-
-# Upstash Redis (MSWモック)
-export UPSTASH_REDIS_REST_TOKEN=fake-upstash-token
-export UPSTASH_REDIS_REST_URL=https://fake.upstash.test
-```
+AIエージェントやCI環境でMSWを使用する場合は、`ENABLE_MSW=true` と、Supabase や Upstash のための fake の値を設定します。設定する値は、各アプリの `playwright.config.ts` の `webServer.env` にあります（E2E テストでは、Playwright がこの値で開発サーバーを起動します。[E2E テストの環境設定](e2e-testing.md#2-環境設定)）。
 
 MSW（Mock Service Worker）はサーバー側でだけ動くため、サービスワーカーのファイル（`mockServiceWorker.js`）を用意する必要はありません。詳細は [MSWガイド](msw-guide.md) を参照してください。
 
