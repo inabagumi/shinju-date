@@ -136,6 +136,29 @@
       }
     }
   ],
+  "plugins": [
+    {
+      "includes": [
+        "**",
+        "!packages/constants/src/index.ts",
+        "!**/__tests__/**",
+        "!**/*.test.*",
+        "!**/e2e/**"
+      ],
+      "path": "./config/biome/no-hardcoded-time-zone.grit",
+      "resolutionKind": "config"
+    },
+    {
+      "includes": [
+        "**",
+        "!packages/tailwind-config/**",
+        "!packages/ui/src/tw-merge.ts",
+        "!packages/ui/src/tw-merge.test.ts"
+      ],
+      "path": "./config/biome/no-default-tailwind-scale.grit",
+      "resolutionKind": "config"
+    }
+  ],
   "tailwind": {
     "attributes": ["class", "className"],
     "mergeFunctions": ["twMerge"],
