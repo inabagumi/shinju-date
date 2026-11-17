@@ -6,16 +6,8 @@ import { TableSkeleton } from '@/components/skeletons'
 import { getTalents } from '../talents/_lib/get-talents'
 import Pagination from './_components/pagination'
 import { VideoFilters } from './_components/video-filters'
-import { VideoTable } from './_components/video-table'
-import {
-  getVideos,
-  type VideoFilters as VideoFiltersType,
-} from './_lib/get-videos'
-import {
-  DEFAULT_VALUES,
-  type VideoSearchParams,
-  videoSearchParamsSchema,
-} from './_lib/search-params-schema'
+import VideoList from './_components/video-list'
+import { getVideosForPage } from './_lib/get-videos-for-page'
 
 export const metadata: Metadata = {
   title: '動画管理',
@@ -29,65 +21,13 @@ async function VideoFiltersData() {
 
 async function VideoTableData({
   searchParams,
-}: {
-  searchParams: PageProps<'/'>['searchParams']
-}) {
-  const rawParams = await searchParams
-
-  // Validate and parse search parameters using zod schema
-  // If validation fails, use default values to prevent crashes
-  let validatedParams: VideoSearchParams
-  try {
-    validatedParams = videoSearchParamsSchema.parse(rawParams)
-  } catch (_error) {
-    // If parsing fails, use safeParse to get default values
-    const result = videoSearchParamsSchema.safeParse({})
-    validatedParams = result.success ? result.data : DEFAULT_VALUES
-  }
-
-  const currentPage = validatedParams.page
-  const perPage = 20
-
-  // Build filters from validated parameters
-  const filters: VideoFiltersType = {}
-  if (validatedParams.talentId !== undefined) {
-    filters.talentId = validatedParams.talentId
-  }
-  if (validatedParams.visible !== undefined) {
-    filters.visible = validatedParams.visible
-  }
-  if (validatedParams.search) {
-    filters.search = validatedParams.search
-  }
-  if (validatedParams.deleted !== undefined) {
-    filters.deleted = validatedParams.deleted
-  }
-  if (validatedParams.status !== undefined) {
-    filters.status = validatedParams.status
-  }
-  if (validatedParams.platform !== undefined) {
-    filters.platform = validatedParams.platform
-  }
-  if (validatedParams.videoKind !== undefined) {
-    filters.videoKind = validatedParams.videoKind
-  }
-
-  // Get sort parameters from validated data
-  const sortField = validatedParams.sortField
-  const sortOrder = validatedParams.sortOrder
-
-  const { videos, total } = await getVideos(
-    currentPage,
-    perPage,
-    filters,
-    sortField,
-    sortOrder,
-  )
-  const totalPages = Math.ceil(total / perPage)
+}: Pick<PageProps<'/videos'>, 'searchParams'>) {
+  const { currentPage, totalPages, videos } =
+    await getVideosForPage(searchParams)
 
   return (
     <>
-      <VideoTable videos={videos} />
+      <VideoList videos={videos} />
       {totalPages > 1 && (
         <Pagination currentPage={currentPage} totalPages={totalPages} />
       )}
@@ -97,59 +37,13 @@ async function VideoTableData({
 
 async function VideoCountData({
   searchParams,
-}: {
-  searchParams: PageProps<'/'>['searchParams']
-}) {
-  const rawParams = await searchParams
-  let validatedParams: VideoSearchParams
-  try {
-    validatedParams = videoSearchParamsSchema.parse(rawParams)
-  } catch (_error) {
-    const result = videoSearchParamsSchema.safeParse({})
-    validatedParams = result.success ? result.data : DEFAULT_VALUES
-  }
-
-  const currentPage = validatedParams.page
-  const perPage = 20
-
-  const filters: VideoFiltersType = {}
-  if (validatedParams.talentId !== undefined) {
-    filters.talentId = validatedParams.talentId
-  }
-  if (validatedParams.visible !== undefined) {
-    filters.visible = validatedParams.visible
-  }
-  if (validatedParams.search) {
-    filters.search = validatedParams.search
-  }
-  if (validatedParams.deleted !== undefined) {
-    filters.deleted = validatedParams.deleted
-  }
-  if (validatedParams.status !== undefined) {
-    filters.status = validatedParams.status
-  }
-  if (validatedParams.platform !== undefined) {
-    filters.platform = validatedParams.platform
-  }
-  if (validatedParams.videoKind !== undefined) {
-    filters.videoKind = validatedParams.videoKind
-  }
-
-  const sortField = validatedParams.sortField
-  const sortOrder = validatedParams.sortOrder
-
-  const { total } = await getVideos(
-    currentPage,
-    perPage,
-    filters,
-    sortField,
-    sortOrder,
-  )
+}: Pick<PageProps<'/videos'>, 'searchParams'>) {
+  const { total } = await getVideosForPage(searchParams)
 
   return <span className="tabular-nums">全 {formatNumber(total)} 件の動画</span>
 }
 
-export default function VideosPage({ searchParams }: PageProps<'/'>) {
+export default function VideosPage({ searchParams }: PageProps<'/videos'>) {
   return (
     <div>
       <PageHeader

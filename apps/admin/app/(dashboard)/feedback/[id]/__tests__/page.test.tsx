@@ -43,7 +43,9 @@ describe('FeedbackDetailPage', () => {
       title: '検索の絞り込みがほしい - 機能要望詳細',
     })
 
-    const detail = await findSuspenseChildren(FeedbackDetailPage({ params }))
+    const detail = findSuspenseChildren(
+      FeedbackDetailPage({ params, searchParams: Promise.resolve({}) }),
+    )
     await runServerComponent(detail)
 
     // `getFeatureRequestById` is a `'use cache: private'` function, so the

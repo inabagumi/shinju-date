@@ -32,6 +32,31 @@ export function findSuspenseChildren(node: ReactNode): unknown {
 }
 
 /**
+ * サーバーコンポーネントの戻り値をたどり、すべての `<Suspense>` の子を、
+ * 現れた順に返す。`children` だけでなく、ほかの props（`PageHeader` の
+ * `description` など）に渡した要素もたどる
+ */
+export function findAllSuspenseChildren(node: ReactNode): unknown[] {
+  if (Array.isArray(node)) {
+    return node.flatMap((child: ReactNode) => findAllSuspenseChildren(child))
+  }
+
+  if (!isValidElement(node)) {
+    return []
+  }
+
+  const props = node.props as { children?: ReactNode } & Record<string, unknown>
+
+  if (node.type === Suspense) {
+    return [props.children]
+  }
+
+  return Object.values(props).flatMap((value) =>
+    findAllSuspenseChildren(value as ReactNode),
+  )
+}
+
+/**
  * 非同期のサーバーコンポーネントの要素を、関数として呼んで実行する
  */
 export async function runServerComponent(element: unknown): Promise<ReactNode> {
