@@ -1,5 +1,5 @@
 import type { User } from '@supabase/supabase-js'
-import type { FormState } from '@/components/form'
+import type { FormState } from '@/lib/action'
 import { isAdminUser } from '@/lib/admin-user'
 import {
   createSupabaseServerClient,
@@ -19,6 +19,8 @@ export interface AuthenticatedContext {
 
 /**
  * Server Action の先頭で呼び出し、リクエストが認証済みの管理者によるものかを検証する。
+ * Server Action は、これを直接呼ばずに `@/lib/action` の `adminAction` または
+ * `adminFormAction` で作る。
  *
  * `proxy.ts` によるセッション保護とは別に、`matcher` の設定などに左右されないよう
  * Action 単位でも認証を確認する（多層防御）。Supabase Auth にログインしていても
