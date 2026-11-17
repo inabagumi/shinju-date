@@ -1,3 +1,5 @@
+import { serverEnv } from '@/lib/env'
+
 interface Cookie {
   name: string
   value: string
@@ -21,10 +23,7 @@ export async function withMockSessionCookie(
   supabaseURL: string,
   cookies: Cookie[],
 ): Promise<Cookie[]> {
-  if (
-    process.env['ENABLE_MSW'] !== 'true' ||
-    process.env['MSW_SUPABASE_AUTHENTICATED'] !== 'true'
-  ) {
+  if (!serverEnv.ENABLE_MSW || !serverEnv.MSW_SUPABASE_AUTHENTICATED) {
     return cookies
   }
 

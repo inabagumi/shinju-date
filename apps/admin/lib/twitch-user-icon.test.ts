@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { syncTwitchUserIconSafely } from './twitch-user-icon'
 
 vi.mock('@/lib/supabase/admin', () => ({
-  supabaseClient: { kind: 'service-role' },
+  getSupabaseAdminClient: () => ({ kind: 'service-role' }),
 }))
 
 vi.mock('@shinju-date/logger', () => ({

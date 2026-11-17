@@ -6,6 +6,7 @@
 import { faker } from '@faker-js/faker'
 import { Collection } from '@msw/data'
 import { TIME_ZONE } from '@shinju-date/constants'
+import { Constants } from '@shinju-date/database'
 import { z } from 'zod'
 import { MOCK_SUPABASE_USER } from './session.js'
 
@@ -17,7 +18,7 @@ export const talents = new Collection({
     id: z.string().uuid(),
     name: z.string(),
     reading: z.string().nullable(),
-    status: z.enum(['active', 'retired']),
+    status: z.enum(Constants.public.Enums.talent_status),
     theme_color: z.string().nullable(),
     updated_at: z.string(),
   }),
@@ -59,18 +60,18 @@ export const videos = new Collection({
     created_at: z.string(),
     deleted_at: z.string().nullable(),
     deleted_reason: z
-      .enum(['unavailable', 'withdrawn', 'talent_deleted'])
+      .enum(Constants.public.Enums.video_deleted_reason)
       .nullable(),
     duration: z.string(),
     id: z.string().uuid(),
-    platform: z.enum(['youtube', 'twitch']),
+    platform: z.enum(Constants.public.Enums.platform_type),
     published_at: z.string(),
-    status: z.enum(['PUBLISHED', 'LIVE', 'ENDED', 'UPCOMING']),
+    status: z.enum(Constants.public.Enums.video_status),
     talent_id: z.string().uuid(),
     thumbnail_id: z.string().uuid().nullable(),
     title: z.string(),
     updated_at: z.string(),
-    video_kind: z.enum(['standard', 'short']),
+    video_kind: z.enum(Constants.public.Enums.video_kind),
     visible: z.boolean(),
   }),
 })
@@ -109,12 +110,12 @@ export const videoBackfillJobs = new Collection({
     finished_at: z.string(),
     id: z.string().uuid(),
     pages: z.number(),
-    platform: z.enum(['youtube', 'twitch']),
+    platform: z.enum(Constants.public.Enums.platform_type),
     requested_at: z.string(),
     requested_by: z.string().nullable(),
     run_id: z.string().uuid().nullable(),
     started_at: z.string().nullable(),
-    status: z.enum(['done', 'failed']),
+    status: z.enum(Constants.public.Enums.video_backfill_job_status),
     talent_id: z.string().uuid(),
   }),
 })
@@ -136,7 +137,7 @@ export const twitchVideos = new Collection({
     stream_id: z.string().nullable(),
     twitch_user_id: z.string().uuid(),
     twitch_video_id: z.string(),
-    type: z.enum(['archive', 'highlight', 'upload', 'clip']).nullable(),
+    type: z.enum(Constants.public.Enums.twitch_video_type).nullable(),
     video_id: z.string().uuid(),
   }),
 })
@@ -146,6 +147,7 @@ export const terms = new Collection({
   schema: z.object({
     created_at: z.string(),
     id: z.string().uuid(),
+    popularity: z.number(),
     readings: z.array(z.string()),
     synonyms: z.array(z.string()),
     term: z.string(),
@@ -175,7 +177,7 @@ export const featureRequests = new Collection({
     id: z.string().uuid(),
     is_read: z.boolean(),
     message: z.string(),
-    status: z.enum(['pending', 'in_progress', 'resolved', 'rejected']),
+    status: z.enum(Constants.public.Enums.feature_request_status),
     updated_at: z.string(),
   }),
 })
@@ -205,12 +207,12 @@ export const auditLogs = new Collection({
  * because it would require restructuring all our Zod schemas to include getter-based
  * relation properties, which would be a breaking change.
  *
- * Instead, we handle relations manually in the applySelect function by looking up
- * related records when needed (e.g., item.talent_id -> talents.findFirst()).
+ * Instead, the relations are listed in the table definitions
+ * (`handlers/supabase/tables.ts`), and embedded resources are looked up from
+ * them (e.g., `videos.talent_id` -> `talents.id`).
  */
 export function defineCollectionRelations() {
-  // Relations are handled manually in applySelect function
-  // See handlers/supabase.ts for implementation details
+  // Relations are listed in handlers/supabase/tables.ts
 }
 
 /**
@@ -848,6 +850,7 @@ export async function seedCollections() {
       terms.create({
         created_at: faker.date.past({ years: 1 }).toISOString(),
         id: faker.string.uuid(),
+        popularity: 0,
         readings: termData.readings,
         synonyms: termData.synonyms,
         term: termData.term,

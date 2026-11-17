@@ -13,7 +13,11 @@ import {
   updateFeatureRequestMemo,
   updateFeatureRequestStatus,
 } from '../../_actions/update-feedback'
-import { isFeatureRequestStatus } from '../../_lib/feature-request-status'
+import {
+  FEATURE_REQUEST_STATUS_LABELS,
+  FEATURE_REQUEST_STATUSES,
+  isFeatureRequestStatus,
+} from '../../_lib/feature-request-status'
 
 interface FeatureRequestDetailProps {
   featureRequest: Tables<'feature_requests'>
@@ -149,10 +153,11 @@ export function FeatureRequestDetail({
                 id="status"
                 name="status"
               >
-                <option value="pending">未対応</option>
-                <option value="in_progress">対応中</option>
-                <option value="resolved">対応済み</option>
-                <option value="rejected">却下</option>
+                {FEATURE_REQUEST_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {FEATURE_REQUEST_STATUS_LABELS[status]}
+                  </option>
+                ))}
               </Select>
             </div>
             <div className="flex flex-wrap items-center gap-3">

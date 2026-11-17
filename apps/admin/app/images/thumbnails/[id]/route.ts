@@ -1,7 +1,7 @@
 import { DUMMY_THUMBNAIL_PNG } from '@shinju-date/constants'
 import { createErrorResponse } from '@shinju-date/helpers'
 import { type NextRequest, NextResponse } from 'next/server'
-import { supabaseClient } from '@/lib/supabase/admin'
+import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 
 const SIGNED_URL_EXPIRES_IN = 60 // 1 minute
 
@@ -10,7 +10,7 @@ export async function GET(
   ctx: RouteContext<'/images/thumbnails/[id]'>,
 ) {
   const { id } = await ctx.params
-  const { data: thumbnail, error } = await supabaseClient
+  const { data: thumbnail, error } = await getSupabaseAdminClient()
     .from('thumbnails')
     .select('path')
     .eq('id', id)
@@ -20,8 +20,8 @@ export async function GET(
     return createErrorResponse('Failed to fetch thumbnail', { status: 404 })
   }
 
-  const { data, error: signedUrlError } = await supabaseClient.storage
-    .from('thumbnails')
+  const { data, error: signedUrlError } = await getSupabaseAdminClient()
+    .storage.from('thumbnails')
     .createSignedUrl(thumbnail.path, SIGNED_URL_EXPIRES_IN)
 
   if (signedUrlError) {

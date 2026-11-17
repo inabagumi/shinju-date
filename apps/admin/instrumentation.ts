@@ -1,8 +1,13 @@
 import type { Instrumentation } from 'next'
 
 export async function register() {
+  // Checks the environment variables on start, so that a missing one stops
+  // the server with its name instead of failing the first request that needs
+  // it.
+  const { serverEnv } = await import('./lib/env')
+
   // Initialize MSW when explicitly enabled
-  if (process.env['ENABLE_MSW'] === 'true') {
+  if (serverEnv.ENABLE_MSW) {
     if (process.env['NEXT_RUNTIME'] === 'nodejs') {
       const { startServer } = await import('@shinju-date/msw-handlers/server')
       startServer()

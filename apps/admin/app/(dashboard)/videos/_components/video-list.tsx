@@ -52,15 +52,59 @@ interface Props {
   videos: Video[]
 }
 
+type VideoAction = 'toggle' | 'delete' | 'restore'
+
+interface ConfirmDialogState {
+  action: VideoAction
+  open: boolean
+  videos: Pick<Video, 'id' | 'title'>[]
+}
+
+/**
+ * 操作の対象になる動画を求める。削除は未削除の動画だけ、復元は削除済みの動画
+ * だけを対象にする。確認ダイアログの表示とアクションの実行で同じ結果を使う
+ */
+function getTargetVideos(
+  videos: Video[],
+  action: VideoAction,
+  ids: readonly string[],
+): Pick<Video, 'id' | 'title'>[] {
+  const idSet = new Set(ids)
+
+  return videos
+    .filter((v) => {
+      if (!idSet.has(v.id)) {
+        return false
+      }
+      if (action === 'delete') {
+        return v.deleted_at === null
+      }
+      if (action === 'restore') {
+        return v.deleted_at !== null
+      }
+      return true
+    })
+    .map((v) => ({ id: v.id, title: v.title }))
+}
+
 export default function VideoList({ videos }: Props) {
   const searchParams = useSearchParams()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [confirmDialog, setConfirmDialog] = useState<{
-    action: 'toggle' | 'delete' | 'restore'
-    open: boolean
-    videoIds: string[]
-  }>({ action: 'toggle', open: false, videoIds: [] })
+  const [prevVideos, setPrevVideos] = useState(videos)
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>({
+    action: 'toggle',
+    open: false,
+    videos: [],
+  })
   const { showToast, toastProps } = useActionToast()
+
+  // ページ送り・絞り込み・並べ替えで一覧が変わったら、選択を現在の一覧に
+  // 含まれる動画だけに絞る（ページをまたぐ選択は持たない）
+  if (videos !== prevVideos) {
+    setPrevVideos(videos)
+    const currentIds = new Set(videos.map((v) => v.id))
+    setSelectedIds((prev) => prev.filter((id) => currentIds.has(id)))
+  }
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -78,19 +122,26 @@ export default function VideoList({ videos }: Props) {
     }
   }
 
-  const handleBulkAction = (action: 'toggle' | 'delete' | 'restore') => {
-    setConfirmDialog({ action, open: true, videoIds: selectedIds })
+  const handleBulkAction = (action: VideoAction) => {
+    setConfirmDialog({
+      action,
+      open: true,
+      videos: getTargetVideos(videos, action, selectedIds),
+    })
   }
 
-  const handleSingleAction = (
-    action: 'toggle' | 'delete' | 'restore',
-    id: string,
-  ) => {
-    setConfirmDialog({ action, open: true, videoIds: [id] })
+  const handleSingleAction = (action: VideoAction, id: string) => {
+    setConfirmDialog({
+      action,
+      open: true,
+      videos: getTargetVideos(videos, action, [id]),
+    })
   }
 
   const handleConfirm = async () => {
-    const { action, videoIds } = confirmDialog
+    const { action } = confirmDialog
+    // 確認ダイアログに表示した動画だけを更新する
+    const videoIds = confirmDialog.videos.map((v) => v.id)
 
     if (videoIds.length === 0) {
       throw new Error('動画が選択されていません。')
@@ -149,7 +200,8 @@ export default function VideoList({ videos }: Props) {
     return `/videos?${params.toString()}`
   }
 
-  const allSelected = videos.length > 0 && selectedIds.length === videos.length
+  const allSelected =
+    videos.length > 0 && videos.every((v) => selectedIds.includes(v.id))
 
   const currentSortField = searchParams.get('sortField') || 'updated_at'
   const currentSortOrder = (searchParams.get('sortOrder') || 'desc') as
@@ -424,25 +476,7 @@ export default function VideoList({ videos }: Props) {
         onConfirm={handleConfirm}
         onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
         open={confirmDialog.open}
-        videos={videos
-          .filter((v) => {
-            // Filter videos based on action
-            if (confirmDialog.action === 'delete') {
-              // Only show non-deleted videos for delete action
-              return (
-                confirmDialog.videoIds.includes(v.id) && v.deleted_at === null
-              )
-            }
-            if (confirmDialog.action === 'restore') {
-              // Only show deleted videos for restore action
-              return (
-                confirmDialog.videoIds.includes(v.id) && v.deleted_at !== null
-              )
-            }
-            // For toggle, show all selected videos
-            return confirmDialog.videoIds.includes(v.id)
-          })
-          .map((v) => ({ id: v.id, title: v.title }))}
+        videos={confirmDialog.videos}
       />
     </div>
   )

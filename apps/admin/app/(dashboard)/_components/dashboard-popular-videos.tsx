@@ -13,7 +13,7 @@ import { PopularVideosListSkeleton } from '@/components/skeletons'
 import { VideoThumbnail } from '@/components/video-thumbnail'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
 
-export function PopularVideosWidgetSkeleton() {
+export function DashboardPopularVideosSkeleton() {
   return (
     <Panel>
       <div className="mb-4 h-7 w-64 animate-pulse rounded-control bg-muted" />
@@ -23,10 +23,10 @@ export function PopularVideosWidgetSkeleton() {
 }
 
 /**
- * PopularVideosWidget - Displays popular videos ranking
+ * DashboardPopularVideos - Displays popular videos ranking
  * This is an async Server Component that fetches its own data
  */
-export async function PopularVideosWidget() {
+export async function DashboardPopularVideos() {
   'use cache: private'
 
   cacheLife('minutes')
