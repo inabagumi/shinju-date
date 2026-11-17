@@ -4,20 +4,20 @@
   "dependencies": {
     "@msw/data": "1.1.8",
     "@shinju-date/database": "workspace:*",
-    "msw": "3.0.6",
-    "zod": "4.6.7"
+    "msw": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@faker-js/faker": "10.6.0",
     "@shinju-date/constants": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
-    "@tsconfig/node20": "20.1.11",
-    "@tsconfig/strictest": "2.0.9",
-    "@types/node": "26.6.6",
-    "@upstash/redis": "1.41.0",
-    "tsdown": "0.23.7",
-    "typescript": "6.0.3",
-    "vitest": "5.1.0"
+    "@tsconfig/node20": "catalog:",
+    "@tsconfig/strictest": "catalog:",
+    "@types/node": "catalog:",
+    "@upstash/redis": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
     ".": {

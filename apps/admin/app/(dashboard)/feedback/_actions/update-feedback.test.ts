@@ -13,6 +13,31 @@ const { supabase } = test
 const ID = '70000000-0000-0000-0000-000000000001'
 const MEMO = '検索の絞り込みと合わせて、次の四半期に対応する。'
 
+function statusForm(status: string, id = ID): FormData {
+  const formData = new FormData()
+  formData.set('id', id)
+  formData.set('status', status)
+  return formData
+}
+
+function memoForm(adminMemo: string, id = ID): FormData {
+  const formData = new FormData()
+  formData.set('id', id)
+  formData.set('admin_memo', adminMemo)
+  return formData
+}
+
+function readForm(isRead: string, id = ID): FormData {
+  const formData = new FormData()
+  formData.set('id', id)
+  formData.set('is_read', isRead)
+  return formData
+}
+
+function errorState(message: string) {
+  return { errors: { generic: [message] } }
+}
+
 /** What the audit log entries record, without the client passed first. */
 function recordedAuditLogs(): string {
   return JSON.stringify(
@@ -28,7 +53,10 @@ describe('updateFeatureRequestStatus', () => {
       { message: '検索結果を配信日で絞り込みたいです', status: 'pending' },
     ])
 
-    const result = await updateFeatureRequestStatus(ID, 'in_progress')
+    const result = await updateFeatureRequestStatus(
+      {},
+      statusForm('in_progress'),
+    )
 
     expect(result).toEqual({ success: true })
     expect(supabase.calls('update', 'feature_requests')).toMatchObject([
@@ -49,7 +77,7 @@ describe('updateFeatureRequestStatus', () => {
       { message: `${'あ'.repeat(40)}\nつづき`, status: 'pending' },
     ])
 
-    await updateFeatureRequestStatus(ID, 'resolved')
+    await updateFeatureRequestStatus({}, statusForm('resolved'))
 
     test.expectAuditLog(
       'FEATURE_REQUEST_UPDATE',
@@ -63,7 +91,7 @@ describe('updateFeatureRequestStatus', () => {
       { message: 'Message', status: 'resolved' },
     ])
 
-    const result = await updateFeatureRequestStatus(ID, 'resolved')
+    const result = await updateFeatureRequestStatus({}, statusForm('resolved'))
 
     expect(result).toEqual({ success: true })
     expect(supabase.calls('update', 'feature_requests')).toEqual([])
@@ -71,12 +99,9 @@ describe('updateFeatureRequestStatus', () => {
   })
 
   it('returns an error for a feedback that does not exist', async () => {
-    const result = await updateFeatureRequestStatus(ID, 'resolved')
+    const result = await updateFeatureRequestStatus({}, statusForm('resolved'))
 
-    expect(result).toEqual({
-      error: 'フィードバックが見つかりませんでした',
-      success: false,
-    })
+    expect(result).toEqual(errorState('フィードバックが見つかりませんでした。'))
     expect(supabase.calls('update', 'feature_requests')).toEqual([])
     test.expectNoAuditLog()
   })
@@ -91,12 +116,9 @@ describe('updateFeatureRequestStatus', () => {
       postgresError('XX000', 'Database error'),
     )
 
-    const result = await updateFeatureRequestStatus(ID, 'resolved')
+    const result = await updateFeatureRequestStatus({}, statusForm('resolved'))
 
-    expect(result).toEqual({
-      error: 'ステータスの更新に失敗しました',
-      success: false,
-    })
+    expect(result).toEqual(errorState('ステータスの更新に失敗しました。'))
     test.expectNoAuditLog()
     test.expectNotRevalidated()
   })
@@ -108,7 +130,7 @@ describe('updateFeatureRequestMemo', () => {
       { admin_memo: null, message: 'Message' },
     ])
 
-    const result = await updateFeatureRequestMemo(ID, MEMO)
+    const result = await updateFeatureRequestMemo({}, memoForm(MEMO))
 
     expect(result).toEqual({ success: true })
     expect(supabase.calls('update', 'feature_requests')).toMatchObject([
@@ -132,7 +154,7 @@ describe('updateFeatureRequestMemo', () => {
       { admin_memo: before, message: 'Message' },
     ])
 
-    await updateFeatureRequestMemo(ID, MEMO)
+    await updateFeatureRequestMemo({}, memoForm(MEMO))
 
     test.expectAuditLog('FEATURE_REQUEST_UPDATE', ID, {
       changes: {
@@ -153,7 +175,7 @@ describe('updateFeatureRequestMemo', () => {
       { admin_memo: MEMO, message: 'Message' },
     ])
 
-    await updateFeatureRequestMemo(ID, '')
+    await updateFeatureRequestMemo({}, memoForm(''))
 
     test.expectAuditLog('FEATURE_REQUEST_UPDATE', ID, {
       changes: {
@@ -174,7 +196,7 @@ describe('updateFeatureRequestMemo', () => {
         { admin_memo: stored, message: 'Message' },
       ])
 
-      const result = await updateFeatureRequestMemo(ID, adminMemo)
+      const result = await updateFeatureRequestMemo({}, memoForm(adminMemo))
 
       expect(result).toEqual({ success: true })
       expect(supabase.calls('update', 'feature_requests')).toEqual([])
@@ -183,12 +205,9 @@ describe('updateFeatureRequestMemo', () => {
   )
 
   it('returns an error for a feedback that does not exist', async () => {
-    const result = await updateFeatureRequestMemo(ID, MEMO)
+    const result = await updateFeatureRequestMemo({}, memoForm(MEMO))
 
-    expect(result).toEqual({
-      error: 'フィードバックが見つかりませんでした',
-      success: false,
-    })
+    expect(result).toEqual(errorState('フィードバックが見つかりませんでした。'))
     expect(supabase.calls('update', 'feature_requests')).toEqual([])
     test.expectNoAuditLog()
   })
@@ -203,12 +222,9 @@ describe('updateFeatureRequestMemo', () => {
       postgresError('XX000', 'Database error'),
     )
 
-    const result = await updateFeatureRequestMemo(ID, MEMO)
+    const result = await updateFeatureRequestMemo({}, memoForm(MEMO))
 
-    expect(result).toEqual({
-      error: 'メモの更新に失敗しました',
-      success: false,
-    })
+    expect(result).toEqual(errorState('メモの更新に失敗しました。'))
     test.expectNoAuditLog()
     test.expectNotRevalidated()
   })
@@ -218,7 +234,10 @@ describe('markFeatureRequestAsRead', () => {
   it.each([true, false])(
     'sets is_read to %s without recording an audit log',
     async (isRead) => {
-      const result = await markFeatureRequestAsRead(ID, isRead)
+      const result = await markFeatureRequestAsRead(
+        {},
+        readForm(String(isRead)),
+      )
 
       expect(result).toEqual({ success: true })
       expect(supabase.calls('update', 'feature_requests')).toMatchObject([
@@ -228,4 +247,65 @@ describe('markFeatureRequestAsRead', () => {
       test.expectRevalidated({ paths: ['/feedback'] })
     },
   )
+
+  it('records nothing when the update fails', async () => {
+    supabase.on(
+      'update',
+      'feature_requests',
+      postgresError('XX000', 'Database error'),
+    )
+
+    const result = await markFeatureRequestAsRead({}, readForm('true'))
+
+    expect(result).toEqual(errorState('既読状態の更新に失敗しました。'))
+    test.expectNotRevalidated()
+  })
+})
+
+describe('with an invalid input', () => {
+  const INVALID_INPUT = errorState('入力が正しくありません。')
+
+  it.each([
+    [
+      'a status for an ID that is not a UUID',
+      () => updateFeatureRequestStatus({}, statusForm('resolved', 'abc')),
+    ],
+    [
+      'a status that is not in the enum',
+      () => updateFeatureRequestStatus({}, statusForm('done')),
+    ],
+    [
+      'a status form without the status',
+      () => {
+        const formData = statusForm('resolved')
+        formData.delete('status')
+        return updateFeatureRequestStatus({}, formData)
+      },
+    ],
+    [
+      'a memo for an ID that is not a UUID',
+      () => updateFeatureRequestMemo({}, memoForm(MEMO, 'abc')),
+    ],
+    [
+      'a memo form without the memo',
+      () => {
+        const formData = memoForm(MEMO)
+        formData.delete('admin_memo')
+        return updateFeatureRequestMemo({}, formData)
+      },
+    ],
+    [
+      'a read state for an ID that is not a UUID',
+      () => markFeatureRequestAsRead({}, readForm('true', 'abc')),
+    ],
+    [
+      'a read state that is not a boolean',
+      () => markFeatureRequestAsRead({}, readForm('yes')),
+    ],
+  ])('updates nothing for %s', async (_label, action) => {
+    await expect(action()).resolves.toEqual(INVALID_INPUT)
+    expect(supabase.requests).toEqual([])
+    test.expectNoAuditLog()
+    test.expectNotRevalidated()
+  })
 })

@@ -1,3 +1,4 @@
+import { throwIfError } from '@shinju-date/scraper'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 
 /**
@@ -41,13 +42,7 @@ export async function* getAllTerms(
       query = query.gt('id', cursor)
     }
 
-    const { data: page, error } = await query
-
-    if (error) {
-      throw new TypeError(error.message, {
-        cause: error,
-      })
-    }
+    const page = throwIfError(await query, 'Failed to load terms')
 
     const lastId = page.at(-1)?.id
 

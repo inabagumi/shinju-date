@@ -3,7 +3,7 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import type { TypedSupabaseClient } from '../../types.js'
 import { chunk } from '../batch.js'
 import { IN_FILTER_CHUNK_SIZE } from '../constants.js'
-import { DatabaseError, isUniqueViolation } from './errors.js'
+import { DatabaseError, isUniqueViolation } from '../errors.js'
 
 export type NewVideo = Omit<TablesInsert<'videos'>, 'id'>
 

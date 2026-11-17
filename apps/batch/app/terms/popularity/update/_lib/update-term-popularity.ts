@@ -1,5 +1,6 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
+import { throwIfError } from '@shinju-date/scraper'
 import type { Redis } from '@upstash/redis'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 
@@ -82,18 +83,10 @@ async function updateTermsPopularityInDatabase(
       .slice(i, i + UPDATE_BATCH_SIZE)
       .map(({ score, term }) => ({ score, term }))
 
-    const { data, error } = await supabase.rpc('update_terms_popularity', {
-      p_items: items,
-    })
-
-    if (error) {
-      logger.error('用語の人気度更新に失敗しました', {
-        error,
-      })
-      throw error
-    }
-
-    updated += data
+    updated += throwIfError(
+      await supabase.rpc('update_terms_popularity', { p_items: items }),
+      'Failed to update the popularity of terms',
+    )
   }
 
   // Search queries are saved in lowercase, so each of them matches one term,

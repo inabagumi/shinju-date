@@ -1,3 +1,4 @@
+import { DatabaseError } from '@shinju-date/scraper'
 import type { BackfillJob } from '@shinju-date/video-backfill'
 import { describe, expect, it, vi } from 'vitest'
 import type { TypedSupabaseClient } from '../supabase'
@@ -122,8 +123,12 @@ describe('recordBackfillJob', () => {
   it('throws when the row cannot be saved', async () => {
     const { client } = createSupabaseClient({ message: 'permission denied' })
 
-    await expect(recordBackfillJob(client, createJob())).rejects.toThrow(
-      'permission denied',
-    )
+    const result = recordBackfillJob(client, createJob())
+
+    await expect(result).rejects.toBeInstanceOf(DatabaseError)
+    await expect(result).rejects.toMatchObject({
+      message: 'Failed to record a backfill job: permission denied',
+      operation: 'Failed to record a backfill job',
+    })
   })
 })

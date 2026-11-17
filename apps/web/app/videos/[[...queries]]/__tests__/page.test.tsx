@@ -10,6 +10,7 @@ import { generateMetadata } from '../page'
 const fetchers = vi.hoisted(() => ({
   countVideos: vi.fn(),
   fetchActiveTalents: vi.fn(),
+  fetchCurrentTime: vi.fn(async () => '2026-11-14T12:00:00+09:00[Asia/Tokyo]'),
   fetchVideos: vi.fn(),
 }))
 

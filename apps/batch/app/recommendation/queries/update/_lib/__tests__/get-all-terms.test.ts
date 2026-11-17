@@ -1,3 +1,4 @@
+import { DatabaseError } from '@shinju-date/scraper'
 import { describe, expect, it, vi } from 'vitest'
 import { getAllTerms } from '../get-all-terms'
 
@@ -128,8 +129,12 @@ describe('getAllTerms', () => {
     const client = { from: () => builder }
 
     // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
-    await expect(Array.fromAsync(getAllTerms(client as any))).rejects.toThrow(
-      'Database error',
-    )
+    const result = Array.fromAsync(getAllTerms(client as any))
+
+    await expect(result).rejects.toBeInstanceOf(DatabaseError)
+    await expect(result).rejects.toMatchObject({
+      cause: error,
+      operation: 'Failed to load terms',
+    })
   })
 })

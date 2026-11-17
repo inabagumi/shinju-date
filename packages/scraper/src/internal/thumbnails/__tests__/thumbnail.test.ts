@@ -1,6 +1,7 @@
 import { HttpResponse, http } from 'msw'
 import sharp from 'sharp'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { StorageError } from '../../errors.js'
 import { postgresError, setupSupabase } from '../../testing/supabase.js'
 import { createThumbnail, removeThumbnail } from '../thumbnail.js'
 
@@ -111,6 +112,32 @@ describe('createThumbnail', () => {
     expect(supabase.requests).toHaveLength(0)
   })
 
+  it('throws StorageError without registering when the upload fails', async () => {
+    mockImageAndStorage()
+    supabase.server.use(
+      http.post(STORAGE_URL, () =>
+        HttpResponse.json(
+          { error: 'Internal', message: 'storage is down', statusCode: '500' },
+          { status: 500 },
+        ),
+      ),
+    )
+    supabase.respond(() => [])
+
+    const result = createThumbnail({
+      folder: 'yt-1',
+      now,
+      source,
+      supabaseClient: supabase.supabaseClient,
+    })
+
+    await expect(result).rejects.toBeInstanceOf(StorageError)
+    await expect(result).rejects.toMatchObject({
+      operation: 'Failed to upload a thumbnail',
+    })
+    expect(supabase.requests).toHaveLength(0)
+  })
+
   it('removes the stored image when it cannot be registered', async () => {
     const removed: unknown[] = []
     mockImageAndStorage()
@@ -210,9 +237,13 @@ describe('removeThumbnail', () => {
     )
 
     expect(supabase.written('DELETE', 'thumbnails')).toHaveLength(1)
-    expect(reportError).toHaveBeenCalledWith(
-      expect.objectContaining({ message: 'storage is down' }),
-      { thumbnailId: 'thumb-1', thumbnailPath: 'yt-1/abc.jpg' },
-    )
+    expect(reportError).toHaveBeenCalledWith(expect.any(StorageError), {
+      thumbnailId: 'thumb-1',
+      thumbnailPath: 'yt-1/abc.jpg',
+    })
+    expect(reportError.mock.calls[0]?.[0]).toMatchObject({
+      cause: expect.objectContaining({ message: 'storage is down' }),
+      operation: 'Failed to remove a thumbnail',
+    })
   })
 })

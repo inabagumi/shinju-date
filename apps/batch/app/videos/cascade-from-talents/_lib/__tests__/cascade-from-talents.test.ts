@@ -1,3 +1,4 @@
+import { DatabaseError } from '@shinju-date/scraper'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   CascadePhaseError,
@@ -307,6 +308,21 @@ describe('cascadeVideosFromTalents', () => {
     await expect(cascadeVideosFromTalents(client as never)).rejects.toThrow(
       'db error',
     )
+
+    const error = await cascadeVideosFromTalents(client as never).catch(
+      (error: unknown) => error,
+    )
+    const causes = (error as Error).cause as AggregateError
+
+    expect(causes).toBeInstanceOf(AggregateError)
+    expect(causes.errors).toEqual([
+      expect.any(DatabaseError),
+      expect.any(DatabaseError),
+    ])
+    expect(causes.errors.map((cause) => cause.operation)).toEqual([
+      'Failed to load videos of deleted talents',
+      'Failed to load videos of restored talents',
+    ])
   })
 
   it('soft-deletes and restores in the same run when both exist', async () => {

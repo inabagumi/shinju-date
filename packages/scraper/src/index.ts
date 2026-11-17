@@ -1,7 +1,10 @@
 export {
   AccountNotFoundError,
+  DatabaseError,
   StalledPaginationError,
-} from './internal/database/errors.js'
+  StorageError,
+  throwIfError,
+} from './internal/errors.js'
 export { Scraper } from './scraper.js'
 export type {
   AccountChanges,

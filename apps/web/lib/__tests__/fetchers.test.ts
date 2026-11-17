@@ -41,6 +41,7 @@ import {
   fetchActiveAnnouncements,
   fetchActiveTalents,
   fetchCalendarVideos,
+  fetchCurrentTime,
   fetchDashboardVideos,
   fetchOldestVideoDate,
   fetchScheduleToday,
@@ -1016,6 +1017,25 @@ describe('fetchOldestVideoDate', () => {
     query.maybeSingle.mockResolvedValue({ data: null, error: null })
 
     await expect(fetchOldestVideoDate()).resolves.toBeNull()
+  })
+})
+
+describe('fetchCurrentTime', () => {
+  test('returns the current time in Japan', async () => {
+    const spy = vi
+      .spyOn(Temporal.Now, 'zonedDateTimeISO')
+      .mockImplementation((timeZone) =>
+        Temporal.Instant.from('2026-11-15T15:30:00Z').toZonedDateTimeISO(
+          timeZone ?? 'UTC',
+        ),
+      )
+
+    await expect(fetchCurrentTime()).resolves.toBe(
+      '2026-11-16T00:30:00+09:00[Asia/Tokyo]',
+    )
+    expect(cacheLife).toHaveBeenCalledWith('hours')
+
+    spy.mockRestore()
   })
 })
 
