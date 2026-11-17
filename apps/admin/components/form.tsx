@@ -17,6 +17,8 @@ import {
   type ComponentPropsWithoutRef,
   createContext,
   Fragment,
+  type SubmitEventHandler,
+  startTransition,
   useActionState,
   useCallback,
   useContext,
@@ -45,18 +47,58 @@ interface Props extends Omit<ComponentPropsWithoutRef<'form'>, 'action'> {
   initialState?: Awaited<FormState>
 }
 
+/**
+ * `useActionState` のアクションを送信するフォーム。
+ *
+ * `<form action>` に任せると、React はアクションが終わったあとにフォームを
+ * リセットする。検証のエラーなどで失敗したときも、セレクトの選択や、
+ * `defaultChecked` / `defaultValue` を使う制御されていない入力欄が初期値に
+ * 戻り、送り直すと選んだ内容と違う値が送られる。そのため `onSubmit` で送信を
+ * 止めて、トランジションの中で自分でアクションを呼び、リセットさせない。
+ * 成功したときもリセットしない（`FormDialog` は、閉じて開き直すときに
+ * フォームを作り直す）。`useFormStatus` の送信中の判定は、このトランジションの
+ * あいだも働く。
+ *
+ * `action` は、JavaScript を読み込む前に送信されたとき（Server Action の
+ * プログレッシブエンハンスメント）のために残す。
+ */
 export default function Form({
   action,
   children,
   initialState = {},
   noValidate = true,
+  onSubmit,
   ...props
 }: Props) {
   const [state, formAction] = useActionState(action, initialState)
 
+  const handleSubmit: SubmitEventHandler<HTMLFormElement> = (event) => {
+    onSubmit?.(event)
+
+    if (event.defaultPrevented) {
+      return
+    }
+
+    event.preventDefault()
+
+    const formData = new FormData(
+      event.currentTarget,
+      event.nativeEvent.submitter,
+    )
+
+    startTransition(() => {
+      formAction(formData)
+    })
+  }
+
   return (
     <FormContext.Provider value={state}>
-      <form action={formAction} noValidate={noValidate} {...props}>
+      <form
+        action={formAction}
+        noValidate={noValidate}
+        onSubmit={handleSubmit}
+        {...props}
+      >
         <FormError />
         {children}
       </form>
