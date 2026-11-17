@@ -2,6 +2,7 @@ import { HttpResponse, http } from 'msw'
 import sharp from 'sharp'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { StorageError } from '../../errors.js'
+import { serveImage } from '../../testing/profile-images.js'
 import { postgresError, setupSupabase } from '../../testing/supabase.js'
 import { createThumbnail, removeThumbnail } from '../thumbnail.js'
 
@@ -64,16 +65,79 @@ describe('createThumbnail', () => {
       supabaseClient: supabase.supabaseClient,
     })
 
-    expect(thumbnail.path).toMatch(/^yt-1\/[\w-]+\.jpe?g$/)
-    expect(uploads).toEqual([`/storage/v1/object/thumbnails/${thumbnail.path}`])
+    expect(thumbnail?.path).toMatch(/^yt-1\/[\w-]+\.jpe?g$/)
+    expect(uploads).toEqual([
+      `/storage/v1/object/thumbnails/${thumbnail?.path}`,
+    ])
     expect(supabase.written('POST', 'thumbnails')[0]?.body).toEqual({
       blur_data_url: expect.stringMatching(/^data:image\/jpeg;base64,/),
       etag: '"etag-1"',
       height: 720,
-      id: thumbnail.id,
-      path: thumbnail.path,
+      id: thumbnail?.id,
+      path: thumbnail?.path,
       updated_at: '2024-05-01T12:34:56Z',
       width: 1280,
+    })
+  })
+
+  it('stores nothing when the platform reports the image as not modified', async () => {
+    const uploads = mockImageAndStorage()
+    const requests = serveImage(supabase, IMAGE_URL, { body: image })
+    supabase.respond(() => [])
+
+    const thumbnail = await createThumbnail({
+      etag: '"etag-1"',
+      folder: 'yt-1',
+      now,
+      source,
+      supabaseClient: supabase.supabaseClient,
+    })
+
+    expect(thumbnail).toBeNull()
+    expect(requests).toEqual([{ ifNoneMatch: '"etag-1"', url: IMAGE_URL }])
+    expect(uploads).toHaveLength(0)
+    expect(supabase.requests).toHaveLength(0)
+  })
+
+  it('stores nothing when the ETag is unchanged even without a 304', async () => {
+    const uploads = mockImageAndStorage()
+    serveImage(supabase, IMAGE_URL, { body: image, conditional: false })
+    supabase.respond(() => [])
+
+    const thumbnail = await createThumbnail({
+      etag: '"etag-1"',
+      folder: 'yt-1',
+      now,
+      source,
+      supabaseClient: supabase.supabaseClient,
+    })
+
+    expect(thumbnail).toBeNull()
+    expect(uploads).toHaveLength(0)
+    expect(supabase.requests).toHaveLength(0)
+  })
+
+  it('stores the image when its ETag changed', async () => {
+    const uploads = mockImageAndStorage()
+    const requests = serveImage(supabase, IMAGE_URL, {
+      body: image,
+      etag: '"etag-2"',
+    })
+    supabase.respond(() => [])
+
+    const thumbnail = await createThumbnail({
+      etag: '"etag-1"',
+      folder: 'yt-1',
+      now,
+      source,
+      supabaseClient: supabase.supabaseClient,
+    })
+
+    expect(thumbnail?.path).toMatch(/^yt-1\//)
+    expect(requests).toEqual([{ ifNoneMatch: '"etag-1"', url: IMAGE_URL }])
+    expect(uploads).toHaveLength(1)
+    expect(supabase.written('POST', 'thumbnails')[0]?.body).toMatchObject({
+      etag: '"etag-2"',
     })
   })
 
