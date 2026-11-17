@@ -1,3 +1,9 @@
+export type { RemoveUnusedThumbnailsOptions } from './cleanup.js'
+export {
+  removeUnusedThumbnails,
+  UNUSED_THUMBNAIL_GRACE_PERIOD,
+  UNUSED_THUMBNAIL_REMOVAL_LIMIT,
+} from './cleanup.js'
 export type { ReplaceThumbnailOptions } from './replace.js'
 export { replaceThumbnail } from './replace.js'
 export {
