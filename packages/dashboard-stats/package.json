@@ -1,0 +1,48 @@
+{
+  "author": "Haneru Developers",
+  "dependencies": {
+    "@shinju-date/constants": "workspace:*",
+    "@shinju-date/database": "workspace:*",
+    "@shinju-date/temporal-fns": "workspace:*",
+    "zod": "4.6.7"
+  },
+  "description": "Types, counts and Redis snapshots of the dashboard statistics shared by the admin and batch apps",
+  "devDependencies": {
+    "@supabase/supabase-js": "2.119.0",
+    "@tsconfig/node20": "20.1.11",
+    "@tsconfig/strictest": "2.0.9",
+    "@types/node": "26.6.6",
+    "@upstash/redis": "1.41.0",
+    "tsdown": "0.23.7",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "name": "@shinju-date/dashboard-stats",
+  "peerDependencies": {
+    "@supabase/supabase-js": "^2.119.0",
+    "@upstash/redis": "^1.41.0"
+  },
+  "private": true,
+  "repository": {
+    "directory": "packages/dashboard-stats",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "1.0.0"
+}
