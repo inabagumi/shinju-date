@@ -3,7 +3,9 @@ import type { Log } from '../_lib/get-audit-logs'
 
 const getAdminPagePath = (table: string, id: string): string | null => {
   switch (table) {
+    // `channels` は `talents` の以前の名前（過去のログ）
     case 'channels':
+    case 'talents':
       return `/talents/${id}`
     case 'videos':
       return `/videos/${id}`

@@ -67,4 +67,27 @@ describe('LogItem', () => {
     expect(screen.getByRole('link', { name: 'Title' })).toBeInTheDocument()
     expect(screen.queryByText('→')).not.toBeInTheDocument()
   })
+
+  it.each(['talents', 'channels'])(
+    'links a talent sync logged against %s to the talent',
+    (targetTable) => {
+      const talentId = '10000000-0000-0000-0000-000000000001'
+
+      render(
+        <LogItem
+          log={{
+            ...videoSyncLog({ entityName: 'Talent Name', platform: 'youtube' }),
+            action: 'CHANNEL_SYNC',
+            target_record_id: talentId,
+            target_table: targetTable,
+          }}
+        />,
+      )
+
+      expect(screen.getByRole('link', { name: 'Talent Name' })).toHaveAttribute(
+        'href',
+        `/talents/${talentId}`,
+      )
+    },
+  )
 })
