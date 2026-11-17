@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   fireEvent,
   render,
@@ -54,10 +55,20 @@ function getTalentSection() {
   return screen.getByRole('region', { name: 'タレント' })
 }
 
-async function renderContent() {
+function createQueryClient() {
+  return new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+}
+
+async function renderContent(queryClient = createQueryClient()) {
   const onClose = vi.fn()
 
-  render(<SearchModalContent onClose={onClose} />)
+  const { unmount } = render(
+    <QueryClientProvider client={queryClient}>
+      <SearchModalContent onClose={onClose} />
+    </QueryClientProvider>,
+  )
 
   await waitFor(() =>
     expect(actions.fetchSearchModalTalents).toHaveBeenCalledTimes(1),
@@ -65,7 +76,7 @@ async function renderContent() {
   // おすすめの検索キーワードの読み込みが終わるまで待つ
   await screen.findByRole('link', { name: '歌枠' })
 
-  return { onClose }
+  return { onClose, unmount }
 }
 
 async function selectTalent(query: string, name: string) {
@@ -89,6 +100,68 @@ describe('SearchModalContent', () => {
       .mockReset()
       .mockResolvedValue([MIO, YURA, MYOSOTIS])
     actions.fetchSuggestions.mockReset().mockResolvedValue([])
+  })
+
+  test('should not refetch the recommended queries and talents when reopened', async () => {
+    const queryClient = createQueryClient()
+
+    const { unmount } = await renderContent(queryClient)
+    unmount()
+
+    // モーダルを閉じて開き直す
+    await renderContent(queryClient)
+
+    expect(actions.fetchRecommendedQueries).toHaveBeenCalledTimes(1)
+    expect(actions.fetchSearchModalTalents).toHaveBeenCalledTimes(1)
+
+    fireEvent.change(getInput(), { target: { value: '朝霧' } })
+    expect(
+      within(getTalentSection()).getByRole('button', { name: '朝霧ミオ' }),
+    ).toBeInTheDocument()
+  })
+
+  test('should hide the recommended queries when they fail to load', async () => {
+    actions.fetchRecommendedQueries.mockRejectedValue(new Error('failed'))
+
+    render(
+      <QueryClientProvider client={createQueryClient()}>
+        <SearchModalContent onClose={vi.fn()} />
+      </QueryClientProvider>,
+    )
+
+    expect(screen.getByText('おすすめの検索キーワード')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.queryByText('おすすめの検索キーワード')).toBeNull(),
+    )
+  })
+
+  test('should show the hint to search when the suggestions fail to load', async () => {
+    actions.fetchSuggestions.mockRejectedValue(new Error('failed'))
+
+    await renderContent()
+
+    fireEvent.change(getInput(), { target: { value: 'test query' } })
+    expect(screen.getByText('読み込み中...')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Enterキーを押して「test query」を検索'),
+    ).toBeInTheDocument()
+  })
+
+  test('should keep showing the previous suggestions while fetching the new ones', async () => {
+    actions.fetchSuggestions.mockImplementation(async (query) => [
+      { term: `${query} 歌枠` },
+    ])
+
+    await renderContent()
+
+    fireEvent.change(getInput(), { target: { value: 'ミオ' } })
+    await screen.findByRole('link', { name: 'ミオ 歌枠' })
+
+    fireEvent.change(getInput(), { target: { value: 'ミオソ' } })
+    expect(screen.getByRole('link', { name: 'ミオ 歌枠' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('link', { name: 'ミオソ 歌枠' }),
+    ).toBeInTheDocument()
   })
 
   test('should show the matching talents above the keyword suggestions', async () => {
