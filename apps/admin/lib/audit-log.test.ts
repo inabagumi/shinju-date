@@ -112,6 +112,32 @@ describe('createAuditLog', () => {
     },
   )
 
+  it.each<AuditLogDetails<'FEATURE_REQUEST_UPDATE'>>([
+    {
+      changes: {
+        after: { status: 'resolved' },
+        before: { status: 'pending' },
+      },
+      entityName: 'Feedback',
+    },
+    {
+      changes: { after: { hasMemo: true }, before: { hasMemo: false } },
+      entityName: 'Feedback',
+    },
+  ])(
+    'records an update of a feedback against the feedback',
+    async (details) => {
+      await createAuditLog('FEATURE_REQUEST_UPDATE', 'feedback-1', details)
+
+      expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith('insert_audit_log', {
+        p_action: 'FEATURE_REQUEST_UPDATE',
+        p_details: details,
+        p_target_record_id: 'feedback-1',
+        p_target_table: 'feature_requests',
+      })
+    },
+  )
+
   it('records a backfill of a talent against the talent', async () => {
     await createAuditLog('VIDEO_BACKFILL', 'talent-1', {
       accounts: [{ accountId: 'account-1', name: 'Account' }],

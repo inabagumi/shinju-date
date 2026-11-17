@@ -13,6 +13,7 @@ type AuditLogJson = Exclude<
 export const AUDIT_TARGET_TABLES = {
   ANNOUNCEMENTS: 'announcements',
   AUTH_USERS: 'auth.users',
+  FEATURE_REQUESTS: 'feature_requests',
   RECOMMENDED_QUERIES: 'redis:recommended_queries',
   SYSTEM: 'redis:system',
   TALENTS: 'talents',
@@ -61,6 +62,14 @@ export interface AccountEmailUpdateDetails extends EntityRef {
     after: { email: string }
   }
 }
+
+/**
+ * A change to the status or to the memo of a feedback. The memo itself is
+ * left out, because it is long: only whether there is one is recorded.
+ */
+export type FeatureRequestUpdateDetails =
+  | EntityChanges<Pick<Tables<'feature_requests'>, 'status'>>
+  | EntityChanges<{ hasMemo: boolean }>
 
 /** An account of a talent that changed when the talent was synced. */
 export interface TalentSyncAccount {
@@ -182,6 +191,10 @@ interface AuditLogDefinitions {
     details: EntityRef
     target: typeof AUDIT_TARGET_TABLES.TALENTS
   }
+  FEATURE_REQUEST_UPDATE: {
+    details: FeatureRequestUpdateDetails
+    target: typeof AUDIT_TARGET_TABLES.FEATURE_REQUESTS
+  }
   MAINTENANCE_MODE_DISABLE: {
     details: undefined
     target: typeof AUDIT_TARGET_TABLES.SYSTEM
@@ -280,6 +293,7 @@ const AUDIT_LOG_TARGETS = {
   CHANNEL_RETIRE: AUDIT_TARGET_TABLES.TALENTS,
   CHANNEL_SYNC: AUDIT_TARGET_TABLES.TALENTS,
   CHANNEL_UPDATE: AUDIT_TARGET_TABLES.TALENTS,
+  FEATURE_REQUEST_UPDATE: AUDIT_TARGET_TABLES.FEATURE_REQUESTS,
   MAINTENANCE_MODE_DISABLE: AUDIT_TARGET_TABLES.SYSTEM,
   MAINTENANCE_MODE_ENABLE: AUDIT_TARGET_TABLES.SYSTEM,
   RECOMMENDED_QUERY_CREATE: AUDIT_TARGET_TABLES.RECOMMENDED_QUERIES,

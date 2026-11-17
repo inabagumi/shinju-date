@@ -17,6 +17,7 @@ const ACTION_LABELS: Record<Enums<'audit_action'>, string> = {
   CHANNEL_RETIRE: 'タレントを引退状態に',
   CHANNEL_SYNC: 'タレントを同期',
   CHANNEL_UPDATE: 'タレントを更新',
+  FEATURE_REQUEST_UPDATE: 'フィードバックを更新',
   MAINTENANCE_MODE_DISABLE: 'メンテナンスモードを無効化',
   MAINTENANCE_MODE_ENABLE: 'メンテナンスモードを有効化',
   RECOMMENDED_QUERY_CREATE: 'おすすめクエリを作成',
