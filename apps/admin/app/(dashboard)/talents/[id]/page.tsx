@@ -1,13 +1,19 @@
+import { range } from '@shinju-date/helpers'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
-import { Alert, EmptyState, PageHeader } from '@shinju-date/ui'
+import { Alert, EmptyState, PageHeader, Skeleton } from '@shinju-date/ui'
 import { Video } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { BackLink } from '@/components/back-link'
-import { DetailList, DetailRow, Panel } from '@/components/panel'
-import { DetailCardsSkeleton, ListCardsSkeleton } from '@/components/skeletons'
+import {
+  DetailList,
+  DetailListSkeleton,
+  DetailRow,
+  Panel,
+  PanelSkeleton,
+} from '@/components/panel'
 import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
 import { TalentStatusBadge } from '../_components/talent-status-badge'
@@ -184,11 +190,14 @@ async function TalentProfile({
   )
 }
 
+/** 「最新動画」に表示する件数 */
+const RECENT_VIDEOS_LIMIT = 5
+
 async function RecentVideosSection({
   params,
 }: Pick<PageProps<'/talents/[id]'>, 'params'>) {
   const { id } = await params
-  const recentVideos = await getRecentVideosForTalent(id, 5)
+  const recentVideos = await getRecentVideosForTalent(id, RECENT_VIDEOS_LIMIT)
 
   return (
     <Panel
@@ -233,6 +242,131 @@ async function RecentVideosSection({
   )
 }
 
+/** 読み込み中の、YouTube チャンネルと Twitch ユーザーの管理の区画。1件ぶんの枠を置く */
+interface AccountManagerSkeletonProps {
+  description: string
+  title: string
+}
+
+function AccountManagerSkeleton({
+  description,
+  title,
+}: AccountManagerSkeletonProps) {
+  return (
+    <PanelSkeleton
+      actions={<Skeleton className="h-9 w-40" />}
+      description={description}
+      title={title}
+    >
+      <div className="flex items-start justify-between gap-4 rounded-container border border-border p-4">
+        <div className="min-w-0 flex-1 space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-5 w-48" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-6 w-full max-w-sm" />
+        </div>
+        <Skeleton className="size-8 shrink-0" />
+      </div>
+    </PanelSkeleton>
+  )
+}
+
+/**
+ * 読み込み中の `TalentProfile`。見出しと、タレント情報・YouTube チャンネル・Twitch ユーザー・
+ * 過去動画の取り込み・メタデータ・状態の変更の区画を、1列に並べる
+ */
+function TalentProfileSkeleton() {
+  return (
+    <div aria-hidden="true">
+      <PageHeader
+        actions={<Skeleton className="h-9 w-28" />}
+        description={
+          <div className="flex flex-wrap items-center gap-2">
+            <Skeleton className="h-5 w-16" />
+            <span>タレント詳細</span>
+          </div>
+        }
+        title={<Skeleton className="h-8 w-64 max-w-full" />}
+      />
+
+      <div className="space-y-6">
+        <PanelSkeleton
+          actions={<Skeleton className="h-9 w-16" />}
+          description="現在データベースに保存されている情報"
+          title="タレント情報"
+        >
+          <DetailListSkeleton rows={4} />
+        </PanelSkeleton>
+
+        <AccountManagerSkeleton
+          description="タレントに紐づけられたYouTubeチャンネルの追加・削除"
+          title="YouTubeチャンネル管理"
+        />
+
+        <AccountManagerSkeleton
+          description="タレントに紐づけられたTwitchユーザーの追加・削除"
+          title="Twitchユーザー管理"
+        />
+
+        <PanelSkeleton
+          actions={<Skeleton className="h-9 w-56" />}
+          description="プラットフォーム上にあってデータベースにない過去の動画を、すべての履歴をさかのぼって取り込みます。登録済みの動画はそのまま残ります。"
+          title="過去動画の取り込み"
+        >
+          <div className="-mx-6 -mb-6 border-t border-border px-6 py-3">
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="mt-1 h-5 w-64 max-w-full" />
+          </div>
+        </PanelSkeleton>
+
+        <PanelSkeleton title="メタデータ">
+          <DetailListSkeleton rows={4} />
+        </PanelSkeleton>
+
+        <PanelSkeleton
+          actions={
+            <>
+              <Skeleton className="h-9 w-24" />
+              <Skeleton className="h-9 w-16" />
+            </>
+          }
+          description={
+            <Skeleton className="inline-block h-4 w-96 max-w-full align-middle" />
+          }
+          title="状態の変更"
+        />
+      </div>
+    </div>
+  )
+}
+
+/** 読み込み中の `RecentVideosSection`。取得する件数ぶんの行を並べる */
+function RecentVideosSectionSkeleton() {
+  return (
+    <PanelSkeleton
+      className="mt-6"
+      description="直近に公開された動画一覧"
+      title="最新動画"
+    >
+      <div className="-mx-6 -mb-6 divide-y divide-border border-t border-border">
+        {range(RECENT_VIDEOS_LIMIT).map((row) => (
+          <div
+            className="flex items-center gap-4 px-6 py-4"
+            key={`recent-video-skeleton-${row}`}
+          >
+            <Skeleton className="aspect-video w-20 shrink-0 rounded-container" />
+            <div className="min-w-0 flex-1 space-y-1">
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-5 w-40" />
+            </div>
+            <Skeleton className="h-5 w-16 shrink-0" />
+          </div>
+        ))}
+      </div>
+    </PanelSkeleton>
+  )
+}
+
 export default function TalentDetailPage({
   params,
 }: PageProps<'/talents/[id]'>) {
@@ -244,12 +378,12 @@ export default function TalentDetailPage({
       </div>
 
       {/* Talent profile section */}
-      <Suspense fallback={<DetailCardsSkeleton />}>
+      <Suspense fallback={<TalentProfileSkeleton />}>
         <TalentProfile params={params} />
       </Suspense>
 
       {/* Recent videos section */}
-      <Suspense fallback={<ListCardsSkeleton rows={3} />}>
+      <Suspense fallback={<RecentVideosSectionSkeleton />}>
         <RecentVideosSection params={params} />
       </Suspense>
     </div>

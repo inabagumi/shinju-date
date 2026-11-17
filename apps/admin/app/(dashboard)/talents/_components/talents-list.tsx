@@ -6,6 +6,7 @@ import {
   EmptyState,
   FilterBar,
   Select,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -17,6 +18,7 @@ import { ArrowDown, ArrowUp, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useMemo } from 'react'
 import { SearchInput } from '@/components/search-input'
+import { FilterBarSkeleton, TableSkeleton } from '@/components/table-skeleton'
 import { useUpdateSearchParams } from '@/lib/use-update-search-params'
 import {
   DEFAULT_TALENT_LIST_FILTERS,
@@ -240,5 +242,43 @@ export function TalentsList({
         </Table>
       )}
     </div>
+  )
+}
+
+/** 読み込み中の `TalentsList`。絞り込みと追加のボタン、5列の表を並べる */
+export function TalentsListSkeleton() {
+  return (
+    <TableSkeleton
+      columns={[
+        {
+          cell: (
+            <div className="min-w-48 space-y-1">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          ),
+          id: 'name',
+        },
+        { cell: <Skeleton className="h-5 w-16" />, id: 'status' },
+        { cell: <Skeleton className="h-4 w-36" />, id: 'created_at' },
+        { cell: <Skeleton className="h-4 w-36" />, id: 'updated_at' },
+        {
+          align: 'end',
+          cell: <Skeleton className="size-7" />,
+          className: 'w-12',
+          header: false,
+          id: 'actions',
+        },
+      ]}
+      filterBar={
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <FilterBarSkeleton className="min-w-0 grow">
+            <Skeleton className="h-10 w-full md:max-w-sm" />
+            <Skeleton className="h-10 md:w-48" />
+          </FilterBarSkeleton>
+          <Skeleton className="h-9 w-44" />
+        </div>
+      }
+    />
   )
 }

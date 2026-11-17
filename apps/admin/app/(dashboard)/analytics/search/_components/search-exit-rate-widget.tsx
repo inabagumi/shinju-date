@@ -3,6 +3,7 @@ import {
   Badge,
   type BadgeProps,
   EmptyState,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -10,9 +11,13 @@ import {
   TableHeader,
   TableRow,
 } from '@shinju-date/ui'
+import { TableSkeleton } from '@/components/table-skeleton'
 import { getSearchExitRates } from '@/lib/analytics/get-search-quality-metrics'
 import { ExportLink } from '../../_components/export-link'
-import { WidgetHeader } from '../../_components/widget-header'
+import {
+  WidgetHeader,
+  WidgetHeaderSkeleton,
+} from '../../_components/widget-header'
 import { resolvePeriod } from '../../_lib/resolve-period'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
@@ -134,5 +139,40 @@ export async function SearchExitRateWidget({ searchParams }: Props) {
       exitRates={exitRates}
       selectedDate={selectedDate}
     />
+  )
+}
+
+/** 読み込み中の `SearchExitRateWidget`。見出し、5列の表、4つの評価基準を並べる */
+export function SearchExitRateWidgetSkeleton() {
+  return (
+    <div aria-hidden="true">
+      <WidgetHeaderSkeleton actions title="検索からの離脱率" />
+      <TableSkeleton
+        columns={[
+          {
+            align: 'end',
+            cell: <Skeleton className="h-4 w-5" />,
+            className: 'w-16',
+            id: 'rank',
+          },
+          { cell: <Skeleton className="h-4 w-48" />, id: 'keyword' },
+          {
+            align: 'end',
+            cell: <Skeleton className="h-4 w-10" />,
+            id: 'count',
+          },
+          { align: 'end', cell: <Skeleton className="h-4 w-12" />, id: 'rate' },
+          { cell: <Skeleton className="h-5 w-12" />, id: 'rating' },
+        ]}
+        rows={10}
+      />
+      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-0.5 sm:grid-cols-4">
+        <Skeleton className="col-span-2 h-4 w-16 sm:col-span-4" />
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-4 w-24" />
+      </div>
+    </div>
   )
 }

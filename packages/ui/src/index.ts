@@ -27,6 +27,7 @@ export {
 } from './MultiSelect/MultiSelect.js'
 export { PageHeader, type PageHeaderProps } from './PageHeader/PageHeader.js'
 export { Select, type SelectProps } from './Select/Select.js'
+export { Skeleton, type SkeletonProps } from './Skeleton/Skeleton.js'
 export {
   StatTile,
   type StatTileProps,

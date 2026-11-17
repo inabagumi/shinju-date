@@ -4,6 +4,7 @@ import { range } from '@shinju-date/helpers'
 import {
   Button,
   EmptyState,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -15,6 +16,7 @@ import { BookOpen } from 'lucide-react'
 import { Fragment, Suspense, use, useMemo } from 'react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { SearchInput } from '@/components/search-input'
+import { TableSkeleton } from '@/components/table-skeleton'
 import { deleteTermAction } from '../_actions'
 import type { TermsSearchParams } from '../_lib/search-params-schema'
 import { TermModal } from './term-modal'
@@ -214,30 +216,33 @@ function TermsResults({ filters, terms }: TermsListProps) {
   )
 }
 
+/** 読み込み中の `TermsResults`。頭文字の索引と、4列の表を並べる */
 function TermsResultsSkeleton() {
   return (
-    <div aria-hidden="true" className="animate-pulse space-y-4">
-      <div className="flex min-h-8 flex-wrap gap-1">
-        {range(8).map((item) => (
-          <div
-            className="h-8 w-9 rounded-control bg-muted"
-            key={`term-index-skeleton-${item}`}
-          />
-        ))}
-      </div>
-      <div className="overflow-hidden rounded-container border border-border">
-        <div className="h-10 bg-muted" />
-        {range(6).map((item) => (
-          <div
-            className="flex h-14 items-center gap-4 border-t border-border px-4"
-            key={`term-row-skeleton-${item}`}
-          >
-            <div className="h-4 w-1/4 rounded-control bg-muted" />
-            <div className="h-4 w-1/4 rounded-control bg-muted" />
-            <div className="h-4 flex-1 rounded-control bg-muted" />
-          </div>
-        ))}
-      </div>
-    </div>
+    <TableSkeleton
+      columns={[
+        { cell: <Skeleton className="h-4 w-24" />, id: 'term' },
+        { cell: <Skeleton className="h-4 w-32" />, id: 'readings' },
+        { cell: <Skeleton className="h-4 w-40" />, id: 'synonyms' },
+        {
+          align: 'end',
+          cell: (
+            <div className="flex gap-4">
+              <Skeleton className="h-7 w-14" />
+              <Skeleton className="h-7 w-14" />
+            </div>
+          ),
+          id: 'actions',
+        },
+      ]}
+      filterBar={
+        <div className="mb-4 flex min-h-8 flex-wrap gap-1">
+          {range(8).map((item) => (
+            <Skeleton className="h-8 w-9" key={`term-index-skeleton-${item}`} />
+          ))}
+        </div>
+      }
+      rows={6}
+    />
   )
 }

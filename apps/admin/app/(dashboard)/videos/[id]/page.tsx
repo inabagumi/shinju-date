@@ -3,7 +3,7 @@ import {
   formatDateTimeFromISO,
   formatDuration,
 } from '@shinju-date/temporal-fns'
-import { Alert, Button, PageHeader } from '@shinju-date/ui'
+import { Alert, Button, PageHeader, Skeleton } from '@shinju-date/ui'
 import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -14,8 +14,13 @@ import {
   ExternalVideoLink,
   getExternalVideoUrl,
 } from '@/components/external-video-link'
-import { DetailList, DetailRow, Panel } from '@/components/panel'
-import { DetailCardsSkeleton } from '@/components/skeletons'
+import {
+  DetailList,
+  DetailListSkeleton,
+  DetailRow,
+  Panel,
+  PanelSkeleton,
+} from '@/components/panel'
 import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
 import { PlatformBadge } from '../_components/platform-badge'
@@ -234,6 +239,57 @@ async function VideoDetails({
   )
 }
 
+/**
+ * 読み込み中の `VideoDetails`。見出し、サムネイルとステータス、動画情報（YouTube の
+ * 動画の10項目）、外部リンク、削除の区画を並べる
+ */
+function VideoDetailsSkeleton() {
+  return (
+    <div aria-hidden="true">
+      <PageHeader
+        actions={
+          <>
+            <Skeleton className="h-9 w-20" />
+            <Skeleton className="h-9 w-40" />
+          </>
+        }
+        description="動画詳細"
+        title={<Skeleton className="h-8 w-96 max-w-full" />}
+      />
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="space-y-6">
+          <PanelSkeleton title="サムネイル">
+            <Skeleton className="aspect-video w-full rounded-container" />
+          </PanelSkeleton>
+          <PanelSkeleton title="ステータス">
+            <Skeleton className="h-5 w-16" />
+          </PanelSkeleton>
+        </div>
+
+        <PanelSkeleton
+          description="現在データベースに保存されている情報"
+          title="動画情報"
+        >
+          <DetailListSkeleton rows={10} />
+        </PanelSkeleton>
+      </div>
+
+      <PanelSkeleton
+        className="mt-6"
+        description={
+          <Skeleton className="inline-block h-4 w-64 max-w-full align-middle" />
+        }
+        title="外部リンク"
+      >
+        <Skeleton className="h-9 w-36" />
+      </PanelSkeleton>
+
+      <Skeleton className="mt-6 h-24 w-full rounded-container" />
+    </div>
+  )
+}
+
 export default function VideoDetailPage({ params }: PageProps<'/videos/[id]'>) {
   return (
     <div>
@@ -241,7 +297,7 @@ export default function VideoDetailPage({ params }: PageProps<'/videos/[id]'>) {
         <BackLink href="/videos">動画一覧に戻る</BackLink>
       </div>
 
-      <Suspense fallback={<DetailCardsSkeleton />}>
+      <Suspense fallback={<VideoDetailsSkeleton />}>
         <VideoDetails params={params} />
       </Suspense>
     </div>

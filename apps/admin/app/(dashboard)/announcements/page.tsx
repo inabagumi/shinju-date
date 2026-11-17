@@ -1,4 +1,4 @@
-import { PageHeader } from '@shinju-date/ui'
+import { PageHeader, Skeleton } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { AnnouncementModal } from './_components/announcement-modal'
@@ -24,11 +24,7 @@ export default function AnnouncementsPage() {
       {/* Header with Add button - static shell */}
       <PageHeader
         actions={
-          <Suspense
-            fallback={
-              <div className="h-10 w-48 animate-pulse rounded-control bg-muted" />
-            }
-          >
+          <Suspense fallback={<Skeleton className="h-9 w-44" />}>
             <AnnouncementModal />
           </Suspense>
         }

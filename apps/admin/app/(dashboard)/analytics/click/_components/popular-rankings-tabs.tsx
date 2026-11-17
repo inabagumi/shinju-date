@@ -1,4 +1,5 @@
 import { Activity, Suspense } from 'react'
+import { RankingWidgetSkeleton } from '../../_components/ranking-widget'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 import { PopularTalentsWidget } from './popular-talents-widget'
 import { PopularVideosWidget } from './popular-videos-widget'
@@ -19,12 +20,7 @@ export async function PopularRankingsTabs({ searchParams }: Props) {
     <div>
       <Activity mode={activeTab === 'videos' ? 'visible' : 'hidden'}>
         <Suspense
-          fallback={
-            <div
-              aria-hidden="true"
-              className="h-64 animate-pulse rounded-container bg-muted"
-            />
-          }
+          fallback={<RankingWidgetSkeleton title="人気動画ランキング" />}
         >
           <PopularVideosWidget searchParams={searchParams} />
         </Suspense>
@@ -32,12 +28,7 @@ export async function PopularRankingsTabs({ searchParams }: Props) {
 
       <Activity mode={activeTab === 'talents' ? 'visible' : 'hidden'}>
         <Suspense
-          fallback={
-            <div
-              aria-hidden="true"
-              className="h-64 animate-pulse rounded-container bg-muted"
-            />
-          }
+          fallback={<RankingWidgetSkeleton title="人気タレントランキング" />}
         >
           <PopularTalentsWidget searchParams={searchParams} />
         </Suspense>

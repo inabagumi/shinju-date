@@ -1,8 +1,7 @@
 import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { ManagementTableSkeleton } from '@/components/skeletons'
-import { TalentsList } from './_components/talents-list'
+import { TalentsList, TalentsListSkeleton } from './_components/talents-list'
 import { getTalents } from './_lib/get-talents'
 import { talentSearchParamsSchema } from './_lib/search-params-schema'
 
@@ -34,7 +33,7 @@ export default function TalentsPage({ searchParams }: PageProps<'/talents'>) {
         title="タレント管理"
       />
 
-      <Suspense fallback={<ManagementTableSkeleton />}>
+      <Suspense fallback={<TalentsListSkeleton />}>
         <TalentsListData searchParams={searchParams} />
       </Suspense>
     </div>

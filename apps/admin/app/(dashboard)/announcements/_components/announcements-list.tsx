@@ -1,9 +1,9 @@
 import type { Tables } from '@shinju-date/database'
-import { range } from '@shinju-date/helpers'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import {
   Button,
   EmptyState,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -14,6 +14,7 @@ import {
 import { Megaphone } from 'lucide-react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Markdown } from '@/components/markdown'
+import { TableSkeleton } from '@/components/table-skeleton'
 import { deleteAnnouncementAction } from '../_actions'
 import { AnnouncementModal } from './announcement-modal'
 import { LevelBadge, StatusBadge } from './badges'
@@ -102,24 +103,43 @@ export function AnnouncementsList({
   )
 }
 
+/** 読み込み中の `AnnouncementsList`。4列の表を並べる */
 export function AnnouncementsListSkeleton() {
   return (
-    <div
-      aria-hidden="true"
-      className="animate-pulse overflow-hidden rounded-container border border-border"
-    >
-      <div className="h-10 bg-muted" />
-      {range(4).map((row) => (
-        <div
-          className="flex h-16 items-center gap-4 border-t border-border px-4"
-          key={`announcement-row-skeleton-${row}`}
-        >
-          <div className="h-4 flex-1 rounded-control bg-muted" />
-          <div className="h-5 w-24 rounded-control bg-muted" />
-          <div className="h-4 w-48 rounded-control bg-muted" />
-          <div className="h-8 w-28 rounded-control bg-muted" />
-        </div>
-      ))}
-    </div>
+    <TableSkeleton
+      columns={[
+        {
+          cell: (
+            <div className="w-full min-w-64 space-y-1">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+          ),
+          className: 'w-full',
+          id: 'message',
+        },
+        {
+          cell: (
+            <div className="flex gap-2">
+              <Skeleton className="h-5 w-12" />
+              <Skeleton className="h-5 w-16" />
+            </div>
+          ),
+          id: 'status',
+        },
+        { cell: <Skeleton className="h-4 w-72" />, id: 'period' },
+        {
+          align: 'end',
+          cell: (
+            <div className="flex gap-4">
+              <Skeleton className="h-7 w-14" />
+              <Skeleton className="h-7 w-14" />
+            </div>
+          ),
+          id: 'actions',
+        },
+      ]}
+      rows={4}
+    />
   )
 }

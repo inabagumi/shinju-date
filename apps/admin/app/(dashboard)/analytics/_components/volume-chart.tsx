@@ -1,5 +1,6 @@
 import { formatNumber } from '@shinju-date/helpers'
-import { StatTile } from '@shinju-date/ui'
+import { Skeleton, StatTile } from '@shinju-date/ui'
+import { StatTileSkeleton } from '@/components/stat-tile-skeleton'
 import type { ChartSeries } from '../../_lib/chart-series'
 import { formatDateLabel } from '../_lib/format-date'
 import type { AnalyticsSearchParams } from '../_lib/search-params-schema'
@@ -96,5 +97,15 @@ export async function VolumeChart({ kind, searchParams }: VolumeChartProps) {
         </p>
       )}
     </>
+  )
+}
+
+/** 読み込み中の `VolumeChart`。合計のタイルと、グラフ（`VolumeChartUI`）と同じ高さの枠を並べる */
+export function VolumeChartSkeleton() {
+  return (
+    <div aria-hidden="true">
+      <StatTileSkeleton className="mb-4 sm:max-w-xs" />
+      <Skeleton className="h-64 w-full rounded-container" />
+    </div>
   )
 }
