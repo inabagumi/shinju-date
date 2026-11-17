@@ -1,8 +1,9 @@
 'use client'
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { use } from 'react'
-import { updateDateRangeParams } from '../_lib/analytics-url-params'
+import { useUpdateSearchParams } from '@/lib/use-update-search-params'
+import { getDateRangeUpdates } from '../_lib/analytics-url-params'
 import type { AnalyticsSearchParams } from '../_lib/search-params-schema'
 import DateRangePicker, { type DateRange } from './date-range-picker'
 
@@ -14,14 +15,14 @@ interface Props {
  * Client component wrapper for DateRangePicker that handles URL navigation
  */
 export function DateRangePickerClient({ searchParams }: Props) {
-  const router = useRouter()
-  const pathname = usePathname()
   const urlSearchParams = useSearchParams()
+  const updateSearchParams = useUpdateSearchParams()
   const { dateRange } = use(searchParams)
 
   const handleDateRangeChange = (newDateRange: DateRange) => {
-    const queryString = updateDateRangeParams(urlSearchParams, newDateRange)
-    router.replace(`${pathname}?${queryString}`)
+    updateSearchParams(
+      getDateRangeUpdates(urlSearchParams.get('date'), newDateRange),
+    )
   }
 
   return <DateRangePicker onChange={handleDateRangeChange} value={dateRange} />

@@ -17,6 +17,7 @@ import type { Video } from '../_lib/get-videos'
 import VideoList from './video-list'
 
 vi.mock('next/navigation', () => ({
+  usePathname: () => '/videos',
   useSearchParams: () => new URLSearchParams(),
 }))
 

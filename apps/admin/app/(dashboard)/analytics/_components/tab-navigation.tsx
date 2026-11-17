@@ -1,7 +1,7 @@
 'use client'
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { use } from 'react'
+import { useUpdateSearchParams } from '@/lib/use-update-search-params'
 import type { AnalyticsSearchParams } from '../_lib/search-params-schema'
 
 interface TabNavigationProps {
@@ -18,24 +18,16 @@ export function TabNavigation({
   tabs,
   defaultTab,
 }: TabNavigationProps) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const urlSearchParams = useSearchParams()
+  const updateSearchParams = useUpdateSearchParams()
   const { tab } = use(searchParams)
 
   const activeTab = tab || defaultTab
 
   const setActiveTab = (tabId: string) => {
-    const params = new URLSearchParams(urlSearchParams.toString())
-    if (tabId === defaultTab) {
-      params.delete('tab')
-    } else {
-      params.set('tab', tabId)
-    }
-
-    const queryString = params.toString()
-    const url = queryString ? `${pathname}?${queryString}` : pathname
-    router.replace(url)
+    updateSearchParams(
+      { tab: tabId === defaultTab ? null : tabId },
+      { history: 'push' },
+    )
   }
 
   return (

@@ -39,6 +39,7 @@ import {
 } from '@/components/external-video-link'
 import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
+import { useSearchParamsHref } from '@/lib/use-update-search-params'
 import {
   restoreAction,
   softDeleteAction,
@@ -91,6 +92,7 @@ function getTargetVideos(
 
 export default function VideoList({ videos }: Props) {
   const searchParams = useSearchParams()
+  const createSortHref = useSearchParamsHref()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [prevVideos, setPrevVideos] = useState(videos)
   const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>({
@@ -188,19 +190,14 @@ export default function VideoList({ videos }: Props) {
     }
   }
 
-  const getSortUrl = (field: 'published_at' | 'updated_at') => {
-    const params = new URLSearchParams(searchParams.toString())
-    // Toggle sort order if clicking the same field, otherwise default to desc
-    if (currentSortField === field) {
-      params.set('sortOrder', currentSortOrder === 'asc' ? 'desc' : 'asc')
-    } else {
-      params.set('sortField', field)
-      params.set('sortOrder', 'desc')
-    }
-    // Reset to page 1 when sort changes
-    params.delete('page')
-    return `/videos?${params.toString()}`
-  }
+  // Toggle sort order if clicking the same field, otherwise default to desc.
+  // `page` is removed so that the list starts from page 1.
+  const getSortUrl = (field: 'published_at' | 'updated_at') =>
+    currentSortField === field
+      ? createSortHref({
+          sortOrder: currentSortOrder === 'asc' ? 'desc' : 'asc',
+        })
+      : createSortHref({ sortField: field, sortOrder: 'desc' })
 
   const allSelected =
     videos.length > 0 && videos.every((v) => selectedIds.includes(v.id))

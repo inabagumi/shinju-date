@@ -1,26 +1,25 @@
+import type { SearchParamUpdates } from '@/lib/use-update-search-params'
+
 /**
- * 現在のクエリを引き継いで、期間（`from` と `to`）だけを書き換えたクエリ文字列を返す。
+ * 期間（`from` と `to`）を書き換えるときに、`useUpdateSearchParams` に渡すパラメータを返す。
  *
- * `tab` などのほかのパラメータは残す。`date`（グラフで選んだ1日）は、新しい期間の外になるときだけ消す。
+ * `tab` などのほかのパラメータは指定しないので、引き継がれる。`date`（グラフで選んだ1日）は、
+ * 新しい期間の外になるときだけ消す。
  *
  * クライアントコンポーネントから読み込むため、zod を読み込むファイル
  * （`search-params-schema.ts`）とは分けている。
  */
-export function updateDateRangeParams(
-  searchParams: URLSearchParams,
+export function getDateRangeUpdates(
+  selectedDate: string | null,
   dateRange: { startDate: string; endDate: string },
-): string {
-  const params = new URLSearchParams(searchParams.toString())
-
-  params.set('from', dateRange.startDate)
-  params.set('to', dateRange.endDate)
-
-  const selectedDate = params.get('date')
-  if (selectedDate && !isWithinRange(selectedDate, dateRange)) {
-    params.delete('date')
+): SearchParamUpdates {
+  return {
+    from: dateRange.startDate,
+    to: dateRange.endDate,
+    ...(selectedDate && !isWithinRange(selectedDate, dateRange)
+      ? { date: null }
+      : {}),
   }
-
-  return params.toString()
 }
 
 function isWithinRange(

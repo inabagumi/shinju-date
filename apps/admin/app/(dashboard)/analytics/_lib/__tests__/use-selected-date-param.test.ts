@@ -3,13 +3,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useSelectedDateParam } from '../use-selected-date-param'
 
 const mocks = vi.hoisted(() => ({
-  replace: vi.fn(),
+  push: vi.fn(),
   searchParams: new URLSearchParams(),
 }))
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/analytics/search',
-  useRouter: () => ({ replace: mocks.replace }),
+  useRouter: () => ({ push: mocks.push }),
   useSearchParams: () => mocks.searchParams,
 }))
 
@@ -42,7 +42,7 @@ describe('useSelectedDateParam', () => {
     const { result } = renderHook(() => useSelectedDateParam())
     result.current.toggleDate('2026-11-10')
 
-    expect(mocks.replace).toHaveBeenCalledWith(
+    expect(mocks.push).toHaveBeenCalledWith(
       '/analytics/search?from=2026-11-08&to=2026-11-14&date=2026-11-10',
     )
   })
@@ -53,9 +53,7 @@ describe('useSelectedDateParam', () => {
     const { result } = renderHook(() => useSelectedDateParam())
     result.current.toggleDate('2026-11-11')
 
-    expect(mocks.replace).toHaveBeenCalledWith(
-      '/analytics/search?date=2026-11-11',
-    )
+    expect(mocks.push).toHaveBeenCalledWith('/analytics/search?date=2026-11-11')
   })
 
   it('clears the day when the selected day is selected again', () => {
@@ -64,6 +62,6 @@ describe('useSelectedDateParam', () => {
     const { result } = renderHook(() => useSelectedDateParam())
     result.current.toggleDate('2026-11-10')
 
-    expect(mocks.replace).toHaveBeenCalledWith('/analytics/search')
+    expect(mocks.push).toHaveBeenCalledWith('/analytics/search')
   })
 })
