@@ -21,7 +21,7 @@ const CACHE_TTL_SECONDS = 60 * 10 // 10 minutes
  * @param endDate - End date as Temporal.PlainDate. If undefined or equals startDate, uses single-day operation
  * @returns Array of [itemId, score] tuples
  */
-export async function _getPopularItemsFromRedis(
+export async function getPopularItems(
   keyPrefix: string,
   limit: number,
   startDate: Temporal.PlainDate,

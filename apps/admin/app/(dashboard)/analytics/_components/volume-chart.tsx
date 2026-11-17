@@ -1,11 +1,11 @@
 import { formatNumber } from '@shinju-date/helpers'
 import { Skeleton, StatTile } from '@shinju-date/ui'
 import { StatTileSkeleton } from '@/components/stat-tile-skeleton'
+import { getClickVolume } from '@/lib/analytics/get-click-volume'
+import { getSearchVolume } from '@/lib/analytics/get-search-volume'
 import type { ChartSeries } from '../../_lib/chart-series'
 import { formatDateLabel } from '../_lib/format-date'
 import type { AnalyticsSearchParams } from '../_lib/search-params-schema'
-import { getClickVolume } from '../click/_lib/get-click-volume'
-import { getSearchVolume } from '../search/_lib/get-search-volume'
 import {
   type VolumeChartDatum,
   VolumeChartUI,

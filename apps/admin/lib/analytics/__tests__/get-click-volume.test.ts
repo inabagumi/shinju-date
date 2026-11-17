@@ -6,9 +6,7 @@ vi.mock('next/cache', () => ({
   cacheLife: vi.fn(),
 }))
 vi.mock('@/lib/redis', async () => {
-  const { createMockPipeline } = await import(
-    '@/lib/analytics/__tests__/mock-redis-pipeline'
-  )
+  const { createMockPipeline } = await import('./mock-redis-pipeline')
   const mockedRedisClient = {
     pipeline: vi.fn(),
     zrange: vi.fn(),

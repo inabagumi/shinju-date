@@ -3,9 +3,9 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { cacheLife } from 'next/cache'
-import { listDatesInRange } from '@/lib/analytics/list-dates-in-range'
-import { dailyKeys, sumScores } from '@/lib/analytics/redis'
 import { getRedisClient } from '@/lib/redis'
+import { listDatesInRange } from './list-dates-in-range'
+import { dailyKeys, sumScores } from './redis'
 
 export interface DailyClickVolume {
   clicks: number

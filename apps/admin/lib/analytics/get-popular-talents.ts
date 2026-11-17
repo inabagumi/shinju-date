@@ -9,7 +9,7 @@ import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
 } from '@/lib/supabase'
-import { _getPopularItemsFromRedis } from './_get-popular-items-from-redis'
+import { getPopularItems } from './popular-items'
 
 const POPULAR_TALENT_SELECT = `
   id,
@@ -50,7 +50,7 @@ export async function getPopularTalents(
 
   cacheLife('minutes')
 
-  const talentScores = await _getPopularItemsFromRedis(
+  const talentScores = await getPopularItems(
     REDIS_KEYS.CLICK_CHANNEL_PREFIX,
     limit,
     Temporal.PlainDate.from(startDate),

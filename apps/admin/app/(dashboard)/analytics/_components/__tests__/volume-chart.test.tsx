@@ -16,11 +16,11 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => mocks.searchParams,
 }))
 
-vi.mock('../../click/_lib/get-click-volume', () => ({
+vi.mock('@/lib/analytics/get-click-volume', () => ({
   getClickVolume: mocks.getClickVolume,
 }))
 
-vi.mock('../../search/_lib/get-search-volume', () => ({
+vi.mock('@/lib/analytics/get-search-volume', () => ({
   getSearchVolume: mocks.getSearchVolume,
 }))
 

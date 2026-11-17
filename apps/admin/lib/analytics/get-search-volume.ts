@@ -4,8 +4,8 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { cacheLife } from 'next/cache'
-import { listDatesInRange } from '@/lib/analytics/list-dates-in-range'
 import { getRedisClient } from '@/lib/redis'
+import { listDatesInRange } from './list-dates-in-range'
 
 export interface DailySearchVolume {
   count: number

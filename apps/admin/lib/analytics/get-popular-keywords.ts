@@ -2,7 +2,7 @@
 
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { cacheLife } from 'next/cache'
-import { _getPopularItemsFromRedis } from './_get-popular-items-from-redis'
+import { getPopularItems } from './popular-items'
 
 export interface PopularKeyword {
   keyword: string
@@ -24,7 +24,7 @@ export async function getPopularKeywords(
 
   cacheLife('minutes')
 
-  const keywordScores = await _getPopularItemsFromRedis(
+  const keywordScores = await getPopularItems(
     REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX,
     limit,
     Temporal.PlainDate.from(startDate),
