@@ -173,8 +173,7 @@ async function syncUser(
  *
  * The details and the icon are synced independently: either one failing is
  * reported and does not keep the other from being synced. Icons that are no
- * longer used are deleted by the YouTube sync, which cleans up icons of every
- * platform.
+ * longer used are deleted by `Scraper#cleanUpImages`.
  *
  * @returns The number of accounts updated.
  */

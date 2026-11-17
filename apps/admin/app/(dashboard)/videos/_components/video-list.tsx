@@ -1,10 +1,7 @@
 'use client'
 
 import { formatNumber } from '@shinju-date/helpers'
-import {
-  formatDateTimeFromISO,
-  formatDuration,
-} from '@shinju-date/temporal-fns'
+import { formatDuration } from '@shinju-date/temporal-fns'
 import {
   Button,
   EmptyState,
@@ -44,6 +41,7 @@ import {
 } from '@/components/table-skeleton'
 import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
+import { formatDateTimeFromISO } from '@/lib/format'
 import { useSearchParamsHref } from '@/lib/use-update-search-params'
 import type { Video } from '../_lib/get-videos'
 import { useVideoAction } from '../_lib/use-video-action'

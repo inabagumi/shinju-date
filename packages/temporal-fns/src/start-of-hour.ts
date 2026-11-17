@@ -1,4 +1,4 @@
-export default function startOfHour(
+export function startOfHour(
   zdt: Temporal.ZonedDateTime,
 ): Temporal.ZonedDateTime {
   return zdt.with({

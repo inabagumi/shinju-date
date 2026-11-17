@@ -6,7 +6,7 @@ import {
   writeSummarySnapshot,
 } from '@shinju-date/dashboard-stats'
 import { logger } from '@shinju-date/logger'
-import { formatDateKey, startOfDay } from '@shinju-date/temporal-fns'
+import { formatDateKey } from '@shinju-date/temporal-fns'
 import { runCronJob } from '@/lib/cron'
 import { STATS_SNAPSHOT_JOB } from '@/lib/jobs'
 import { redisClient } from '@/lib/redis'
@@ -20,7 +20,7 @@ export async function POST(request: Request): Promise<Response> {
     // start of today).
     const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
     const previousDay = now.subtract({ days: 1 })
-    const asOf = startOfDay(now).toInstant()
+    const asOf = now.startOfDay().toInstant()
     const dateKey = formatDateKey(previousDay)
 
     const [summaryStats, analyticsSummary] = await Promise.all([

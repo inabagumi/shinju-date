@@ -24,12 +24,9 @@ import {
   useState,
 } from 'react'
 import { useFormStatus } from 'react-dom'
+import type { FormState } from '@/lib/action'
 
-export interface FormState {
-  errors?: Record<string, string[]>
-  error?: string
-  success?: boolean
-}
+export type { FormState }
 
 const FormContext = createContext<FormState>({})
 
