@@ -258,6 +258,7 @@ describe('YouTubeScraper', () => {
       id: 'video-1',
       published_at: '2024-05-01T13:00:00+00:00',
       status: 'UPCOMING',
+      thumbnail: { etag: null, id: 'thumb-1', path: 'yt-1/old.jpg' },
       thumbnail_id: 'thumb-1',
       title: 'Video yt-1',
       video_kind: 'standard',
@@ -338,6 +339,7 @@ describe('YouTubeScraper', () => {
       id: 'video-1',
       published_at: '2024-05-01T13:00:00+00:00',
       status: 'UPCOMING',
+      thumbnail: { etag: null, id: 'thumb-1', path: 'yt-1/old.jpg' },
       thumbnail_id: 'thumb-1',
       title: 'Video yt-1',
       video_kind: 'standard',
@@ -436,6 +438,53 @@ describe('YouTubeScraper', () => {
         status: 'updated',
         title: 'Video yt-1',
       })
+    })
+
+    it('fills in a missing thumbnail and reports the video as updated', async () => {
+      supabase.respond(({ method }) =>
+        method === 'GET'
+          ? [
+              {
+                ...savedVideo,
+                duration: 'PT10M',
+                published_at: '2024-05-01T10:00:00+00:00',
+                status: 'PUBLISHED',
+                thumbnail: null,
+                thumbnail_id: null,
+              },
+            ]
+          : [],
+      )
+      const { scraper } = createScraper({
+        videos: {
+          'yt-1': {
+            snippet: {
+              publishedAt: '2024-05-01T10:00:00Z',
+              thumbnails: {
+                maxres: {
+                  height: 720,
+                  url: 'https://i.ytimg.test/yt-1.jpg',
+                  width: 1280,
+                },
+              },
+              title: 'Video yt-1',
+            },
+          },
+        },
+      })
+
+      await expect(scraper.refreshVideo('video-1', TEST_NOW)).resolves.toEqual({
+        after: {},
+        before: {},
+        status: 'updated',
+        title: 'Video yt-1',
+      })
+      expect(supabase.written('PATCH', 'videos')).toEqual([
+        expect.objectContaining({
+          body: { thumbnail_id: 'thumb-1', updated_at: '2024-05-01T12:00:00Z' },
+          query: { id: 'eq.video-1' },
+        }),
+      ])
     })
 
     it('reports a video that is up to date without writing', async () => {

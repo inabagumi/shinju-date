@@ -6,10 +6,13 @@ import { sweepUnavailableVideos } from '../internal/operations/sweep-unavailable
 import type { CrawlContext } from '../types.js'
 import type { YouTubeFetcher } from './fetcher.js'
 import { createYouTubePlatform } from './platform.js'
+import { refreshYouTubeThumbnail } from './thumbnail.js'
 
 /**
  * Brings saved videos in line with YouTube: updates what changed (status,
- * schedule, title, duration) and soft-deletes videos YouTube no longer returns.
+ * schedule, title, duration), fills in missing thumbnails, follows thumbnails
+ * replaced before or during a stream (see `refreshYouTubeThumbnail`) and
+ * soft-deletes videos YouTube no longer returns.
  *
  * @returns The number of videos updated or deleted.
  */
@@ -19,7 +22,11 @@ export function refreshYouTubeVideos(
 ): Promise<number> {
   const platform = createYouTubePlatform(context.fetcher)
 
-  return refreshSavedVideos(context, platform, { scope })
+  return refreshSavedVideos(context, platform, {
+    afterRefresh: (saved, fetched) =>
+      refreshYouTubeThumbnail(context, saved, fetched),
+    scope,
+  })
 }
 
 /**

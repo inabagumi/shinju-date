@@ -63,18 +63,27 @@ export function createVideo(
 /**
  * Builds a saved row of the YouTube video `youtubeVideoId`. Defaults to a
  * stream scheduled for 13:00 that matches `createVideo` with the
- * `liveStreamingDetails` of a scheduled stream.
+ * `liveStreamingDetails` of a scheduled stream. Its thumbnail follows
+ * `thumbnail_id` and has no ETag, so it is never downloaded again.
  */
 export function createSavedVideo(
   youtubeVideoId = 'yt-1',
   overrides: Partial<SavedYouTubeVideo> = {},
 ): SavedYouTubeVideo {
+  const thumbnailId =
+    overrides.thumbnail_id === undefined
+      ? `thumb-${youtubeVideoId}`
+      : overrides.thumbnail_id
+
   return {
     duration: 'P0D',
     id: `video-${youtubeVideoId}`,
     published_at: '2024-05-01T13:00:00+00:00',
     status: 'UPCOMING',
-    thumbnail_id: `thumb-${youtubeVideoId}`,
+    thumbnail: thumbnailId
+      ? { etag: null, id: thumbnailId, path: `${youtubeVideoId}/old.jpg` }
+      : null,
+    thumbnail_id: thumbnailId,
     title: `Video ${youtubeVideoId}`,
     video_kind: 'standard',
     youtube_video: { youtube_video_id: youtubeVideoId },

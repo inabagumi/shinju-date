@@ -7,40 +7,12 @@ import {
   getActiveYouTubeChannels,
   insertVideo,
 } from '../internal/database/index.js'
-import {
-  createThumbnail,
-  removeThumbnail,
-  type Thumbnail,
-} from '../internal/thumbnails/index.js'
+import { removeThumbnail } from '../internal/thumbnails/index.js'
 import type { CrawlContext, WriteContext } from '../types.js'
 import type { YouTubeFetcher } from './fetcher.js'
+import { createYouTubeThumbnail } from './thumbnail.js'
 import type { YouTubeVideo } from './types.js'
-import { getThumbnailSource, toVideoFields } from './video.js'
-
-async function createVideoThumbnail(
-  { now, reportError, supabaseClient }: WriteContext,
-  video: YouTubeVideo,
-): Promise<Thumbnail | null> {
-  const source = getThumbnailSource(video)
-
-  if (!source) {
-    return null
-  }
-
-  try {
-    return await createThumbnail({
-      folder: video.id,
-      now,
-      source,
-      supabaseClient,
-    })
-  } catch (error) {
-    // A video without a thumbnail is still worth listing.
-    reportError(error, { youtubeVideoId: video.id })
-
-    return null
-  }
-}
+import { toVideoFields } from './video.js'
 
 /**
  * @returns Whether the video was saved (`false` when another run saved it first).
@@ -51,7 +23,7 @@ async function saveVideo(
   video: YouTubeVideo,
 ): Promise<boolean> {
   const { now, supabaseClient } = context
-  const thumbnail = await createVideoThumbnail(context, video)
+  const thumbnail = await createYouTubeThumbnail(context, video)
   const timestamp = toDBString(now)
 
   try {

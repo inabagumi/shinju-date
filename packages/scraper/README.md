@@ -34,8 +34,19 @@ const changed = await scraper.addNewVideos()
 | `addPastVideos(options)`    | 1 アカウントの全履歴を 1 ページ読み、未保存の動画を保存する（バックフィル）          |
 | `cleanUpImages()`           | どこからも使われなくなったサムネイルとアイコンを削除する（全プラットフォーム）       |
 
+- `refreshLiveVideos()` と `refreshRecentVideos()` は、サムネイルも見直します（[動画のサムネイルの見直し](#動画のサムネイルの見直し)）。
 - `addPastVideos`、`refreshVideo`、`syncTalentAccounts`、`cleanUpImages` 以外の操作は「公開サイトに見える変更があったか」を `boolean` で返します（キャッシュ再検証の判断に使えます）。
 - 引数に実行時刻（`Temporal.Instant`）を渡すと、その実行で書き込む行のタイムスタンプが揃います。省略時は現在時刻です。
+
+### 動画のサムネイルの見直し
+
+動画のサムネイルは、動画を保存するときに取得します。取得に失敗しても、動画はサムネイルなしで保存し、定期の見直し（`refreshLiveVideos`、`refreshRecentVideos`）と `refreshVideo` で、次のように取り直します。
+
+- **サムネイルのない動画**: 状態を問わず、サムネイルを取得して、動画に結び付けます。
+- **YouTube の配信の予定と、配信中の動画**: 配信者がサムネイルを差し替えることがあるので、保存してある `ETag` を `If-None-Match` で送ります。`304 Not Modified`（または同じ `ETag`）なら取り直さず、変わっていれば新しい画像に差し替えます。`ETag` が保存されていないサムネイルは、比べられないので取り直しません。
+- 終わった動画と、投稿された動画のサムネイルは、ほぼ変わらないので取り直しません。
+
+差し替える前のサムネイルは、その場では削除せず、[使われなくなった画像の削除](#使われなくなった画像の削除cleanupimages)に任せます。取得の失敗は `onError` に渡し、ほかの動画の見直しは続けます。
 
 ### 過去動画の取り込み（`addPastVideos`）
 
@@ -81,7 +92,7 @@ switch (result.status) {
 - 定期の見直しと違い、動画の状態やタレントの状態を問わずに見直します。
 - 1 件だけを扱うので、プラットフォームやデータベースを読めなければ reject します（サムネイルを保存できない場合だけは、ほかの操作と同じく `onError` に渡します）。
 - **Twitch** は、配信中の行と、アーカイブが分からないままの行（プレースホルダー）を、配信の状態から見直します（`refreshLiveVideos` と同じ）。アーカイブが見つかれば結び付けます（`addNewVideos` と同じ。配信中なら LIVE のまま）。クリップは、クリップとして確認します。
-- Twitch でアーカイブへの結び付けやサムネイルだけが変わった場合も `updated` を返します（`before` と `after` は空）。
+- アーカイブへの結び付け（Twitch）やサムネイルだけが変わった場合も `updated` を返します（`before` と `after` は空）。
 
 型 `RefreshVideoResult` は `@shinju-date/scraper` から import できます。
 
