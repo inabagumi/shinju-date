@@ -1,3 +1,4 @@
+import { formatNumber } from '@shinju-date/helpers'
 import {
   EmptyState,
   Table,
@@ -52,7 +53,7 @@ export function RankingTable({
               {item.label}
             </TableCell>
             <TableCell className="text-right font-semibold tabular-nums">
-              {item.value.toLocaleString('ja-JP')}
+              {formatNumber(item.value)}
             </TableCell>
           </TableRow>
         ))}

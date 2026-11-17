@@ -1,5 +1,6 @@
 'use client'
 
+import { formatNumber } from '@shinju-date/helpers'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import { Badge, Button } from '@shinju-date/ui'
 import { Loader2 } from 'lucide-react'
@@ -68,7 +69,9 @@ function AccountRow({ account }: { account: VideoBackfillAccount }) {
           </p>
           {account.status !== null && (
             <p className="text-meta text-muted tabular-nums">
-              {account.added}件追加 · {account.pages}ページ確認
+              {formatNumber(account.added)}件追加 ·{' '}
+              {formatNumber(account.pages)}
+              ページ確認
               {account.updatedAt && (
                 <>
                   {' · '}
