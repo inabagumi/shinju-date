@@ -272,6 +272,29 @@ import { twMerge } from '@shinju-date/ui'
 
 アプリにはまだ Tailwind の既定の角丸と影のクラスが残っています。画面を作り直すときに、上の名前に置き換えてください。
 
+## フォーカス
+
+キーボードでフォーカスしたときの見た目は2種類です。クラスは `packages/ui/src/focus.ts` で定義し、`@shinju-date/ui` から使います。フォーカスのクラスを、その場で書かないでください。
+
+| 対象                                                                            | 定数                                                                   | 見た目                                                                    |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| ボタン、リンク、タブなど、押して操作する部品                                    | `FOCUS_RING`                                                           | 部品から 2px 離して、`accent` の線を出す                                  |
+| 文字を入力する部品（`Input`・`Select`・`Textarea`・`MultiSelect` の開くボタン） | `FIELD_FOCUS_RING`（入力に誤りがあるときは `FIELD_FOCUS_RING_DANGER`） | 枠の線を `accent` にし、同じ色の線を外側に重ねる（誤りのときは `danger`） |
+
+```tsx
+import { FOCUS_RING } from '@shinju-date/ui'
+
+<Link className={`rounded-control text-accent hover:underline ${FOCUS_RING}`} href="/">
+```
+
+- **`focus-visible` を使います。** `focus:` は、マウスでのクリックでも線が出るので使いません
+- **薄い色の輪（`ring-accent/20` など）は使いません。** 背景との差が小さく、フォーカスの位置が見分けにくいためです。`accent` と `danger` は、ライトとダークの両方で、背景（`background`・`surface`・`muted`）とのコントラスト比 3:1 以上を `packages/ui/src/colors.test.ts` で確かめています
+- **フォーカスの線を出す部品に `outline-none` を付けません。** `outline-none` は線の種類を `none` にするので、`outline-2` を重ねても線が出ません
+- 次の場合だけ、`FOCUS_RING` とは違うクラスを書きます
+  - 地が `primary` のところ（管理画面のナビゲーション、フッター）: `accent` との差が小さいので、`focus-visible:outline-primary-foreground` にする
+  - スクロールする入れ物の中の、幅いっぱいの項目（検索の候補など）: 外側の線が切れるので、`focus-visible:-outline-offset-2` で内側に出す
+  - 余白のないカード（動画カード、タレントのカード）: サムネイルと線がくっつかないよう、`focus-visible:outline-offset-4` にする
+
 ## 濃淡の表
 
 回数の分布を色の濃さで示す表（タレントのページの「配信の傾向」など）は、次の組み合わせにします。部品は `apps/web/app/talents/[id]/_components/talent-stream-tendency.tsx` です。
@@ -306,6 +329,7 @@ import { twMerge } from '@shinju-date/ui'
 - [ ] 時刻・再生時間・件数に `tabular-nums` を付けている
 - [ ] 角丸は `rounded-control` / `rounded-container` / `rounded-full` のいずれか
 - [ ] 影は重なるものだけに `shadow-overlay` を使っている
+- [ ] フォーカスの見た目は、`@shinju-date/ui` の `FOCUS_RING` / `FIELD_FOCUS_RING` を使っている
 - [ ] `packages/ui` にある部品（Button・Badge・Card・Dialog・Input・Select・Table・PageHeader・EmptyState・StatTile・FilterBar・Alert など）を使っている
 - [ ] Badge の色と Alert の `tone` は状態の意味で選んでいる（成功は `success`、注意は `warning`、危険は `danger`、中立は `neutral`）
 - [ ] 管理画面の操作の結果は、[操作の結果の知らせ](#操作の結果の知らせ管理画面)に沿って出している
