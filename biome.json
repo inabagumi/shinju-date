@@ -53,12 +53,27 @@
         }
       },
       "style": {
+        "noRestrictedGlobals": {
+          "level": "error",
+          "options": {
+            "deniedGlobals": {
+              "Date": "Temporal を使ってください。AGENTS.md の「時刻の扱い」を参照。"
+            }
+          }
+        },
         "noRestrictedImports": {
           "level": "error",
           "options": {
             "paths": {
-              "tailwind-merge": "theme.css の文字サイズなどを登録した twMerge を @shinju-date/ui からインポートしてください。"
-            }
+              "tailwind-merge": "theme.css の文字サイズなどを登録した twMerge を @shinju-date/ui からインポートしてください。",
+              "temporal-polyfill": "Temporal はグローバルを使ってください。AGENTS.md の「時刻の扱い」を参照。"
+            },
+            "patterns": [
+              {
+                "group": ["temporal-polyfill/**"],
+                "message": "Temporal はグローバルを使ってください。AGENTS.md の「時刻の扱い」を参照。"
+              }
+            ]
           }
         },
         "useConsistentTypeDefinitions": {
@@ -87,6 +102,26 @@
         "rules": {
           "style": {
             "noRestrictedImports": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/instrumentation-client.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/__tests__/**", "**/*.test.*", "**/e2e/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedGlobals": "off"
           }
         }
       }

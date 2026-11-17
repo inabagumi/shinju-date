@@ -263,7 +263,10 @@ export function parseTwitchUserIdentifier(
 // Mappers
 // ---------------------------------------------------------------------------
 
-function toIsoString(date: Date): string {
+// biome-ignore lint/style/noRestrictedGlobals: twurple returns timestamps as Date, so the mappers have to accept it.
+type TwurpleDate = Date
+
+function toIsoString(date: TwurpleDate): string {
   return Temporal.Instant.fromEpochMilliseconds(date.getTime()).toString()
 }
 
@@ -288,7 +291,7 @@ function mapUser(user: {
   offlinePlaceholderUrl: string
   broadcasterType: string
   type: string
-  creationDate: Date
+  creationDate: TwurpleDate
 }): TwitchUser {
   return {
     broadcaster_type: user.broadcasterType,
@@ -309,8 +312,8 @@ function mapVideo(video: {
   description: string
   durationInSeconds: number
   language: string
-  publishDate: Date
-  creationDate: Date
+  publishDate: TwurpleDate
+  creationDate: TwurpleDate
   thumbnailUrl: string
   type: string
   url: string
@@ -363,7 +366,7 @@ function mapClip(clip: {
   language: string
   thumbnailUrl: string
   views: number
-  creationDate: Date
+  creationDate: TwurpleDate
   duration: number
   vodOffset: number | null
 }): TwitchClip {
@@ -397,7 +400,7 @@ function mapStream(stream: {
   type: string
   title: string
   viewers: number
-  startDate: Date
+  startDate: TwurpleDate
   language: string
   thumbnailUrl: string
   tags: string[]
