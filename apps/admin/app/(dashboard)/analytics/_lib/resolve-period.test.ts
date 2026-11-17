@@ -8,8 +8,8 @@ describe('resolvePeriod', () => {
       selectedDate: null,
     })
 
-    expect(period.start.toString()).toBe('2026-11-08')
-    expect(period.end.toString()).toBe('2026-11-14')
+    expect(period.start).toBe('2026-11-08')
+    expect(period.end).toBe('2026-11-14')
   })
 
   it('returns the selected date as both ends of the period', () => {
@@ -18,7 +18,7 @@ describe('resolvePeriod', () => {
       selectedDate: '2026-11-10',
     })
 
-    expect(period.start.toString()).toBe('2026-11-10')
-    expect(period.end.toString()).toBe('2026-11-10')
+    expect(period.start).toBe('2026-11-10')
+    expect(period.end).toBe('2026-11-10')
   })
 })

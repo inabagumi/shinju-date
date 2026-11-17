@@ -33,7 +33,11 @@ export async function DashboardPopularVideos() {
 
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
   const startDate = today.subtract({ days: 29 })
-  const popularVideos = await getPopularVideos(10, startDate, today)
+  const popularVideos = await getPopularVideos(
+    10,
+    startDate.toString(),
+    today.toString(),
+  )
 
   return (
     <Panel title="人気動画ランキング (過去30日間)">

@@ -42,14 +42,14 @@ export interface PopularVideo extends PopularVideoRow {
 
 export async function getPopularVideos(
   limit: number,
-  startDate: Temporal.PlainDate,
-  endDate?: Temporal.PlainDate,
+  startDate: string,
+  endDate?: string,
 ): Promise<PopularVideo[]> {
   const videoScores = await _getPopularItemsFromRedis<string>(
     REDIS_KEYS.CLICK_VIDEO_PREFIX,
     limit,
-    startDate,
-    endDate,
+    Temporal.PlainDate.from(startDate),
+    endDate ? Temporal.PlainDate.from(endDate) : undefined,
   )
 
   if (videoScores.length === 0) {

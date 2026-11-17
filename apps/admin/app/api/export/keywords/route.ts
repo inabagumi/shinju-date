@@ -26,16 +26,18 @@ export async function GET(request: NextRequest) {
     if (validatedParams.selectedDate) {
       keywords = await getPopularKeywords(
         validatedParams.limit,
-        Temporal.PlainDate.from(validatedParams.selectedDate),
+        validatedParams.selectedDate,
       )
     } else if (validatedParams.endDate) {
-      const start = Temporal.PlainDate.from(validatedParams.startDate)
-      const end = Temporal.PlainDate.from(validatedParams.endDate)
-      keywords = await getPopularKeywords(validatedParams.limit, start, end)
+      keywords = await getPopularKeywords(
+        validatedParams.limit,
+        validatedParams.startDate,
+        validatedParams.endDate,
+      )
     } else {
       keywords = await getPopularKeywords(
         validatedParams.limit,
-        Temporal.PlainDate.from(validatedParams.startDate),
+        validatedParams.startDate,
       )
     }
 

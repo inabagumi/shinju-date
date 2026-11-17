@@ -11,19 +11,19 @@ export interface PopularKeyword {
 /**
  * Get popular keywords for a single date or date range
  * @param limit - Maximum number of keywords to return
- * @param startDate - Start date as Temporal.PlainDate
- * @param endDate - End date as Temporal.PlainDate. If undefined, gets data for single date
+ * @param startDate - Start date in ISO 8601 format (YYYY-MM-DD)
+ * @param endDate - End date in ISO 8601 format (YYYY-MM-DD). If undefined, gets data for single date
  */
 export async function getPopularKeywords(
   limit: number,
-  startDate: Temporal.PlainDate,
-  endDate?: Temporal.PlainDate,
+  startDate: string,
+  endDate?: string,
 ): Promise<PopularKeyword[]> {
   const keywordScores = await _getPopularItemsFromRedis<string>(
     REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX,
     limit,
-    startDate,
-    endDate,
+    Temporal.PlainDate.from(startDate),
+    endDate ? Temporal.PlainDate.from(endDate) : undefined,
   )
 
   return keywordScores.map(([keyword, count]) => ({
