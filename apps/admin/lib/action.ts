@@ -7,7 +7,11 @@ import {
   unauthenticatedFormState,
   unauthenticatedResult,
 } from '@/lib/auth'
-import { actionErrorToFormState, parseFormData } from '@/lib/form'
+import {
+  actionErrorToFormState,
+  parseFormData,
+  type ZodErrorToFormStateOptions,
+} from '@/lib/form'
 
 /**
  * 予期しない例外で Server Action が失敗したときに、画面に見せる文。
@@ -130,12 +134,19 @@ export function adminAction<TArgs extends unknown[], TData = void>(
 }
 
 /**
+ * `adminFormAction` のオプション。`hiddenFields` には、画面に入力欄がない項目
+ * （隠しフィールドなど）の名前を入れる。これらの項目の検証のエラーは、
+ * 項目に結び付かないエラー（`generic`）にする。
+ */
+export type AdminFormActionOptions = ZodErrorToFormStateOptions
+
+/**
  * `useActionState` 用の、`FormState` を返す Server Action を作る。
  *
  * 1. `requireAuthenticatedUser()` で認証を確かめ、未認証なら `handler` を呼ばずに
  *    `unauthenticatedFormState()` を返す
  * 2. `FormData` を `schema` で検証し、失敗したら `handler` を呼ばずに
- *    項目ごとのエラーを返す
+ *    項目ごとのエラーを返す（`options.hiddenFields` の項目のエラーは `generic` にする）
  * 3. `handler` を、認証に使った Supabase のクライアントとユーザー、検証した値を
  *    付けて呼ぶ。`handler` が何も返さなければ `{ success: true }` を返す
  * 4. `handler` が `ActionError` を投げたら、その文を（`field` があればその項目の
@@ -173,6 +184,7 @@ export function adminFormAction<TSchema extends z.ZodType>(
     context: AuthenticatedContext,
     data: z.output<TSchema>,
   ) => Promise<FormState | undefined>,
+  options: AdminFormActionOptions = {},
 ): (currentState: FormState, formData: FormData) => Promise<FormState> {
   return async (_currentState, formData) => {
     const auth = await requireAuthenticatedUser()
@@ -181,7 +193,7 @@ export function adminFormAction<TSchema extends z.ZodType>(
       return unauthenticatedFormState()
     }
 
-    const result = parseFormData(schema, formData)
+    const result = parseFormData(schema, formData, options)
 
     if (!result.success) {
       return result.state

@@ -448,7 +448,7 @@ await supabase
 
 - **必ず** `adminAction` か `adminFormAction` で作る。ラッパーは、入力値の検証や外部 API の呼び出しより前に `requireAuthenticatedUser()` で認証を確かめ、未認証なら `handler` を呼ばずに共通のレスポンスを返す
   - `ActionResult`（`{ success, error }`）を返す Action: `adminAction(name, handler)`。未認証なら `unauthenticatedResult()` を返す
-  - `FormState` を返す Action（`useActionState` 用）: `adminFormAction(name, schema, handler)`。未認証なら `unauthenticatedFormState()` を返し、`FormData` を `schema` で検証してから `handler` を呼ぶ。`handler` が何も返さなければ `{ success: true }` を返す
+  - `FormState` を返す Action（`useActionState` 用）: `adminFormAction(name, schema, handler)`。未認証なら `unauthenticatedFormState()` を返し、`FormData` を `schema` で検証してから `handler` を呼ぶ。`handler` が何も返さなければ `{ success: true }` を返す。隠しフィールド（`id` など）の検証のエラーは、4つめの引数の `{ hiddenFields: ['id'] }` で、項目に結び付かないエラー（`generic`）にする
 - 画面に見せてよい失敗（「すでに登録されています。」など）は `ActionError` を投げる。項目に結び付けるときは `new ActionError(message, { field })` とする
 - それ以外の例外は、ラッパーが `logger.error` に記録し、決まった文を返す。Supabase のエラーなど、例外の文を画面に返さない
 - Supabase のクライアントは、`handler` に渡される `supabaseClient` を使う（`createSupabaseServerClient()` を別に呼ばない）
