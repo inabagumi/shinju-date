@@ -28,6 +28,7 @@ import { VideoKindBadge } from '../_components/video-kind-badge'
 import getVideo from '../_lib/get-video'
 import {
   VideoActionsButtons,
+  VideoActionsProvider,
   VideoDeleteButton,
 } from './_components/video-actions-buttons'
 
@@ -155,87 +156,89 @@ async function VideoDetails({
   ]
 
   return (
-    <div>
-      <PageHeader
-        actions={<VideoActionsButtons video={video} />}
-        description="動画詳細"
-        title={<span className="wrap-break-word">{video.title}</span>}
-      />
+    <VideoActionsProvider video={video}>
+      <div>
+        <PageHeader
+          actions={<VideoActionsButtons video={video} />}
+          description="動画詳細"
+          title={<span className="wrap-break-word">{video.title}</span>}
+        />
 
-      {/* Status indicator */}
-      {isDeleted && (
-        <Alert className="mb-6" title="削除された動画" tone="danger">
-          この動画は削除されており、同期できません。
-        </Alert>
-      )}
+        {/* Status indicator */}
+        {isDeleted && (
+          <Alert className="mb-6" title="削除された動画" tone="danger">
+            この動画は削除されており、同期できません。
+          </Alert>
+        )}
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Thumbnail and basic info */}
-        <div className="space-y-6">
-          {/* Thumbnail */}
-          <Panel title="サムネイル">
-            <VideoThumbnail
-              alt={video.title}
-              size="lg"
-              thumbnail={video.thumbnail}
-            />
-          </Panel>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {/* Thumbnail and basic info */}
+          <div className="space-y-6">
+            {/* Thumbnail */}
+            <Panel title="サムネイル">
+              <VideoThumbnail
+                alt={video.title}
+                size="lg"
+                thumbnail={video.thumbnail}
+              />
+            </Panel>
 
-          {/* Status */}
-          <Panel title="ステータス">
-            <VideoStatusBadge video={video} />
+            {/* Status */}
+            <Panel title="ステータス">
+              <VideoStatusBadge video={video} />
+            </Panel>
+          </div>
+
+          {/* Video information */}
+          <Panel
+            description="現在データベースに保存されている情報"
+            title="動画情報"
+          >
+            <DetailList>
+              {details.map(({ label, value }) => (
+                <DetailRow key={label} label={label}>
+                  {value}
+                </DetailRow>
+              ))}
+            </DetailList>
           </Panel>
         </div>
 
-        {/* Video information */}
+        {/* External links */}
         <Panel
-          description="現在データベースに保存されている情報"
-          title="動画情報"
-        >
-          <DetailList>
-            {details.map(({ label, value }) => (
-              <DetailRow key={label} label={label}>
-                {value}
-              </DetailRow>
-            ))}
-          </DetailList>
-        </Panel>
-      </div>
-
-      {/* External links */}
-      <Panel
-        className="mt-6"
-        description={
-          video.platform === 'twitch'
-            ? 'Twitch上のオリジナル動画へのリンク'
-            : 'YouTube上のオリジナル動画へのリンク'
-        }
-        title="外部リンク"
-      >
-        {hasExternalUrl && (
-          <Button asChild className="gap-2" variant="secondary">
-            <ExternalVideoLink video={video}>
-              {video.platform === 'twitch' ? 'Twitchで見る' : 'YouTubeで見る'}
-              <ExternalLink aria-hidden="true" className="size-4" />
-            </ExternalVideoLink>
-          </Button>
-        )}
-      </Panel>
-
-      {/* Dangerous operations, kept apart from the ordinary ones above */}
-      {!isDeleted && (
-        <Alert
-          action={<VideoDeleteButton video={video} />}
-          aria-label="動画の削除"
           className="mt-6"
-          role="region"
-          title="動画の削除"
-          tone="danger"
+          description={
+            video.platform === 'twitch'
+              ? 'Twitch上のオリジナル動画へのリンク'
+              : 'YouTube上のオリジナル動画へのリンク'
+          }
+          title="外部リンク"
         >
-          削除した動画は公開サイトに表示されなくなり、同期もできなくなります。
-        </Alert>
-      )}
-    </div>
+          {hasExternalUrl && (
+            <Button asChild className="gap-2" variant="secondary">
+              <ExternalVideoLink video={video}>
+                {video.platform === 'twitch' ? 'Twitchで見る' : 'YouTubeで見る'}
+                <ExternalLink aria-hidden="true" className="size-4" />
+              </ExternalVideoLink>
+            </Button>
+          )}
+        </Panel>
+
+        {/* Dangerous operations, kept apart from the ordinary ones above */}
+        {!isDeleted && (
+          <Alert
+            action={<VideoDeleteButton />}
+            aria-label="動画の削除"
+            className="mt-6"
+            role="region"
+            title="動画の削除"
+            tone="danger"
+          >
+            削除した動画は公開サイトに表示されなくなり、同期もできなくなります。
+          </Alert>
+        )}
+      </div>
+    </VideoActionsProvider>
   )
 }
 
