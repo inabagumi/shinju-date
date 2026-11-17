@@ -2,7 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { ChevronRight } from 'lucide-react'
-import Link from 'next/link'
+import {
+  NavigationLink,
+  NavigationLinkIcon,
+} from '@/components/navigation-link'
 import VideoCardList, {
   VideoCardListSkeleton,
 } from '@/components/video-card-list'
@@ -90,17 +93,16 @@ export function LiveSection({ prefetchedData }: DashboardSectionProps) {
   )
 }
 
-const SECTION_LINK_CLASS_NAME =
-  'inline-flex items-center gap-0.5 rounded-control font-semibold text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
-
 /** タイムラインの下に置く、週ごとのスケジュールへのリンク */
 function ScheduleLink() {
   return (
     <p className="mt-6 text-meta">
-      <Link className={SECTION_LINK_CLASS_NAME} href={getSchedulePath()}>
+      <NavigationLink href={getSchedulePath()}>
         スケジュールを見る
-        <ChevronRight aria-hidden="true" className="size-4" />
-      </Link>
+        <NavigationLinkIcon>
+          <ChevronRight />
+        </NavigationLinkIcon>
+      </NavigationLink>
     </p>
   )
 }
@@ -149,10 +151,12 @@ export function ScheduleSectionSkeleton() {
 
 function VideosLink() {
   return (
-    <Link className={SECTION_LINK_CLASS_NAME} href="/videos">
+    <NavigationLink href="/videos">
       動画一覧を見る
-      <ChevronRight aria-hidden="true" className="size-4" />
-    </Link>
+      <NavigationLinkIcon>
+        <ChevronRight />
+      </NavigationLinkIcon>
+    </NavigationLink>
   )
 }
 

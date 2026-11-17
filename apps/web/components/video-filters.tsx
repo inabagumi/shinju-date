@@ -8,6 +8,7 @@ import {
 } from '@/lib/video-kind-filter'
 import TalentChip, { TALENT_CHIP_REMOVE_CLASS_NAME } from './talent-chip'
 import TalentFilter from './talent-filter'
+import { TextLink, TextLinkIcon } from './text-link'
 import VideoKindFilterNav, {
   VideoKindFilterNavSkeleton,
 } from './video-kind-filter-nav'
@@ -99,13 +100,15 @@ export default function VideoFilters({
         />
         {!query && (
           // カレンダーはページではないので、`next/link` のリンクにしない
-          <a
-            className="inline-flex h-9 items-center gap-1 rounded-control px-1 text-meta font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          <TextLink
+            className="h-9 px-1 text-meta"
             href={getVideosCalendarPath(kind, selectedIds)}
           >
-            <CalendarPlus aria-hidden="true" className="size-4" />
+            <TextLinkIcon>
+              <CalendarPlus />
+            </TextLinkIcon>
             カレンダーに登録
-          </a>
+          </TextLink>
         )}
       </div>
       {selectedTalents.length > 0 && (

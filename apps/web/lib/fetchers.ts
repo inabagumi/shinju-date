@@ -6,6 +6,7 @@ import {
   TIME_ZONE,
 } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
+import { logger } from '@shinju-date/logger'
 import { startOfHour, toDBString } from '@shinju-date/temporal-fns'
 import { cacheLife, cacheTag } from 'next/cache'
 import { STREAM_TENDENCY_DAYS } from '@/lib/stream-tendency'
@@ -801,6 +802,24 @@ export const fetchTalentStreamStatuses = async (): Promise<
   }
 
   return statuses
+}
+
+/**
+ * `fetchTalentStreamStatuses`, or no statuses when they cannot be fetched, as
+ * the talents are still shown without them. The error is logged.
+ */
+export const fetchTalentStreamStatusesSafe = async (): Promise<
+  Record<string, TalentStreamStatus>
+> => {
+  try {
+    return await fetchTalentStreamStatuses()
+  } catch (error) {
+    logger.error('Failed to fetch the stream statuses of the talents', {
+      error,
+    })
+
+    return {}
+  }
 }
 
 /**

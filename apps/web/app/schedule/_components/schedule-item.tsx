@@ -6,7 +6,7 @@ import {
 } from '@shinju-date/temporal-fns'
 import { twMerge } from '@shinju-date/ui'
 import type { CSSProperties } from 'react'
-import LiveNow from '@/components/live-now'
+import LiveBadge from '@/components/live-badge'
 import PlatformBadge from '@/components/platform-badge'
 import TalentIcon from '@/components/talent-icon'
 import type { ScheduleVideo } from '@/lib/fetchers'
@@ -159,10 +159,9 @@ export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
           {formatTime(startAt)}
         </time>
 
-        <LiveNow
-          className="shrink-0 rounded-control bg-live px-1.5 py-0.5 text-caption leading-4 font-semibold text-live-foreground"
-          status={value.status}
-        />
+        {value.status === 'LIVE' && (
+          <LiveBadge className="shrink-0" size="compact" />
+        )}
 
         <PlatformBadge
           className="shrink-0 leading-4"

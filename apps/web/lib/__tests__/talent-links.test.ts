@@ -5,6 +5,7 @@ import type {
   TalentYouTubeChannel,
 } from '../fetchers'
 import {
+  findFirstNonBlank,
   getTalentCalendarPath,
   getTalentLinks,
   getTalentPath,
@@ -46,6 +47,19 @@ function createTalent(overrides: Partial<TalentDetail> = {}): TalentDetail {
     ...overrides,
   }
 }
+
+describe('findFirstNonBlank', () => {
+  test('should return the first value that is not blank, trimmed', () => {
+    expect(findFirstNonBlank(null, undefined, ' ', ' name ', 'other')).toBe(
+      'name',
+    )
+  })
+
+  test('should return null without any value that is not blank', () => {
+    expect(findFirstNonBlank()).toBeNull()
+    expect(findFirstNonBlank(null, undefined, '', '  ')).toBeNull()
+  })
+})
 
 describe('getTalentLinks', () => {
   test('should link to each channel and the calendar', () => {

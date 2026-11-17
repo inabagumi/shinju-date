@@ -1,22 +1,20 @@
-import { logger } from '@shinju-date/logger'
 import { twMerge } from '@shinju-date/ui'
 import { CalendarPlus, ExternalLink } from 'lucide-react'
-import PageHeader from '@/components/page-header'
+import LiveBadge from '@/components/live-badge'
+import PageHeader, { PageHeaderSkeleton } from '@/components/page-header'
 import TalentIcon from '@/components/talent-icon'
 import {
   LIVE_RING_CLASS_NAME,
   NextStream,
 } from '@/components/talent-stream-status'
+import { TextLink, TextLinkIcon } from '@/components/text-link'
 import {
-  fetchTalentStreamStatuses,
+  fetchTalentStreamStatusesSafe,
   type TalentDetail,
   type TalentStreamStatus,
 } from '@/lib/fetchers'
 import { getTalentLinks, type TalentLink } from '@/lib/talent-links'
 import { getShownTalent, type TalentPageParams } from '../_lib/get-shown-talent'
-
-const LINK_CLASS_NAME =
-  'inline-flex items-center gap-1 rounded-control font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
 
 interface TalentLinkItemProps {
   link: TalentLink
@@ -25,24 +23,23 @@ interface TalentLinkItemProps {
 function TalentLinkItem({ link }: TalentLinkItemProps) {
   if (link.external) {
     return (
-      <a
-        className={LINK_CLASS_NAME}
-        href={link.href}
-        rel="noopener noreferrer"
-        target="_blank"
-      >
+      <TextLink href={link.href} rel="noopener noreferrer" target="_blank">
         {link.label}
-        <ExternalLink aria-hidden="true" className="size-4" />
-      </a>
+        <TextLinkIcon>
+          <ExternalLink />
+        </TextLinkIcon>
+      </TextLink>
     )
   }
 
   // The calendar is not a page, so it is not a `next/link` link
   return (
-    <a className={LINK_CLASS_NAME} href={link.href}>
-      <CalendarPlus aria-hidden="true" className="size-4" />
+    <TextLink href={link.href}>
+      <TextLinkIcon>
+        <CalendarPlus />
+      </TextLinkIcon>
       {link.label}
-    </a>
+    </TextLink>
   )
 }
 
@@ -60,9 +57,7 @@ function StreamStatusLine({ streamStatus }: StreamStatusLineProps) {
   if (streamStatus?.isLive) {
     return (
       <p className="mb-2">
-        <span className="rounded-control bg-live px-1.5 py-0.5 text-caption font-semibold text-live-foreground">
-          配信中
-        </span>
+        <LiveBadge />
       </p>
     )
   }
@@ -140,32 +135,15 @@ interface TalentPageHeadingProps {
 }
 
 /**
- * Whether each talent is live and when it streams next. The heading is still
- * shown without them when they cannot be fetched.
- */
-async function getStreamStatuses(): Promise<
-  Record<string, TalentStreamStatus>
-> {
-  try {
-    return await fetchTalentStreamStatuses()
-  } catch (error) {
-    logger.error('Failed to fetch the stream statuses of the talents', {
-      error,
-    })
-
-    return {}
-  }
-}
-
-/**
  * Both are cached, so they are awaited together in the same `<Suspense>`
  * instead of streaming the stream status in later, which would move the
- * links down.
+ * links down. The heading is still shown without the stream status when it
+ * cannot be fetched.
  */
 export async function TalentPageHeading({ params }: TalentPageHeadingProps) {
   const [talent, streamStatuses] = await Promise.all([
     getShownTalent(params),
-    getStreamStatuses(),
+    fetchTalentStreamStatusesSafe(),
   ])
 
   return (
@@ -177,14 +155,5 @@ export async function TalentPageHeading({ params }: TalentPageHeadingProps) {
 }
 
 export function TalentPageHeadingSkeleton() {
-  return (
-    <div aria-hidden="true" className="mb-8 space-y-2">
-      <div className="h-[1.4rem] w-48 animate-pulse rounded-control bg-muted" />
-      <div className="flex items-center gap-4">
-        <div className="size-16 shrink-0 animate-pulse rounded-full bg-muted" />
-        <div className="h-[2.1rem] w-64 animate-pulse rounded-control bg-muted md:h-[2.8rem]" />
-      </div>
-      <div className="h-[1lh] w-80 max-w-full animate-pulse rounded-control bg-muted text-meta" />
-    </div>
-  )
+  return <PageHeaderSkeleton description icon />
 }

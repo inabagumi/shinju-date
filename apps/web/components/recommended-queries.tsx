@@ -1,6 +1,7 @@
 import { Hash } from 'lucide-react'
 import Link from 'next/link'
 import { getVideosPath } from '@/lib/video-kind-filter'
+import { ListOption, ListOptionIcon } from './list-option'
 
 interface RecommendedQueriesProps {
   onClickLink?: () => void
@@ -35,18 +36,17 @@ export default function RecommendedQueries({
         <div className="max-h-96 overflow-y-auto">
           <div className="p-2">
             {queries.map((query) => (
-              <Link
-                className="flex w-full items-center gap-3 rounded-control px-4 py-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
-                href={getVideosPath(query, 'all', talentIds)}
-                key={query}
-                {...(onClickLink ? { onClick: onClickLink } : {})}
-              >
-                <Hash
-                  aria-hidden="true"
-                  className="size-4 shrink-0 text-muted"
-                />
-                <span>{query}</span>
-              </Link>
+              <ListOption asChild key={query}>
+                <Link
+                  href={getVideosPath(query, 'all', talentIds)}
+                  {...(onClickLink ? { onClick: onClickLink } : {})}
+                >
+                  <ListOptionIcon>
+                    <Hash />
+                  </ListOptionIcon>
+                  <span>{query}</span>
+                </Link>
+              </ListOption>
             ))}
           </div>
         </div>

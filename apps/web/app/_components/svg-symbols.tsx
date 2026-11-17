@@ -8,23 +8,36 @@ export const LOGO_PATH =
 /** The `viewBox` of the logo, for `LOGO_PATH` */
 export const LOGO_VIEW_BOX = '0 0 256 80'
 
+/**
+ * The shapes of the search icon (`svg-symbols-square-icon`): a ring and a
+ * handle. They are also drawn directly where `<use>` cannot be used, such as
+ * in the Apple touch icon.
+ */
+export const SEARCH_ICON_CIRCLE = {
+  cx: '97.5',
+  cy: '100.5',
+  r: '52',
+  strokeWidth: '21',
+} as const
+
+/** The path of the handle of the search icon */
+export const SEARCH_ICON_PATH =
+  'M146.14 137l58.34 58.34a5 5 0 010 7.07l-7.07 7.07a5 5 0 01-7.07 0L132 151.14 146.14 137z'
+
+/** The `viewBox` of the search icon */
+export const SEARCH_ICON_VIEW_BOX = '0 0 256 256'
+
 export default function SVGSymbols() {
   return (
     <svg aria-hidden="true" className="hidden">
       <defs>
-        <symbol id="svg-symbols-square-icon" viewBox="0 0 256 256">
+        <symbol id="svg-symbols-square-icon" viewBox={SEARCH_ICON_VIEW_BOX}>
           <circle
-            cx="97.5"
-            cy="100.5"
+            {...SEARCH_ICON_CIRCLE}
             fill="transparent"
-            r="52"
             stroke="currentColor"
-            strokeWidth="21"
           />
-          <path
-            d="M146.14 137l58.34 58.34a5 5 0 010 7.07l-7.07 7.07a5 5 0 01-7.07 0L132 151.14 146.14 137z"
-            fill="currentColor"
-          />
+          <path d={SEARCH_ICON_PATH} fill="currentColor" />
         </symbol>
         <symbol id="svg-symbols-logo" viewBox={LOGO_VIEW_BOX}>
           <path d={LOGO_PATH} fill="currentColor" />

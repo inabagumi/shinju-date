@@ -78,7 +78,7 @@
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 項目（リンク）           | `block rounded-control border border-l-4 border-border bg-surface py-1 pr-1 pl-2`。地と見分けられるよう枠を付ける。地は広げたときに下が透けないよう不透明にし、マウスを乗せても変えない                                               |
 | 左端の線                 | `border-l-(--talent-color)`（`style` で `--talent-color` を渡す）／未設定や形が違う値は `border-l-border`                                                                                                                             |
-| 1行目                    | 高さ 20px（`h-5`）に、タレントのアイコン（`TalentIcon`、20px）、開始時刻 `text-meta leading-5 font-bold tabular-nums`、配信中は `LiveNow`、Twitch は `PlatformBadge`、タレント名 `truncate text-caption text-muted` の順に並べる      |
+| 1行目                    | 高さ 20px（`h-5`）に、タレントのアイコン（`TalentIcon`、20px）、開始時刻 `text-meta leading-5 font-bold tabular-nums`、配信中は `LiveBadge`、Twitch は `PlatformBadge`、タレント名 `truncate text-caption text-muted` の順に並べる    |
 | ラベルとハッシュタグの行 | 1行目とタイトルの間に `truncate text-caption text-muted`。動画カードと同じく、先頭のラベル1つと、ハッシュタグを先頭から3つまで（頭に `#`）を半角の空白で区切って並べる。内容がない項目では出さない。1024px 以上では広げたときだけ出す |
 | タイトル                 | `text-meta`（`title` 属性に全文）。本文を出す。1024px 未満は2行まで、1024px 以上は項目の高さに収まる行数まで                                                                                                                          |
 
@@ -127,6 +127,7 @@ Lato は 300・400・700 を読み込んでいます（Lato には 600 があり
 | 本文                                          | `text-body`                              | 16px               | 400                 | 1.7  |
 | 補助情報（日時・タレント名・説明）            | `text-meta text-muted`                   | 14px               | 400                 | 1.6  |
 | バッジ・注記                                  | `text-caption font-semibold`             | 12px               | 600                 | 1.4  |
+| 「配信中」の印                                | `LiveBadge`                              | 12px               | 600                 | 1.4  |
 | 状態の知らせ（[`Alert`](#状態の知らせalert)） | `text-meta`（見出しは `font-semibold`）  | 14px               | 400（見出しは 600） | 1.6  |
 | フォームのラベル                              | `text-meta font-semibold`                | 14px               | 600                 | 1.6  |
 | フォームのエラーの文                          | `text-meta text-danger`                  | 14px               | 400                 | 1.6  |
