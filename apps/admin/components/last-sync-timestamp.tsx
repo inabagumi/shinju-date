@@ -1,5 +1,5 @@
+import { TIME_ZONE } from '@shinju-date/constants'
 import { formatDateTime } from '@shinju-date/temporal-fns'
-import { cacheLife } from 'next/cache'
 import { getLastVideoSync } from '@/lib/get-last-sync'
 
 export function SyncLabel({ children }: { children: React.ReactNode }) {
@@ -17,16 +17,14 @@ function SyncSkeleton() {
 export { SyncSkeleton }
 
 export async function LastSyncTimestamp() {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const lastSync = await getLastVideoSync()
 
   if (!lastSync) {
     return <SyncLabel>N/A</SyncLabel>
   }
 
-  const formatted = formatDateTime(lastSync)
+  const formatted = formatDateTime(
+    Temporal.Instant.from(lastSync).toZonedDateTimeISO(TIME_ZONE),
+  )
   return <SyncLabel>{formatted}</SyncLabel>
 }

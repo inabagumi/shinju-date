@@ -4,6 +4,7 @@ import { range } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import type { QueryData } from '@supabase/supabase-js'
+import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 import {
   createSupabaseServerClient,
@@ -49,6 +50,10 @@ export async function getVideos(
   videos: Video[]
   total: number
 }> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   const supabaseClient = await createSupabaseServerClient()
 
   const from = (page - 1) * perPage

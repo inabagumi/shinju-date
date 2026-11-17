@@ -6,7 +6,6 @@ import {
 import { Alert, Button, PageHeader } from '@shinju-date/ui'
 import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
-import { cacheLife } from 'next/cache'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { type ReactNode, Suspense } from 'react'
@@ -39,10 +38,6 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const { id } = await params
 
   const video = await getVideo(id)
@@ -58,11 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-async function CachedVideoDetails({ id }: { id: string }) {
-  'use cache: private'
-
-  cacheLife('minutes')
-
+async function VideoDetails({ id }: { id: string }) {
   const video = await getVideo(id)
 
   if (!video) {
@@ -252,7 +243,7 @@ export default function VideoDetailPage({ params }: Props) {
 
       <Suspense fallback={<DetailCardsSkeleton />}>
         {params.then(({ id }) => (
-          <CachedVideoDetails id={id} />
+          <VideoDetails id={id} />
         ))}
       </Suspense>
     </div>

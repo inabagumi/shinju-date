@@ -1,7 +1,6 @@
 import { PageHeader } from '@shinju-date/ui'
 
 import type { Metadata } from 'next'
-import { cacheLife } from 'next/cache'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { BackLink } from '@/components/back-link'
@@ -17,10 +16,6 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const { id } = await params
 
   const featureRequest = await getFeatureRequestById(id)
@@ -38,11 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-async function CachedFeatureRequestDetail({ id }: { id: string }) {
-  'use cache: private'
-
-  cacheLife('minutes')
-
+async function FeatureRequestDetailData({ id }: { id: string }) {
   const featureRequest = await getFeatureRequestById(id)
 
   if (!featureRequest) {
@@ -63,7 +54,7 @@ export default function FeedbackDetailPage({ params }: Props) {
 
       <Suspense fallback={<StackedDetailSkeleton />}>
         {params.then(({ id }) => (
-          <CachedFeatureRequestDetail id={id} />
+          <FeatureRequestDetailData id={id} />
         ))}
       </Suspense>
     </div>

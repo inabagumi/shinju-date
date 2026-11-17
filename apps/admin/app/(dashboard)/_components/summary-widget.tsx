@@ -1,4 +1,3 @@
-import { cacheLife } from 'next/cache'
 import { Panel } from '@/components/panel'
 import { getHistoricalStats } from '../_lib/get-historical-stats'
 import { getSummaryStats } from '../_lib/get-summary-stats'
@@ -15,10 +14,6 @@ import { VideoStatsChartUI } from './video-stats-chart-ui'
  * This is an async Server Component that fetches its own data
  */
 export async function VideoSummaryWidget() {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const [stats, historicalStats] = await Promise.all([
     getSummaryStats(),
     getHistoricalStats(7),
@@ -73,10 +68,6 @@ export async function VideoSummaryWidget() {
  * This is an async Server Component that fetches its own data
  */
 export async function ContentSummaryWidget() {
-  'use cache: private'
-
-  cacheLife('minutes')
-
   const stats = await getSummaryStats()
 
   return (

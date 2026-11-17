@@ -25,16 +25,18 @@ export async function GET(request: NextRequest) {
     if (validatedParams.selectedDate) {
       talents = await getPopularTalents(
         validatedParams.limit,
-        Temporal.PlainDate.from(validatedParams.selectedDate),
+        validatedParams.selectedDate,
       )
     } else if (validatedParams.endDate) {
-      const start = Temporal.PlainDate.from(validatedParams.startDate)
-      const end = Temporal.PlainDate.from(validatedParams.endDate)
-      talents = await getPopularTalents(validatedParams.limit, start, end)
+      talents = await getPopularTalents(
+        validatedParams.limit,
+        validatedParams.startDate,
+        validatedParams.endDate,
+      )
     } else {
       talents = await getPopularTalents(
         validatedParams.limit,
-        Temporal.PlainDate.from(validatedParams.startDate),
+        validatedParams.startDate,
       )
     }
 

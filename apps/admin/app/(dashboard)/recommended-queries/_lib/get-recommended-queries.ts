@@ -1,4 +1,5 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
+import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 
 export interface AutoRecommendedQuery {
@@ -12,6 +13,10 @@ export interface RecommendedQueriesResult {
 }
 
 export default async function getRecommendedQueries(): Promise<RecommendedQueriesResult> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   const redisClient = getRedisClient()
   const [manualQueries, autoQueriesWithScores] = await Promise.all([
     redisClient.smembers<string[]>(REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED),

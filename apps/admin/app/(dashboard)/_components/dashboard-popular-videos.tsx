@@ -1,8 +1,6 @@
-import { TIME_ZONE } from '@shinju-date/constants'
 import { formatNumber } from '@shinju-date/helpers'
 import { Button, EmptyState } from '@shinju-date/ui'
 import { ExternalLink } from 'lucide-react'
-import { cacheLife } from 'next/cache'
 import Link from 'next/link'
 import {
   ExternalVideoLink,
@@ -12,6 +10,7 @@ import { Panel } from '@/components/panel'
 import { PopularVideosListSkeleton } from '@/components/skeletons'
 import { VideoThumbnail } from '@/components/video-thumbnail'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
+import { getToday } from '../_lib/get-today'
 
 export function DashboardPopularVideosSkeleton() {
   return (
@@ -27,13 +26,13 @@ export function DashboardPopularVideosSkeleton() {
  * This is an async Server Component that fetches its own data
  */
 export async function DashboardPopularVideos() {
-  'use cache: private'
-
-  cacheLife('minutes')
-
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
+  const today = Temporal.PlainDate.from(await getToday())
   const startDate = today.subtract({ days: 29 })
-  const popularVideos = await getPopularVideos(10, startDate, today)
+  const popularVideos = await getPopularVideos(
+    10,
+    startDate.toString(),
+    today.toString(),
+  )
 
   return (
     <Panel title="人気動画ランキング (過去30日間)">

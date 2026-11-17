@@ -2,12 +2,17 @@
 
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
+import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 
 /**
  * Get keywords that returned zero search results from Redis
  */
 export async function getZeroResultKeywords(): Promise<string[]> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   try {
     const redisClient = getRedisClient()
     const keywords = await redisClient.smembers<string[]>(

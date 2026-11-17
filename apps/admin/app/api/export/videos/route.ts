@@ -25,16 +25,18 @@ export async function GET(request: NextRequest) {
     if (validatedParams.selectedDate) {
       videos = await getPopularVideos(
         validatedParams.limit,
-        Temporal.PlainDate.from(validatedParams.selectedDate),
+        validatedParams.selectedDate,
       )
     } else if (validatedParams.endDate) {
-      const start = Temporal.PlainDate.from(validatedParams.startDate)
-      const end = Temporal.PlainDate.from(validatedParams.endDate)
-      videos = await getPopularVideos(validatedParams.limit, start, end)
+      videos = await getPopularVideos(
+        validatedParams.limit,
+        validatedParams.startDate,
+        validatedParams.endDate,
+      )
     } else {
       videos = await getPopularVideos(
         validatedParams.limit,
-        Temporal.PlainDate.from(validatedParams.startDate),
+        validatedParams.startDate,
       )
     }
 

@@ -13,6 +13,9 @@ import { getFeatureRequestById, getFeatureRequests } from './get-feedback'
 
 const state = vi.hoisted(() => ({ supabase: null as FakeSupabase | null }))
 
+vi.mock('next/cache', () => ({
+  cacheLife: vi.fn(),
+}))
 vi.mock('@/lib/supabase/admin', () => ({
   getSupabaseAdminClient: () => {
     if (!state.supabase) {

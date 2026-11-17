@@ -7,6 +7,9 @@ import {
 } from '../get-search-quality-metrics'
 
 // Mock Redis client
+vi.mock('next/cache', () => ({
+  cacheLife: vi.fn(),
+}))
 vi.mock('@/lib/redis', async () => {
   const { createMockPipeline } = await import('./mock-redis-pipeline')
   const mockedRedisClient = {
@@ -44,9 +47,7 @@ describe('getSearchEngagementRate', async () => {
       .mockResolvedValueOnce(100) // total sessions
       .mockResolvedValueOnce(30) // search sessions
 
-    const result = await getSearchEngagementRate(
-      Temporal.PlainDate.from('2024-01-01'),
-    )
+    const result = await getSearchEngagementRate('2024-01-01')
 
     expect(result).toBe(30) // 30/100 * 100 = 30%
   })
@@ -56,9 +57,7 @@ describe('getSearchEngagementRate', async () => {
       .mockResolvedValueOnce(0) // total sessions
       .mockResolvedValueOnce(0) // search sessions
 
-    const result = await getSearchEngagementRate(
-      Temporal.PlainDate.from('2024-01-01'),
-    )
+    const result = await getSearchEngagementRate('2024-01-01')
 
     expect(result).toBeNull()
   })
@@ -68,9 +67,7 @@ describe('getSearchEngagementRate', async () => {
       .mockResolvedValueOnce(100) // total sessions
       .mockResolvedValueOnce(0) // search sessions
 
-    const result = await getSearchEngagementRate(
-      Temporal.PlainDate.from('2024-01-01'),
-    )
+    const result = await getSearchEngagementRate('2024-01-01')
 
     expect(result).toBe(0)
   })
@@ -82,10 +79,7 @@ describe('getSearchEngagementRate', async () => {
       .mockResolvedValueOnce(300) // 2024-01-02 total sessions
       .mockResolvedValueOnce(50) // 2024-01-02 search sessions
 
-    const result = await getSearchEngagementRate(
-      Temporal.PlainDate.from('2024-01-01'),
-      Temporal.PlainDate.from('2024-01-02'),
-    )
+    const result = await getSearchEngagementRate('2024-01-01', '2024-01-02')
 
     expect(result).toBe(20) // (30+50) / (100+300) * 100 = 20%
     expect(redisClient.pipeline).toHaveBeenCalledTimes(1)
@@ -98,10 +92,7 @@ describe('getSearchEngagementRate', async () => {
   })
 
   it('should return null without calling Redis for an empty range', async () => {
-    const result = await getSearchEngagementRate(
-      Temporal.PlainDate.from('2024-01-02'),
-      Temporal.PlainDate.from('2024-01-01'),
-    )
+    const result = await getSearchEngagementRate('2024-01-02', '2024-01-01')
 
     expect(result).toBeNull()
     expect(redisClient.pipeline).not.toHaveBeenCalled()
@@ -110,9 +101,7 @@ describe('getSearchEngagementRate', async () => {
   it('should handle errors gracefully', async () => {
     vi.mocked(redisClient.scard).mockRejectedValue(new Error('Redis error'))
 
-    const result = await getSearchEngagementRate(
-      Temporal.PlainDate.from('2024-01-01'),
-    )
+    const result = await getSearchEngagementRate('2024-01-01')
 
     expect(result).toBeNull()
   })
@@ -137,9 +126,7 @@ describe('getSearchExitRates', async () => {
       keyword2: '10',
     })
 
-    const result = await getSearchExitRates(
-      Temporal.PlainDate.from('2024-01-01'),
-    )
+    const result = await getSearchExitRates('2024-01-01')
 
     expect(result).toHaveLength(2)
     expect(result[0]).toEqual({
@@ -162,10 +149,7 @@ describe('getSearchExitRates', async () => {
       .mockResolvedValueOnce({ keyword1: '30' })
       .mockResolvedValueOnce(null)
 
-    const result = await getSearchExitRates(
-      Temporal.PlainDate.from('2024-01-01'),
-      Temporal.PlainDate.from('2024-01-02'),
-    )
+    const result = await getSearchExitRates('2024-01-01', '2024-01-02')
 
     expect(result).toEqual([
       {
@@ -189,9 +173,7 @@ describe('getSearchExitRates', async () => {
 
     vi.mocked(redisClient.hgetall).mockResolvedValue({})
 
-    const result = await getSearchExitRates(
-      Temporal.PlainDate.from('2024-01-01'),
-    )
+    const result = await getSearchExitRates('2024-01-01')
 
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
@@ -214,9 +196,7 @@ describe('getRepeatSearchRate', async () => {
       session3: '2',
     })
 
-    const result = await getRepeatSearchRate(
-      Temporal.PlainDate.from('2024-01-01'),
-    )
+    const result = await getRepeatSearchRate('2024-01-01')
 
     expect(result).toBe(2) // (3+1+2) / 3 = 2
   })
@@ -227,10 +207,7 @@ describe('getRepeatSearchRate', async () => {
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce({ session3: '5' })
 
-    const result = await getRepeatSearchRate(
-      Temporal.PlainDate.from('2024-01-01'),
-      Temporal.PlainDate.from('2024-01-03'),
-    )
+    const result = await getRepeatSearchRate('2024-01-01', '2024-01-03')
 
     expect(result).toBe(3) // (3+1+5) / 3 = 3
     expect(redisClient.pipeline).toHaveBeenCalledTimes(1)
@@ -240,9 +217,7 @@ describe('getRepeatSearchRate', async () => {
   it('should return null when no search sessions exist', async () => {
     vi.mocked(redisClient.hgetall).mockResolvedValue({})
 
-    const result = await getRepeatSearchRate(
-      Temporal.PlainDate.from('2024-01-01'),
-    )
+    const result = await getRepeatSearchRate('2024-01-01')
 
     expect(result).toBeNull()
   })
