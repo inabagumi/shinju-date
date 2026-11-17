@@ -19,7 +19,6 @@
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "main": "./dist/index.js",
   "name": "@shinju-date/database",
   "private": true,
   "repository": {
@@ -33,6 +32,5 @@
     "typecheck": "tsc --noEmit"
   },
   "type": "module",
-  "types": "./dist/index.d.ts",
   "version": "1.0.0"
 }

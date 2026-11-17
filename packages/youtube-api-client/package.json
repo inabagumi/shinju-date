@@ -16,13 +16,12 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "main": "./dist/index.js",
   "name": "@shinju-date/youtube-api-client",
   "private": true,
   "repository": {
@@ -36,6 +35,5 @@
     "typecheck": "tsc --noEmit"
   },
   "type": "module",
-  "types": "./dist/index.d.ts",
   "version": "1.0.0"
 }

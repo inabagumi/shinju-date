@@ -13,9 +13,14 @@
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "main": "./dist/index.js",
   "name": "@shinju-date/retryable-fetch",
   "private": true,
   "repository": {
@@ -29,6 +34,5 @@
     "typecheck": "tsc --noEmit"
   },
   "type": "module",
-  "types": "./dist/index.d.ts",
   "version": "1.0.0"
 }

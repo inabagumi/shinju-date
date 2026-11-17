@@ -47,7 +47,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "default": "./dist/index.js"
     }
   },
   "homepage": "https://shinju.date/",
@@ -59,7 +59,6 @@
     ]
   },
   "license": "MIT",
-  "main": "./dist/index.js",
   "name": "@shinju-date/ui",
   "peerDependencies": {
     "react": "^19.0.0",
@@ -83,6 +82,5 @@
     "typecheck": "tsc --noEmit"
   },
   "type": "module",
-  "types": "./dist/index.d.ts",
   "version": "1.0.0"
 }
