@@ -1,13 +1,14 @@
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import { Alert, Badge, EmptyState, PageHeader } from '@shinju-date/ui'
-import { ChevronLeft, Video } from 'lucide-react'
+import { Video } from 'lucide-react'
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { BackLink } from '@/components/back-link'
 import { DetailList, DetailRow, Panel } from '@/components/panel'
 import { DetailCardsSkeleton, ListCardsSkeleton } from '@/components/skeletons'
+import { VideoThumbnail } from '@/components/video-thumbnail'
 import { TalentStatusBadge } from '../_components/talent-status-badge'
 import { getRecentVideosForTalent } from '../_lib/get-recent-videos'
 import { getTalent } from '../_lib/get-talent'
@@ -202,25 +203,7 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
           {recentVideos.map((video) => (
             <li className="px-6 py-4" key={video.id}>
               <div className="flex items-center gap-4">
-                <div className="shrink-0">
-                  {video.thumbnail ? (
-                    <div className="relative h-12 w-20">
-                      <Image
-                        alt=""
-                        blurDataURL={video.thumbnail.blur_data_url}
-                        className="rounded-control object-cover"
-                        fill
-                        placeholder="blur"
-                        sizes="80px"
-                        src={`/images/thumbnails/${video.thumbnail.id}`}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex h-12 w-20 items-center justify-center rounded-control bg-muted text-caption text-muted">
-                      No Image
-                    </div>
-                  )}
-                </div>
+                <VideoThumbnail size="sm" thumbnail={video.thumbnail} />
                 <div className="min-w-0 flex-1">
                   <Link
                     className="block truncate text-meta font-semibold text-accent hover:underline"
@@ -265,13 +248,7 @@ export default function TalentDetailPage({ params }: Props) {
     <div>
       {/* Back button - static, renders immediately */}
       <div className="mb-4">
-        <Link
-          className="inline-flex items-center gap-1 text-meta text-accent hover:underline"
-          href="/talents"
-        >
-          <ChevronLeft aria-hidden="true" className="size-4" />
-          タレント一覧に戻る
-        </Link>
+        <BackLink href="/talents">タレント一覧に戻る</BackLink>
       </div>
 
       {/* Talent profile section */}

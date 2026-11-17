@@ -9,10 +9,10 @@ import {
   TableHeader,
   TableRow,
 } from '@shinju-date/ui'
-import { cache } from 'react'
 import { getSearchExitRates } from '@/lib/analytics/get-search-quality-metrics'
-import { ExportMenu } from '../../_components/export-menu'
+import { ExportLink } from '../../_components/export-link'
 import { WidgetHeader } from '../../_components/widget-header'
+import { resolvePeriod } from '../../_lib/resolve-period'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 interface Props {
@@ -24,29 +24,6 @@ interface SearchExitRate {
   exitRate: number
   searchCount: number
 }
-
-/**
- * Cached function to fetch search exit rates data
- */
-const fetchSearchExitRatesData = cache(
-  async (
-    startDate: string,
-    endDate: string,
-    selectedDate: string | null,
-  ): Promise<SearchExitRate[]> => {
-    if (selectedDate) {
-      return getSearchExitRates(
-        Temporal.PlainDate.from(selectedDate),
-        undefined,
-        20,
-      )
-    }
-
-    const start = Temporal.PlainDate.from(startDate)
-    const end = Temporal.PlainDate.from(endDate)
-    return getSearchExitRates(start, end, 20)
-  },
-)
 
 /**
  * 離脱率の評価。良し悪しの意味で Badge の色を選ぶ
@@ -77,7 +54,7 @@ function SearchExitRateWidgetComponent({
     <div>
       <WidgetHeader
         actions={
-          <ExportMenu
+          <ExportLink
             dateRange={dateRange}
             selectedDate={selectedDate}
             type="search-exit-rates"
@@ -147,11 +124,8 @@ function SearchExitRateWidgetComponent({
 export async function SearchExitRateWidget({ searchParams }: Props) {
   const { dateRange, selectedDate } = await searchParams
 
-  const exitRates = await fetchSearchExitRatesData(
-    dateRange.startDate,
-    dateRange.endDate,
-    selectedDate,
-  )
+  const { start, end } = resolvePeriod({ dateRange, selectedDate })
+  const exitRates = await getSearchExitRates(start, end, 20)
 
   return (
     <SearchExitRateWidgetComponent

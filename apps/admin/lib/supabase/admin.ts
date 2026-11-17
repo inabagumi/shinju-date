@@ -1,19 +1,21 @@
 import type { default as DefaultDatabase } from '@shinju-date/database'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { publicEnv, serverEnv } from '@/lib/env'
+
+let supabaseAdminClient: SupabaseClient<DefaultDatabase> | undefined
 
 /**
- * Creates a Supabase admin client with service role key for privileged operations.
- * This client has elevated permissions and should only be used in secure server contexts.
+ * The client with the service role key, which bypasses RLS. Use it only in
+ * secure server contexts, after `requireAuthenticatedUser()`.
+ *
+ * Created on first use and reused afterwards, so that importing this module
+ * does not create the client.
  */
-function createSupabaseAdminClient() {
-  const url = process.env['NEXT_PUBLIC_SUPABASE_URL']
-  const key = process.env['SUPABASE_SERVICE_ROLE_KEY']
+export function getSupabaseAdminClient(): SupabaseClient<DefaultDatabase> {
+  supabaseAdminClient ??= createClient<DefaultDatabase>(
+    publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+    serverEnv.SUPABASE_SERVICE_ROLE_KEY,
+  )
 
-  if (!url || !key) {
-    throw new TypeError('Supabase URL and service role key are required.')
-  }
-
-  return createClient<DefaultDatabase>(url, key)
+  return supabaseAdminClient
 }
-
-export const supabaseClient = createSupabaseAdminClient()

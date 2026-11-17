@@ -10,7 +10,7 @@ import {
   softDeleteAction,
   toggleVisibilityAction,
 } from '../../_actions'
-import { syncVideoWithTwitch, syncVideoWithYouTube } from '../../_actions/sync'
+import { syncVideoAction } from '../../_actions/sync'
 import { VideoActionConfirmDialog } from '../../_components/video-action-confirm-dialog'
 
 type VideoInfo = Pick<Tables<'videos'>, 'id' | 'title'>
@@ -29,10 +29,7 @@ function SyncVideoButton({ videoId, platform }: SyncVideoButtonProps) {
   const handleSync = () => {
     startTransition(async () => {
       try {
-        const result =
-          platform === 'twitch'
-            ? await syncVideoWithTwitch(videoId)
-            : await syncVideoWithYouTube(videoId)
+        const result = await syncVideoAction(videoId)
         if (result.success) {
           showToast(
             'success',

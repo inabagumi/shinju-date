@@ -1,5 +1,6 @@
 'use client'
 
+import type { Enums } from '@shinju-date/database'
 import { Button } from '@shinju-date/ui'
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -23,12 +24,11 @@ export function SyncTalentButton({
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [pendingPlatform, setPendingPlatform] = useState<
-    'youtube' | 'twitch' | null
-  >(null)
+  const [pendingPlatform, setPendingPlatform] =
+    useState<Enums<'platform_type'> | null>(null)
   const { showToast, toastProps } = useActionToast()
 
-  const runSync = (platform: 'youtube' | 'twitch') => {
+  const runSync = (platform: Enums<'platform_type'>) => {
     setPendingPlatform(platform)
     startTransition(async () => {
       try {

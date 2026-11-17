@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { use } from 'react'
-import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
+import type { AnalyticsSearchParams } from '../_lib/search-params-schema'
 
 interface TabNavigationProps {
   searchParams: Promise<AnalyticsSearchParams>

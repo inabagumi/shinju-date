@@ -1,10 +1,10 @@
 import { PageHeader } from '@shinju-date/ui'
-import { ChevronLeft } from 'lucide-react'
+
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { BackLink } from '@/components/back-link'
 import { StackedDetailSkeleton } from '@/components/skeletons'
 import { createTitleFromMessage } from '../_lib/create-title-from-message'
 import { getFeatureRequestById } from '../_lib/get-feedback'
@@ -56,13 +56,7 @@ export default function FeedbackDetailPage({ params }: Props) {
   return (
     <div>
       <div className="mb-4">
-        <Link
-          className="inline-flex items-center gap-1 rounded-control text-meta text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          href="/feedback"
-        >
-          <ChevronLeft aria-hidden="true" className="size-4" />
-          機能要望一覧に戻る
-        </Link>
+        <BackLink href="/feedback">機能要望一覧に戻る</BackLink>
       </div>
 
       <PageHeader title="機能要望詳細" />
