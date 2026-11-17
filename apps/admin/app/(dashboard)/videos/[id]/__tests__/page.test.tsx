@@ -50,7 +50,9 @@ describe('VideoDetailPage', () => {
       title: 'テストの動画 - 動画詳細',
     })
 
-    const details = await findSuspenseChildren(VideoDetailPage({ params }))
+    const details = findSuspenseChildren(
+      VideoDetailPage({ params, searchParams: Promise.resolve({}) }),
+    )
     await runServerComponent(details)
 
     // `getVideo` is a `'use cache: private'` function, so the calls with the
