@@ -3,16 +3,17 @@
 import { CACHE_TAGS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import type { SavedTwitchUserIcon } from '@shinju-date/scraper/twitch'
-import type {
-  ProfileImageSyncResult,
-  SavedYouTubeChannelIcon,
-} from '@shinju-date/scraper/youtube'
+import type { SavedYouTubeChannelIcon } from '@shinju-date/scraper/youtube'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { getUsers } from '@shinju-date/twitch-api-client'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { getChannels } from '@shinju-date/youtube-api-client'
 import { revalidatePath } from 'next/cache'
-import { createAuditLog } from '@/lib/audit-log'
+import {
+  createAuditLog,
+  type TwitchUserSyncChange,
+  type YouTubeChannelSyncChange,
+} from '@/lib/audit-log'
 import {
   type AuthenticatedContext,
   requireAuthenticatedUser,
@@ -134,12 +135,7 @@ async function syncYouTubeChannels(
       ]),
     )
 
-    const channelChanges: {
-      youtube_channel_id: string
-      before: { name: string | null; youtube_handle: string | null }
-      after: { name: string; youtube_handle: string | null }
-      profile_image?: Exclude<ProfileImageSyncResult, 'unchanged'>
-    }[] = []
+    const channelChanges: YouTubeChannelSyncChange[] = []
 
     let syncedCount = 0
 
@@ -225,7 +221,7 @@ async function syncYouTubeChannels(
 
     await touchTalent(supabaseClient, talentId)
 
-    await createAuditLog('CHANNEL_SYNC', 'channels', talentId, {
+    await createAuditLog('CHANNEL_SYNC', talentId, {
       channels: channelChanges,
     })
 
@@ -267,13 +263,7 @@ async function syncTwitchUsers(
       twitchUsers.map((twitchUser) => [twitchUser.id, twitchUser]),
     )
 
-    const userChanges: {
-      twitch_user_id: string
-      /** Omitted when the name and login could not be written. */
-      before?: { name: string | null; twitch_login_name: string | null }
-      after?: { name: string; twitch_login_name: string }
-      profile_image?: Exclude<ProfileImageSyncResult, 'unchanged'>
-    }[] = []
+    const userChanges: TwitchUserSyncChange[] = []
 
     let syncedCount = 0
 
@@ -363,7 +353,7 @@ async function syncTwitchUsers(
 
     await touchTalent(supabaseClient, talentId)
 
-    await createAuditLog('CHANNEL_SYNC', 'twitch_users', talentId, {
+    await createAuditLog('CHANNEL_SYNC', talentId, {
       platform: 'twitch',
       users: userChanges,
     })

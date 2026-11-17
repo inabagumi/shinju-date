@@ -170,7 +170,7 @@ export async function createTalentAction(
     }
 
     // Log audit entry
-    await createAuditLog('CHANNEL_CREATE', 'channels', newTalent.id, {
+    await createAuditLog('CHANNEL_CREATE', newTalent.id, {
       entityName: newTalent.name,
     })
 
@@ -265,7 +265,7 @@ export async function updateTalentAction(
     // Future enhancement: Add UI for managing multiple channels individually
 
     // Log audit entry
-    await createAuditLog('CHANNEL_UPDATE', 'channels', validatedData.id, {
+    await createAuditLog('CHANNEL_UPDATE', validatedData.id, {
       entityName: talent.name,
     })
 
@@ -401,7 +401,7 @@ async function transitionTalentLifecycle(
       throw error
     }
 
-    await createAuditLog(transition.auditAction, 'channels', id, {
+    await createAuditLog(transition.auditAction, id, {
       entityName: talent.name,
     })
 

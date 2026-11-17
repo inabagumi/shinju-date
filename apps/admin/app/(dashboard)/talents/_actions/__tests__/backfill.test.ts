@@ -73,7 +73,6 @@ describe('requestVideoBackfillAction', () => {
     ])
     expect(test.createAuditLog).toHaveBeenCalledWith(
       'VIDEO_BACKFILL',
-      'channels',
       talentId,
       {
         accounts: [
@@ -108,7 +107,6 @@ describe('requestVideoBackfillAction', () => {
     expect(result.message).toContain('実行中の1件は除く')
     expect(test.createAuditLog).toHaveBeenCalledWith(
       'VIDEO_BACKFILL',
-      'channels',
       talentId,
       expect.objectContaining({
         accounts: [{ accountId: 'channel-row-2', name: 'UCbbb' }],
@@ -130,7 +128,6 @@ describe('requestVideoBackfillAction', () => {
     })
     expect(test.createAuditLog).toHaveBeenCalledWith(
       'VIDEO_BACKFILL',
-      'channels',
       talentId,
       expect.objectContaining({
         accounts: [{ accountId: 'channel-row-1', name: 'Main' }],

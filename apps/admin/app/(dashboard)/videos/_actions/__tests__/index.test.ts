@@ -44,7 +44,7 @@ describe('restoreAction', () => {
     const result = await restoreAction(['video-id-1'])
 
     expect(result).toEqual({ success: true })
-    test.expectAuditLog('VIDEO_RESTORE', 'videos', 'video-id-1', {
+    test.expectAuditLog('VIDEO_RESTORE', 'video-id-1', {
       entityName: 'Test Video',
     })
     test.expectRevalidated({ paths: ['/videos'], tags: [['videos']] })
@@ -86,7 +86,7 @@ describe('restoreAction', () => {
     expect(result).toEqual({ success: true })
     // Check that audit logs were created for both videos
     const videoIds = test.createAuditLog.mock.calls.map(
-      (call: unknown[]) => call[2],
+      (call: unknown[]) => call[1],
     )
     expect(videoIds).toContain('video-id-1')
     expect(videoIds).toContain('video-id-2')
@@ -213,7 +213,7 @@ describe('toggleVisibilityAction', () => {
     ])
     expect(test.createAuditLog).toHaveBeenCalledTimes(3)
     for (const video of videos) {
-      test.expectAuditLog('VIDEO_VISIBILITY_TOGGLE', 'videos', video.id, {
+      test.expectAuditLog('VIDEO_VISIBILITY_TOGGLE', video.id, {
         entityName: video.title,
       })
     }
@@ -241,7 +241,6 @@ describe('toggleVisibilityAction', () => {
     expect(test.createAuditLog).toHaveBeenCalledTimes(2)
     expect(test.createAuditLog).not.toHaveBeenCalledWith(
       'VIDEO_VISIBILITY_TOGGLE',
-      'videos',
       'video-id-1',
       expect.anything(),
     )
@@ -291,7 +290,6 @@ describe('toggleVisibilityAction', () => {
     expect(test.createAuditLog).toHaveBeenCalledTimes(2)
     expect(test.createAuditLog).not.toHaveBeenCalledWith(
       'VIDEO_VISIBILITY_TOGGLE',
-      'videos',
       'video-id-2',
       expect.anything(),
     )

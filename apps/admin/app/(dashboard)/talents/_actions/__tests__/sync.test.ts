@@ -214,7 +214,7 @@ describe('syncTalentWithYouTube', () => {
     expect(talentUpdates()[0]?.body).toEqual({
       updated_at: '2024-11-24T17:00:00Z',
     })
-    test.expectAuditLog('CHANNEL_SYNC', 'channels', talentId, {
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
       channels: [
         {
           after: {
@@ -270,7 +270,7 @@ describe('syncTalentWithYouTube', () => {
       channel,
     )
     expect(talentUpdates()).not.toHaveLength(0)
-    test.expectAuditLog('CHANNEL_SYNC', 'channels', talentId, {
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
       channels: [
         {
           after: { name: 'Same Name', youtube_handle: '@same' },
@@ -296,7 +296,7 @@ describe('syncTalentWithYouTube', () => {
 
     expect(result).toEqual({ success: true })
     expect(supabase.calls('upsert', 'youtube_channels')).not.toHaveLength(0)
-    test.expectAuditLog('CHANNEL_SYNC', 'channels', talentId, {
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
       channels: [
         {
           after: { name: 'New Name', youtube_handle: '@new' },
@@ -357,7 +357,7 @@ describe('syncTalentWithYouTube', () => {
       'id',
       'id',
     ])
-    test.expectAuditLog('CHANNEL_SYNC', 'channels', talentId, {
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
       channels: [
         {
           after: {
@@ -494,7 +494,7 @@ describe('syncTalentWithTwitch', () => {
     expect(talentUpdates()[0]?.body).toEqual({
       updated_at: '2024-11-24T17:00:00Z',
     })
-    test.expectAuditLog('CHANNEL_SYNC', 'twitch_users', talentId, {
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
       platform: 'twitch',
       users: [
         {
@@ -561,7 +561,7 @@ describe('syncTalentWithTwitch', () => {
     expect(result).toEqual({ success: true })
     expect(syncTwitchUserIconSafely).toHaveBeenCalledWith(twitchUser, user)
     expect(talentUpdates()).not.toHaveLength(0)
-    test.expectAuditLog('CHANNEL_SYNC', 'twitch_users', talentId, {
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
       platform: 'twitch',
       users: [
         {
@@ -590,7 +590,7 @@ describe('syncTalentWithTwitch', () => {
 
     expect(result).toEqual({ success: true })
     expect(supabase.calls('upsert', 'twitch_users')).not.toHaveLength(0)
-    test.expectAuditLog('CHANNEL_SYNC', 'twitch_users', talentId, {
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
       platform: 'twitch',
       users: [
         {
@@ -624,7 +624,7 @@ describe('syncTalentWithTwitch', () => {
     expect(syncTwitchUserIconSafely).toHaveBeenCalledWith(twitchUser, user)
     expect(talentUpdates()).not.toHaveLength(0)
     // name / login は書き込めていないので、監査ログにはアイコンの変更だけを残す
-    test.expectAuditLog('CHANNEL_SYNC', 'twitch_users', talentId, {
+    test.expectAuditLog('CHANNEL_SYNC', talentId, {
       platform: 'twitch',
       users: [{ profile_image: 'created', twitch_user_id: twitchUserId }],
     })
@@ -728,7 +728,6 @@ describe('syncTalentAccounts', () => {
     )
     test.expectAuditLog(
       'CHANNEL_SYNC',
-      'twitch_users',
       talentId,
       expect.objectContaining({ platform: 'twitch' }),
     )
@@ -760,12 +759,7 @@ describe('syncTalentAccounts', () => {
     expect(supabase.calls('upsert', 'youtube_channels')).toHaveLength(0)
     expect(supabase.calls('upsert', 'twitch_users')).not.toHaveLength(0)
     expect(test.createAuditLog).toHaveBeenCalledTimes(1)
-    test.expectAuditLog(
-      'CHANNEL_SYNC',
-      'twitch_users',
-      talentId,
-      expect.anything(),
-    )
+    test.expectAuditLog('CHANNEL_SYNC', talentId, expect.anything())
   })
 
   it('should report each platform when everything is up to date', async () => {

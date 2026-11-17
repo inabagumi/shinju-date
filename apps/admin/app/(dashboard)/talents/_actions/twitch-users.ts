@@ -162,7 +162,7 @@ export async function addTwitchUserAction(
       })
       .eq('id', talentId)
 
-    await createAuditLog('TWITCH_USER_CREATE', 'twitch_users', newUser.id, {
+    await createAuditLog('TWITCH_USER_CREATE', newUser.id, {
       name: displayName,
       talent_id: talentId,
       twitch_login_name: loginName,
@@ -252,16 +252,11 @@ export async function removeTwitchUserAction(
       })
       .eq('id', talentId)
 
-    await createAuditLog(
-      'TWITCH_USER_DELETE',
-      'twitch_users',
-      twitchUserRowId,
-      {
-        talent_id: talentId,
-        twitch_login_name: user.twitch_login_name,
-        twitch_user_id: user.twitch_user_id,
-      },
-    )
+    await createAuditLog('TWITCH_USER_DELETE', twitchUserRowId, {
+      talent_id: talentId,
+      twitch_login_name: user.twitch_login_name,
+      twitch_user_id: user.twitch_user_id,
+    })
 
     revalidatePath(`/talents/${talentId}`)
     revalidatePath('/talents')
