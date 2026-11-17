@@ -2,7 +2,7 @@ import type { Tables } from '@shinju-date/database'
 import { diffAccountFields } from '../internal/account-fields.js'
 import { countChanges } from '../internal/concurrency.js'
 import { WRITE_CONCURRENCY } from '../internal/constants.js'
-import { DatabaseError } from '../internal/database/index.js'
+import { DatabaseError } from '../internal/errors.js'
 import { removeUnusedProfileImages } from '../internal/profile-images/index.js'
 import type {
   AccountChanges,

@@ -4,7 +4,7 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import { nanoid } from 'nanoid'
 import sharp from 'sharp'
 import type { TypedSupabaseClient } from '../../types.js'
-import { DatabaseError } from '../database/errors.js'
+import { DatabaseError } from '../errors.js'
 
 export const PROFILE_IMAGES_BUCKET = 'profile-images'
 

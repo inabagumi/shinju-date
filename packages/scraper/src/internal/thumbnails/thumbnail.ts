@@ -4,7 +4,7 @@ import mime from 'mime'
 import { nanoid } from 'nanoid'
 import sharp from 'sharp'
 import type { TypedSupabaseClient, WriteContext } from '../../types.js'
-import { DatabaseError } from '../database/errors.js'
+import { DatabaseError } from '../errors.js'
 
 const BUCKET = 'thumbnails'
 
