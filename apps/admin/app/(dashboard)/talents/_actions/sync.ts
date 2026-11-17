@@ -71,7 +71,7 @@ async function syncPlatform(
       throw error
     }
 
-    await createAuditLog('CHANNEL_SYNC', 'talents', talent.id, {
+    await createAuditLog('CHANNEL_SYNC', talent.id, {
       accounts: changed.map(({ accountId, changes, iconUpdated, name }) => ({
         id: accountId,
         name,

@@ -90,7 +90,7 @@ describe('addTwitchUserAction', () => {
         twitch_user_id: twitchUserId,
       },
     ])
-    test.expectAuditLog('TWITCH_USER_CREATE', 'twitch_users', newUserId, {
+    test.expectAuditLog('TWITCH_USER_CREATE', newUserId, {
       name: 'ExampleUser',
       talent_id: talentId,
       twitch_login_name: 'exampleuser',
@@ -296,16 +296,11 @@ describe('removeTwitchUserAction', () => {
     const result = await removeTwitchUserAction('twitch-user-row-123', talentId)
 
     expect(result).toEqual({ success: true })
-    test.expectAuditLog(
-      'TWITCH_USER_DELETE',
-      'twitch_users',
-      'twitch-user-row-123',
-      {
-        talent_id: talentId,
-        twitch_login_name: 'exampleuser',
-        twitch_user_id: twitchUserId,
-      },
-    )
+    test.expectAuditLog('TWITCH_USER_DELETE', 'twitch-user-row-123', {
+      talent_id: talentId,
+      twitch_login_name: 'exampleuser',
+      twitch_user_id: twitchUserId,
+    })
     test.expectRevalidated({
       paths: [`/talents/${talentId}`, '/talents'],
       tags: [['talents', 'videos']],

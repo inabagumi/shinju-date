@@ -325,7 +325,7 @@ export async function retryFailedVideoBackfillJobsAction(): Promise<{
     const skipped = accounts.length - enqueued.length - failed
 
     if (enqueued.length > 0) {
-      await createAuditLog('VIDEO_BACKFILL', 'redis:video-backfill', null, {
+      await createAuditLog('VIDEO_BACKFILL', null, {
         accounts: enqueued.map(({ accountId, name, provider, talentId }) => ({
           accountId,
           name,
