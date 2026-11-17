@@ -125,15 +125,6 @@
           }
         }
       }
-    },
-    {
-      "includes": ["apps/*/**"],
-      "linter": {
-        "domains": {
-          "next": "recommended",
-          "react": "recommended"
-        }
-      }
     }
   ],
   "plugins": [

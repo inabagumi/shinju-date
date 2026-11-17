@@ -133,6 +133,7 @@ export function ScheduleWeekdayBandSkeleton() {
       {Array.from({ length: 7 }, (_, index) => (
         <span
           className="h-11 animate-pulse rounded-control bg-muted"
+          // biome-ignore lint/suspicious/noArrayIndexKey: 件数が決まっていて並びも変わらないスケルトンなので、インデックスをキーにする
           key={index}
         />
       ))}
@@ -313,6 +314,7 @@ export function ScheduleDaysSkeleton() {
       <TimeColumn />
 
       {Array.from({ length: 7 }, (_, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: 件数が決まっていて並びも変わらないスケルトンなので、インデックスをキーにする
         <div className={twMerge(COLUMN_CLASS_NAME, 'min-w-0')} key={index}>
           <div className="border-b border-border pb-1">
             <span className="inline-block h-[1lh] w-20 animate-pulse rounded-control bg-muted text-body" />
