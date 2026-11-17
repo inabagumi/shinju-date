@@ -103,7 +103,6 @@ describe('VolumeChart', () => {
     )
 
     expect(mocks.getClickVolume).toHaveBeenCalledWith(
-      7,
       DATE_RANGE.startDate,
       DATE_RANGE.endDate,
     )
@@ -134,7 +133,6 @@ describe('VolumeChart', () => {
     )
 
     expect(mocks.getSearchVolume).toHaveBeenCalledWith(
-      7,
       DATE_RANGE.startDate,
       DATE_RANGE.endDate,
     )

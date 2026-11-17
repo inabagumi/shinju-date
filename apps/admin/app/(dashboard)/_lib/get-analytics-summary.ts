@@ -24,16 +24,10 @@ export interface AnalyticsSummaryWithTrends {
 }
 
 /**
- * Get summary analytics data for the dashboard
- * @param includeTrends - If true, returns data with trend indicators (day-over-day and week-over-week)
+ * Get summary analytics data for the dashboard with trend indicators
+ * (day-over-day and week-over-week)
  */
-export async function getAnalyticsSummary(): Promise<AnalyticsSummary>
-export async function getAnalyticsSummary(
-  includeTrends: true,
-): Promise<AnalyticsSummaryWithTrends>
-export async function getAnalyticsSummary(
-  includeTrends?: boolean,
-): Promise<AnalyticsSummary | AnalyticsSummaryWithTrends> {
+export async function getAnalyticsSummary(): Promise<AnalyticsSummaryWithTrends> {
   try {
     const redisClient = getRedisClient()
     const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
@@ -69,11 +63,6 @@ export async function getAnalyticsSummary(
       recentClicks,
       recentSearches: recentSearches ?? 0,
       totalPopularKeywords: totalPopularKeywords ?? 0,
-    }
-
-    // If trends not requested, return current data only
-    if (!includeTrends) {
-      return currentAnalytics
     }
 
     // Get yesterday's and last week's snapshots for trends
@@ -140,16 +129,6 @@ export async function getAnalyticsSummary(
     }
   } catch (error) {
     logger.error('分析サマリーの取得に失敗しました', { error })
-
-    const fallbackData: AnalyticsSummary = {
-      recentClicks: 0,
-      recentSearches: 0,
-      totalPopularKeywords: 0,
-    }
-
-    if (!includeTrends) {
-      return fallbackData
-    }
 
     // Return with null trends on error
     return {

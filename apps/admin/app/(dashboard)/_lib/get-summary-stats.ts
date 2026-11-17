@@ -35,16 +35,10 @@ export interface SummaryStatsWithTrends {
 }
 
 /**
- * Get summary statistics about videos and terms
- * @param includeTrends - If true, returns data with trend indicators (day-over-day and week-over-week)
+ * Get summary statistics about videos and terms with trend indicators
+ * (day-over-day and week-over-week)
  */
-export async function getSummaryStats(): Promise<SummaryStats>
-export async function getSummaryStats(
-  includeTrends: true,
-): Promise<SummaryStatsWithTrends>
-export async function getSummaryStats(
-  includeTrends?: boolean,
-): Promise<SummaryStats | SummaryStatsWithTrends> {
+export async function getSummaryStats(): Promise<SummaryStatsWithTrends> {
   const supabaseClient = await createSupabaseServerClient()
 
   const countVideos = (filter: VideoSummaryFilter) =>
@@ -107,11 +101,6 @@ export async function getSummaryStats(
     totalTerms: totalTerms ?? 0,
     totalVideos: totalVideos ?? 0,
     visibleVideos: visibleVideos ?? 0,
-  }
-
-  // If trends not requested, return current data only
-  if (!includeTrends) {
-    return currentStats
   }
 
   // Get yesterday's and last week's snapshots for trends

@@ -34,7 +34,7 @@ interface VolumeChartKindDefinition {
 const VOLUME_CHART_KINDS = {
   click: {
     fetchData: async (startDate, endDate) => {
-      const data = await getClickVolume(7, startDate, endDate)
+      const data = await getClickVolume(startDate, endDate)
       return data.map((day) => ({ ...day }))
     },
     series: [{ className: 'text-accent', key: 'clicks', label: 'クリック数' }],
@@ -43,7 +43,7 @@ const VOLUME_CHART_KINDS = {
   },
   search: {
     fetchData: async (startDate, endDate) => {
-      const data = await getSearchVolume(7, startDate, endDate)
+      const data = await getSearchVolume(startDate, endDate)
       return data.map((day) => ({ ...day }))
     },
     series: [{ className: 'text-accent', key: 'count', label: '検索数' }],
