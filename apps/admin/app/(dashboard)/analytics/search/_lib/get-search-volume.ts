@@ -1,6 +1,6 @@
 'use server'
 
-import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { listDatesInRange } from '@/lib/analytics/list-dates-in-range'
@@ -12,33 +12,20 @@ export interface DailySearchVolume {
 }
 
 /**
- * Get daily search volume for the past N days or a specific date range
- * @param days - Number of days (legacy parameter, ignored if startDate/endDate provided)
+ * Get daily search volume for a date range
  * @param startDate - Start date in ISO 8601 format (YYYY-MM-DD)
  * @param endDate - End date in ISO 8601 format (YYYY-MM-DD)
  */
 export async function getSearchVolume(
-  days = 7,
-  startDate?: string,
-  endDate?: string,
+  startDate: string,
+  endDate: string,
 ): Promise<DailySearchVolume[]> {
   try {
     const redisClient = getRedisClient()
-    const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-
-    // Determine date range
-    let start: Temporal.PlainDate
-    let end: Temporal.PlainDate
-
-    if (startDate && endDate) {
-      start = Temporal.PlainDate.from(startDate)
-      end = Temporal.PlainDate.from(endDate)
-    } else {
-      end = today.toPlainDate()
-      start = end.subtract({ days: days - 1 })
-    }
-
-    const dates = listDatesInRange(start, end)
+    const dates = listDatesInRange(
+      Temporal.PlainDate.from(startDate),
+      Temporal.PlainDate.from(endDate),
+    )
 
     if (dates.length === 0) {
       return []
@@ -63,10 +50,9 @@ export async function getSearchVolume(
     return volumes
   } catch (error) {
     logger.error('Redisから検索ボリュームの取得に失敗しました', {
-      days,
-      endDate: endDate ?? 'undefined',
+      endDate,
       error,
-      startDate: startDate ?? 'undefined',
+      startDate,
     })
     return []
   }
