@@ -35,7 +35,7 @@ const PROFILE_IMAGE = { blur_data_url: '', id: 'icon-1' }
 
 describe('getTalentThemeColor', () => {
   test('should use the theme color of the talent', () => {
-    expect(getTalentThemeColor('#FF6B9D')).toBe('#FF6B9D')
+    expect(getTalentThemeColor('#FF6B9D')).toBe('#ff6b9d')
     expect(getTalentThemeColor('#87ceeb')).toBe('#87ceeb')
   })
 
