@@ -68,7 +68,14 @@ export const VIDEO_ACTIONS = {
       title: '動画を削除',
     },
     errorText: '削除に失敗しました。',
-    successText: () => '動画を削除しました。',
+    successText: (result) => {
+      const { skippedCount = 0, updatedCount = 0 } = result.data ?? {}
+
+      // 選んだ動画の一部が、すでに削除されていたとき
+      return skippedCount > 0
+        ? `${updatedCount} 件を削除しました（${skippedCount} 件は削除済みでした）。`
+        : '動画を削除しました。'
+    },
   },
   restore: {
     action: restoreAction,
@@ -82,7 +89,14 @@ export const VIDEO_ACTIONS = {
       title: '動画を復元',
     },
     errorText: '復元に失敗しました。',
-    successText: () => '動画を復元しました。',
+    successText: (result) => {
+      const { skippedCount = 0, updatedCount = 0 } = result.data ?? {}
+
+      // 選んだ動画の一部が、削除されていなかったとき
+      return skippedCount > 0
+        ? `${updatedCount} 件を復元しました（${skippedCount} 件は削除されていませんでした）。`
+        : '動画を復元しました。'
+    },
   },
   toggle: {
     action: toggleVisibilityAction,

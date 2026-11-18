@@ -8,8 +8,8 @@ import {
   getTwitchVideoType,
   type TwitchLookedUpVideo,
 } from './platform.js'
-import { createTwitchThumbnail } from './save-video.js'
 import { type SavedTwitchVideo, updateTwitchVideo } from './saved-video.js'
+import { createTwitchThumbnail } from './thumbnail.js'
 
 /**
  * What a refresh does on Twitch only, after the shared columns were written:

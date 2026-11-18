@@ -1741,6 +1741,98 @@ describe('Supabase Handlers', () => {
     })
   })
 
+  describe('Soft-deleting and restoring videos', () => {
+    const restUrl = 'https://fake.supabase.test/rest/v1'
+
+    async function callRpc(name: string, params: Record<string, unknown>) {
+      const response = await fetch(`${restUrl}/rpc/${name}`, {
+        body: JSON.stringify(params),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      })
+
+      expect(response.status).toBe(200)
+
+      return (await response.json()) as string[]
+    }
+
+    async function getStates(ids: string[]) {
+      return (await (
+        await fetch(
+          `${restUrl}/videos?select=id,deleted_at,deleted_reason,thumbnail:thumbnails(deleted_at)&id=in.(${ids.join(',')})&order=id.asc`,
+        )
+      ).json()) as {
+        deleted_at: string | null
+        deleted_reason: string | null
+        id: string
+        thumbnail: { deleted_at: string | null } | null
+      }[]
+    }
+
+    it('should delete and restore the videos with their thumbnails, like the functions', async () => {
+      const videos = (await (
+        await fetch(
+          `${restUrl}/videos?select=id&deleted_at=is.null&thumbnail_id=not.is.null&order=id.asc&limit=2`,
+        )
+      ).json()) as { id: string }[]
+      const ids = videos.map((video) => video.id)
+      const deletedAt = '2026-11-18T00:00:00Z'
+
+      expect(ids).toHaveLength(2)
+
+      try {
+        await expect(
+          callRpc('soft_delete_videos', {
+            p_deleted_at: deletedAt,
+            p_reason: 'withdrawn',
+            p_video_ids: ids,
+          }),
+        ).resolves.toEqual(ids)
+        expect(await getStates(ids)).toEqual(
+          ids.map((id) => ({
+            deleted_at: deletedAt,
+            deleted_reason: 'withdrawn',
+            id,
+            thumbnail: { deleted_at: deletedAt },
+          })),
+        )
+
+        // A deleted video keeps its reason and time.
+        await expect(
+          callRpc('soft_delete_videos', {
+            p_deleted_at: '2026-11-19T00:00:00Z',
+            p_reason: 'talent_deleted',
+            p_video_ids: ids,
+          }),
+        ).resolves.toEqual([])
+        // A video deleted for another reason is not restored with a reason.
+        await expect(
+          callRpc('restore_videos', {
+            p_reason: 'talent_deleted',
+            p_video_ids: ids,
+          }),
+        ).resolves.toEqual([])
+        expect(
+          (await getStates(ids)).map((video) => video.deleted_reason),
+        ).toEqual(['withdrawn', 'withdrawn'])
+
+        await expect(
+          callRpc('restore_videos', { p_video_ids: ids }),
+        ).resolves.toEqual(ids)
+        expect(await getStates(ids)).toEqual(
+          ids.map((id) => ({
+            deleted_at: null,
+            deleted_reason: null,
+            id,
+            thumbnail: { deleted_at: null },
+          })),
+        )
+      } finally {
+        await callRpc('restore_videos', { p_video_ids: ids })
+      }
+    })
+  })
+
   describe('Term popularity', () => {
     it('should count the terms matching the given terms, ignoring the case', async () => {
       const response = await fetch(

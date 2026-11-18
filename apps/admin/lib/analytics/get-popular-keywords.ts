@@ -1,5 +1,3 @@
-'use server'
-
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { cacheLife } from 'next/cache'
 import { DEFAULT_RANKING_LIMIT, type RankingQuery, toDateRange } from './period'

@@ -1,5 +1,3 @@
-'use server'
-
 import { TIME_ZONE } from '@shinju-date/constants'
 import {
   type AnalyticsSummary,

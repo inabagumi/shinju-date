@@ -102,13 +102,13 @@ describe('refreshYouTubeVideos', () => {
     ])
   })
 
-  it('deletes videos YouTube no longer returns, with their thumbnails', async () => {
+  it('deletes videos YouTube no longer returns', async () => {
     supabase.respond(({ method, table }) => {
       if (method === 'GET') {
         return [createSavedVideo('a'), createSavedVideo('gone')]
       }
 
-      return table === 'videos' ? [{ id: 'video-gone' }] : []
+      return table === 'rpc/soft_delete_videos' ? ['video-gone'] : []
     })
     const { fetcher } = createFakeFetcher<YouTubeFetcher>({
       missingVideoIds: ['gone'],
@@ -118,17 +118,18 @@ describe('refreshYouTubeVideos', () => {
     const changed = await refreshYouTubeVideos(createContext(fetcher), 'live')
 
     expect(changed).toBeGreaterThan(0)
-    expect(supabase.written('PATCH', 'videos')[0]).toMatchObject({
-      body: {
-        deleted_at: '2024-05-01T12:00:00Z',
-        deleted_reason: 'unavailable',
-      },
-      query: { id: 'in.(video-gone)' },
-    })
-    expect(supabase.written('PATCH', 'thumbnails')[0]).toMatchObject({
-      body: { deleted_at: '2024-05-01T12:00:00Z' },
-      query: { id: 'in.(thumb-gone)' },
-    })
+    // `soft_delete_videos` deletes the thumbnails with the videos.
+    expect(supabase.written('POST', 'rpc/soft_delete_videos')).toEqual([
+      expect.objectContaining({
+        body: {
+          p_deleted_at: '2024-05-01T12:00:00Z',
+          p_reason: 'unavailable',
+          p_video_ids: ['video-gone'],
+        },
+      }),
+    ])
+    expect(supabase.written('PATCH', 'videos')).toHaveLength(0)
+    expect(supabase.written('PATCH', 'thumbnails')).toHaveLength(0)
   })
 
   it('deletes the videos even when YouTube returns none of them', async () => {
@@ -137,7 +138,7 @@ describe('refreshYouTubeVideos', () => {
         return [createSavedVideo('gone', { thumbnail_id: null })]
       }
 
-      return table === 'videos' ? [{ id: 'video-gone' }] : []
+      return table === 'rpc/soft_delete_videos' ? ['video-gone'] : []
     })
     const { fetcher } = createFakeFetcher<YouTubeFetcher>({
       missingVideoIds: ['gone'],
@@ -146,8 +147,7 @@ describe('refreshYouTubeVideos', () => {
     const changed = await refreshYouTubeVideos(createContext(fetcher), 'live')
 
     expect(changed).toBeGreaterThan(0)
-    expect(supabase.written('PATCH', 'videos')).toHaveLength(1)
-    expect(supabase.written('PATCH', 'thumbnails')).toHaveLength(0)
+    expect(supabase.written('POST', 'rpc/soft_delete_videos')).toHaveLength(1)
   })
 
   it('reports a video that could not be updated and handles the rest', async () => {
@@ -522,7 +522,7 @@ describe('removeUnavailableYouTubeVideos', () => {
         return query['id'] ? [] : createPage(0, 3)
       }
 
-      return table === 'videos' ? [{ id: 'video-0001' }] : []
+      return table === 'rpc/soft_delete_videos' ? ['video-0001'] : []
     })
     const { fetcher } = createFakeFetcher<YouTubeFetcher>({
       missingVideoIds: ['yt-0001'],
@@ -531,12 +531,9 @@ describe('removeUnavailableYouTubeVideos', () => {
     const changed = await removeUnavailableYouTubeVideos(createContext(fetcher))
 
     expect(changed).toBeGreaterThan(0)
-    expect(supabase.written('PATCH', 'videos')[0]?.query['id']).toBe(
-      'in.(video-0001)',
-    )
-    expect(supabase.written('PATCH', 'thumbnails')[0]?.query['id']).toBe(
-      'in.(thumb-0001)',
-    )
+    expect(
+      supabase.written('POST', 'rpc/soft_delete_videos')[0]?.body,
+    ).toMatchObject({ p_video_ids: ['video-0001'] })
   })
 
   it('does not call YouTube when there are no videos', async () => {

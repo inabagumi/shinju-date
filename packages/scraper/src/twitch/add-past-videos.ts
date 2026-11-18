@@ -1,9 +1,8 @@
-import { BACKFILL_SAVE_CONCURRENCY } from '../internal/concurrency.js'
-import { findAccount, TWITCH_USERS } from '../internal/database/index.js'
+import { TWITCH_USERS } from '../internal/database/index.js'
 import {
-  AccountNotFoundError,
-  StalledPaginationError,
-} from '../internal/errors.js'
+  addPastVideosWith,
+  type PastVideoAdapter,
+} from '../internal/operations/add-past-videos.js'
 import type {
   AddPastVideosOptions,
   AddPastVideosResult,
@@ -23,50 +22,51 @@ const SAVED_TYPES: ReadonlySet<TwitchVideo['type']> = new Set([
 ])
 
 /**
+ * Describes Twitch to the backfill: a page lists whole videos, and archives
+ * are attached to the broadcasts the live sync already tracks, the same way
+ * the discovery of new videos does.
+ */
+const TWITCH_PAST_VIDEOS: PastVideoAdapter<TwitchFetcher, TwitchVideo> = {
+  accountTable: TWITCH_USERS,
+  async getPage({ fetcher }, user, cursor) {
+    const page = await fetcher.getVideoPage(user.platformId, {
+      cursor,
+      type: 'all',
+    })
+
+    return { cursor: page.cursor, listed: page.videos }
+  },
+  async saveNew(context, user, listed, concurrency) {
+    const videos = listed.filter((video) => SAVED_TYPES.has(video.type))
+
+    // The archive of a broadcast that is still on air must keep its row LIVE.
+    const liveStreams =
+      videos.length > 0
+        ? await context.fetcher.getLiveStreams([user.platformId])
+        : []
+
+    return saveNewTwitchVideos(context, {
+      concurrency,
+      liveStreams,
+      users: [user],
+      videos,
+    })
+  },
+}
+
+/**
  * Reads one page of a Twitch account's videos, newest first, and saves the
  * ones that are not saved yet. Videos that are saved already are left alone.
- *
- * Unlike the discovery of new videos, which only looks at the newest page,
- * this walks the whole history page by page so that videos from before the
- * account was tracked can be added. Call it again with the returned cursor
- * until it is `null`.
+ * Call it again with the returned cursor until it is `null`.
  *
  * @throws {AccountNotFoundError} When the account does not exist or its
  *   talent was deleted.
  * @throws {StalledPaginationError} When Twitch returns the requested cursor
  *   as the next one.
  */
-export async function addPastTwitchVideos(
+export function addPastTwitchVideos(
   context: CrawlContext<TwitchFetcher>,
-  { accountId, cursor }: Pick<AddPastVideosOptions, 'accountId' | 'cursor'>,
+  options: Pick<AddPastVideosOptions, 'accountId' | 'cursor'>,
 ): Promise<AddPastVideosResult> {
-  const { fetcher, supabaseClient } = context
-  const user = await findAccount(supabaseClient, TWITCH_USERS, accountId)
-
-  if (!user) {
-    throw new AccountNotFoundError(accountId)
-  }
-
-  const page = await fetcher.getVideoPage(user.platformId, {
-    cursor,
-    type: 'all',
-  })
-
-  if (cursor && page.cursor === cursor) {
-    throw new StalledPaginationError(accountId, cursor)
-  }
-
-  const videos = page.videos.filter((video) => SAVED_TYPES.has(video.type))
-
-  // The archive of a broadcast that is still on air must keep its row LIVE.
-  const liveStreams =
-    videos.length > 0 ? await fetcher.getLiveStreams([user.platformId]) : []
-  const added = await saveNewTwitchVideos(context, {
-    concurrency: BACKFILL_SAVE_CONCURRENCY,
-    liveStreams,
-    users: [user],
-    videos,
-  })
-
-  return { added, cursor: page.cursor, listed: page.videos.length }
+  return addPastVideosWith(context, TWITCH_PAST_VIDEOS, options)
 }

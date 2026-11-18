@@ -15,6 +15,15 @@ const NOT_FOUND_ERROR = 'フィードバックが見つかりませんでした�
 
 const FORM_OPTIONS = { hiddenFields: FEEDBACK_FORM_FIELDS }
 
+/**
+ * 一覧と詳細の両方のページを再検証する。詳細のページは、状態・メモ・既読を
+ * `getFeatureRequestById` の結果から表示するので、一覧だけでは古い値が残る
+ */
+function revalidateFeatureRequest(id: string): void {
+  revalidatePath('/feedback')
+  revalidatePath(`/feedback/${id}`)
+}
+
 export const updateFeatureRequestStatusAction = adminFormAction(
   'updateFeatureRequestStatusAction',
   feedbackStatusFormSchema,
@@ -55,7 +64,7 @@ export const updateFeatureRequestStatusAction = adminFormAction(
       entityName: createEntityNameFromMessage(featureRequest.message),
     })
 
-    revalidatePath('/feedback')
+    revalidateFeatureRequest(id)
   },
   FORM_OPTIONS,
 )
@@ -101,7 +110,7 @@ export const updateFeatureRequestMemoAction = adminFormAction(
       entityName: createEntityNameFromMessage(featureRequest.message),
     })
 
-    revalidatePath('/feedback')
+    revalidateFeatureRequest(id)
   },
   FORM_OPTIONS,
 )
@@ -120,7 +129,7 @@ export const markFeatureRequestAsReadAction = adminFormAction(
       throw error
     }
 
-    revalidatePath('/feedback')
+    revalidateFeatureRequest(id)
   },
   FORM_OPTIONS,
 )

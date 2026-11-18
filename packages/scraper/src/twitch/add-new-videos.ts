@@ -6,10 +6,11 @@ import {
   type TalentAccount,
   TWITCH_USERS,
 } from '../internal/database/index.js'
+import { saveVideoWithThumbnail } from '../internal/operations/save-video.js'
 import type { CrawlContext, WriteContext } from '../types.js'
 import { attachArchive } from './attach-archive.js'
 import type { TwitchFetcher } from './fetcher.js'
-import { saveTwitchVideo } from './save-video.js'
+import { TWITCH_NEW_VIDEOS } from './platform.js'
 import {
   findSavedTwitchVideos,
   isLivePlaceholder,
@@ -125,18 +126,24 @@ export async function applyNewVideoAction(
       return false
     }
 
-    return saveTwitchVideo(context, {
-      // While the broadcast is on air the row describes the stream, exactly
-      // like the placeholder the live sync would have created.
-      fields: liveStream ? toLiveFields(liveStream) : toVideoFields(video),
-      thumbnailUrl: liveStream ? liveStream.thumbnail_url : video.thumbnail_url,
-      twitchVideo: {
-        stream_id: video.stream_id,
-        twitch_video_id: video.id,
-        type: video.type,
+    return saveVideoWithThumbnail(
+      context,
+      TWITCH_NEW_VIDEOS,
+      {
+        // While the broadcast is on air the row describes the stream, exactly
+        // like the placeholder the live sync would have created.
+        fields: liveStream ? toLiveFields(liveStream) : toVideoFields(video),
+        thumbnailUrl: liveStream
+          ? liveStream.thumbnail_url
+          : video.thumbnail_url,
+        twitchVideo: {
+          stream_id: video.stream_id,
+          twitch_video_id: video.id,
+          type: video.type,
+        },
       },
       user,
-    })
+    )
   }
 
   return attachArchive(context, action.saved, video, {

@@ -12,6 +12,7 @@ export interface SupabaseRequest {
   method: string
   /** Query string parameters, e.g. `id` → `in.(a,b)`. */
   query: Record<string, string>
+  /** The table, or `rpc/<name>` for a database function. */
   table: string
 }
 
@@ -25,7 +26,7 @@ export type SupabaseResponder = (
 
 /**
  * How the database answers each kind of request, keyed by method and table
- * (e.g. `GET talents`, `PATCH videos`): the rows to return, or a responder
+ * (e.g. `GET talents`, `PATCH videos`, `POST rpc/soft_delete_videos`): the rows to return, or a responder
  * for answers that depend on the request.
  */
 export type SupabaseRoutes = Record<
@@ -69,26 +70,30 @@ export function setupSupabase() {
 
   /** Defines how the database answers during the current test. */
   function respond(responder: SupabaseResponder): void {
+    async function handle(request: Request, table: string) {
+      const text = await request.text()
+      const recorded: SupabaseRequest = {
+        body: text ? JSON.parse(text) : undefined,
+        method: request.method,
+        query: Object.fromEntries(new URL(request.url).searchParams),
+        table,
+      }
+
+      requests.push(recorded)
+
+      const result = await responder(recorded)
+
+      return result instanceof Response
+        ? result
+        : HttpResponse.json(result ?? [])
+    }
+
     server.use(
-      http.all(
-        `${SUPABASE_URL}/rest/v1/:table`,
-        async ({ params, request }) => {
-          const text = await request.text()
-          const recorded: SupabaseRequest = {
-            body: text ? JSON.parse(text) : undefined,
-            method: request.method,
-            query: Object.fromEntries(new URL(request.url).searchParams),
-            table: String(params['table']),
-          }
-
-          requests.push(recorded)
-
-          const result = await responder(recorded)
-
-          return result instanceof Response
-            ? result
-            : HttpResponse.json(result ?? [])
-        },
+      http.all(`${SUPABASE_URL}/rest/v1/rpc/:name`, ({ params, request }) =>
+        handle(request, `rpc/${String(params['name'])}`),
+      ),
+      http.all(`${SUPABASE_URL}/rest/v1/:table`, ({ params, request }) =>
+        handle(request, String(params['table'])),
       ),
     )
   }
