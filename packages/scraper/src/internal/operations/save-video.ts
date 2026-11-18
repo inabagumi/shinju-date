@@ -49,16 +49,19 @@ export async function saveVideoWithThumbnail<TNew>(
   account: TalentAccount,
 ): Promise<boolean> {
   const { now, supabaseClient } = context
-  const thumbnail = await adapter.createThumbnail(context, video)
+  // Mapped before the thumbnail is stored, so a video that cannot be mapped
+  // leaves nothing behind.
+  const fields = adapter.toFields(video, now)
   const platformVideo = adapter.toPlatformVideo(video, account)
   const timestamp = toDBString(now)
+  const thumbnail = await adapter.createThumbnail(context, video)
   let videoId: string | null
 
   try {
     videoId = await insertVideo(
       supabaseClient,
       {
-        ...adapter.toFields(video, now),
+        ...fields,
         created_at: timestamp,
         platform: platformVideo.platform,
         talent_id: account.talentId,

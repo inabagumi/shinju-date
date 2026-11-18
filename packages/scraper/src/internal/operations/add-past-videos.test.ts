@@ -81,6 +81,25 @@ describe('addPastVideosWith', () => {
     )
   })
 
+  it('starts from the newest videos and reports the end of the history', async () => {
+    const { adapter, getPage, saveNew } = createAdapter({
+      cursor: null,
+      listed: ['a', 'b'],
+    })
+
+    await expect(
+      addPastVideosWith(context, adapter, { accountId: 'channel-row-1' }),
+    ).resolves.toEqual({ added: 1, cursor: null, listed: 2 })
+
+    expect(getPage).toHaveBeenCalledWith(context, account, undefined)
+    expect(saveNew).toHaveBeenCalledWith(
+      context,
+      account,
+      ['a', 'b'],
+      BACKFILL_SAVE_CONCURRENCY,
+    )
+  })
+
   it('rejects an account that is not saved or whose talent was deleted', async () => {
     supabase.respondWith({ 'GET youtube_channels': [] })
     const { adapter, getPage } = createAdapter({ cursor: null, listed: [] })

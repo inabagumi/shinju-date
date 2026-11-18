@@ -76,7 +76,8 @@ function mockDatabase() {
   const rows = {
     thumbnails: new Map<string, Row>(),
     videos: new Map<string, Row>(),
-    youtubeVideoIds: new Set<string>(),
+    /** `video_id` of each `youtube_videos` row, by `youtube_video_id`. */
+    youtubeVideos: new Map<string, string>(),
   }
 
   supabase.respond(({ body, method, query, table }) => {
@@ -96,13 +97,16 @@ function mockDatabase() {
         if (id) rows.videos.delete(id)
         return []
       case 'POST youtube_videos': {
-        const { youtube_video_id } = body as { youtube_video_id: string }
+        const { video_id, youtube_video_id } = body as {
+          video_id: string
+          youtube_video_id: string
+        }
 
-        if (rows.youtubeVideoIds.has(youtube_video_id)) {
+        if (rows.youtubeVideos.has(youtube_video_id)) {
           return postgresError('23505', 'duplicate key value')
         }
 
-        rows.youtubeVideoIds.add(youtube_video_id)
+        rows.youtubeVideos.set(youtube_video_id, video_id)
         return []
       }
       default:
@@ -199,7 +203,8 @@ describe('saveVideoWithThumbnail', () => {
     const uploadedPaths = storage.uploads.map((upload) => upload.path)
 
     expect(rows.videos.size).toBe(1)
-    expect(rows.youtubeVideoIds).toEqual(new Set(['video-1']))
+    // The video that is left is the one its platform row points at.
+    expect(rows.youtubeVideos).toEqual(new Map([['video-1', video?.id]]))
     expect(rows.thumbnails.size).toBe(1)
     expect(uploadedPaths).toHaveLength(2)
     expect(uploadedPaths).toContain(kept?.path)

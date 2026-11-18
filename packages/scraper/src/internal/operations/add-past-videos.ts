@@ -64,8 +64,8 @@ export interface PastVideoAdapter<TFetcher, TListed> {
  * account was tracked can be added. Call it again with the returned cursor
  * until it is `null`.
  *
- * @throws {AccountNotFoundError} When the account does not exist (in the
- *   database or on the platform) or its talent was deleted.
+ * @throws {AccountNotFoundError} When the account is not saved, its talent
+ *   was deleted, or `getPage` reports that the platform does not have it.
  * @throws {StalledPaginationError} When the platform returns the requested
  *   cursor as the next one.
  */
