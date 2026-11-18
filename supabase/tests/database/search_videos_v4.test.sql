@@ -1,10 +1,9 @@
 -- Tests for the video search by kind (#6804) and its pages, which leave out the
--- videos the site does not show (#7200) or cannot link to (#7050), and the
--- functions they replace, which take `channel_ids` instead of `talent_ids`
--- (#7121). Run with `supabase test db`.
+-- videos the site does not show (#7200) or cannot link to (#7050). Run with
+-- `supabase test db`.
 BEGIN;
 
-SELECT plan(19);
+SELECT plan(17);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures: a talent with regular videos and shorts, and a deleted talent.
@@ -200,22 +199,6 @@ SELECT is(
     (SELECT count(*) FROM "public"."search_videos_v4"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[], 1000)),
     "public"."count_videos_v2"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[]),
     'the search returns as many videos on Twitch as count_videos_v2 counts'
-);
-
--- ---------------------------------------------------------------------------
--- search_videos_v3 and count_videos_v1, kept until the deployed site stops
--- calling them, return the same as the functions that replace them
--- ---------------------------------------------------------------------------
-SELECT results_eq(
-    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000003']::uuid[], 1000)$$,
-    $$SELECT "id" FROM "public"."search_videos_v4"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000003']::uuid[], 1000)$$,
-    'search_videos_v3 returns the same videos as search_videos_v4'
-);
-
-SELECT is(
-    "public"."count_videos_v1"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000003']::uuid[]),
-    "public"."count_videos_v2"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000003']::uuid[]),
-    'count_videos_v1 counts as many videos as count_videos_v2'
 );
 
 RESET ROLE;

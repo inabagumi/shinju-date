@@ -273,10 +273,7 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "count_videos_v1":
-{ Args: { "channel_ids": (string)[],"query": string,"until": string,"video_kinds"?: (Database["public"]['Enums']["video_kind"])[] }; Returns: number
-                           },
-"count_videos_v2":
+            "count_videos_v2":
 { Args: { "p_query": string,"p_talent_ids": (string)[],"p_until": string,"p_video_kinds"?: (Database["public"]['Enums']["video_kind"])[] }; Returns: number
                            },
 "get_audit_logs":
@@ -299,29 +296,6 @@ isOneToOne: false
 "restore_videos":
 { Args: { "p_reason"?: Database["public"]['Enums']["video_deleted_reason"],"p_video_ids": (string)[] }; Returns: string[]
                            },
-"search_videos_v3":
-{ Args: { "channel_ids": (string)[],"perpage"?: number,"query": string,"until": string,"video_kinds"?: (Database["public"]['Enums']["video_kind"])[] }; Returns: {
-              "created_at": string,
-"deleted_at": string | null,
-"deleted_reason": Database["public"]['Enums']["video_deleted_reason"] | null,
-"duration": string,
-"id": string,
-"platform": Database["public"]['Enums']["platform_type"],
-"published_at": string,
-"status": Database["public"]['Enums']["video_status"],
-"talent_id": string,
-"thumbnail_id": string | null,
-"title": string,
-"updated_at": string,
-"video_kind": Database["public"]['Enums']["video_kind"],
-"visible": boolean
-            }[]
-                          SetofOptions: {
-        from: "*"
-        to: "videos"
-        isOneToOne: false
-        isSetofReturn: true
-      } },
 "search_videos_v4":
 { Args: { "p_perpage"?: number,"p_query": string,"p_talent_ids": (string)[],"p_until": string,"p_video_kinds"?: (Database["public"]['Enums']["video_kind"])[] }; Returns: {
               "created_at": string,
