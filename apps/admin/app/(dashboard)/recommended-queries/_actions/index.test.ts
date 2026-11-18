@@ -13,6 +13,9 @@ const test = setupActionTest()
 const ACTION_FAILED_ERROR =
   '処理に失敗しました。時間をおいて、もう一度お試しください。'
 
+/** 引数の検証に失敗したときの文（`@/lib/schemas` の `INVALID_INPUT_ERROR_MESSAGE`） */
+const INVALID_INPUT_ERROR = '入力が正しくありません。'
+
 const redisClient = {
   sadd: vi.fn(async () => 1),
   srem: vi.fn(async () => 1),
@@ -25,15 +28,30 @@ beforeEach(() => {
 })
 
 describe('addQueryAction', () => {
-  it('should return error when query is empty', async () => {
-    const result = await addQueryAction('   ')
+  it.each([
+    ['an empty query', ''],
+    ['a query of only spaces', '   '],
+    ['a query longer than 100 characters', 'a'.repeat(101)],
+    ['a value that is not a string', 1],
+  ])('should return error without adding anything for %s', async (_, query) => {
+    const result = await addQueryAction(query as string)
 
-    expect(result).toEqual({
-      error: 'クエリを入力してください。',
-      success: false,
-    })
+    expect(result).toEqual({ error: INVALID_INPUT_ERROR, success: false })
     expect(redisClient.sadd).not.toHaveBeenCalled()
+    test.expectNoAuditLog()
     test.expectNotRevalidated()
+  })
+
+  it('should accept a query of 100 characters without the spaces around it', async () => {
+    const query = 'a'.repeat(100)
+
+    const result = await addQueryAction(`  ${query}  `)
+
+    expect(result).toEqual({ success: true })
+    expect(redisClient.sadd).toHaveBeenCalledWith(
+      REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED,
+      query,
+    )
   })
 
   it('should add the trimmed query and revalidate the recommendation queries', async () => {
@@ -65,16 +83,22 @@ describe('addQueryAction', () => {
 })
 
 describe('deleteQueryAction', () => {
-  it('should return error when query is empty', async () => {
-    const result = await deleteQueryAction('')
+  it.each([
+    ['an empty query', ''],
+    ['a query of only spaces', '   '],
+    ['a query longer than 100 characters', 'a'.repeat(101)],
+    ['a value that is not a string', null],
+  ])(
+    'should return error without deleting anything for %s',
+    async (_, query) => {
+      const result = await deleteQueryAction(query as string)
 
-    expect(result).toEqual({
-      error: 'クエリが指定されていません。',
-      success: false,
-    })
-    expect(redisClient.srem).not.toHaveBeenCalled()
-    test.expectNotRevalidated()
-  })
+      expect(result).toEqual({ error: INVALID_INPUT_ERROR, success: false })
+      expect(redisClient.srem).not.toHaveBeenCalled()
+      test.expectNoAuditLog()
+      test.expectNotRevalidated()
+    },
+  )
 
   it('should delete the query and revalidate the recommendation queries', async () => {
     const result = await deleteQueryAction('Hoge')
