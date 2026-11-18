@@ -2,10 +2,9 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@googleapis/youtube": "catalog:",
-    "@shinju-date/database": "workspace:*",
-    "zod": "catalog:"
+    "@shinju-date/database": "workspace:*"
   },
-  "description": "YouTube API client package for SHINJU DATE with Zod validation",
+  "description": "YouTube API client package for SHINJU DATE",
   "devDependencies": {
     "@shinju-date/config": "workspace:*",
     "@types/node": "catalog:",
