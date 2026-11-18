@@ -7,9 +7,9 @@ import {
   SAVED_TWITCH_VIDEO_COLUMNS,
   type SavedTwitchVideo,
 } from './saved-video.js'
+import { createTwitchThumbnail } from './thumbnail.js'
 import type { TwitchClip, TwitchVideo } from './types.js'
 import {
-  getThumbnailSource,
   type TwitchVideoFields,
   type TwitchVideoType,
   toClipFields,
@@ -94,9 +94,11 @@ export interface NewTwitchVideo {
 
 /** Describes Twitch to the saving of new videos. */
 export const TWITCH_NEW_VIDEOS: NewVideoAdapter<NewTwitchVideo> = {
-  getPlatformVideoId: (video) => video.twitchVideo.twitch_video_id,
-  getThumbnailSource: (video) => getThumbnailSource(video.thumbnailUrl),
-  platformVideoIdKey: 'twitchVideoId',
+  createThumbnail: (context, video) =>
+    createTwitchThumbnail(context, {
+      thumbnailUrl: video.thumbnailUrl,
+      twitchVideoId: video.twitchVideo.twitch_video_id,
+    }),
   // Twitch has no kinds; every Twitch video is saved as `standard`.
   toFields: (video) => ({ ...video.fields, video_kind: 'standard' }),
   toPlatformVideo: (video, user) => ({

@@ -5,73 +5,30 @@ import {
   type NewPlatformVideo,
   type TalentAccount,
 } from '../database/index.js'
-import {
-  createThumbnail,
-  removeThumbnail,
-  type Thumbnail,
-  type ThumbnailSource,
-} from '../thumbnails/index.js'
+import { removeThumbnail, type Thumbnail } from '../thumbnails/index.js'
 
 /**
  * What differs between the platforms when a new video is saved: how it maps
- * to its `videos` row and its platform row, and which image its thumbnail is
- * copied from.
+ * to its `videos` row and its platform row, and how its thumbnail is stored.
  *
  * @typeParam TNew - A video to save, as the platform describes it.
  */
 export interface NewVideoAdapter<TNew> {
   /**
-   * The key the ID of a video on the platform is reported under, e.g.
-   * `youtubeVideoId`.
+   * Stores the thumbnail of the video.
+   *
+   * A video without a thumbnail is still worth listing, and a refresh fills
+   * it in later, so a thumbnail that cannot be stored is reported instead of
+   * thrown.
+   *
+   * @returns The stored thumbnail, or `null` when the platform has none yet
+   *   or it cannot be stored.
    */
-  platformVideoIdKey: string
-  /**
-   * The ID of the video on the platform. Its thumbnail is stored under a
-   * folder of this name, so stored objects can be traced back to the video.
-   */
-  getPlatformVideoId(video: TNew): string
-  /**
-   * The image to copy as the thumbnail, or `null` when the platform has none
-   * yet.
-   */
-  getThumbnailSource(video: TNew): ThumbnailSource | null
+  createThumbnail(context: WriteContext, video: TNew): Promise<Thumbnail | null>
   /** The columns of the `videos` row kept in line with the platform. */
   toFields(video: TNew, now: Temporal.Instant): VideoFields
   /** The platform row that identifies the video on its platform. */
   toPlatformVideo(video: TNew, account: TalentAccount): NewPlatformVideo
-}
-
-/**
- * Stores the thumbnail of a new video, or returns `null` when the platform
- * has none yet or it cannot be stored. A video without a thumbnail is still
- * worth listing, and a refresh fills it in later, so failures are reported
- * instead of thrown.
- */
-async function createNewVideoThumbnail<TNew>(
-  { now, reportError, supabaseClient }: WriteContext,
-  adapter: NewVideoAdapter<TNew>,
-  video: TNew,
-): Promise<Thumbnail | null> {
-  const source = adapter.getThumbnailSource(video)
-
-  if (!source) {
-    return null
-  }
-
-  const platformVideoId = adapter.getPlatformVideoId(video)
-
-  try {
-    return await createThumbnail({
-      folder: platformVideoId,
-      now,
-      source,
-      supabaseClient,
-    })
-  } catch (error) {
-    reportError(error, { [adapter.platformVideoIdKey]: platformVideoId })
-
-    return null
-  }
 }
 
 /**
@@ -92,7 +49,7 @@ export async function saveVideoWithThumbnail<TNew>(
   account: TalentAccount,
 ): Promise<boolean> {
   const { now, supabaseClient } = context
-  const thumbnail = await createNewVideoThumbnail(context, adapter, video)
+  const thumbnail = await adapter.createThumbnail(context, video)
   const platformVideo = adapter.toPlatformVideo(video, account)
   const timestamp = toDBString(now)
   let videoId: string | null

@@ -5,8 +5,9 @@ import {
   SAVED_YOUTUBE_VIDEO_COLUMNS,
   type SavedYouTubeVideo,
 } from './saved-video.js'
+import { createYouTubeThumbnail } from './thumbnail.js'
 import type { YouTubeVideo } from './types.js'
-import { getThumbnailSource, toVideoFields } from './video.js'
+import { toVideoFields } from './video.js'
 
 export type YouTubePlatformAdapter = PlatformAdapter<
   YouTubeVideo,
@@ -46,9 +47,7 @@ export function createYouTubePlatform(
 
 /** Describes YouTube to the saving of new videos. */
 export const YOUTUBE_NEW_VIDEOS: NewVideoAdapter<YouTubeVideo> = {
-  getPlatformVideoId: (video) => video.id,
-  getThumbnailSource,
-  platformVideoIdKey: 'youtubeVideoId',
+  createThumbnail: (context, video) => createYouTubeThumbnail(context, video),
   toFields: toVideoFields,
   toPlatformVideo: (video, channel) => ({
     platform: 'youtube',

@@ -3,7 +3,7 @@ import type { TalentAccount } from '../database/index.js'
 import { createTestContext } from '../testing/context.js'
 import { createImage, mockStorage, serveImage } from '../testing/images.js'
 import { postgresError, setupSupabase } from '../testing/supabase.js'
-import { THUMBNAILS_BUCKET } from '../thumbnails/thumbnail.js'
+import { createThumbnail, THUMBNAILS_BUCKET } from '../thumbnails/thumbnail.js'
 import { type NewVideoAdapter, saveVideoWithThumbnail } from './save-video.js'
 
 interface FakeVideo {
@@ -28,12 +28,15 @@ const account: TalentAccount = {
 }
 
 const adapter: NewVideoAdapter<FakeVideo> = {
-  getPlatformVideoId: (video) => video.id,
-  getThumbnailSource: (video) =>
+  createThumbnail: ({ now, supabaseClient }, video) =>
     video.thumbnailUrl
-      ? { height: 720, url: video.thumbnailUrl, width: 1280 }
-      : null,
-  platformVideoIdKey: 'fakeVideoId',
+      ? createThumbnail({
+          folder: video.id,
+          now,
+          source: { height: 720, url: video.thumbnailUrl, width: 1280 },
+          supabaseClient,
+        })
+      : Promise.resolve(null),
   toFields: (video) => ({
     duration: 'PT10M',
     published_at: '2024-05-01T10:00:00Z',
@@ -175,26 +178,6 @@ describe('saveVideoWithThumbnail', () => {
     expect(rows.thumbnails.size).toBe(0)
     expect(supabase.written('POST', 'videos')[0]?.body).toMatchObject({
       thumbnail_id: null,
-    })
-  })
-
-  it('reports a thumbnail that cannot be stored and inserts the video without it', async () => {
-    mockDatabase()
-    mockStorage(supabase, THUMBNAILS_BUCKET)
-    serveImage(supabase, THUMBNAIL_URL, {
-      body: Buffer.from('not an image'),
-      contentType: 'text/html',
-    })
-
-    await expect(
-      saveVideoWithThumbnail(context, adapter, createFakeVideo(), account),
-    ).resolves.toBe(true)
-
-    expect(supabase.written('POST', 'videos')[0]?.body).toMatchObject({
-      thumbnail_id: null,
-    })
-    expect(reportError).toHaveBeenCalledWith(expect.any(Error), {
-      fakeVideoId: 'video-1',
     })
   })
 
