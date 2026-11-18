@@ -57,7 +57,7 @@ test.describe('Login', () => {
     ).toBeVisible()
 
     await page.getByRole('button', { name: 'ユーザーメニュー' }).click()
-    await page.getByRole('button', { name: 'ログアウト' }).click()
+    await page.getByRole('menuitem', { name: 'ログアウト' }).click()
 
     await expect(page).toHaveURL(/\/login$/)
     await expect(

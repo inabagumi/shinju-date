@@ -1,19 +1,28 @@
 'use client'
 
-import { twMerge } from '@shinju-date/ui'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  twMerge,
+} from '@shinju-date/ui'
 import { ChevronDown, Menu, User, X } from 'lucide-react'
 import NextLink from 'next/link'
-import { usePathname } from 'next/navigation'
+import { unstable_rethrow, usePathname } from 'next/navigation'
 import {
   type ComponentProps,
   type ReactNode,
   Suspense,
-  useId,
   useState,
+  useTransition,
 } from 'react'
+import { useActionToast } from '@/components/action-toast'
 import Form, { SubmitButton } from '@/components/form'
 import { LogoIcon } from '@/components/logo-icon'
 import { signOut } from '@/lib/actions/sign-out'
+import { SERVER_ACTION_FALLBACK_ERROR } from '@/lib/use-server-action'
 
 function ActiveNavigationLink({
   href,
@@ -63,67 +72,95 @@ const USER_ITEMS: NavigationItem[] = [
   { href: '/system', label: 'システム' },
 ]
 
-type MenuId = 'analytics' | 'data' | 'user'
-
 /** `bg-primary` のバーの上に置くボタンとリンク */
 const barItemClassName =
   'inline-flex items-center gap-1 rounded-control px-3 py-1.5 text-meta font-semibold transition-colors hover:bg-primary-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground'
 
-/** ドロップダウンの中の項目。現在のページは `text-accent` で示す */
-const menuItemClassName =
-  'block w-full rounded-control px-3 py-2 text-left text-meta text-foreground transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none aria-[current=page]:font-semibold aria-[current=page]:text-accent'
+/** メニューの中のリンク。現在のページは `text-accent` で示す */
+const menuLinkClassName =
+  'aria-[current=page]:font-semibold aria-[current=page]:text-accent'
 
-interface DropdownProps {
-  align?: 'left' | 'right'
+interface NavigationMenuProps {
+  align?: 'start' | 'end'
   children: ReactNode
   /** ボタンの中身。アイコンだけの場合は `label` で名前を付ける */
   trigger: ReactNode
   label?: string
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
 }
 
-function Dropdown({
-  align = 'left',
+/** バーのボタンから開くメニュー。クリックかキーボードで開く */
+function NavigationMenu({
+  align = 'start',
   children,
-  isOpen,
   label,
-  onOpenChange,
   trigger,
-}: DropdownProps) {
-  const menuId = useId()
+}: NavigationMenuProps) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          aria-label={label}
+          className={twMerge(
+            barItemClassName,
+            'data-[state=open]:bg-primary-foreground/10',
+          )}
+          type="button"
+        >
+          {trigger}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align={align} className="min-w-52">
+        {children}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+interface NavigationMenuLinksProps {
+  items: NavigationItem[]
+}
+
+function NavigationMenuLinks({ items }: NavigationMenuLinksProps) {
+  return items.map((item) => (
+    <DropdownMenuItem asChild className={menuLinkClassName} key={item.href}>
+      <Link href={item.href}>{item.label}</Link>
+    </DropdownMenuItem>
+  ))
+}
+
+/** ユーザーメニューのログアウト。失敗したときはトーストで知らせる */
+function SignOutMenuItem() {
+  const [isPending, startTransition] = useTransition()
+  const { showToast } = useActionToast()
+
+  const handleSelect = (event: Event) => {
+    // 終わるまでメニューを開いたままにし、実行中の状態を項目に出す。閉じると
+    // 項目が消え、成功したときの `redirect()` を Next.js に返せなくなる
+    event.preventDefault()
+
+    startTransition(async () => {
+      let message: string | undefined
+
+      try {
+        const state = await signOut()
+
+        message = state.errors?.['generic']?.[0]
+      } catch (error) {
+        // 成功したときの `redirect()` は、Next.js に任せる
+        unstable_rethrow(error)
+        message = SERVER_ACTION_FALLBACK_ERROR
+      }
+
+      if (message) {
+        showToast('danger', message)
+      }
+    })
+  }
 
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: マウスが離れたらメニューを閉じる
-    <div className="relative" onMouseLeave={() => onOpenChange(false)}>
-      <button
-        aria-controls={isOpen ? menuId : undefined}
-        aria-expanded={isOpen}
-        aria-label={label}
-        className={barItemClassName}
-        onClick={() => onOpenChange(!isOpen)}
-        onMouseEnter={() => onOpenChange(true)}
-        type="button"
-      >
-        {trigger}
-      </button>
-      {isOpen && (
-        // 開いたメニューとボタンの間でマウスが離れないよう、上に余白（pt-1）を取る
-        <div
-          className={twMerge(
-            'absolute top-full z-50 min-w-52 pt-1',
-            align === 'right' ? 'right-0' : 'left-0',
-          )}
-        >
-          <div
-            className="rounded-container border border-border bg-surface p-1 shadow-overlay"
-            id={menuId}
-          >
-            {children}
-          </div>
-        </div>
-      )}
-    </div>
+    <DropdownMenuItem disabled={isPending} onSelect={handleSelect}>
+      ログアウト
+    </DropdownMenuItem>
   )
 }
 
@@ -134,12 +171,6 @@ interface NavigationBarProps {
 
 export function NavigationBar({ lastSync }: NavigationBarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [openMenu, setOpenMenu] = useState<MenuId | null>(null)
-
-  const handleOpenChange = (id: MenuId) => (open: boolean) => {
-    setOpenMenu(open ? id : (current) => (current === id ? null : current))
-  }
-  const closeMenu = () => setOpenMenu(null)
 
   return (
     <nav
@@ -157,9 +188,7 @@ export function NavigationBar({ lastSync }: NavigationBarProps) {
 
         {/* Desktop Navigation */}
         <div className="hidden grow items-center gap-1 md:flex">
-          <Dropdown
-            isOpen={openMenu === 'data'}
-            onOpenChange={handleOpenChange('data')}
+          <NavigationMenu
             trigger={
               <>
                 データ管理
@@ -167,20 +196,9 @@ export function NavigationBar({ lastSync }: NavigationBarProps) {
               </>
             }
           >
-            {DATA_ITEMS.map((item) => (
-              <Link
-                className={menuItemClassName}
-                href={item.href}
-                key={item.href}
-                onClick={closeMenu}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </Dropdown>
-          <Dropdown
-            isOpen={openMenu === 'analytics'}
-            onOpenChange={handleOpenChange('analytics')}
+            <NavigationMenuLinks items={DATA_ITEMS} />
+          </NavigationMenu>
+          <NavigationMenu
             trigger={
               <>
                 アナリティクス
@@ -188,17 +206,8 @@ export function NavigationBar({ lastSync }: NavigationBarProps) {
               </>
             }
           >
-            {ANALYTICS_ITEMS.map((item) => (
-              <Link
-                className={menuItemClassName}
-                href={item.href}
-                key={item.href}
-                onClick={closeMenu}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </Dropdown>
+            <NavigationMenuLinks items={ANALYTICS_ITEMS} />
+          </NavigationMenu>
         </div>
 
         <div className="ml-auto flex items-center gap-4">
@@ -208,33 +217,15 @@ export function NavigationBar({ lastSync }: NavigationBarProps) {
             </p>
           )}
           <div className="hidden md:block">
-            <Dropdown
-              align="right"
-              isOpen={openMenu === 'user'}
+            <NavigationMenu
+              align="end"
               label="ユーザーメニュー"
-              onOpenChange={handleOpenChange('user')}
               trigger={<User aria-hidden="true" className="size-5" />}
             >
-              {USER_ITEMS.map((item) => (
-                <Link
-                  className={menuItemClassName}
-                  href={item.href}
-                  key={item.href}
-                  onClick={closeMenu}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <div className="my-1 border-t border-border" />
-              <Form action={signOut}>
-                <SubmitButton
-                  className={twMerge(menuItemClassName, 'font-normal')}
-                  variant="ghost"
-                >
-                  ログアウト
-                </SubmitButton>
-              </Form>
-            </Dropdown>
+              <NavigationMenuLinks items={USER_ITEMS} />
+              <DropdownMenuSeparator />
+              <SignOutMenuItem />
+            </NavigationMenu>
           </div>
           <button
             aria-expanded={isMenuOpen}
