@@ -2,11 +2,9 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import type { TypedSupabaseClient } from '../../types.js'
 import { chunk } from '../batch.js'
 import { IN_FILTER_CHUNK_SIZE } from '../constants.js'
-import { DatabaseError } from '../errors.js'
+import { DatabaseError, isForeignKeyViolation } from '../errors.js'
+import { removeStoredImages } from '../images/index.js'
 import { THUMBNAILS_BUCKET, type Thumbnail } from './thumbnail.js'
-
-/** PostgreSQL error code for a foreign key violation. */
-const FOREIGN_KEY_VIOLATION = '23503'
 
 /**
  * Thumbnails unused for less than this are left alone:
@@ -63,7 +61,7 @@ async function deleteThumbnailRows(
     return thumbnails.filter((thumbnail) => deletedIds.has(thumbnail.id))
   }
 
-  if (error.code !== FOREIGN_KEY_VIOLATION) {
+  if (!isForeignKeyViolation(error)) {
     throw new DatabaseError('Failed to delete unused thumbnails', error)
   }
 
@@ -77,7 +75,7 @@ async function deleteThumbnailRows(
       .select('id')
 
     if (error) {
-      if (error.code === FOREIGN_KEY_VIOLATION) {
+      if (isForeignKeyViolation(error)) {
         continue
       }
 
@@ -140,9 +138,10 @@ export async function removeUnusedThumbnails(
     }
 
     try {
-      await supabaseClient.storage
-        .from(THUMBNAILS_BUCKET)
-        .remove(deleted.map((thumbnail) => thumbnail.path))
+      await removeStoredImages(supabaseClient, {
+        bucket: THUMBNAILS_BUCKET,
+        paths: deleted.map((thumbnail) => thumbnail.path),
+      })
     } catch {
       // Ignored on purpose, see above.
     }

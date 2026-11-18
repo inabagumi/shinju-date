@@ -1,5 +1,6 @@
 import { HttpResponse, http } from 'msw'
 import { describe, expect, it } from 'vitest'
+import { mockStorage } from '../testing/images.js'
 import { postgresError, setupSupabase } from '../testing/supabase.js'
 import {
   removeUnusedThumbnails,
@@ -12,23 +13,6 @@ const STORAGE_DELETE_URL =
   'https://fake.supabase.test/storage/v1/object/thumbnails'
 const now = Temporal.Instant.from('2024-05-08T12:34:56.789Z')
 const olderThan = UNUSED_THUMBNAIL_GRACE_PERIOD
-
-/** Records the paths removed from the thumbnails bucket, one array per call. */
-function mockStorage(): string[][] {
-  const removed: string[][] = []
-
-  supabase.server.use(
-    http.delete(STORAGE_DELETE_URL, async ({ request }) => {
-      const { prefixes } = (await request.json()) as { prefixes: string[] }
-
-      removed.push(prefixes)
-
-      return HttpResponse.json([])
-    }),
-  )
-
-  return removed
-}
 
 function unusedThumbnail(index: number) {
   return { id: `thumb-${index}`, path: `vod-${index}/a.jpg`, videos: [] }
@@ -43,7 +27,7 @@ function deletedIds(): (string | undefined)[] {
 
 describe('removeUnusedThumbnails', () => {
   it('lists the oldest thumbnails no video uses that are past the grace period', async () => {
-    mockStorage()
+    mockStorage(supabase, 'thumbnails')
     supabase.respond(() => [])
 
     await expect(
@@ -66,7 +50,7 @@ describe('removeUnusedThumbnails', () => {
   })
 
   it('deletes unused thumbnails, then their images', async () => {
-    const removed = mockStorage()
+    const { removed } = mockStorage(supabase, 'thumbnails')
     supabase.respondWith({
       'DELETE thumbnails': ({ query }) =>
         query['id'] === 'in.(thumb-1,thumb-2)'
@@ -83,7 +67,7 @@ describe('removeUnusedThumbnails', () => {
   })
 
   it('deletes in batches', async () => {
-    const removed = mockStorage()
+    const { removed } = mockStorage(supabase, 'thumbnails')
     const thumbnails = Array.from({ length: 150 }, (_, index) =>
       unusedThumbnail(index),
     )
@@ -104,7 +88,7 @@ describe('removeUnusedThumbnails', () => {
   })
 
   it('keeps thumbnails that a video uses again and deletes the rest', async () => {
-    const removed = mockStorage()
+    const { removed } = mockStorage(supabase, 'thumbnails')
     supabase.respondWith({
       'DELETE thumbnails': ({ query }) =>
         query['id'] === 'eq.thumb-1'
@@ -125,7 +109,7 @@ describe('removeUnusedThumbnails', () => {
   })
 
   it('does not count thumbnails that are already gone', async () => {
-    const removed = mockStorage()
+    const { removed } = mockStorage(supabase, 'thumbnails')
     supabase.respondWith({
       'DELETE thumbnails': [{ id: 'thumb-2' }],
       'GET thumbnails': [unusedThumbnail(1), unusedThumbnail(2)],
@@ -162,7 +146,7 @@ describe('removeUnusedThumbnails', () => {
   })
 
   it('fails when unused thumbnails cannot be deleted', async () => {
-    const removed = mockStorage()
+    const { removed } = mockStorage(supabase, 'thumbnails')
     supabase.respondWith({
       'DELETE thumbnails': () => postgresError('42501', 'permission denied'),
       'GET thumbnails': [unusedThumbnail(1)],

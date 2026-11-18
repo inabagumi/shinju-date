@@ -1,15 +1,17 @@
-import retryableFetch from '@shinju-date/retryable-fetch'
 import { toDBString } from '@shinju-date/temporal-fns'
 import mime from 'mime'
 import { nanoid } from 'nanoid'
-import sharp from 'sharp'
 import type { TypedSupabaseClient, WriteContext } from '../../types.js'
-import { DatabaseError, StorageError } from '../errors.js'
+import { DatabaseError } from '../errors.js'
+import {
+  createBlurDataURL,
+  downloadImage,
+  removeImage,
+  removeStoredImages,
+  storeImage,
+} from '../images/index.js'
 
 export const THUMBNAILS_BUCKET = 'thumbnails'
-
-/** One year: stored objects are immutable because every upload gets a new path. */
-const CACHE_CONTROL_MAX_AGE_SECONDS = 365 * 24 * 60 * 60
 
 /** An image on the source platform to copy into our storage. */
 export interface ThumbnailSource {
@@ -46,12 +48,6 @@ export interface Thumbnail {
   path: string
 }
 
-async function createBlurDataURL(image: ArrayBuffer): Promise<string> {
-  const buffer = await sharp(image).resize(10).jpeg().toBuffer()
-
-  return `data:image/jpeg;base64,${buffer.toString('base64')}`
-}
-
 /**
  * Copies an image into the thumbnails bucket and registers it in the
  * `thumbnails` table.
@@ -71,36 +67,14 @@ export async function createThumbnail({
   source,
   supabaseClient,
 }: CreateThumbnailOptions): Promise<Thumbnail | null> {
-  const response = await retryableFetch(source.url, {
-    ...(etag ? { headers: { 'If-None-Match': etag } } : {}),
-  })
-  const responseEtag = response.headers.get('ETag')
+  const downloaded = await downloadImage(source.url, { etag })
 
-  if (etag && (response.status === 304 || responseEtag === etag)) {
-    // The body is read to reuse the socket.
-    await response.arrayBuffer()
-
+  if (!downloaded) {
     return null
   }
 
-  if (!response.ok) {
-    // The body is read to reuse the socket.
-    await response.arrayBuffer()
-
-    throw new Error(
-      `Failed to download a thumbnail (${response.status}): ${source.url}`,
-    )
-  }
-
-  const contentType = response.headers.get('Content-Type') ?? 'image/jpeg'
-  const image = await response.arrayBuffer()
-
-  if (!contentType.startsWith('image/')) {
-    throw new TypeError(
-      `Expected an image but received "${contentType}": ${source.url}`,
-    )
-  }
-
+  const contentType = downloaded.contentType ?? 'image/jpeg'
+  const image = downloaded.body
   // Decoding first means a broken image is rejected before anything is stored.
   const blurDataURL = await createBlurDataURL(image)
   const extension = mime.getExtension(contentType) ?? 'jpg'
@@ -109,23 +83,18 @@ export async function createThumbnail({
     path: `${folder}/${nanoid()}.${extension}`,
   }
 
-  const { error: uploadError } = await supabaseClient.storage
-    .from(THUMBNAILS_BUCKET)
-    .upload(thumbnail.path, image, {
-      cacheControl: CACHE_CONTROL_MAX_AGE_SECONDS.toString(10),
-      contentType,
-      upsert: false,
-    })
-
-  if (uploadError) {
-    throw new StorageError('Failed to upload a thumbnail', uploadError)
-  }
+  await storeImage(supabaseClient, {
+    bucket: THUMBNAILS_BUCKET,
+    contentType,
+    image,
+    path: thumbnail.path,
+  })
 
   const { error: insertError } = await supabaseClient
     .from('thumbnails')
     .insert({
       blur_data_url: blurDataURL,
-      etag: responseEtag,
+      etag: downloaded.etag,
       height: source.height,
       id: thumbnail.id,
       path: thumbnail.path,
@@ -134,9 +103,13 @@ export async function createThumbnail({
     })
 
   if (insertError) {
-    await supabaseClient.storage
-      .from(THUMBNAILS_BUCKET)
-      .remove([thumbnail.path])
+    await removeStoredImages(supabaseClient, {
+      bucket: THUMBNAILS_BUCKET,
+      paths: [thumbnail.path],
+    }).catch(() => {
+      // Ignored: the insert error is the one to throw, and an object without
+      // its row is never served.
+    })
 
     throw new DatabaseError('Failed to insert a thumbnail', insertError)
   }
@@ -156,21 +129,14 @@ export async function removeThumbnail(
   thumbnail: Thumbnail,
 ): Promise<void> {
   try {
-    const { error: deleteError } = await supabaseClient
-      .from('thumbnails')
-      .delete()
-      .eq('id', thumbnail.id)
+    const removed = await removeImage(supabaseClient, {
+      bucket: THUMBNAILS_BUCKET,
+      image: thumbnail,
+      table: 'thumbnails',
+    })
 
-    if (deleteError) {
-      throw new DatabaseError('Failed to delete a thumbnail', deleteError)
-    }
-
-    const { error: removeError } = await supabaseClient.storage
-      .from(THUMBNAILS_BUCKET)
-      .remove([thumbnail.path])
-
-    if (removeError) {
-      throw new StorageError('Failed to remove a thumbnail', removeError)
+    if (!removed) {
+      throw new Error(`The thumbnail is still used by a video: ${thumbnail.id}`)
     }
   } catch (error) {
     reportError(error, {

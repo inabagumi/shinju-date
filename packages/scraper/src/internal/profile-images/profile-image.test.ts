@@ -1,11 +1,7 @@
 import { HttpResponse, http } from 'msw'
 import sharp from 'sharp'
 import { beforeAll, describe, expect, it } from 'vitest'
-import {
-  createImage,
-  mockStorage,
-  serveImage,
-} from '../testing/profile-images.js'
+import { createImage, mockStorage, serveImage } from '../testing/images.js'
 import { postgresError, setupSupabase } from '../testing/supabase.js'
 import {
   createProfileImage,
@@ -99,7 +95,7 @@ describe('downloadProfileImage', () => {
     )
 
     await expect(downloadProfileImage(IMAGE_URL, saved)).rejects.toThrow(
-      'Failed to download a profile image (404)',
+      'Failed to download an image (404)',
     )
   })
 
@@ -114,7 +110,7 @@ describe('downloadProfileImage', () => {
 
 describe('createProfileImage', () => {
   it('stores a centred square WebP and registers it', async () => {
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     supabase.respond(() => [])
 
     const stored = await createProfileImage({
@@ -156,7 +152,7 @@ describe('createProfileImage', () => {
   })
 
   it('does not enlarge icons smaller than the maximum size', async () => {
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     supabase.respond(() => [])
     const small = await createImage(88, 100)
 
@@ -183,7 +179,7 @@ describe('createProfileImage', () => {
   })
 
   it('rejects broken images without storing anything', async () => {
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     supabase.respond(() => [])
 
     await expect(
@@ -203,7 +199,7 @@ describe('createProfileImage', () => {
   })
 
   it('removes the stored object when it cannot be registered', async () => {
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     supabase.respond(() => postgresError('23502', 'null value in column'))
 
     await expect(
@@ -224,7 +220,7 @@ describe('createProfileImage', () => {
 
 describe('removeProfileImage', () => {
   it('deletes the row, then the stored object', async () => {
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     supabase.respond(() => [])
 
     await expect(
@@ -237,7 +233,7 @@ describe('removeProfileImage', () => {
   })
 
   it('keeps an icon that is still in use', async () => {
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     supabase.respond(() =>
       postgresError('23503', 'violates foreign key constraint'),
     )
@@ -249,7 +245,7 @@ describe('removeProfileImage', () => {
   })
 
   it('fails when the row cannot be deleted for another reason', async () => {
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     supabase.respond(() => postgresError('42501', 'permission denied'))
 
     await expect(
