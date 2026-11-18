@@ -3,7 +3,7 @@ import type { BackfillRunJobStatus } from '@shinju-date/video-backfill'
 
 /**
  * 過去動画の取り込みの状態の、表示名とバッジの色。「中断」（`interrupted`）かどうかは
- * `@shinju-date/video-backfill` の `getBackfillRunJobStatus` が決める
+ * `@shinju-date/video-backfill` の `getJobActivity` が決める
  */
 export const BACKFILL_STATUS_LABELS = {
   done: { label: '完了', variant: 'success' },
