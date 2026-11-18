@@ -64,6 +64,9 @@ const temporarilyDisabled = defineConfig({
     "func-names": "off",
     "func-style": "off",
     "import/consistent-type-specifier-style": "off",
+    // Reports the type-only default export of @shinju-date/database, once the
+    // packages are built
+    "import/default": "off",
     "import/first": "off",
     "import/no-named-default": "off",
     "jsdoc/check-tag-names": "off",
