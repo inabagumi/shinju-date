@@ -3,6 +3,7 @@ import type { Scraper } from '@shinju-date/scraper'
 import {
   type BackfillProvider,
   BackfillQueue,
+  createBackfillRunResultRecorder,
 } from '@shinju-date/video-backfill'
 import { revalidateTags } from '@shinju-date/web-cache'
 import type { NextRequest } from 'next/server'
@@ -42,7 +43,11 @@ export async function POST(request: NextRequest): Promise<Response> {
       // Jobs expire in Redis; the history keeps what they did.
       onFinish: (job) => recordBackfillJob(supabaseClient, job),
       // A job is locked for as long as this run may last, and a little more.
-      queue: new BackfillQueue(redisClient, { maxRunSeconds: maxDuration }),
+      // A job of a check keeps its outcome for the check when it finishes.
+      queue: new BackfillQueue(redisClient, {
+        maxRunSeconds: maxDuration,
+        onFinish: createBackfillRunResultRecorder(redisClient),
+      }),
     })
 
     if (added > 0) {

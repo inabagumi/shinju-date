@@ -1,16 +1,15 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import type { Redis } from '@upstash/redis'
-import {
-  BACKFILL_JOB_TTL_SECONDS,
-  type BackfillActivityStatus,
-  type BackfillJob,
-  type BackfillJobActivity,
-  type BackfillProvider,
-  BackfillQueue,
-  type BackfillRequest,
-  getJobActivity,
-  getRunResultKey,
-} from './queue.js'
+import { getJobActivity } from './jobs.js'
+import { BACKFILL_JOB_TTL_SECONDS, getRunResultKey } from './keys.js'
+import { BackfillQueue } from './queue.js'
+import type {
+  BackfillActivityStatus,
+  BackfillJob,
+  BackfillJobActivity,
+  BackfillProvider,
+  BackfillRequest,
+} from './types.js'
 
 /**
  * How long a request for a check holds the lock that keeps a second one from
@@ -35,6 +34,30 @@ if redis.call('GET', KEYS[1]) == ARGV[1] then
   return redis.call('DEL', KEYS[1])
 end
 return 0`
+
+/**
+ * Makes the `onFinish` of a {@link BackfillQueue} that works off jobs: a job
+ * of a check keeps its outcome for the check when it finishes, so that the
+ * check still shows it as it finished after the job is requested again on
+ * its own.
+ *
+ * ```ts
+ * new BackfillQueue(redis, { onFinish: createBackfillRunResultRecorder(redis) })
+ * ```
+ */
+export function createBackfillRunResultRecorder(
+  redis: Redis,
+): (job: BackfillJob) => Promise<void> {
+  return async (job) => {
+    if (!job.runId) {
+      return
+    }
+
+    await redis.set(getRunResultKey(job.runId, job.id), job, {
+      ex: BACKFILL_JOB_TTL_SECONDS,
+    })
+  }
+}
 
 /** Accounts queued at the same time when a check is requested. */
 const ENQUEUE_CONCURRENCY = 10

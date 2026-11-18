@@ -1,4 +1,9 @@
-import { BACKFILL_LEASE_MARGIN_SECONDS } from '@shinju-date/video-backfill'
+import {
+  BACKFILL_LEASE_MARGIN_SECONDS,
+  type BackfillQueue,
+  getRunResultKey,
+} from '@shinju-date/video-backfill'
+import { FakeRedis } from '@shinju-date/video-backfill/testing'
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -9,10 +14,11 @@ const revalidateTags = vi.fn()
 const workOffBackfillQueue = vi.fn()
 const recordBackfillJob = vi.fn()
 const supabaseClient = { from: vi.fn() }
+const redisClient = new FakeRedis()
 
 vi.mock('@/lib/lock', () => ({ acquireLock }))
 vi.mock('@/lib/ratelimit', () => ({ videosBackfill: { limit } }))
-vi.mock('@/lib/redis', () => ({ redisClient: {} }))
+vi.mock('@/lib/redis', () => ({ redisClient }))
 vi.mock('@/lib/scraper', () => ({ createScraper }))
 vi.mock('@/lib/supabase', () => ({ supabaseClient }))
 vi.mock('@/lib/video-backfill', () => ({ workOffBackfillQueue }))
@@ -87,6 +93,37 @@ describe('POST /videos/backfill', () => {
     await onFinish(job)
 
     expect(recordBackfillJob).toHaveBeenCalledWith(supabaseClient, job)
+  })
+
+  it('keeps the outcome of a job of a check when it finishes', async () => {
+    await POST(createRequest())
+
+    const queue: BackfillQueue = workOffBackfillQueue.mock.calls[0]?.[0].queue
+
+    await queue.enqueue({
+      accountId: 'channel-row-1',
+      provider: 'youtube',
+      requestedBy: null,
+      runId: 'run-1',
+      talentId: 'talent-1',
+    })
+
+    const claimed = await queue.claim()
+
+    if (!claimed) {
+      throw new Error('Expected a job to claim')
+    }
+
+    const finished = await queue.recordPage(claimed, {
+      added: 0,
+      done: true,
+      nextCursor: null,
+    })
+
+    expect(finished.status).toBe('saved')
+    await expect(
+      redisClient.get(getRunResultKey('run-1', claimed.job.id)),
+    ).resolves.toEqual(finished.status === 'saved' && finished.job)
   })
 
   it('refreshes the public site after videos were added', async () => {

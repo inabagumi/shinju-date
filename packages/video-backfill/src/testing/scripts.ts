@@ -1,11 +1,11 @@
+import { RUN_UNLOCK_SCRIPT } from '../runs.js'
 import {
   CLAIM_SCRIPT,
   ENQUEUE_SCRIPT,
   FINISH_SCRIPT,
   REQUEUE_SCRIPT,
   SAVE_SCRIPT,
-} from '../queue.js'
-import { RUN_UNLOCK_SCRIPT } from '../runs.js'
+} from '../scripts.js'
 
 /** A reply of Redis, as the REST API of Upstash returns it in JSON. */
 export type RedisReply = number | string | null | RedisReply[]
@@ -113,7 +113,7 @@ export const SCRIPT_EMULATIONS: Readonly<Record<string, ScriptEmulation>> = {
       }
     }
   },
-  [nameOf(FINISH_SCRIPT)]: (call, [job = '', lock = '', outcome], argv) => {
+  [nameOf(FINISH_SCRIPT)]: (call, [job = '', lock = ''], argv) => {
     const [token = '', value = '', ttl = ''] = argv
 
     if (call('GET', lock) !== token) {
@@ -121,11 +121,6 @@ export const SCRIPT_EMULATIONS: Readonly<Record<string, ScriptEmulation>> = {
     }
 
     call('SET', job, value, 'EX', ttl)
-
-    if (outcome !== undefined) {
-      call('SET', outcome, value, 'EX', ttl)
-    }
-
     call('DEL', lock)
 
     return 1
