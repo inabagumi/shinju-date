@@ -29,11 +29,6 @@ moved {
 }
 
 moved {
-  from = vercel_project_environment_variable.enable_experimental_corepack
-  to   = module.project["web"].vercel_project_environment_variable.this["enable_experimental_corepack"]
-}
-
-moved {
   from = vercel_project_environment_variable.turbo_platform_env_disabled
   to   = module.project["web"].vercel_project_environment_variable.this["turbo_platform_env_disabled"]
 }
@@ -69,11 +64,6 @@ moved {
 }
 
 moved {
-  from = vercel_project_environment_variable.admin_enable_experimental_corepack
-  to   = module.project["admin"].vercel_project_environment_variable.this["enable_experimental_corepack"]
-}
-
-moved {
   from = vercel_project_environment_variable.admin_turbo_platform_env_disabled
   to   = module.project["admin"].vercel_project_environment_variable.this["turbo_platform_env_disabled"]
 }
@@ -101,11 +91,6 @@ moved {
 moved {
   from = vercel_project_environment_variable.admin_upstash_redis_rest_url_dev
   to   = module.project["admin"].vercel_project_environment_variable.this["upstash_redis_rest_url_dev"]
-}
-
-moved {
-  from = vercel_project_environment_variable.batch_enable_experimental_corepack
-  to   = module.project["batch"].vercel_project_environment_variable.this["enable_experimental_corepack"]
 }
 
 moved {
