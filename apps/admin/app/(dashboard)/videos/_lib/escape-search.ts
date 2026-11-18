@@ -6,6 +6,7 @@
  * @returns The escaped search string with \, %, and _ characters escaped
  */
 export function escapeSearchString(search: string): string {
-  // Escape backslashes first to prevent double-escaping
-  return search.replaceAll("\\", "\\\\").replaceAll(/[%_]/g, "\\$&");
+  // Escape all of them at once, so that the added backslashes are not escaped
+  // again
+  return search.replaceAll(/[\\%_]/g, "\\$&");
 }
