@@ -3,12 +3,11 @@
 import { type ServerActionResult, useServerAction } from './use-server-action'
 
 /**
- * 過去動画の取り込みをキューに追加する Server Action の戻り値。成功のトーストの文は、
- * `data.message`（`adminAction` で作ったアクション）か `message` に入れる
+ * 過去動画の取り込みをキューに追加する Server Action の戻り値。成功のトーストの文は
+ * `data.message` に入れる
  */
 interface BackfillRequestResult extends ServerActionResult {
   data?: { message?: string | undefined } | undefined
-  message?: string | undefined
 }
 
 /**
@@ -22,8 +21,7 @@ export function useBackfillRequest<TArgs extends unknown[]>(
 ): (...args: TArgs) => Promise<void> {
   const { run } = useServerAction(action, {
     errorText: 'キューへの追加に失敗しました。',
-    successText: (result) =>
-      result.data?.message ?? result.message ?? 'キューに追加しました。',
+    successText: (result) => result.data?.message ?? 'キューに追加しました。',
   })
 
   return async (...args) => {

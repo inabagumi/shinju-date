@@ -78,17 +78,28 @@ describe('VideoBackfillRunPanel', () => {
 
   it('confirms the number of accounts before requesting a check', async () => {
     mocks.requestVideoBackfillRunAction.mockResolvedValue({
-      message: '全タレントの取得漏れチェックを3件キューに追加しました。',
+      data: {
+        message: '全タレントの取得漏れチェックを3件キューに追加しました。',
+      },
       success: true,
     })
     mocks.getVideoBackfillRunAction.mockResolvedValue({
-      run: createRun({
-        accounts: [createAccount({ active: true, status: 'pending' })],
-        active: true,
-        counts: { done: 0, failed: 0, interrupted: 0, pending: 1, running: 0 },
-      }),
+      data: {
+        run: createRun({
+          accounts: [createAccount({ active: true, status: 'pending' })],
+          active: true,
+          counts: {
+            done: 0,
+            failed: 0,
+            interrupted: 0,
+            pending: 1,
+            running: 0,
+          },
+        }),
+        success: true,
+        targets,
+      },
       success: true,
-      targets,
     })
 
     renderPanel(null)

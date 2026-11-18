@@ -144,12 +144,17 @@ describe('VideoBackfillHistoryPanel', () => {
 
   it('confirms before retrying the failed jobs at once', async () => {
     mocks.getVideoBackfillHistoryAction.mockResolvedValue({
-      entries: [],
-      failures: [createFailure({ active: true })],
+      data: {
+        entries: [],
+        failures: [createFailure({ active: true })],
+        success: true,
+      },
       success: true,
     })
     mocks.retryFailedVideoBackfillJobsAction.mockResolvedValue({
-      message: '失敗した過去動画の取り込みを1件キューに追加しました。',
+      data: {
+        message: '失敗した過去動画の取り込みを1件キューに追加しました。',
+      },
       success: true,
     })
 

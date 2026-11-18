@@ -2,8 +2,8 @@
 
 import { logger } from '@shinju-date/logger'
 import { BackfillQueue } from '@shinju-date/video-backfill'
+import { ActionError, type ActionResult, adminAction } from '@/lib/action'
 import { createAuditLog } from '@/lib/audit-log'
-import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 import { getRedisClient } from '@/lib/redis'
 import { getBackfillAccounts } from '../_lib/backfill-accounts'
 import {
@@ -13,32 +13,23 @@ import {
   type VideoBackfillHistory,
 } from '../_lib/get-video-backfill-history'
 
+/** 失敗した過去動画の取り込みをキューに追加し直せたときに、画面に知らせること */
+interface VideoBackfillRetrySummary {
+  /** 成功のトーストに出す文 */
+  message: string
+}
+
 /**
  * 終了した過去動画の取り込み（バックフィル）の履歴と、最後の取り込みが失敗したアカウントを返す。
+ * 定期的な再取得に使う。
  */
-export async function getVideoBackfillHistoryAction(): Promise<
-  VideoBackfillHistory | { error: string; success: false }
-> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  try {
-    return await readVideoBackfillHistory(auth.supabaseClient)
-  } catch (error) {
-    logger.error('過去動画の取り込みの履歴の取得に失敗しました', { error })
-
-    return {
-      error:
-        error instanceof Error
-          ? error.message
-          : '予期しないエラーが発生しました。',
-      success: false,
-    }
-  }
-}
+export const getVideoBackfillHistoryAction = adminAction(
+  'getVideoBackfillHistoryAction',
+  async ({ supabaseClient }): Promise<ActionResult<VideoBackfillHistory>> => ({
+    data: await readVideoBackfillHistory(supabaseClient),
+    success: true,
+  }),
+)
 
 /**
  * 最後の過去動画の取り込みが失敗したアカウントを、まとめてキューに追加し直す。
@@ -50,21 +41,14 @@ export async function getVideoBackfillHistoryAction(): Promise<
  * - Redis にジョブが残っていれば失敗したところから、残っていなければ最新の動画から読み直す
  * - 全タレントの取得漏れチェックに属していたジョブは、そのままチェックの進捗に反映される
  * - 1 件以上追加したら監査ログ（`VIDEO_BACKFILL`）に依頼者を残す
+ * - 一部のアカウントだけを追加できなかったときは、成功として返し、`warnings` で知らせる
  */
-export async function retryFailedVideoBackfillJobsAction(): Promise<{
-  success: boolean
-  error?: string
-  message?: string
-}> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  const { supabaseClient, user } = auth
-
-  try {
+export const retryFailedVideoBackfillJobsAction = adminAction(
+  'retryFailedVideoBackfillJobsAction',
+  async ({
+    supabaseClient,
+    user,
+  }): Promise<ActionResult<VideoBackfillRetrySummary>> => {
     const [latestFailures, { all }] = await Promise.all([
       getLatestFailures(supabaseClient),
       getBackfillAccounts(supabaseClient),
@@ -72,16 +56,12 @@ export async function retryFailedVideoBackfillJobsAction(): Promise<{
     const accounts = toFailedAccounts(latestFailures, all)
 
     if (accounts.length === 0) {
-      return {
-        error: '失敗した過去動画の取り込みはありません。',
-        success: false,
-      }
+      throw new ActionError('失敗した過去動画の取り込みはありません。')
     }
 
     const queue = new BackfillQueue(getRedisClient())
     const enqueued: typeof accounts = []
     let failed = 0
-    let lastError: unknown
 
     // One account that cannot be queued does not stop the others, and the
     // ones that were queued are recorded in any case.
@@ -99,7 +79,6 @@ export async function retryFailedVideoBackfillJobsAction(): Promise<{
         }
       } catch (error) {
         failed++
-        lastError = error
         logger.error('過去動画の取り込みをキューに追加できませんでした', {
           accountId: account.accountId,
           error,
@@ -126,41 +105,28 @@ export async function retryFailedVideoBackfillJobsAction(): Promise<{
       })
     }
 
-    const reason =
-      lastError instanceof Error ? lastError.message : '不明なエラー'
-
     if (enqueued.length === 0) {
-      return {
-        error:
-          failed > 0
-            ? `失敗した過去動画の取り込みをキューに追加できませんでした（${reason}）。`
-            : '失敗した過去動画の取り込みは、すべて再試行中です。',
-        success: false,
-      }
+      throw new ActionError(
+        failed > 0
+          ? '失敗した過去動画の取り込みをキューに追加できませんでした。'
+          : '失敗した過去動画の取り込みは、すべて再試行中です。',
+      )
     }
 
-    const notes = [
-      skipped > 0 ? `再試行中の${skipped}件は除く` : null,
-      failed > 0 ? `${failed}件は追加できませんでした: ${reason}` : null,
-    ].filter((note) => note !== null)
-    const text = `失敗した過去動画の取り込みを${enqueued.length}件キューに追加しました${
-      notes.length > 0 ? `（${notes.join('、')}）` : ''
+    const message = `失敗した過去動画の取り込みを${enqueued.length}件キューに追加しました${
+      skipped > 0 ? `（再試行中の${skipped}件は除く）` : ''
     }。`
 
-    return failed > 0
-      ? { error: text, success: false }
-      : { message: text, success: true }
-  } catch (error) {
-    logger.error('失敗した過去動画の取り込みの再試行に失敗しました', {
-      error,
-    })
-
     return {
-      error:
-        error instanceof Error
-          ? error.message
-          : '予期しないエラーが発生しました。',
-      success: false,
+      data: { message },
+      success: true,
+      ...(failed > 0
+        ? {
+            warnings: [
+              `失敗した過去動画の取り込みのうち、${failed}件はキューに追加できませんでした。`,
+            ],
+          }
+        : {}),
     }
-  }
-}
+  },
+)

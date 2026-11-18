@@ -9,7 +9,10 @@ describe('useBackfillRequest', () => {
     const action = vi.fn(async (talentId: string) => {
       calls.push(`action:${talentId}`)
 
-      return { message: '2件キューに追加しました。', success: true }
+      return {
+        data: { message: '2件キューに追加しました。' },
+        success: true,
+      }
     })
     const reload = vi.fn(async () => {
       calls.push('reload')

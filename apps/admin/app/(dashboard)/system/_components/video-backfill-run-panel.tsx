@@ -15,7 +15,10 @@ import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Panel, PanelSkeleton } from '@/components/panel'
 import { formatDateTimeFromISO } from '@/lib/format'
 import { useBackfillRequest } from '@/lib/use-backfill-request'
-import { usePolledResource } from '@/lib/use-polled-resource'
+import {
+  type PolledResourceFailure,
+  usePolledResource,
+} from '@/lib/use-polled-resource'
 import {
   getVideoBackfillRunAction,
   requestVideoBackfillRunAction,
@@ -34,6 +37,19 @@ const POLL_INTERVAL_MS = 5_000
 const TITLE = '取得漏れチェック（全タレント）'
 const DESCRIPTION =
   'active なタレントのすべてのアカウントについて、プラットフォーム上にあってデータベースにない過去の動画を取り込みます。登録済みの動画はそのまま残ります。'
+
+/** 進捗を取り直す。アクションの `data` を、`usePolledResource` が受け取る形にする */
+async function fetchVideoBackfillRun(): Promise<
+  VideoBackfillRunState | PolledResourceFailure
+> {
+  const result = await getVideoBackfillRunAction()
+
+  if (!result.success) {
+    return result
+  }
+
+  return result.data ?? { success: false }
+}
 
 /** Order of the counts in the summary. */
 const STATUSES: Status[] = [
@@ -156,7 +172,7 @@ export function VideoBackfillRunPanel({
   initialData,
 }: VideoBackfillRunPanelProps) {
   const { data, error, reload } = usePolledResource({
-    fetcher: getVideoBackfillRunAction,
+    fetcher: fetchVideoBackfillRun,
     initialData,
     intervalMs: POLL_INTERVAL_MS,
     isActive: ({ run }) => run?.active ?? false,
