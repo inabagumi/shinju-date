@@ -22,7 +22,7 @@ export function ToastViewport({
 }
 
 const toastVariants = cva(
-  'group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-container border p-4 pr-8 shadow-overlay transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-[transform_200ms_ease-out] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]',
+  'group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-container border p-4 pr-8 shadow-overlay transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-[transform_200ms_ease-out] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] motion-safe:data-[state=closed]:animate-fade-out motion-safe:data-[state=open]:animate-slide-in motion-safe:data-[state=closed]:data-[swipe=end]:animate-swipe-out',
   {
     defaultVariants: {
       variant: 'default',

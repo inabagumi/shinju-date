@@ -13,7 +13,10 @@ export function DialogOverlay({
 }: ComponentPropsWithRef<typeof DialogPrimitive.Overlay>) {
   return (
     <DialogPrimitive.Overlay
-      className={twMerge('fixed inset-0 bg-black/50', className)}
+      className={twMerge(
+        'fixed inset-0 bg-black/50 motion-safe:data-[state=closed]:animate-fade-out motion-safe:data-[state=open]:animate-fade-in',
+        className,
+      )}
       {...props}
     />
   )
@@ -27,7 +30,7 @@ export function DialogContent({
   return (
     <DialogPrimitive.Content
       className={twMerge(
-        'fixed top-1/2 left-1/2 max-h-[85vh] w-[90vw] max-w-[450px] -translate-x-1/2 -translate-y-1/2 rounded-container bg-surface p-6 text-foreground shadow-overlay',
+        'fixed top-1/2 left-1/2 max-h-[85vh] w-[90vw] max-w-[450px] -translate-x-1/2 -translate-y-1/2 rounded-container bg-surface p-6 text-foreground shadow-overlay motion-safe:data-[state=closed]:animate-scale-out motion-safe:data-[state=open]:animate-scale-in',
         className,
       )}
       {...props}
