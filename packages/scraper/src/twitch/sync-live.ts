@@ -1,9 +1,9 @@
+import { toLiveTwitchVideoId } from '@shinju-date/constants'
 import type { TablesUpdate } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import {
   getArchivedStreamId,
   TWITCH_API_MAX_RESULTS,
-  toLiveTwitchVideoId,
 } from '@shinju-date/twitch-api-client'
 import type { QueryData } from '@supabase/supabase-js'
 import { countChanges } from '../internal/concurrency.js'

@@ -5,7 +5,8 @@
     "@shinju-date/config": "workspace:*",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
     ".": {
@@ -24,6 +25,7 @@
   },
   "scripts": {
     "build": "tsdown",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "type": "module",
