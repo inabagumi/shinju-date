@@ -39,25 +39,22 @@ locals {
 
   # admin と batch が必須にする、YouTube と Twitch の API のキー
   # （apps/admin/lib/env.ts と apps/batch/lib/env.ts の API_KEY_NAMES）
-  #
-  # 手で追加されていた環境変数は Sensitive ではなく、Vercel では作ったあとに sensitive を
-  # 変えられない。作り直さずに取り込むために、いまの設定に合わせて sensitive = false にしている
   api_key_environment_variables = {
     google_api_key = {
       key       = "GOOGLE_API_KEY"
-      sensitive = false
+      sensitive = true
       target    = ["production", "preview"]
       value     = var.google_api_key
     }
     twitch_client_id = {
       key       = "TWITCH_CLIENT_ID"
-      sensitive = false
+      sensitive = true
       target    = ["production", "preview"]
       value     = var.twitch_client_id
     }
     twitch_client_secret = {
       key       = "TWITCH_CLIENT_SECRET"
-      sensitive = false
+      sensitive = true
       target    = ["production", "preview"]
       value     = var.twitch_client_secret
     }
@@ -91,10 +88,6 @@ locals {
       function_default_cpu_type = "standard"
       function_default_timeout  = 120
       environment_variables = merge(local.api_key_environment_variables, {
-        # batch の GOOGLE_API_KEY は、はじめから Terraform が Sensitive として作っている
-        google_api_key = merge(local.api_key_environment_variables.google_api_key, {
-          sensitive = true
-        })
         cron_secret = {
           key       = "CRON_SECRET"
           sensitive = true
