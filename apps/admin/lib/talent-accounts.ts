@@ -60,10 +60,6 @@ interface AccountMessages {
   apiFailed: string
   /** API の認証情報が設定されていない */
   credentialsMissing: string
-  /** 入力を、ID や URL として解釈できない */
-  inputInvalid: string
-  /** 入力が空 */
-  inputRequired: string
   /** ほかのタレントに登録済み */
   linkedToOtherTalent: string
   /** プラットフォームに、アカウントが見つからない */
@@ -133,10 +129,6 @@ const ACCOUNT_DEFINITIONS: {
         'Twitch APIへの接続に失敗しました。しばらくしてから再度お試しください。',
       credentialsMissing:
         'Twitch APIの認証情報が設定されていません。管理者に連絡してください。',
-      inputInvalid:
-        '有効なログイン名、ユーザーID（数字）、またはTwitch URLを入力してください。',
-      inputRequired:
-        'Twitchのログイン名、ユーザーID、またはURLを入力してください。',
       linkedToOtherTalent:
         'このTwitchユーザーは別のタレントに既に登録されています。',
       notFound:
@@ -184,10 +176,6 @@ const ACCOUNT_DEFINITIONS: {
         'YouTube APIへの接続に失敗しました。しばらくしてから再度お試しください。',
       credentialsMissing:
         'YouTube APIキーが設定されていません。管理者に連絡してください。',
-      inputInvalid:
-        '有効なチャンネルID（UC...）、ハンドル（@name）、またはYouTube URLを入力してください。',
-      inputRequired:
-        'YouTubeチャンネルID、ハンドル、またはURLを入力してください。',
       linkedToOtherTalent:
         'このチャンネルは別のタレントに既に登録されています。',
       notFound:
@@ -233,7 +221,11 @@ export interface ResolvedAccount<P extends AccountPlatform = AccountPlatform> {
 }
 
 export interface ResolveAccountOptions {
-  /** 入力された、アカウントの ID、ハンドル（ログイン名）、または URL */
+  /**
+   * 入力された、アカウントの ID、ハンドル（ログイン名）、または URL。
+   * 呼ぶ側で、`talents/_lib/talent-schema.ts` のスキーマ（`youtubeChannelInputSchema`
+   * など）を通して検証しておく
+   */
   input: string
   supabaseClient: TypedSupabaseClient
   /** 結び付ける先のタレント。登録済みのときのエラーの文を、このタレントかどうかで変える */
@@ -241,7 +233,10 @@ export interface ResolveAccountOptions {
 }
 
 export interface LinkAccountOptions<P extends AccountPlatform> {
-  /** 入力された文字列。先に `resolveAccount` で解決してあるときは、その結果 */
+  /**
+   * 入力された文字列（`ResolveAccountOptions` の `input` と同じく、検証しておく）。
+   * 先に `resolveAccount` で解決してあるときは、その結果
+   */
   input: string | ResolvedAccount<P>
   supabaseClient: TypedSupabaseClient
   talentId: string
@@ -351,7 +346,10 @@ async function assertNotLinked(
  * タレントを作る前に確かめたいとき（新規作成）は、これを先に呼び、
  * 結果を `linkAccount` の `input` に渡す。
  *
- * @throws {ActionError} 入力を解釈できない、API を呼べない、アカウントが見つからない、登録済み
+ * 入力が空か、解釈できないときの画面に出す文は、スキーマが返す。ここでは、検証を
+ * 通っていない入力を渡したという呼ぶ側の誤りとして、`ActionError` ではない例外を投げる。
+ *
+ * @throws {ActionError} API を呼べない、アカウントが見つからない、登録済み
  */
 export async function resolveAccount<P extends AccountPlatform>(
   platform: P,
@@ -360,14 +358,12 @@ export async function resolveAccount<P extends AccountPlatform>(
   const definition: AccountDefinition<P> = ACCOUNT_DEFINITIONS[platform]
   const { field, messages } = definition
 
-  if (!input.trim()) {
-    throw new ActionError(messages.inputRequired, { field })
-  }
-
   const identifier = definition.parse(input)
 
   if (!identifier) {
-    throw new ActionError(messages.inputInvalid, { field })
+    throw new TypeError(
+      `検証を通っていない入力が渡されました（platform: ${platform}）`,
+    )
   }
 
   let remote: AccountTypes[P]['remote'] | null
