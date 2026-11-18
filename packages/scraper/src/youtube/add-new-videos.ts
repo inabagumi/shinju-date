@@ -31,10 +31,9 @@ export async function addNewYouTubeVideos(
     return 0
   }
 
-  const { accounts, failures, missingAccountIds } =
-    await fetcher.getRecentVideoIds(
-      channels.map((channel) => channel.platformId),
-    )
+  const { failures, missingAccountIds, videos } = await fetcher.getRecentVideos(
+    channels.map((channel) => channel.platformId),
+  )
 
   for (const { accountId, error } of failures) {
     reportError(error, { youtubeChannelId: accountId })
@@ -51,14 +50,10 @@ export async function addNewYouTubeVideos(
   )
   const channelByVideoId = new Map<string, TalentAccount>()
 
-  for (const { accountId, videoIds } of accounts) {
-    const channel = channelById.get(accountId)
+  for (const { channelId, videoId } of videos) {
+    const channel = channelById.get(channelId)
 
-    if (!channel) {
-      continue
-    }
-
-    for (const videoId of videoIds) {
+    if (channel) {
       channelByVideoId.set(videoId, channel)
     }
   }

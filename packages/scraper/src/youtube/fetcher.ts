@@ -11,7 +11,6 @@ import {
 import { unique } from '../internal/batch.js'
 import { DEFAULT_RECENT_VIDEOS_LIMIT, Fetcher } from '../internal/fetcher.js'
 import type {
-  RecentVideoIdsResult,
   RecentVideosOptions,
   VideoLookupResult,
 } from '../internal/fetcher-types.js'
@@ -19,6 +18,8 @@ import type {
   UploadPage,
   YouTubeChannel,
   YouTubeFetcherOptions,
+  YouTubeRecentVideosResult,
+  YouTubeUpload,
   YouTubeVideo,
 } from './types.js'
 
@@ -26,7 +27,11 @@ import type {
  * Reads channels and videos from the YouTube Data API.
  * An account is a YouTube channel.
  */
-export class YouTubeFetcher extends Fetcher<YouTubeChannel, YouTubeVideo> {
+export class YouTubeFetcher extends Fetcher<
+  YouTubeChannel,
+  YouTubeVideo,
+  YouTubeUpload
+> {
   readonly provider = 'youtube'
 
   readonly #client: youtube.Youtube | undefined
@@ -41,10 +46,8 @@ export class YouTubeFetcher extends Fetcher<YouTubeChannel, YouTubeVideo> {
    * Gets channels by channel ID (`UC...`).
    */
   async getAccounts(accountIds: readonly string[]): Promise<YouTubeChannel[]> {
-    const { found } = await this.fetchByIds(
-      accountIds,
-      YOUTUBE_DATA_API_MAX_RESULTS,
-      (ids) => getChannels({ client: this.#client, ids }),
+    const { found } = await this.fetchByIds(accountIds, (ids) =>
+      getChannels({ client: this.#client, ids, schedule: this.request }),
     )
 
     return found
@@ -56,10 +59,10 @@ export class YouTubeFetcher extends Fetcher<YouTubeChannel, YouTubeVideo> {
    * YouTube only returns IDs here; video details are a separate request
    * ({@link getVideos}), so ask for them only for the IDs that matter.
    */
-  async getRecentVideoIds(
+  async getRecentVideos(
     accountIds: readonly string[],
     { limit = DEFAULT_RECENT_VIDEOS_LIMIT }: RecentVideosOptions = {},
-  ): Promise<RecentVideoIdsResult> {
+  ): Promise<YouTubeRecentVideosResult> {
     const requestedIds = unique(accountIds)
     const channels = await this.getAccounts(requestedIds)
     const channelById = new Map(
@@ -73,12 +76,11 @@ export class YouTubeFetcher extends Fetcher<YouTubeChannel, YouTubeVideo> {
     )
 
     return {
-      accounts: results.map(({ accountId, value }) => ({
-        accountId,
-        videoIds: value,
-      })),
       failures,
       missingAccountIds: requestedIds.filter((id) => !channelById.has(id)),
+      videos: results.flatMap(({ accountId, value }) =>
+        value.map((videoId) => ({ channelId: accountId, videoId })),
+      ),
     }
   }
 
@@ -153,28 +155,29 @@ export class YouTubeFetcher extends Fetcher<YouTubeChannel, YouTubeVideo> {
   async getVideos(
     videoIds: readonly string[],
   ): Promise<VideoLookupResult<YouTubeVideo>> {
-    const { found, missingIds } = await this.fetchByIds(
-      videoIds,
-      YOUTUBE_DATA_API_MAX_RESULTS,
-      (ids) => getVideos({ client: this.#client, ids }),
+    const { found, missingIds } = await this.fetchByIds(videoIds, (ids) =>
+      getVideos({ client: this.#client, ids, schedule: this.request }),
     )
 
     return { missingIds, videos: found }
   }
 
   /**
+   * Returns the IDs of the videos that no longer exist on YouTube (deleted or
+   * made private).
+   *
    * Requests only the `id` part instead of full videos, which makes checking
    * every saved video cheap enough for full sweeps.
    */
-  override async findMissingVideoIds(
-    videoIds: readonly string[],
-  ): Promise<string[]> {
+  async findMissingVideoIds(videoIds: readonly string[]): Promise<string[]> {
     const requestedIds = unique(videoIds)
     const foundIds = new Set(
-      await this.fetchInBatches(
-        requestedIds,
-        YOUTUBE_DATA_API_MAX_RESULTS,
-        (ids) => getVideoIds({ client: this.#client, ids }),
+      await Array.fromAsync(
+        getVideoIds({
+          client: this.#client,
+          ids: requestedIds,
+          schedule: this.request,
+        }),
       ),
     )
 

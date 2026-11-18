@@ -17,10 +17,3 @@ export function chunk<T>(values: readonly T[], size: number): T[][] {
 
   return chunks
 }
-
-/**
- * Deduplicates IDs and splits them into the batches one API request accepts.
- */
-export function toBatches(ids: readonly string[], size: number): string[][] {
-  return chunk(unique(ids), size)
-}

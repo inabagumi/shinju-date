@@ -140,6 +140,23 @@ for await (const video of getVideos({ client, ids: videoIds })) {
 
 `getPlaylistItems` also accepts `maxResults` to control the page size.
 
+### Bound the requests in flight
+
+`getChannels`, `getVideos` and `getVideoIds` accept any number of IDs and split them into batches of `YOUTUBE_DATA_API_MAX_RESULTS` (50). The batches are requested one after another. Pass `schedule` to run each request through it instead: every batch is requested at once, and `schedule` decides how many requests run at a time.
+
+```typescript
+import PQueue from 'p-queue'
+
+const queue = new PQueue({ concurrency: 5 })
+
+for await (const video of getVideos({
+  ids: videoIds,
+  schedule: (request) => queue.add(request),
+})) {
+  // ...
+}
+```
+
 ## Environment Variables
 
 The package requires a Google API key to be set:

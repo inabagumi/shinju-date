@@ -7,13 +7,9 @@ import {
   getVideosByUserPage,
   TWITCH_API_MAX_RESULTS,
 } from '@shinju-date/twitch-api-client'
-import {
-  DEFAULT_RECENT_VIDEOS_LIMIT,
-  Fetcher,
-  type PerAccountResult,
-} from '../internal/fetcher.js'
+import { unique } from '../internal/batch.js'
+import { DEFAULT_RECENT_VIDEOS_LIMIT, Fetcher } from '../internal/fetcher.js'
 import type {
-  RecentVideoIdsResult,
   RecentVideosResult,
   VideoLookupResult,
 } from '../internal/fetcher-types.js'
@@ -49,6 +45,7 @@ const defaultClient: TwitchApi = {
 export class TwitchFetcher extends Fetcher<
   TwitchUser,
   TwitchVideo,
+  TwitchVideo,
   TwitchRecentVideosOptions
 > {
   readonly provider = 'twitch'
@@ -65,67 +62,33 @@ export class TwitchFetcher extends Fetcher<
    * Gets users by Helix user ID.
    */
   async getAccounts(accountIds: readonly string[]): Promise<TwitchUser[]> {
-    const { found } = await this.fetchByIds(
-      accountIds,
-      TWITCH_API_MAX_RESULTS,
-      (ids) => this.#client.getUsers({ ids }),
+    const { found } = await this.fetchByIds(accountIds, (ids) =>
+      this.#client.getUsers({ ids, schedule: this.request }),
     )
 
     return found
   }
 
-  #listRecentVideos(
+  /**
+   * Lists the newest videos of each broadcaster.
+   *
+   * Helix returns full videos when listing, so this takes no second request.
+   * It cannot tell an unknown broadcaster from one without videos.
+   */
+  async getRecentVideos(
     accountIds: readonly string[],
     {
       limit = DEFAULT_RECENT_VIDEOS_LIMIT,
       type = 'archive',
     }: TwitchRecentVideosOptions = {},
-  ): Promise<PerAccountResult<TwitchVideo[]>> {
-    return this.fetchPerAccount(accountIds, (userId) =>
-      Array.fromAsync(this.#client.getVideosByUser({ limit, type, userId })),
-    )
-  }
-
-  /**
-   * Lists the newest videos of each broadcaster.
-   *
-   * Helix returns full videos when listing, so unlike the default this takes
-   * no second request. It also cannot tell an unknown broadcaster from one
-   * without videos: `missingAccountIds` is always empty.
-   */
-  override async getRecentVideos(
-    accountIds: readonly string[],
-    options?: TwitchRecentVideosOptions,
   ): Promise<RecentVideosResult<TwitchVideo>> {
-    const { failures, results } = await this.#listRecentVideos(
+    const { failures, results } = await this.fetchPerAccount(
       accountIds,
-      options,
+      (userId) =>
+        Array.fromAsync(this.#client.getVideosByUser({ limit, type, userId })),
     )
 
-    return {
-      failures,
-      missingAccountIds: [],
-      videos: results.flatMap(({ value }) => value),
-    }
-  }
-
-  async getRecentVideoIds(
-    accountIds: readonly string[],
-    options?: TwitchRecentVideosOptions,
-  ): Promise<RecentVideoIdsResult> {
-    const { failures, results } = await this.#listRecentVideos(
-      accountIds,
-      options,
-    )
-
-    return {
-      accounts: results.map(({ accountId, value }) => ({
-        accountId,
-        videoIds: value.map((video) => video.id),
-      })),
-      failures,
-      missingAccountIds: [],
-    }
+    return { failures, videos: results.flatMap(({ value }) => value) }
   }
 
   /**
@@ -156,10 +119,8 @@ export class TwitchFetcher extends Fetcher<
   async getVideos(
     videoIds: readonly string[],
   ): Promise<VideoLookupResult<TwitchVideo>> {
-    const { found, missingIds } = await this.fetchByIds(
-      videoIds,
-      TWITCH_API_MAX_RESULTS,
-      (ids) => this.#client.getVideos({ ids }),
+    const { found, missingIds } = await this.fetchByIds(videoIds, (ids) =>
+      this.#client.getVideos({ ids, schedule: this.request }),
     )
 
     return { missingIds, videos: found }
@@ -170,8 +131,11 @@ export class TwitchFetcher extends Fetcher<
    * Offline broadcasters are omitted (Helix does not return them).
    */
   getLiveStreams(accountIds: readonly string[]): Promise<TwitchStream[]> {
-    return this.fetchInBatches(accountIds, TWITCH_API_MAX_RESULTS, (userIds) =>
-      this.#client.getStreamsByUserIds({ userIds }),
+    return Array.fromAsync(
+      this.#client.getStreamsByUserIds({
+        schedule: this.request,
+        userIds: unique(accountIds),
+      }),
     )
   }
 
@@ -179,10 +143,8 @@ export class TwitchFetcher extends Fetcher<
    * Gets clips by ID (slug) and reports the IDs Helix did not return.
    */
   async getClips(clipIds: readonly string[]): Promise<ClipLookupResult> {
-    const { found, missingIds } = await this.fetchByIds(
-      clipIds,
-      TWITCH_API_MAX_RESULTS,
-      (ids) => this.#client.getClips({ ids }),
+    const { found, missingIds } = await this.fetchByIds(clipIds, (ids) =>
+      this.#client.getClips({ ids, schedule: this.request }),
     )
 
     return { clips: found, missingIds }

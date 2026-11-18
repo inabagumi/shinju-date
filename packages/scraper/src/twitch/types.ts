@@ -1,4 +1,5 @@
 import type {
+  RequestScheduler,
   TwitchClip,
   TwitchStream,
   TwitchUser,
@@ -24,14 +25,28 @@ export type {
 /**
  * The Helix calls a Twitch scraper makes. Defaults to the implementations of
  * `@shinju-date/twitch-api-client`; tests pass their own.
+ *
+ * Lookups by ID get every ID at once: they split the IDs into the batches one
+ * request accepts and make each request through `schedule`, which bounds the
+ * requests in flight.
  */
 export interface TwitchApi {
-  getClips: (options: { ids: string[] }) => AsyncIterable<TwitchClip>
+  getClips: (options: {
+    ids: string[]
+    schedule?: RequestScheduler
+  }) => AsyncIterable<TwitchClip>
   getStreamsByUserIds: (options: {
+    schedule?: RequestScheduler
     userIds: string[]
   }) => AsyncIterable<TwitchStream>
-  getUsers: (options: { ids: string[] }) => AsyncIterable<TwitchUser>
-  getVideos: (options: { ids: string[] }) => AsyncIterable<TwitchVideo>
+  getUsers: (options: {
+    ids: string[]
+    schedule?: RequestScheduler
+  }) => AsyncIterable<TwitchUser>
+  getVideos: (options: {
+    ids: string[]
+    schedule?: RequestScheduler
+  }) => AsyncIterable<TwitchVideo>
   getVideosByUser: (options: {
     limit?: number
     type?: TwitchVideoFilter

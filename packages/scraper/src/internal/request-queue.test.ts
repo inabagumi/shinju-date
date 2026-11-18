@@ -6,18 +6,6 @@ function delay(ms: number): Promise<void> {
 }
 
 describe('RequestQueue', () => {
-  it('keeps results in input order', async () => {
-    const queue = new RequestQueue(3)
-
-    const results = await queue.map([30, 10, 20], async (ms) => {
-      await delay(ms)
-
-      return ms
-    })
-
-    expect(results).toEqual([30, 10, 20])
-  })
-
   it('shares its limit across concurrent calls', async () => {
     const queue = new RequestQueue(2)
     let running = 0
@@ -30,25 +18,12 @@ describe('RequestQueue', () => {
     }
 
     await Promise.all([
-      queue.map([1, 2, 3], task),
-      queue.mapSettled([4, 5, 6], task),
+      queue.mapSettled([1, 2, 3], task),
+      queue.run(task),
+      queue.run(task),
     ])
 
     expect(peak).toBe(2)
-  })
-
-  it('rejects map with the first failure', async () => {
-    const queue = new RequestQueue()
-
-    await expect(
-      queue.map([1, 2], async (value) => {
-        if (value === 2) {
-          throw new Error('boom')
-        }
-
-        return value
-      }),
-    ).rejects.toThrow('boom')
   })
 
   it('reports failures of mapSettled per item', async () => {

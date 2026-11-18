@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { Fetcher } from './fetcher.js'
 import type {
   FetcherOptions,
-  RecentVideoIdsResult,
+  RecentVideosResult,
   VideoLookupResult,
 } from './fetcher-types.js'
 
@@ -50,7 +50,7 @@ class ExampleFetcher extends Fetcher<Account, Video> {
   }
 
   async getAccounts(accountIds: readonly string[]): Promise<Account[]> {
-    const { found } = await this.fetchByIds(accountIds, 2, (ids) =>
+    const { found } = await this.fetchByIds(accountIds, (ids) =>
       this.#lookUp(ids, Object.keys(this.#platform.accounts), (id) => ({
         id,
         name: `Account ${id}`,
@@ -60,9 +60,9 @@ class ExampleFetcher extends Fetcher<Account, Video> {
     return found
   }
 
-  async getRecentVideoIds(
+  async getRecentVideos(
     accountIds: readonly string[],
-  ): Promise<RecentVideoIdsResult> {
+  ): Promise<RecentVideosResult<Video>> {
     const { failures, results } = await this.fetchPerAccount(
       accountIds,
       async (accountId) => {
@@ -72,24 +72,17 @@ class ExampleFetcher extends Fetcher<Account, Video> {
           throw videoIds
         }
 
-        return videoIds
+        return videoIds.map((id) => ({ id, title: `Video ${id}` }))
       },
     )
 
-    return {
-      accounts: results.map(({ accountId, value }) => ({
-        accountId,
-        videoIds: value,
-      })),
-      failures,
-      missingAccountIds: [],
-    }
+    return { failures, videos: results.flatMap(({ value }) => value) }
   }
 
   async getVideos(
     videoIds: readonly string[],
   ): Promise<VideoLookupResult<Video>> {
-    const { found, missingIds } = await this.fetchByIds(videoIds, 2, (ids) =>
+    const { found, missingIds } = await this.fetchByIds(videoIds, (ids) =>
       this.#lookUp(ids, this.#platform.videoIds, (id) => ({
         id,
         title: `Video ${id}`,
@@ -102,7 +95,7 @@ class ExampleFetcher extends Fetcher<Account, Video> {
 
 describe('Fetcher', () => {
   describe('lookups by ID', () => {
-    it('deduplicates IDs and requests them in batches', async () => {
+    it('passes each ID once and leaves batching to the API client', async () => {
       const fetcher = new ExampleFetcher({
         accounts: {},
         videoIds: ['v1', 'v2', 'v3'],
@@ -111,7 +104,7 @@ describe('Fetcher', () => {
       const result = await fetcher.getVideos(['v1', 'v2', 'v1', 'v3', 'v2'])
 
       expect(result.videos.map((video) => video.id)).toEqual(['v1', 'v2', 'v3'])
-      expect(fetcher.requests).toEqual([['v1', 'v2'], ['v3']])
+      expect(fetcher.requests).toEqual([['v1', 'v2', 'v3']])
     })
 
     it('reports the IDs the platform did not return', async () => {
@@ -131,36 +124,7 @@ describe('Fetcher', () => {
     })
   })
 
-  describe('findMissingVideoIds', () => {
-    it('is derived from getVideos by default', async () => {
-      const fetcher = new ExampleFetcher({ accounts: {}, videoIds: ['v1'] })
-
-      await expect(
-        fetcher.findMissingVideoIds(['v1', 'gone-a', 'gone-b']),
-      ).resolves.toEqual(['gone-a', 'gone-b'])
-    })
-  })
-
   describe('getRecentVideos', () => {
-    it('is derived from getRecentVideoIds and getVideos by default', async () => {
-      const fetcher = new ExampleFetcher({
-        accounts: { a: ['v1', 'v2'], b: ['v3'] },
-        videoIds: ['v1', 'v2', 'v3'],
-      })
-
-      const result = await fetcher.getRecentVideos(['a', 'b'])
-
-      expect(result).toEqual({
-        failures: [],
-        missingAccountIds: [],
-        videos: [
-          { id: 'v1', title: 'Video v1' },
-          { id: 'v2', title: 'Video v2' },
-          { id: 'v3', title: 'Video v3' },
-        ],
-      })
-    })
-
     it('keeps the accounts that worked when one fails', async () => {
       const error = new Error('rate limited')
       const fetcher = new ExampleFetcher({
@@ -190,7 +154,7 @@ describe('Fetcher', () => {
         { logger },
       )
 
-      await fetcher.getRecentVideoIds(['a'])
+      await fetcher.getRecentVideos(['a'])
 
       expect(logger.error).toHaveBeenCalledWith(
         'Failed to fetch data for an account',
@@ -205,7 +169,6 @@ describe('Fetcher', () => {
         ): Promise<VideoLookupResult<Video>> {
           const { found, missingIds } = await this.fetchByIds(
             videoIds,
-            2,
             // biome-ignore lint/correctness/useYield: a request that fails yields nothing
             async function* (): AsyncGenerator<Video> {
               throw new Error('boom')
@@ -219,7 +182,6 @@ describe('Fetcher', () => {
       const fetcher = new FailingFetcher({ accounts: {}, videoIds: [] })
 
       await expect(fetcher.getVideos(['v1'])).rejects.toThrow('boom')
-      await expect(fetcher.findMissingVideoIds(['v1'])).rejects.toThrow('boom')
     })
   })
 
@@ -227,22 +189,29 @@ describe('Fetcher', () => {
     it('is shared by every method of a fetcher', async () => {
       let running = 0
       let peak = 0
+      const task = async () => {
+        running++
+        peak = Math.max(peak, running)
+        await new Promise((resolve) => setTimeout(resolve, 5))
+        running--
+      }
 
       class SlowFetcher extends ExampleFetcher {
-        override async getRecentVideoIds(
+        override async getRecentVideos(
           accountIds: readonly string[],
-        ): Promise<RecentVideoIdsResult> {
-          const { failures } = await this.fetchPerAccount(
-            accountIds,
-            async () => {
-              running++
-              peak = Math.max(peak, running)
-              await new Promise((resolve) => setTimeout(resolve, 5))
-              running--
-            },
-          )
+        ): Promise<RecentVideosResult<Video>> {
+          const { failures } = await this.fetchPerAccount(accountIds, task)
 
-          return { accounts: [], failures, missingAccountIds: [] }
+          return { failures, videos: [] }
+        }
+
+        override async getVideos(
+          videoIds: readonly string[],
+        ): Promise<VideoLookupResult<Video>> {
+          // Like an API client handed `request` as its `schedule`.
+          await Promise.all(videoIds.map(() => this.request(task)))
+
+          return { missingIds: [], videos: [] }
         }
       }
 
@@ -252,8 +221,8 @@ describe('Fetcher', () => {
       )
 
       await Promise.all([
-        fetcher.getRecentVideoIds(['a', 'b', 'c']),
-        fetcher.getRecentVideoIds(['d', 'e', 'f']),
+        fetcher.getRecentVideos(['a', 'b', 'c']),
+        fetcher.getVideos(['v1', 'v2', 'v3']),
       ])
 
       expect(peak).toBe(2)

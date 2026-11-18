@@ -4,6 +4,7 @@ import {
   getTwitchVideoStatus,
   isLiveTwitchVideoId,
   parseTwitchUserIdentifier,
+  type RequestScheduler,
   resetTwitchClientState,
   streamIdFromLiveTwitchVideoId,
   type TwitchVideo,
@@ -254,6 +255,61 @@ describe('lookups by ID', () => {
     await expect(Array.fromAsync(getVideos({ ids: ['1'] }))).rejects.toThrow(
       /500/,
     )
+  })
+
+  it('requests the IDs in batches, one after another by default', async () => {
+    getVideosByIds.mockImplementation(async (ids: string[]) =>
+      ids.map(helixVideo),
+    )
+    const ids = Array.from({ length: 250 }, (_, i) => `${i}`)
+
+    const { getVideos } = await import('./index.js')
+    const videos = await Array.fromAsync(getVideos({ ids }))
+
+    expect(videos.map((video) => video.id)).toEqual(ids)
+    expect(getVideosByIds.mock.calls).toEqual([
+      [ids.slice(0, 100)],
+      [ids.slice(100, 200)],
+      [ids.slice(200)],
+    ])
+  })
+
+  it('hands every request to the scheduler, including retries after a 404', async () => {
+    let running = 0
+    let peak = 0
+    getVideosByIds.mockImplementation(async (ids: string[]) => {
+      running++
+      peak = Math.max(peak, running)
+      await new Promise((resolve) => setTimeout(resolve, 5))
+      running--
+
+      if (ids.includes('gone')) {
+        throw notFound()
+      }
+
+      return ids.map(helixVideo)
+    })
+    const ids = [
+      ...Array.from({ length: 199 }, (_, i) => `${i}`),
+      'gone',
+      '199',
+    ]
+    let scheduled = 0
+    const schedule: RequestScheduler = (request) => {
+      scheduled++
+
+      return request()
+    }
+
+    const { getVideos } = await import('./index.js')
+    const videos = await Array.fromAsync(getVideos({ ids, schedule }))
+
+    expect(videos.map((video) => video.id)).toEqual(
+      ids.filter((id) => id !== 'gone'),
+    )
+    // The batches run at once; the one with `gone` is retried in halves.
+    expect(peak).toBe(3)
+    expect(scheduled).toBe(getVideosByIds.mock.calls.length)
   })
 
   it('treats a 404 for clips as not found', async () => {

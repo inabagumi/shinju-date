@@ -40,11 +40,11 @@ describe('addNewYouTubeVideos', () => {
       'GET talents': YOUTUBE_TALENTS,
       'GET youtube_videos': [{ youtube_video_id: 'old-1' }],
     })
-    const { getRecentVideoIds, getVideos, fetcher } =
+    const { getRecentVideos, getVideos, fetcher } =
       createFakeFetcher<YouTubeFetcher>({
-        recentVideoIds: [
-          { accountId: 'UCaaa', videoIds: ['new-1', 'old-1'] },
-          { accountId: 'UCbbb', videoIds: [] },
+        recentVideos: [
+          { channelId: 'UCaaa', videoId: 'new-1' },
+          { channelId: 'UCaaa', videoId: 'old-1' },
         ],
         videos: [createVideo({ id: 'new-1' })],
       })
@@ -52,7 +52,7 @@ describe('addNewYouTubeVideos', () => {
     const added = await addNewYouTubeVideos(createContext(fetcher))
 
     expect(added).toBe(1)
-    expect(getRecentVideoIds).toHaveBeenCalledWith(['UCaaa', 'UCbbb'])
+    expect(getRecentVideos).toHaveBeenCalledWith(['UCaaa', 'UCbbb'])
     expect(getVideos).toHaveBeenCalledWith(['new-1'])
 
     const video = supabase.written('POST', 'videos')[0]?.body as { id: string }
@@ -91,9 +91,9 @@ describe('addNewYouTubeVideos', () => {
   it('links each video to the channel it was uploaded to', async () => {
     supabase.respondWith({ 'GET talents': YOUTUBE_TALENTS })
     const { fetcher } = createFakeFetcher<YouTubeFetcher>({
-      recentVideoIds: [
-        { accountId: 'UCaaa', videoIds: ['a-1'] },
-        { accountId: 'UCbbb', videoIds: ['b-1'] },
+      recentVideos: [
+        { channelId: 'UCaaa', videoId: 'a-1' },
+        { channelId: 'UCbbb', videoId: 'b-1' },
       ],
       videos: [createVideo({ id: 'a-1' }), createVideo({ id: 'b-1' })],
     })
@@ -125,7 +125,7 @@ describe('addNewYouTubeVideos', () => {
       'GET youtube_videos': [{ youtube_video_id: 'old-1' }],
     })
     const { getVideos, fetcher } = createFakeFetcher<YouTubeFetcher>({
-      recentVideoIds: [{ accountId: 'UCaaa', videoIds: ['old-1'] }],
+      recentVideos: [{ channelId: 'UCaaa', videoId: 'old-1' }],
     })
 
     const added = await addNewYouTubeVideos(createContext(fetcher))
@@ -140,7 +140,7 @@ describe('addNewYouTubeVideos', () => {
     vi.mocked(createThumbnail).mockRejectedValue(error)
     supabase.respondWith({ 'GET talents': YOUTUBE_TALENTS })
     const { fetcher } = createFakeFetcher<YouTubeFetcher>({
-      recentVideoIds: [{ accountId: 'UCaaa', videoIds: ['new-1'] }],
+      recentVideos: [{ channelId: 'UCaaa', videoId: 'new-1' }],
       videos: [createVideo({ id: 'new-1' })],
     })
 
@@ -160,7 +160,7 @@ describe('addNewYouTubeVideos', () => {
         postgresError('23505', 'duplicate key value'),
     })
     const { fetcher } = createFakeFetcher<YouTubeFetcher>({
-      recentVideoIds: [{ accountId: 'UCaaa', videoIds: ['new-1'] }],
+      recentVideos: [{ channelId: 'UCaaa', videoId: 'new-1' }],
       videos: [createVideo({ id: 'new-1' })],
     })
 
@@ -186,7 +186,10 @@ describe('addNewYouTubeVideos', () => {
           : [],
     })
     const { fetcher } = createFakeFetcher<YouTubeFetcher>({
-      recentVideoIds: [{ accountId: 'UCaaa', videoIds: ['bad-1', 'new-1'] }],
+      recentVideos: [
+        { channelId: 'UCaaa', videoId: 'bad-1' },
+        { channelId: 'UCaaa', videoId: 'new-1' },
+      ],
       videos: [createVideo({ id: 'bad-1' }), createVideo({ id: 'new-1' })],
     })
 
@@ -207,7 +210,7 @@ describe('addNewYouTubeVideos', () => {
     supabase.respondWith({ 'GET talents': YOUTUBE_TALENTS })
     const { fetcher } = createFakeFetcher<YouTubeFetcher>({
       failures: [{ accountId: 'UCaaa', error }],
-      recentVideoIds: [{ accountId: 'UCbbb', videoIds: ['b-1'] }],
+      recentVideos: [{ channelId: 'UCbbb', videoId: 'b-1' }],
       videos: [createVideo({ id: 'b-1' })],
     })
 
@@ -221,12 +224,12 @@ describe('addNewYouTubeVideos', () => {
 
   it('does not call YouTube when no channel is registered', async () => {
     supabase.respond(() => [])
-    const { getRecentVideoIds, fetcher } = createFakeFetcher<YouTubeFetcher>()
+    const { getRecentVideos, fetcher } = createFakeFetcher<YouTubeFetcher>()
 
     const added = await addNewYouTubeVideos(createContext(fetcher))
 
     expect(added).toBe(0)
-    expect(getRecentVideoIds).not.toHaveBeenCalled()
+    expect(getRecentVideos).not.toHaveBeenCalled()
   })
 
   it('fails when the channels cannot be loaded', async () => {

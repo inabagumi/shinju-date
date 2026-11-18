@@ -8,13 +8,13 @@ import type {
   TwitchVideo,
 } from '../../twitch/types.js'
 import type { Fetcher } from '../fetcher.js'
-import type { AccountFailure, AccountVideoIds } from '../fetcher-types.js'
+import type { AccountFailure } from '../fetcher-types.js'
 
 interface Resource {
   id: string
 }
 
-type AnyFetcher = Fetcher<Resource, Resource>
+type AnyFetcher = Fetcher<Resource, Resource, unknown>
 
 type AccountOf<TFetcher extends AnyFetcher> = Awaited<
   ReturnType<TFetcher['getAccounts']>
@@ -24,15 +24,19 @@ type VideoOf<TFetcher extends AnyFetcher> = Awaited<
   ReturnType<TFetcher['getVideos']>
 >['videos'][number]
 
-export interface FakeFetcherOptions<TAccount, TVideo> {
+type RecentVideoOf<TFetcher extends AnyFetcher> = Awaited<
+  ReturnType<TFetcher['getRecentVideos']>
+>['videos'][number]
+
+export interface FakeFetcherOptions<TAccount, TVideo, TRecentVideo = TVideo> {
   /** Accounts the platform knows; `getAccounts` returns the requested ones. */
   accounts?: TAccount[]
   /** Accounts whose newest videos cannot be listed. */
   failures?: AccountFailure[]
   /** Videos the platform no longer has (deleted or made private). */
   missingVideoIds?: string[]
-  /** What `getRecentVideoIds` lists for each account. */
-  recentVideoIds?: AccountVideoIds[]
+  /** What `getRecentVideos` lists; `failures` apply to these. */
+  recentVideos?: TRecentVideo[]
   /** Videos the platform has; `getVideos` returns the requested ones. */
   videos?: TVideo[]
 }
@@ -44,13 +48,17 @@ function pick<T extends Resource>(
   return items.filter((item) => ids.includes(item.id))
 }
 
-function createFakeMethods<TAccount extends Resource, TVideo extends Resource>({
+function createFakeMethods<
+  TAccount extends Resource,
+  TVideo extends Resource,
+  TRecentVideo,
+>({
   accounts = [],
   failures = [],
   missingVideoIds = [],
-  recentVideoIds = [],
+  recentVideos = [],
   videos = [],
-}: FakeFetcherOptions<TAccount, TVideo>) {
+}: FakeFetcherOptions<TAccount, TVideo, TRecentVideo>) {
   const findMissing = (videoIds: readonly string[]) =>
     missingVideoIds.filter((id) => videoIds.includes(id))
 
@@ -61,11 +69,11 @@ function createFakeMethods<TAccount extends Resource, TVideo extends Resource>({
     getAccounts: vi.fn(async (accountIds: readonly string[]) =>
       pick(accounts, accountIds),
     ),
-    getRecentVideoIds: vi.fn(
+    getRecentVideos: vi.fn(
       async (_accountIds: readonly string[], _options?: unknown) => ({
-        accounts: recentVideoIds,
         failures,
         missingAccountIds: [] as string[],
+        videos: recentVideos,
       }),
     ),
     getVideos: vi.fn(async (videoIds: readonly string[]) => ({
@@ -86,7 +94,11 @@ function createFakeMethods<TAccount extends Resource, TVideo extends Resource>({
  * ```
  */
 export function createFakeFetcher<TFetcher extends AnyFetcher>(
-  options: FakeFetcherOptions<AccountOf<TFetcher>, VideoOf<TFetcher>> = {},
+  options: FakeFetcherOptions<
+    AccountOf<TFetcher>,
+    VideoOf<TFetcher>,
+    RecentVideoOf<TFetcher>
+  > = {},
 ) {
   const methods = createFakeMethods(options)
 
@@ -94,7 +106,7 @@ export function createFakeFetcher<TFetcher extends AnyFetcher>(
 }
 
 export interface FakeTwitchFetcherOptions
-  extends FakeFetcherOptions<TwitchUser, TwitchVideo> {
+  extends Omit<FakeFetcherOptions<TwitchUser, TwitchVideo>, 'recentVideos'> {
   /** Archives `getRecentVideos` lists; `failures` apply to these. */
   archives?: TwitchVideo[]
   /** Clips Twitch has; `getClips` returns the requested ones. */
@@ -133,8 +145,8 @@ export function createFakeTwitchFetcher({
         { type }: TwitchRecentVideosOptions = {},
       ) =>
         type === 'upload'
-          ? { failures: [], missingAccountIds: [], videos: uploads }
-          : { failures, missingAccountIds: [], videos: archives },
+          ? { failures: [], videos: uploads }
+          : { failures, videos: archives },
     ),
   }
 

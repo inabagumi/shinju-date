@@ -59,6 +59,21 @@ const api = getTwitchApiClient()
 
 `getVideos` and `getClips` omit IDs that no longer exist. Helix answers a lookup by ID with `404` instead of an empty list when nothing matches, so a batch that fails with `404` is split and retried until only the missing IDs are left out. Other errors are rethrown.
 
+`getUsers`, `getVideos`, `getClips` and `getStreamsByUserIds` accept any number of IDs and split them into batches of `TWITCH_API_MAX_RESULTS` (100). The batches are requested one after another. Pass `schedule` to run each request through it instead: every batch is requested at once, and `schedule` decides how many requests run at a time.
+
+```typescript
+import PQueue from 'p-queue'
+
+const queue = new PQueue({ concurrency: 5 })
+
+for await (const video of getVideos({
+  ids: videoIds,
+  schedule: (request) => queue.add(request),
+})) {
+  // ...
+}
+```
+
 ### Listing a broadcaster's videos
 
 ```typescript

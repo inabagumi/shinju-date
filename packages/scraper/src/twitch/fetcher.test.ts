@@ -53,7 +53,7 @@ describe('TwitchFetcher', () => {
       expect(users.map((value) => value.id)).toEqual(['1', '2'])
     })
 
-    it('requests each ID once in batches of 100', async () => {
+    it('passes each ID once and leaves batching to the client', async () => {
       const ids = Array.from({ length: 150 }, (_, i) => `${i}`)
       const getUsers = vi.fn(({ ids }: { ids: string[] }) =>
         fromArray(ids.map((id) => createUser(id))),
@@ -63,7 +63,10 @@ describe('TwitchFetcher', () => {
       const users = await fetcher.getAccounts([...ids, ...ids])
 
       expect(users).toHaveLength(150)
-      expect(getUsers).toHaveBeenCalledTimes(2)
+      expect(getUsers).toHaveBeenCalledExactlyOnceWith({
+        ids,
+        schedule: expect.any(Function),
+      })
     })
 
     it('does not call Helix without IDs', async () => {
@@ -88,6 +91,7 @@ describe('TwitchFetcher', () => {
 
       expect(streams.map((value) => value.id)).toEqual(['s1'])
       expect(getStreamsByUserIds).toHaveBeenCalledWith({
+        schedule: expect.any(Function),
         userIds: ['user-1', 'user-2'],
       })
     })
@@ -105,7 +109,6 @@ describe('TwitchFetcher', () => {
       const result = await fetcher.getRecentVideos(['user-1', 'user-2'])
 
       expect(result.failures).toEqual([])
-      expect(result.missingAccountIds).toEqual([])
       expect(result.videos.map((value) => value.id)).toEqual([
         'user-1-v1',
         'user-2-v1',
@@ -180,54 +183,6 @@ describe('TwitchFetcher', () => {
     })
   })
 
-  describe('getRecentVideoIds', () => {
-    it('lists the IDs of the newest videos per broadcaster', async () => {
-      const getVideosByUser = vi.fn(({ userId }: { userId: string }) =>
-        fromArray(
-          userId === 'user-1'
-            ? [createVideo({ id: 'v1' }), createVideo({ id: 'v2' })]
-            : [],
-        ),
-      )
-      const fetcher = new TwitchFetcher({
-        client: createClient({ getVideosByUser }),
-      })
-
-      const result = await fetcher.getRecentVideoIds(['user-1', 'user-2'], {
-        type: 'upload',
-      })
-
-      expect(result).toEqual({
-        accounts: [
-          { accountId: 'user-1', videoIds: ['v1', 'v2'] },
-          { accountId: 'user-2', videoIds: [] },
-        ],
-        failures: [],
-        missingAccountIds: [],
-      })
-      expect(getVideosByUser).toHaveBeenCalledWith({
-        limit: 20,
-        type: 'upload',
-        userId: 'user-1',
-      })
-    })
-  })
-
-  describe('findMissingVideoIds', () => {
-    it('returns the IDs Helix no longer knows', async () => {
-      const getVideos = vi.fn(({ ids }: { ids: string[] }) =>
-        fromArray(
-          ids.filter((id) => id !== 'gone').map((id) => createVideo({ id })),
-        ),
-      )
-      const fetcher = new TwitchFetcher({ client: createClient({ getVideos }) })
-
-      await expect(
-        fetcher.findMissingVideoIds(['v1', 'gone']),
-      ).resolves.toEqual(['gone'])
-    })
-  })
-
   describe('getVideos', () => {
     it('returns found videos and the IDs Helix omitted', async () => {
       const getVideos = vi.fn(({ ids }: { ids: string[] }) =>
@@ -241,6 +196,40 @@ describe('TwitchFetcher', () => {
 
       expect(result.videos.map((value) => value.id)).toEqual(['v1', 'v2'])
       expect(result.missingIds).toEqual(['gone'])
+    })
+
+    it('makes each request within the concurrency limit', async () => {
+      let running = 0
+      let peak = 0
+      // Like the Helix client: every batch at once, each through `schedule`.
+      const getVideos = vi.fn(async function* ({
+        ids,
+        schedule = (request) => request(),
+      }: Parameters<TwitchApi['getVideos']>[0]) {
+        const batches = await Promise.all(
+          ids.map((id) =>
+            schedule(async () => {
+              running++
+              peak = Math.max(peak, running)
+              await new Promise((resolve) => setTimeout(resolve, 5))
+              running--
+
+              return createVideo({ id })
+            }),
+          ),
+        )
+
+        yield* batches
+      })
+      const fetcher = new TwitchFetcher({
+        client: createClient({ getVideos }),
+        concurrency: 2,
+      })
+
+      const result = await fetcher.getVideos(['1', '2', '3', '4', '5'])
+
+      expect(result.videos).toHaveLength(5)
+      expect(peak).toBe(2)
     })
 
     it('rejects when a request fails', async () => {
