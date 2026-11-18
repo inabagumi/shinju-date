@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
-import type { ProfileImage, TalentYouTubeChannel } from '@/lib/fetchers'
+import type { ProfileImage, TalentYouTubeChannel } from '@/lib/data/talents'
 import TalentIcon from './talent-icon'
 
 function createProfileImage(id: string): ProfileImage {

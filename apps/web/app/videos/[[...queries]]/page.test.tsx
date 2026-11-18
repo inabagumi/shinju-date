@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import type { Talent, Video } from '@/lib/fetchers'
+import type { Talent } from '@/lib/data/talents'
+import type { Video } from '@/lib/data/videos'
 import {
   VideosPageHeading,
   VideosPageResults,
@@ -14,7 +15,15 @@ const fetchers = vi.hoisted(() => ({
   fetchVideos: vi.fn(),
 }))
 
-vi.mock('@/lib/fetchers', () => fetchers)
+vi.mock('@/lib/data/talents', () => ({
+  fetchActiveTalents: fetchers.fetchActiveTalents,
+}))
+
+vi.mock('@/lib/data/videos', () => ({
+  countVideos: fetchers.countVideos,
+  fetchCurrentTime: fetchers.fetchCurrentTime,
+  fetchVideos: fetchers.fetchVideos,
+}))
 
 interface MockTrackerProps {
   query: string

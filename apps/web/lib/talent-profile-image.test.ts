@@ -3,7 +3,7 @@ import type {
   ProfileImage,
   TalentTwitchUser,
   TalentYouTubeChannel,
-} from '@/lib/fetchers'
+} from '@/lib/data/talents'
 import { getTalentProfileImage } from './talent-profile-image'
 
 function createProfileImage(id: string): ProfileImage {

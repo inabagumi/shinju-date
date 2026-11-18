@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import { renderToString } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import type { Video } from '@/lib/fetchers'
+import type { Video } from '@/lib/data/videos'
 import Timeline from './timeline'
 
 vi.mock('@/components/video-card', () => ({

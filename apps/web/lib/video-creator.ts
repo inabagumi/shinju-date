@@ -1,4 +1,5 @@
-import type { ProfileImage, Video } from '@/lib/fetchers'
+import type { ProfileImage } from '@/lib/data/talents'
+import type { Video } from '@/lib/data/videos'
 import { findFirstNonBlank } from '@/lib/talent-links'
 
 export interface VideoCreatorInfo {

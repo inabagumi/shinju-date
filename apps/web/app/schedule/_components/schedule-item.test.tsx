@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import type { ScheduleVideo } from '@/lib/fetchers'
+import type { ScheduleVideo } from '@/lib/data/schedule'
 import ScheduleItem, {
   getScheduleVideoUrl,
   getTitleLines,

@@ -6,12 +6,12 @@ import { renderToString } from 'react-dom/server'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import Timeline from '@/app/_components/timeline'
 import ScheduleDayHeader from '@/app/schedule/_components/schedule-day-header'
-import type { Video } from '@/lib/fetchers'
+import type { Video } from '@/lib/data/videos'
 import FormattedTime from './formatted-time'
 import SearchResults from './search-results'
 import { TimerProvider } from './timer'
 
-vi.mock('@/lib/fetchers', () => ({
+vi.mock('@/lib/data/videos', () => ({
   fetchVideos: vi.fn(() => new Promise(() => {})),
 }))
 

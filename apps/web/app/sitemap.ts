@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
+import { fetchActiveTalents } from '@/lib/data/talents'
 import { publicEnv } from '@/lib/env'
-import { fetchActiveTalents } from '@/lib/fetchers'
 import { SCHEDULE_PATH } from '@/lib/schedule'
 import { getTalentPath } from '@/lib/talent-links'
 

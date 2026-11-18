@@ -1,4 +1,4 @@
-import type { Announcement } from '@/lib/fetchers'
+import type { Announcement } from '@/lib/data/announcements'
 
 /**
  * `fetchActiveAnnouncements` の結果から、現在の時刻が開始と終了の間にある

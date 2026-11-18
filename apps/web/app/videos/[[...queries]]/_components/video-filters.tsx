@@ -7,7 +7,7 @@ import { TextLink, TextLinkIcon } from '@/components/text-link'
 import VideoKindFilterNav, {
   VideoKindFilterNavSkeleton,
 } from '@/components/video-kind-filter-nav'
-import type { Talent } from '@/lib/fetchers'
+import type { Talent } from '@/lib/data/talents'
 import {
   getVideosCalendarPath,
   getVideosPath,

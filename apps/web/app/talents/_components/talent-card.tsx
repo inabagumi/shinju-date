@@ -6,7 +6,7 @@ import {
   LIVE_RING_CLASS_NAME,
   NextStream,
 } from '@/components/talent-stream-status'
-import type { TalentListItem, TalentStreamStatus } from '@/lib/fetchers'
+import type { TalentListItem, TalentStreamStatus } from '@/lib/data/talents'
 import { getTalentPath } from '@/lib/talent-links'
 
 /** The size of the icon: 80px, 96px from 640px, and 112px from 1024px */

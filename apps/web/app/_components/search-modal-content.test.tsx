@@ -7,7 +7,7 @@ import {
   within,
 } from '@testing-library/react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import type { Talent } from '@/lib/fetchers'
+import type { Talent } from '@/lib/data/talents'
 import { SearchModalContent } from './search-modal-content'
 
 const MIO: Talent = {

@@ -4,7 +4,7 @@ import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import VideoCard, { VideoCardSkeleton } from '@/components/video-card'
-import type { Video } from '@/lib/fetchers'
+import type { Video } from '@/lib/data/videos'
 
 const SLIDE_CLASS_NAME =
   'min-w-0 shrink-0 basis-[85%] md:basis-[calc(25%-1.125rem)]'

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { ImageResponse } from 'next/og'
-import { fetchTalent } from '@/lib/fetchers'
+import { fetchTalent } from '@/lib/data/talents'
 import { SITE_THEME_COLOR } from '@/lib/site'
 import { LOGO_PATH, LOGO_VIEW_BOX } from '@/lib/svg-symbols'
 import { getTalentProfileImage } from '@/lib/talent-profile-image'
