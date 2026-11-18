@@ -207,6 +207,15 @@ CI は、プルリクエストごとに次のことを確かめます。どれ�
 - **E2E**: web、admin、batch の Playwright のテストと、ui の Storybook のブラウザのテストが通ること
 - **データベース**: データベースを変えた場合だけ、マイグレーションとシードを空のデータベースに適用できること、pgTAP のテストが通ること、生成される型がコミットされたものと一致すること
 
+### 5. merge queue での取り込み
+
+`main` には、GitHub の merge queue を通して取り込みます。プルリクエストの CI は、作成した時点や push した時点の `main` とのマージ結果で動くため、そのあとに `main` に入った変更との組み合わせは確かめていません。merge queue は、`main` と先に並んでいるプルリクエストを含めた状態でもう一度 CI を動かし、通ったものだけを squash して取り込みます。
+
+- CI が通り、レビューで承認されたら、GitHub の UI の「Merge when ready」か `gh pr merge --auto` で queue に並べる。直接 `main` にはマージできない
+- queue の中で CI が失敗したプルリクエストは、取り込まれずに queue から外れる。`main` を取り込んで直し、もう一度並べる
+- queue の中の CI（`merge_group` のイベント）でも、データベースと Terraform のジョブは、それらを変えた場合だけ動く
+- URL の確認は、queue の中では省く（queue に並べる前に、プルリクエストで確かめている）
+
 ## Issue の起票ルール
 
 ### Issue テンプレート
