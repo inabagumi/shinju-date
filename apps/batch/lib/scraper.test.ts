@@ -23,7 +23,7 @@ vi.mock('@shinju-date/scraper/twitch', () => ({
   },
 }))
 
-const { createScraper } = await import('../scraper')
+const { createScraper } = await import('./scraper')
 
 interface CreatedScraper {
   options: {

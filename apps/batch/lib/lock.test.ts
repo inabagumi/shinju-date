@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const redis = await vi.hoisted(async () => {
-  const { FakeLockRedis } = await import('./fake-lock-redis')
+  const { FakeLockRedis } = await import('@/test/fake-lock-redis')
 
   return new FakeLockRedis()
 })
 
-vi.mock('../redis', () => ({ redisClient: redis }))
+vi.mock('./redis', () => ({ redisClient: redis }))
 
-const { acquireLock, releaseLock } = await import('../lock')
+const { acquireLock, releaseLock } = await import('./lock')
 
 describe('acquireLock', () => {
   beforeEach(() => {

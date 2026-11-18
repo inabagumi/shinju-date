@@ -1,11 +1,11 @@
 import { DatabaseError } from '@shinju-date/scraper'
 import type { BackfillJob } from '@shinju-date/video-backfill'
 import { describe, expect, it, vi } from 'vitest'
-import type { TypedSupabaseClient } from '../supabase'
+import type { TypedSupabaseClient } from './supabase'
 import {
   recordBackfillJob,
   toBackfillHistoryRow,
-} from '../video-backfill-history'
+} from './video-backfill-history'
 
 function createJob(overrides: Partial<BackfillJob> = {}): BackfillJob {
   return {

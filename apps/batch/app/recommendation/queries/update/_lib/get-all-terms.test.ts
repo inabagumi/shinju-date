@@ -1,6 +1,6 @@
 import { DatabaseError } from '@shinju-date/scraper'
 import { describe, expect, it, vi } from 'vitest'
-import { getAllTerms } from '../get-all-terms'
+import { getAllTerms } from './get-all-terms'
 
 interface Row {
   id: string

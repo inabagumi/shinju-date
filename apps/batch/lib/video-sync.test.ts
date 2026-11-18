@@ -3,10 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const set = vi.fn()
 const revalidateTags = vi.fn()
 
-vi.mock('../redis', () => ({ redisClient: { set } }))
+vi.mock('./redis', () => ({ redisClient: { set } }))
 vi.mock('@shinju-date/web-cache', () => ({ revalidateTags }))
 
-const { finishVideoSync } = await import('../video-sync')
+const { finishVideoSync } = await import('./video-sync')
 
 const now = Temporal.Instant.from('2024-05-01T12:00:00.500Z')
 

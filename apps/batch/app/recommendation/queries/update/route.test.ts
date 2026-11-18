@@ -24,7 +24,7 @@ const getAllTerms = vi.fn()
 vi.mock('@/lib/lock', () => ({ acquireLock, releaseLock }))
 vi.mock('@/lib/redis', () => ({ redisClient }))
 vi.mock('@/lib/supabase', () => ({ supabaseClient: {} }))
-vi.mock('../_lib/get-all-terms', () => ({ getAllTerms }))
+vi.mock('./_lib/get-all-terms', () => ({ getAllTerms }))
 vi.mock('@shinju-date/web-cache', () => ({ revalidateTags }))
 
 const captureCheckIn = vi.fn(() => 'check-in-id')
@@ -45,7 +45,7 @@ vi.mock('next/server', async (importOriginal) => ({
   after: vi.fn((callback: () => unknown) => callback()),
 }))
 
-const { POST } = await import('../route')
+const { POST } = await import('./route')
 
 function createRequest(): NextRequest {
   return new NextRequest(

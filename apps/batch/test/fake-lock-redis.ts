@@ -34,9 +34,9 @@ export class FakeLockRedis {
   }
 
   /**
-   * Runs `RELEASE_LOCK_SCRIPT` of `../lock` the way Redis would, knowing it
+   * Runs `RELEASE_LOCK_SCRIPT` of `@/lib/lock` the way Redis would, knowing it
    * by its first line. It is not imported, so that this file can be loaded
-   * before `../redis` is mocked.
+   * before `@/lib/redis` is mocked.
    */
   async eval(script: string, keys: string[], args: string[]): Promise<number> {
     if (this.evalFails) {

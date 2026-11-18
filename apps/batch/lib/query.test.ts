@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { providerQuerySchema } from '../provider'
-import { parseQuery } from '../query'
+import { providerQuerySchema } from './provider'
+import { parseQuery } from './query'
 
 function createRequest(search = ''): Request {
   return new Request(`http://localhost:5000/talents/update${search}`)

@@ -10,7 +10,7 @@ vi.mock('@shinju-date/logger', () => ({
 }))
 
 const { BACKFILL_MAX_ATTEMPTS, BACKFILL_SENTRY_TAG, workOffBackfillQueue } =
-  await import('../video-backfill')
+  await import('./video-backfill')
 
 function createJob(overrides: Partial<BackfillJob> = {}): BackfillJob {
   return {
