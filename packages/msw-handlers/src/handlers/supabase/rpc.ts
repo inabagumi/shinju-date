@@ -69,8 +69,8 @@ interface SearchVideosParams {
 }
 
 /**
- * The shape this mock returns from `search_videos_v2` and `search_videos_v3`
- * when no select is given, with the resources of both platforms embedded.
+ * The shape this mock returns from `search_videos_v3` when no select is
+ * given, with the resources of both platforms embedded.
  */
 const DEFAULT_SEARCH_VIDEOS_SELECT = [
   'deleted_at',
@@ -213,14 +213,6 @@ function pageMockVideos<T extends { published_at: string }>(
   return matchedVideos
     .sort((a, b) => Temporal.Instant.compare(b.published_at, a.published_at))
     .slice(0, perpage)
-}
-
-/**
- * Mirrors `search_videos_v2`: the videos of `filterMockVideos`, newest first.
- * It takes no `video_kinds`, so its requests always search every kind.
- */
-async function searchMockVideos({ perpage, ...params }: SearchVideosParams) {
-  return pageMockVideos(await filterMockVideos(params), perpage)
 }
 
 /**
@@ -495,39 +487,32 @@ export const rpcHandlers = [
     return HttpResponse.json(await suggestMockTerms(body))
   }),
 
-  ...(
-    [
-      ['search_videos_v2', searchMockVideos],
-      ['search_videos_v3', searchShownMockVideos],
-    ] as const
-  ).map(([functionName, search]) =>
-    rest.post(`${REST_URL}/rpc/${functionName}`, async ({ request }) => {
-      const body = (await request.json()) as SearchVideosParams
-      const url = new URL(request.url)
-      // `.rpc(...).select(...)` embeds resources and takes filters like a
-      // table query, so the video rows are queried like the table.
-      const query = parseSupabaseQuery(url)
-      const select =
-        url.searchParams.get('select') ?? DEFAULT_SEARCH_VIDEOS_SELECT
-      const selected = await selectRows(
-        applySupabaseConditions(
-          await search(body),
-          query,
-          videosTable.uuidColumns,
-        ),
-        select,
-        'videos',
-        query.filters,
-      )
+  rest.post(`${REST_URL}/rpc/search_videos_v3`, async ({ request }) => {
+    const body = (await request.json()) as SearchVideosParams
+    const url = new URL(request.url)
+    // `.rpc(...).select(...)` embeds resources and takes filters like a
+    // table query, so the video rows are queried like the table.
+    const query = parseSupabaseQuery(url)
+    const select =
+      url.searchParams.get('select') ?? DEFAULT_SEARCH_VIDEOS_SELECT
+    const selected = await selectRows(
+      applySupabaseConditions(
+        await searchShownMockVideos(body),
+        query,
+        videosTable.uuidColumns,
+      ),
+      select,
+      'videos',
+      query.filters,
+    )
 
-      return HttpResponse.json(
-        applyPagination(
-          applyOrder(selected, query.order, ({ row }) => row),
-          query,
-        ).map(({ output }) => output),
-      )
-    }),
-  ),
+    return HttpResponse.json(
+      applyPagination(
+        applyOrder(selected, query.order, ({ row }) => row),
+        query,
+      ).map(({ output }) => output),
+    )
+  }),
 
   rest.post(`${REST_URL}/rpc/update_terms_popularity`, async ({ request }) => {
     const body = (await request.json()) as UpdateTermsPopularityParams
