@@ -30,16 +30,6 @@ const FILES_OUTSIDE_ACTIONS = [
   // ログインの前後に呼ぶため、認証を確かめないアクション（#7010 で移す）
   'app/login/_lib/actions.ts',
   'lib/actions/sign-out.ts',
-  // アクションではない、読み取りの取得関数（#7313 で `'use server'` を外す）
-  'app/(dashboard)/_lib/get-analytics-summary.ts',
-  'lib/analytics/get-click-volume.ts',
-  'lib/analytics/get-popular-keywords.ts',
-  'lib/analytics/get-popular-talents.ts',
-  'lib/analytics/get-popular-videos.ts',
-  'lib/analytics/get-search-quality-metrics.ts',
-  'lib/analytics/get-search-volume.ts',
-  'lib/analytics/get-zero-result-keywords.ts',
-  'lib/analytics/popular-items.ts',
 ]
 
 /**

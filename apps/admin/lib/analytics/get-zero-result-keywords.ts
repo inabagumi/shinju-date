@@ -1,5 +1,3 @@
-'use server'
-
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { cacheLife } from 'next/cache'
