@@ -70,7 +70,7 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 - 文字サイズは `text-display` / `text-title` / `text-heading` / `text-body` / `text-meta` / `text-caption` を使う（`text-xs` / `text-sm` などは使わない。`pnpm run check` が確かめる）
 - 角丸は `rounded-control`（操作部品）/ `rounded-container`（入れ物）/ `rounded-full`（丸）の3種類（`rounded-md` / `rounded-xl` などは使わない。`pnpm run check` が確かめる）
 - 影は重なるもの（モーダル、ドロップダウン、お知らせバナー）だけに `shadow-overlay` を使う（`shadow-sm` / `shadow-lg` などは使わない。`pnpm run check` が確かめる）。固定ヘッダーは影を付けず、下端を `border` の線1本で区切る
-- 開閉の動きは重なるもの（ダイアログ、トースト、ポップオーバー）だけに、`motion-safe:` を付けて `theme.css` の `animate-*` で付ける。閉じる動きは `transition` ではなく `animation` にする（[動き](docs/design-guidelines.md#動き)）
+- 開閉の動きは重なるもの（ダイアログ、トースト、ポップオーバー、メニュー）だけに、`motion-safe:` を付けて `theme.css` の `animate-*` で付ける。閉じる動きは `transition` ではなく `animation` にする（[動き](docs/design-guidelines.md#動き)）
 - `twMerge` は `tailwind-merge` ではなく `@shinju-date/ui` からインポートする（`pnpm run check` が確かめる）
 - 日本語のウェブフォントは追加しない
 - 管理画面で、フォームを使わずに Server Action を呼ぶときは `useServerAction`（`apps/admin/lib/use-server-action.ts`）を使い、結果をトーストで知らせる。成功のあとに `router.refresh()` を呼ばない（[操作の結果の知らせ](docs/design-guidelines.md#操作の結果の知らせ管理画面)）

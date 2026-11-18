@@ -42,7 +42,8 @@ export interface DropdownMenuContentProps
 
 /**
  * メニューの中身。ポータルに描画するため、横にスクロールする表の中に置いても
- * 枠で切れない。既定ではボタンの右端にそろえる（`align="end"`）。
+ * 枠で切れない。既定ではボタンの右端にそろえる（`align="end"`）。開閉の動きは
+ * `MultiSelect` のポップオーバーと同じで、開いたボタンの側から広がる。
  */
 export function DropdownMenuContent({
   align = 'end',
@@ -56,7 +57,7 @@ export function DropdownMenuContent({
       <DropdownMenuPrimitive.Content
         align={align}
         className={twMerge(
-          'z-50 min-w-40 rounded-container border border-border bg-surface p-1 text-foreground shadow-overlay',
+          'z-50 min-w-40 origin-(--radix-dropdown-menu-content-transform-origin) rounded-container border border-border bg-surface p-1 text-foreground shadow-overlay motion-safe:data-[state=closed]:animate-scale-out motion-safe:data-[state=open]:animate-scale-in',
           className,
         )}
         collisionPadding={collisionPadding}
