@@ -28,7 +28,7 @@ pnpm exec playwright install chromium
 
 ### 2. 環境設定
 
-E2Eテストの実行時に必要な環境変数は、各アプリの `playwright.config.ts` の `webServer.env` で、Playwright が起動する開発サーバー（`pnpm dev`）に渡されます。`.env` ファイルを用意する必要はありません。設定されている値は以下のとおりです：
+E2Eテストの実行時に必要な環境変数は、`webServer.env` で、Playwright が起動する開発サーバー（`pnpm dev`）に渡されます。`.env` ファイルを用意する必要はありません。3つのアプリに共通の値は `packages/config/playwright.ts` の `definePlaywrightConfig()` が、アプリだけの値は各アプリの `playwright.config.ts` の `env` が持ちます（[`@shinju-date/config` の Playwright](../packages/config/README.md#playwright)）。設定されている値は以下のとおりです：
 
 - `ENABLE_MSW=true`: MSWによるAPIモックを有効化
 - 各種APIキー（fake値）: Supabase、Upstash、Google APIなど
@@ -167,7 +167,7 @@ test.describe('新しい機能', () => {
 
 ### テストがタイムアウトする
 
-- Next.jsサーバーの起動に時間がかかる場合があります。各アプリの `playwright.config.ts` の `timeout` 設定を調整してください。
+- Next.jsサーバーの起動に時間がかかる場合があります。`packages/config/playwright.ts` の `webServer.timeout` を調整してください。
 - ローカルで既に開発サーバーが起動している場合、Playwrightはそれを再利用します（`reuseExistingServer` オプション）。
 
 ### MSWが動作しない
@@ -206,12 +206,10 @@ GitHub Actions上でのテスト実行時、Playwrightは自動的に**GitHubレ
 - **チェックラン**: テスト結果がGitHub Checksに統合され、PRのUIから確認できます
 - **HTMLレポート**: 詳細なテストレポートがartifactとしてアップロードされ、後から確認できます
 
-レポーターの設定は各アプリケーションの `playwright.config.ts` で以下のように構成されています：
+レポーターの設定は、3つのアプリに共通の `packages/config/playwright.ts` で以下のように構成されています：
 
 ```typescript
-reporter: process.env['CI']
-  ? [['github'], ['html', { open: 'never' }]]
-  : 'html',
+reporter: isCI ? [['github'], ['html', { open: 'never' }]] : 'html',
 ```
 
 この設定により：

@@ -285,7 +285,7 @@ export NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1
 
 ### 5.2. AIエージェントおよびCI環境（MSW使用時）
 
-AIエージェントやCI環境でMSWを使用する場合は、`ENABLE_MSW=true` と、Supabase や Upstash のための fake の値を設定します。設定する値は、各アプリの `playwright.config.ts` の `webServer.env` にあります（E2E テストでは、Playwright がこの値で開発サーバーを起動します。[E2E テストの環境設定](e2e-testing.md#2-環境設定)）。
+AIエージェントやCI環境でMSWを使用する場合は、`ENABLE_MSW=true` と、Supabase や Upstash のための fake の値を設定します。設定する値は、`packages/config/playwright.ts` と各アプリの `playwright.config.ts` の `env` にあります（E2E テストでは、Playwright がこの値で開発サーバーを起動します。[E2E テストの環境設定](e2e-testing.md#2-環境設定)）。
 
 MSW（Mock Service Worker）はサーバー側でだけ動くため、サービスワーカーのファイル（`mockServiceWorker.js`）を用意する必要はありません。詳細は [MSWガイド](msw-guide.md) を参照してください。
 
