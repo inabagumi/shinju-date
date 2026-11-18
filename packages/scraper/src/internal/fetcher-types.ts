@@ -17,26 +17,11 @@ export interface AccountFailure {
   error: unknown
 }
 
-/** The newest videos of one account, newest first. */
-export interface AccountVideoIds {
-  accountId: string
-  videoIds: string[]
-}
-
-export interface RecentVideoIdsResult {
-  accounts: AccountVideoIds[]
+export interface RecentVideosResult<TRecentVideo> {
   /** Accounts that failed; the other accounts are still returned. */
   failures: AccountFailure[]
-  /** Requested accounts the platform does not know (deleted or terminated). */
-  missingAccountIds: string[]
-}
-
-export interface RecentVideosResult<TVideo> {
-  /** Accounts that failed; the other accounts are still returned. */
-  failures: AccountFailure[]
-  /** Requested accounts the platform does not know (deleted or terminated). */
-  missingAccountIds: string[]
-  videos: TVideo[]
+  /** The newest videos of the accounts that worked, newest first per account. */
+  videos: TRecentVideo[]
 }
 
 export interface VideoLookupResult<TVideo> {

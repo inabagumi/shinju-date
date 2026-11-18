@@ -23,14 +23,6 @@ export class RequestQueue {
   }
 
   /**
-   * Runs `task` for every item, keeping input order.
-   * Rejects with the first failure, like `Promise.all`.
-   */
-  map<T, R>(items: readonly T[], task: (item: T) => Promise<R>): Promise<R[]> {
-    return Promise.all(items.map((item) => this.#queue.add(() => task(item))))
-  }
-
-  /**
    * Runs `task` for every item without letting one failure stop the others.
    * Results keep input order, like `Promise.allSettled`.
    */

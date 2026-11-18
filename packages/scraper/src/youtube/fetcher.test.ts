@@ -70,6 +70,29 @@ function createClient({
   return { channelsList, client, playlistItemsList, videosList }
 }
 
+/**
+ * A client whose `videos.list` takes a while, to see how many requests run at
+ * once.
+ */
+function createSlowClient() {
+  let running = 0
+  let peak = 0
+  const list = vi.fn(async () => {
+    running++
+    peak = Math.max(peak, running)
+    await new Promise((resolve) => setTimeout(resolve, 5))
+    running--
+
+    return { data: { items: [] } }
+  })
+
+  return {
+    client: { videos: { list } } as unknown as youtube.Youtube,
+    list,
+    peak: () => peak,
+  }
+}
+
 function notFoundError(): Error {
   return Object.assign(new Error('The playlist cannot be found.'), {
     status: 404,
@@ -111,7 +134,7 @@ describe('YouTubeFetcher', () => {
     })
   })
 
-  describe('getRecentVideoIds', () => {
+  describe('getRecentVideos', () => {
     it('lists the newest uploads of each channel', async () => {
       const { client, playlistItemsList } = createClient({
         channelIds: ['UCaaa', 'UCbbb'],
@@ -119,17 +142,18 @@ describe('YouTubeFetcher', () => {
       })
       const fetcher = new YouTubeFetcher({ client })
 
-      const result = await fetcher.getRecentVideoIds(['UCaaa', 'UCbbb'], {
+      const result = await fetcher.getRecentVideos(['UCaaa', 'UCbbb'], {
         limit: 10,
       })
 
       expect(result).toEqual({
-        accounts: [
-          { accountId: 'UCaaa', videoIds: ['a1', 'a2'] },
-          { accountId: 'UCbbb', videoIds: ['b1'] },
-        ],
         failures: [],
         missingAccountIds: [],
+        videos: [
+          { channelId: 'UCaaa', videoId: 'a1' },
+          { channelId: 'UCaaa', videoId: 'a2' },
+          { channelId: 'UCbbb', videoId: 'b1' },
+        ],
       })
       expect(playlistItemsList).toHaveBeenCalledWith(
         expect.objectContaining({ maxResults: 10, playlistId: 'UUaaa' }),
@@ -140,7 +164,7 @@ describe('YouTubeFetcher', () => {
       const { client } = createClient({ channelIds: ['UCaaa'] })
       const fetcher = new YouTubeFetcher({ client })
 
-      const result = await fetcher.getRecentVideoIds(['UCaaa', 'UCgone'])
+      const result = await fetcher.getRecentVideos(['UCaaa', 'UCgone'])
 
       expect(result.missingAccountIds).toEqual(['UCgone'])
     })
@@ -159,11 +183,9 @@ describe('YouTubeFetcher', () => {
       }
       const fetcher = new YouTubeFetcher({ client, logger })
 
-      const result = await fetcher.getRecentVideoIds(['UCaaa', 'UCbbb'])
+      const result = await fetcher.getRecentVideos(['UCaaa', 'UCbbb'])
 
-      expect(result.accounts).toEqual([
-        { accountId: 'UCbbb', videoIds: ['b1'] },
-      ])
+      expect(result.videos).toEqual([{ channelId: 'UCbbb', videoId: 'b1' }])
       expect(result.failures).toEqual([{ accountId: 'UCaaa', error }])
       expect(logger.error).toHaveBeenCalledTimes(1)
     })
@@ -175,28 +197,10 @@ describe('YouTubeFetcher', () => {
       })
       const fetcher = new YouTubeFetcher({ client })
 
-      const result = await fetcher.getRecentVideoIds(['UCaaa'])
+      const result = await fetcher.getRecentVideos(['UCaaa'])
 
       expect(result.failures).toEqual([])
-      expect(result.accounts).toEqual([{ accountId: 'UCaaa', videoIds: [] }])
-    })
-  })
-
-  describe('getRecentVideos', () => {
-    it('lists the newest uploads and fetches their details', async () => {
-      const { client, videosList } = createClient({
-        channelIds: ['UCaaa'],
-        uploads: { UCaaa: ['a1', 'a2'] },
-        videoIds: ['a1', 'a2'],
-      })
-      const fetcher = new YouTubeFetcher({ client })
-
-      const result = await fetcher.getRecentVideos(['UCaaa', 'UCgone'])
-
-      expect(result.videos.map((video) => video.id)).toEqual(['a1', 'a2'])
-      expect(result.missingAccountIds).toEqual(['UCgone'])
-      expect(result.failures).toEqual([])
-      expect(videosList).toHaveBeenCalledTimes(1)
+      expect(result.videos).toEqual([])
     })
   })
 
@@ -233,25 +237,13 @@ describe('YouTubeFetcher', () => {
     })
 
     it('never runs more requests than the concurrency limit', async () => {
-      let running = 0
-      let peak = 0
-      const client = {
-        videos: {
-          list: vi.fn(async () => {
-            running++
-            peak = Math.max(peak, running)
-            await new Promise((resolve) => setTimeout(resolve, 5))
-            running--
-
-            return { data: { items: [] } }
-          }),
-        },
-      } as unknown as youtube.Youtube
+      const { client, list, peak } = createSlowClient()
       const fetcher = new YouTubeFetcher({ client, concurrency: 2 })
 
       await fetcher.getVideos(range(300).map((i) => `v${i}`))
 
-      expect(peak).toBe(2)
+      expect(list).toHaveBeenCalledTimes(6)
+      expect(peak()).toBe(2)
     })
 
     it('rejects when a request fails', async () => {
@@ -288,6 +280,16 @@ describe('YouTubeFetcher', () => {
 
       expect(missingIds).toEqual(ids.slice(70))
       expect(videosList).toHaveBeenCalledTimes(2)
+    })
+
+    it('never runs more requests than the concurrency limit', async () => {
+      const { client, list, peak } = createSlowClient()
+      const fetcher = new YouTubeFetcher({ client, concurrency: 2 })
+
+      await fetcher.findMissingVideoIds(range(300).map((i) => `v${i}`))
+
+      expect(list).toHaveBeenCalledTimes(6)
+      expect(peak()).toBe(2)
     })
   })
 })

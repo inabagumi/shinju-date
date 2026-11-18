@@ -394,7 +394,9 @@ describe('TwitchScraper', () => {
         status: 'updated',
         title: 'Renamed clip',
       })
-      expect(client.getClips).toHaveBeenCalledWith({ ids: ['clip-1'] })
+      expect(client.getClips).toHaveBeenCalledWith(
+        expect.objectContaining({ ids: ['clip-1'] }),
+      )
       expect(client.getVideos).not.toHaveBeenCalled()
     })
 

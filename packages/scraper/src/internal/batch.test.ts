@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { chunk, toBatches, unique } from './batch.js'
+import { chunk, unique } from './batch.js'
 
 describe('unique', () => {
   it('removes duplicates and keeps the first appearance', () => {
@@ -14,11 +14,5 @@ describe('chunk', () => {
 
   it('returns no chunks for an empty list', () => {
     expect(chunk([], 2)).toEqual([])
-  })
-})
-
-describe('toBatches', () => {
-  it('deduplicates before batching', () => {
-    expect(toBatches(['a', 'b', 'a', 'c'], 2)).toEqual([['a', 'b'], ['c']])
   })
 })

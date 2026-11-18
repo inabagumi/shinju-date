@@ -1,9 +1,8 @@
 import type { Enums } from '@shinju-date/database'
-import { toBatches, unique } from './batch.js'
+import { unique } from './batch.js'
 import type {
   AccountFailure,
   FetcherOptions,
-  RecentVideoIdsResult,
   RecentVideosOptions,
   RecentVideosResult,
   VideoLookupResult,
@@ -36,18 +35,20 @@ export interface PerAccountResult<T> {
  * - **accounts** — where videos are published (a YouTube channel, a Twitch
  *   user): {@link getAccounts}
  * - **recent videos** of accounts, to discover new ones:
- *   {@link getRecentVideoIds} / {@link getRecentVideos}
+ *   {@link getRecentVideos}
  * - **videos by ID**, to refresh or check the ones already known:
- *   {@link getVideos} / {@link findMissingVideoIds}
+ *   {@link getVideos}
  *
- * Accounts and videos keep the shape of their platform (`TAccount`, `TVideo`).
- * Subclasses implement the three abstract methods with {@link fetchByIds},
- * {@link fetchInBatches} and {@link fetchPerAccount}, which deduplicate and
- * batch IDs, bound concurrency and isolate failures per account, and override
- * {@link getRecentVideos} or {@link findMissingVideoIds} only when the
- * platform offers a cheaper way than the default.
+ * Accounts and videos keep the shape of their platform (`TAccount`, `TVideo`),
+ * and so do the recent videos (`TRecentVideo`): a platform that lists only
+ * IDs lists something lighter than a video. Subclasses implement the three
+ * abstract methods with {@link fetchByIds} and {@link fetchPerAccount}, which
+ * deduplicate IDs, bound concurrency and isolate failures per account, and add
+ * the calls only their platform has.
  *
- * - `concurrency` bounds the requests in flight for the whole fetcher.
+ * - `concurrency` bounds the requests in flight for the whole fetcher. The
+ *   API clients split long lists of IDs into the batches one request accepts
+ *   and run each request through {@link request}.
  * - Listing recent videos never fails because of one account: accounts that
  *   fail are returned in `failures`.
  * - Every other method rejects when a request fails, so a partial result is
@@ -56,6 +57,7 @@ export interface PerAccountResult<T> {
 export abstract class Fetcher<
   TAccount,
   TVideo,
+  TRecentVideo = TVideo,
   TRecentVideosOptions extends RecentVideosOptions = RecentVideosOptions,
 > {
   /** Name of the platform, e.g. for logs. */
@@ -75,12 +77,12 @@ export abstract class Fetcher<
   abstract getAccounts(accountIds: readonly string[]): Promise<TAccount[]>
 
   /**
-   * Lists the IDs of the newest videos of each account.
+   * Lists the newest videos of each account.
    */
-  abstract getRecentVideoIds(
+  abstract getRecentVideos(
     accountIds: readonly string[],
     options?: TRecentVideosOptions,
-  ): Promise<RecentVideoIdsResult>
+  ): Promise<RecentVideosResult<TRecentVideo>>
 
   /**
    * Gets videos by ID and reports the IDs the platform did not return.
@@ -90,70 +92,28 @@ export abstract class Fetcher<
   ): Promise<VideoLookupResult<TVideo>>
 
   /**
-   * Lists the newest videos of each account.
-   *
-   * When only some of them are of interest (e.g. the ones not saved yet),
-   * prefer {@link getRecentVideoIds} followed by {@link getVideos} for those:
-   * on platforms where video details are a separate request, that avoids
-   * fetching details nobody needs.
-   */
-  async getRecentVideos(
-    accountIds: readonly string[],
-    options?: TRecentVideosOptions,
-  ): Promise<RecentVideosResult<TVideo>> {
-    const { accounts, failures, missingAccountIds } =
-      await this.getRecentVideoIds(accountIds, options)
-    const { videos } = await this.getVideos(
-      accounts.flatMap((account) => account.videoIds),
-    )
-
-    return { failures, missingAccountIds, videos }
-  }
-
-  /**
-   * Returns the IDs of the videos that no longer exist on the platform
-   * (deleted or made private).
-   */
-  async findMissingVideoIds(videoIds: readonly string[]): Promise<string[]> {
-    const { missingIds } = await this.getVideos(videoIds)
-
-    return missingIds
-  }
-
-  /**
    * Makes a single request, counted against `concurrency` like every other.
+   * Pass it to the API clients as their `schedule`.
    */
-  protected request<T>(task: () => Promise<T>): Promise<T> {
-    return this.#queue.run(task)
-  }
+  protected readonly request = <T>(task: () => Promise<T>): Promise<T> =>
+    this.#queue.run(task)
 
   /**
-   * Fetches resources for a list of IDs in batches of `batchSize`.
-   * Rejects when a batch fails.
-   */
-  protected async fetchInBatches<T>(
-    ids: readonly string[],
-    batchSize: number,
-    fetch: (ids: string[]) => AsyncIterable<T>,
-  ): Promise<T[]> {
-    const batches = await this.#queue.map(toBatches(ids, batchSize), (batch) =>
-      Array.fromAsync(fetch(batch)),
-    )
-
-    return batches.flat()
-  }
-
-  /**
-   * Looks resources up by their ID in batches of `batchSize` and reports the
-   * IDs that were not returned. Rejects when a batch fails.
+   * Looks resources up by their ID and reports the IDs that were not
+   * returned. `fetch` gets the IDs once each; splitting them into batches is
+   * left to the API client. Rejects when a request fails.
    */
   protected async fetchByIds<T extends { id: string }>(
     ids: readonly string[],
-    batchSize: number,
     fetch: (ids: string[]) => AsyncIterable<T>,
   ): Promise<LookupResult<T>> {
     const requestedIds = unique(ids)
-    const found = await this.fetchInBatches(requestedIds, batchSize, fetch)
+
+    if (requestedIds.length === 0) {
+      return { found: [], missingIds: [] }
+    }
+
+    const found = await Array.fromAsync(fetch(requestedIds))
     const foundIds = new Set(found.map((item) => item.id))
 
     return {
