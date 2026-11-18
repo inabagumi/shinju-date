@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import { formatNumber } from './format-number.js'
 
 describe('formatNumber', () => {

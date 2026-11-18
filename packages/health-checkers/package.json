@@ -4,7 +4,7 @@
   "devDependencies": {
     "@shinju-date/config": "workspace:*",
     "@supabase/supabase-js": "catalog:",
-    "@tsconfig/strictest": "catalog:",
+    "@types/node": "catalog:",
     "@upstash/redis": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",

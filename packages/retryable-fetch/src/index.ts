@@ -18,7 +18,10 @@ function isRetryableStatus(status: number): boolean {
   return status === 408 || status === 429 || status >= 500
 }
 
-function getMethod(input: RequestInfo | URL, init?: RequestInit): string {
+/** The first argument of `fetch`: a URL or a `Request`. */
+type FetchInput = Parameters<typeof fetch>[0]
+
+function getMethod(input: FetchInput, init?: RequestInit): string {
   const method =
     init?.method ?? (input instanceof Request ? input.method : 'GET')
 
@@ -26,7 +29,7 @@ function getMethod(input: RequestInfo | URL, init?: RequestInit): string {
 }
 
 function getSignal(
-  input: RequestInfo | URL,
+  input: FetchInput,
   init?: RequestInit,
 ): AbortSignal | undefined {
   // `signal: null` detaches the request's signal, as in `fetch`.

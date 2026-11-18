@@ -1,10 +1,12 @@
 {
   "author": "Haneru Developers",
+  "dependencies": {
+    "@tsconfig/next": "2.0.7",
+    "@tsconfig/strictest": "2.0.9"
+  },
   "description": "Shared build and test configuration for SHINJU DATE packages and apps",
   "devDependencies": {
     "@playwright/test": "catalog:",
-    "@tsconfig/node20": "catalog:",
-    "@tsconfig/strictest": "catalog:",
     "@types/node": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "tsdown": "catalog:",
@@ -17,6 +19,10 @@
       "types": "./playwright.ts",
       "default": "./playwright.ts"
     },
+    "./tsconfig/next-app.json": "./tsconfig/next-app.json",
+    "./tsconfig/node-library.json": "./tsconfig/node-library.json",
+    "./tsconfig/react-library.json": "./tsconfig/react-library.json",
+    "./tsconfig/universal-library.json": "./tsconfig/universal-library.json",
     "./tsdown": {
       "types": "./tsdown.ts",
       "default": "./tsdown.ts"
