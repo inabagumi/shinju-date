@@ -415,6 +415,78 @@ async function restoreMockVideos({
   return targets.map((video) => video.id)
 }
 
+interface InsertVideoParams {
+  p_platform: Tables<'videos'>['platform']
+  p_platform_video: Record<string, unknown>
+  p_video: Partial<Tables<'videos'>>
+}
+
+/**
+ * The columns of the platform tables that identify a video on its platform:
+ * their unique constraints other than `video_id`.
+ */
+const PLATFORM_VIDEO_KEYS = {
+  twitch: ['twitch_video_id', 'stream_id'],
+  youtube: ['youtube_video_id'],
+} as const satisfies Record<Tables<'videos'>['platform'], readonly string[]>
+
+/**
+ * Mirrors `insert_video`: inserts the video with its platform row and
+ * returns its ID, or returns `null` without inserting anything when the
+ * platform video is already saved. The function sets the ID and the
+ * platform of the video and the `video_id` of the platform row.
+ */
+async function insertMockVideo({
+  p_platform: platform,
+  p_platform_video: platformVideo,
+  p_video: video,
+}: InsertVideoParams): Promise<string | null> {
+  const savedRows: readonly Record<string, unknown>[] =
+    platform === 'twitch' ? twitchVideos.findMany() : youtubeVideos.findMany()
+  const alreadySaved = PLATFORM_VIDEO_KEYS[platform].some(
+    (column) =>
+      platformVideo[column] != null &&
+      savedRows.some((row) => row[column] === platformVideo[column]),
+  )
+
+  if (alreadySaved) {
+    return null
+  }
+
+  const videoId = crypto.randomUUID()
+  const { id: _videoId, ...videoValues } = video
+  const {
+    id: _platformVideoId,
+    video_id: _platformVideoVideoId,
+    ...platformValues
+  } = platformVideo
+
+  await videos.create({
+    ...videosTable.defaults(),
+    ...videoValues,
+    id: videoId,
+    platform,
+  } as Tables<'videos'>)
+
+  if (platform === 'twitch') {
+    await twitchVideos.create({
+      id: crypto.randomUUID(),
+      stream_id: null,
+      type: null,
+      ...platformValues,
+      video_id: videoId,
+    } as Tables<'twitch_videos'>)
+  } else {
+    await youtubeVideos.create({
+      id: crypto.randomUUID(),
+      ...platformValues,
+      video_id: videoId,
+    } as Tables<'youtube_videos'>)
+  }
+
+  return videoId
+}
+
 /** The handlers of the database functions (`/rest/v1/rpc/<name>`). */
 export const rpcHandlers = [
   rest.post(`${REST_URL}/rpc/suggestions_v2`, async ({ request }) => {
@@ -467,6 +539,12 @@ export const rpcHandlers = [
     const body = (await request.json()) as SoftDeleteVideosParams
 
     return HttpResponse.json(await softDeleteMockVideos(body))
+  }),
+
+  rest.post(`${REST_URL}/rpc/insert_video`, async ({ request }) => {
+    const body = (await request.json()) as InsertVideoParams
+
+    return HttpResponse.json(await insertMockVideo(body))
   }),
 
   rest.post(`${REST_URL}/rpc/restore_videos`, async ({ request }) => {

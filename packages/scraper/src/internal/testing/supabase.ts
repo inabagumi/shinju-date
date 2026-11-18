@@ -3,6 +3,7 @@ import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll } from 'vitest'
 import type { TypedSupabaseClient } from '../../types.js'
+import type { NewPlatformVideo, NewVideo } from '../database/videos.js'
 
 const SUPABASE_URL = 'https://fake.supabase.test'
 
@@ -33,6 +34,26 @@ export type SupabaseRoutes = Record<
   `${string} ${string}`,
   unknown[] | SupabaseResponder
 >
+
+/** A video inserted with `insert_video`: its `videos` row and its platform row. */
+export interface InsertedVideo {
+  platform: NewPlatformVideo['platform']
+  platformVideo: NewPlatformVideo['values']
+  video: NewVideo
+}
+
+/** The response of `insert_video` when it inserts the video: a new video ID. */
+export function newVideoId(): Response {
+  return HttpResponse.json(crypto.randomUUID())
+}
+
+/**
+ * The response of `insert_video` when the platform video already exists
+ * (another run saved it first): `NULL`, and nothing is inserted.
+ */
+export function alreadySaved(): Response {
+  return HttpResponse.json(null)
+}
 
 /**
  * Builds the response PostgREST sends when a statement fails.
@@ -99,18 +120,48 @@ export function setupSupabase() {
   }
 
   return {
+    /** The videos inserted with `insert_video` so far in the current test. */
+    insertedVideos(): InsertedVideo[] {
+      return requests
+        .filter(
+          (request) =>
+            request.method === 'POST' && request.table === 'rpc/insert_video',
+        )
+        .map(({ body }) => {
+          const { p_platform, p_platform_video, p_video } = body as {
+            p_platform: InsertedVideo['platform']
+            p_platform_video: InsertedVideo['platformVideo']
+            p_video: InsertedVideo['video']
+          }
+
+          return {
+            platform: p_platform,
+            platformVideo: p_platform_video,
+            video: p_video,
+          }
+        })
+    },
     /** Every PostgREST request made so far in the current test. */
     requests,
     respond,
     /**
      * Defines how the database answers by method and table. Requests without
-     * a route succeed and return no rows.
+     * a route succeed and return no rows, except `insert_video`, which
+     * returns a new video ID like the function does.
      */
     respondWith(routes: SupabaseRoutes): void {
       respond((request) => {
         const route = routes[`${request.method} ${request.table}`]
 
-        return typeof route === 'function' ? route(request) : (route ?? [])
+        if (typeof route === 'function') {
+          return route(request)
+        }
+
+        if (!route && request.table === 'rpc/insert_video') {
+          return newVideoId()
+        }
+
+        return route ?? []
       })
     },
     /** The underlying MSW server, for non-database endpoints. */

@@ -1,9 +1,6 @@
 /** PostgreSQL error code for a foreign key violation. */
 const FOREIGN_KEY_VIOLATION = '23503'
 
-/** PostgreSQL error code for a unique constraint violation. */
-const UNIQUE_VIOLATION = '23505'
-
 interface PostgrestErrorLike {
   code?: string
   message: string
@@ -70,10 +67,6 @@ export function throwIfError<Result extends QueryResult>(
 
 export function isForeignKeyViolation(error: PostgrestErrorLike): boolean {
   return error.code === FOREIGN_KEY_VIOLATION
-}
-
-export function isUniqueViolation(error: PostgrestErrorLike): boolean {
-  return error.code === UNIQUE_VIOLATION
 }
 
 /**

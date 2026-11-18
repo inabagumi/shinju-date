@@ -1,6 +1,11 @@
+import { HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 import { DatabaseError } from '../errors.js'
-import { postgresError, setupSupabase } from '../testing/supabase.js'
+import {
+  alreadySaved,
+  postgresError,
+  setupSupabase,
+} from '../testing/supabase.js'
 import {
   findSavedYouTubeVideoIds,
   insertVideo,
@@ -23,8 +28,10 @@ const youtubeVideo = {
 }
 
 describe('insertVideo', () => {
-  it('inserts the video and its platform row under one ID', async () => {
-    supabase.respond(() => [])
+  it('inserts the video and its platform row with one function call', async () => {
+    supabase.respondWith({
+      'POST rpc/insert_video': () => HttpResponse.json('video-1'),
+    })
 
     const videoId = await insertVideo(
       supabase.supabaseClient,
@@ -32,23 +39,24 @@ describe('insertVideo', () => {
       youtubeVideo,
     )
 
-    expect(videoId).toEqual(expect.any(String))
+    expect(videoId).toBe('video-1')
     expect(supabase.requests.map((r) => `${r.method} ${r.table}`)).toEqual([
-      'POST videos',
-      'POST youtube_videos',
+      'POST rpc/insert_video',
     ])
-    expect(supabase.requests[0]?.body).toEqual({ ...video, id: videoId })
-    expect(supabase.requests[1]?.body).toEqual({
-      video_id: videoId,
-      youtube_channel_id: 'channel-row-1',
-      youtube_video_id: 'yt-1',
+    expect(supabase.requests[0]?.body).toEqual({
+      p_platform: 'youtube',
+      p_platform_video: {
+        youtube_channel_id: 'channel-row-1',
+        youtube_video_id: 'yt-1',
+      },
+      p_video: video,
     })
   })
 
-  it('inserts Twitch videos into twitch_videos', async () => {
-    supabase.respond(() => [])
+  it('passes Twitch videos with their twitch_videos row', async () => {
+    supabase.respondWith({})
 
-    const videoId = await insertVideo(
+    await insertVideo(
       supabase.supabaseClient,
       { ...video, platform: 'twitch' },
       {
@@ -62,55 +70,47 @@ describe('insertVideo', () => {
       },
     )
 
-    expect(supabase.written('POST', 'twitch_videos')[0]?.body).toEqual({
-      stream_id: 'stream-1',
-      twitch_user_id: 'user-row-1',
-      twitch_video_id: 'live:stream-1',
-      type: null,
-      video_id: videoId,
-    })
-  })
-
-  it('removes the video again when its platform row cannot be inserted', async () => {
-    supabase.respond(({ method, table }) =>
-      method === 'POST' && table === 'youtube_videos'
-        ? postgresError('23503', 'violates foreign key constraint')
-        : [],
-    )
-
-    await expect(
-      insertVideo(supabase.supabaseClient, video, youtubeVideo),
-    ).rejects.toThrow('violates foreign key constraint')
-
-    const inserted = supabase.written('POST', 'videos')[0]?.body as {
-      id: string
-    }
-
-    expect(supabase.written('DELETE', 'videos')[0]?.query['id']).toBe(
-      `eq.${inserted.id}`,
-    )
+    expect(supabase.insertedVideos()).toEqual([
+      {
+        platform: 'twitch',
+        platformVideo: {
+          stream_id: 'stream-1',
+          twitch_user_id: 'user-row-1',
+          twitch_video_id: 'live:stream-1',
+          type: null,
+        },
+        video: { ...video, platform: 'twitch' },
+      },
+    ])
   })
 
   it('returns null when another run already saved the platform video', async () => {
-    supabase.respond(({ method, table }) =>
-      method === 'POST' && table === 'youtube_videos'
-        ? postgresError('23505', 'duplicate key value')
-        : [],
-    )
+    supabase.respondWith({ 'POST rpc/insert_video': () => alreadySaved() })
 
     await expect(
       insertVideo(supabase.supabaseClient, video, youtubeVideo),
     ).resolves.toBeNull()
-    expect(supabase.written('DELETE', 'videos')).toHaveLength(1)
+    expect(supabase.requests).toHaveLength(1)
   })
 
-  it('does not touch the platform table when the video cannot be inserted', async () => {
-    supabase.respond(() => postgresError('23502', 'null value in column'))
+  it('throws a DatabaseError and removes nothing when the function fails', async () => {
+    supabase.respondWith({
+      'POST rpc/insert_video': () =>
+        postgresError('23503', 'violates foreign key constraint'),
+    })
 
     await expect(
       insertVideo(supabase.supabaseClient, video, youtubeVideo),
-    ).rejects.toThrow('null value in column')
-    expect(supabase.requests).toHaveLength(1)
+    ).rejects.toThrow(DatabaseError)
+    await expect(
+      insertVideo(supabase.supabaseClient, video, youtubeVideo),
+    ).rejects.toThrow(
+      'Failed to insert a youtube video: violates foreign key constraint',
+    )
+    // The function inserts nothing when it fails, so nothing is undone.
+    expect(
+      supabase.requests.every(({ table }) => table === 'rpc/insert_video'),
+    ).toBe(true)
   })
 })
 

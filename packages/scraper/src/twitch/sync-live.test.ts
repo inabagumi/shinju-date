@@ -2,7 +2,11 @@ import { HttpResponse, http } from 'msw'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../internal/testing/context.js'
 import { createFakeTwitchFetcher } from '../internal/testing/fetcher.js'
-import { postgresError, setupSupabase } from '../internal/testing/supabase.js'
+import {
+  alreadySaved,
+  postgresError,
+  setupSupabase,
+} from '../internal/testing/supabase.js'
 import {
   createSavedLiveVideo,
   createSavedVideo,
@@ -203,7 +207,7 @@ describe('syncTwitchLive', () => {
 
     expect(changed).toBeGreaterThan(0)
     expect(getLiveStreams).toHaveBeenCalledWith(['twitch-user-1'])
-    expect(supabase.written('POST', 'videos')[0]?.body).toMatchObject({
+    expect(supabase.insertedVideos()[0]?.video).toMatchObject({
       created_at: '2024-05-01T12:00:00Z',
       duration: 'P0D',
       platform: 'twitch',
@@ -213,7 +217,7 @@ describe('syncTwitchLive', () => {
       thumbnail_id: 'thumb-new',
       title: 'Live now',
     })
-    expect(supabase.written('POST', 'twitch_videos')[0]?.body).toMatchObject({
+    expect(supabase.insertedVideos()[0]?.platformVideo).toMatchObject({
       stream_id: 'stream-1',
       twitch_user_id: 'user-row-1',
       twitch_video_id: 'live:stream-1',
@@ -403,7 +407,7 @@ describe('syncTwitchLive', () => {
   it('quietly skips a stream another run started tracking first', async () => {
     supabase.respondWith({
       ...liveVideoRoutes(),
-      'POST twitch_videos': () => postgresError('23505', 'duplicate key value'),
+      'POST rpc/insert_video': () => alreadySaved(),
     })
     const { fetcher } = createFakeTwitchFetcher({
       liveStreams: [createStream()],
