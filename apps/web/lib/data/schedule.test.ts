@@ -5,6 +5,7 @@ import {
   createThumbnail,
   createTwitchUser,
   createVideo,
+  createVideoOnTwitch,
   createVideoOnYouTube,
   createYouTubeChannel,
 } from '@/test/factories'
@@ -127,6 +128,31 @@ describe('fetchScheduleVideos', () => {
         talent_id: talent.id,
       }),
     ])
+
+    expect(ids(await fetchScheduleVideos('2026-11-08'))).toEqual([
+      shown.video.id,
+    ])
+  })
+
+  test('drops the videos that cannot be linked to', async () => {
+    const shown = video('2026-11-10T12:00:00Z')
+    // A Twitch stream whose archive is not ready, by a user without the login
+    // name to link to the channel
+    const userWithoutLogin = createTwitchUser({ talent_id: talent.id })
+
+    await seedSupabase({
+      talents: [talent],
+      twitchUsers: [userWithoutLogin],
+      youtubeChannels: [channel],
+      ...videoSeed([
+        shown,
+        createVideoOnTwitch(
+          userWithoutLogin,
+          { published_at: '2026-11-10T13:00:00Z', status: 'ENDED' },
+          { twitch_video_id: 'live:12345678901', type: null },
+        ),
+      ]),
+    })
 
     expect(ids(await fetchScheduleVideos('2026-11-08'))).toEqual([
       shown.video.id,

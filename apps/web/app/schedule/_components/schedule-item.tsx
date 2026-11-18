@@ -1,5 +1,4 @@
 import { TIME_ZONE } from '@shinju-date/constants'
-import { getVideoExternalUrl } from '@shinju-date/helpers'
 import {
   formatDateTimeWithSeconds,
   formatTime,
@@ -12,27 +11,13 @@ import TalentIcon from '@/components/talent-icon'
 import type { ScheduleVideo } from '@/lib/data/schedule'
 import { parseThemeColor } from '@/lib/theme-color'
 import { getVideoTitleParts } from '@/lib/video-title'
+import { getVideoUrl } from '@/lib/video-url'
 import {
   HOUR_HEIGHT_REM,
   ITEM_CHROME_HEIGHT,
   ROOT_FONT_SIZE,
   TITLE_LINE_HEIGHT,
 } from '../_lib/layout'
-
-/**
- * 項目のリンク先。`VideoCard` と同じく `getVideoExternalUrl` で作る。
- * リンク先が作れない動画は表示しないので、件数を数える前にこれで絞り込む。
- */
-export function getScheduleVideoUrl(video: ScheduleVideo): string | null {
-  return getVideoExternalUrl({
-    platform: video.platform,
-    status: video.status,
-    twitchLoginName: video.twitch_video?.twitch_user.twitch_login_name,
-    twitchVideoId: video.twitch_video?.twitch_video_id,
-    twitchVideoType: video.twitch_video?.type,
-    youtubeVideoId: video.youtube_video?.youtube_video_id,
-  })
-}
 
 /**
  * `TalentIcon` に渡すアカウント。動画の YouTube チャンネルか Twitch ユーザーの
@@ -99,7 +84,7 @@ interface ScheduleItemProps {
  * 値のときは `border-border` の色にする。
  */
 export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
-  const href = getScheduleVideoUrl(value)
+  const href = getVideoUrl(value)
 
   if (!href) {
     return null

@@ -67,7 +67,7 @@ const TWITCH_VIDEO_ID_COLUMNS = `
 
 /**
  * The YouTube and Twitch videos of a video with only what links to the video
- * (`getVideoExternalUrl`). The one of the other platform is `null`.
+ * (`getVideoUrl`). The one of the other platform is `null`.
  */
 export const VIDEO_PLATFORM_ID_COLUMNS = `
   youtube_video:youtube_videos (${YOUTUBE_VIDEO_ID_COLUMNS}),
