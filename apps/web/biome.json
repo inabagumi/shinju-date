@@ -7,8 +7,5 @@
       "react": "recommended"
     }
   },
-  "root": false,
-  "tailwind": {
-    "stylesheet": "./app/globals.css"
-  }
+  "root": false
 }

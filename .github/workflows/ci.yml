@@ -138,6 +138,9 @@ jobs:
       - name: Run Node.js lint
         run: pnpm biome ci --reporter=github .
 
+      - name: Check format
+        run: pnpm oxfmt --check
+
       # Checks the blank lines after the cache directives, which the Biome plugins cannot check
       - name: Check cache directives
         run: pnpm run check:cache-directives
