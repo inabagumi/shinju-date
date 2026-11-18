@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true
+  },
+  "extends": "@shinju-date/config/tsconfig/node-library.json",
+  "include": ["./src/**/*.ts", "./vitest.config.ts"]
+}

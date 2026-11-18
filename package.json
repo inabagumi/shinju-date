@@ -9,7 +9,7 @@
   "type": "module",
   "scripts": {
     "build": "turbo build",
-    "check": "biome check && oxfmt --check",
+    "check": "stylelint \"**/*.css\" && ultracite check",
     "check:cache-directives": "node scripts/check-cache-directives.mjs",
     "check:dev-secrets": "node scripts/check-dev-secrets.mjs",
     "check:docs": "node scripts/check-docs.mjs",
@@ -19,7 +19,7 @@
     "db:schema": "./scripts/generate-types.sh",
     "db:import": "./scripts/import-data.sh",
     "dev": "turbo watch dev --env-mode=loose",
-    "fix": "biome check --fix && oxfmt",
+    "fix": "stylelint --fix \"**/*.css\" && ultracite fix",
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
     "test:scripts": "node --test 'scripts/**/*.test.mjs'",
@@ -27,8 +27,12 @@
     "typegen": "turbo typegen"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.8",
+    "@shinju-date/oxlint-plugin": "workspace:*",
     "oxfmt": "0.79.0",
+    "oxlint": "catalog:",
+    "stylelint": "17.16.0",
+    "stylelint-config-idiomatic-order": "10.0.0",
+    "stylelint-config-standard": "40.0.0",
     "supabase": "3.2.0",
     "turbo": "2.11.11",
     "typescript": "catalog:",
