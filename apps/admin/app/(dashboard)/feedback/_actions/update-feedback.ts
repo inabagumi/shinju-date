@@ -24,6 +24,15 @@ function errorState(message: string): FormState {
   return { errors: { generic: [message] } }
 }
 
+/**
+ * 一覧と詳細の両方のページを再検証する。詳細のページは、状態・メモ・既読を
+ * `getFeatureRequestById` の結果から表示するので、一覧だけでは古い値が残る
+ */
+function revalidateFeatureRequest(id: string): void {
+  revalidatePath('/feedback')
+  revalidatePath(`/feedback/${id}`)
+}
+
 export async function updateFeatureRequestStatus(
   _currentState: FormState,
   formData: FormData,
@@ -80,7 +89,7 @@ export async function updateFeatureRequestStatus(
       entityName: createEntityNameFromMessage(featureRequest.message),
     })
 
-    revalidatePath('/feedback')
+    revalidateFeatureRequest(id)
     return { success: true }
   } catch (error) {
     console.error('Update feature request status error:', error)
@@ -145,7 +154,7 @@ export async function updateFeatureRequestMemo(
       entityName: createEntityNameFromMessage(featureRequest.message),
     })
 
-    revalidatePath('/feedback')
+    revalidateFeatureRequest(id)
     return { success: true }
   } catch (error) {
     console.error('Update feature request memo error:', error)
@@ -180,7 +189,7 @@ export async function markFeatureRequestAsRead(
       throw error
     }
 
-    revalidatePath('/feedback')
+    revalidateFeatureRequest(id)
     return { success: true }
   } catch (error) {
     console.error('Mark feature request as read error:', error)
