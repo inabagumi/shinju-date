@@ -5,6 +5,14 @@ import { addQueryAction, deleteQueryAction } from './index'
 
 const test = setupActionTest()
 
+/**
+ * 予期しない例外のときに画面に出る文（`@/lib/action` の `ACTION_FAILED_ERROR_MESSAGE`）。
+ * `@/lib/action` を読み込むと、認証のモックより先に `@/lib/auth` が読み込まれるため、
+ * ここに書く
+ */
+const ACTION_FAILED_ERROR =
+  '処理に失敗しました。時間をおいて、もう一度お試しください。'
+
 const redisClient = {
   sadd: vi.fn(async () => 1),
   srem: vi.fn(async () => 1),
@@ -50,7 +58,7 @@ describe('addQueryAction', () => {
 
     const result = await addQueryAction('Hoge')
 
-    expect(result).toEqual({ error: 'Redis error', success: false })
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false })
     test.expectNoAuditLog()
     test.expectNotRevalidated()
   })
@@ -90,7 +98,7 @@ describe('deleteQueryAction', () => {
 
     const result = await deleteQueryAction('Hoge')
 
-    expect(result).toEqual({ error: 'Redis error', success: false })
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false })
     test.expectNoAuditLog()
     test.expectNotRevalidated()
   })
