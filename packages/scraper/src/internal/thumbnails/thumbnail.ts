@@ -20,6 +20,11 @@ export interface ThumbnailSource {
 
 export interface CreateThumbnailOptions {
   /**
+   * The ETag of the image the video uses now. When given, the image is only
+   * downloaded and stored if it changed since (see {@link createThumbnail}).
+   */
+  etag?: string | null
+  /**
    * Folder the image is stored under. Use the platform video ID so stored
    * objects can be traced back to their video.
    */
@@ -51,16 +56,32 @@ async function createBlurDataURL(image: ArrayBuffer): Promise<string> {
  * Copies an image into the thumbnails bucket and registers it in the
  * `thumbnails` table.
  *
+ * With `etag`, the image is requested with `If-None-Match`, and nothing is
+ * stored when the platform confirms it is unchanged (`304 Not Modified`, or
+ * the same ETag again).
+ *
+ * @returns The stored thumbnail, or `null` when the image is unchanged.
  * @throws When the image cannot be downloaded, stored or registered. Nothing
  *   is left behind in that case.
  */
 export async function createThumbnail({
+  etag,
   folder,
   now,
   source,
   supabaseClient,
-}: CreateThumbnailOptions): Promise<Thumbnail> {
-  const response = await retryableFetch(source.url)
+}: CreateThumbnailOptions): Promise<Thumbnail | null> {
+  const response = await retryableFetch(source.url, {
+    ...(etag ? { headers: { 'If-None-Match': etag } } : {}),
+  })
+  const responseEtag = response.headers.get('ETag')
+
+  if (etag && (response.status === 304 || responseEtag === etag)) {
+    // The body is read to reuse the socket.
+    await response.arrayBuffer()
+
+    return null
+  }
 
   if (!response.ok) {
     // The body is read to reuse the socket.
@@ -104,7 +125,7 @@ export async function createThumbnail({
     .from('thumbnails')
     .insert({
       blur_data_url: blurDataURL,
-      etag: response.headers.get('ETag'),
+      etag: responseEtag,
       height: source.height,
       id: thumbnail.id,
       path: thumbnail.path,

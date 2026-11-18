@@ -53,13 +53,14 @@ pnpm exec playwright test --ui
     - 1リクエストでは単一プロバイダのみ処理（タイムアウト回避）
   - `/videos/check`: 既存動画の情報更新と削除判定
     - デフォルト（`provider=youtube`、パラメータなし）: UPCOMING/LIVE の動画を更新（1分毎）
+      - サムネイルは `ETag` で変更を確かめ、差し替えられていれば取り直す
     - `?provider=twitch`: 配信の LIVE 状態を同期（1分毎）
       - 配信が始まったら `status: LIVE`、合成 id `live:{stream_id}` の行を追加（Twitch には配信予定の事前登録がないため、ここで検出する）
       - 配信中はタイトル変更に追従する
       - 配信が終わったら `ENDED` にし、アーカイブが見つかればその情報（VOD id・長さ・タイトル）に差し替える
       - アーカイブが残らない配信（VOD 無効など）は合成 id のまま `ENDED` で残る
     - `?mode=recent` / `?provider=twitch&mode=recent`: 最新100件（ENDED/PUBLISHED）のメタデータ更新と削除判定
-      - Twitch は配信直後だとサムネイルが未生成のため、サムネイルがない動画はここで補完する
+      - サムネイルがない動画（Twitch は配信直後だとサムネイルが未生成。YouTube は保存時に取得に失敗したもの）は、ここで補完する
     - `?mode=all` / `?provider=twitch&mode=all`: 全動画の削除判定のみ（週2回）
   - `/videos/cascade-from-talents`: タレント削除／復活に伴う動画の連鎖処理（5分毎）
     - 削除済みタレントに紐づく未削除動画をソフトデリート（`deleted_reason = talent_deleted`）

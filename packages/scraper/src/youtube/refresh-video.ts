@@ -5,6 +5,7 @@ import type { CrawlContext, RefreshVideoResult } from '../types.js'
 import type { YouTubeFetcher } from './fetcher.js'
 import { createYouTubePlatform } from './platform.js'
 import { SAVED_YOUTUBE_VIDEO_COLUMNS } from './saved-video.js'
+import { refreshYouTubeThumbnail } from './thumbnail.js'
 
 /**
  * Brings one saved video in line with YouTube, the same way the scheduled
@@ -36,7 +37,10 @@ export async function refreshYouTubeVideo(
   }
 
   const platform = createYouTubePlatform(fetcher)
-  const result = await refreshSavedVideo(context, platform, saved)
+  const result = await refreshSavedVideo(context, platform, saved, {
+    afterRefresh: (current, fetched) =>
+      refreshYouTubeThumbnail(context, current, fetched),
+  })
 
   if (result === null || result === 'unavailable') {
     return { status: 'unavailable' }

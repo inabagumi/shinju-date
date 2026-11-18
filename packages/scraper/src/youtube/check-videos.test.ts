@@ -1,6 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { HttpResponse, http } from 'msw'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../internal/testing/context.js'
 import { createFakeFetcher } from '../internal/testing/fetcher.js'
+import { createImage, serveImage } from '../internal/testing/profile-images.js'
 import { postgresError, setupSupabase } from '../internal/testing/supabase.js'
 import { createSavedVideo, createVideo } from '../internal/testing/youtube.js'
 import {
@@ -192,6 +194,299 @@ describe('refreshYouTubeVideos', () => {
 
     expect(changed).toBe(0)
     expect(supabase.requests).toHaveLength(1)
+  })
+})
+
+describe('refreshYouTubeVideos and thumbnails', () => {
+  const IMAGE_URL = 'https://i.ytimg.test/a.jpg'
+  const STORAGE_URL = 'https://fake.supabase.test/storage/v1/object/thumbnails'
+  const thumbnail = { etag: '"etag-1"', id: 'thumb-a', path: 'a/old.jpg' }
+  const finished = {
+    contentDetails: { duration: 'PT1H' },
+    liveStreamingDetails: {
+      actualEndTime: '2024-05-01T11:00:00Z',
+      actualStartTime: '2024-05-01T10:00:00Z',
+      scheduledStartTime: '2024-05-01T10:00:00Z',
+    },
+  }
+
+  let image: Buffer
+
+  beforeAll(async () => {
+    image = await createImage(32, 18)
+  })
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  interface StorageCalls {
+    removed: unknown[]
+    uploads: string[]
+  }
+
+  /** Records uploads to and removals from the thumbnails bucket. */
+  function mockStorage(): StorageCalls {
+    const calls: StorageCalls = { removed: [], uploads: [] }
+
+    supabase.server.use(
+      http.post(`${STORAGE_URL}/*`, ({ request }) => {
+        calls.uploads.push(
+          new URL(request.url).pathname.replace(
+            '/storage/v1/object/thumbnails/',
+            '',
+          ),
+        )
+
+        return HttpResponse.json({ Key: 'thumbnails/x' })
+      }),
+      http.delete(STORAGE_URL, async ({ request }) => {
+        calls.removed.push(await request.json())
+
+        return HttpResponse.json([])
+      }),
+    )
+
+    return calls
+  }
+
+  it('fills in the thumbnail of a video saved without one', async () => {
+    const storage = mockStorage()
+    const requests = serveImage(supabase, IMAGE_URL, { body: image })
+    supabase.respond(({ method }) =>
+      method === 'GET'
+        ? [
+            createSavedVideo('a', {
+              duration: 'PT1H',
+              published_at: '2024-05-01T10:00:00+00:00',
+              status: 'ENDED',
+              thumbnail_id: null,
+            }),
+          ]
+        : [],
+    )
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      videos: [createVideo({ ...finished, id: 'a' })],
+    })
+
+    const changed = await refreshYouTubeVideos(createContext(fetcher), 'recent')
+
+    expect(changed).toBe(1)
+    expect(requests).toEqual([{ ifNoneMatch: null, url: IMAGE_URL }])
+    expect(storage.uploads).toEqual([expect.stringMatching(/^a\//)])
+    const inserted = supabase.written('POST', 'thumbnails')[0]?.body
+
+    expect(inserted).toMatchObject({ etag: '"etag-1"' })
+    expect(supabase.written('PATCH', 'videos')).toEqual([
+      expect.objectContaining({
+        body: {
+          thumbnail_id: (inserted as { id: string }).id,
+          updated_at: '2024-05-01T12:00:00Z',
+        },
+        query: { id: 'eq.video-a' },
+      }),
+    ])
+    expect(reportError).not.toHaveBeenCalled()
+  })
+
+  it('replaces the thumbnail of a scheduled video and keeps the old one', async () => {
+    const storage = mockStorage()
+    const requests = serveImage(supabase, IMAGE_URL, {
+      body: image,
+      etag: '"etag-2"',
+    })
+    supabase.respond(({ method }) =>
+      method === 'GET' ? [createSavedVideo('a', { thumbnail })] : [],
+    )
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      videos: [createVideo({ ...scheduled, id: 'a' })],
+    })
+
+    const changed = await refreshYouTubeVideos(createContext(fetcher), 'live')
+
+    expect(changed).toBe(1)
+    expect(requests).toEqual([{ ifNoneMatch: '"etag-1"', url: IMAGE_URL }])
+    expect(storage.uploads).toHaveLength(1)
+    const inserted = supabase.written('POST', 'thumbnails')[0]?.body
+
+    expect(inserted).toMatchObject({ etag: '"etag-2"' })
+    expect(supabase.written('PATCH', 'videos')).toEqual([
+      expect.objectContaining({
+        body: {
+          thumbnail_id: (inserted as { id: string }).id,
+          updated_at: '2024-05-01T12:00:00Z',
+        },
+      }),
+    ])
+    // The old thumbnail is left for the cleanup of unused thumbnails.
+    expect(supabase.written('PATCH', 'thumbnails')).toEqual([
+      expect.objectContaining({
+        body: { updated_at: '2024-05-01T12:00:00Z' },
+        query: { id: 'eq.thumb-a' },
+      }),
+    ])
+    expect(supabase.written('DELETE', 'thumbnails')).toHaveLength(0)
+    expect(storage.removed).toHaveLength(0)
+  })
+
+  it('also follows the thumbnail of a live video', async () => {
+    mockStorage()
+    serveImage(supabase, IMAGE_URL, { body: image, etag: '"etag-2"' })
+    supabase.respond(({ method }) =>
+      method === 'GET'
+        ? [
+            createSavedVideo('a', {
+              published_at: '2024-05-01T11:58:00+00:00',
+              status: 'LIVE',
+              thumbnail,
+            }),
+          ]
+        : [],
+    )
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      videos: [
+        createVideo({
+          ...scheduled,
+          id: 'a',
+          liveStreamingDetails: {
+            actualStartTime: '2024-05-01T11:58:00Z',
+            scheduledStartTime: '2024-05-01T13:00:00Z',
+          },
+        }),
+      ],
+    })
+
+    const changed = await refreshYouTubeVideos(createContext(fetcher), 'live')
+
+    expect(changed).toBe(1)
+    expect(supabase.written('POST', 'thumbnails')).toHaveLength(1)
+  })
+
+  it('does not download again a thumbnail that is not modified', async () => {
+    const storage = mockStorage()
+    const requests = serveImage(supabase, IMAGE_URL, { body: image })
+    supabase.respond(({ method }) =>
+      method === 'GET' ? [createSavedVideo('a', { thumbnail })] : [],
+    )
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      videos: [createVideo({ ...scheduled, id: 'a' })],
+    })
+
+    const changed = await refreshYouTubeVideos(createContext(fetcher), 'live')
+
+    expect(changed).toBe(0)
+    expect(requests).toEqual([{ ifNoneMatch: '"etag-1"', url: IMAGE_URL }])
+    expect(storage.uploads).toHaveLength(0)
+    expect(supabase.requests).toHaveLength(1)
+  })
+
+  it('does not download a thumbnail without an ETag to compare with', async () => {
+    const requests = serveImage(supabase, IMAGE_URL, { body: image })
+    supabase.respond(({ method }) =>
+      method === 'GET'
+        ? [createSavedVideo('a', { thumbnail: { ...thumbnail, etag: null } })]
+        : [],
+    )
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      videos: [createVideo({ ...scheduled, id: 'a' })],
+    })
+
+    const changed = await refreshYouTubeVideos(createContext(fetcher), 'live')
+
+    expect(changed).toBe(0)
+    expect(requests).toHaveLength(0)
+  })
+
+  it('does not download the thumbnails of finished videos and uploads', async () => {
+    const requests = serveImage(supabase, IMAGE_URL, {
+      body: image,
+      etag: '"etag-2"',
+    })
+    supabase.respond(({ method }) =>
+      method === 'GET'
+        ? [
+            createSavedVideo('a', {
+              duration: 'PT1H',
+              published_at: '2024-05-01T10:00:00+00:00',
+              status: 'ENDED',
+              thumbnail,
+            }),
+            createSavedVideo('b', {
+              duration: 'PT10M',
+              published_at: '2024-05-01T10:00:00+00:00',
+              status: 'PUBLISHED',
+            }),
+          ]
+        : [],
+    )
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      videos: [createVideo({ ...finished, id: 'a' }), createVideo({ id: 'b' })],
+    })
+
+    const changed = await refreshYouTubeVideos(createContext(fetcher), 'recent')
+
+    expect(changed).toBe(0)
+    expect(requests).toHaveLength(0)
+    expect(supabase.requests).toHaveLength(1)
+  })
+
+  it('stops following the thumbnail of a stream once it ended', async () => {
+    const requests = serveImage(supabase, IMAGE_URL, {
+      body: image,
+      etag: '"etag-2"',
+    })
+    supabase.respond(({ method }) =>
+      method === 'GET'
+        ? [createSavedVideo('a', { status: 'LIVE', thumbnail })]
+        : [],
+    )
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      videos: [createVideo({ ...finished, id: 'a' })],
+    })
+
+    const changed = await refreshYouTubeVideos(createContext(fetcher), 'live')
+
+    expect(changed).toBe(1)
+    expect(requests).toHaveLength(0)
+    expect(supabase.written('PATCH', 'videos')[0]?.body).toMatchObject({
+      status: 'ENDED',
+    })
+  })
+
+  it('reports a thumbnail that cannot be downloaded and refreshes the rest', async () => {
+    mockStorage()
+    supabase.server.use(
+      http.get(IMAGE_URL, () => new HttpResponse('Not Found', { status: 404 })),
+    )
+    serveImage(supabase, 'https://i.ytimg.test/b.jpg', { body: image })
+    supabase.respond(({ method }) =>
+      method === 'GET'
+        ? [
+            createSavedVideo('a', { thumbnail_id: null }),
+            createSavedVideo('b', { thumbnail_id: null }),
+          ]
+        : [],
+    )
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      videos: [
+        createVideo({ ...scheduled, id: 'a' }),
+        createVideo({ ...scheduled, id: 'b' }),
+      ],
+    })
+
+    const changed = await refreshYouTubeVideos(createContext(fetcher), 'live')
+
+    expect(changed).toBe(1)
+    expect(reportError).toHaveBeenCalledTimes(1)
+    expect(reportError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('Failed to download a thumbnail'),
+      }),
+      { youtubeVideoId: 'a' },
+    )
+    expect(supabase.written('PATCH', 'videos')).toEqual([
+      expect.objectContaining({ query: { id: 'eq.video-b' } }),
+    ])
   })
 })
 
