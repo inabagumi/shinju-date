@@ -136,7 +136,12 @@ export const fetchVideos = async ({
     'fetchVideos',
   )
 
-  return videos.filter(hasPlatformSource)
+  // `search_videos_v3` leaves out the videos without a YouTube or Twitch
+  // video, and `count_videos_v1` counts the same videos. They are not left out
+  // here by `hasPlatformSource`: a page shorter than `SEARCH_RESULT_COUNT` ends
+  // the search results. The video cards do not show the videos that cannot be
+  // linked to.
+  return videos
 }
 
 interface CountVideosOptions {
