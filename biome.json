@@ -117,7 +117,7 @@
       }
     },
     {
-      "includes": ["**/__tests__/**", "**/*.test.*", "**/e2e/**"],
+      "includes": ["**/*.test.*", "**/e2e/**"],
       "linter": {
         "rules": {
           "style": {
@@ -132,7 +132,6 @@
       "includes": [
         "**",
         "!packages/constants/src/index.ts",
-        "!**/__tests__/**",
         "!**/*.test.*",
         "!**/e2e/**"
       ],

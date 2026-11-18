@@ -1,6 +1,6 @@
 import { createErrorResponse } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
-import { fetchTalent, type TalentDetail } from '@/lib/fetchers'
+import { fetchTalent, type TalentDetail } from '@/lib/data/talents'
 import { createVideosCalendarResponse } from '@/lib/videos-calendar'
 
 export async function GET(

@@ -8,6 +8,7 @@ import {
 import {
   BACKFILL_JOB_TTL_SECONDS,
   BACKFILL_RUN_LOCK_SECONDS,
+  type BackfillClaim,
   type BackfillJob,
   BackfillQueue,
   type BackfillRunRequest,
@@ -37,28 +38,36 @@ async function claimJob(
   queue: BackfillQueue,
   id: string,
   at: Temporal.Instant,
-): Promise<BackfillJob> {
-  const skipped: BackfillJob[] = []
+): Promise<BackfillClaim> {
+  const skipped: BackfillClaim[] = []
 
   try {
     while (true) {
-      const job = await queue.claim(at)
+      const claim = await queue.claim(at)
 
-      if (!job) {
+      if (!claim) {
         throw new Error(`Expected ${id} to be queued`)
       }
 
-      if (job.id === id) {
-        return job
+      if (claim.job.id === id) {
+        return claim
       }
 
-      skipped.push(job)
+      skipped.push(claim)
     }
   } finally {
-    for (const job of skipped) {
-      await queue.requeue(job, at)
+    for (const claim of skipped) {
+      await queue.requeue(claim, at)
     }
   }
+}
+
+/** The claim with changes made to its job. */
+function withChanges(
+  { job, token }: BackfillClaim,
+  changes: Partial<BackfillJob>,
+): BackfillClaim {
+  return { job: { ...job, ...changes }, token }
 }
 
 /** Starts a check, failing the test when it does not start. */
@@ -318,11 +327,18 @@ describeOnEachRedis((createClient) => {
 
       // Jobs are claimed in the order they were queued.
       const youtube = await claimJob(queue, youtubeJobId, later(1))
-      await queue.complete({ ...youtube, added: 4, cursor: null }, later(2))
+      await queue.complete(
+        withChanges(youtube, { added: 4, cursor: null }),
+        later(2),
+      )
       const twitch = await claimJob(queue, twitchJobId, later(2))
-      await queue.fail({ ...twitch, added: 1 }, 'quota exceeded', later(3))
+      await queue.fail(
+        withChanges(twitch, { added: 1 }),
+        'quota exceeded',
+        later(3),
+      )
       const other = await claimJob(queue, otherJobId, later(3))
-      await queue.update({ ...other, added: 2 }, later(4))
+      await queue.update(withChanges(other, { added: 2 }), later(4))
 
       await expect(runs.getLatest(later(5))).resolves.toMatchObject({
         active: true,
@@ -341,7 +357,10 @@ describeOnEachRedis((createClient) => {
         ],
       })
 
-      await queue.complete({ ...other, added: 2, cursor: null }, later(6))
+      await queue.complete(
+        withChanges(other, { added: 2, cursor: null }),
+        later(6),
+      )
 
       await expect(runs.getLatest(later(7))).resolves.toMatchObject({
         active: false,
@@ -354,9 +373,12 @@ describeOnEachRedis((createClient) => {
 
       await startRun(runs)
       const job = await claimJob(queue, youtubeJobId, later(1))
-      await queue.update({ ...job, added: 3, cursor: 'page-2' }, later(2))
+      await queue.update(
+        withChanges(job, { added: 3, cursor: 'page-2' }),
+        later(2),
+      )
       // Every lease ran out and the other jobs were lost.
-      await redis.del(`${REDIS_KEYS.VIDEO_BACKFILL_LOCK_PREFIX}${job.id}`)
+      await redis.del(`${REDIS_KEYS.VIDEO_BACKFILL_LOCK_PREFIX}${job.job.id}`)
       await redis.del(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)
 
       await expect(runs.getLatest(later(90))).resolves.toMatchObject({
@@ -376,7 +398,10 @@ describeOnEachRedis((createClient) => {
 
       // Only what was added since the new check counts for it.
       const resumed = await claimJob(queue, youtubeJobId, later(92))
-      await queue.complete({ ...resumed, added: 5, cursor: null }, later(93))
+      await queue.complete(
+        withChanges(resumed, { added: 5, cursor: null }),
+        later(93),
+      )
 
       await expect(runs.getLatest(later(94))).resolves.toMatchObject({
         jobs: [{ added: 2, id: youtubeJobId, status: 'done' }, {}, {}],
@@ -388,7 +413,11 @@ describeOnEachRedis((createClient) => {
 
       await startRun(runs)
       const job = await claimJob(queue, youtubeJobId, later(1))
-      await queue.fail({ ...job, cursor: 'page-2' }, 'error', later(2))
+      await queue.fail(
+        withChanges(job, { cursor: 'page-2' }),
+        'error',
+        later(2),
+      )
 
       await queue.enqueue(
         {
@@ -411,7 +440,10 @@ describeOnEachRedis((createClient) => {
 
       await startRun(runs)
       const job = await claimJob(queue, youtubeJobId, later(1))
-      await queue.complete({ ...job, added: 4, cursor: null }, later(2))
+      await queue.complete(
+        withChanges(job, { added: 4, cursor: null }),
+        later(2),
+      )
 
       // Starts over from the newest videos, outside the check.
       await queue.enqueue(

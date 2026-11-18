@@ -1,6 +1,6 @@
 import { twMerge } from '@shinju-date/ui'
 import type { ComponentPropsWithoutRef } from 'react'
-import type { Video } from '@/lib/fetchers'
+import type { Video } from '@/lib/data/videos'
 import VideoCard, {
   VideoCardSkeleton,
   type VideoCardVariant,

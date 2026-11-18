@@ -13,11 +13,33 @@ import {
   videoSeed,
 } from '@/test/supabase'
 
-const mocks = vi.hoisted(() => ({
+const mocks = vi.hoisted(() => {
   // Entries of the `'use cache'` functions, keyed by their arguments
-  cacheEntries: new Map<string, unknown>(),
-  logger: { error: vi.fn() },
-}))
+  const cacheEntries = new Map<string, unknown>()
+
+  // Vitest does not run `'use cache'`, so serve the second call with the same
+  // arguments from the entry of the first, as Next.js does
+  function cached<Args extends unknown[], Result>(
+    name: string,
+    fn: (...args: Args) => Promise<Result>,
+  ): (...args: Args) => Promise<Result> {
+    return (...args) => {
+      const key = JSON.stringify([name, args])
+
+      if (!cacheEntries.has(key)) {
+        cacheEntries.set(key, fn(...args))
+      }
+
+      return cacheEntries.get(key) as Promise<Result>
+    }
+  }
+
+  return {
+    cached,
+    cacheEntries,
+    logger: { error: vi.fn() },
+  }
+})
 
 vi.mock('next/cache', () => ({
   cacheLife: vi.fn(),
@@ -28,33 +50,24 @@ vi.mock('@shinju-date/logger', () => ({
   logger: mocks.logger,
 }))
 
-// Vitest does not run `'use cache'`, so serve the second call with the same
-// arguments from the entry of the first, as Next.js does
-vi.mock('@/lib/fetchers', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/lib/fetchers')>()
-
-  function cached<Args extends unknown[], Result>(
-    name: string,
-    fn: (...args: Args) => Promise<Result>,
-  ): (...args: Args) => Promise<Result> {
-    return (...args) => {
-      const key = JSON.stringify([name, args])
-
-      if (!mocks.cacheEntries.has(key)) {
-        mocks.cacheEntries.set(key, fn(...args))
-      }
-
-      return mocks.cacheEntries.get(key) as Promise<Result>
-    }
-  }
+vi.mock('@/lib/data/videos', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/data/videos')>()
 
   return {
     ...actual,
-    fetchCalendarVideos: cached(
+    fetchCalendarVideos: mocks.cached(
       'fetchCalendarVideos',
       actual.fetchCalendarVideos,
     ),
-    fetchTalent: cached('fetchTalent', actual.fetchTalent),
+  }
+})
+
+vi.mock('@/lib/data/talents', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/data/talents')>()
+
+  return {
+    ...actual,
+    fetchTalent: mocks.cached('fetchTalent', actual.fetchTalent),
   }
 })
 

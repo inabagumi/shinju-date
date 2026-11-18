@@ -315,9 +315,9 @@ describe('Upstash Redis Handlers', () => {
       const script = '-- video-backfill:requeue\n...'
       const job = JSON.stringify({ status: 'pending' })
 
-      await send(['set', 'test:requeue-lock', 'worker'])
+      await send(['set', 'test:requeue-lock', 'token-1'])
 
-      await expect(
+      const requeue = (token: string) =>
         send([
           'eval',
           script,
@@ -328,13 +328,89 @@ describe('Upstash Redis Handlers', () => {
           'youtube:y',
           job,
           60,
-        ]),
-      ).resolves.toBe(1)
+          token,
+        ])
+
+      // Not the token of the worker that holds the job.
+      await expect(requeue('token-2')).resolves.toBe(0)
+      await expect(requeue('token-1')).resolves.toBe(1)
       await expect(send(['get', 'test:requeue-job'])).resolves.toBe(job)
       await expect(send(['mget', 'test:requeue-lock'])).resolves.toEqual([null])
       await expect(send(['rpop', 'test:requeue-queue'])).resolves.toBe(
         'youtube:y',
       )
+    })
+
+    it('emulates the claim script of the backfill queue', async () => {
+      const script = '-- video-backfill:claim\n...'
+      const job = { id: 'youtube:z', startedAt: null, status: 'pending' }
+      const claim = (token: string) =>
+        send([
+          'eval',
+          script,
+          3,
+          'test:claim-queue',
+          'test:claim-job:',
+          'test:claim-lock:',
+          token,
+          360,
+          '2026-11-14T00:00:00Z',
+          60,
+        ])
+
+      await send(['set', 'test:claim-job:youtube:z', JSON.stringify(job)])
+      await send(['lpush', 'test:claim-queue', 'youtube:z', 'youtube:z'])
+
+      await expect(claim('token-1')).resolves.toBe(
+        JSON.stringify({
+          ...job,
+          startedAt: '2026-11-14T00:00:00Z',
+          status: 'running',
+          updatedAt: '2026-11-14T00:00:00Z',
+        }),
+      )
+      await expect(send(['get', 'test:claim-lock:youtube:z'])).resolves.toBe(
+        'token-1',
+      )
+      // The second entry is locked by the first claim.
+      await expect(claim('token-2')).resolves.toBeNull()
+    })
+
+    it('emulates the save and finish scripts of the backfill queue', async () => {
+      const job = JSON.stringify({ status: 'done' })
+
+      await send(['set', 'test:save-lock', 'token-1'])
+
+      await expect(
+        send([
+          'eval',
+          '-- video-backfill:save\n...',
+          2,
+          'test:save-job',
+          'test:save-lock',
+          'token-2',
+          job,
+          60,
+        ]),
+      ).resolves.toBe(0)
+      await expect(send(['get', 'test:save-job'])).resolves.toBeNull()
+
+      await expect(
+        send([
+          'eval',
+          '-- video-backfill:finish\n...',
+          3,
+          'test:save-job',
+          'test:save-lock',
+          'test:save-outcome',
+          'token-1',
+          job,
+          60,
+        ]),
+      ).resolves.toBe(1)
+      await expect(
+        send(['mget', 'test:save-job', 'test:save-outcome', 'test:save-lock']),
+      ).resolves.toEqual([job, job, null])
     })
 
     it('emulates the unlock script of a check of all accounts', async () => {

@@ -9,7 +9,7 @@ import type { CSSProperties } from 'react'
 import LiveBadge from '@/components/live-badge'
 import PlatformBadge from '@/components/platform-badge'
 import TalentIcon from '@/components/talent-icon'
-import type { ScheduleVideo } from '@/lib/fetchers'
+import type { ScheduleVideo } from '@/lib/data/schedule'
 import { parseThemeColor } from '@/lib/theme-color'
 import { getVideoTitleParts } from '@/lib/video-title'
 import {

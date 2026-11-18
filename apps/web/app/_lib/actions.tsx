@@ -6,9 +6,8 @@ import { selectCurrentAnnouncement } from '@/lib/announcement'
 import {
   type Announcement,
   fetchActiveAnnouncements,
-  fetchActiveTalents,
-  type Talent,
-} from '@/lib/fetchers'
+} from '@/lib/data/announcements'
+import { fetchActiveTalents, type Talent } from '@/lib/data/talents'
 import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
 import { COOKIE_NAMES } from '@/lib/site'
 import { supabaseClient } from '@/lib/supabase'

@@ -2,11 +2,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { fetchVideos, type Video } from '@/lib/fetchers'
+import { fetchVideos, type Video } from '@/lib/data/videos'
 import { createVideoItem } from '@/test/factories'
 import SearchResults from './search-results'
 
-vi.mock('@/lib/fetchers', () => ({
+vi.mock('@/lib/data/videos', () => ({
   fetchVideos: vi.fn(() => new Promise(() => {})),
 }))
 

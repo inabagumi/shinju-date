@@ -1,6 +1,6 @@
 import { EmptyState } from '@shinju-date/ui'
 import { UsersRound } from 'lucide-react'
-import type { TalentListItem, TalentStreamStatus } from '@/lib/fetchers'
+import type { TalentListItem, TalentStreamStatus } from '@/lib/data/talents'
 import TalentCard, { TalentCardSkeleton } from './talent-card'
 
 /** 3 columns, 4 from 640px, 5 from 768px and 6 from 1024px */

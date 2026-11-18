@@ -3,7 +3,7 @@ import SearchResults from '@/components/search-results'
 import VideoKindFilterNav, {
   VideoKindFilterNavSkeleton,
 } from '@/components/video-kind-filter-nav'
-import { fetchVideos } from '@/lib/fetchers'
+import { fetchVideos } from '@/lib/data/videos'
 import { getReferenceDate } from '@/lib/reference-date'
 import { getTalentPath } from '@/lib/talent-links'
 import {

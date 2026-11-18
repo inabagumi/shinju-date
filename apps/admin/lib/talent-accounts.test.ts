@@ -129,6 +129,21 @@ describe('resolveAccount', () => {
     await expect(promise).rejects.toMatchObject({ code: 'XX000' })
     await expect(promise).rejects.not.toBeInstanceOf(ActionError)
   })
+
+  it.each([[''], ['ab']])(
+    'throws an error that is not shown on the screen for the input %j that is not validated',
+    async (input) => {
+      const promise = resolveAccount('youtube', {
+        input,
+        supabaseClient: supabase.client,
+      })
+
+      await expect(promise).rejects.toBeInstanceOf(TypeError)
+      await expect(promise).rejects.not.toBeInstanceOf(ActionError)
+      expect(resolveYouTubeChannel).not.toHaveBeenCalled()
+      expect(supabase.requests).toHaveLength(0)
+    },
+  )
 })
 
 describe('linkAccount', () => {

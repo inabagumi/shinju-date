@@ -5,7 +5,7 @@ import {
   createImage,
   mockStorage,
   serveImage,
-} from '../internal/testing/profile-images.js'
+} from '../internal/testing/images.js'
 import { setupSupabase } from '../internal/testing/supabase.js'
 import {
   type SavedTwitchUserIcon,
@@ -85,7 +85,7 @@ describe('syncTwitchUserIcon', () => {
       body: image,
       contentType: 'image/png',
     })
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithUser()
 
     await expect(
@@ -112,7 +112,7 @@ describe('syncTwitchUserIcon', () => {
 
   it('asks Twitch whether a saved icon changed', async () => {
     const requests = serveImage(supabase, ICON_URL, { body: image })
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithUser()
 
     await expect(
@@ -132,7 +132,7 @@ describe('syncTwitchUserIcon', () => {
   it('replaces the icon when Twitch serves a new one', async () => {
     const newIconUrl = ICON_URL.replace('8a6381c7', '0f9e1a2b')
     serveImage(supabase, newIconUrl, { body: image })
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithUser()
 
     await expect(
@@ -152,7 +152,7 @@ describe('syncTwitchUserIcon', () => {
   })
 
   it('removes the icon of a user who went back to a default one', async () => {
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithUser()
 
     await expect(
@@ -171,7 +171,7 @@ describe('syncTwitchUserIcon', () => {
   })
 
   it('writes nothing for a user without an icon', async () => {
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithUser()
 
     await expect(
@@ -191,7 +191,7 @@ describe('syncTwitchUserIcon', () => {
     supabase.server.use(
       http.get(ICON_URL, () => new HttpResponse(null, { status: 404 })),
     )
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithUser()
 
     await expect(
@@ -212,7 +212,7 @@ describe('syncTwitchUserIcon', () => {
       body: Buffer.from('<Error>AccessDenied</Error>'),
       contentType: 'application/xml',
     })
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithUser()
 
     await expect(

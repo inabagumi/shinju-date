@@ -1,9 +1,9 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, test, vi } from 'vitest'
-import type { TalentStreamStatus } from '@/lib/fetchers'
+import type { TalentStreamStatus } from '@/lib/data/talents'
 import { createTalentDetail } from '@/test/factories'
 
-vi.mock('@/lib/fetchers', () => ({}))
+vi.mock('@/lib/data/talents', () => ({}))
 
 import { TalentPageHeader } from './talent-page-header'
 

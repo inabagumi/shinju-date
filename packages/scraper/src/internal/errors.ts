@@ -1,3 +1,6 @@
+/** PostgreSQL error code for a foreign key violation. */
+const FOREIGN_KEY_VIOLATION = '23503'
+
 /** PostgreSQL error code for a unique constraint violation. */
 const UNIQUE_VIOLATION = '23505'
 
@@ -63,6 +66,10 @@ export function throwIfError<Result extends QueryResult>(
 
   // The type of `data` is not narrowed by checking `error` of a generic.
   return result.data as Extract<Result, { error: null }>['data']
+}
+
+export function isForeignKeyViolation(error: PostgrestErrorLike): boolean {
+  return error.code === FOREIGN_KEY_VIOLATION
 }
 
 export function isUniqueViolation(error: PostgrestErrorLike): boolean {

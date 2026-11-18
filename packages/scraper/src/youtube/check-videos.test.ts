@@ -2,7 +2,11 @@ import { HttpResponse, http } from 'msw'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../internal/testing/context.js'
 import { createFakeFetcher } from '../internal/testing/fetcher.js'
-import { createImage, serveImage } from '../internal/testing/profile-images.js'
+import {
+  createImage,
+  mockStorage,
+  serveImage,
+} from '../internal/testing/images.js'
 import { postgresError, setupSupabase } from '../internal/testing/supabase.js'
 import { createSavedVideo, createVideo } from '../internal/testing/youtube.js'
 import {
@@ -199,7 +203,6 @@ describe('refreshYouTubeVideos', () => {
 
 describe('refreshYouTubeVideos and thumbnails', () => {
   const IMAGE_URL = 'https://i.ytimg.test/a.jpg'
-  const STORAGE_URL = 'https://fake.supabase.test/storage/v1/object/thumbnails'
   const thumbnail = { etag: '"etag-1"', id: 'thumb-a', path: 'a/old.jpg' }
   const finished = {
     contentDetails: { duration: 'PT1H' },
@@ -220,38 +223,8 @@ describe('refreshYouTubeVideos and thumbnails', () => {
     vi.clearAllMocks()
   })
 
-  interface StorageCalls {
-    removed: unknown[]
-    uploads: string[]
-  }
-
-  /** Records uploads to and removals from the thumbnails bucket. */
-  function mockStorage(): StorageCalls {
-    const calls: StorageCalls = { removed: [], uploads: [] }
-
-    supabase.server.use(
-      http.post(`${STORAGE_URL}/*`, ({ request }) => {
-        calls.uploads.push(
-          new URL(request.url).pathname.replace(
-            '/storage/v1/object/thumbnails/',
-            '',
-          ),
-        )
-
-        return HttpResponse.json({ Key: 'thumbnails/x' })
-      }),
-      http.delete(STORAGE_URL, async ({ request }) => {
-        calls.removed.push(await request.json())
-
-        return HttpResponse.json([])
-      }),
-    )
-
-    return calls
-  }
-
   it('fills in the thumbnail of a video saved without one', async () => {
-    const storage = mockStorage()
+    const storage = mockStorage(supabase, 'thumbnails')
     const requests = serveImage(supabase, IMAGE_URL, { body: image })
     supabase.respond(({ method }) =>
       method === 'GET'
@@ -273,7 +246,9 @@ describe('refreshYouTubeVideos and thumbnails', () => {
 
     expect(changed).toBe(1)
     expect(requests).toEqual([{ ifNoneMatch: null, url: IMAGE_URL }])
-    expect(storage.uploads).toEqual([expect.stringMatching(/^a\//)])
+    expect(storage.uploads.map(({ path }) => path)).toEqual([
+      expect.stringMatching(/^a\//),
+    ])
     const inserted = supabase.written('POST', 'thumbnails')[0]?.body
 
     expect(inserted).toMatchObject({ etag: '"etag-1"' })
@@ -290,7 +265,7 @@ describe('refreshYouTubeVideos and thumbnails', () => {
   })
 
   it('replaces the thumbnail of a scheduled video and keeps the old one', async () => {
-    const storage = mockStorage()
+    const storage = mockStorage(supabase, 'thumbnails')
     const requests = serveImage(supabase, IMAGE_URL, {
       body: image,
       etag: '"etag-2"',
@@ -330,7 +305,7 @@ describe('refreshYouTubeVideos and thumbnails', () => {
   })
 
   it('also follows the thumbnail of a live video', async () => {
-    mockStorage()
+    mockStorage(supabase, 'thumbnails')
     serveImage(supabase, IMAGE_URL, { body: image, etag: '"etag-2"' })
     supabase.respond(({ method }) =>
       method === 'GET'
@@ -363,7 +338,7 @@ describe('refreshYouTubeVideos and thumbnails', () => {
   })
 
   it('does not download again a thumbnail that is not modified', async () => {
-    const storage = mockStorage()
+    const storage = mockStorage(supabase, 'thumbnails')
     const requests = serveImage(supabase, IMAGE_URL, { body: image })
     supabase.respond(({ method }) =>
       method === 'GET' ? [createSavedVideo('a', { thumbnail })] : [],
@@ -454,7 +429,7 @@ describe('refreshYouTubeVideos and thumbnails', () => {
   })
 
   it('reports a thumbnail that cannot be downloaded and refreshes the rest', async () => {
-    mockStorage()
+    mockStorage(supabase, 'thumbnails')
     supabase.server.use(
       http.get(IMAGE_URL, () => new HttpResponse('Not Found', { status: 404 })),
     )
@@ -480,7 +455,7 @@ describe('refreshYouTubeVideos and thumbnails', () => {
     expect(reportError).toHaveBeenCalledTimes(1)
     expect(reportError).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: expect.stringContaining('Failed to download a thumbnail'),
+        message: expect.stringContaining('Failed to download an image'),
       }),
       { youtubeVideoId: 'a' },
     )

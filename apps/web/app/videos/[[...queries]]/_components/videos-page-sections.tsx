@@ -3,12 +3,8 @@ import { type ComponentProps, Suspense } from 'react'
 import NoResults from '@/components/no-results'
 import PageHeader, { PageHeaderSkeleton } from '@/components/page-header'
 import SearchResults from '@/components/search-results'
-import {
-  countVideos,
-  fetchActiveTalents,
-  fetchVideos,
-  type Talent,
-} from '@/lib/fetchers'
+import { fetchActiveTalents, type Talent } from '@/lib/data/talents'
+import { countVideos, fetchVideos } from '@/lib/data/videos'
 import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
 import { getReferenceDate } from '@/lib/reference-date'
 import { parseTalentIds, TALENT_SEARCH_PARAM } from '@/lib/talent-filter'

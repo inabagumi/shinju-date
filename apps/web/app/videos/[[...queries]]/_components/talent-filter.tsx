@@ -3,7 +3,7 @@
 import { MultiSelect } from '@shinju-date/ui'
 import { useRouter } from 'next/navigation'
 import { useOptimistic, useTransition } from 'react'
-import type { Talent } from '@/lib/fetchers'
+import type { Talent } from '@/lib/data/talents'
 import { getVideosPath, type VideoKindFilter } from '@/lib/video-kind-filter'
 
 interface TalentFilterProps {

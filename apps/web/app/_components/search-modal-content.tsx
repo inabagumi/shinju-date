@@ -21,7 +21,7 @@ import { ListOption, ListOptionIcon } from '@/components/list-option'
 import TalentChip, {
   TALENT_CHIP_REMOVE_CLASS_NAME,
 } from '@/components/talent-chip'
-import type { Talent } from '@/lib/fetchers'
+import type { Talent } from '@/lib/data/talents'
 import { queryKeys } from '@/lib/query-keys'
 import { parseTalentIds, TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
 import { findMatchingTalents } from '@/lib/talent-match'

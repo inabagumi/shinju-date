@@ -1,7 +1,7 @@
 import type { MultiSelectOption } from '@shinju-date/ui'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import type { Talent } from '@/lib/fetchers'
+import type { Talent } from '@/lib/data/talents'
 import VideoFilters from './video-filters'
 
 const push = vi.hoisted(() => vi.fn())

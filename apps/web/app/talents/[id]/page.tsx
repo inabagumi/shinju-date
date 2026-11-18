@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import PageMain from '@/components/page-main'
 import { SearchResultsSkeleton } from '@/components/search-results'
-import { fetchTalent } from '@/lib/fetchers'
+import { fetchTalent } from '@/lib/data/talents'
 import { createPageMetadata } from '@/lib/metadata'
 import { getTalentCalendarPath, getTalentPath } from '@/lib/talent-links'
 import {

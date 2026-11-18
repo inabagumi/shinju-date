@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
+import type { TalentTwitchUser, TalentYouTubeChannel } from '@/lib/data/talents'
 import { createTalentDetail } from '@/test/factories'
-import type { TalentTwitchUser, TalentYouTubeChannel } from './fetchers'
 import {
   findFirstNonBlank,
   getTalentCalendarPath,

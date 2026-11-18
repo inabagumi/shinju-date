@@ -9,6 +9,8 @@
 - 待機中・処理中のジョブは二重に依頼できません。失敗・中断したジョブは続きから、完了したジョブは最新の動画から読み直します
 - 依頼の保存は、読み取った時点からジョブが変わっていないときだけ行う compare-and-set です（`ENQUEUE_SCRIPT`、Redis 上で原子的に実行）。同時に来た依頼や途中で止まった依頼が、互いの進捗やワーカーの進捗を上書きすることはありません。ジョブの保存とキューへの追加は常に一体で行います
 - `claim` したジョブはロック（`BACKFILL_LEASE_SECONDS`）され、同じジョブを 2 つのワーカーが同時に読むことはありません。ワーカーが落ちてもロックの期限が切れれば再依頼できます
+- `claim` は、キューからの取り出し・ロック・`running` への更新を 1 つのスクリプト（`CLAIM_SCRIPT`）で行います。途中で止まっても、キューから消えたのに `pending` のまま、というジョブは残りません
+- ロックの値は `claim` のたびに作るトークンです。`claim` はジョブとトークン（`BackfillClaim`）を返し、`update`・`complete`・`fail`・`requeue` は、ロックがそのトークンを持っているときだけ書き込みます。ロックの期限が切れたあと（別のワーカーが取り出したかもしれない）は何も書き込まず、`{ status: 'lost' }` を返すので、バッチはそのジョブの処理をやめて次へ進みます
 
 | 状態      | 意味                             |
 | --------- | -------------------------------- |
@@ -65,7 +67,18 @@ const queue = new BackfillQueue(redisClient)
 await queue.enqueue({ accountId, provider: 'youtube', requestedBy, talentId })
 
 // バッチ: 処理する
-const job = await queue.claim()
+const claim = await queue.claim()
+
+if (claim) {
+  const result = await queue.update({
+    ...claim,
+    job: { ...claim.job, pages: 1 },
+  })
+
+  if (result.status === 'lost') {
+    // ロックが切れた: このジョブの処理をやめる
+  }
+}
 
 // 管理画面: 全アカウントのチェックを依頼し、進捗を読む
 const runs = new BackfillRuns(redisClient)

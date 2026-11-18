@@ -6,7 +6,6 @@ import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
-import * as z from 'zod'
 import {
   ActionError,
   type ActionResult,
@@ -15,46 +14,21 @@ import {
 } from '@/lib/action'
 import { type AuditAction, createAuditLog } from '@/lib/audit-log'
 import type { AuthenticatedContext } from '@/lib/auth'
-import { uuidSchema } from '@/lib/schemas'
 import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 import { isNotFoundError } from '@/lib/supabase/query'
 import { linkAccount, resolveAccount } from '@/lib/talent-accounts'
-import { talentNameSchema, talentReadingSchema } from '../_lib/talent-schema'
-
-const createTalentSchema = z.object({
-  name: talentNameSchema,
-  reading: talentReadingSchema,
-  youtube_channel_id: z.string().optional(),
-})
-
-const updateTalentSchema = z.object({
-  id: uuidSchema,
-  name: talentNameSchema,
-  reading: talentReadingSchema,
-  theme_color: z
-    .string()
-    .trim()
-    .regex(/^#[0-9A-Fa-f]{6}$/, {
-      message: 'カラーコードは#RRGGBB形式で入力してください（例: #FF5733）',
-    })
-    .nullable()
-    .optional()
-    .transform((val) => {
-      if (!val || val === '') return null
-      return val
-    }),
-})
+import { createTalentSchema, updateTalentSchema } from '../_lib/talent-schema'
 
 export const createTalentAction = adminFormAction(
   'createTalentAction',
   createTalentSchema,
   async (
     { supabaseClient },
-    { name, reading, youtube_channel_id: channelInput = '' },
+    { name, reading, youtube_channel_id: channelInput },
   ) => {
     // タレントを作る前に、チャンネルを解決し、登録済みでないことを確かめる
     const account =
-      channelInput.trim() !== ''
+      channelInput !== undefined
         ? await resolveAccount('youtube', {
             input: channelInput,
             supabaseClient,

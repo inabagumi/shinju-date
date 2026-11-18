@@ -330,7 +330,7 @@ describe('restoreAction', () => {
 ```ts
 import { createTalent } from '@/test/factories'
 import { seedSupabase, setupSupabase } from '@/test/supabase'
-import { fetchActiveTalents } from './fetchers'
+import { fetchActiveTalents } from './talents'
 
 vi.mock('next/cache', () => ({ cacheLife: vi.fn(), cacheTag: vi.fn() }))
 

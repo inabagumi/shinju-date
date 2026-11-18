@@ -32,8 +32,8 @@ vi.mock('@shinju-date/logger', () => ({
 
 // Vitest does not run `'use cache'`, so serve the second call with the same
 // arguments from the entry of the first, as Next.js does
-vi.mock('@/lib/fetchers', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/lib/fetchers')>()
+vi.mock('@/lib/data/videos', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/data/videos')>()
 
   return {
     ...actual,

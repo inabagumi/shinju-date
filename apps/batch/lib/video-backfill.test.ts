@@ -1,13 +1,17 @@
 import { AccountNotFoundError, type Scraper } from '@shinju-date/scraper'
-import type { BackfillJob, BackfillQueue } from '@shinju-date/video-backfill'
+import type {
+  BackfillClaim,
+  BackfillJob,
+  BackfillQueue,
+  BackfillWriteResult,
+} from '@shinju-date/video-backfill'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const captureException = vi.fn()
+const logger = { error: vi.fn(), info: vi.fn(), warn: vi.fn() }
 
 vi.mock('@sentry/nextjs', () => ({ captureException }))
-vi.mock('@shinju-date/logger', () => ({
-  logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
-}))
+vi.mock('@shinju-date/logger', () => ({ logger }))
 
 const { BACKFILL_MAX_ATTEMPTS, BACKFILL_SENTRY_TAG, workOffBackfillQueue } =
   await import('./video-backfill')
@@ -33,30 +37,63 @@ function createJob(overrides: Partial<BackfillJob> = {}): BackfillJob {
   }
 }
 
+const lost: BackfillWriteResult = { status: 'lost' }
+
+/** A claim of a job whose job has the given fields. */
+function claimOf(fields: Partial<BackfillJob>) {
+  return { job: expect.objectContaining(fields), token: expect.any(String) }
+}
+
 /**
  * Hands out the given jobs in order and puts requeued jobs at the end, like
- * the Redis queue does.
+ * the Redis queue does. Every write keeps the lock unless a test says
+ * otherwise.
  */
 function createQueue(jobs: BackfillJob[]) {
   const queued = [...jobs]
+  let claims = 0
   const queue = {
-    claim: vi.fn(async () => queued.shift() ?? null),
-    complete: vi.fn(async (job: BackfillJob) => ({
-      ...job,
-      finishedAt: '2026-11-14T00:05:00Z',
-      status: 'done' as const,
-    })),
-    fail: vi.fn(async (job: BackfillJob, error: string) => ({
-      ...job,
-      error,
-      finishedAt: '2026-11-14T00:05:00Z',
-      status: 'failed' as const,
-    })),
-    requeue: vi.fn(async (job: BackfillJob) => {
-      queued.push(job)
-      return job
+    claim: vi.fn(async (): Promise<BackfillClaim | null> => {
+      const job = queued.shift()
+
+      return job ? { job, token: `token-${++claims}` } : null
     }),
-    update: vi.fn(async (job: BackfillJob) => job),
+    complete: vi.fn(
+      async ({ job }: BackfillClaim): Promise<BackfillWriteResult> => ({
+        job: {
+          ...job,
+          finishedAt: '2026-11-14T00:05:00Z',
+          status: 'done' as const,
+        },
+        status: 'saved' as const,
+      }),
+    ),
+    fail: vi.fn(
+      async (
+        { job }: BackfillClaim,
+        error: string,
+      ): Promise<BackfillWriteResult> => ({
+        job: {
+          ...job,
+          error,
+          finishedAt: '2026-11-14T00:05:00Z',
+          status: 'failed' as const,
+        },
+        status: 'saved' as const,
+      }),
+    ),
+    requeue: vi.fn(
+      async ({ job }: BackfillClaim): Promise<BackfillWriteResult> => {
+        queued.push(job)
+        return { job, status: 'saved' as const }
+      },
+    ),
+    update: vi.fn(
+      async ({ job }: BackfillClaim): Promise<BackfillWriteResult> => ({
+        job,
+        status: 'saved' as const,
+      }),
+    ),
   }
 
   return { queue, typed: queue as unknown as BackfillQueue }
@@ -100,10 +137,10 @@ describe('workOffBackfillQueue', () => {
       expect.objectContaining({ cursor: 'page-2' }),
     )
     expect(queue.update).toHaveBeenCalledWith(
-      expect.objectContaining({ added: 3, cursor: 'page-2', pages: 1 }),
+      claimOf({ added: 3, cursor: 'page-2', pages: 1 }),
     )
     expect(queue.complete).toHaveBeenCalledWith(
-      expect.objectContaining({ added: 4, cursor: null, pages: 2 }),
+      claimOf({ added: 4, cursor: null, pages: 2 }),
     )
     expect(queue.requeue).not.toHaveBeenCalled()
   })
@@ -133,7 +170,7 @@ describe('workOffBackfillQueue', () => {
 
     expect(addPastVideos).toHaveBeenCalledTimes(1)
     expect(queue.requeue).toHaveBeenCalledWith(
-      expect.objectContaining({ added: 7, cursor: 'page-4', pages: 3 }),
+      claimOf({ added: 7, cursor: 'page-4', pages: 3 }),
     )
     expect(queue.complete).not.toHaveBeenCalled()
   })
@@ -150,7 +187,7 @@ describe('workOffBackfillQueue', () => {
     ).rejects.toThrow('redis unavailable')
 
     expect(queue.requeue).toHaveBeenCalledWith(
-      expect.objectContaining({ added: 3, cursor: 'page-2', pages: 1 }),
+      claimOf({ added: 3, cursor: 'page-2', pages: 1 }),
     )
   })
 
@@ -189,7 +226,7 @@ describe('workOffBackfillQueue', () => {
     expect(queue.requeue).toHaveBeenCalledTimes(2)
     expect(queue.requeue).toHaveBeenNthCalledWith(
       1,
-      expect.objectContaining({ attempts: 1, error: 'quota exceeded' }),
+      claimOf({ attempts: 1, error: 'quota exceeded' }),
     )
   })
 
@@ -208,10 +245,7 @@ describe('workOffBackfillQueue', () => {
     })
 
     expect(queue.fail).toHaveBeenCalledWith(
-      expect.objectContaining({
-        attempts: BACKFILL_MAX_ATTEMPTS,
-        cursor: 'page-9',
-      }),
+      claimOf({ attempts: BACKFILL_MAX_ATTEMPTS, cursor: 'page-9' }),
       'quota exceeded',
     )
     expect(queue.requeue).not.toHaveBeenCalled()
@@ -230,7 +264,7 @@ describe('workOffBackfillQueue', () => {
     })
 
     expect(queue.fail).toHaveBeenCalledWith(
-      expect.objectContaining({ attempts: 1 }),
+      claimOf({ attempts: 1 }),
       'Account not found: channel-row-1',
     )
   })
@@ -372,5 +406,90 @@ describe('workOffBackfillQueue', () => {
         }),
       ],
     ])
+  })
+
+  it('stops working on a job whose lock was lost and goes on to the next', async () => {
+    const other = createJob({
+      accountId: 'twitch-row-1',
+      id: 'twitch:twitch-row-1',
+      provider: 'twitch',
+    })
+    const { queue, typed } = createQueue([createJob(), other])
+    const { addPastVideos, getScraper } = createScraper()
+
+    addPastVideos
+      .mockResolvedValueOnce({ added: 3, cursor: 'page-2', listed: 50 })
+      .mockResolvedValueOnce({ added: 1, cursor: null, listed: 1 })
+    queue.update.mockResolvedValueOnce(lost)
+
+    await expect(
+      workOffBackfillQueue({ deadline: farFuture, getScraper, queue: typed }),
+    ).resolves.toEqual({ added: 4, jobs: 2 })
+
+    // The first job was not read further nor put back.
+    expect(addPastVideos).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ accountId: 'twitch-row-1' }),
+    )
+    expect(queue.requeue).not.toHaveBeenCalled()
+    expect(queue.complete).toHaveBeenCalledTimes(1)
+    expect(queue.complete).toHaveBeenCalledWith(
+      claimOf({ id: 'twitch:twitch-row-1' }),
+    )
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('ロック'),
+      expect.objectContaining({ jobId: 'youtube:channel-row-1' }),
+    )
+  })
+
+  it('passes the token of the claim to every write', async () => {
+    const { queue, typed } = createQueue([createJob()])
+    const { addPastVideos, getScraper } = createScraper()
+
+    addPastVideos
+      .mockResolvedValueOnce({ added: 3, cursor: 'page-2', listed: 50 })
+      .mockResolvedValueOnce({ added: 1, cursor: null, listed: 1 })
+
+    await workOffBackfillQueue({
+      deadline: farFuture,
+      getScraper,
+      queue: typed,
+    })
+
+    expect(queue.update).toHaveBeenCalledWith(
+      expect.objectContaining({ token: 'token-1' }),
+    )
+    expect(queue.complete).toHaveBeenCalledWith(
+      expect.objectContaining({ token: 'token-1' }),
+    )
+  })
+
+  it('does not report a job whose lock was lost when it finished', async () => {
+    const { queue, typed } = createQueue([
+      createJob(),
+      createJob({
+        accountId: 'twitch-row-1',
+        id: 'twitch:twitch-row-1',
+        provider: 'twitch',
+      }),
+    ])
+    const { addPastVideos, getScraper } = createScraper()
+    const onFinish = vi.fn()
+
+    addPastVideos
+      .mockResolvedValueOnce({ added: 1, cursor: null, listed: 1 })
+      .mockRejectedValueOnce(new AccountNotFoundError('twitch-row-1'))
+    queue.complete.mockResolvedValueOnce(lost)
+    queue.fail.mockResolvedValueOnce(lost)
+
+    await workOffBackfillQueue({
+      deadline: farFuture,
+      getScraper,
+      onFinish,
+      queue: typed,
+    })
+
+    expect(onFinish).not.toHaveBeenCalled()
+    expect(logger.warn).toHaveBeenCalledTimes(2)
   })
 })

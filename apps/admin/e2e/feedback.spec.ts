@@ -65,4 +65,21 @@ test.describe('Feedback', () => {
         .first(),
     ).toHaveText(new RegExp(`^${nextLabel}`))
   })
+
+  test('should filter the feature requests on the server through the URL', async ({
+    page,
+  }) => {
+    await page.goto('/feedback')
+
+    await page.getByLabel('既読状態').selectOption('read')
+    await expect(page).toHaveURL(/\/feedback\?read=read$/)
+
+    // Every remaining row is read
+    await expect(page.getByRole('row').filter({ hasText: '未読' })).toHaveCount(
+      0,
+    )
+
+    await page.getByLabel('既読状態').selectOption('all')
+    await expect(page).toHaveURL(/\/feedback$/)
+  })
 })

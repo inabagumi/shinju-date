@@ -127,50 +127,6 @@ export class FakeRedis {
     return deserialize(this.#run(['MGET', ...keys])) as T
   }
 
-  /**
-   * Commands queued in a transaction run together. Like Redis, a failing
-   * command does not stop the others; like `@upstash/redis`, `exec` then
-   * throws.
-   */
-  multi() {
-    const commands: string[][] = []
-    const transaction = {
-      del: (...keys: string[]) => {
-        commands.push(['DEL', ...keys])
-        return transaction
-      },
-      exec: async () => {
-        const results: unknown[] = []
-        let failure: unknown
-
-        for (const command of commands) {
-          try {
-            results.push(deserialize(this.#run(command)))
-          } catch (error) {
-            failure ??= error
-            results.push(null)
-          }
-        }
-
-        if (failure) {
-          throw failure
-        }
-
-        return results
-      },
-      set: (key: string, value: unknown, options?: SetOptions) => {
-        commands.push(this.#setCommand(key, value, options))
-        return transaction
-      },
-    }
-
-    return transaction
-  }
-
-  async rpop<T>(key: string): Promise<T | null> {
-    return deserialize(this.#run(['RPOP', key])) as T | null
-  }
-
   async set(
     key: string,
     value: unknown,

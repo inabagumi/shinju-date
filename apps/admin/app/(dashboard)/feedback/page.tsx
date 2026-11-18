@@ -5,6 +5,7 @@ import {
   FeatureRequestList,
   FeatureRequestListSkeleton,
 } from './_components/feedback-list'
+import { filterFeatureRequests } from './_lib/filter-feature-requests'
 import { getFeatureRequests } from './_lib/get-feedback'
 import { feedbackSearchParamsSchema } from './_lib/search-params-schema'
 
@@ -19,13 +20,13 @@ async function FeatureRequestListData({
     getFeatureRequests(),
     searchParams,
   ])
-  const { read, status } = feedbackSearchParamsSchema.parse(rawParams)
+  const filters = feedbackSearchParamsSchema.parse(rawParams)
 
   return (
     <FeatureRequestList
-      featureRequests={featureRequests}
-      readFilter={read}
-      statusFilter={status}
+      featureRequests={filterFeatureRequests(featureRequests, filters)}
+      readFilter={filters.read}
+      statusFilter={filters.status}
     />
   )
 }

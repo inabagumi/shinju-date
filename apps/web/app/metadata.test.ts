@@ -1,20 +1,20 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { SITE_DESCRIPTION, SITE_TAGLINE } from '@/lib/site'
 
-vi.mock('@/lib/fetchers', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/fetchers')>()),
-  fetchActiveTalents: vi.fn(),
+vi.mock('@/lib/data/schedule', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/data/schedule')>()),
   fetchOldestVideoDate: vi.fn(),
   fetchScheduleToday: vi.fn(),
+}))
+
+vi.mock('@/lib/data/talents', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/data/talents')>()),
+  fetchActiveTalents: vi.fn(),
   fetchTalent: vi.fn(),
 }))
 
-import {
-  fetchActiveTalents,
-  fetchOldestVideoDate,
-  fetchScheduleToday,
-  fetchTalent,
-} from '@/lib/fetchers'
+import { fetchOldestVideoDate, fetchScheduleToday } from '@/lib/data/schedule'
+import { fetchActiveTalents, fetchTalent } from '@/lib/data/talents'
 import { metadata as aboutMetadata } from './about/layout'
 import { metadata as contactMetadata } from './contact/page'
 import { metadata as feedbackMetadata } from './feedback/page'

@@ -1,4 +1,4 @@
-import type { ProfileImage, TalentListItem } from '@/lib/fetchers'
+import type { ProfileImage, TalentListItem } from '@/lib/data/talents'
 
 /** `TalentDetail` and `TalentListItem` both have the accounts */
 export type TalentAccounts = Pick<

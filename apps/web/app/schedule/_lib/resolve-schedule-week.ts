@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { fetchOldestVideoDate, fetchScheduleToday } from '@/lib/fetchers'
+import { fetchOldestVideoDate, fetchScheduleToday } from '@/lib/data/schedule'
 import {
   getScheduleWeekRange,
   getWeekStart,

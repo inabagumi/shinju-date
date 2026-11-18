@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mockStorage } from '../testing/profile-images.js'
+import { mockStorage } from '../testing/images.js'
 import { postgresError, setupSupabase } from '../testing/supabase.js'
 import { removeUnusedProfileImages } from './cleanup.js'
 
@@ -9,7 +9,7 @@ const now = Temporal.Instant.from('2024-05-01T12:34:56.789Z')
 
 describe('removeUnusedProfileImages', () => {
   it('lists icons without an owner that are past the grace period', async () => {
-    mockStorage(supabase)
+    mockStorage(supabase, 'profile-images')
     supabase.respond(() => [])
 
     await expect(
@@ -30,7 +30,7 @@ describe('removeUnusedProfileImages', () => {
   })
 
   it('deletes unused icons and keeps those that became used again', async () => {
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     supabase.respond(({ method, query }) => {
       if (method === 'GET') {
         return [

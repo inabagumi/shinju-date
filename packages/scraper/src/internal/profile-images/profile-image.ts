@@ -1,21 +1,21 @@
 import type { Enums } from '@shinju-date/database'
-import retryableFetch from '@shinju-date/retryable-fetch'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { nanoid } from 'nanoid'
 import sharp from 'sharp'
 import type { TypedSupabaseClient } from '../../types.js'
 import { DatabaseError, StorageError } from '../errors.js'
+import {
+  createBlurDataURL,
+  downloadImage,
+  removeImage,
+  removeStoredImages,
+  storeImage,
+} from '../images/index.js'
 
 export const PROFILE_IMAGES_BUCKET = 'profile-images'
 
 /** Stored icons are square and at most this many pixels wide. */
 export const MAX_PROFILE_IMAGE_SIZE = 256
-
-/** One year: stored objects are immutable because every upload gets a new path. */
-const CACHE_CONTROL_MAX_AGE_SECONDS = 365 * 24 * 60 * 60
-
-/** PostgreSQL error code for a foreign key violation. */
-const FOREIGN_KEY_VIOLATION = '23503'
 
 /** The YouTube channel or Twitch user an icon belongs to. */
 export interface ProfileImageOwner {
@@ -68,38 +68,13 @@ export async function downloadProfileImage(
     return null
   }
 
-  const response = await retryableFetch(sourceUrl, {
-    ...(savedEtag ? { headers: { 'If-None-Match': savedEtag } } : {}),
-  })
+  const downloaded = await downloadImage(sourceUrl, { etag: savedEtag })
 
-  if (!response.ok && response.status !== 304) {
-    // The body is read to reuse the socket.
-    await response.arrayBuffer()
-
-    throw new Error(
-      `Failed to download a profile image (${response.status}): ${sourceUrl}`,
-    )
-  }
-
-  const etag = response.headers.get('ETag')
-
-  if (response.status === 304 || (savedEtag && etag === savedEtag)) {
-    // The body is read to reuse the socket.
-    await response.arrayBuffer()
-
+  if (!downloaded) {
     return null
   }
 
-  const contentType = response.headers.get('Content-Type') ?? ''
-  const body = await response.arrayBuffer()
-
-  if (!contentType.startsWith('image/')) {
-    throw new TypeError(
-      `Expected an image but received "${contentType}": ${sourceUrl}`,
-    )
-  }
-
-  return { body, etag, sourceUrl }
+  return { body: downloaded.body, etag: downloaded.etag, sourceUrl }
 }
 
 /**
@@ -118,12 +93,6 @@ async function toSquareWebP(
     .toBuffer()
 
   return { body, size }
-}
-
-async function createBlurDataURL(image: Buffer): Promise<string> {
-  const buffer = await sharp(image).resize(10).jpeg().toBuffer()
-
-  return `data:image/jpeg;base64,${buffer.toString('base64')}`
 }
 
 export interface CreateProfileImageOptions {
@@ -156,17 +125,12 @@ export async function createProfileImage({
     sourceUrl: image.sourceUrl,
   }
 
-  const { error: uploadError } = await supabaseClient.storage
-    .from(PROFILE_IMAGES_BUCKET)
-    .upload(stored.path, body, {
-      cacheControl: CACHE_CONTROL_MAX_AGE_SECONDS.toString(10),
-      contentType: 'image/webp',
-      upsert: false,
-    })
-
-  if (uploadError) {
-    throw new StorageError('Failed to upload a profile image', uploadError)
-  }
+  await storeImage(supabaseClient, {
+    bucket: PROFILE_IMAGES_BUCKET,
+    contentType: 'image/webp',
+    image: body,
+    path: stored.path,
+  })
 
   const timestamp = toDBString(now)
   const { error: insertError } = await supabaseClient
@@ -184,9 +148,13 @@ export async function createProfileImage({
     })
 
   if (insertError) {
-    await supabaseClient.storage
-      .from(PROFILE_IMAGES_BUCKET)
-      .remove([stored.path])
+    await removeStoredImages(supabaseClient, {
+      bucket: PROFILE_IMAGES_BUCKET,
+      paths: [stored.path],
+    }).catch(() => {
+      // Ignored: the insert error is the one to throw, and an object without
+      // its row is never served.
+    })
 
     throw new DatabaseError('Failed to insert a profile image', insertError)
   }
@@ -209,26 +177,18 @@ export async function removeProfileImage(
   supabaseClient: TypedSupabaseClient,
   image: Pick<StoredProfileImage, 'id' | 'path'>,
 ): Promise<boolean> {
-  const { error } = await supabaseClient
-    .from('profile_images')
-    .delete()
-    .eq('id', image.id)
-
-  if (error) {
-    if (error.code === FOREIGN_KEY_VIOLATION) {
-      return false
+  try {
+    return await removeImage(supabaseClient, {
+      bucket: PROFILE_IMAGES_BUCKET,
+      image,
+      table: 'profile_images',
+    })
+  } catch (error) {
+    if (error instanceof StorageError) {
+      // Ignored on purpose, see above.
+      return true
     }
 
-    throw new DatabaseError('Failed to delete a profile image', error)
+    throw error
   }
-
-  try {
-    await supabaseClient.storage
-      .from(PROFILE_IMAGES_BUCKET)
-      .remove([image.path])
-  } catch {
-    // Ignored on purpose, see above.
-  }
-
-  return true
 }

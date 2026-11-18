@@ -9,12 +9,9 @@
  */
 
 import type { Tables } from '@shinju-date/database'
-import type {
-  ScheduleVideo,
-  TalentDetail,
-  TalentListItem,
-  Video,
-} from '@/lib/fetchers'
+import type { ScheduleVideo } from '@/lib/data/schedule'
+import type { TalentDetail, TalentListItem } from '@/lib/data/talents'
+import type { Video } from '@/lib/data/videos'
 
 /** The time the rows are created and updated at, which no fetcher reads */
 const CREATED_AT = '2026-01-01T00:00:00Z'

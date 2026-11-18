@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
-import type { Video } from '@/lib/fetchers'
+import type { Video } from '@/lib/data/videos'
 import VideoCard, { VideoCardSkeleton } from './video-card'
 
 const profileImage = {

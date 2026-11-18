@@ -90,4 +90,34 @@ test.describe('Talents', () => {
     await dialog.getByRole('button', { name: 'キャンセル' }).click()
     await expect(dialog).toBeHidden()
   })
+
+  test('should filter and sort the list on the server through the URL', async ({
+    page,
+  }) => {
+    await page.goto('/talents')
+
+    await page
+      .getByRole('combobox', { name: '状態で絞り込み' })
+      .selectOption('all')
+    await expect(page).toHaveURL(/\/talents\?status=all$/)
+
+    const sortHeader = page.getByRole('columnheader', { name: /最終更新日時/ })
+    await expect(sortHeader).toHaveAttribute('aria-sort', 'descending')
+    await sortHeader.getByRole('link').click()
+    await expect(page).toHaveURL(/\/talents\?status=all&sort=asc$/)
+    await expect(sortHeader).toHaveAttribute('aria-sort', 'ascending')
+
+    // The filters stay after a reload
+    await page.reload()
+    await expect(
+      page.getByRole('combobox', { name: '状態で絞り込み' }),
+    ).toHaveValue('all')
+    await expect(sortHeader).toHaveAttribute('aria-sort', 'ascending')
+
+    // Searching a name that no talent has shows the empty state
+    await page
+      .getByRole('searchbox', { name: 'タレント名またはIDで検索' })
+      .fill(`none-${crypto.randomUUID()}`)
+    await expect(page.getByText('検索結果がありません。')).toBeVisible()
+  })
 })

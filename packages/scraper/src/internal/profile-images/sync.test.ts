@@ -1,9 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import {
-  createImage,
-  mockStorage,
-  serveImage,
-} from '../testing/profile-images.js'
+import { createImage, mockStorage, serveImage } from '../testing/images.js'
 import { postgresError, setupSupabase } from '../testing/supabase.js'
 import type { ProfileImageOwner, StoredProfileImage } from './profile-image.js'
 import { syncProfileImage } from './sync.js'
@@ -60,7 +56,7 @@ describe('syncProfileImage', () => {
 
   it('stores and assigns the first icon of a channel', async () => {
     serveImage(supabase, IMAGE_URL, { body: image })
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithOwner()
 
     await expect(
@@ -86,7 +82,7 @@ describe('syncProfileImage', () => {
 
   it('leaves an unchanged icon alone', async () => {
     serveImage(supabase, IMAGE_URL, { body: image })
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithOwner()
 
     await expect(
@@ -105,7 +101,7 @@ describe('syncProfileImage', () => {
   it('assigns a changed icon before discarding the old one', async () => {
     const newUrl = 'https://twitch.test/avatar-2.png'
     serveImage(supabase, newUrl, { body: image, etag: '"etag-2"' })
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithOwner()
 
     await expect(
@@ -139,7 +135,7 @@ describe('syncProfileImage', () => {
   })
 
   it('unassigns and discards the icon when the platform has none', async () => {
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithOwner()
 
     await expect(
@@ -159,7 +155,7 @@ describe('syncProfileImage', () => {
 
   it('still succeeds when the old icon cannot be discarded', async () => {
     serveImage(supabase, IMAGE_URL, { body: image, etag: '"etag-2"' })
-    mockStorage(supabase)
+    mockStorage(supabase, 'profile-images')
     supabase.respond(({ method, table }) => {
       if (method === 'PATCH') {
         return [{ id: 'owner' }]
@@ -185,7 +181,7 @@ describe('syncProfileImage', () => {
 
   it('discards the new icon and keeps the old one when it cannot be assigned', async () => {
     serveImage(supabase, IMAGE_URL, { body: image, etag: '"etag-2"' })
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     // The channel was deleted in the meantime: the update matches no row.
     supabase.respond(() => [])
 

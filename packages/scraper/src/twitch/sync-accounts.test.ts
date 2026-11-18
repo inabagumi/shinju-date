@@ -5,7 +5,7 @@ import {
   createImage,
   mockStorage,
   serveImage,
-} from '../internal/testing/profile-images.js'
+} from '../internal/testing/images.js'
 import {
   postgresError,
   type SupabaseResponder,
@@ -145,7 +145,7 @@ describe('syncTwitchUsers', () => {
 
     it('stores the icon of an account that has none yet', async () => {
       serveImage(supabase, ICON_URL, { body: image, contentType: 'image/png' })
-      const storage = mockStorage(supabase)
+      const storage = mockStorage(supabase, 'profile-images')
       supabase.respondWith(routes)
       const { fetcher } = createFakeTwitchFetcher({
         accounts: [createUser('1001', { profile_image_url: ICON_URL })],
@@ -173,7 +173,7 @@ describe('syncTwitchUsers', () => {
 
     it('leaves an icon alone when Twitch serves the same one', async () => {
       const requests = serveImage(supabase, ICON_URL, { body: image })
-      const storage = mockStorage(supabase)
+      const storage = mockStorage(supabase, 'profile-images')
       supabase.respondWith({
         ...routes,
         'GET talents': [
@@ -210,7 +210,7 @@ describe('syncTwitchUsers', () => {
         body: Buffer.from('not found'),
         contentType: 'text/plain',
       })
-      mockStorage(supabase)
+      mockStorage(supabase, 'profile-images')
       supabase.respondWith(routes)
       const { fetcher } = createFakeTwitchFetcher({
         accounts: [
@@ -239,7 +239,7 @@ describe('syncTwitchUsers', () => {
 
     it('still syncs the icon when the name cannot be updated', async () => {
       serveImage(supabase, ICON_URL, { body: image, contentType: 'image/png' })
-      const storage = mockStorage(supabase)
+      const storage = mockStorage(supabase, 'profile-images')
       supabase.respondWith({
         ...routes,
         'PATCH twitch_users': ({ body }) =>
@@ -270,7 +270,7 @@ describe('syncTwitchUsers', () => {
     })
 
     it('writes nothing for an account with a default icon', async () => {
-      const storage = mockStorage(supabase)
+      const storage = mockStorage(supabase, 'profile-images')
       supabase.respondWith(routes)
       const { fetcher } = createFakeTwitchFetcher({
         accounts: [
@@ -428,7 +428,7 @@ describe('syncTwitchUsersOfTalent', () => {
       body: await createImage(300, 300),
       contentType: 'image/png',
     })
-    mockStorage(supabase)
+    mockStorage(supabase, 'profile-images')
     supabase.respondWith({
       ...routes,
       'PATCH twitch_users': failDetailsOfFirstUser,
