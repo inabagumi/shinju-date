@@ -34,7 +34,7 @@ pnpm build-storybook
 
 ## コンポーネント
 
-主な部品を説明します。ほかに、`Alert`、`MultiSelect`、`Toast`（`ToastProvider` など）と、`theme.css` の文字サイズを登録した `twMerge` も公開しています。公開しているものは [`src/index.ts`](src/index.ts) と Storybook を見てください。
+主な部品を説明します。ほかに、`Alert`、`DropdownMenu`（[使い方](../../docs/design-guidelines.md#メニューdropdownmenu)）、`MultiSelect`、`Toast`（`ToastProvider` など）と、`theme.css` の文字サイズを登録した `twMerge` も公開しています。公開しているものは [`src/index.ts`](src/index.ts) と Storybook を見てください。
 
 ### Button
 
