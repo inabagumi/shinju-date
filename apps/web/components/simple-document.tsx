@@ -1,10 +1,11 @@
-import type { ReactNode } from 'react'
-import PageHeader from './page-header'
-import PageMain from './page-main'
+import type { ReactNode } from "react";
+
+import PageHeader from "./page-header";
+import PageMain from "./page-main";
 
 interface SimpleDocumentProps {
-  children: ReactNode
-  title: string
+  children: ReactNode;
+  title: string;
 }
 
 /**
@@ -21,5 +22,5 @@ export default function SimpleDocument({
 
       <div className="max-w-text text-body text-foreground">{children}</div>
     </PageMain>
-  )
+  );
 }

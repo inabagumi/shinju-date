@@ -1,19 +1,20 @@
 import {
   getTalentProfileImage,
   type TalentAccounts,
-} from '@/lib/talent-profile-image'
-import { Avatar, AvatarFallback, AvatarImage } from './avatar'
+} from "@/lib/talent-profile-image";
+
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 
 interface TalentIconProps {
-  className?: string
+  className?: string;
   /**
    * The width and height in pixels. Omit it to set them with `className`
    * instead (to change them with the screen width), and pass `sizes`.
    */
-  size?: number
+  size?: number;
   /** `sizes` of the image. Defaults to the `size` */
-  sizes?: string
-  talent: TalentAccounts
+  sizes?: string;
+  talent: TalentAccounts;
 }
 
 /**
@@ -26,13 +27,13 @@ export default function TalentIcon({
   sizes = size ? `${size}px` : undefined,
   talent,
 }: TalentIconProps) {
-  const profileImage = getTalentProfileImage(talent)
+  const profileImage = getTalentProfileImage(talent);
 
   return (
     <Avatar
       aria-hidden="true"
       className={className}
-      data-testid={profileImage ? 'talent-icon' : 'talent-default-icon'}
+      data-testid={profileImage ? "talent-icon" : "talent-default-icon"}
       size={size}
     >
       {profileImage ? (
@@ -41,5 +42,5 @@ export default function TalentIcon({
         <AvatarFallback />
       )}
     </Avatar>
-  )
+  );
 }

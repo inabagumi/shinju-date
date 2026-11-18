@@ -1,18 +1,19 @@
-import type { youtube_v3 as youtube } from '@googleapis/youtube'
-import { paginate } from '@shinju-date/helpers'
-import { YOUTUBE_DATA_API_MAX_RESULTS } from './batches.js'
-import { type ClientOptions, getYouTubeClient } from './client.js'
+import type { youtube_v3 as youtube } from "@googleapis/youtube";
+import { paginate } from "@shinju-date/helpers";
+
+import { YOUTUBE_DATA_API_MAX_RESULTS } from "./batches.js";
+import { type ClientOptions, getYouTubeClient } from "./client.js";
 import type {
   FilteredYouTubePlaylistItem,
   YouTubePlaylistItemsPage,
-} from './types.js'
+} from "./types.js";
 
 interface GetPlaylistItemsOptions extends ClientOptions {
   /** Drain every page when true (default: first page only). */
-  all?: boolean
+  all?: boolean;
   /** Page size. Defaults to the API maximum when `all` is set, 20 otherwise. */
-  maxResults?: number
-  playlistID: string
+  maxResults?: number;
+  playlistID: string;
 }
 
 /**
@@ -20,9 +21,9 @@ interface GetPlaylistItemsOptions extends ClientOptions {
  * {@link FilteredYouTubePlaylistItem} requires.
  */
 export function isFilteredYouTubePlaylistItem(
-  item: youtube.Schema$PlaylistItem,
+  item: youtube.Schema$PlaylistItem
 ): item is FilteredYouTubePlaylistItem {
-  return typeof item.contentDetails?.videoId === 'string'
+  return typeof item.contentDetails?.videoId === "string";
 }
 
 /**
@@ -45,11 +46,11 @@ export async function* getPlaylistItems({
       client,
       maxResults,
       playlistID,
-    })
+    });
 
-    yield* items
+    yield* items;
 
-    return
+    return;
   }
 
   yield* paginate(async (pageToken) => {
@@ -58,18 +59,18 @@ export async function* getPlaylistItems({
       maxResults,
       pageToken,
       playlistID,
-    })
+    });
 
-    return { items, next: nextPageToken }
-  })
+    return { items, next: nextPageToken };
+  });
 }
 
 interface GetPlaylistItemsPageOptions extends ClientOptions {
   /** Page size (default: the API maximum). */
-  maxResults?: number
+  maxResults?: number;
   /** Token returned by the previous page; omit for the first page. */
-  pageToken?: string | undefined
-  playlistID: string
+  pageToken?: string | undefined;
+  playlistID: string;
 }
 
 /**
@@ -88,15 +89,15 @@ export async function getPlaylistItemsPage({
     data: { items, nextPageToken },
   } = await client.playlistItems.list({
     maxResults,
-    part: ['contentDetails'],
+    part: ["contentDetails"],
     playlistId: playlistID,
     ...(pageToken ? { pageToken } : {}),
-  })
+  });
 
   return {
     items: (items ?? []).filter(isFilteredYouTubePlaylistItem),
     // An empty page ends the walk even if YouTube returns a token with it.
     nextPageToken:
       items && items.length > 0 && nextPageToken ? nextPageToken : null,
-  }
+  };
 }

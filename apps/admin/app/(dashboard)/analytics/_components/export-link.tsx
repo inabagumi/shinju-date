@@ -1,12 +1,16 @@
-import { Button } from '@shinju-date/ui'
-import { Download } from 'lucide-react'
+import { Button } from "@shinju-date/ui";
+import { Download } from "lucide-react";
 
-export type ExportType = 'videos' | 'talents' | 'keywords' | 'search-exit-rates'
+export type ExportType =
+  | "videos"
+  | "talents"
+  | "keywords"
+  | "search-exit-rates";
 
 interface ExportLinkProps {
-  dateRange: { startDate: string; endDate: string }
-  selectedDate?: string | null
-  type: ExportType
+  dateRange: { startDate: string; endDate: string };
+  selectedDate?: string | null;
+  type: ExportType;
 }
 
 /**
@@ -18,18 +22,18 @@ export function buildExportHref({
   selectedDate,
   type,
 }: ExportLinkProps): string {
-  const params = new URLSearchParams()
+  const params = new URLSearchParams();
 
   if (selectedDate) {
-    params.set('date', selectedDate)
+    params.set("date", selectedDate);
   } else {
-    params.set('from', dateRange.startDate)
+    params.set("from", dateRange.startDate);
     if (dateRange.endDate !== dateRange.startDate) {
-      params.set('to', dateRange.endDate)
+      params.set("to", dateRange.endDate);
     }
   }
 
-  return `/api/export/${type}?${params.toString()}`
+  return `/api/export/${type}?${params.toString()}`;
 }
 
 /** ウィジェットの見出しに置く、CSV をダウンロードするリンク */
@@ -46,5 +50,5 @@ export function ExportLink(props: ExportLinkProps) {
         CSV をダウンロード
       </a>
     </Button>
-  )
+  );
 }

@@ -1,11 +1,12 @@
-import type * as z from 'zod'
-import type { ActionError, FormState } from '@/lib/action'
+import type * as z from "zod";
+
+import type { ActionError, FormState } from "@/lib/action";
 
 export type ParseFormDataResult<T> =
   | { data: T; success: true }
-  | { state: FormState; success: false }
+  | { state: FormState; success: false };
 
-const INDEXED_KEY_PATTERN = /^(.+)\[(\d+)\]$/
+const INDEXED_KEY_PATTERN = /^(.+)\[(\d+)\]$/;
 
 export interface ZodErrorToFormStateOptions {
   /**
@@ -13,7 +14,7 @@ export interface ZodErrorToFormStateOptions {
    * 対応する `ErrorMessage` がなく表示されないため、項目に結び付かないエラー
    * （`generic`）にする。
    */
-  hiddenFields?: readonly string[]
+  hiddenFields?: readonly string[];
 }
 
 /**
@@ -22,16 +23,16 @@ export interface ZodErrorToFormStateOptions {
  */
 export function zodErrorToFormState(
   error: z.ZodError,
-  { hiddenFields = [] }: ZodErrorToFormStateOptions = {},
+  { hiddenFields = [] }: ZodErrorToFormStateOptions = {}
 ): FormState {
   return error.issues.reduce<FormState>(
     ({ errors: previousErrors = {} }, issue) => {
-      const path = issue.path.join('.')
-      const name = hiddenFields.includes(path) ? 'generic' : path
-      const previousMessages = previousErrors[name] ?? []
+      const path = issue.path.join(".");
+      const name = hiddenFields.includes(path) ? "generic" : path;
+      const previousMessages = previousErrors[name] ?? [];
 
       if (previousMessages.includes(issue.message)) {
-        return { errors: previousErrors }
+        return { errors: previousErrors };
       }
 
       return {
@@ -39,10 +40,10 @@ export function zodErrorToFormState(
           ...previousErrors,
           [name]: [...previousMessages, issue.message],
         },
-      }
+      };
     },
-    {},
-  )
+    {}
+  );
 }
 
 /**
@@ -52,9 +53,9 @@ export function zodErrorToFormState(
 export function actionErrorToFormState(error: ActionError): FormState {
   return {
     errors: {
-      [error.field ?? 'generic']: [error.message],
+      [error.field ?? "generic"]: [error.message],
     },
-  }
+  };
 }
 
 /**
@@ -62,21 +63,21 @@ export function actionErrorToFormState(error: ActionError): FormState {
  * `名前[添字]` の形のキーは、添字の順に並べた `名前` の配列にまとめる。
  */
 function formDataToObject(formData: FormData): Record<string, unknown> {
-  const values = new Map<string, FormDataEntryValue>()
-  const indexedValues = new Map<string, [number, FormDataEntryValue][]>()
+  const values = new Map<string, FormDataEntryValue>();
+  const indexedValues = new Map<string, [number, FormDataEntryValue][]>();
 
   for (const [key, value] of formData.entries()) {
-    const match = INDEXED_KEY_PATTERN.exec(key)
+    const match = INDEXED_KEY_PATTERN.exec(key);
 
     if (match) {
-      const [, name = key, index = '0'] = match
-      const entries = indexedValues.get(name) ?? []
+      const [, name = key, index = "0"] = match;
+      const entries = indexedValues.get(name) ?? [];
 
-      entries.push([Number(index), value])
-      indexedValues.set(name, entries)
+      entries.push([Number(index), value]);
+      indexedValues.set(name, entries);
     } else if (!values.has(key)) {
       // `FormData.prototype.get()` と同じく、最初の値を使う
-      values.set(key, value)
+      values.set(key, value);
     }
   }
 
@@ -86,7 +87,7 @@ function formDataToObject(formData: FormData): Record<string, unknown> {
       name,
       entries.sort(([a], [b]) => a - b).map(([, value]) => value),
     ]),
-  ])
+  ]);
 }
 
 /**
@@ -96,13 +97,16 @@ function formDataToObject(formData: FormData): Record<string, unknown> {
 export function parseFormData<T extends z.ZodType>(
   schema: T,
   formData: FormData,
-  options?: ZodErrorToFormStateOptions,
+  options?: ZodErrorToFormStateOptions
 ): ParseFormDataResult<z.output<T>> {
-  const result = schema.safeParse(formDataToObject(formData))
+  const result = schema.safeParse(formDataToObject(formData));
 
   if (!result.success) {
-    return { state: zodErrorToFormState(result.error, options), success: false }
+    return {
+      state: zodErrorToFormState(result.error, options),
+      success: false,
+    };
   }
 
-  return { data: result.data, success: true }
+  return { data: result.data, success: true };
 }

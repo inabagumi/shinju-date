@@ -1,4 +1,4 @@
-import type { Tables } from '@shinju-date/database'
+import type { Tables } from "@shinju-date/database";
 import {
   Badge,
   EmptyState,
@@ -10,44 +10,46 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@shinju-date/ui'
-import { Inbox } from 'lucide-react'
-import Link from 'next/link'
-import { SearchParamSelect } from '@/components/search-param-select'
+} from "@shinju-date/ui";
+import { Inbox } from "lucide-react";
+import Link from "next/link";
+
+import { SearchParamSelect } from "@/components/search-param-select";
 import {
   FieldSkeleton,
   FilterBarSkeleton,
   TableSkeleton,
-} from '@/components/table-skeleton'
-import { formatDateTimeFromISO } from '@/lib/format'
+} from "@/components/table-skeleton";
+import { formatDateTimeFromISO } from "@/lib/format";
+
 import {
   FEATURE_REQUEST_STATUS_LABELS,
   FEATURE_REQUEST_STATUSES,
   type FeatureRequestStatus,
-} from '../_lib/feature-request-status'
-import type { FeedbackSearchParams } from '../_lib/search-params-schema'
+} from "../_lib/feature-request-status";
+import type { FeedbackSearchParams } from "../_lib/search-params-schema";
 
 interface FeatureRequestListProps {
   /** 絞り込みを済ませた機能要望 */
-  featureRequests: Tables<'feature_requests'>[]
+  featureRequests: Tables<"feature_requests">[];
   /** URL の `read`。`undefined` はすべて */
-  readFilter: FeedbackSearchParams['read']
+  readFilter: FeedbackSearchParams["read"];
   /** URL の `status`。`undefined` はすべて */
-  statusFilter: FeedbackSearchParams['status']
+  statusFilter: FeedbackSearchParams["status"];
 }
 
 /** 「すべて」の選択肢の値。URL にはパラメータを付けない */
-const ALL = 'all'
+const ALL = "all";
 
 const statusColors: Record<
   FeatureRequestStatus,
-  'info' | 'neutral' | 'success' | 'danger'
+  "info" | "neutral" | "success" | "danger"
 > = {
-  in_progress: 'neutral',
-  pending: 'info',
-  rejected: 'danger',
-  resolved: 'success',
-}
+  in_progress: "neutral",
+  pending: "info",
+  rejected: "danger",
+  resolved: "success",
+};
 
 /**
  * 機能要望の一覧。表と行はサーバーで描き、絞り込みのセレクトだけをクライアントの
@@ -59,7 +61,7 @@ export function FeatureRequestList({
   statusFilter,
 }: FeatureRequestListProps) {
   const activeCount =
-    (statusFilter === undefined ? 0 : 1) + (readFilter === undefined ? 0 : 1)
+    (statusFilter === undefined ? 0 : 1) + (readFilter === undefined ? 0 : 1);
 
   return (
     <div className="space-y-4">
@@ -118,7 +120,7 @@ export function FeatureRequestList({
             {featureRequests.map((item) => {
               const formattedDate = formatDateTimeFromISO(item.created_at, {
                 includeSeconds: false,
-              })
+              });
 
               return (
                 <TableRow key={item.id}>
@@ -133,7 +135,7 @@ export function FeatureRequestList({
                   <TableCell className="min-w-64 whitespace-normal">
                     <Link
                       className={`line-clamp-2 max-w-text rounded-control focus-ring hover:text-accent hover:underline ${
-                        item.is_read ? '' : 'font-semibold'
+                        item.is_read ? "" : "font-semibold"
                       }`}
                       href={`/feedback/${item.id}`}
                     >
@@ -144,13 +146,13 @@ export function FeatureRequestList({
                     {formattedDate}
                   </TableCell>
                 </TableRow>
-              )
+              );
             })}
           </TableBody>
         </Table>
       )}
     </div>
-  )
+  );
 }
 
 /** 読み込み中の `FeatureRequestList`。2つの絞り込みと、3列の表を並べる */
@@ -158,7 +160,7 @@ export function FeatureRequestListSkeleton() {
   return (
     <TableSkeleton
       columns={[
-        { cell: <Skeleton className="h-5 w-16" />, id: 'status' },
+        { cell: <Skeleton className="h-5 w-16" />, id: "status" },
         {
           cell: (
             <div className="w-full max-w-text min-w-64 space-y-1">
@@ -166,10 +168,10 @@ export function FeatureRequestListSkeleton() {
               <Skeleton className="h-4 w-2/3" />
             </div>
           ),
-          className: 'w-full',
-          id: 'message',
+          className: "w-full",
+          id: "message",
         },
-        { align: 'end', cell: <Skeleton className="h-4 w-32" />, id: 'date' },
+        { align: "end", cell: <Skeleton className="h-4 w-32" />, id: "date" },
       ]}
       filterBar={
         <FilterBarSkeleton className="mb-4">
@@ -178,5 +180,5 @@ export function FeatureRequestListSkeleton() {
         </FilterBarSkeleton>
       }
     />
-  )
+  );
 }

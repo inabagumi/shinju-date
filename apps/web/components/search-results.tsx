@@ -1,34 +1,36 @@
-'use client'
+"use client";
 
-import { twMerge } from '@shinju-date/ui'
-import { useInfiniteQuery } from '@tanstack/react-query'
-import { useEffect, useId, useMemo } from 'react'
-import { useInView } from 'react-intersection-observer'
-import { fetchVideos, type Video } from '@/lib/data/videos'
-import { formatRelativeDate } from '@/lib/date-heading'
-import { groupVideosByDate } from '@/lib/group-videos-by-date'
-import { queryKeys } from '@/lib/query-keys'
-import { SEARCH_RESULT_COUNT } from '@/lib/site'
-import { useToday } from '@/lib/use-today'
-import type { VideoKindFilter } from '@/lib/video-kind-filter'
-import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
+import { twMerge } from "@shinju-date/ui";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useEffect, useId, useMemo } from "react";
+import { useInView } from "react-intersection-observer";
+
+import { fetchVideos, type Video } from "@/lib/data/videos";
+import { formatRelativeDate } from "@/lib/date-heading";
+import { groupVideosByDate } from "@/lib/group-videos-by-date";
+import { queryKeys } from "@/lib/query-keys";
+import { SEARCH_RESULT_COUNT } from "@/lib/site";
+import { useToday } from "@/lib/use-today";
+import type { VideoKindFilter } from "@/lib/video-kind-filter";
+
+import VideoCardList, { VideoCardListSkeleton } from "./video-card-list";
 
 /** PC 4列、タブレット 2列、モバイルは横型のカードで1列 */
-const LIST_CLASS_NAME = 'lg:grid-cols-4'
+const LIST_CLASS_NAME = "lg:grid-cols-4";
 
 /**
  * スケルトンを1段ぶんだけ表示する。モバイルは1件、タブレットは2件、PC は4件。
  */
 function getRowSkeletonItemClassName(index: number): string | undefined {
   if (index === 0) {
-    return undefined
+    return undefined;
   }
 
-  return index === 1 ? 'hidden sm:flex' : 'hidden lg:flex'
+  return index === 1 ? "hidden sm:flex" : "hidden lg:flex";
 }
 
 interface VideoCardRowSkeletonProps {
-  className?: string | undefined
+  className?: string | undefined;
 }
 
 function VideoCardRowSkeleton({ className }: VideoCardRowSkeletonProps) {
@@ -38,7 +40,7 @@ function VideoCardRowSkeleton({ className }: VideoCardRowSkeletonProps) {
       count={4}
       itemClassName={getRowSkeletonItemClassName}
     />
-  )
+  );
 }
 
 /**
@@ -48,7 +50,7 @@ function VideoCardRowSkeleton({ className }: VideoCardRowSkeletonProps) {
  * 同じ `bg-background` にする。
  */
 const DATE_HEADING_CLASS_NAME =
-  'sticky top-14 z-10 -mx-4 mb-4 bg-background px-4 py-2 text-heading font-bold'
+  "sticky top-14 z-10 -mx-4 mb-4 bg-background px-4 py-2 text-heading font-bold";
 
 export function SearchResultsSkeleton() {
   return (
@@ -58,23 +60,23 @@ export function SearchResultsSkeleton() {
       </div>
       <VideoCardRowSkeleton />
     </div>
-  )
+  );
 }
 
 interface DateSectionProps {
-  date: Temporal.PlainDate
-  today: Temporal.PlainDate
-  values: Video[]
+  date: Temporal.PlainDate;
+  today: Temporal.PlainDate;
+  values: Video[];
 }
 
 function DateSection({ date, today, values }: DateSectionProps) {
-  const headingId = useId()
+  const headingId = useId();
 
   return (
     <section aria-labelledby={headingId} data-testid="date-section">
       <h2 className={DATE_HEADING_CLASS_NAME} id={headingId}>
         <time dateTime={date.toString()}>
-          {formatRelativeDate(date, today, { style: 'long', yesterday: true })}
+          {formatRelativeDate(date, today, { style: "long", yesterday: true })}
         </time>
       </h2>
 
@@ -84,28 +86,28 @@ function DateSection({ date, today, values }: DateSectionProps) {
         values={values}
       />
     </section>
-  )
+  );
 }
 
 interface SearchResultsProps {
-  kind?: VideoKindFilter
-  prefetchedData?: Video[][]
-  query?: string
+  kind?: VideoKindFilter;
+  prefetchedData?: Video[][];
+  query?: string;
   /**
    * サーバーで描画したときの日付（`YYYY-MM-DD`）。ハイドレーションまでの
    * 「今日」の基準で、その後はブラウザの現在時刻を使う
    */
-  referenceDate: string
+  referenceDate: string;
   /** 絞り込むタレントの ID。空のときはすべてのタレントが対象になる */
-  talentIds?: string[]
+  talentIds?: string[];
 }
 
-const NO_TALENT_IDS: string[] = []
+const NO_TALENT_IDS: string[] = [];
 
 export default function SearchResults({
-  kind = 'all',
+  kind = "all",
   prefetchedData,
-  query = '',
+  query = "",
   referenceDate,
   talentIds = NO_TALENT_IDS,
 }: SearchResultsProps) {
@@ -113,15 +115,15 @@ export default function SearchResults({
     useInfiniteQuery({
       getNextPageParam: (lastPage) => {
         if (lastPage.length < SEARCH_RESULT_COUNT) {
-          return undefined
+          return undefined;
         }
-        const lastVideo = lastPage.at(-1)
+        const lastVideo = lastPage.at(-1);
         if (!lastVideo) {
-          return undefined
+          return undefined;
         }
         return Temporal.Instant.from(lastVideo.published_at).subtract({
           nanoseconds: 1,
-        }).epochNanoseconds
+        }).epochNanoseconds;
       },
       ...(prefetchedData
         ? {
@@ -138,36 +140,36 @@ export default function SearchResults({
           query,
           talentIds,
           until: pageParam,
-        })
+        });
       },
       queryKey: queryKeys.videos({ kind, query, talentIds }),
-    })
+    });
 
   const { ref: loadMoreRef, inView } = useInView({
-    rootMargin: '200px',
+    rootMargin: "200px",
     threshold: 0,
-  })
+  });
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage()
+      fetchNextPage();
     }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage])
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const today = useToday(referenceDate)
-  const items = useMemo(() => data?.pages.flat() ?? [], [data])
+  const today = useToday(referenceDate);
+  const items = useMemo(() => data?.pages.flat() ?? [], [data]);
   // 新しい順に並んでいるので、並べ替えずに日付ごとにまとめる
   const groups = useMemo(
     () => groupVideosByDate(items, { sort: false }),
-    [items],
-  )
+    [items]
+  );
 
   if (isLoading && !data) {
-    return <SearchResultsSkeleton />
+    return <SearchResultsSkeleton />;
   }
 
   if (items.length === 0) {
-    return null // Let the parent handle empty state
+    return null; // Let the parent handle empty state
   }
 
   return (
@@ -197,5 +199,5 @@ export default function SearchResults({
         </p>
       )}
     </div>
-  )
+  );
 }

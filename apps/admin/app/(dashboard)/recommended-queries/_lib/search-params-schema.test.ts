@@ -1,34 +1,35 @@
-import { describe, expect, it } from 'vitest'
-import { recommendedQueriesSearchParamsSchema } from './search-params-schema'
+import { describe, expect, it } from "vitest";
 
-describe('recommendedQueriesSearchParamsSchema', () => {
-  it('has no search when no parameters are given', () => {
+import { recommendedQueriesSearchParamsSchema } from "./search-params-schema";
+
+describe("recommendedQueriesSearchParamsSchema", () => {
+  it("has no search when no parameters are given", () => {
     expect(recommendedQueriesSearchParamsSchema.parse({})).toEqual({
       search: undefined,
-    })
-  })
+    });
+  });
 
-  it('parses the search', () => {
+  it("parses the search", () => {
     expect(
-      recommendedQueriesSearchParamsSchema.parse({ search: ' 歌枠 ' }),
+      recommendedQueriesSearchParamsSchema.parse({ search: " 歌枠 " })
     ).toEqual({
-      search: '歌枠',
-    })
-  })
+      search: "歌枠",
+    });
+  });
 
-  it('has no search for a blank search', () => {
+  it("has no search for a blank search", () => {
     expect(
-      recommendedQueriesSearchParamsSchema.parse({ search: '  ' }),
+      recommendedQueriesSearchParamsSchema.parse({ search: "  " })
     ).toEqual({
       search: undefined,
-    })
-  })
+    });
+  });
 
-  it('uses the first value when the search is repeated', () => {
+  it("uses the first value when the search is repeated", () => {
     expect(
-      recommendedQueriesSearchParamsSchema.parse({ search: ['a', 'b'] }),
+      recommendedQueriesSearchParamsSchema.parse({ search: ["a", "b"] })
     ).toEqual({
-      search: 'a',
-    })
-  })
-})
+      search: "a",
+    });
+  });
+});

@@ -1,41 +1,41 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const set = vi.fn()
-const revalidateTags = vi.fn()
+const set = vi.fn();
+const revalidateTags = vi.fn();
 
-vi.mock('./redis', () => ({ redisClient: { set } }))
-vi.mock('@shinju-date/web-cache', () => ({ revalidateTags }))
+vi.mock("./redis", () => ({ redisClient: { set } }));
+vi.mock("@shinju-date/web-cache", () => ({ revalidateTags }));
 
-const { finishVideoSync } = await import('./video-sync')
+const { finishVideoSync } = await import("./video-sync");
 
-const now = Temporal.Instant.from('2024-05-01T12:00:00.500Z')
+const now = Temporal.Instant.from("2024-05-01T12:00:00.500Z");
 
-describe('finishVideoSync', () => {
+describe("finishVideoSync", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
-  it('refreshes the public cache when something changed', async () => {
-    const { signal } = new AbortController()
+  it("refreshes the public cache when something changed", async () => {
+    const { signal } = new AbortController();
 
-    await finishVideoSync({ changed: true, now, signal })
+    await finishVideoSync({ changed: true, now, signal });
 
-    expect(revalidateTags).toHaveBeenCalledWith(['videos'], { signal })
-  })
+    expect(revalidateTags).toHaveBeenCalledWith(["videos"], { signal });
+  });
 
-  it('leaves the public cache alone when nothing changed', async () => {
-    await finishVideoSync({ changed: false, now })
+  it("leaves the public cache alone when nothing changed", async () => {
+    await finishVideoSync({ changed: false, now });
 
-    expect(revalidateTags).not.toHaveBeenCalled()
-  })
+    expect(revalidateTags).not.toHaveBeenCalled();
+  });
 
-  it('always records when videos were last synced, for 30 days', async () => {
-    await finishVideoSync({ changed: false, now })
+  it("always records when videos were last synced, for 30 days", async () => {
+    await finishVideoSync({ changed: false, now });
 
     expect(set).toHaveBeenCalledWith(
-      'status:last_video_sync',
-      '2024-05-01T12:00:00Z',
-      { ex: 30 * 24 * 60 * 60 },
-    )
-  })
-})
+      "status:last_video_sync",
+      "2024-05-01T12:00:00Z",
+      { ex: 30 * 24 * 60 * 60 }
+    );
+  });
+});

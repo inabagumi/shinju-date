@@ -1,10 +1,10 @@
 import {
   countUpdatedAccounts,
   syncAccountsWith,
-} from '../internal/operations/sync-accounts.js'
-import type { CrawlContext, SyncAccountResult } from '../types.js'
-import { createTwitchAccounts, type TwitchUserFields } from './accounts.js'
-import type { TwitchFetcher } from './fetcher.js'
+} from "../internal/operations/sync-accounts.js";
+import type { CrawlContext, SyncAccountResult } from "../types.js";
+import { createTwitchAccounts, type TwitchUserFields } from "./accounts.js";
+import type { TwitchFetcher } from "./fetcher.js";
 
 /**
  * Brings the display name, login and icon of saved Twitch accounts in line
@@ -16,11 +16,11 @@ import type { TwitchFetcher } from './fetcher.js'
  * @returns The number of accounts updated.
  */
 export async function syncTwitchUsers(
-  context: CrawlContext<TwitchFetcher>,
+  context: CrawlContext<TwitchFetcher>
 ): Promise<number> {
   return countUpdatedAccounts(
-    await syncAccountsWith(context, createTwitchAccounts(context.fetcher)),
-  )
+    await syncAccountsWith(context, createTwitchAccounts(context.fetcher))
+  );
 }
 
 /**
@@ -34,9 +34,9 @@ export async function syncTwitchUsers(
  */
 export function syncTwitchUsersOfTalent(
   context: CrawlContext<TwitchFetcher>,
-  talentId: string,
+  talentId: string
 ): Promise<SyncAccountResult<TwitchUserFields>[]> {
   return syncAccountsWith(context, createTwitchAccounts(context.fetcher), {
     talentId,
-  })
+  });
 }

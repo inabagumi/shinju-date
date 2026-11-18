@@ -1,13 +1,16 @@
-import type { ComponentPropsWithRef, ReactNode } from 'react'
-import { twMerge } from '../tw-merge.js'
+import type { ComponentPropsWithRef, ReactNode } from "react";
 
-export interface PageHeaderProps
-  extends Omit<ComponentPropsWithRef<'div'>, 'children' | 'title'> {
+import { twMerge } from "../tw-merge.js";
+
+export interface PageHeaderProps extends Omit<
+  ComponentPropsWithRef<"div">,
+  "children" | "title"
+> {
   /** 見出しの右端に置く操作ボタン（「追加」など） */
-  actions?: ReactNode
+  actions?: ReactNode;
   /** 見出しの下に表示する説明文 */
-  description?: ReactNode
-  title: ReactNode
+  description?: ReactNode;
+  title: ReactNode;
 }
 
 /**
@@ -24,8 +27,8 @@ export function PageHeader({
   return (
     <div
       className={twMerge(
-        'mb-6 flex flex-wrap items-start justify-between gap-4',
-        className,
+        "mb-6 flex flex-wrap items-start justify-between gap-4",
+        className
       )}
       {...props}
     >
@@ -39,5 +42,5 @@ export function PageHeader({
         <div className="flex flex-wrap items-center gap-2">{actions}</div>
       )}
     </div>
-  )
+  );
 }

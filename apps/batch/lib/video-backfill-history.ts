@@ -1,11 +1,12 @@
-import type { TablesInsert } from '@shinju-date/database'
-import { throwIfError } from '@shinju-date/scraper'
-import { toDBString } from '@shinju-date/temporal-fns'
-import type { BackfillJob } from '@shinju-date/video-backfill'
-import type { TypedSupabaseClient } from './supabase'
+import type { TablesInsert } from "@shinju-date/database";
+import { throwIfError } from "@shinju-date/scraper";
+import { toDBString } from "@shinju-date/temporal-fns";
+import type { BackfillJob } from "@shinju-date/video-backfill";
+
+import type { TypedSupabaseClient } from "./supabase";
 
 function toTimestamp(value: string): string {
-  return toDBString(Temporal.Instant.from(value))
+  return toDBString(Temporal.Instant.from(value));
 }
 
 /**
@@ -14,10 +15,10 @@ function toTimestamp(value: string): string {
  * @throws {TypeError} When the job has not finished.
  */
 export function toBackfillHistoryRow(
-  job: BackfillJob,
-): TablesInsert<'video_backfill_jobs'> {
-  if ((job.status !== 'done' && job.status !== 'failed') || !job.finishedAt) {
-    throw new TypeError(`Backfill job ${job.id} has not finished.`)
+  job: BackfillJob
+): TablesInsert<"video_backfill_jobs"> {
+  if ((job.status !== "done" && job.status !== "failed") || !job.finishedAt) {
+    throw new TypeError(`Backfill job ${job.id} has not finished.`);
   }
 
   return {
@@ -37,7 +38,7 @@ export function toBackfillHistoryRow(
     started_at: job.startedAt ? toTimestamp(job.startedAt) : null,
     status: job.status,
     talent_id: job.talentId,
-  }
+  };
 }
 
 /**
@@ -47,15 +48,15 @@ export function toBackfillHistoryRow(
  */
 export async function recordBackfillJob(
   supabaseClient: TypedSupabaseClient,
-  job: BackfillJob,
+  job: BackfillJob
 ): Promise<void> {
   throwIfError(
     await supabaseClient
-      .from('video_backfill_jobs')
+      .from("video_backfill_jobs")
       .upsert(toBackfillHistoryRow(job), {
         ignoreDuplicates: true,
-        onConflict: 'platform,account_id,requested_at',
+        onConflict: "platform,account_id,requested_at",
       }),
-    'Failed to record a backfill job',
-  )
+    "Failed to record a backfill job"
+  );
 }

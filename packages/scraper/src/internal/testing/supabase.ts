@@ -1,20 +1,21 @@
-import { createClient } from '@supabase/supabase-js'
-import { HttpResponse, http } from 'msw'
-import { setupServer } from 'msw/node'
-import { afterAll, afterEach, beforeAll } from 'vitest'
-import type { TypedSupabaseClient } from '../../types.js'
-import type { NewPlatformVideo, NewVideo } from '../database/videos.js'
+import { createClient } from "@supabase/supabase-js";
+import { HttpResponse, http } from "msw";
+import { setupServer } from "msw/node";
+import { afterAll, afterEach, beforeAll } from "vitest";
 
-const SUPABASE_URL = 'https://fake.supabase.test'
+import type { TypedSupabaseClient } from "../../types.js";
+import type { NewPlatformVideo, NewVideo } from "../database/videos.js";
+
+const SUPABASE_URL = "https://fake.supabase.test";
 
 /** A PostgREST request made by the code under test. */
 export interface SupabaseRequest {
-  body: unknown
-  method: string
+  body: unknown;
+  method: string;
   /** Query string parameters, e.g. `id` → `in.(a,b)`. */
-  query: Record<string, string>
+  query: Record<string, string>;
   /** The table, or `rpc/<name>` for a database function. */
-  table: string
+  table: string;
 }
 
 /**
@@ -22,8 +23,8 @@ export interface SupabaseRequest {
  * simulate an error) the database would send back.
  */
 export type SupabaseResponder = (
-  request: SupabaseRequest,
-) => unknown | Promise<unknown>
+  request: SupabaseRequest
+) => unknown | Promise<unknown>;
 
 /**
  * How the database answers each kind of request, keyed by method and table
@@ -33,18 +34,18 @@ export type SupabaseResponder = (
 export type SupabaseRoutes = Record<
   `${string} ${string}`,
   unknown[] | SupabaseResponder
->
+>;
 
 /** A video inserted with `insert_video`: its `videos` row and its platform row. */
 export interface InsertedVideo {
-  platform: NewPlatformVideo['platform']
-  platformVideo: NewPlatformVideo['values']
-  video: NewVideo
+  platform: NewPlatformVideo["platform"];
+  platformVideo: NewPlatformVideo["values"];
+  video: NewVideo;
 }
 
 /** The response of `insert_video` when it inserts the video: a new video ID. */
 export function newVideoId(): Response {
-  return HttpResponse.json(crypto.randomUUID())
+  return HttpResponse.json(crypto.randomUUID());
 }
 
 /**
@@ -52,7 +53,7 @@ export function newVideoId(): Response {
  * (another run saved it first): `NULL`, and nothing is inserted.
  */
 export function alreadySaved(): Response {
-  return HttpResponse.json(null)
+  return HttpResponse.json(null);
 }
 
 /**
@@ -61,8 +62,8 @@ export function alreadySaved(): Response {
 export function postgresError(code: string, message: string): Response {
   return HttpResponse.json(
     { code, details: null, hint: null, message },
-    { status: code === '23505' ? 409 : 400 },
-  )
+    { status: code === "23505" ? 409 : 400 }
+  );
 }
 
 /**
@@ -73,50 +74,50 @@ export function postgresError(code: string, message: string): Response {
  * the test, so nothing can reach the network by accident.
  */
 export function setupSupabase() {
-  const server = setupServer()
-  const requests: SupabaseRequest[] = []
+  const server = setupServer();
+  const requests: SupabaseRequest[] = [];
 
   beforeAll(() => {
-    server.listen({ onUnhandledFrame: 'error' })
-  })
+    server.listen({ onUnhandledFrame: "error" });
+  });
 
   afterEach(() => {
-    server.resetHandlers()
-    requests.length = 0
-  })
+    server.resetHandlers();
+    requests.length = 0;
+  });
 
   afterAll(() => {
-    server.close()
-  })
+    server.close();
+  });
 
   /** Defines how the database answers during the current test. */
   function respond(responder: SupabaseResponder): void {
     async function handle(request: Request, table: string) {
-      const text = await request.text()
+      const text = await request.text();
       const recorded: SupabaseRequest = {
         body: text ? JSON.parse(text) : undefined,
         method: request.method,
         query: Object.fromEntries(new URL(request.url).searchParams),
         table,
-      }
+      };
 
-      requests.push(recorded)
+      requests.push(recorded);
 
-      const result = await responder(recorded)
+      const result = await responder(recorded);
 
       return result instanceof Response
         ? result
-        : HttpResponse.json(result ?? [])
+        : HttpResponse.json(result ?? []);
     }
 
     server.use(
       http.all(`${SUPABASE_URL}/rest/v1/rpc/:name`, ({ params, request }) =>
-        handle(request, `rpc/${String(params['name'])}`),
+        handle(request, `rpc/${String(params["name"])}`)
       ),
       http.all(`${SUPABASE_URL}/rest/v1/:table`, ({ params, request }) =>
-        handle(request, String(params['table'])),
-      ),
-    )
+        handle(request, String(params["table"]))
+      )
+    );
   }
 
   return {
@@ -125,21 +126,21 @@ export function setupSupabase() {
       return requests
         .filter(
           (request) =>
-            request.method === 'POST' && request.table === 'rpc/insert_video',
+            request.method === "POST" && request.table === "rpc/insert_video"
         )
         .map(({ body }) => {
           const { p_platform, p_platform_video, p_video } = body as {
-            p_platform: InsertedVideo['platform']
-            p_platform_video: InsertedVideo['platformVideo']
-            p_video: InsertedVideo['video']
-          }
+            p_platform: InsertedVideo["platform"];
+            p_platform_video: InsertedVideo["platformVideo"];
+            p_video: InsertedVideo["video"];
+          };
 
           return {
             platform: p_platform,
             platformVideo: p_platform_video,
             video: p_video,
-          }
-        })
+          };
+        });
     },
     /** Every PostgREST request made so far in the current test. */
     requests,
@@ -151,30 +152,30 @@ export function setupSupabase() {
      */
     respondWith(routes: SupabaseRoutes): void {
       respond((request) => {
-        const route = routes[`${request.method} ${request.table}`]
+        const route = routes[`${request.method} ${request.table}`];
 
-        if (typeof route === 'function') {
-          return route(request)
+        if (typeof route === "function") {
+          return route(request);
         }
 
-        if (!route && request.table === 'rpc/insert_video') {
-          return newVideoId()
+        if (!route && request.table === "rpc/insert_video") {
+          return newVideoId();
         }
 
-        return route ?? []
-      })
+        return route ?? [];
+      });
     },
     /** The underlying MSW server, for non-database endpoints. */
     server,
     supabaseClient: createClient(
       SUPABASE_URL,
-      'fake-key',
+      "fake-key"
     ) as TypedSupabaseClient,
     /** Requests of one kind, e.g. `written('PATCH', 'videos')`. */
     written(method: string, table: string): SupabaseRequest[] {
       return requests.filter(
-        (request) => request.method === method && request.table === table,
-      )
+        (request) => request.method === method && request.table === table
+      );
     },
-  }
+  };
 }

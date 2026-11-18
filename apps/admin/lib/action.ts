@@ -1,25 +1,26 @@
-import { logger } from '@shinju-date/logger'
-import { unstable_rethrow } from 'next/navigation'
-import type * as z from 'zod'
+import { logger } from "@shinju-date/logger";
+import { unstable_rethrow } from "next/navigation";
+import type * as z from "zod";
+
 import {
   type AuthenticatedContext,
   requireAuthenticatedUser,
   unauthenticatedFormState,
   unauthenticatedResult,
-} from '@/lib/auth'
+} from "@/lib/auth";
 import {
   actionErrorToFormState,
   parseFormData,
   type ZodErrorToFormStateOptions,
-} from '@/lib/form'
-import { INVALID_INPUT_ERROR_MESSAGE } from '@/lib/schemas'
+} from "@/lib/form";
+import { INVALID_INPUT_ERROR_MESSAGE } from "@/lib/schemas";
 
 /**
  * 予期しない例外で Server Action が失敗したときに、画面に見せる文。
  * 例外の文は内部の情報を含みうるので、画面には出さない。
  */
 export const ACTION_FAILED_ERROR_MESSAGE =
-  '処理に失敗しました。時間をおいて、もう一度お試しください。'
+  "処理に失敗しました。時間をおいて、もう一度お試しください。";
 
 /**
  * `{ success, error }` 形式の Server Action の戻り値。
@@ -29,7 +30,7 @@ export const ACTION_FAILED_ERROR_MESSAGE =
  */
 export type ActionResult<T = void> =
   | { success: true; data?: T; warnings?: string[] }
-  | { success: false; error: string }
+  | { success: false; error: string };
 
 /**
  * `useActionState` 用の Server Action の戻り値。
@@ -38,19 +39,19 @@ export interface FormState {
   /**
    * 項目ごとのエラー。項目に結び付かないエラーは `generic` に入れる。
    */
-  errors?: Record<string, string[]>
+  errors?: Record<string, string[]>;
   /**
    * 項目に結び付かないエラー。
    */
-  error?: string
-  success?: boolean
+  error?: string;
+  success?: boolean;
 }
 
 export interface ActionErrorOptions {
   /**
    * エラーを結び付けるフォームの項目の名前。省くと、項目に結び付かないエラーになる。
    */
-  field?: string
+  field?: string;
 }
 
 /**
@@ -60,13 +61,13 @@ export interface ActionErrorOptions {
  * それ以外の例外の文は、内部の情報を含みうるので、画面には出さない。
  */
 export class ActionError extends Error {
-  override readonly name = 'ActionError'
-  readonly field: string | undefined
+  override readonly name = "ActionError";
+  readonly field: string | undefined;
 
   constructor(message: string, { field }: ActionErrorOptions = {}) {
-    super(message)
+    super(message);
 
-    this.field = field
+    this.field = field;
   }
 }
 
@@ -92,15 +93,15 @@ export class ActionError extends Error {
  */
 export function parseActionInput<TSchema extends z.ZodType>(
   schema: TSchema,
-  input: unknown,
+  input: unknown
 ): z.output<TSchema> {
-  const result = schema.safeParse(input)
+  const result = schema.safeParse(input);
 
   if (!result.success) {
-    throw new ActionError(INVALID_INPUT_ERROR_MESSAGE)
+    throw new ActionError(INVALID_INPUT_ERROR_MESSAGE);
   }
 
-  return result.data
+  return result.data;
 }
 
 /**
@@ -138,33 +139,33 @@ export function adminAction<TArgs extends unknown[], TData = void>(
   handler: (
     context: AuthenticatedContext,
     ...args: TArgs
-  ) => Promise<ActionResult<TData>>,
+  ) => Promise<ActionResult<TData>>
 ): (...args: TArgs) => Promise<ActionResult<TData>> {
   return async (...args) => {
-    const auth = await requireAuthenticatedUser()
+    const auth = await requireAuthenticatedUser();
 
     if (!auth) {
-      return unauthenticatedResult()
+      return unauthenticatedResult();
     }
 
     try {
-      return await handler(auth, ...args)
+      return await handler(auth, ...args);
     } catch (error) {
-      unstable_rethrow(error)
+      unstable_rethrow(error);
 
       if (error instanceof ActionError) {
-        return { error: error.message, success: false }
+        return { error: error.message, success: false };
       }
 
-      logger.error('Server Action が失敗しました', {
+      logger.error("Server Action が失敗しました", {
         action: name,
         args,
         error,
-      })
+      });
 
-      return { error: ACTION_FAILED_ERROR_MESSAGE, success: false }
+      return { error: ACTION_FAILED_ERROR_MESSAGE, success: false };
     }
-  }
+  };
 }
 
 /**
@@ -172,7 +173,7 @@ export function adminAction<TArgs extends unknown[], TData = void>(
  * （隠しフィールドなど）の名前を入れる。これらの項目の検証のエラーは、
  * 項目に結び付かないエラー（`generic`）にする。
  */
-export type AdminFormActionOptions = ZodErrorToFormStateOptions
+export type AdminFormActionOptions = ZodErrorToFormStateOptions;
 
 /**
  * `useActionState` 用の、`FormState` を返す Server Action を作る。
@@ -216,38 +217,38 @@ export function adminFormAction<TSchema extends z.ZodType>(
   schema: TSchema,
   handler: (
     context: AuthenticatedContext,
-    data: z.output<TSchema>,
+    data: z.output<TSchema>
   ) => Promise<FormState | undefined>,
-  options: AdminFormActionOptions = {},
+  options: AdminFormActionOptions = {}
 ): (currentState: FormState, formData: FormData) => Promise<FormState> {
   return async (_currentState, formData) => {
-    const auth = await requireAuthenticatedUser()
+    const auth = await requireAuthenticatedUser();
 
     if (!auth) {
-      return unauthenticatedFormState()
+      return unauthenticatedFormState();
     }
 
-    const result = parseFormData(schema, formData, options)
+    const result = parseFormData(schema, formData, options);
 
     if (!result.success) {
-      return result.state
+      return result.state;
     }
 
     try {
-      return (await handler(auth, result.data)) ?? { success: true }
+      return (await handler(auth, result.data)) ?? { success: true };
     } catch (error) {
-      unstable_rethrow(error)
+      unstable_rethrow(error);
 
       if (error instanceof ActionError) {
-        return actionErrorToFormState(error)
+        return actionErrorToFormState(error);
       }
 
-      logger.error('Server Action が失敗しました', {
+      logger.error("Server Action が失敗しました", {
         action: name,
         error,
-      })
+      });
 
-      return { error: ACTION_FAILED_ERROR_MESSAGE }
+      return { error: ACTION_FAILED_ERROR_MESSAGE };
     }
-  }
+  };
 }

@@ -1,132 +1,134 @@
-import { expect, userEvent, within } from 'storybook/test'
-import preview from '#.storybook/preview'
-import { Input } from './Input'
+import { expect, userEvent, within } from "storybook/test";
+
+import preview from "#.storybook/preview";
+
+import { Input } from "./Input";
 
 const meta = preview.meta({
   argTypes: {
     disabled: {
-      control: 'boolean',
+      control: "boolean",
     },
     inputSize: {
-      control: 'select',
-      options: ['sm', 'md', 'lg'],
+      control: "select",
+      options: ["sm", "md", "lg"],
     },
     variant: {
-      control: 'select',
-      options: ['default', 'danger'],
+      control: "select",
+      options: ["default", "danger"],
     },
   },
   component: Input,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs'],
-  title: 'Components/Input',
-})
+  tags: ["autodocs"],
+  title: "Components/Input",
+});
 
 export const Default = meta.story({
   args: {
-    placeholder: 'Enter text...',
-    variant: 'default',
+    placeholder: "Enter text...",
+    variant: "default",
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const input = canvas.getByPlaceholderText(/enter text/i)
+    const canvas = within(canvasElement);
+    const input = canvas.getByPlaceholderText(/enter text/i);
 
     // Verify input is rendered
-    await expect(input).toBeInTheDocument()
+    await expect(input).toBeInTheDocument();
 
     // Test typing interaction
-    await userEvent.type(input, 'Hello, Storybook!')
+    await userEvent.type(input, "Hello, Storybook!");
 
     // Verify the typed value
-    await expect(input).toHaveValue('Hello, Storybook!')
+    await expect(input).toHaveValue("Hello, Storybook!");
 
     // Clear the input
-    await userEvent.clear(input)
+    await userEvent.clear(input);
 
     // Verify input is cleared
-    await expect(input).toHaveValue('')
+    await expect(input).toHaveValue("");
   },
-})
+});
 
 export const WithValue = meta.story({
   args: {
-    value: 'Hello World',
-    variant: 'default',
+    value: "Hello World",
+    variant: "default",
   },
-})
+});
 
 export const ErrorState = meta.story({
   args: {
-    placeholder: 'Enter text...',
-    value: 'Invalid input',
-    variant: 'danger',
+    placeholder: "Enter text...",
+    value: "Invalid input",
+    variant: "danger",
   },
-})
+});
 
 export const Disabled = meta.story({
   args: {
     disabled: true,
-    placeholder: 'Disabled input',
+    placeholder: "Disabled input",
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const input = canvas.getByPlaceholderText(/disabled input/i)
+    const canvas = within(canvasElement);
+    const input = canvas.getByPlaceholderText(/disabled input/i);
 
     // Verify input is disabled
-    await expect(input).toBeDisabled()
+    await expect(input).toBeDisabled();
 
     // Verify input cannot receive focus programmatically
-    await expect(input).toBeInTheDocument()
+    await expect(input).toBeInTheDocument();
   },
-})
+});
 
 export const Small = meta.story({
   args: {
-    inputSize: 'sm',
-    placeholder: 'Small input',
+    inputSize: "sm",
+    placeholder: "Small input",
   },
-})
+});
 
 export const Medium = meta.story({
   args: {
-    inputSize: 'md',
-    placeholder: 'Medium input',
+    inputSize: "md",
+    placeholder: "Medium input",
   },
-})
+});
 
 export const Large = meta.story({
   args: {
-    inputSize: 'lg',
-    placeholder: 'Large input',
+    inputSize: "lg",
+    placeholder: "Large input",
   },
-})
+});
 
 export const Email = meta.story({
   args: {
-    placeholder: 'email@example.com',
-    type: 'email',
+    placeholder: "email@example.com",
+    type: "email",
   },
-})
+});
 
 export const Password = meta.story({
   args: {
-    placeholder: 'Enter password',
-    type: 'password',
+    placeholder: "Enter password",
+    type: "password",
   },
-})
+});
 
 export const Search = meta.story({
   args: {
-    placeholder: 'Search...',
-    type: 'search',
+    placeholder: "Search...",
+    type: "search",
   },
-})
+});
 
 export const WithLabel = meta.story({
   args: {
-    placeholder: 'Enter your username',
+    placeholder: "Enter your username",
   },
   render: (args) => (
     <div className="flex w-64 flex-col gap-2">
@@ -136,13 +138,13 @@ export const WithLabel = meta.story({
       <Input {...args} id="input-with-label" />
     </div>
   ),
-})
+});
 
 export const WithErrorMessage = meta.story({
   args: {
-    type: 'email',
-    value: 'invalid-email',
-    variant: 'danger',
+    type: "email",
+    value: "invalid-email",
+    variant: "danger",
   },
   render: (args) => (
     <div className="flex w-64 flex-col gap-2">
@@ -155,4 +157,4 @@ export const WithErrorMessage = meta.story({
       </p>
     </div>
   ),
-})
+});

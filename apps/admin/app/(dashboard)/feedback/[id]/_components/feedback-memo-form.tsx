@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import Form, {
   FormField,
@@ -6,12 +6,13 @@ import Form, {
   SubmitButton,
   SuccessMessage,
   Textarea,
-} from '@/components/form'
-import { updateFeatureRequestMemoAction } from '../../_actions/update-feedback'
+} from "@/components/form";
+
+import { updateFeatureRequestMemoAction } from "../../_actions/update-feedback";
 
 interface FeedbackMemoFormProps {
-  adminMemo: string | null
-  id: string
+  adminMemo: string | null;
+  id: string;
 }
 
 /** 機能要望の管理メモを保存するフォーム */
@@ -21,7 +22,7 @@ export function FeedbackMemoForm({ adminMemo, id }: FeedbackMemoFormProps) {
       <input name="id" type="hidden" value={id} />
       <FormField name="admin_memo">
         <Label>メモ（Markdown対応）</Label>
-        <Textarea defaultValue={adminMemo ?? ''} rows={8} />
+        <Textarea defaultValue={adminMemo ?? ""} rows={8} />
       </FormField>
       <div className="flex flex-wrap items-center gap-3">
         <SubmitButton>メモを保存</SubmitButton>
@@ -31,5 +32,5 @@ export function FeedbackMemoForm({ adminMemo, id }: FeedbackMemoFormProps) {
         />
       </div>
     </Form>
-  )
+  );
 }

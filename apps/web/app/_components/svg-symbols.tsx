@@ -4,7 +4,7 @@ import {
   SEARCH_ICON_CIRCLE,
   SEARCH_ICON_PATH,
   SEARCH_ICON_VIEW_BOX,
-} from '@/lib/svg-symbols'
+} from "@/lib/svg-symbols";
 
 export default function SVGSymbols() {
   return (
@@ -23,5 +23,5 @@ export default function SVGSymbols() {
         </symbol>
       </defs>
     </svg>
-  )
+  );
 }

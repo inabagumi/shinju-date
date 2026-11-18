@@ -1,160 +1,163 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ActionToastProvider } from '@/components/action-toast'
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { ActionToastProvider } from "@/components/action-toast";
 
 const mocks = vi.hoisted(() => ({
   addQueryAction: vi.fn(),
   deleteQueryAction: vi.fn(),
-}))
+}));
 
-vi.mock('next/navigation', () => ({
-  usePathname: () => '/recommended-queries',
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/recommended-queries",
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
   useSearchParams: () => new URLSearchParams(),
-}))
+}));
 
-vi.mock('../_actions', () => ({
+vi.mock("../_actions", () => ({
   addQueryAction: mocks.addQueryAction,
   deleteQueryAction: mocks.deleteQueryAction,
-}))
+}));
 
-const { QueriesList } = await import('./queries-list')
+const { QueriesList } = await import("./queries-list");
 
 function renderList() {
   return render(
     <QueriesList
       autoQueries={[]}
       autoTotal={0}
-      manualQueries={['ホロライブ', '歌枠']}
+      manualQueries={["ホロライブ", "歌枠"]}
       manualTotal={2}
       search={undefined}
     />,
-    { wrapper: ActionToastProvider },
-  )
+    { wrapper: ActionToastProvider }
+  );
 }
 
-describe('QueriesList', () => {
+describe("QueriesList", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
-  it('asks for confirmation before deleting a query', () => {
-    renderList()
+  it("asks for confirmation before deleting a query", () => {
+    renderList();
 
-    fireEvent.click(screen.getByRole('button', { name: '「歌枠」を削除' }))
+    fireEvent.click(screen.getByRole("button", { name: "「歌枠」を削除" }));
 
-    const dialog = screen.getByRole('dialog')
-    expect(dialog).toHaveTextContent('おすすめクエリを削除')
-    expect(dialog).toHaveTextContent('「歌枠」を削除しますか？')
-    expect(mocks.deleteQueryAction).not.toHaveBeenCalled()
-  })
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toHaveTextContent("おすすめクエリを削除");
+    expect(dialog).toHaveTextContent("「歌枠」を削除しますか？");
+    expect(mocks.deleteQueryAction).not.toHaveBeenCalled();
+  });
 
-  it('does not delete the query when cancelled', async () => {
-    renderList()
+  it("does not delete the query when cancelled", async () => {
+    renderList();
 
-    fireEvent.click(screen.getByRole('button', { name: '「歌枠」を削除' }))
-    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }))
+    fireEvent.click(screen.getByRole("button", { name: "「歌枠」を削除" }));
+    fireEvent.click(screen.getByRole("button", { name: "キャンセル" }));
 
     await waitFor(() => {
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    })
-    expect(mocks.deleteQueryAction).not.toHaveBeenCalled()
-  })
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+    expect(mocks.deleteQueryAction).not.toHaveBeenCalled();
+  });
 
-  it('deletes the query after confirmation', async () => {
-    mocks.deleteQueryAction.mockResolvedValue({ success: true })
-    renderList()
+  it("deletes the query after confirmation", async () => {
+    mocks.deleteQueryAction.mockResolvedValue({ success: true });
+    renderList();
 
-    fireEvent.click(screen.getByRole('button', { name: '「歌枠」を削除' }))
-    fireEvent.click(screen.getByRole('button', { name: '削除' }))
+    fireEvent.click(screen.getByRole("button", { name: "「歌枠」を削除" }));
+    fireEvent.click(screen.getByRole("button", { name: "削除" }));
 
-    expect(mocks.deleteQueryAction).toHaveBeenCalledWith('歌枠')
+    expect(mocks.deleteQueryAction).toHaveBeenCalledWith("歌枠");
     await waitFor(() => {
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    })
-    expect(screen.getByText('クエリを削除しました。')).toBeInTheDocument()
-  })
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+    expect(screen.getByText("クエリを削除しました。")).toBeInTheDocument();
+  });
 
-  it('keeps the dialog open and shows the error when deleting fails', async () => {
+  it("keeps the dialog open and shows the error when deleting fails", async () => {
     mocks.deleteQueryAction.mockResolvedValue({
-      error: 'クエリの削除に失敗しました。',
+      error: "クエリの削除に失敗しました。",
       success: false,
-    })
-    renderList()
+    });
+    renderList();
 
-    fireEvent.click(screen.getByRole('button', { name: '「歌枠」を削除' }))
-    fireEvent.click(screen.getByRole('button', { name: '削除' }))
-
-    expect(
-      await screen.findByText('クエリの削除に失敗しました。'),
-    ).toBeInTheDocument()
-    expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.queryByText('クエリを削除しました。')).not.toBeInTheDocument()
-  })
-
-  it('adds a query, clears the input and shows a toast', async () => {
-    mocks.addQueryAction.mockResolvedValue({ success: true })
-    renderList()
-
-    const input = screen.getByLabelText('新しい手動クエリを追加')
-    fireEvent.change(input, { target: { value: '雑談' } })
-    fireEvent.click(screen.getByRole('button', { name: '追加' }))
+    fireEvent.click(screen.getByRole("button", { name: "「歌枠」を削除" }));
+    fireEvent.click(screen.getByRole("button", { name: "削除" }));
 
     expect(
-      await screen.findByText('クエリを追加しました。'),
-    ).toBeInTheDocument()
-    expect(mocks.addQueryAction).toHaveBeenCalledWith('雑談')
-    expect(input).toHaveValue('')
-  })
+      await screen.findByText("クエリの削除に失敗しました。")
+    ).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(
+      screen.queryByText("クエリを削除しました。")
+    ).not.toBeInTheDocument();
+  });
 
-  it('keeps the input and shows the error in a toast when adding fails', async () => {
+  it("adds a query, clears the input and shows a toast", async () => {
+    mocks.addQueryAction.mockResolvedValue({ success: true });
+    renderList();
+
+    const input = screen.getByLabelText("新しい手動クエリを追加");
+    fireEvent.change(input, { target: { value: "雑談" } });
+    fireEvent.click(screen.getByRole("button", { name: "追加" }));
+
+    expect(
+      await screen.findByText("クエリを追加しました。")
+    ).toBeInTheDocument();
+    expect(mocks.addQueryAction).toHaveBeenCalledWith("雑談");
+    expect(input).toHaveValue("");
+  });
+
+  it("keeps the input and shows the error in a toast when adding fails", async () => {
     mocks.addQueryAction.mockResolvedValue({
-      error: 'クエリを入力してください。',
+      error: "クエリを入力してください。",
       success: false,
-    })
-    renderList()
+    });
+    renderList();
 
-    const input = screen.getByLabelText('新しい手動クエリを追加')
-    fireEvent.change(input, { target: { value: '雑談' } })
-    fireEvent.click(screen.getByRole('button', { name: '追加' }))
+    const input = screen.getByLabelText("新しい手動クエリを追加");
+    fireEvent.change(input, { target: { value: "雑談" } });
+    fireEvent.click(screen.getByRole("button", { name: "追加" }));
 
     expect(
-      await screen.findByText('クエリを入力してください。'),
-    ).toBeInTheDocument()
-    expect(input).toHaveValue('雑談')
-  })
+      await screen.findByText("クエリを入力してください。")
+    ).toBeInTheDocument();
+    expect(input).toHaveValue("雑談");
+  });
 
-  it('renders the filtered queries with the total counts', () => {
+  it("renders the filtered queries with the total counts", () => {
     render(
       <QueriesList
-        autoQueries={[{ query: '歌枠 練習', score: 1.234 }]}
+        autoQueries={[{ query: "歌枠 練習", score: 1.234 }]}
         autoTotal={5}
-        manualQueries={['歌枠']}
+        manualQueries={["歌枠"]}
         manualTotal={3}
         search="歌枠"
       />,
-      { wrapper: ActionToastProvider },
-    )
+      { wrapper: ActionToastProvider }
+    );
 
     expect(
-      screen.getByRole('heading', { name: /手動追加クエリ/ }),
-    ).toHaveTextContent('3件')
+      screen.getByRole("heading", { name: /手動追加クエリ/ })
+    ).toHaveTextContent("3件");
     expect(
-      screen.getByRole('heading', { name: /自動選出クエリ/ }),
-    ).toHaveTextContent('5件')
-    expect(screen.getByRole('cell', { name: '歌枠' })).toBeInTheDocument()
-    expect(screen.getByRole('cell', { name: '1.23' })).toBeInTheDocument()
-  })
+      screen.getByRole("heading", { name: /自動選出クエリ/ })
+    ).toHaveTextContent("5件");
+    expect(screen.getByRole("cell", { name: "歌枠" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "1.23" })).toBeInTheDocument();
+  });
 
   it.each([
-    ['歌枠', '検索結果がありません。', '検索結果がありません。'],
+    ["歌枠", "検索結果がありません。", "検索結果がありません。"],
     [
       undefined,
-      '手動追加されたおすすめクエリがありません。',
-      '自動選出されたおすすめクエリがありません。',
+      "手動追加されたおすすめクエリがありません。",
+      "自動選出されたおすすめクエリがありません。",
     ],
   ])(
-    'tells that there is no query for the search %s',
+    "tells that there is no query for the search %s",
     (search, manual, auto) => {
       render(
         <QueriesList
@@ -164,11 +167,11 @@ describe('QueriesList', () => {
           manualTotal={0}
           search={search}
         />,
-        { wrapper: ActionToastProvider },
-      )
+        { wrapper: ActionToastProvider }
+      );
 
-      expect(screen.getAllByText(manual)[0]).toBeInTheDocument()
-      expect(screen.getAllByText(auto)[0]).toBeInTheDocument()
-    },
-  )
-})
+      expect(screen.getAllByText(manual)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(auto)[0]).toBeInTheDocument();
+    }
+  );
+});

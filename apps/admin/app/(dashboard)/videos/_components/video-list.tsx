@@ -1,5 +1,5 @@
-import { formatNumber } from '@shinju-date/helpers'
-import { formatDuration } from '@shinju-date/temporal-fns'
+import { formatNumber } from "@shinju-date/helpers";
+import { formatDuration } from "@shinju-date/temporal-fns";
 import {
   EmptyState,
   Skeleton,
@@ -9,61 +9,63 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@shinju-date/ui'
+} from "@shinju-date/ui";
 import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
   Video as VideoIcon,
-} from 'lucide-react'
-import Link from 'next/link'
-import { getExternalVideoUrl } from '@/components/external-video-link'
-import { PlatformBadge } from '@/components/platform-badge'
+} from "lucide-react";
+import Link from "next/link";
+
+import { getExternalVideoUrl } from "@/components/external-video-link";
+import { PlatformBadge } from "@/components/platform-badge";
 import {
   TableSkeleton,
   type TableSkeletonColumn,
-} from '@/components/table-skeleton'
-import { VideoStatusBadge } from '@/components/video-status-badge'
-import { VideoThumbnail } from '@/components/video-thumbnail'
-import { formatDateTimeFromISO } from '@/lib/format'
-import type { Video, VideoSortField } from '../_lib/get-videos'
+} from "@/components/table-skeleton";
+import { VideoStatusBadge } from "@/components/video-status-badge";
+import { VideoThumbnail } from "@/components/video-thumbnail";
+import { formatDateTimeFromISO } from "@/lib/format";
+
+import type { Video, VideoSortField } from "../_lib/get-videos";
 import {
   getVideoSortHref,
   toAriaSort,
   type VideoSort,
-} from '../_lib/video-sort'
-import { VideoBulkActions } from './video-bulk-actions'
-import { VideoKindBadge } from './video-kind-badge'
-import { VideoRowActions } from './video-row-actions'
+} from "../_lib/video-sort";
+import { VideoBulkActions } from "./video-bulk-actions";
+import { VideoKindBadge } from "./video-kind-badge";
+import { VideoRowActions } from "./video-row-actions";
 import {
   VideoSelectAllCheckbox,
   VideoSelectCheckbox,
-} from './video-select-checkbox'
-import { VideoSelectionProvider } from './video-selection-provider'
+} from "./video-select-checkbox";
+import { VideoSelectionProvider } from "./video-selection-provider";
 
 interface Props {
-  videos: Video[]
+  videos: Video[];
   /** 今の並べ替え */
-  sort: VideoSort
+  sort: VideoSort;
   /** 今のページの URL のパラメータ。並べ替えのリンクで絞り込みを引き継ぐ */
-  searchParams: URLSearchParams | string
+  searchParams: URLSearchParams | string;
 }
 
 interface SortLinkProps {
-  field: VideoSortField
-  label: string
-  sort: VideoSort
-  searchParams: URLSearchParams | string
+  field: VideoSortField;
+  label: string;
+  sort: VideoSort;
+  searchParams: URLSearchParams | string;
 }
 
 /** 見出しの並べ替えのリンク。今の並べ替えの項目には、向きの矢印を付ける */
 function SortLink({ field, label, sort, searchParams }: SortLinkProps) {
-  const isCurrent = sort.field === field
+  const isCurrent = sort.field === field;
   const Icon = !isCurrent
     ? ArrowUpDown
-    : sort.order === 'asc'
+    : sort.order === "asc"
       ? ArrowUp
-      : ArrowDown
+      : ArrowDown;
 
   return (
     <Link
@@ -73,15 +75,15 @@ function SortLink({ field, label, sort, searchParams }: SortLinkProps) {
       {label}
       {isCurrent && (
         <span className="sr-only">
-          （{sort.order === 'asc' ? '昇順' : '降順'}で並べ替え中）
+          （{sort.order === "asc" ? "昇順" : "降順"}で並べ替え中）
         </span>
       )}
       <Icon
         aria-hidden="true"
-        className={isCurrent ? 'size-3' : 'size-3 text-muted'}
+        className={isCurrent ? "size-3" : "size-3 text-muted"}
       />
     </Link>
-  )
+  );
 }
 
 /**
@@ -156,7 +158,7 @@ export default function VideoList({ videos, sort, searchParams }: Props) {
                     </Link>
                   </TableCell>
                   <TableCell className="text-muted">
-                    {video.talent ? video.talent.name : 'タレント不明'}
+                    {video.talent ? video.talent.name : "タレント不明"}
                   </TableCell>
                   <TableCell className="text-muted tabular-nums">
                     <dl className="grid grid-cols-[auto_auto] gap-x-2">
@@ -215,15 +217,15 @@ export default function VideoList({ videos, sort, searchParams }: Props) {
         </Table>
       </div>
     </VideoSelectionProvider>
-  )
+  );
 }
 
 /** 動画の一覧の10列（選択、サムネイル、タイトル、タレント、日時、再生時間、クリック数、種別、ステータス、操作） */
 const VIDEO_LIST_SKELETON_COLUMNS: TableSkeletonColumn[] = [
-  { cell: <Skeleton className="size-4" />, header: false, id: 'select' },
+  { cell: <Skeleton className="size-4" />, header: false, id: "select" },
   {
     cell: <Skeleton className="aspect-video w-28 rounded-container" />,
-    id: 'thumbnail',
+    id: "thumbnail",
   },
   {
     cell: (
@@ -232,10 +234,10 @@ const VIDEO_LIST_SKELETON_COLUMNS: TableSkeletonColumn[] = [
         <Skeleton className="h-4 w-2/3" />
       </div>
     ),
-    className: 'w-full',
-    id: 'title',
+    className: "w-full",
+    id: "title",
   },
-  { cell: <Skeleton className="h-4 w-20" />, id: 'talent' },
+  { cell: <Skeleton className="h-4 w-20" />, id: "talent" },
   {
     cell: (
       <div className="space-y-1">
@@ -243,10 +245,10 @@ const VIDEO_LIST_SKELETON_COLUMNS: TableSkeletonColumn[] = [
         <Skeleton className="h-4 w-36" />
       </div>
     ),
-    id: 'date',
+    id: "date",
   },
-  { align: 'end', cell: <Skeleton className="h-4 w-14" />, id: 'duration' },
-  { align: 'end', cell: <Skeleton className="h-4 w-10" />, id: 'clicks' },
+  { align: "end", cell: <Skeleton className="h-4 w-14" />, id: "duration" },
+  { align: "end", cell: <Skeleton className="h-4 w-10" />, id: "clicks" },
   {
     cell: (
       <div className="space-y-1">
@@ -254,15 +256,15 @@ const VIDEO_LIST_SKELETON_COLUMNS: TableSkeletonColumn[] = [
         <Skeleton className="h-5 w-16" />
       </div>
     ),
-    id: 'kind',
+    id: "kind",
   },
-  { cell: <Skeleton className="h-5 w-16" />, id: 'status' },
-  { cell: <Skeleton className="size-7" />, header: false, id: 'actions' },
-]
+  { cell: <Skeleton className="h-5 w-16" />, id: "status" },
+  { cell: <Skeleton className="size-7" />, header: false, id: "actions" },
+];
 
 interface VideoListSkeletonProps {
   /** 1ページの件数 */
-  rows: number
+  rows: number;
 }
 
 /** 読み込み中の `VideoList`。一括操作のバーと、同じ列の表を並べる */
@@ -274,5 +276,5 @@ export function VideoListSkeleton({ rows }: VideoListSkeletonProps) {
       rows={rows}
       tableClassName="min-w-5xl"
     />
-  )
+  );
 }

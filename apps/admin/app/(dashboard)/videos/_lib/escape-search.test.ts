@@ -1,60 +1,61 @@
-import { describe, expect, it } from 'vitest'
-import { escapeSearchString } from './escape-search'
+import { describe, expect, it } from "vitest";
 
-describe('escapeSearchString', () => {
-  it('escapes % character', () => {
-    expect(escapeSearchString('test%')).toBe('test\\%')
-  })
+import { escapeSearchString } from "./escape-search";
 
-  it('escapes _ character', () => {
-    expect(escapeSearchString('test_')).toBe('test\\_')
-  })
+describe("escapeSearchString", () => {
+  it("escapes % character", () => {
+    expect(escapeSearchString("test%")).toBe("test\\%");
+  });
 
-  it('escapes multiple % characters', () => {
-    expect(escapeSearchString('test%value%')).toBe('test\\%value\\%')
-  })
+  it("escapes _ character", () => {
+    expect(escapeSearchString("test_")).toBe("test\\_");
+  });
 
-  it('escapes multiple _ characters', () => {
-    expect(escapeSearchString('test_value_')).toBe('test\\_value\\_')
-  })
+  it("escapes multiple % characters", () => {
+    expect(escapeSearchString("test%value%")).toBe("test\\%value\\%");
+  });
 
-  it('escapes both % and _ characters', () => {
-    expect(escapeSearchString('test%value_name')).toBe('test\\%value\\_name')
-  })
+  it("escapes multiple _ characters", () => {
+    expect(escapeSearchString("test_value_")).toBe("test\\_value\\_");
+  });
 
-  it('returns unchanged string when no special characters present', () => {
-    expect(escapeSearchString('test')).toBe('test')
-  })
+  it("escapes both % and _ characters", () => {
+    expect(escapeSearchString("test%value_name")).toBe("test\\%value\\_name");
+  });
 
-  it('handles empty string', () => {
-    expect(escapeSearchString('')).toBe('')
-  })
+  it("returns unchanged string when no special characters present", () => {
+    expect(escapeSearchString("test")).toBe("test");
+  });
 
-  it('handles string with only special characters', () => {
-    expect(escapeSearchString('%_%')).toBe('\\%\\_\\%')
-  })
+  it("handles empty string", () => {
+    expect(escapeSearchString("")).toBe("");
+  });
 
-  it('handles SQL injection attempts', () => {
-    const malicious = 'xxx%other_column.ilike.%malicious_phrase'
-    const escaped = escapeSearchString(malicious)
-    expect(escaped).toBe('xxx\\%other\\_column.ilike.\\%malicious\\_phrase')
-  })
+  it("handles string with only special characters", () => {
+    expect(escapeSearchString("%_%")).toBe("\\%\\_\\%");
+  });
 
-  it('escapes backslash character', () => {
-    expect(escapeSearchString('test\\value')).toBe('test\\\\value')
-  })
+  it("handles SQL injection attempts", () => {
+    const malicious = "xxx%other_column.ilike.%malicious_phrase";
+    const escaped = escapeSearchString(malicious);
+    expect(escaped).toBe("xxx\\%other\\_column.ilike.\\%malicious\\_phrase");
+  });
 
-  it('escapes backslash followed by special characters', () => {
-    expect(escapeSearchString('test\\%value')).toBe('test\\\\\\%value')
-  })
+  it("escapes backslash character", () => {
+    expect(escapeSearchString("test\\value")).toBe("test\\\\value");
+  });
 
-  it('handles multiple backslashes', () => {
-    expect(escapeSearchString('test\\\\value')).toBe('test\\\\\\\\value')
-  })
+  it("escapes backslash followed by special characters", () => {
+    expect(escapeSearchString("test\\%value")).toBe("test\\\\\\%value");
+  });
 
-  it('escapes backslash, %, and _ together', () => {
-    expect(escapeSearchString('test\\%value_name')).toBe(
-      'test\\\\\\%value\\_name',
-    )
-  })
-})
+  it("handles multiple backslashes", () => {
+    expect(escapeSearchString("test\\\\value")).toBe("test\\\\\\\\value");
+  });
+
+  it("escapes backslash, %, and _ together", () => {
+    expect(escapeSearchString("test\\%value_name")).toBe(
+      "test\\\\\\%value\\_name"
+    );
+  });
+});

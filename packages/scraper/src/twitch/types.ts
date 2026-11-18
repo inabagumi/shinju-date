@@ -6,12 +6,13 @@ import type {
   TwitchVideo,
   TwitchVideoFilter,
   TwitchVideoPage,
-} from '@shinju-date/twitch-api-client'
+} from "@shinju-date/twitch-api-client";
+
 import type {
   FetcherOptions,
   RecentVideosOptions,
-} from '../internal/fetcher-types.js'
-import type { ScraperOptions } from '../types.js'
+} from "../internal/fetcher-types.js";
+import type { ScraperOptions } from "../types.js";
 
 export type {
   TwitchClip,
@@ -20,7 +21,7 @@ export type {
   TwitchVideo,
   TwitchVideoFilter,
   TwitchVideoPage,
-}
+};
 
 /**
  * The Helix calls a Twitch scraper makes. Defaults to the implementations of
@@ -32,50 +33,50 @@ export type {
  */
 export interface TwitchApi {
   getClips: (options: {
-    ids: string[]
-    schedule?: RequestScheduler
-  }) => AsyncIterable<TwitchClip>
+    ids: string[];
+    schedule?: RequestScheduler;
+  }) => AsyncIterable<TwitchClip>;
   getStreamsByUserIds: (options: {
-    schedule?: RequestScheduler
-    userIds: string[]
-  }) => AsyncIterable<TwitchStream>
+    schedule?: RequestScheduler;
+    userIds: string[];
+  }) => AsyncIterable<TwitchStream>;
   getUsers: (options: {
-    ids: string[]
-    schedule?: RequestScheduler
-  }) => AsyncIterable<TwitchUser>
+    ids: string[];
+    schedule?: RequestScheduler;
+  }) => AsyncIterable<TwitchUser>;
   getVideos: (options: {
-    ids: string[]
-    schedule?: RequestScheduler
-  }) => AsyncIterable<TwitchVideo>
+    ids: string[];
+    schedule?: RequestScheduler;
+  }) => AsyncIterable<TwitchVideo>;
   getVideosByUser: (options: {
-    limit?: number
-    type?: TwitchVideoFilter
-    userId: string
-  }) => AsyncIterable<TwitchVideo>
+    limit?: number;
+    type?: TwitchVideoFilter;
+    userId: string;
+  }) => AsyncIterable<TwitchVideo>;
   getVideosByUserPage: (options: {
-    after?: string | undefined
-    limit?: number
-    type?: TwitchVideoFilter
-    userId: string
-  }) => Promise<TwitchVideoPage>
+    after?: string | undefined;
+    limit?: number;
+    type?: TwitchVideoFilter;
+    userId: string;
+  }) => Promise<TwitchVideoPage>;
 }
 
 export interface TwitchFetcherOptions extends FetcherOptions {
-  client?: TwitchApi | undefined
+  client?: TwitchApi | undefined;
 }
 
 export interface TwitchScraperOptions extends ScraperOptions {
   /** Helix accessors. Defaults to `@shinju-date/twitch-api-client`. */
-  client?: TwitchApi
+  client?: TwitchApi;
 }
 
 export interface TwitchRecentVideosOptions extends RecentVideosOptions {
   /** Kind of video to list (default: `archive`). */
-  type?: TwitchVideoFilter
+  type?: TwitchVideoFilter;
 }
 
 export interface ClipLookupResult {
-  clips: TwitchClip[]
+  clips: TwitchClip[];
   /** Requested IDs Helix did not return (deleted). */
-  missingIds: string[]
+  missingIds: string[];
 }

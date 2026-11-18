@@ -1,12 +1,34 @@
 {
+  "name": "@shinju-date/dashboard-stats",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Types, counts and Redis snapshots of the dashboard statistics shared by the admin and batch apps",
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
   "author": "Haneru Developers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git",
+    "directory": "packages/dashboard-stats"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
     "@shinju-date/constants": "workspace:*",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
     "zod": "catalog:"
   },
-  "description": "Types, counts and Redis snapshots of the dashboard statistics shared by the admin and batch apps",
   "devDependencies": {
     "@shinju-date/config": "workspace:*",
     "@supabase/supabase-js": "catalog:",
@@ -16,30 +38,8 @@
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
-  },
-  "homepage": "https://shinju.date/",
-  "license": "MIT",
-  "name": "@shinju-date/dashboard-stats",
   "peerDependencies": {
     "@supabase/supabase-js": "^2.119.0",
     "@upstash/redis": "^1.41.0"
-  },
-  "private": true,
-  "repository": {
-    "directory": "packages/dashboard-stats",
-    "type": "git",
-    "url": "https://github.com/inabagumi/shinju-date.git"
-  },
-  "scripts": {
-    "build": "tsdown",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
-  },
-  "type": "module",
-  "version": "1.0.0"
+  }
 }

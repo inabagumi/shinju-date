@@ -1,20 +1,21 @@
-import type { User } from '@supabase/supabase-js'
-import type { FormState } from '@/lib/action'
-import { isAdminUser } from '@/lib/admin-user'
+import type { User } from "@supabase/supabase-js";
+
+import type { FormState } from "@/lib/action";
+import { isAdminUser } from "@/lib/admin-user";
 import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
-} from '@/lib/supabase'
+} from "@/lib/supabase";
 
 /**
  * 未認証のリクエストに対して Server Action が返すエラーメッセージ。
  */
 export const UNAUTHENTICATED_ERROR_MESSAGE =
-  'ログインセッションが無効です。再度ログインしてからお試しください。'
+  "ログインセッションが無効です。再度ログインしてからお試しください。";
 
 export interface AuthenticatedContext {
-  supabaseClient: TypedSupabaseClient
-  user: User
+  supabaseClient: TypedSupabaseClient;
+  user: User;
 }
 
 /**
@@ -47,19 +48,19 @@ export interface AuthenticatedContext {
  */
 export async function requireAuthenticatedUser(): Promise<AuthenticatedContext | null> {
   try {
-    const supabaseClient = await createSupabaseServerClient()
+    const supabaseClient = await createSupabaseServerClient();
     const {
       data: { user },
       error,
-    } = await supabaseClient.auth.getUser()
+    } = await supabaseClient.auth.getUser();
 
     if (error || !user || !isAdminUser(user)) {
-      return null
+      return null;
     }
 
-    return { supabaseClient, user }
+    return { supabaseClient, user };
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -70,7 +71,7 @@ export function unauthenticatedResult(): { success: false; error: string } {
   return {
     error: UNAUTHENTICATED_ERROR_MESSAGE,
     success: false,
-  }
+  };
 }
 
 /**
@@ -81,5 +82,5 @@ export function unauthenticatedFormState(): FormState {
     errors: {
       generic: [UNAUTHENTICATED_ERROR_MESSAGE],
     },
-  }
+  };
 }

@@ -22,20 +22,20 @@
 
 色は用途で名付けたセマンティックカラーで指定します。ライトとダークの値は `theme.css` で切り替わるので、1つのクラスを書くだけで両モードに対応できます。値の一覧は `theme.css` と Storybook の「Design System/Colors」を参照してください。
 
-| クラス                                   | 用途                                                                |
-| ---------------------------------------- | ------------------------------------------------------------------- |
-| `bg-background`                          | ページの地                                                          |
-| `text-foreground`                        | 本文・見出し                                                        |
-| `bg-surface`                             | ヘッダー・モーダル・メニュー・入力欄                                |
-| `bg-muted`                               | スケルトン・ホバー・表の見出し行                                    |
-| `text-muted`                             | 補助情報（日時・タレント名・説明）                                  |
-| `border-border`                          | 区切り線・入力欄の枠                                                |
-| `bg-accent` / `text-accent`              | リンク・選択中・主ボタン・フォーカス                                |
-| `text-accent-foreground`                 | `bg-accent` の上の文字                                              |
-| `bg-primary` / `text-primary-foreground` | ブランドの地（フッター）と、その上の文字                            |
-| `bg-live` / `text-live-foreground`       | 配信中（バッジの地と、その上の文字）。ほかには使わない              |
-| `bg-twitch` / `text-twitch-foreground`   | Twitch の動画を示すバッジ。ブランドカラーなので値や透明度を変えない |
-| `danger` / `success` / `warning`         | 状態（エラー・成功・警告）                                          |
+| クラス | 用途 |
+| --- | --- |
+| `bg-background` | ページの地 |
+| `text-foreground` | 本文・見出し |
+| `bg-surface` | ヘッダー・モーダル・メニュー・入力欄 |
+| `bg-muted` | スケルトン・ホバー・表の見出し行 |
+| `text-muted` | 補助情報（日時・タレント名・説明） |
+| `border-border` | 区切り線・入力欄の枠 |
+| `bg-accent` / `text-accent` | リンク・選択中・主ボタン・フォーカス |
+| `text-accent-foreground` | `bg-accent` の上の文字 |
+| `bg-primary` / `text-primary-foreground` | ブランドの地（フッター）と、その上の文字 |
+| `bg-live` / `text-live-foreground` | 配信中（バッジの地と、その上の文字）。ほかには使わない |
+| `bg-twitch` / `text-twitch-foreground` | Twitch の動画を示すバッジ。ブランドカラーなので値や透明度を変えない |
+| `danger` / `success` / `warning` | 状態（エラー・成功・警告） |
 
 - 状態の表示は、状態色の文字と同じ色の 10% の地（`bg-danger/10 text-danger` など）にする
 - `gray-*` / `zinc-*` / `slate-*` などの Tailwind の標準色や、`774-*` の色見本は部品で直接使わない
@@ -74,13 +74,13 @@
 
 配信スケジュールの1件は、共通の動画カードではなく専用の項目（`apps/web/app/schedule/_components/schedule-item.tsx`）で表示します。スケジュールで知りたいのは「いつ・誰が」なので、サムネイルは出しません。リンクの挙動（リンク先、`ping`、別タブ）は動画カードと同じです。
 
-| 部分                     | クラス                                                                                                                                                                                                                                |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 項目（リンク）           | `block rounded-control border border-l-4 border-border bg-surface py-1 pr-1 pl-2`。地と見分けられるよう枠を付ける。地は広げたときに下が透けないよう不透明にし、マウスを乗せても変えない                                               |
-| 左端の線                 | `border-l-(--talent-color)`（`style` で `--talent-color` を渡す）／未設定や形が違う値は `border-l-border`                                                                                                                             |
-| 1行目                    | 高さ 20px（`h-5`）に、タレントのアイコン（`TalentIcon`、20px）、開始時刻 `text-meta leading-5 font-bold tabular-nums`、配信中は `LiveBadge`、Twitch は `PlatformBadge`、タレント名 `truncate text-caption text-muted` の順に並べる    |
+| 部分 | クラス |
+| --- | --- |
+| 項目（リンク） | `block rounded-control border border-l-4 border-border bg-surface py-1 pr-1 pl-2`。地と見分けられるよう枠を付ける。地は広げたときに下が透けないよう不透明にし、マウスを乗せても変えない |
+| 左端の線 | `border-l-(--talent-color)`（`style` で `--talent-color` を渡す）／未設定や形が違う値は `border-l-border` |
+| 1行目 | 高さ 20px（`h-5`）に、タレントのアイコン（`TalentIcon`、20px）、開始時刻 `text-meta leading-5 font-bold tabular-nums`、配信中は `LiveBadge`、Twitch は `PlatformBadge`、タレント名 `truncate text-caption text-muted` の順に並べる |
 | ラベルとハッシュタグの行 | 1行目とタイトルの間に `truncate text-caption text-muted`。動画カードと同じく、先頭のラベル1つと、ハッシュタグを先頭から3つまで（頭に `#`）を半角の空白で区切って並べる。内容がない項目では出さない。1024px 以上では広げたときだけ出す |
-| タイトル                 | `text-meta`（`title` 属性に全文）。本文を出す。1024px 未満は2行まで、1024px 以上は項目の高さに収まる行数まで                                                                                                                          |
+| タイトル | `text-meta`（`title` 属性に全文）。本文を出す。1024px 未満は2行まで、1024px 以上は項目の高さに収まる行数まで |
 
 - 週は日曜始まり（日曜〜土曜）です。URL（`/schedule/YYYY-MM-DD`）と `canonical` は、その週の日曜の日付を指します
 - 終了済みと予定には印を付けません。配信中だけ「配信中」の文字の印を出します
@@ -105,44 +105,44 @@ Lato は 300・400・700 を読み込んでいます（Lato には 600 があり
 
 文字サイズは6段階です。`theme.css` で、サイズと行間を組にしたクラスとして定義しています。
 
-| クラス         | サイズ / 行間 | 使う場所                                               |
-| -------------- | ------------- | ------------------------------------------------------ |
-| `text-display` | 32px / 1.4    | PC のページ見出し                                      |
-| `text-title`   | 24px / 1.4    | ページ見出し                                           |
-| `text-heading` | 20px / 1.4    | セクション見出し                                       |
-| `text-body`    | 16px / 1.7    | 本文。カードのタイトルでは `leading-normal` を併用する |
-| `text-meta`    | 14px / 1.6    | 補助情報（日時・タレント名・説明）                     |
-| `text-caption` | 12px / 1.4    | バッジ・注記                                           |
+| クラス | サイズ / 行間 | 使う場所 |
+| --- | --- | --- |
+| `text-display` | 32px / 1.4 | PC のページ見出し |
+| `text-title` | 24px / 1.4 | ページ見出し |
+| `text-heading` | 20px / 1.4 | セクション見出し |
+| `text-body` | 16px / 1.7 | 本文。カードのタイトルでは `leading-normal` を併用する |
+| `text-meta` | 14px / 1.6 | 補助情報（日時・タレント名・説明） |
+| `text-caption` | 12px / 1.4 | バッジ・注記 |
 
 `text-xs` や `text-sm` などの Tailwind の標準のサイズは、新しく書く部分では使いません。
 
 ### 役割ごとの組み合わせ
 
-| 役割                                          | クラス                                   | サイズ             | 太さ                | 行間 |
-| --------------------------------------------- | ---------------------------------------- | ------------------ | ------------------- | ---- |
-| ページ見出し（h1）                            | `text-title font-bold md:text-display`   | 24px（PC は 32px） | 700                 | 1.4  |
-| セクション見出し（h2）                        | `text-heading font-bold`                 | 20px               | 700                 | 1.4  |
-| パネルの見出し（管理画面の `Panel` の h2）    | `text-heading font-bold`                 | 20px               | 700                 | 1.4  |
-| カードのタイトル・小見出し                    | `text-body leading-normal font-semibold` | 16px               | 600                 | 1.5  |
-| 本文                                          | `text-body`                              | 16px               | 400                 | 1.7  |
-| 補助情報（日時・タレント名・説明）            | `text-meta text-muted`                   | 14px               | 400                 | 1.6  |
-| バッジ・注記                                  | `text-caption font-semibold`             | 12px               | 600                 | 1.4  |
-| 「配信中」の印                                | `LiveBadge`                              | 12px               | 600                 | 1.4  |
-| 状態の知らせ（[`Alert`](#状態の知らせalert)） | `text-meta`（見出しは `font-semibold`）  | 14px               | 400（見出しは 600） | 1.6  |
-| フォームのラベル                              | `text-meta font-semibold`                | 14px               | 600                 | 1.6  |
-| フォームのエラーの文                          | `text-meta text-danger`                  | 14px               | 400                 | 1.6  |
-| 入力欄（すべての大きさ）、大きいボタン        | `text-body leading-normal`               | 16px               | —                   | 1.5  |
-| ボタン（標準と小）、メニューの項目、トースト  | `text-meta leading-5`                    | 14px               | —                   | 20px |
+| 役割 | クラス | サイズ | 太さ | 行間 |
+| --- | --- | --- | --- | --- |
+| ページ見出し（h1） | `text-title font-bold md:text-display` | 24px（PC は 32px） | 700 | 1.4 |
+| セクション見出し（h2） | `text-heading font-bold` | 20px | 700 | 1.4 |
+| パネルの見出し（管理画面の `Panel` の h2） | `text-heading font-bold` | 20px | 700 | 1.4 |
+| カードのタイトル・小見出し | `text-body leading-normal font-semibold` | 16px | 600 | 1.5 |
+| 本文 | `text-body` | 16px | 400 | 1.7 |
+| 補助情報（日時・タレント名・説明） | `text-meta text-muted` | 14px | 400 | 1.6 |
+| バッジ・注記 | `text-caption font-semibold` | 12px | 600 | 1.4 |
+| 「配信中」の印 | `LiveBadge` | 12px | 600 | 1.4 |
+| 状態の知らせ（[`Alert`](#状態の知らせalert)） | `text-meta`（見出しは `font-semibold`） | 14px | 400（見出しは 600） | 1.6 |
+| フォームのラベル | `text-meta font-semibold` | 14px | 600 | 1.6 |
+| フォームのエラーの文 | `text-meta text-danger` | 14px | 400 | 1.6 |
+| 入力欄（すべての大きさ）、大きいボタン | `text-body leading-normal` | 16px | — | 1.5 |
+| ボタン（標準と小）、メニューの項目、トースト | `text-meta leading-5` | 14px | — | 20px |
 
 ```tsx
 const example = (
   <article>
-    <h1 className="text-title font-bold md:text-display">タレント一覧</h1>
+    <h1 className="text-title md:text-display font-bold">タレント一覧</h1>
     <h2 className="text-heading font-bold">配信中</h2>
     <h3 className="text-body leading-normal font-semibold">動画のタイトル</h3>
     <p className="text-meta text-muted tabular-nums">2026/11/14 21:00</p>
   </article>
-)
+);
 ```
 
 - **操作部品の行間は、本文より詰める。** ボタン・入力欄・メニューの項目・トーストは、1行で収まる前提で高さを決めているため、`text-body` / `text-meta` の行間（1.7 / 1.6）ではなく、上の表の `leading-normal` / `leading-5` を併用します。`packages/ui` の部品は、すでにこの組み合わせになっています
@@ -163,29 +163,29 @@ const panel = (
       <DetailRow label="タレント名">{talent.name}</DetailRow>
     </DetailList>
   </Panel>
-)
+);
 ```
 
 ### 状態の知らせ（Alert）
 
 削除済み・引退・失敗など、画面の中で状態を知らせる枠は、`@shinju-date/ui` の `Alert` を使います。色の付いた枠を手で書かないでください。
 
-| 部分     | クラス・props                                                                                                                                                                        |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 枠       | `rounded-container border p-4 text-meta text-foreground`。地と枠線は `tone` で決まる                                                                                                 |
-| 見出し   | `title`。本文の上の太字の1行（`font-semibold`）                                                                                                                                      |
-| 本文     | `children`                                                                                                                                                                           |
-| 操作     | `action`。右端に置くリンクやボタン。狭い画面では本文の下に回る                                                                                                                       |
+| 部分 | クラス・props |
+| --- | --- |
+| 枠 | `rounded-container border p-4 text-meta text-foreground`。地と枠線は `tone` で決まる |
+| 見出し | `title`。本文の上の太字の1行（`font-semibold`） |
+| 本文 | `children` |
+| 操作 | `action`。右端に置くリンクやボタン。狭い画面では本文の下に回る |
 | 読み上げ | `role`。既定は `danger` と `warning` が `alert`、`success` と `neutral` が `status`。知らせではない枠（一覧や、危険な操作を分けて置く枠）は `role="region"` と `aria-label` を付ける |
 
 `tone` は状態の意味で選びます。文字はどの `tone` でも `text-foreground` にし、色は地と枠線だけに使います（コントラスト比は `packages/ui/src/colors.test.ts` で確認しています）。
 
-| `tone`    | 地と枠線                          | 使う場面                                   |
-| --------- | --------------------------------- | ------------------------------------------ |
-| `danger`  | `border-danger/30 bg-danger/10`   | 危険な状態（失敗、削除済み、操作のエラー） |
-| `warning` | `border-warning/30 bg-warning/10` | 注意を促す状態（引退、確認が必要な操作）   |
-| `success` | `border-success/30 bg-success/10` | 操作が済んだこと                           |
-| `neutral` | `border-border bg-muted`          | どれにも当たらない知らせ（予定や補足）     |
+| `tone` | 地と枠線 | 使う場面 |
+| --- | --- | --- |
+| `danger` | `border-danger/30 bg-danger/10` | 危険な状態（失敗、削除済み、操作のエラー） |
+| `warning` | `border-warning/30 bg-warning/10` | 注意を促す状態（引退、確認が必要な操作） |
+| `success` | `border-success/30 bg-success/10` | 操作が済んだこと |
+| `neutral` | `border-border bg-muted` | どれにも当たらない知らせ（予定や補足） |
 
 ```tsx
 const example = (
@@ -196,20 +196,20 @@ const example = (
   >
     このタレントは削除されています。
   </Alert>
-)
+);
 ```
 
 ### 操作の結果の知らせ（管理画面）
 
 管理画面で Server Action を呼んだ結果は、操作した場所によって知らせ方を決めます。
 
-| 操作した場所                                 | 知らせ方                                                         |
-| -------------------------------------------- | ---------------------------------------------------------------- |
-| 一覧の行・メニュー・ボタン                   | トースト                                                         |
-| 確認ダイアログ（`ConfirmDialog`）            | 失敗はダイアログの中に出す。成功したら閉じて、トーストで知らせる |
-| 作成・編集のダイアログ（`FormDialog`）       | 失敗はダイアログの中の、入力欄の近くに出す。成功したら閉じる     |
-| フォームの送信（`useActionState`）           | 入力欄の近くに出す                                               |
-| 画面の状態（削除済み・引退・読み込みの失敗） | `Alert`（[状態の知らせ](#状態の知らせalert)）                    |
+| 操作した場所 | 知らせ方 |
+| --- | --- |
+| 一覧の行・メニュー・ボタン | トースト |
+| 確認ダイアログ（`ConfirmDialog`） | 失敗はダイアログの中に出す。成功したら閉じて、トーストで知らせる |
+| 作成・編集のダイアログ（`FormDialog`） | 失敗はダイアログの中の、入力欄の近くに出す。成功したら閉じる |
+| フォームの送信（`useActionState`） | 入力欄の近くに出す |
+| 画面の状態（削除済み・引退・読み込みの失敗） | `Alert`（[状態の知らせ](#状態の知らせalert)） |
 
 - フォームを使わずにアクションを呼ぶときは、`apps/admin/lib/use-server-action.ts` の `useServerAction` を使う。`useTransition` と try/catch を部品ごとに書かない
   - 成功なら `successText`、失敗なら `result.error`、`result.warnings` があれば1件ずつ警告のトーストを出す。例外のときは「処理に失敗しました。」を出す
@@ -224,14 +224,14 @@ const example = (
 
 ```tsx
 const { isPending, run } = useServerAction(toggleVisibilityAction, {
-  successText: '表示状態を更新しました。',
-})
+  successText: "表示状態を更新しました。",
+});
 
 const button = (
   <Button disabled={isPending} onClick={() => run([video.id])}>
     表示を切り替える
   </Button>
-)
+);
 ```
 
 ### メニュー（DropdownMenu）
@@ -242,13 +242,13 @@ const button = (
 - 上下の矢印キーで項目を移動し、文字を打つとその文字で始まる項目へ移る。無効な項目は飛ばす
 - Enter で項目を実行して閉じる。Escape と外側のクリックで閉じる。閉じると、フォーカスが開いたボタンに戻る
 
-| 部品                    | 役割と見た目                                                                                                                                                                  |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DropdownMenu`          | 全体。開閉の状態を持つ                                                                                                                                                        |
-| `DropdownMenuTrigger`   | 開くボタン。既定はアイコンのボタン（`rounded-control p-1 text-muted focus-ring`）。`asChild` で子の要素をボタンにするときは、既定の見た目を付けず、子の見た目を使う           |
-| `DropdownMenuContent`   | 入れ物（`rounded-container border border-border bg-surface p-1 shadow-overlay`）。ポータルに描くので、横にスクロールする表の中でも切れない。既定は右端そろえ（`align="end"`） |
-| `DropdownMenuItem`      | 項目（`rounded-control px-3 py-2 text-meta leading-5`）。選ぶと `onSelect` が呼ばれる。リンクは `asChild` で `<a>` や `Link` を子に渡す。削除などは `variant="danger"`        |
-| `DropdownMenuSeparator` | 項目のまとまりを分ける線（`my-1 h-px bg-border`）                                                                                                                             |
+| 部品 | 役割と見た目 |
+| --- | --- |
+| `DropdownMenu` | 全体。開閉の状態を持つ |
+| `DropdownMenuTrigger` | 開くボタン。既定はアイコンのボタン（`rounded-control p-1 text-muted focus-ring`）。`asChild` で子の要素をボタンにするときは、既定の見た目を付けず、子の見た目を使う |
+| `DropdownMenuContent` | 入れ物（`rounded-container border border-border bg-surface p-1 shadow-overlay`）。ポータルに描くので、横にスクロールする表の中でも切れない。既定は右端そろえ（`align="end"`） |
+| `DropdownMenuItem` | 項目（`rounded-control px-3 py-2 text-meta leading-5`）。選ぶと `onSelect` が呼ばれる。リンクは `asChild` で `<a>` や `Link` を子に渡す。削除などは `variant="danger"` |
+| `DropdownMenuSeparator` | 項目のまとまりを分ける線（`my-1 h-px bg-border`） |
 
 - 項目の選択中の地は、マウスとキーボードのどちらでも `data-highlighted` で付く（`bg-muted`、`danger` は `bg-danger/10`）。項目に `focus-ring` は付けない
 - 項目を選ぶとメニューは閉じ、中身も消える。項目から開くダイアログは、メニューの外に置き、開いているかどうかをメニューの外の状態で持つ
@@ -267,16 +267,16 @@ const menu = (
           YouTubeで見る
         </a>
       </DropdownMenuItem>
-      <DropdownMenuItem onSelect={() => openDialog('toggle')}>
+      <DropdownMenuItem onSelect={() => openDialog("toggle")}>
         表示/非表示を切り替え
       </DropdownMenuItem>
       <DropdownMenuSeparator />
-      <DropdownMenuItem onSelect={() => openDialog('delete')} variant="danger">
+      <DropdownMenuItem onSelect={() => openDialog("delete")} variant="danger">
         削除
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
-)
+);
 ```
 
 ### 読み込み中の表示（スケルトン）
@@ -292,29 +292,29 @@ const menu = (
 - 見出しなど、読み込みの前後で変わらない文字は、`Skeleton` にせずそのまま描く
 - 管理画面では、形を引数で決める次の部品を組み合わせる
 
-| 部品                                                                       | 使う場面                                                                                  |
-| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `PanelSkeleton`・`DetailListSkeleton`（`apps/admin/components/panel.tsx`） | `Panel` と `DetailList`。見出し（`title`・`description`）は読み込み後と同じ文言を渡す     |
-| `TableSkeleton`（`apps/admin/components/table-skeleton.tsx`）              | `Table`。列の定義（`columns`）、行の数（`rows`）、表の上の帯（`filterBar`）を呼ぶ側が渡す |
-| `FilterBarSkeleton`・`FieldSkeleton`（同上）                               | `FilterBar` と、見出し付きの入力欄                                                        |
-| `StatTileSkeleton`（`apps/admin/components/stat-tile-skeleton.tsx`）       | `StatTile`                                                                                |
+| 部品 | 使う場面 |
+| --- | --- |
+| `PanelSkeleton`・`DetailListSkeleton`（`apps/admin/components/panel.tsx`） | `Panel` と `DetailList`。見出し（`title`・`description`）は読み込み後と同じ文言を渡す |
+| `TableSkeleton`（`apps/admin/components/table-skeleton.tsx`） | `Table`。列の定義（`columns`）、行の数（`rows`）、表の上の帯（`filterBar`）を呼ぶ側が渡す |
+| `FilterBarSkeleton`・`FieldSkeleton`（同上） | `FilterBar` と、見出し付きの入力欄 |
+| `StatTileSkeleton`（`apps/admin/components/stat-tile-skeleton.tsx`） | `StatTile` |
 
 ```tsx
 export function TalentsListSkeleton() {
   return (
     <TableSkeleton
       columns={[
-        { cell: <Skeleton className="h-5 w-32" />, id: 'name' },
-        { cell: <Skeleton className="h-5 w-16" />, id: 'status' },
+        { cell: <Skeleton className="h-5 w-32" />, id: "name" },
+        { cell: <Skeleton className="h-5 w-16" />, id: "status" },
         {
-          align: 'end',
+          align: "end",
           cell: <Skeleton className="size-7" />,
           header: false,
-          id: 'actions',
+          id: "actions",
         },
       ]}
     />
-  )
+  );
 }
 ```
 
@@ -322,10 +322,10 @@ export function TalentsListSkeleton() {
 
 動画のタイトルは、`apps/web/lib/video-title.ts` の `parseVideoTitle` で「本文・ラベル（【】と〖〗の中身）・末尾のハッシュタグ」に分けて表示します。【】の中の出演者の表記（所属の名前 `TALENT_AFFILIATION_NAME`（`apps/web/lib/site.ts`）を含む部分と、タレントの名前）は出しません。`title` 属性には元のタイトルを入れます。
 
-| 部分                     | クラス                                                                                                                                                                |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 部分 | クラス |
+| --- | --- |
 | ラベルとハッシュタグの行 | `<p>` に `truncate min-h-[1lh] text-caption text-muted`。タイトルの上に置く。先頭のラベル1つと、ハッシュタグを先頭から3つまで（頭に `#`）を半角の空白で区切って並べる |
-| タイトル                 | `line-clamp-2 min-h-[2lh] text-body leading-normal font-semibold`。本文を出す                                                                                         |
+| タイトル | `line-clamp-2 min-h-[2lh] text-body leading-normal font-semibold`。本文を出す |
 
 - 内容がないカードでも、ラベルとハッシュタグの行の1行ぶんの高さを確保して、カードの高さを揃えます。スケルトンにも同じ高さの行を置きます
 - カード全体が1つのリンクなので、ハッシュタグはリンクにしません
@@ -337,7 +337,7 @@ export function TalentsListSkeleton() {
 `theme.css` で追加した文字サイズ、角丸、影を `tailwind-merge` に登録した `twMerge` を、`@shinju-date/ui` から使ってください。`tailwind-merge` の `twMerge` は `text-body` などを文字色として扱うため、`twMerge('text-body text-foreground')` の `text-body` が消えてしまいます。`tailwind-merge` から直接インポートすると Biome のエラーになります。
 
 ```tsx
-import { twMerge } from '@shinju-date/ui'
+import { twMerge } from "@shinju-date/ui";
 ```
 
 ## 角丸
@@ -374,13 +374,13 @@ import { twMerge } from '@shinju-date/ui'
 - **動きの種類は、フェードと、小さな拡大・移動だけにします。** 跳ねる動きや、大きく動くものは使いません
 - **開くときは 150ms の `ease-out`、閉じるときは 100ms の `ease-in` にします。** 閉じるほうを短くして、操作の邪魔にならないようにします
 
-| 対象                                    | 開くとき                                                                            | 閉じるとき                                                                                             |
-| --------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| ダイアログの後ろの幕（`DialogOverlay`） | `animate-fade-in`（フェード）                                                       | `animate-fade-out`                                                                                     |
-| ダイアログの本体（`DialogContent`）     | `animate-scale-in`（フェードと 95% からの拡大）                                     | `animate-scale-out`                                                                                    |
-| ポップオーバー（`MultiSelect`）         | `animate-scale-in`（開いたボタンの側から広がるよう、`origin-(--radix-…)` を付ける） | `animate-scale-out`                                                                                    |
-| メニュー（`DropdownMenuContent`）       | `animate-scale-in`（開いたボタンの側から広がるよう、`origin-(--radix-…)` を付ける） | `animate-scale-out`                                                                                    |
-| トースト（`Toast`）                     | `animate-slide-in`（フェードと 0.5rem 下からの移動）                                | `animate-fade-out`。スワイプで閉じたときは `animate-swipe-out`（指を離した位置から、スワイプの向きへ） |
+| 対象 | 開くとき | 閉じるとき |
+| --- | --- | --- |
+| ダイアログの後ろの幕（`DialogOverlay`） | `animate-fade-in`（フェード） | `animate-fade-out` |
+| ダイアログの本体（`DialogContent`） | `animate-scale-in`（フェードと 95% からの拡大） | `animate-scale-out` |
+| ポップオーバー（`MultiSelect`） | `animate-scale-in`（開いたボタンの側から広がるよう、`origin-(--radix-…)` を付ける） | `animate-scale-out` |
+| メニュー（`DropdownMenuContent`） | `animate-scale-in`（開いたボタンの側から広がるよう、`origin-(--radix-…)` を付ける） | `animate-scale-out` |
+| トースト（`Toast`） | `animate-slide-in`（フェードと 0.5rem 下からの移動） | `animate-fade-out`。スワイプで閉じたときは `animate-swipe-out`（指を離した位置から、スワイプの向きへ） |
 
 - **`motion-safe:` を必ず付けます。** OS で「視差効果を減らす」などを選んでいる人（`prefers-reduced-motion: reduce`）には、動きなしで切り替えます
 - **開閉は、Radix UI が付ける `data-state="open"` / `data-state="closed"` で切り替えます**（`motion-safe:data-[state=open]:animate-scale-in motion-safe:data-[state=closed]:animate-scale-out`）
@@ -392,9 +392,9 @@ import { twMerge } from '@shinju-date/ui'
 
 キーボードでフォーカスしたときの見た目は2種類です。`packages/tailwind-config/theme.css` に `@utility` で定義しているので、ほかのクラスと同じように `className` に書きます。`focus-visible:outline-*` や `focus:ring-*` を、その場で組み合わせないでください。
 
-| 対象                                                                            | クラス                                                                 | 見た目                                                                    |
-| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| ボタン、リンク、タブなど、押して操作する部品                                    | `focus-ring`                                                           | 部品から 2px 離して、`accent` の線を出す                                  |
+| 対象 | クラス | 見た目 |
+| --- | --- | --- |
+| ボタン、リンク、タブなど、押して操作する部品 | `focus-ring` | 部品から 2px 離して、`accent` の線を出す |
 | 文字を入力する部品（`Input`・`Select`・`Textarea`・`MultiSelect` の開くボタン） | `field-focus-ring`（入力に誤りがあるときは `field-focus-ring-danger`） | 枠の線を `accent` にし、同じ色の線を外側に重ねる（誤りのときは `danger`） |
 
 ```tsx
@@ -427,12 +427,12 @@ import { twMerge } from '@shinju-date/ui'
 | 同 3                                      | `bg-accent/75` |
 | 同 4                                      | `bg-accent`    |
 
-| 部分           | クラス・要素                                                                                                                                                                                                                                                    |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 表             | 入れ物は `w-full max-w-84`（1マス約11px）。`<table>` に `w-full table-fixed border-separate border-spacing-0.5`。`<caption>` は `sr-only`                                                                                                                       |
+| 部分 | クラス・要素 |
+| --- | --- |
+| 表 | 入れ物は `w-full max-w-84`（1マス約11px）。`<table>` に `w-full table-fixed border-separate border-spacing-0.5`。`<caption>` は `sr-only` |
 | 行・列の見出し | `<th scope="row">` / `<th scope="col">` に `text-caption leading-none text-muted`（行の高さをマスに合わせる）。見せる文字（「月」「18」）は `aria-hidden`、読み上げる文字（「月曜日」「18時」）は `sr-only` で別に入れる。間引いた見出しは `sr-only` だけにする |
-| セル           | `<td>` の中に `block aspect-square` と濃淡のクラス。角丸は付けない                                                                                                                                                                                              |
-| セルの回数     | 数字は見せず、`sr-only` で「3回」のように入れる                                                                                                                                                                                                                 |
+| セル | `<td>` の中に `block aspect-square` と濃淡のクラス。角丸は付けない |
+| セルの回数 | 数字は見せず、`sr-only` で「3回」のように入れる |
 
 見せる文字に `sr-only` の文字を続けると、ブラウザーが間に空白を入れて「月 曜日」と読み上げるため、読み上げる文字はまとめて `sr-only` にします。
 

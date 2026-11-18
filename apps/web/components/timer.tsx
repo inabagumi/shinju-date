@@ -1,46 +1,46 @@
-'use client'
+"use client";
 
-import { TIME_ZONE } from '@shinju-date/constants'
+import { TIME_ZONE } from "@shinju-date/constants";
 import {
   createContext,
   type ReactNode,
   useContext,
   useEffect,
   useState,
-} from 'react'
+} from "react";
 
 interface TimerContextValue {
-  now?: Temporal.ZonedDateTime | undefined
+  now?: Temporal.ZonedDateTime | undefined;
 }
 
-const TimerContext = createContext<TimerContextValue>({})
+const TimerContext = createContext<TimerContextValue>({});
 
 interface TimerProviderProps {
-  children: ReactNode
+  children: ReactNode;
   /**
    * サーバーで取得した現在の時刻（`Temporal.ZonedDateTime` の文字列）。
    * サーバーでの描画とハイドレーションでは、どちらもこの時刻を使い、
    * マウントの後にブラウザの時計へ切り替える
    */
-  initialNow: string
+  initialNow: string;
 }
 
 export function TimerProvider({ children, initialNow }: TimerProviderProps) {
-  const [now, setNow] = useState(() => Temporal.ZonedDateTime.from(initialNow))
+  const [now, setNow] = useState(() => Temporal.ZonedDateTime.from(initialNow));
 
   useEffect(() => {
     const tick = () => {
-      setNow(Temporal.Now.zonedDateTimeISO(TIME_ZONE))
-    }
+      setNow(Temporal.Now.zonedDateTimeISO(TIME_ZONE));
+    };
 
-    tick()
+    tick();
 
-    const timer = setInterval(tick, 60_000)
+    const timer = setInterval(tick, 60_000);
 
     return () => {
-      clearInterval(timer)
-    }
-  }, [])
+      clearInterval(timer);
+    };
+  }, []);
 
   return (
     <TimerContext.Provider
@@ -50,7 +50,7 @@ export function TimerProvider({ children, initialNow }: TimerProviderProps) {
     >
       {children}
     </TimerContext.Provider>
-  )
+  );
 }
 
 /**
@@ -60,7 +60,7 @@ export function TimerProvider({ children, initialNow }: TimerProviderProps) {
  */
 export function useNow(): Temporal.ZonedDateTime {
   const { now = Temporal.Now.zonedDateTimeISO(TIME_ZONE) } =
-    useContext(TimerContext)
+    useContext(TimerContext);
 
-  return now
+  return now;
 }

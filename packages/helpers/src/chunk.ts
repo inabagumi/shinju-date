@@ -12,14 +12,14 @@
  */
 export function chunk<T>(items: readonly T[], size: number): T[][] {
   if (!Number.isInteger(size) || size < 1) {
-    throw new RangeError('Chunk size must be a positive integer')
+    throw new RangeError("Chunk size must be a positive integer");
   }
 
-  const chunks: T[][] = []
+  const chunks: T[][] = [];
 
   for (let i = 0; i < items.length; i += size) {
-    chunks.push(items.slice(i, i + size))
+    chunks.push(items.slice(i, i + size));
   }
 
-  return chunks
+  return chunks;
 }

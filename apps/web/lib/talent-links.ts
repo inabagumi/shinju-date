@@ -1,14 +1,14 @@
-import type { TalentDetail } from '@/lib/data/talents'
+import type { TalentDetail } from "@/lib/data/talents";
 import {
   VIDEO_KIND_SEARCH_PARAM,
   type VideoKindFilter,
-} from '@/lib/video-kind-filter'
+} from "@/lib/video-kind-filter";
 
 export interface TalentLink {
   /** Whether the link leads outside of this site */
-  external: boolean
-  href: string
-  label: string
+  external: boolean;
+  href: string;
+  label: string;
 }
 
 /** The first value that is not blank, trimmed, or `null` without any */
@@ -16,14 +16,14 @@ export function findFirstNonBlank(
   ...values: (string | null | undefined)[]
 ): string | null {
   for (const value of values) {
-    const trimmed = value?.trim()
+    const trimmed = value?.trim();
 
     if (trimmed) {
-      return trimmed
+      return trimmed;
     }
   }
 
-  return null
+  return null;
 }
 
 /**
@@ -33,9 +33,9 @@ export function findFirstNonBlank(
 function getAccountLabel(
   baseLabel: string,
   accountName: string,
-  count: number,
+  count: number
 ): string {
-  return count > 1 ? `${baseLabel}（${accountName}）` : baseLabel
+  return count > 1 ? `${baseLabel}（${accountName}）` : baseLabel;
 }
 
 /**
@@ -43,40 +43,40 @@ function getAccountLabel(
  * Twitch channels, and the calendar of the talent's videos.
  */
 export function getTalentLinks(talent: TalentDetail): TalentLink[] {
-  const youtubeChannels = talent.youtube_channels
+  const youtubeChannels = talent.youtube_channels;
   // Twitch users without a login have no channel page to link to
   const twitchUsers = talent.twitch_users.flatMap((user) => {
-    const login = findFirstNonBlank(user.twitch_login_name)
+    const login = findFirstNonBlank(user.twitch_login_name);
 
-    return login ? [{ ...user, twitch_login_name: login }] : []
-  })
+    return login ? [{ ...user, twitch_login_name: login }] : [];
+  });
 
   return [
     ...youtubeChannels.map((channel) => ({
       external: true,
       href: `https://www.youtube.com/channel/${encodeURIComponent(channel.youtube_channel_id)}`,
       label: getAccountLabel(
-        'YouTube チャンネル',
+        "YouTube チャンネル",
         findFirstNonBlank(channel.name, channel.youtube_handle) ??
           channel.youtube_channel_id,
-        youtubeChannels.length,
+        youtubeChannels.length
       ),
     })),
     ...twitchUsers.map((user) => ({
       external: true,
       href: `https://www.twitch.tv/${encodeURIComponent(user.twitch_login_name)}`,
       label: getAccountLabel(
-        'Twitch チャンネル',
+        "Twitch チャンネル",
         findFirstNonBlank(user.name) ?? user.twitch_login_name,
-        twitchUsers.length,
+        twitchUsers.length
       ),
     })),
     {
       external: false,
       href: getTalentCalendarPath(talent.id),
-      label: 'カレンダーに登録',
+      label: "カレンダーに登録",
     },
-  ]
+  ];
 }
 
 /**
@@ -85,18 +85,18 @@ export function getTalentLinks(talent: TalentDetail): TalentLink[] {
  */
 export function getTalentPath(
   id: string,
-  kind: VideoKindFilter = 'all',
+  kind: VideoKindFilter = "all"
 ): string {
-  const pathname = `/talents/${encodeURIComponent(id)}`
+  const pathname = `/talents/${encodeURIComponent(id)}`;
 
-  if (kind === 'all') {
-    return pathname
+  if (kind === "all") {
+    return pathname;
   }
 
-  return `${pathname}?${new URLSearchParams({ [VIDEO_KIND_SEARCH_PARAM]: kind })}`
+  return `${pathname}?${new URLSearchParams({ [VIDEO_KIND_SEARCH_PARAM]: kind })}`;
 }
 
 /** The path of a talent's calendar, the alternate of the talent's page */
 export function getTalentCalendarPath(id: string): string {
-  return `/talents/${encodeURIComponent(id)}.ics`
+  return `/talents/${encodeURIComponent(id)}.ics`;
 }

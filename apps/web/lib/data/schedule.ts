@@ -1,17 +1,18 @@
-'use server'
+"use server";
 
-import { CACHE_TAGS, TIME_ZONE } from '@shinju-date/constants'
-import { toDBString } from '@shinju-date/temporal-fns'
-import type { QueryData } from '@supabase/supabase-js'
-import { cacheLife, cacheTag } from 'next/cache'
-import { VIDEO_SCHEDULE_SELECT } from '@/lib/data/selects'
-import { unwrap } from '@/lib/data/unwrap'
-import { supabaseClient } from '@/lib/supabase'
-import { hasPlatformSource } from '@/lib/video-url'
+import { CACHE_TAGS, TIME_ZONE } from "@shinju-date/constants";
+import { toDBString } from "@shinju-date/temporal-fns";
+import type { QueryData } from "@supabase/supabase-js";
+import { cacheLife, cacheTag } from "next/cache";
+
+import { VIDEO_SCHEDULE_SELECT } from "@/lib/data/selects";
+import { unwrap } from "@/lib/data/unwrap";
+import { supabaseClient } from "@/lib/supabase";
+import { hasPlatformSource } from "@/lib/video-url";
 
 /** The query of the videos of the schedule, which the type is derived from */
 function selectScheduleVideos() {
-  return supabaseClient.from('videos').select(VIDEO_SCHEDULE_SELECT)
+  return supabaseClient.from("videos").select(VIDEO_SCHEDULE_SELECT);
 }
 
 /**
@@ -20,10 +21,10 @@ function selectScheduleVideos() {
  */
 export type ScheduleVideo = QueryData<
   ReturnType<typeof selectScheduleVideos>
->[number]
+>[number];
 
 /** The talent of a video on the schedule, with the theme color of the talent */
-export type ScheduleTalent = ScheduleVideo['talent']
+export type ScheduleTalent = ScheduleVideo["talent"];
 
 /**
  * Today (`YYYY-MM-DD` in `TIME_ZONE`). The schedule decides the current week
@@ -31,42 +32,42 @@ export type ScheduleTalent = ScheduleVideo['talent']
  * the hydration.
  */
 export const fetchScheduleToday = async (): Promise<string> => {
-  'use cache'
+  "use cache";
 
-  cacheLife('minutes')
+  cacheLife("minutes");
 
-  return Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate().toString()
-}
+  return Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate().toString();
+};
 
 /**
  * The date (`YYYY-MM-DD` in `TIME_ZONE`) the oldest video starts on, or `null`
  * when there is no video. The schedule shows no week before it.
  */
 export const fetchOldestVideoDate = async (): Promise<string | null> => {
-  'use cache: remote'
+  "use cache: remote";
 
-  cacheLife('days')
-  cacheTag(CACHE_TAGS.VIDEOS)
+  cacheLife("days");
+  cacheTag(CACHE_TAGS.VIDEOS);
 
   const video = unwrap(
     await supabaseClient
-      .from('videos')
-      .select('published_at')
-      .order('published_at', { ascending: true })
+      .from("videos")
+      .select("published_at")
+      .order("published_at", { ascending: true })
       .limit(1)
       .maybeSingle(),
-    'fetchOldestVideoDate',
-  )
+    "fetchOldestVideoDate"
+  );
 
   if (!video) {
-    return null
+    return null;
   }
 
   return Temporal.Instant.from(video.published_at)
     .toZonedDateTimeISO(TIME_ZONE)
     .toPlainDate()
-    .toString()
-}
+    .toString();
+};
 
 /**
  * Fetch the videos that start in the 7 days from `weekStart` (the Sunday,
@@ -77,27 +78,27 @@ export const fetchOldestVideoDate = async (): Promise<string | null> => {
  * Callers pass the Sunday, so each week is cached only once.
  */
 export const fetchScheduleVideos = async (
-  weekStart: string,
+  weekStart: string
 ): Promise<ScheduleVideo[]> => {
-  'use cache: remote'
+  "use cache: remote";
 
-  cacheLife('hours')
-  cacheTag(CACHE_TAGS.VIDEOS)
+  cacheLife("hours");
+  cacheTag(CACHE_TAGS.VIDEOS);
 
-  const since = Temporal.PlainDate.from(weekStart).toZonedDateTime(TIME_ZONE)
-  const until = since.add({ weeks: 1 })
+  const since = Temporal.PlainDate.from(weekStart).toZonedDateTime(TIME_ZONE);
+  const until = since.add({ weeks: 1 });
 
   // 1,000 is the most rows Supabase returns for a request. A week has far
   // fewer videos.
   const videos = unwrap(
     await selectScheduleVideos()
-      .gte('published_at', toDBString(since))
-      .lt('published_at', toDBString(until))
-      .eq('video_kind', 'standard')
-      .order('published_at', { ascending: true })
+      .gte("published_at", toDBString(since))
+      .lt("published_at", toDBString(until))
+      .eq("video_kind", "standard")
+      .order("published_at", { ascending: true })
       .limit(1000),
-    'fetchScheduleVideos',
-  )
+    "fetchScheduleVideos"
+  );
 
-  return videos.filter(hasPlatformSource)
-}
+  return videos.filter(hasPlatformSource);
+};

@@ -1,64 +1,66 @@
-import { cacheLife, cacheTag } from 'next/cache'
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { createAnnouncement } from '@/test/factories'
-import { mockNow } from '@/test/now'
-import { failSupabase, seedSupabase, setupSupabase } from '@/test/supabase'
-import { fetchActiveAnnouncements } from './announcements'
+import { cacheLife, cacheTag } from "next/cache";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+
+import { createAnnouncement } from "@/test/factories";
+import { mockNow } from "@/test/now";
+import { failSupabase, seedSupabase, setupSupabase } from "@/test/supabase";
+
+import { fetchActiveAnnouncements } from "./announcements";
 
 // Vitest does not run `'use cache'`, so only what the fetchers pass to the
 // cache is checked
-vi.mock('next/cache', () => ({
+vi.mock("next/cache", () => ({
   cacheLife: vi.fn(),
   cacheTag: vi.fn(),
-}))
+}));
 
-setupSupabase()
+setupSupabase();
 
 /** The IDs of the given rows or results, to compare them in order */
 function ids(rows: readonly { id: string }[]): string[] {
-  return rows.map((row) => row.id)
+  return rows.map((row) => row.id);
 }
 
 beforeEach(() => {
-  vi.clearAllMocks()
-})
+  vi.clearAllMocks();
+});
 
 afterEach(() => {
-  vi.restoreAllMocks()
-})
+  vi.restoreAllMocks();
+});
 
-describe('fetchActiveAnnouncements', () => {
+describe("fetchActiveAnnouncements", () => {
   beforeEach(() => {
-    mockNow('2026-11-17T03:00:00Z')
-  })
+    mockNow("2026-11-17T03:00:00Z");
+  });
 
-  test('returns the enabled announcements that have not ended, newest first', async () => {
+  test("returns the enabled announcements that have not ended, newest first", async () => {
     const older = createAnnouncement({
-      created_at: '2026-11-01T00:00:00Z',
-      end_at: '2026-11-20T00:00:00Z',
-      start_at: '2026-11-10T00:00:00Z',
-    })
+      created_at: "2026-11-01T00:00:00Z",
+      end_at: "2026-11-20T00:00:00Z",
+      start_at: "2026-11-10T00:00:00Z",
+    });
     const newer = createAnnouncement({
-      created_at: '2026-11-05T00:00:00Z',
-      end_at: '2026-11-17T03:00:01Z',
-      start_at: '2026-11-10T00:00:00Z',
-    })
+      created_at: "2026-11-05T00:00:00Z",
+      end_at: "2026-11-17T03:00:01Z",
+      start_at: "2026-11-10T00:00:00Z",
+    });
     // Not started yet, which the caller decides when to show
     const future = createAnnouncement({
-      created_at: '2026-11-03T00:00:00Z',
-      end_at: '2026-11-25T00:00:00Z',
-      start_at: '2026-11-18T00:00:00Z',
-    })
+      created_at: "2026-11-03T00:00:00Z",
+      end_at: "2026-11-25T00:00:00Z",
+      start_at: "2026-11-18T00:00:00Z",
+    });
 
     await seedSupabase({
       announcements: [
         older,
         createAnnouncement({ enabled: false }),
-        createAnnouncement({ end_at: '2026-11-17T03:00:00Z' }),
+        createAnnouncement({ end_at: "2026-11-17T03:00:00Z" }),
         newer,
         future,
       ],
-    })
+    });
 
     await expect(fetchActiveAnnouncements()).resolves.toEqual(
       [newer, future, older].map(
@@ -68,31 +70,31 @@ describe('fetchActiveAnnouncements', () => {
           level,
           message,
           start_at,
-        }),
-      ),
-    )
-    expect(cacheLife).toHaveBeenCalledWith('minutes')
-    expect(cacheTag).toHaveBeenCalledWith('announcements')
-  })
+        })
+      )
+    );
+    expect(cacheLife).toHaveBeenCalledWith("minutes");
+    expect(cacheTag).toHaveBeenCalledWith("announcements");
+  });
 
-  test('returns up to 10 announcements', async () => {
+  test("returns up to 10 announcements", async () => {
     const announcements = Array.from({ length: 11 }, (_, index) =>
       createAnnouncement({
-        created_at: `2026-11-${String(index + 1).padStart(2, '0')}T00:00:00Z`,
-      }),
-    )
+        created_at: `2026-11-${String(index + 1).padStart(2, "0")}T00:00:00Z`,
+      })
+    );
 
-    await seedSupabase({ announcements })
+    await seedSupabase({ announcements });
 
-    const fetched = await fetchActiveAnnouncements()
+    const fetched = await fetchActiveAnnouncements();
 
-    expect(fetched).toHaveLength(10)
-    expect(ids(fetched)).not.toContain(announcements[0]?.id)
-  })
+    expect(fetched).toHaveLength(10);
+    expect(ids(fetched)).not.toContain(announcements[0]?.id);
+  });
 
-  test('throws when the announcements cannot be fetched', async () => {
-    failSupabase('announcements', 'failed')
+  test("throws when the announcements cannot be fetched", async () => {
+    failSupabase("announcements", "failed");
 
-    await expect(fetchActiveAnnouncements()).rejects.toThrow('failed')
-  })
-})
+    await expect(fetchActiveAnnouncements()).rejects.toThrow("failed");
+  });
+});

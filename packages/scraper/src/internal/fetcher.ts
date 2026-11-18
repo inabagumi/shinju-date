@@ -1,28 +1,29 @@
-import type { Enums } from '@shinju-date/database'
-import { unique } from './batch.js'
+import type { Enums } from "@shinju-date/database";
+
+import { unique } from "./batch.js";
 import type {
   AccountFailure,
   FetcherOptions,
   RecentVideosOptions,
   RecentVideosResult,
   VideoLookupResult,
-} from './fetcher-types.js'
-import type { Logger } from './logger.js'
-import { RequestQueue } from './request-queue.js'
+} from "./fetcher-types.js";
+import type { Logger } from "./logger.js";
+import { RequestQueue } from "./request-queue.js";
 
-export const DEFAULT_RECENT_VIDEOS_LIMIT = 20
+export const DEFAULT_RECENT_VIDEOS_LIMIT = 20;
 
 /** Resources of one kind looked up by ID. */
 export interface LookupResult<T> {
-  found: T[]
+  found: T[];
   /** Requested IDs the platform did not return. */
-  missingIds: string[]
+  missingIds: string[];
 }
 
 /** What was fetched for each account, and the accounts that failed. */
 export interface PerAccountResult<T> {
-  failures: AccountFailure[]
-  results: { accountId: string; value: T }[]
+  failures: AccountFailure[];
+  results: { accountId: string; value: T }[];
 }
 
 /**
@@ -61,42 +62,42 @@ export abstract class Fetcher<
   TRecentVideosOptions extends RecentVideosOptions = RecentVideosOptions,
 > {
   /** Name of the platform, e.g. for logs. */
-  abstract readonly provider: Enums<'platform_type'>
+  abstract readonly provider: Enums<"platform_type">;
 
-  protected readonly logger: Logger | undefined
-  readonly #queue: RequestQueue
+  protected readonly logger: Logger | undefined;
+  readonly #queue: RequestQueue;
 
   constructor({ concurrency, logger }: FetcherOptions = {}) {
-    this.logger = logger
-    this.#queue = new RequestQueue(concurrency)
+    this.logger = logger;
+    this.#queue = new RequestQueue(concurrency);
   }
 
   /**
    * Gets accounts by ID. Accounts the platform does not return are omitted.
    */
-  abstract getAccounts(accountIds: readonly string[]): Promise<TAccount[]>
+  abstract getAccounts(accountIds: readonly string[]): Promise<TAccount[]>;
 
   /**
    * Lists the newest videos of each account.
    */
   abstract getRecentVideos(
     accountIds: readonly string[],
-    options?: TRecentVideosOptions,
-  ): Promise<RecentVideosResult<TRecentVideo>>
+    options?: TRecentVideosOptions
+  ): Promise<RecentVideosResult<TRecentVideo>>;
 
   /**
    * Gets videos by ID and reports the IDs the platform did not return.
    */
   abstract getVideos(
-    videoIds: readonly string[],
-  ): Promise<VideoLookupResult<TVideo>>
+    videoIds: readonly string[]
+  ): Promise<VideoLookupResult<TVideo>>;
 
   /**
    * Makes a single request, counted against `concurrency` like every other.
    * Pass it to the API clients as their `schedule`.
    */
   protected readonly request = <T>(task: () => Promise<T>): Promise<T> =>
-    this.#queue.run(task)
+    this.#queue.run(task);
 
   /**
    * Looks resources up by their ID and reports the IDs that were not
@@ -105,21 +106,21 @@ export abstract class Fetcher<
    */
   protected async fetchByIds<T extends { id: string }>(
     ids: readonly string[],
-    fetch: (ids: string[]) => AsyncIterable<T>,
+    fetch: (ids: string[]) => AsyncIterable<T>
   ): Promise<LookupResult<T>> {
-    const requestedIds = unique(ids)
+    const requestedIds = unique(ids);
 
     if (requestedIds.length === 0) {
-      return { found: [], missingIds: [] }
+      return { found: [], missingIds: [] };
     }
 
-    const found = await Array.fromAsync(fetch(requestedIds))
-    const foundIds = new Set(found.map((item) => item.id))
+    const found = await Array.fromAsync(fetch(requestedIds));
+    const foundIds = new Set(found.map((item) => item.id));
 
     return {
       found,
       missingIds: requestedIds.filter((id) => !foundIds.has(id)),
-    }
+    };
   }
 
   /**
@@ -128,31 +129,31 @@ export abstract class Fetcher<
    */
   protected async fetchPerAccount<T>(
     accountIds: readonly string[],
-    fetch: (accountId: string) => Promise<T>,
+    fetch: (accountId: string) => Promise<T>
   ): Promise<PerAccountResult<T>> {
-    const requestedIds = unique(accountIds)
-    const settled = await this.#queue.mapSettled(requestedIds, fetch)
-    const result: PerAccountResult<T> = { failures: [], results: [] }
+    const requestedIds = unique(accountIds);
+    const settled = await this.#queue.mapSettled(requestedIds, fetch);
+    const result: PerAccountResult<T> = { failures: [], results: [] };
 
     for (const [index, outcome] of settled.entries()) {
-      const accountId = requestedIds[index]
+      const accountId = requestedIds[index];
 
       if (accountId === undefined) {
-        continue
+        continue;
       }
 
-      if (outcome.status === 'fulfilled') {
-        result.results.push({ accountId, value: outcome.value })
+      if (outcome.status === "fulfilled") {
+        result.results.push({ accountId, value: outcome.value });
       } else {
-        this.logger?.error('Failed to fetch data for an account', {
+        this.logger?.error("Failed to fetch data for an account", {
           accountId,
           error: outcome.reason,
           provider: this.provider,
-        })
-        result.failures.push({ accountId, error: outcome.reason })
+        });
+        result.failures.push({ accountId, error: outcome.reason });
       }
     }
 
-    return result
+    return result;
   }
 }

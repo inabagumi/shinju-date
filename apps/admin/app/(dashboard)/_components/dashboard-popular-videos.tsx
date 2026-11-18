@@ -1,18 +1,20 @@
-import { formatNumber, range } from '@shinju-date/helpers'
-import { Button, EmptyState, Skeleton } from '@shinju-date/ui'
-import { ExternalLink } from 'lucide-react'
-import Link from 'next/link'
+import { formatNumber, range } from "@shinju-date/helpers";
+import { Button, EmptyState, Skeleton } from "@shinju-date/ui";
+import { ExternalLink } from "lucide-react";
+import Link from "next/link";
+
 import {
   ExternalVideoLink,
   getExternalVideoUrl,
-} from '@/components/external-video-link'
-import { Panel, PanelSkeleton } from '@/components/panel'
-import { VideoThumbnail } from '@/components/video-thumbnail'
-import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
-import { getToday } from '../_lib/get-today'
+} from "@/components/external-video-link";
+import { Panel, PanelSkeleton } from "@/components/panel";
+import { VideoThumbnail } from "@/components/video-thumbnail";
+import { getPopularVideos } from "@/lib/analytics/get-popular-videos";
+
+import { getToday } from "../_lib/get-today";
 
 /** 表示する動画の件数 */
-const POPULAR_VIDEOS_LIMIT = 10
+const POPULAR_VIDEOS_LIMIT = 10;
 
 /** 読み込み中の `DashboardPopularVideos`。取得する件数ぶんの行を並べる */
 export function DashboardPopularVideosSkeleton() {
@@ -38,7 +40,7 @@ export function DashboardPopularVideosSkeleton() {
         ))}
       </div>
     </PanelSkeleton>
-  )
+  );
 }
 
 /**
@@ -46,12 +48,12 @@ export function DashboardPopularVideosSkeleton() {
  * This is an async Server Component that fetches its own data
  */
 export async function DashboardPopularVideos() {
-  const today = Temporal.PlainDate.from(await getToday())
-  const startDate = today.subtract({ days: 29 })
+  const today = Temporal.PlainDate.from(await getToday());
+  const startDate = today.subtract({ days: 29 });
   const popularVideos = await getPopularVideos({
     limit: POPULAR_VIDEOS_LIMIT,
     range: { end: today.toString(), start: startDate.toString() },
-  })
+  });
 
   return (
     <Panel title="人気動画ランキング (過去30日間)">
@@ -77,14 +79,14 @@ export async function DashboardPopularVideos() {
                 </Button>
                 {getExternalVideoUrl(video) && (
                   <ExternalVideoLink
-                    className="flex items-center justify-center rounded-control border border-border bg-surface p-1 text-muted transition-colors focus-ring hover:bg-muted hover:text-foreground"
+                    className="flex items-center justify-center rounded-control border border-border bg-surface p-1 text-muted focus-ring transition-colors hover:bg-muted hover:text-foreground"
                     video={video}
                   >
                     <ExternalLink aria-hidden="true" className="size-5" />
                     <span className="sr-only">
-                      {video.platform === 'twitch'
-                        ? 'Twitchで視聴'
-                        : 'YouTubeで視聴'}
+                      {video.platform === "twitch"
+                        ? "Twitchで視聴"
+                        : "YouTubeで視聴"}
                     </span>
                   </ExternalVideoLink>
                 )}
@@ -96,5 +98,5 @@ export async function DashboardPopularVideos() {
         <EmptyState title="データがありません" />
       )}
     </Panel>
-  )
+  );
 }

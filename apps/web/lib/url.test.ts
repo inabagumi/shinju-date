@@ -1,22 +1,23 @@
-import { describe, expect, it } from 'vitest'
-import { parseQueries } from './url'
+import { describe, expect, it } from "vitest";
 
-describe('parseQueries', () => {
-  it('should return empty string when queries is undefined', () => {
-    const result = parseQueries(undefined)
+import { parseQueries } from "./url";
 
-    expect(result).toBe('')
-  })
+describe("parseQueries", () => {
+  it("should return empty string when queries is undefined", () => {
+    const result = parseQueries(undefined);
 
-  it('should decode and join queries with slash', () => {
-    const result = parseQueries(['hello', 'world'])
+    expect(result).toBe("");
+  });
 
-    expect(result).toBe('hello/world')
-  })
+  it("should decode and join queries with slash", () => {
+    const result = parseQueries(["hello", "world"]);
 
-  it('should decode URI components', () => {
-    const result = parseQueries(['hello%20world', 'test'])
+    expect(result).toBe("hello/world");
+  });
 
-    expect(result).toBe('hello world/test')
-  })
-})
+  it("should decode URI components", () => {
+    const result = parseQueries(["hello%20world", "test"]);
+
+    expect(result).toBe("hello world/test");
+  });
+});

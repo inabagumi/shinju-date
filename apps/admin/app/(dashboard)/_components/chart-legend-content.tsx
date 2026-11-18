@@ -1,8 +1,9 @@
-import { twMerge } from '@shinju-date/ui'
-import type { ChartSeries } from '../_lib/chart-series'
+import { twMerge } from "@shinju-date/ui";
+
+import type { ChartSeries } from "../_lib/chart-series";
 
 interface ChartLegendContentProps {
-  series: ChartSeries[]
+  series: ChartSeries[];
 }
 
 /**
@@ -14,7 +15,7 @@ export function ChartLegendContent({ series }: ChartLegendContentProps) {
     <ul className="flex flex-wrap justify-center gap-x-2.5 pt-5">
       {series.map((item) => (
         <li
-          className={twMerge('inline-flex items-center gap-1', item.className)}
+          className={twMerge("inline-flex items-center gap-1", item.className)}
           key={item.key}
         >
           <svg aria-hidden="true" className="size-3.5" viewBox="0 0 32 32">
@@ -24,5 +25,5 @@ export function ChartLegendContent({ series }: ChartLegendContentProps) {
         </li>
       ))}
     </ul>
-  )
+  );
 }

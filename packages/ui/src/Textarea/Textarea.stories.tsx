@@ -1,76 +1,77 @@
-import preview from '#.storybook/preview'
-import { Input } from '../Input/Input'
-import { Textarea } from './Textarea'
+import preview from "#.storybook/preview";
+
+import { Input } from "../Input/Input";
+import { Textarea } from "./Textarea";
 
 const meta = preview.meta({
   argTypes: {
     disabled: {
-      control: 'boolean',
+      control: "boolean",
     },
     inputSize: {
-      control: 'select',
-      options: ['sm', 'md', 'lg'],
+      control: "select",
+      options: ["sm", "md", "lg"],
     },
     variant: {
-      control: 'select',
-      options: ['default', 'danger'],
+      control: "select",
+      options: ["default", "danger"],
     },
   },
   component: Textarea,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs'],
-  title: 'Components/Textarea',
-})
+  tags: ["autodocs"],
+  title: "Components/Textarea",
+});
 
 export const Default = meta.story({
   args: {
-    placeholder: 'Enter text...',
+    placeholder: "Enter text...",
     rows: 4,
-    variant: 'default',
+    variant: "default",
   },
-})
+});
 
 export const WithValue = meta.story({
   args: {
     rows: 4,
     value:
-      'This is a sample text content in a textarea. You can edit this text.',
-    variant: 'default',
+      "This is a sample text content in a textarea. You can edit this text.",
+    variant: "default",
   },
-})
+});
 
 export const ErrorState = meta.story({
   args: {
-    placeholder: 'Enter text...',
+    placeholder: "Enter text...",
     rows: 4,
-    value: 'This content has an error',
-    variant: 'danger',
+    value: "This content has an error",
+    variant: "danger",
   },
-})
+});
 
 export const Disabled = meta.story({
   args: {
     disabled: true,
-    placeholder: 'Disabled textarea',
+    placeholder: "Disabled textarea",
     rows: 4,
   },
-})
+});
 
 export const ManyRows = meta.story({
   args: {
-    placeholder: 'Textarea with many rows',
+    placeholder: "Textarea with many rows",
     rows: 8,
   },
-})
+});
 
 export const FewRows = meta.story({
   args: {
-    placeholder: 'Textarea with few rows',
+    placeholder: "Textarea with few rows",
     rows: 2,
   },
-})
+});
 
 export const Sizes = meta.story({
   render: () => (
@@ -80,7 +81,7 @@ export const Sizes = meta.story({
       <Textarea inputSize="lg" placeholder="Large" rows={2} />
     </div>
   ),
-})
+});
 
 /** `Input` と並べ、余白・枠・角丸が同じであることを確かめる */
 export const WithInput = meta.story({
@@ -92,11 +93,11 @@ export const WithInput = meta.story({
       <Textarea placeholder="Textarea (danger)" rows={3} variant="danger" />
     </div>
   ),
-})
+});
 
 export const WithLabel = meta.story({
   args: {
-    placeholder: 'Enter your feedback',
+    placeholder: "Enter your feedback",
     rows: 5,
   },
   render: (args) => (
@@ -107,13 +108,13 @@ export const WithLabel = meta.story({
       <Textarea {...args} id="textarea-with-label" />
     </div>
   ),
-})
+});
 
 export const WithErrorMessage = meta.story({
   args: {
     rows: 4,
-    value: 'Too short',
-    variant: 'danger',
+    value: "Too short",
+    variant: "danger",
   },
   render: (args) => (
     <div className="flex w-96 flex-col gap-2">
@@ -126,18 +127,18 @@ export const WithErrorMessage = meta.story({
       </p>
     </div>
   ),
-})
+});
 
 export const WithCounter = meta.story({
   args: {
     maxLength: 200,
-    placeholder: 'Enter up to 200 characters',
+    placeholder: "Enter up to 200 characters",
     rows: 5,
   },
   render: (args) => {
-    const value = args.value as string | undefined
-    const count = value?.length || 0
-    const maxLength = args.maxLength || 0
+    const value = args.value as string | undefined;
+    const count = value?.length || 0;
+    const maxLength = args.maxLength || 0;
 
     return (
       <div className="flex w-96 flex-col gap-2">
@@ -149,6 +150,6 @@ export const WithCounter = meta.story({
           {count}/{maxLength}
         </p>
       </div>
-    )
+    );
   },
-})
+});

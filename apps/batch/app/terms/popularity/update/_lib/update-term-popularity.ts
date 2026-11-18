@@ -1,12 +1,13 @@
-import { REDIS_KEYS } from '@shinju-date/constants'
-import { logger } from '@shinju-date/logger'
-import { throwIfError } from '@shinju-date/scraper'
-import type { Redis } from '@upstash/redis'
-import type { TypedSupabaseClient } from '@/lib/supabase'
+import { REDIS_KEYS } from "@shinju-date/constants";
+import { logger } from "@shinju-date/logger";
+import { throwIfError } from "@shinju-date/scraper";
+import type { Redis } from "@upstash/redis";
+
+import type { TypedSupabaseClient } from "@/lib/supabase";
 
 interface TermPopularity {
-  term: string
-  score: number
+  term: string;
+  score: number;
 }
 
 /**
@@ -14,7 +15,7 @@ interface TermPopularity {
  * Uses the all-time search popularity sorted set
  */
 async function fetchSearchPopularityFromRedis(
-  redis: Redis,
+  redis: Redis
 ): Promise<TermPopularity[]> {
   try {
     // Fetch all terms from the all-time popularity sorted set
@@ -25,36 +26,36 @@ async function fetchSearchPopularityFromRedis(
       -1,
       {
         withScores: true,
-      },
-    )
+      }
+    );
 
     if (!results || results.length === 0) {
-      logger.info('Redisに検索人気度データが見つかりませんでした')
-      return []
+      logger.info("Redisに検索人気度データが見つかりませんでした");
+      return [];
     }
 
     // Convert flat array to array of objects with term and score
-    const popularityData: TermPopularity[] = []
+    const popularityData: TermPopularity[] = [];
     for (let i = 0; i < results.length; i += 2) {
-      const term = results[i]
-      const score = results[i + 1]
+      const term = results[i];
+      const score = results[i + 1];
 
-      if (typeof term === 'string' && typeof score === 'number') {
+      if (typeof term === "string" && typeof score === "number") {
         popularityData.push({
           score: Math.floor(score), // Ensure integer
           term,
-        })
+        });
       }
     }
 
-    logger.info('Redisから検索人気度データを取得しました', {
+    logger.info("Redisから検索人気度データを取得しました", {
       count: popularityData.length,
-    })
+    });
 
-    return popularityData
+    return popularityData;
   } catch (error) {
-    logger.error('Redisからの検索人気度データの取得に失敗しました', { error })
-    throw error
+    logger.error("Redisからの検索人気度データの取得に失敗しました", { error });
+    throw error;
   }
 }
 
@@ -62,7 +63,7 @@ async function fetchSearchPopularityFromRedis(
  * How many terms one call of `update_terms_popularity` updates. Keeps each
  * request and UPDATE statement small, whatever the number of terms.
  */
-export const UPDATE_BATCH_SIZE = 500
+export const UPDATE_BATCH_SIZE = 500;
 
 /**
  * Update the popularity of the terms in the database
@@ -74,30 +75,30 @@ export const UPDATE_BATCH_SIZE = 500
  */
 async function updateTermsPopularityInDatabase(
   supabase: TypedSupabaseClient,
-  popularityData: TermPopularity[],
+  popularityData: TermPopularity[]
 ): Promise<{ updated: number; notFound: number }> {
-  let updated = 0
+  let updated = 0;
 
   for (let i = 0; i < popularityData.length; i += UPDATE_BATCH_SIZE) {
     const items = popularityData
       .slice(i, i + UPDATE_BATCH_SIZE)
-      .map(({ score, term }) => ({ score, term }))
+      .map(({ score, term }) => ({ score, term }));
 
     updated += throwIfError(
-      await supabase.rpc('update_terms_popularity', { p_items: items }),
-      'Failed to update the popularity of terms',
-    )
+      await supabase.rpc("update_terms_popularity", { p_items: items }),
+      "Failed to update the popularity of terms"
+    );
   }
 
   // Search queries are saved in lowercase, so each of them matches one term,
   // unless terms differ only in case.
-  const notFound = Math.max(popularityData.length - updated, 0)
+  const notFound = Math.max(popularityData.length - updated, 0);
 
   if (updated === 0) {
-    logger.info('更新対象の用語が見つかりませんでした')
+    logger.info("更新対象の用語が見つかりませんでした");
   }
 
-  return { notFound, updated }
+  return { notFound, updated };
 }
 
 /**
@@ -105,26 +106,29 @@ async function updateTermsPopularityInDatabase(
  */
 export async function updateTermPopularity(
   redis: Redis,
-  supabase: TypedSupabaseClient,
+  supabase: TypedSupabaseClient
 ): Promise<{ updated: number; notFound: number; total: number }> {
   // Fetch popularity data from Redis
-  const popularityData = await fetchSearchPopularityFromRedis(redis)
+  const popularityData = await fetchSearchPopularityFromRedis(redis);
 
   if (popularityData.length === 0) {
-    return { notFound: 0, total: 0, updated: 0 }
+    return { notFound: 0, total: 0, updated: 0 };
   }
 
   // Update database
-  const result = await updateTermsPopularityInDatabase(supabase, popularityData)
+  const result = await updateTermsPopularityInDatabase(
+    supabase,
+    popularityData
+  );
 
-  logger.info('用語の人気度更新が完了しました', {
+  logger.info("用語の人気度更新が完了しました", {
     notFound: result.notFound,
     total: popularityData.length,
     updated: result.updated,
-  })
+  });
 
   return {
     ...result,
     total: popularityData.length,
-  }
+  };
 }

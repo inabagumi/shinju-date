@@ -1,75 +1,76 @@
-import { describe, expect, it } from 'vitest'
-import { mockStorage } from '../testing/images.js'
-import { postgresError, setupSupabase } from '../testing/supabase.js'
-import { removeUnusedProfileImages } from './cleanup.js'
+import { describe, expect, it } from "vitest";
 
-const supabase = setupSupabase()
+import { mockStorage } from "../testing/images.js";
+import { postgresError, setupSupabase } from "../testing/supabase.js";
+import { removeUnusedProfileImages } from "./cleanup.js";
 
-const now = Temporal.Instant.from('2024-05-01T12:34:56.789Z')
+const supabase = setupSupabase();
 
-describe('removeUnusedProfileImages', () => {
-  it('lists icons without an owner that are past the grace period', async () => {
-    mockStorage(supabase, 'profile-images')
-    supabase.respond(() => [])
+const now = Temporal.Instant.from("2024-05-01T12:34:56.789Z");
+
+describe("removeUnusedProfileImages", () => {
+  it("lists icons without an owner that are past the grace period", async () => {
+    mockStorage(supabase, "profile-images");
+    supabase.respond(() => []);
 
     await expect(
-      removeUnusedProfileImages(supabase.supabaseClient, { now }),
-    ).resolves.toBe(0)
+      removeUnusedProfileImages(supabase.supabaseClient, { now })
+    ).resolves.toBe(0);
 
-    expect(supabase.requests).toHaveLength(1)
+    expect(supabase.requests).toHaveLength(1);
     expect(supabase.requests[0]).toMatchObject({
-      method: 'GET',
+      method: "GET",
       query: {
-        created_at: 'lt.2024-05-01T11:34:56Z',
-        select: 'id,path,youtube_channels(id),twitch_users(id)',
-        twitch_users: 'is.null',
-        youtube_channels: 'is.null',
+        created_at: "lt.2024-05-01T11:34:56Z",
+        select: "id,path,youtube_channels(id),twitch_users(id)",
+        twitch_users: "is.null",
+        youtube_channels: "is.null",
       },
-      table: 'profile_images',
-    })
-  })
+      table: "profile_images",
+    });
+  });
 
-  it('deletes unused icons and keeps those that became used again', async () => {
-    const storage = mockStorage(supabase, 'profile-images')
+  it("deletes unused icons and keeps those that became used again", async () => {
+    const storage = mockStorage(supabase, "profile-images");
     supabase.respond(({ method, query }) => {
-      if (method === 'GET') {
+      if (method === "GET") {
         return [
           {
-            id: 'image-1',
-            path: 'youtube/UC1/a.webp',
+            id: "image-1",
+            path: "youtube/UC1/a.webp",
             twitch_users: null,
             youtube_channels: null,
           },
           {
-            id: 'image-2',
-            path: 'twitch/100001/a.webp',
+            id: "image-2",
+            path: "twitch/100001/a.webp",
             twitch_users: null,
             youtube_channels: null,
           },
-        ]
+        ];
       }
 
-      return query['id'] === 'eq.image-2'
-        ? postgresError('23503', 'violates foreign key constraint')
-        : []
-    })
+      return query["id"] === "eq.image-2"
+        ? postgresError("23503", "violates foreign key constraint")
+        : [];
+    });
 
     await expect(
-      removeUnusedProfileImages(supabase.supabaseClient, { now }),
-    ).resolves.toBe(1)
+      removeUnusedProfileImages(supabase.supabaseClient, { now })
+    ).resolves.toBe(1);
     expect(
       supabase
-        .written('DELETE', 'profile_images')
-        .map(({ query }) => query['id']),
-    ).toEqual(['eq.image-1', 'eq.image-2'])
-    expect(storage.removed).toEqual([['youtube/UC1/a.webp']])
-  })
+        .written("DELETE", "profile_images")
+        .map(({ query }) => query["id"])
+    ).toEqual(["eq.image-1", "eq.image-2"]);
+    expect(storage.removed).toEqual([["youtube/UC1/a.webp"]]);
+  });
 
-  it('fails when unused icons cannot be listed', async () => {
-    supabase.respond(() => postgresError('57014', 'canceling statement'))
+  it("fails when unused icons cannot be listed", async () => {
+    supabase.respond(() => postgresError("57014", "canceling statement"));
 
     await expect(
-      removeUnusedProfileImages(supabase.supabaseClient, { now }),
-    ).rejects.toThrow('Failed to list unused profile images')
-  })
-})
+      removeUnusedProfileImages(supabase.supabaseClient, { now })
+    ).rejects.toThrow("Failed to list unused profile images");
+  });
+});

@@ -1,11 +1,11 @@
-import { HttpResponse } from 'msw'
+import { HttpResponse } from "msw";
 
 /** The body of an error response of PostgREST. */
 export interface PostgrestErrorBody {
-  code: string
-  details: string | null
-  hint: string | null
-  message: string
+  code: string;
+  details: string | null;
+  hint: string | null;
+  message: string;
 }
 
 /**
@@ -14,29 +14,29 @@ export interface PostgrestErrorBody {
  * `rest.ts`) turns it into the response.
  */
 export class PostgrestError extends Error {
-  readonly body: PostgrestErrorBody
-  readonly status: number
+  readonly body: PostgrestErrorBody;
+  readonly status: number;
 
   constructor(
     status: number,
-    { code, details = null, hint = null, message }: PostgrestErrorInit,
+    { code, details = null, hint = null, message }: PostgrestErrorInit
   ) {
-    super(message)
-    this.name = 'PostgrestError'
-    this.body = { code, details, hint, message }
-    this.status = status
+    super(message);
+    this.name = "PostgrestError";
+    this.body = { code, details, hint, message };
+    this.status = status;
   }
 
   toResponse(): Response {
-    return HttpResponse.json(this.body, { status: this.status })
+    return HttpResponse.json(this.body, { status: this.status });
   }
 }
 
 interface PostgrestErrorInit {
-  code: string
-  details?: string | null
-  hint?: string | null
-  message: string
+  code: string;
+  details?: string | null;
+  hint?: string | null;
+  message: string;
 }
 
 /**
@@ -46,5 +46,5 @@ interface PostgrestErrorInit {
  * that differs from PostgREST.
  */
 export function parseError(message: string, details: string): PostgrestError {
-  return new PostgrestError(400, { code: 'PGRST100', details, message })
+  return new PostgrestError(400, { code: "PGRST100", details, message });
 }

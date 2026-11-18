@@ -1,20 +1,22 @@
-import { TIME_ZONE } from '@shinju-date/constants'
-import { describe, expect, it } from 'vitest'
-import { getDefaultDateRange } from '@/lib/analytics/date-window'
-import { analyticsSearchParamsSchema } from './search-params-schema'
+import { TIME_ZONE } from "@shinju-date/constants";
+import { describe, expect, it } from "vitest";
 
-describe('analyticsSearchParamsSchema', () => {
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
-  const yesterday = today.subtract({ days: 1 })
-  const weekAgo = today.subtract({ days: 7 })
+import { getDefaultDateRange } from "@/lib/analytics/date-window";
 
-  it('should parse valid date range with from and to parameters', () => {
+import { analyticsSearchParamsSchema } from "./search-params-schema";
+
+describe("analyticsSearchParamsSchema", () => {
+  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate();
+  const yesterday = today.subtract({ days: 1 });
+  const weekAgo = today.subtract({ days: 7 });
+
+  it("should parse valid date range with from and to parameters", () => {
     const input = {
       from: weekAgo.toString(),
       to: yesterday.toString(),
-    }
+    };
 
-    const result = analyticsSearchParamsSchema.parse(input)
+    const result = analyticsSearchParamsSchema.parse(input);
 
     expect(result).toEqual({
       dateRange: {
@@ -23,31 +25,31 @@ describe('analyticsSearchParamsSchema', () => {
       },
       selectedDate: null,
       tab: null,
-    })
-  })
+    });
+  });
 
-  it('should parse single date parameter with default chart range', () => {
+  it("should parse single date parameter with default chart range", () => {
     const input = {
       date: yesterday.toString(),
-    }
+    };
 
-    const result = analyticsSearchParamsSchema.parse(input)
-    const defaultRange = getDefaultDateRange()
+    const result = analyticsSearchParamsSchema.parse(input);
+    const defaultRange = getDefaultDateRange();
 
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: yesterday.toString(),
       tab: null,
-    })
-  })
+    });
+  });
 
-  it('should detect single-day range when from equals to', () => {
+  it("should detect single-day range when from equals to", () => {
     const input = {
       from: yesterday.toString(),
       to: yesterday.toString(),
-    }
+    };
 
-    const result = analyticsSearchParamsSchema.parse(input)
+    const result = analyticsSearchParamsSchema.parse(input);
 
     expect(result).toEqual({
       dateRange: {
@@ -56,125 +58,125 @@ describe('analyticsSearchParamsSchema', () => {
       },
       selectedDate: null,
       tab: null,
-    })
-  })
+    });
+  });
 
-  it('should use default range when no parameters provided', () => {
-    const input = {}
-    const defaultRange = getDefaultDateRange()
+  it("should use default range when no parameters provided", () => {
+    const input = {};
+    const defaultRange = getDefaultDateRange();
 
-    const result = analyticsSearchParamsSchema.parse(input)
+    const result = analyticsSearchParamsSchema.parse(input);
 
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: null,
       tab: null,
-    })
-  })
+    });
+  });
 
-  it('should handle array inputs by taking first element', () => {
+  it("should handle array inputs by taking first element", () => {
     const input = {
-      from: [weekAgo.toString(), 'ignored'],
-      to: [yesterday.toString(), 'ignored'],
-    }
+      from: [weekAgo.toString(), "ignored"],
+      to: [yesterday.toString(), "ignored"],
+    };
 
-    const result = analyticsSearchParamsSchema.parse(input)
+    const result = analyticsSearchParamsSchema.parse(input);
 
-    expect(result.dateRange.startDate).toBe(weekAgo.toString())
-    expect(result.dateRange.endDate).toBe(yesterday.toString())
-  })
+    expect(result.dateRange.startDate).toBe(weekAgo.toString());
+    expect(result.dateRange.endDate).toBe(yesterday.toString());
+  });
 
-  it('should reject future dates and fall back to default', () => {
-    const futureDate = today.add({ days: 1 })
+  it("should reject future dates and fall back to default", () => {
+    const futureDate = today.add({ days: 1 });
     const input = {
       date: futureDate.toString(),
-    }
+    };
 
-    const result = analyticsSearchParamsSchema.parse(input)
-    const defaultRange = getDefaultDateRange()
+    const result = analyticsSearchParamsSchema.parse(input);
+    const defaultRange = getDefaultDateRange();
 
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: null,
       tab: null,
-    })
-  })
+    });
+  });
 
-  it('should reject dates older than 90 days and fall back to default', () => {
-    const tooOldDate = today.subtract({ days: 91 })
+  it("should reject dates older than 90 days and fall back to default", () => {
+    const tooOldDate = today.subtract({ days: 91 });
     const input = {
       date: tooOldDate.toString(),
-    }
+    };
 
-    const result = analyticsSearchParamsSchema.parse(input)
-    const defaultRange = getDefaultDateRange()
+    const result = analyticsSearchParamsSchema.parse(input);
+    const defaultRange = getDefaultDateRange();
 
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: null,
       tab: null,
-    })
-  })
+    });
+  });
 
-  it('should reject ranges where start date is after end date', () => {
+  it("should reject ranges where start date is after end date", () => {
     const input = {
       from: yesterday.toString(),
       to: weekAgo.toString(), // start > end
-    }
+    };
 
-    const result = analyticsSearchParamsSchema.parse(input)
-    const defaultRange = getDefaultDateRange()
+    const result = analyticsSearchParamsSchema.parse(input);
+    const defaultRange = getDefaultDateRange();
 
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: null,
       tab: null,
-    })
-  })
+    });
+  });
 
-  it('should reject ranges longer than 90 days', () => {
-    const endDate = today.subtract({ days: 1 })
+  it("should reject ranges longer than 90 days", () => {
+    const endDate = today.subtract({ days: 1 });
     // Create a range > 90 days by using very old start date
-    const tooLongStart = endDate.subtract({ days: 91 })
+    const tooLongStart = endDate.subtract({ days: 91 });
 
     const input = {
       from: tooLongStart.toString(),
       to: endDate.toString(),
-    }
+    };
 
-    const result = analyticsSearchParamsSchema.parse(input)
-    const defaultRange = getDefaultDateRange()
+    const result = analyticsSearchParamsSchema.parse(input);
+    const defaultRange = getDefaultDateRange();
 
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: null,
       tab: null,
-    })
-  })
+    });
+  });
 
-  it('should reject invalid date formats', () => {
+  it("should reject invalid date formats", () => {
     const input = {
-      date: 'invalid-date',
-    }
+      date: "invalid-date",
+    };
 
-    const result = analyticsSearchParamsSchema.parse(input)
-    const defaultRange = getDefaultDateRange()
+    const result = analyticsSearchParamsSchema.parse(input);
+    const defaultRange = getDefaultDateRange();
 
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: null,
       tab: null,
-    })
-  })
+    });
+  });
 
-  it('should use date for filtering while maintaining from/to chart range', () => {
+  it("should use date for filtering while maintaining from/to chart range", () => {
     const input = {
       date: today.subtract({ days: 2 }).toString(),
       from: weekAgo.toString(),
       to: yesterday.toString(),
-    }
+    };
 
-    const result = analyticsSearchParamsSchema.parse(input)
+    const result = analyticsSearchParamsSchema.parse(input);
 
     expect(result).toEqual({
       dateRange: {
@@ -183,33 +185,33 @@ describe('analyticsSearchParamsSchema', () => {
       },
       selectedDate: today.subtract({ days: 2 }).toString(),
       tab: null,
-    })
-  })
+    });
+  });
 
-  it('should handle partial range parameters by falling back to default', () => {
+  it("should handle partial range parameters by falling back to default", () => {
     const input = {
       from: weekAgo.toString(),
       // Missing 'to' parameter
-    }
+    };
 
-    const result = analyticsSearchParamsSchema.parse(input)
-    const defaultRange = getDefaultDateRange()
+    const result = analyticsSearchParamsSchema.parse(input);
+    const defaultRange = getDefaultDateRange();
 
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: null,
       tab: null,
-    })
-  })
+    });
+  });
 
-  it('should handle tab parameter correctly', () => {
+  it("should handle tab parameter correctly", () => {
     const input = {
       from: weekAgo.toString(),
-      tab: 'talents',
+      tab: "talents",
       to: yesterday.toString(),
-    }
+    };
 
-    const result = analyticsSearchParamsSchema.parse(input)
+    const result = analyticsSearchParamsSchema.parse(input);
 
     expect(result).toEqual({
       dateRange: {
@@ -217,18 +219,18 @@ describe('analyticsSearchParamsSchema', () => {
         startDate: weekAgo.toString(),
       },
       selectedDate: null,
-      tab: 'talents',
-    })
-  })
+      tab: "talents",
+    });
+  });
 
-  it('should handle tab parameter as array', () => {
+  it("should handle tab parameter as array", () => {
     const input = {
       from: weekAgo.toString(),
-      tab: ['videos', 'ignored'],
+      tab: ["videos", "ignored"],
       to: yesterday.toString(),
-    }
+    };
 
-    const result = analyticsSearchParamsSchema.parse(input)
+    const result = analyticsSearchParamsSchema.parse(input);
 
     expect(result).toEqual({
       dateRange: {
@@ -236,7 +238,7 @@ describe('analyticsSearchParamsSchema', () => {
         startDate: weekAgo.toString(),
       },
       selectedDate: null,
-      tab: 'videos',
-    })
-  })
-})
+      tab: "videos",
+    });
+  });
+});

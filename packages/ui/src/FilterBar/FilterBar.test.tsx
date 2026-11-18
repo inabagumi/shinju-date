@@ -1,64 +1,65 @@
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
-import { FilterBar } from './FilterBar'
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it } from "vitest";
 
-describe('FilterBar', () => {
-  it('toggles the filters with the button', async () => {
-    const user = userEvent.setup()
+import { FilterBar } from "./FilterBar";
+
+describe("FilterBar", () => {
+  it("toggles the filters with the button", async () => {
+    const user = userEvent.setup();
 
     render(
       <FilterBar>
         <input aria-label="キーワード" />
-      </FilterBar>,
-    )
+      </FilterBar>
+    );
 
-    const trigger = screen.getByRole('button', { name: '絞り込み' })
-    const content = screen.getByRole('textbox').parentElement
+    const trigger = screen.getByRole("button", { name: "絞り込み" });
+    const content = screen.getByRole("textbox").parentElement;
 
-    expect(trigger).toHaveAttribute('aria-expanded', 'false')
-    expect(trigger).toHaveAttribute('aria-controls', content?.id)
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveAttribute("aria-controls", content?.id);
 
-    await user.click(trigger)
+    await user.click(trigger);
 
-    expect(trigger).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('group', { name: '絞り込み' })).toHaveAttribute(
-      'data-state',
-      'open',
-    )
-  })
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("group", { name: "絞り込み" })).toHaveAttribute(
+      "data-state",
+      "open"
+    );
+  });
 
-  it('keeps the filters rendered while closed', () => {
+  it("keeps the filters rendered while closed", () => {
     render(
       <FilterBar>
         <input aria-label="キーワード" />
-      </FilterBar>,
-    )
+      </FilterBar>
+    );
 
     expect(
-      screen.getByRole('textbox', { name: 'キーワード' }),
-    ).toBeInTheDocument()
-  })
+      screen.getByRole("textbox", { name: "キーワード" })
+    ).toBeInTheDocument();
+  });
 
-  it('shows the number of active filters', () => {
+  it("shows the number of active filters", () => {
     render(
       <FilterBar activeCount={2} label="動画の絞り込み">
         <input aria-label="キーワード" />
-      </FilterBar>,
-    )
+      </FilterBar>
+    );
 
     expect(
-      screen.getByRole('button', { name: /動画の絞り込み\s*2件適用中/ }),
-    ).toBeInTheDocument()
-  })
+      screen.getByRole("button", { name: /動画の絞り込み\s*2件適用中/ })
+    ).toBeInTheDocument();
+  });
 
-  it('hides the count without active filters', () => {
+  it("hides the count without active filters", () => {
     render(
       <FilterBar>
         <input aria-label="キーワード" />
-      </FilterBar>,
-    )
+      </FilterBar>
+    );
 
-    expect(screen.queryByText('件適用中')).not.toBeInTheDocument()
-  })
-})
+    expect(screen.queryByText("件適用中")).not.toBeInTheDocument();
+  });
+});

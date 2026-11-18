@@ -1,30 +1,31 @@
-import PQueue from 'p-queue'
+import PQueue from "p-queue";
+
 import type {
   AccountChanges,
   AccountFields,
   SyncAccountResult,
   WriteContext,
-} from '../../types.js'
-import { diffAccountFields } from '../account-fields.js'
-import { WRITE_CONCURRENCY } from '../constants.js'
-import type { AccountTable } from '../database/index.js'
-import { DatabaseError } from '../errors.js'
-import type { ProfileImageSyncResult } from '../profile-images/index.js'
+} from "../../types.js";
+import { diffAccountFields } from "../account-fields.js";
+import { WRITE_CONCURRENCY } from "../constants.js";
+import type { AccountTable } from "../database/index.js";
+import { DatabaseError } from "../errors.js";
+import type { ProfileImageSyncResult } from "../profile-images/index.js";
 
 /** The columns every saved account is loaded with. */
 export interface SavedAccountBase {
   /** Primary key of the account row */
-  id: string
+  id: string;
 }
 
 /** Where saved accounts are loaded from. */
 export interface SavedAccountQuery {
-  accountTable: AccountTable
+  accountTable: AccountTable;
   /**
    * The columns of `accountTable` that load a saved account, its icon
    * included.
    */
-  savedAccountColumns: string
+  savedAccountColumns: string;
 }
 
 /**
@@ -42,19 +43,19 @@ export interface AccountAdapter<
   TFields extends AccountFields,
 > extends SavedAccountQuery {
   /** What logs call an account, e.g. `YouTubeチャンネル`. */
-  label: string
+  label: string;
   /**
    * The key the ID of an account on the platform is logged and reported
    * under, e.g. `youtubeChannelId`.
    */
-  platformIdKey: string
+  platformIdKey: string;
   /**
    * Reads accounts from the platform. IDs it does not return are accounts
    * the platform no longer has.
    */
-  getAccounts(platformIds: readonly string[]): Promise<TAccount[]>
+  getAccounts(platformIds: readonly string[]): Promise<TAccount[]>;
   /** The ID of the saved account on the platform. */
-  getPlatformId(saved: TSaved): string
+  getPlatformId(saved: TSaved): string;
   /**
    * Brings the stored icon of the saved account in line with the platform.
    *
@@ -63,10 +64,10 @@ export interface AccountAdapter<
   syncIcon(
     context: WriteContext,
     saved: TSaved,
-    account: TAccount,
-  ): Promise<ProfileImageSyncResult>
+    account: TAccount
+  ): Promise<ProfileImageSyncResult>;
   /** The details of an account as the platform reports them. */
-  toDetails(account: TAccount): TFields
+  toDetails(account: TAccount): TFields;
   /**
    * Writes the details of an account that changed on the platform.
    *
@@ -75,8 +76,8 @@ export interface AccountAdapter<
   updateDetails(
     context: WriteContext,
     saved: TSaved,
-    details: TFields,
-  ): Promise<void>
+    details: TFields
+  ): Promise<void>;
 }
 
 export interface SyncAccountsOptions {
@@ -84,7 +85,7 @@ export interface SyncAccountsOptions {
    * Primary key of the talent whose accounts are synced. Omit to sync the
    * accounts of every talent.
    */
-  talentId?: string | undefined
+  talentId?: string | undefined;
 }
 
 /**
@@ -96,28 +97,28 @@ export interface SyncAccountsOptions {
 async function loadSavedAccounts<TSaved extends SavedAccountBase>(
   { supabaseClient }: WriteContext,
   { accountTable: { table }, savedAccountColumns }: SavedAccountQuery,
-  talentId: string | undefined,
+  talentId: string | undefined
 ): Promise<TSaved[]> {
   let query = supabaseClient
-    .from('talents')
+    .from("talents")
     .select(`id, ${table}!inner(${savedAccountColumns})`)
-    .is('deleted_at', null)
+    .is("deleted_at", null);
 
   if (talentId !== undefined) {
-    query = query.eq('id', talentId)
+    query = query.eq("id", talentId);
   }
 
-  const { data: talents, error } = await query
+  const { data: talents, error } = await query;
 
   if (error) {
-    throw new DatabaseError(`Failed to load ${table}`, error)
+    throw new DatabaseError(`Failed to load ${table}`, error);
   }
 
   // `savedAccountColumns` is a plain string here, so the rows cannot be typed
   // from it; the adapter guarantees they are `TSaved`.
   return (talents as unknown as Partial<Record<string, TSaved[]>>[]).flatMap(
-    (talent) => talent[table] ?? [],
-  )
+    (talent) => talent[table] ?? []
+  );
 }
 
 /**
@@ -136,27 +137,30 @@ async function syncIcon<
   context: WriteContext,
   adapter: AccountAdapter<TAccount, TSaved, TFields>,
   saved: TSaved,
-  account: TAccount,
+  account: TAccount
 ): Promise<boolean> {
-  const platformId = { [adapter.platformIdKey]: adapter.getPlatformId(saved) }
+  const platformId = { [adapter.platformIdKey]: adapter.getPlatformId(saved) };
 
   try {
-    const result = await adapter.syncIcon(context, saved, account)
+    const result = await adapter.syncIcon(context, saved, account);
 
-    if (result === 'unchanged') {
-      return false
+    if (result === "unchanged") {
+      return false;
     }
 
     context.logger.info(`${adapter.label}のアイコンを更新しました`, {
       result,
       ...platformId,
-    })
+    });
 
-    return true
+    return true;
   } catch (error) {
-    context.reportError(error, { operation: 'syncProfileImage', ...platformId })
+    context.reportError(error, {
+      operation: "syncProfileImage",
+      ...platformId,
+    });
 
-    return false
+    return false;
   }
 }
 
@@ -173,42 +177,42 @@ async function syncAccount<
   context: WriteContext,
   adapter: AccountAdapter<TAccount, TSaved, TFields>,
   saved: TSaved,
-  account: TAccount,
+  account: TAccount
 ): Promise<SyncAccountResult<TFields>> {
-  const details = adapter.toDetails(account)
+  const details = adapter.toDetails(account);
   const changes: AccountChanges<TFields> | undefined =
-    diffAccountFields<TFields>(saved, details)
-  let detailsFailed = false
+    diffAccountFields<TFields>(saved, details);
+  let detailsFailed = false;
 
   if (changes) {
     try {
-      await adapter.updateDetails(context, saved, details)
+      await adapter.updateDetails(context, saved, details);
     } catch (error) {
       context.reportError(error, {
         [adapter.platformIdKey]: adapter.getPlatformId(saved),
-      })
-      detailsFailed = true
+      });
+      detailsFailed = true;
     }
   }
 
-  const iconUpdated = await syncIcon(context, adapter, saved, account)
+  const iconUpdated = await syncIcon(context, adapter, saved, account);
 
   if (detailsFailed) {
     return {
       accountId: saved.id,
       iconUpdated,
       name: saved.name,
-      status: 'failed',
-    }
+      status: "failed",
+    };
   }
 
   return {
     accountId: saved.id,
     iconUpdated,
     name: details.name,
-    status: changes || iconUpdated ? 'updated' : 'unchanged',
+    status: changes || iconUpdated ? "updated" : "unchanged",
     ...(changes ? { changes } : {}),
-  }
+  };
 }
 
 /**
@@ -230,59 +234,59 @@ export async function syncAccountsWith<
 >(
   context: WriteContext,
   adapter: AccountAdapter<TAccount, TSaved, TFields>,
-  { talentId }: SyncAccountsOptions = {},
+  { talentId }: SyncAccountsOptions = {}
 ): Promise<SyncAccountResult<TFields>[]> {
   const savedAccounts = await loadSavedAccounts<TSaved>(
     context,
     adapter,
-    talentId,
-  )
+    talentId
+  );
 
   if (savedAccounts.length === 0) {
-    return []
+    return [];
   }
 
   const accounts = await adapter.getAccounts(
-    savedAccounts.map((saved) => adapter.getPlatformId(saved)),
-  )
-  const accountById = new Map(accounts.map((account) => [account.id, account]))
-  const queue = new PQueue({ concurrency: WRITE_CONCURRENCY })
+    savedAccounts.map((saved) => adapter.getPlatformId(saved))
+  );
+  const accountById = new Map(accounts.map((account) => [account.id, account]));
+  const queue = new PQueue({ concurrency: WRITE_CONCURRENCY });
 
   return Promise.all(
     savedAccounts.map((saved) =>
       queue.add(async (): Promise<SyncAccountResult<TFields>> => {
-        const account = accountById.get(adapter.getPlatformId(saved))
+        const account = accountById.get(adapter.getPlatformId(saved));
         const notSynced = {
           accountId: saved.id,
           iconUpdated: false,
           name: saved.name,
-        }
+        };
 
         if (!account) {
-          return { ...notSynced, status: 'not-found' }
+          return { ...notSynced, status: "not-found" };
         }
 
         try {
-          return await syncAccount(context, adapter, saved, account)
+          return await syncAccount(context, adapter, saved, account);
         } catch (error) {
           context.reportError(error, {
             [adapter.platformIdKey]: adapter.getPlatformId(saved),
-          })
+          });
 
-          return { ...notSynced, status: 'failed' }
+          return { ...notSynced, status: "failed" };
         }
-      }),
-    ),
-  )
+      })
+    )
+  );
 }
 
 /**
  * Counts the accounts a sync wrote to: those whose details or icon changed.
  */
 export function countUpdatedAccounts(
-  results: readonly SyncAccountResult[],
+  results: readonly SyncAccountResult[]
 ): number {
   return results.filter(
-    ({ iconUpdated, status }) => status === 'updated' || iconUpdated,
-  ).length
+    ({ iconUpdated, status }) => status === "updated" || iconUpdated
+  ).length;
 }

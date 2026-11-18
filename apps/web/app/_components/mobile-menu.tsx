@@ -1,10 +1,10 @@
-'use client'
+"use client";
 
-import { Menu, X } from 'lucide-react'
-import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
+import { Menu, X } from "lucide-react";
+import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 
 interface MobileMenuProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 /**
@@ -12,32 +12,32 @@ interface MobileMenuProps {
  * viewports where the inline header links are hidden.
  */
 export function MobileMenu({ children }: MobileMenuProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const buttonRef = useRef<HTMLButtonElement>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
-  const menuId = useId()
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuId = useId();
 
   useEffect(() => {
-    const container = containerRef.current
-    const menu = menuRef.current
+    const container = containerRef.current;
+    const menu = menuRef.current;
 
-    if (!isOpen || !container || !menu) return
+    if (!isOpen || !container || !menu) return;
 
-    const close = () => setIsOpen(false)
+    const close = () => setIsOpen(false);
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        close()
-        buttonRef.current?.focus()
+      if (event.key === "Escape") {
+        close();
+        buttonRef.current?.focus();
       }
-    }
+    };
 
     const handlePointerDown = (event: PointerEvent) => {
       if (event.target instanceof Node && !container.contains(event.target)) {
-        close()
+        close();
       }
-    }
+    };
 
     // Close the menu when the keyboard focus moves outside of it.
     const handleFocusOut = (event: FocusEvent) => {
@@ -45,30 +45,30 @@ export function MobileMenu({ children }: MobileMenuProps) {
         event.relatedTarget instanceof Node &&
         !container.contains(event.relatedTarget)
       ) {
-        close()
+        close();
       }
-    }
+    };
 
     // Close the menu once one of its links has been activated, including
     // links to the current page that do not trigger a pathname change.
     const handleMenuClick = (event: MouseEvent) => {
-      if (event.target instanceof Element && event.target.closest('a')) {
-        close()
+      if (event.target instanceof Element && event.target.closest("a")) {
+        close();
       }
-    }
+    };
 
-    document.addEventListener('keydown', handleKeyDown)
-    document.addEventListener('pointerdown', handlePointerDown)
-    container.addEventListener('focusout', handleFocusOut)
-    menu.addEventListener('click', handleMenuClick)
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
+    container.addEventListener("focusout", handleFocusOut);
+    menu.addEventListener("click", handleMenuClick);
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      document.removeEventListener('pointerdown', handlePointerDown)
-      container.removeEventListener('focusout', handleFocusOut)
-      menu.removeEventListener('click', handleMenuClick)
-    }
-  }, [isOpen])
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
+      container.removeEventListener("focusout", handleFocusOut);
+      menu.removeEventListener("click", handleMenuClick);
+    };
+  }, [isOpen]);
 
   return (
     <div className="flex items-center md:hidden" ref={containerRef}>
@@ -97,5 +97,5 @@ export function MobileMenu({ children }: MobileMenuProps) {
         {children}
       </div>
     </div>
-  )
+  );
 }

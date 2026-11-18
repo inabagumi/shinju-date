@@ -1,6 +1,6 @@
-import PQueue from 'p-queue'
+import PQueue from "p-queue";
 
-const DEFAULT_CONCURRENCY = 5
+const DEFAULT_CONCURRENCY = 5;
 
 /**
  * Bounds how many API requests a scraper has in flight.
@@ -9,17 +9,17 @@ const DEFAULT_CONCURRENCY = 5
  * the scraper as a whole rather than to a single call.
  */
 export class RequestQueue {
-  readonly #queue: PQueue
+  readonly #queue: PQueue;
 
   constructor(concurrency = DEFAULT_CONCURRENCY) {
-    this.#queue = new PQueue({ concurrency })
+    this.#queue = new PQueue({ concurrency });
   }
 
   /**
    * Runs a single task once a slot is free.
    */
   run<R>(task: () => Promise<R>): Promise<R> {
-    return this.#queue.add(task)
+    return this.#queue.add(task);
   }
 
   /**
@@ -28,10 +28,10 @@ export class RequestQueue {
    */
   mapSettled<T, R>(
     items: readonly T[],
-    task: (item: T) => Promise<R>,
+    task: (item: T) => Promise<R>
   ): Promise<PromiseSettledResult<R>[]> {
     return Promise.allSettled(
-      items.map((item) => this.#queue.add(() => task(item))),
-    )
+      items.map((item) => this.#queue.add(() => task(item)))
+    );
   }
 }

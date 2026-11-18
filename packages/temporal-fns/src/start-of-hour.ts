@@ -1,5 +1,5 @@
 export function startOfHour(
-  zdt: Temporal.ZonedDateTime,
+  zdt: Temporal.ZonedDateTime
 ): Temporal.ZonedDateTime {
   return zdt.with({
     microsecond: 0,
@@ -7,5 +7,5 @@ export function startOfHour(
     minute: 0,
     nanosecond: 0,
     second: 0,
-  })
+  });
 }

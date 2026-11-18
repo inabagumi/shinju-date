@@ -4,5 +4,5 @@ export type {
   Tables,
   TablesInsert,
   TablesUpdate,
-} from '../types/supabase.js'
-export { Constants } from '../types/supabase.js'
+} from "../types/supabase.js";
+export { Constants } from "../types/supabase.js";

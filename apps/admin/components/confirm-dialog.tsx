@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   Alert,
@@ -14,8 +14,8 @@ import {
   DialogTrigger,
   Input,
   twMerge,
-} from '@shinju-date/ui'
-import { type ReactElement, type ReactNode, useId, useState } from 'react'
+} from "@shinju-date/ui";
+import { type ReactElement, type ReactNode, useId, useState } from "react";
 
 /**
  * `onConfirm` が返す処理の結果。
@@ -23,8 +23,8 @@ import { type ReactElement, type ReactNode, useId, useState } from 'react'
  * TODO: Server Action の共通の戻り値の型（#7005）ができたら、そちらに置き換える。
  */
 export interface ActionResult {
-  success: boolean
-  error?: string | undefined
+  success: boolean;
+  error?: string | undefined;
 }
 
 /**
@@ -34,41 +34,41 @@ export interface ActionResult {
 export type ConfirmHandler = () =>
   | void
   | Promise<void>
-  | Promise<ActionResult | undefined>
+  | Promise<ActionResult | undefined>;
 
 /** ダイアログの幅 */
-export type ConfirmDialogSize = 'md' | 'lg'
+export type ConfirmDialogSize = "md" | "lg";
 
 const SIZE_CLASS_NAMES = {
-  lg: 'max-w-lg',
+  lg: "max-w-lg",
   md: undefined,
-} as const satisfies Record<ConfirmDialogSize, string | undefined>
+} as const satisfies Record<ConfirmDialogSize, string | undefined>;
 
-type ConfirmResult = Awaited<ReturnType<ConfirmHandler>>
+type ConfirmResult = Awaited<ReturnType<ConfirmHandler>>;
 
 /** `onConfirm` が例外を投げたときに表示するエラー */
-export const CONFIRM_DIALOG_FALLBACK_ERROR = '処理に失敗しました。'
+export const CONFIRM_DIALOG_FALLBACK_ERROR = "処理に失敗しました。";
 
 interface ConfirmDialogBaseProps {
-  title: string
+  title: string;
   /** 確認文。改行（`\n`）はそのまま表示する */
-  description: string
+  description: string;
   /** 操作の対象（チャンネル名など）を強調して示す内容 */
-  children?: ReactNode | undefined
-  confirmLabel: string
-  confirmVariant?: ButtonProps['variant'] | undefined
+  children?: ReactNode | undefined;
+  confirmLabel: string;
+  confirmVariant?: ButtonProps["variant"] | undefined;
   /** 実行中の確認ボタンの文字。省略時は `confirmLabel` に「中...」を付けたもの */
-  pendingLabel?: string | undefined
+  pendingLabel?: string | undefined;
   /**
    * 指定すると、この文字列（`DELETE` など）を入力するまで確認ボタンを押せない
    * 入力欄を出す
    */
-  requireKeyword?: string | undefined
+  requireKeyword?: string | undefined;
   /**
    * ダイアログの幅。`md`（既定）は 450px、`lg` は動画の一覧など広い内容を出すとき
    * に使う。高さが画面に収まらない場合は、ダイアログの中でスクロールする
    */
-  size?: ConfirmDialogSize | undefined
+  size?: ConfirmDialogSize | undefined;
   /**
    * 確認ボタンが押されたときに呼ばれる。
    *
@@ -78,33 +78,33 @@ interface ConfirmDialogBaseProps {
    *   開いたままにし、成功か値を返さなかったら閉じる。例外が投げられたら
    *   「処理に失敗しました。」を表示する
    */
-  onConfirm: ConfirmHandler
+  onConfirm: ConfirmHandler;
 }
 
 interface ControlledConfirmDialogProps extends ConfirmDialogBaseProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   /** 開くためのボタン */
-  trigger?: ReactElement | undefined
+  trigger?: ReactElement | undefined;
 }
 
 interface UncontrolledConfirmDialogProps extends ConfirmDialogBaseProps {
-  open?: undefined
-  onOpenChange?: ((open: boolean) => void) | undefined
+  open?: undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
   /** 開くためのボタン。開閉の状態は部品の中で持つ */
-  trigger: ReactElement
+  trigger: ReactElement;
 }
 
 export type ConfirmDialogProps =
   | ControlledConfirmDialogProps
-  | UncontrolledConfirmDialogProps
+  | UncontrolledConfirmDialogProps;
 
 function isPromiseLike<T>(value: unknown): value is PromiseLike<T> {
   return (
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
-    typeof (value as PromiseLike<T>).then === 'function'
-  )
+    typeof (value as PromiseLike<T>).then === "function"
+  );
 }
 
 /**
@@ -119,102 +119,102 @@ export function ConfirmDialog({
   description,
   children,
   confirmLabel,
-  confirmVariant = 'primary',
+  confirmVariant = "primary",
   pendingLabel = `${confirmLabel}中...`,
   requireKeyword,
-  size = 'md',
+  size = "md",
   onConfirm,
 }: ConfirmDialogProps) {
-  const keywordInputId = useId()
-  const [uncontrolledOpen, setUncontrolledOpen] = useState(false)
-  const [isPending, setIsPending] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [keyword, setKeyword] = useState('')
+  const keywordInputId = useId();
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [keyword, setKeyword] = useState("");
 
-  const isControlled = controlledOpen !== undefined
-  const open = isControlled ? controlledOpen : uncontrolledOpen
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : uncontrolledOpen;
 
   // 開くたびに、前回のエラーとキーワードの入力を消す。開閉を外から決める場合も
   // 同じように消すため、`onOpenChange` ではなく `open` の変化で判定する
-  const [prevOpen, setPrevOpen] = useState(open)
+  const [prevOpen, setPrevOpen] = useState(open);
   if (open !== prevOpen) {
-    setPrevOpen(open)
+    setPrevOpen(open);
     if (open) {
-      setError(null)
-      setKeyword('')
+      setError(null);
+      setKeyword("");
     }
   }
 
   const setOpen = (nextOpen: boolean) => {
     if (!isControlled) {
-      setUncontrolledOpen(nextOpen)
+      setUncontrolledOpen(nextOpen);
     }
-    onOpenChange?.(nextOpen)
-  }
+    onOpenChange?.(nextOpen);
+  };
 
   const handleOpenChange = (nextOpen: boolean) => {
     // 実行中は閉じない
     if (isPending && !nextOpen) {
-      return
+      return;
     }
 
-    setOpen(nextOpen)
-  }
+    setOpen(nextOpen);
+  };
 
   const isKeywordMatched =
-    requireKeyword === undefined || keyword === requireKeyword
+    requireKeyword === undefined || keyword === requireKeyword;
 
   const waitForResult = async (pendingResult: PromiseLike<ConfirmResult>) => {
-    setIsPending(true)
+    setIsPending(true);
 
     try {
-      const actionResult = await pendingResult
+      const actionResult = await pendingResult;
 
       if (actionResult && !actionResult.success) {
-        setError(actionResult.error ?? CONFIRM_DIALOG_FALLBACK_ERROR)
-        return
+        setError(actionResult.error ?? CONFIRM_DIALOG_FALLBACK_ERROR);
+        return;
       }
 
-      setOpen(false)
+      setOpen(false);
     } catch {
-      setError(CONFIRM_DIALOG_FALLBACK_ERROR)
+      setError(CONFIRM_DIALOG_FALLBACK_ERROR);
     } finally {
-      setIsPending(false)
+      setIsPending(false);
     }
-  }
+  };
 
   const handleConfirm = () => {
     if (isPending || !isKeywordMatched) {
-      return
+      return;
     }
 
-    setError(null)
+    setError(null);
 
-    let result: ReturnType<ConfirmHandler>
+    let result: ReturnType<ConfirmHandler>;
 
     try {
-      result = onConfirm()
+      result = onConfirm();
     } catch (err) {
       // 値を返さない `onConfirm` は、これまでどおり例外があっても閉じる
-      setOpen(false)
-      throw err
+      setOpen(false);
+      throw err;
     }
 
     if (!isPromiseLike<ConfirmResult>(result)) {
-      setOpen(false)
-      return
+      setOpen(false);
+      return;
     }
 
-    void waitForResult(result)
-  }
+    void waitForResult(result);
+  };
 
   const preventWhilePending = (event: Event) => {
     if (isPending) {
-      event.preventDefault()
+      event.preventDefault();
     }
-  }
+  };
 
-  const hasDetails = Boolean(children)
+  const hasDetails = Boolean(children);
 
   return (
     <Dialog onOpenChange={handleOpenChange} open={open}>
@@ -222,13 +222,13 @@ export function ConfirmDialog({
       <DialogPortal>
         <DialogOverlay />
         <DialogContent
-          className={twMerge('overflow-y-auto', SIZE_CLASS_NAMES[size])}
+          className={twMerge("overflow-y-auto", SIZE_CLASS_NAMES[size])}
           onEscapeKeyDown={preventWhilePending}
           onInteractOutside={preventWhilePending}
         >
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription
-            className={`whitespace-pre-line ${hasDetails ? 'mb-4' : ''}`}
+            className={`whitespace-pre-line ${hasDetails ? "mb-4" : ""}`}
           >
             {description}
           </DialogDescription>
@@ -278,5 +278,5 @@ export function ConfirmDialog({
         </DialogContent>
       </DialogPortal>
     </Dialog>
-  )
+  );
 }

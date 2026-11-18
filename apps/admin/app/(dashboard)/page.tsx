@@ -1,21 +1,23 @@
-import { PageHeader } from '@shinju-date/ui'
-import { Suspense } from 'react'
-import { WidgetErrorBoundary } from '@/components/widget-error-boundary'
+import { PageHeader } from "@shinju-date/ui";
+import { Suspense } from "react";
+
+import { WidgetErrorBoundary } from "@/components/widget-error-boundary";
+
 import {
   AnalyticsWidget,
   AnalyticsWidgetSkeleton,
-} from './_components/analytics-widget'
+} from "./_components/analytics-widget";
 import {
   DashboardPopularVideos,
   DashboardPopularVideosSkeleton,
-} from './_components/dashboard-popular-videos'
+} from "./_components/dashboard-popular-videos";
 import {
   ContentSummaryWidget,
   ContentSummaryWidgetSkeleton,
   VideoSummaryWidget,
   VideoSummaryWidgetSkeleton,
-} from './_components/summary-widget'
-import { VideoBackfillFailureAlert } from './_components/video-backfill-failure-alert'
+} from "./_components/summary-widget";
+import { VideoBackfillFailureAlert } from "./_components/video-backfill-failure-alert";
 
 export default function DashboardPage() {
   return (
@@ -61,5 +63,5 @@ export default function DashboardPage() {
         </WidgetErrorBoundary>
       </div>
     </div>
-  )
+  );
 }

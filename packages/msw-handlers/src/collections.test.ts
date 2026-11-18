@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from "vitest";
+
 import {
   announcements,
   auditLogs,
@@ -14,7 +15,7 @@ import {
   videos,
   youtubeChannels,
   youtubeVideos,
-} from './collections.js'
+} from "./collections.js";
 
 const COLLECTIONS = {
   announcements,
@@ -30,7 +31,7 @@ const COLLECTIONS = {
   videos,
   youtubeChannels,
   youtubeVideos,
-}
+};
 
 /** The rows of every collection, as plain JSON. */
 function dumpCollections(): Record<string, unknown[]> {
@@ -40,10 +41,10 @@ function dumpCollections(): Record<string, unknown[]> {
         Object.entries(COLLECTIONS).map(([name, collection]) => [
           name,
           collection.findMany(),
-        ]),
-      ),
-    ),
-  )
+        ])
+      )
+    )
+  );
 }
 
 /** The values of every row that look like a time (an ISO 8601 string). */
@@ -53,70 +54,70 @@ function getTimestamps(dump: Record<string, unknown[]>): string[] {
     .flatMap((row) => Object.values(row as Record<string, unknown>))
     .filter(
       (value): value is string =>
-        typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value),
-    )
+        typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)
+    );
 }
 
-const NOW = Temporal.Instant.from('2026-11-15T12:34:56.789Z')
+const NOW = Temporal.Instant.from("2026-11-15T12:34:56.789Z");
 
-describe('seedCollections', () => {
-  it('seeds the same data for the same now', async () => {
-    await seedCollections({ now: NOW })
-    const first = dumpCollections()
+describe("seedCollections", () => {
+  it("seeds the same data for the same now", async () => {
+    await seedCollections({ now: NOW });
+    const first = dumpCollections();
 
-    await seedCollections({ now: NOW })
-    const second = dumpCollections()
+    await seedCollections({ now: NOW });
+    const second = dumpCollections();
 
-    expect(second).toEqual(first)
-  })
+    expect(second).toEqual(first);
+  });
 
-  it('seeds every collection', async () => {
-    await seedCollections({ now: NOW })
+  it("seeds every collection", async () => {
+    await seedCollections({ now: NOW });
 
     for (const [name, rows] of Object.entries(dumpCollections())) {
-      expect(rows.length, name).toBeGreaterThan(0)
+      expect(rows.length, name).toBeGreaterThan(0);
     }
-  })
+  });
 
-  it('seeds data around the given now', async () => {
-    await seedCollections({ now: NOW })
-    const first = dumpCollections()
+  it("seeds data around the given now", async () => {
+    await seedCollections({ now: NOW });
+    const first = dumpCollections();
 
-    await seedCollections({ now: NOW.add({ hours: 24 * 7 }) })
+    await seedCollections({ now: NOW.add({ hours: 24 * 7 }) });
 
-    expect(dumpCollections()).not.toEqual(first)
-  })
+    expect(dumpCollections()).not.toEqual(first);
+  });
 
-  it('saves the times in seconds, without milliseconds', async () => {
-    await seedCollections({ now: NOW })
+  it("saves the times in seconds, without milliseconds", async () => {
+    await seedCollections({ now: NOW });
 
-    const timestamps = getTimestamps(dumpCollections())
+    const timestamps = getTimestamps(dumpCollections());
 
-    expect(timestamps.length).toBeGreaterThan(0)
+    expect(timestamps.length).toBeGreaterThan(0);
 
     for (const timestamp of timestamps) {
-      expect(timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/)
+      expect(timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
     }
-  })
+  });
 
-  it('links every video on YouTube to the channel of its talent', async () => {
-    await seedCollections({ now: NOW })
+  it("links every video on YouTube to the channel of its talent", async () => {
+    await seedCollections({ now: NOW });
 
     const channels = new Map(
-      youtubeChannels.findMany().map((channel) => [channel.id, channel]),
-    )
+      youtubeChannels.findMany().map((channel) => [channel.id, channel])
+    );
     const savedVideos = new Map(
-      videos.findMany().map((video) => [video.id, video]),
-    )
+      videos.findMany().map((video) => [video.id, video])
+    );
 
     for (const youtubeVideo of youtubeVideos.findMany()) {
       expect(channels.get(youtubeVideo.youtube_channel_id)?.talent_id).toBe(
-        savedVideos.get(youtubeVideo.video_id)?.talent_id,
-      )
+        savedVideos.get(youtubeVideo.video_id)?.talent_id
+      );
     }
 
     expect(youtubeVideos.findMany()).toHaveLength(
-      videos.findMany().filter((video) => video.platform === 'youtube').length,
-    )
-  })
-})
+      videos.findMany().filter((video) => video.platform === "youtube").length
+    );
+  });
+});

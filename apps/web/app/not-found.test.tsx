@@ -1,19 +1,20 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, test, vi } from 'vitest'
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, test, vi } from "vitest";
+
 import {
   SearchModalProvider,
   useSearchModal,
-} from './_components/search-modal-context'
-import NotFound from './not-found'
+} from "./_components/search-modal-context";
+import NotFound from "./not-found";
 
-vi.mock('next/navigation', () => ({
-  usePathname: () => '/missing-page',
-}))
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/missing-page",
+}));
 
 function SearchModalState() {
-  const { isOpen } = useSearchModal()
+  const { isOpen } = useSearchModal();
 
-  return <output>{isOpen ? 'open' : 'closed'}</output>
+  return <output>{isOpen ? "open" : "closed"}</output>;
 }
 
 function renderNotFound() {
@@ -21,37 +22,37 @@ function renderNotFound() {
     <SearchModalProvider>
       <NotFound />
       <SearchModalState />
-    </SearchModalProvider>,
-  )
+    </SearchModalProvider>
+  );
 }
 
-describe('NotFound', () => {
-  test('should render the heading in Japanese', () => {
-    renderNotFound()
+describe("NotFound", () => {
+  test("should render the heading in Japanese", () => {
+    renderNotFound();
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'ページが見つかりません' }),
-    ).toBeInTheDocument()
-  })
+      screen.getByRole("heading", { level: 1, name: "ページが見つかりません" })
+    ).toBeInTheDocument();
+  });
 
-  test('should render links to the top page and the video list', () => {
-    renderNotFound()
+  test("should render links to the top page and the video list", () => {
+    renderNotFound();
 
     expect(
-      screen.getByRole('link', { name: 'トップページへ' }),
-    ).toHaveAttribute('href', '/')
+      screen.getByRole("link", { name: "トップページへ" })
+    ).toHaveAttribute("href", "/");
     expect(
-      screen.getByRole('link', { name: '動画一覧を見る' }),
-    ).toHaveAttribute('href', '/videos')
-  })
+      screen.getByRole("link", { name: "動画一覧を見る" })
+    ).toHaveAttribute("href", "/videos");
+  });
 
-  test('should open the search modal when the search button is clicked', () => {
-    renderNotFound()
+  test("should open the search modal when the search button is clicked", () => {
+    renderNotFound();
 
-    expect(screen.getByRole('status')).toHaveTextContent('closed')
+    expect(screen.getByRole("status")).toHaveTextContent("closed");
 
-    fireEvent.click(screen.getByRole('button', { name: '検索する' }))
+    fireEvent.click(screen.getByRole("button", { name: "検索する" }));
 
-    expect(screen.getByRole('status')).toHaveTextContent('open')
-  })
-})
+    expect(screen.getByRole("status")).toHaveTextContent("open");
+  });
+});

@@ -1,12 +1,12 @@
-import { z } from 'zod'
+import { z } from "zod";
 
 /** URL のパラメータの値。同じ名前のパラメータが複数あると配列になる */
 const rawSearchParamSchema = z
   .union([z.string(), z.array(z.string())])
-  .optional()
+  .optional();
 
 function firstValue(value: string | string[] | undefined): string | undefined {
-  return Array.isArray(value) ? value[0] : value
+  return Array.isArray(value) ? value[0] : value;
 }
 
 /**
@@ -15,8 +15,8 @@ function firstValue(value: string | string[] | undefined): string | undefined {
  */
 export function searchTextParamSchema() {
   return rawSearchParamSchema.transform(
-    (value) => firstValue(value)?.trim() || undefined,
-  )
+    (value) => firstValue(value)?.trim() || undefined
+  );
 }
 
 /**
@@ -28,10 +28,10 @@ export function enumParamSchema<
   const D extends T[number] | undefined,
 >(values: T, defaultValue: D) {
   return rawSearchParamSchema.transform((value): T[number] | D => {
-    const first = firstValue(value)
+    const first = firstValue(value);
 
     return first !== undefined && (values as readonly string[]).includes(first)
       ? (first as T[number])
-      : defaultValue
-  })
+      : defaultValue;
+  });
 }

@@ -1,10 +1,10 @@
-import type { Talent } from '@/lib/data/talents'
+import type { Talent } from "@/lib/data/talents";
 
 /**
  * 照合に使う形に揃える。NFKC で全角・半角の違いをなくし、小文字にする。
  */
 export function normalizeForTalentMatch(value: string): string {
-  return value.normalize('NFKC').toLowerCase()
+  return value.normalize("NFKC").toLowerCase();
 }
 
 /**
@@ -15,19 +15,19 @@ export function normalizeForTalentMatch(value: string): string {
 export function findMatchingTalents(
   talents: readonly Talent[],
   query: string,
-  excludedIds: readonly string[] = [],
+  excludedIds: readonly string[] = []
 ): Talent[] {
-  const normalizedQuery = normalizeForTalentMatch(query).trim()
+  const normalizedQuery = normalizeForTalentMatch(query).trim();
 
   if (!normalizedQuery) {
-    return []
+    return [];
   }
 
-  const excluded = new Set(excludedIds)
+  const excluded = new Set(excludedIds);
 
   return talents.filter(
     (talent) =>
       !excluded.has(talent.id) &&
-      normalizeForTalentMatch(talent.name).includes(normalizedQuery),
-  )
+      normalizeForTalentMatch(talent.name).includes(normalizedQuery)
+  );
 }

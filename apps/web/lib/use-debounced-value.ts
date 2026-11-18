@@ -1,18 +1,18 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 
 /**
  * 値が `delay` ミリ秒変わらなくなってから、その値を返す。
  */
 export function useDebouncedValue<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value)
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => setDebouncedValue(value), delay)
+    const timeoutId = setTimeout(() => setDebouncedValue(value), delay);
 
-    return () => clearTimeout(timeoutId)
-  }, [value, delay])
+    return () => clearTimeout(timeoutId);
+  }, [value, delay]);
 
-  return debouncedValue
+  return debouncedValue;
 }

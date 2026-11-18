@@ -1,11 +1,12 @@
-'use client'
+"use client";
 
-import { ConfirmDialog } from '@/components/confirm-dialog'
-import type { VideoActionDialogProps } from '../_lib/use-video-action'
+import { ConfirmDialog } from "@/components/confirm-dialog";
+
+import type { VideoActionDialogProps } from "../_lib/use-video-action";
 import {
   VIDEO_ACTIONS,
   type VideoActionConfirmConfig,
-} from '../_lib/video-actions'
+} from "../_lib/video-actions";
 
 /**
  * 動画の表示の切り替え・削除・復元を確かめてから実行するダイアログ。
@@ -19,7 +20,7 @@ export function VideoActionConfirmDialog({
   onOpenChange,
   onConfirm,
 }: VideoActionDialogProps) {
-  const config: VideoActionConfirmConfig = VIDEO_ACTIONS[action].confirm
+  const config: VideoActionConfirmConfig = VIDEO_ACTIONS[action].confirm;
 
   return (
     <ConfirmDialog
@@ -48,5 +49,5 @@ export function VideoActionConfirmDialog({
         ))}
       </ul>
     </ConfirmDialog>
-  )
+  );
 }

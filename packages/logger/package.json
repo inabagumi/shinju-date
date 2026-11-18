@@ -1,6 +1,28 @@
 {
-  "author": "Haneru Developers",
+  "name": "@shinju-date/logger",
+  "version": "1.0.0",
+  "private": true,
   "description": "Shared logger package for SHINJU DATE applications",
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "author": "Haneru Developers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git",
+    "directory": "packages/logger"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
   "devDependencies": {
     "@sentry/nextjs": "catalog:",
     "@shinju-date/config": "workspace:*",
@@ -9,29 +31,7 @@
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
-  },
-  "homepage": "https://shinju.date/",
-  "license": "MIT",
-  "name": "@shinju-date/logger",
   "peerDependencies": {
     "@sentry/nextjs": "^11.0.0"
-  },
-  "private": true,
-  "repository": {
-    "directory": "packages/logger",
-    "type": "git",
-    "url": "https://github.com/inabagumi/shinju-date.git"
-  },
-  "scripts": {
-    "build": "tsdown",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
-  },
-  "type": "module",
-  "version": "1.0.0"
+  }
 }

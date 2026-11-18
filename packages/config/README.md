@@ -6,12 +6,12 @@
 
 `tsconfig/` に、`tsconfig.json` の基底を置いています。各パッケージとアプリの `tsconfig.json` は、どれか1つを継承します。
 
-| ファイル                                                             | 使う場所                         | 中身                                                                                                                                                                                       |
-| -------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`tsconfig/node-library.json`](tsconfig/node-library.json)           | Node だけで動くパッケージ        | `@tsconfig/strictest`、`target` は `ES2025`、`lib` は `ES2025` と `ESNext.Array`、`ESNext.Temporal`（`DOM` なし）、`module` は `Node20`、`moduleResolution` は `Node16`、`types` は `node` |
-| [`tsconfig/universal-library.json`](tsconfig/universal-library.json) | ブラウザでも動くパッケージ       | `node-library.json` の `lib` に、`DOM` と `DOM.Iterable` を足したもの                                                                                                                      |
-| [`tsconfig/react-library.json`](tsconfig/react-library.json)         | React の部品のパッケージ（`ui`） | `universal-library.json` に、JSX（`react-jsx`）を足し、`module` を `Preserve`、`moduleResolution` を `Bundler` にしたもの                                                                  |
-| [`tsconfig/next-app.json`](tsconfig/next-app.json)                   | `apps/*`                         | `@tsconfig/strictest` と `@tsconfig/next`。`target`、`lib`、`module`、`moduleResolution` は `universal-library.json` と `react-library.json` と同じ                                        |
+| ファイル | 使う場所 | 中身 |
+| --- | --- | --- |
+| [`tsconfig/node-library.json`](tsconfig/node-library.json) | Node だけで動くパッケージ | `@tsconfig/strictest`、`target` は `ES2025`、`lib` は `ES2025` と `ESNext.Array`、`ESNext.Temporal`（`DOM` なし）、`module` は `Node20`、`moduleResolution` は `Node16`、`types` は `node` |
+| [`tsconfig/universal-library.json`](tsconfig/universal-library.json) | ブラウザでも動くパッケージ | `node-library.json` の `lib` に、`DOM` と `DOM.Iterable` を足したもの |
+| [`tsconfig/react-library.json`](tsconfig/react-library.json) | React の部品のパッケージ（`ui`） | `universal-library.json` に、JSX（`react-jsx`）を足し、`module` を `Preserve`、`moduleResolution` を `Bundler` にしたもの |
+| [`tsconfig/next-app.json`](tsconfig/next-app.json) | `apps/*` | `@tsconfig/strictest` と `@tsconfig/next`。`target`、`lib`、`module`、`moduleResolution` は `universal-library.json` と `react-library.json` と同じ |
 
 パッケージの `tsconfig.json` は、基底を継承し、`include` だけを書きます。`include` と `paths` は、書いたファイルからの相対パスになるため、基底には書けません。
 
@@ -51,11 +51,11 @@ TypeScript 6 は、`types` を書かないと `@types/*` を読み込まない�
 
 ```ts
 // packages/<name>/tsdown.config.ts
-import { definePackageConfig } from '@shinju-date/config/tsdown'
+import { definePackageConfig } from "@shinju-date/config/tsdown";
 
 export default definePackageConfig({
-  entry: ['./src/index.ts'],
-})
+  entry: ["./src/index.ts"],
+});
 ```
 
 共通の設定は次のとおりです（[`tsdown.ts`](tsdown.ts)）。
@@ -76,22 +76,22 @@ export default definePackageConfig({
 
 ```ts
 // packages/<name>/vitest.config.ts
-import { defineVitestConfig } from '@shinju-date/config/vitest'
+import { defineVitestConfig } from "@shinju-date/config/vitest";
 
-export default defineVitestConfig()
+export default defineVitestConfig();
 ```
 
 React の部品をテストするパッケージ（`ui`）とアプリ（`web`、`admin`）は、`defineVitestConfig.react()` を呼びます。`@vitejs/plugin-react`（JSX の変換）と jsdom を足した設定を返します。
 
 ```ts
 // apps/<name>/vitest.config.ts
-import { defineVitestConfig } from '@shinju-date/config/vitest'
+import { defineVitestConfig } from "@shinju-date/config/vitest";
 
 export default defineVitestConfig.react({
   test: {
-    setupFiles: ['./vitest.setup.ts'],
+    setupFiles: ["./vitest.setup.ts"],
   },
-})
+});
 ```
 
 共通の設定は次のとおりです（[`vitest.ts`](vitest.ts)）。
@@ -111,33 +111,33 @@ export default defineVitestConfig.react({
 
 ```ts
 // apps/<name>/playwright.config.ts
-import { definePlaywrightConfig } from '@shinju-date/config/playwright'
+import { definePlaywrightConfig } from "@shinju-date/config/playwright";
 
 export default definePlaywrightConfig({
   env: {
-    GOOGLE_API_KEY: 'fake',
+    GOOGLE_API_KEY: "fake",
   },
   port: 5000,
-  readyPath: '/api/healthz',
-})
+  readyPath: "/api/healthz",
+});
 ```
 
 共通の設定は次のとおりです（[`playwright.ts`](playwright.ts)）。`CI` を設定したときは、括弧の中の値になります。
 
-| 設定                            | 値                                                                                            |
-| ------------------------------- | --------------------------------------------------------------------------------------------- |
-| `testDir` / `testMatch`         | `./e2e` / `**/*.spec.ts`                                                                      |
-| `projects`                      | `chromium`（Desktop Chrome）                                                                  |
-| `retries`                       | `0`（`2`）                                                                                    |
-| `workers`                       | Playwright の既定（`1`）                                                                      |
-| `reporter`                      | `html`（`github` と `html`）                                                                  |
-| `forbidOnly`                    | `false`（`true`）                                                                             |
-| `use.baseURL`                   | `http://localhost:<port>`                                                                     |
-| `use.trace`                     | `'on-first-retry'`                                                                            |
-| `webServer.command`             | `pnpm dev`（`playwright.config.ts` のあるフォルダーで起動する）                               |
-| `webServer.env`                 | `ENABLE_MSW`、`NEXT_PUBLIC_BASE_URL`、`NEXT_TELEMETRY_DISABLED`、Supabase と Upstash の偽の値 |
-| `webServer.reuseExistingServer` | `true`（`false`）                                                                             |
-| `webServer.url`                 | `http://localhost:<port><readyPath>`                                                          |
+| 設定 | 値 |
+| --- | --- |
+| `testDir` / `testMatch` | `./e2e` / `**/*.spec.ts` |
+| `projects` | `chromium`（Desktop Chrome） |
+| `retries` | `0`（`2`） |
+| `workers` | Playwright の既定（`1`） |
+| `reporter` | `html`（`github` と `html`） |
+| `forbidOnly` | `false`（`true`） |
+| `use.baseURL` | `http://localhost:<port>` |
+| `use.trace` | `'on-first-retry'` |
+| `webServer.command` | `pnpm dev`（`playwright.config.ts` のあるフォルダーで起動する） |
+| `webServer.env` | `ENABLE_MSW`、`NEXT_PUBLIC_BASE_URL`、`NEXT_TELEMETRY_DISABLED`、Supabase と Upstash の偽の値 |
+| `webServer.reuseExistingServer` | `true`（`false`） |
+| `webServer.url` | `http://localhost:<port><readyPath>` |
 
 `projects` などの、Playwright のほかの設定も渡せます。アプリに必要なときだけ渡してください（`apps/admin/playwright.config.ts` の、ログインを済ませるプロジェクトなど）。
 

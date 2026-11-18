@@ -1,8 +1,9 @@
-import { chunk } from '@shinju-date/helpers'
-import { getErrorStatus } from './errors.js'
-import type { RequestScheduler } from './types.js'
+import { chunk } from "@shinju-date/helpers";
 
-export const TWITCH_API_MAX_RESULTS = 100
+import { getErrorStatus } from "./errors.js";
+import type { RequestScheduler } from "./types.js";
+
+export const TWITCH_API_MAX_RESULTS = 100;
 
 export interface BatchOptions {
   /**
@@ -10,10 +11,10 @@ export interface BatchOptions {
    * once and it decides how many requests run at a time; otherwise the
    * batches are requested one after another.
    */
-  schedule?: RequestScheduler | undefined
+  schedule?: RequestScheduler | undefined;
 }
 
-const runNow: RequestScheduler = (request) => request()
+const runNow: RequestScheduler = (request) => request();
 
 /**
  * Requests `ids` in batches of {@link TWITCH_API_MAX_RESULTS}, the most one
@@ -23,24 +24,24 @@ const runNow: RequestScheduler = (request) => request()
 export async function* requestInBatches<T>(
   ids: readonly string[],
   schedule: RequestScheduler | undefined,
-  request: (ids: string[], run: RequestScheduler) => Promise<readonly T[]>,
+  request: (ids: string[], run: RequestScheduler) => Promise<readonly T[]>
 ): AsyncGenerator<T, void, undefined> {
-  const batches = chunk(ids, TWITCH_API_MAX_RESULTS)
+  const batches = chunk(ids, TWITCH_API_MAX_RESULTS);
 
   if (!schedule) {
     for (const batch of batches) {
-      yield* await request(batch, runNow)
+      yield* await request(batch, runNow);
     }
 
-    return
+    return;
   }
 
   const results = await Promise.all(
-    batches.map((batch) => request(batch, schedule)),
-  )
+    batches.map((batch) => request(batch, schedule))
+  );
 
   for (const items of results) {
-    yield* items
+    yield* items;
   }
 }
 
@@ -54,28 +55,28 @@ export async function* requestInBatches<T>(
  */
 export async function lookupByIds<T>(
   ids: string[],
-  lookup: (ids: string[]) => Promise<T[]>,
+  lookup: (ids: string[]) => Promise<T[]>
 ): Promise<T[]> {
   if (ids.length === 0) {
-    return []
+    return [];
   }
 
   try {
-    return await lookup(ids)
+    return await lookup(ids);
   } catch (error) {
     if (getErrorStatus(error) !== 404) {
-      throw error
+      throw error;
     }
 
     if (ids.length === 1) {
-      return []
+      return [];
     }
 
-    const middle = Math.ceil(ids.length / 2)
+    const middle = Math.ceil(ids.length / 2);
 
     return [
       ...(await lookupByIds(ids.slice(0, middle), lookup)),
       ...(await lookupByIds(ids.slice(middle), lookup)),
-    ]
+    ];
   }
 }

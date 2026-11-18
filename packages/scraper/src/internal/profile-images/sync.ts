@@ -1,12 +1,12 @@
-import type { TypedSupabaseClient } from '../../types.js'
-import { DatabaseError } from '../errors.js'
+import type { TypedSupabaseClient } from "../../types.js";
+import { DatabaseError } from "../errors.js";
 import {
   createProfileImage,
   downloadProfileImage,
   type ProfileImageOwner,
   removeProfileImage,
   type StoredProfileImage,
-} from './profile-image.js'
+} from "./profile-image.js";
 
 /**
  * What {@link syncProfileImage} did:
@@ -17,19 +17,19 @@ import {
  * - `unchanged`: nothing was written
  */
 export type ProfileImageSyncResult =
-  | 'created'
-  | 'removed'
-  | 'replaced'
-  | 'unchanged'
+  | "created"
+  | "removed"
+  | "replaced"
+  | "unchanged";
 
 export interface SyncProfileImageOptions {
-  now: Temporal.Instant
-  owner: ProfileImageOwner
+  now: Temporal.Instant;
+  owner: ProfileImageOwner;
   /** The owner's current icon, if any. */
-  saved: StoredProfileImage | null
+  saved: StoredProfileImage | null;
   /** URL of the icon on the platform, or `null` when it has none. */
-  sourceUrl: string | null
-  supabaseClient: TypedSupabaseClient
+  sourceUrl: string | null;
+  supabaseClient: TypedSupabaseClient;
 }
 
 /**
@@ -40,30 +40,30 @@ export interface SyncProfileImageOptions {
 async function assignProfileImage(
   supabaseClient: TypedSupabaseClient,
   owner: ProfileImageOwner,
-  profileImageId: string | null,
+  profileImageId: string | null
 ): Promise<void> {
-  const values = { profile_image_id: profileImageId }
+  const values = { profile_image_id: profileImageId };
   const { data, error } =
-    owner.platform === 'youtube'
+    owner.platform === "youtube"
       ? await supabaseClient
-          .from('youtube_channels')
+          .from("youtube_channels")
           .update(values)
-          .eq('id', owner.id)
-          .select('id')
+          .eq("id", owner.id)
+          .select("id")
       : await supabaseClient
-          .from('twitch_users')
+          .from("twitch_users")
           .update(values)
-          .eq('id', owner.id)
-          .select('id')
+          .eq("id", owner.id)
+          .select("id");
 
   if (error) {
-    throw new DatabaseError('Failed to assign a profile image', error)
+    throw new DatabaseError("Failed to assign a profile image", error);
   }
 
   if (data.length === 0) {
     throw new Error(
-      `The ${owner.platform} account to assign a profile image to was not found: ${owner.id}`,
-    )
+      `The ${owner.platform} account to assign a profile image to was not found: ${owner.id}`
+    );
   }
 }
 
@@ -73,10 +73,10 @@ async function assignProfileImage(
  */
 async function discardProfileImage(
   supabaseClient: TypedSupabaseClient,
-  image: StoredProfileImage,
+  image: StoredProfileImage
 ): Promise<void> {
   try {
-    await removeProfileImage(supabaseClient, image)
+    await removeProfileImage(supabaseClient, image);
   } catch {
     // Ignored on purpose, see above.
   }
@@ -103,19 +103,19 @@ export async function syncProfileImage({
 }: SyncProfileImageOptions): Promise<ProfileImageSyncResult> {
   if (!sourceUrl) {
     if (!saved) {
-      return 'unchanged'
+      return "unchanged";
     }
 
-    await assignProfileImage(supabaseClient, owner, null)
-    await discardProfileImage(supabaseClient, saved)
+    await assignProfileImage(supabaseClient, owner, null);
+    await discardProfileImage(supabaseClient, saved);
 
-    return 'removed'
+    return "removed";
   }
 
-  const downloaded = await downloadProfileImage(sourceUrl, saved)
+  const downloaded = await downloadProfileImage(sourceUrl, saved);
 
   if (!downloaded) {
-    return 'unchanged'
+    return "unchanged";
   }
 
   const created = await createProfileImage({
@@ -123,21 +123,21 @@ export async function syncProfileImage({
     now,
     owner,
     supabaseClient,
-  })
+  });
 
   try {
-    await assignProfileImage(supabaseClient, owner, created.id)
+    await assignProfileImage(supabaseClient, owner, created.id);
   } catch (error) {
-    await discardProfileImage(supabaseClient, created)
+    await discardProfileImage(supabaseClient, created);
 
-    throw error
+    throw error;
   }
 
   if (!saved) {
-    return 'created'
+    return "created";
   }
 
-  await discardProfileImage(supabaseClient, saved)
+  await discardProfileImage(supabaseClient, saved);
 
-  return 'replaced'
+  return "replaced";
 }

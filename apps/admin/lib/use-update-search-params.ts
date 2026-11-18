@@ -1,16 +1,17 @@
-'use client'
+"use client";
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback } from "react";
+
 import {
   buildSearchParamsHref,
   type SearchParamsHrefOptions,
   type SearchParamUpdates,
-} from './search-params-href'
+} from "./search-params-href";
 
 export interface UpdateSearchParamsOptions extends SearchParamsHrefOptions {
   /** 履歴に積むか（`push`）、置き換えるか（`replace`）。既定は `replace` */
-  history?: 'push' | 'replace' | undefined
+  history?: "push" | "replace" | undefined;
 }
 
 /**
@@ -19,10 +20,10 @@ export interface UpdateSearchParamsOptions extends SearchParamsHrefOptions {
  */
 export function useSearchParamsHref(): (
   updates: SearchParamUpdates,
-  options?: SearchParamsHrefOptions,
+  options?: SearchParamsHrefOptions
 ) => string {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   return useCallback(
     (updates, options) =>
@@ -30,10 +31,10 @@ export function useSearchParamsHref(): (
         pathname,
         searchParams.toString(),
         updates,
-        options,
+        options
       ),
-    [pathname, searchParams],
-  )
+    [pathname, searchParams]
+  );
 }
 
 /**
@@ -49,21 +50,21 @@ export function useSearchParamsHref(): (
  */
 export function useUpdateSearchParams(): (
   updates: SearchParamUpdates,
-  options?: UpdateSearchParamsOptions,
+  options?: UpdateSearchParamsOptions
 ) => void {
-  const router = useRouter()
-  const createHref = useSearchParamsHref()
+  const router = useRouter();
+  const createHref = useSearchParamsHref();
 
   return useCallback(
-    (updates, { history = 'replace', ...options } = {}) => {
-      const href = createHref(updates, options)
+    (updates, { history = "replace", ...options } = {}) => {
+      const href = createHref(updates, options);
 
-      if (history === 'push') {
-        router.push(href)
+      if (history === "push") {
+        router.push(href);
       } else {
-        router.replace(href)
+        router.replace(href);
       }
     },
-    [createHref, router],
-  )
+    [createHref, router]
+  );
 }

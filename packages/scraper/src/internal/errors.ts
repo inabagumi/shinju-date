@@ -1,13 +1,13 @@
 /** PostgreSQL error code for a foreign key violation. */
-const FOREIGN_KEY_VIOLATION = '23503'
+const FOREIGN_KEY_VIOLATION = "23503";
 
 interface PostgrestErrorLike {
-  code?: string
-  message: string
+  code?: string;
+  message: string;
 }
 
 interface StorageErrorLike {
-  message: string
+  message: string;
 }
 
 /**
@@ -15,12 +15,12 @@ interface StorageErrorLike {
  * that error reports can be told apart without reading the message.
  */
 export class DatabaseError extends Error {
-  readonly operation: string
+  readonly operation: string;
 
   constructor(operation: string, cause: PostgrestErrorLike) {
-    super(`${operation}: ${cause.message}`, { cause })
-    this.name = 'DatabaseError'
-    this.operation = operation
+    super(`${operation}: ${cause.message}`, { cause });
+    this.name = "DatabaseError";
+    this.operation = operation;
   }
 }
 
@@ -29,19 +29,19 @@ export class DatabaseError extends Error {
  * done, like `DatabaseError`.
  */
 export class StorageError extends Error {
-  readonly operation: string
+  readonly operation: string;
 
   constructor(operation: string, cause: StorageErrorLike) {
-    super(`${operation}: ${cause.message}`, { cause })
-    this.name = 'StorageError'
-    this.operation = operation
+    super(`${operation}: ${cause.message}`, { cause });
+    this.name = "StorageError";
+    this.operation = operation;
   }
 }
 
 /** The result of a Supabase query: `data` on success, `error` on failure. */
 interface QueryResult {
-  data: unknown
-  error: PostgrestErrorLike | null
+  data: unknown;
+  error: PostgrestErrorLike | null;
 }
 
 /**
@@ -55,18 +55,18 @@ interface QueryResult {
  */
 export function throwIfError<Result extends QueryResult>(
   result: Result,
-  operation: string,
-): Extract<Result, { error: null }>['data'] {
+  operation: string
+): Extract<Result, { error: null }>["data"] {
   if (result.error) {
-    throw new DatabaseError(operation, result.error)
+    throw new DatabaseError(operation, result.error);
   }
 
   // The type of `data` is not narrowed by checking `error` of a generic.
-  return result.data as Extract<Result, { error: null }>['data']
+  return result.data as Extract<Result, { error: null }>["data"];
 }
 
 export function isForeignKeyViolation(error: PostgrestErrorLike): boolean {
-  return error.code === FOREIGN_KEY_VIOLATION
+  return error.code === FOREIGN_KEY_VIOLATION;
 }
 
 /**
@@ -74,8 +74,8 @@ export function isForeignKeyViolation(error: PostgrestErrorLike): boolean {
  */
 export class AccountNotFoundError extends Error {
   constructor(accountId: string) {
-    super(`Account not found: ${accountId}`)
-    this.name = 'AccountNotFoundError'
+    super(`Account not found: ${accountId}`);
+    this.name = "AccountNotFoundError";
   }
 }
 
@@ -85,7 +85,7 @@ export class AccountNotFoundError extends Error {
  */
 export class StalledPaginationError extends Error {
   constructor(accountId: string, cursor: string) {
-    super(`Pagination did not advance for ${accountId} (cursor: ${cursor})`)
-    this.name = 'StalledPaginationError'
+    super(`Pagination did not advance for ${accountId} (cursor: ${cursor})`);
+    this.name = "StalledPaginationError";
   }
 }

@@ -3,114 +3,116 @@ import type {
   TwitchStream,
   TwitchUser,
   TwitchVideo,
-} from '@shinju-date/twitch-api-client'
-import type { SavedTwitchVideo } from '../../twitch/saved-video.js'
-import type { SavedLiveVideo } from '../../twitch/sync-live.js'
+} from "@shinju-date/twitch-api-client";
+
+import type { SavedTwitchVideo } from "../../twitch/saved-video.js";
+import type { SavedLiveVideo } from "../../twitch/sync-live.js";
 import type {
   SupabaseRequest,
   SupabaseResponder,
   SupabaseRoutes,
-} from './supabase.js'
+} from "./supabase.js";
 
 /** An active talent with one Twitch account, as the crawls load it. */
 export const TWITCH_TALENTS = [
   {
-    id: 'talent-1',
-    twitch_users: [{ id: 'user-row-1', twitch_user_id: 'twitch-user-1' }],
+    id: "talent-1",
+    twitch_users: [{ id: "user-row-1", twitch_user_id: "twitch-user-1" }],
   },
-]
+];
 
 /** Builds the Helix user `id` (Alice by default) for tests. */
 export function createUser(
-  id = 'twitch-user-1',
-  overrides: Partial<Omit<TwitchUser, 'id'>> = {},
+  id = "twitch-user-1",
+  overrides: Partial<Omit<TwitchUser, "id">> = {}
 ): TwitchUser {
   return {
-    broadcaster_type: '',
-    created_at: '2020-01-01T00:00:00Z',
-    description: '',
-    display_name: 'Alice',
+    broadcaster_type: "",
+    created_at: "2020-01-01T00:00:00Z",
+    description: "",
+    display_name: "Alice",
     id,
-    login: 'alice',
-    offline_image_url: '',
-    profile_image_url: '',
-    type: '',
+    login: "alice",
+    offline_image_url: "",
+    profile_image_url: "",
+    type: "",
     ...overrides,
-  }
+  };
 }
 
 /** Builds a Helix stream with sensible defaults for tests. */
 export function createStream(
-  overrides: Partial<TwitchStream> = {},
+  overrides: Partial<TwitchStream> = {}
 ): TwitchStream {
   return {
-    game_id: '1',
-    game_name: 'Game',
-    id: 'stream-1',
+    game_id: "1",
+    game_name: "Game",
+    id: "stream-1",
     is_mature: false,
-    language: 'ja',
-    started_at: '2024-05-01T09:00:00Z',
+    language: "ja",
+    started_at: "2024-05-01T09:00:00Z",
     tags: [],
-    thumbnail_url: 'https://cdn.test/live-{width}x{height}.jpg',
-    title: 'Live now',
-    type: 'live',
-    user_id: 'twitch-user-1',
-    user_login: 'alice',
-    user_name: 'Alice',
+    thumbnail_url: "https://cdn.test/live-{width}x{height}.jpg",
+    title: "Live now",
+    type: "live",
+    user_id: "twitch-user-1",
+    user_login: "alice",
+    user_name: "Alice",
     viewer_count: 10,
     ...overrides,
-  }
+  };
 }
 
 /** Builds a Helix video (an archive by default) for tests. */
 export function createVideo(overrides: Partial<TwitchVideo> = {}): TwitchVideo {
   return {
-    created_at: '2024-05-01T09:00:00Z',
-    description: '',
-    duration: 'PT2H',
-    id: 'vod-1',
-    language: 'ja',
-    published_at: '2024-05-01T09:00:00Z',
-    stream_id: 'stream-1',
-    thumbnail_url: 'https://cdn.test/vod-%{width}x%{height}.jpg',
-    title: 'Archive',
-    type: 'archive',
-    url: 'https://www.twitch.tv/videos/vod-1',
-    user_id: 'twitch-user-1',
-    user_login: 'alice',
-    user_name: 'Alice',
+    created_at: "2024-05-01T09:00:00Z",
+    description: "",
+    duration: "PT2H",
+    id: "vod-1",
+    language: "ja",
+    published_at: "2024-05-01T09:00:00Z",
+    stream_id: "stream-1",
+    thumbnail_url: "https://cdn.test/vod-%{width}x%{height}.jpg",
+    title: "Archive",
+    type: "archive",
+    url: "https://www.twitch.tv/videos/vod-1",
+    user_id: "twitch-user-1",
+    user_login: "alice",
+    user_name: "Alice",
     view_count: 1,
-    viewable: 'public',
+    viewable: "public",
     ...overrides,
-  }
+  };
 }
 
 /** Builds a Helix clip for tests. */
 export function createClip(overrides: Partial<TwitchClip> = {}): TwitchClip {
   return {
-    broadcaster_id: 'twitch-user-1',
-    broadcaster_name: 'Alice',
-    created_at: '2024-05-01T09:00:00Z',
-    creator_id: 'twitch-user-2',
-    creator_name: 'Bob',
-    duration: 'PT30S',
-    embed_url: '',
-    game_id: '1',
-    id: 'clip-1',
-    language: 'ja',
-    thumbnail_url: 'https://cdn.test/clip.jpg',
-    title: 'Clip',
-    url: 'https://clips.twitch.tv/clip-1',
-    video_id: 'vod-1',
+    broadcaster_id: "twitch-user-1",
+    broadcaster_name: "Alice",
+    created_at: "2024-05-01T09:00:00Z",
+    creator_id: "twitch-user-2",
+    creator_name: "Bob",
+    duration: "PT30S",
+    embed_url: "",
+    game_id: "1",
+    id: "clip-1",
+    language: "ja",
+    thumbnail_url: "https://cdn.test/clip.jpg",
+    title: "Clip",
+    url: "https://clips.twitch.tv/clip-1",
+    video_id: "vod-1",
     view_count: 1,
     vod_offset: 0,
     ...overrides,
-  }
+  };
 }
 
-interface SavedVideoOverrides
-  extends Partial<Omit<SavedTwitchVideo, 'twitch_video'>> {
-  twitch_video?: Partial<SavedTwitchVideo['twitch_video']>
+interface SavedVideoOverrides extends Partial<
+  Omit<SavedTwitchVideo, "twitch_video">
+> {
+  twitch_video?: Partial<SavedTwitchVideo["twitch_video"]>;
 }
 
 /**
@@ -123,21 +125,21 @@ export function createSavedVideo({
 }: SavedVideoOverrides = {}): SavedTwitchVideo {
   return {
     deleted_at: null,
-    duration: 'P0D',
-    id: 'video-1',
-    published_at: '2024-05-01T09:00:00+00:00',
-    status: 'LIVE',
-    thumbnail_id: 'thumb-live',
-    title: 'Live now',
+    duration: "P0D",
+    id: "video-1",
+    published_at: "2024-05-01T09:00:00+00:00",
+    status: "LIVE",
+    thumbnail_id: "thumb-live",
+    title: "Live now",
     ...overrides,
     twitch_video: {
-      id: 'twitch-row-1',
-      stream_id: 'stream-1',
-      twitch_video_id: 'live:stream-1',
+      id: "twitch-row-1",
+      stream_id: "stream-1",
+      twitch_video_id: "live:stream-1",
       type: null,
       ...twitchVideo,
     },
-  }
+  };
 }
 
 /** Builds a saved archive that matches `createVideo()` exactly. */
@@ -146,17 +148,17 @@ export function createSavedArchive({
   ...overrides
 }: SavedVideoOverrides = {}): SavedTwitchVideo {
   return createSavedVideo({
-    duration: 'PT2H',
-    status: 'ENDED',
-    thumbnail_id: 'thumb-1',
-    title: 'Archive',
+    duration: "PT2H",
+    status: "ENDED",
+    thumbnail_id: "thumb-1",
+    title: "Archive",
     ...overrides,
     twitch_video: {
-      twitch_video_id: 'vod-1',
-      type: 'archive',
+      twitch_video_id: "vod-1",
+      type: "archive",
       ...twitchVideo,
     },
-  })
+  });
 }
 
 /**
@@ -165,24 +167,24 @@ export function createSavedArchive({
  */
 export function createSavedLiveVideo(
   overrides: SavedVideoOverrides = {},
-  twitchUserId: string | null = 'twitch-user-1',
+  twitchUserId: string | null = "twitch-user-1"
 ): SavedLiveVideo {
-  return { ...createSavedVideo(overrides), twitchUserId }
+  return { ...createSavedVideo(overrides), twitchUserId };
 }
 
 /** The column a lookup of saved rows filters on, if the request is one. */
 function getLookupColumn(
-  query: Record<string, string>,
-): 'stream_id' | 'twitch_video_id' | undefined {
-  if (query['twitch_video.stream_id']) {
-    return 'stream_id'
+  query: Record<string, string>
+): "stream_id" | "twitch_video_id" | undefined {
+  if (query["twitch_video.stream_id"]) {
+    return "stream_id";
   }
 
-  if (query['twitch_video.twitch_video_id']) {
-    return 'twitch_video_id'
+  if (query["twitch_video.twitch_video_id"]) {
+    return "twitch_video_id";
   }
 
-  return undefined
+  return undefined;
 }
 
 /**
@@ -190,7 +192,7 @@ function getLookupColumn(
  * video ID, as {@link findSavedVideos} answers it.
  */
 export function isSavedVideoLookup({ query }: SupabaseRequest): boolean {
-  return getLookupColumn(query) !== undefined
+  return getLookupColumn(query) !== undefined;
 }
 
 /**
@@ -198,16 +200,16 @@ export function isSavedVideoLookup({ query }: SupabaseRequest): boolean {
  * (`GET videos`) with the matching ones among `savedVideos`.
  */
 export function findSavedVideos(
-  savedVideos: readonly SavedTwitchVideo[],
+  savedVideos: readonly SavedTwitchVideo[]
 ): SupabaseResponder {
   return ({ query }) => {
-    const column = getLookupColumn(query) ?? 'twitch_video_id'
-    const ids = (query[`twitch_video.${column}`] ?? '').slice(4, -1).split(',')
+    const column = getLookupColumn(query) ?? "twitch_video_id";
+    const ids = (query[`twitch_video.${column}`] ?? "").slice(4, -1).split(",");
 
     return savedVideos.filter((saved) =>
-      ids.includes(String(saved.twitch_video[column])),
-    )
-  }
+      ids.includes(String(saved.twitch_video[column]))
+    );
+  };
 }
 
 /**
@@ -215,13 +217,13 @@ export function findSavedVideos(
  * has `savedLiveVideos` shown as LIVE.
  */
 export function liveVideoRoutes(
-  savedLiveVideos: readonly SavedLiveVideo[] = [],
+  savedLiveVideos: readonly SavedLiveVideo[] = []
 ): SupabaseRoutes {
-  const lookUp = findSavedVideos(savedLiveVideos)
+  const lookUp = findSavedVideos(savedLiveVideos);
 
   return {
-    'GET talents': TWITCH_TALENTS,
-    'GET videos': (request) =>
+    "GET talents": TWITCH_TALENTS,
+    "GET videos": (request) =>
       isSavedVideoLookup(request)
         ? lookUp(request)
         : savedLiveVideos.map(({ twitch_video, twitchUserId, ...video }) => ({
@@ -233,5 +235,5 @@ export function liveVideoRoutes(
                 : null,
             },
           })),
-  }
+  };
 }

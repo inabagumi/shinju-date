@@ -1,7 +1,8 @@
-import { notFound } from 'next/navigation'
-import { fetchTalent, type TalentDetail } from '@/lib/data/talents'
+import { notFound } from "next/navigation";
 
-export type TalentPageParams = PageProps<'/talents/[id]'>['params']
+import { fetchTalent, type TalentDetail } from "@/lib/data/talents";
+
+export type TalentPageParams = PageProps<"/talents/[id]">["params"];
 
 /**
  * The talent of the page. For talents that are not shown (missing, retired,
@@ -11,14 +12,14 @@ export type TalentPageParams = PageProps<'/talents/[id]'>['params']
  * `fetchTalent` is cached, so the talent is fetched only once.
  */
 export async function getShownTalent(
-  params: TalentPageParams,
+  params: TalentPageParams
 ): Promise<TalentDetail> {
-  const { id } = await params
-  const talent = await fetchTalent(id)
+  const { id } = await params;
+  const talent = await fetchTalent(id);
 
   if (!talent) {
-    notFound()
+    notFound();
   }
 
-  return talent
+  return talent;
 }

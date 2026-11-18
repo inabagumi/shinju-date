@@ -1,4 +1,4 @@
-import type { youtube_v3 as youtube } from '@googleapis/youtube'
+import type { youtube_v3 as youtube } from "@googleapis/youtube";
 
 /**
  * Extracts the published date from a YouTube video.
@@ -9,12 +9,12 @@ import type { youtube_v3 as youtube } from '@googleapis/youtube'
  * @returns The published date as a Temporal.Instant
  */
 export function getPublishedAt(
-  video: youtube.Schema$Video,
+  video: youtube.Schema$Video
 ): Temporal.Instant | null {
   const publishedAt =
     video.liveStreamingDetails?.actualStartTime ??
     video.liveStreamingDetails?.scheduledStartTime ??
-    video.snippet?.publishedAt
+    video.snippet?.publishedAt;
 
-  return publishedAt ? Temporal.Instant.from(publishedAt) : null
+  return publishedAt ? Temporal.Instant.from(publishedAt) : null;
 }

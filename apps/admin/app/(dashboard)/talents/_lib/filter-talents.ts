@@ -1,32 +1,32 @@
-import type { TalentSearchParams } from './search-params-schema'
-import type { TalentStatusFilter } from './talent-list-filters'
+import type { TalentSearchParams } from "./search-params-schema";
+import type { TalentStatusFilter } from "./talent-list-filters";
 
 /** 絞り込みと並べ替えに使う、タレントの項目 */
 interface FilterableTalent {
-  id: string
-  name: string
-  deleted_at: string | null
-  status: string
-  updated_at: string
+  id: string;
+  name: string;
+  deleted_at: string | null;
+  status: string;
+  updated_at: string;
 }
 
 function matchesStatus(
   talent: FilterableTalent,
-  filter: TalentStatusFilter,
+  filter: TalentStatusFilter
 ): boolean {
-  const isDeleted = talent.deleted_at !== null
+  const isDeleted = talent.deleted_at !== null;
 
   switch (filter) {
-    case 'all':
-      return true
-    case 'deleted':
-      return isDeleted
-    case 'active':
-      return !isDeleted && talent.status === 'active'
-    case 'retired':
-      return !isDeleted && talent.status === 'retired'
-    case 'not_deleted':
-      return !isDeleted
+    case "all":
+      return true;
+    case "deleted":
+      return isDeleted;
+    case "active":
+      return !isDeleted && talent.status === "active";
+    case "retired":
+      return !isDeleted && talent.status === "retired";
+    case "not_deleted":
+      return !isDeleted;
   }
 }
 
@@ -39,9 +39,9 @@ function matchesStatus(
  */
 export function filterTalents<T extends FilterableTalent>(
   talents: readonly T[],
-  { search, sort, status }: TalentSearchParams,
+  { search, sort, status }: TalentSearchParams
 ): T[] {
-  const query = search?.toLowerCase()
+  const query = search?.toLowerCase();
 
   return talents
     .filter(
@@ -49,14 +49,14 @@ export function filterTalents<T extends FilterableTalent>(
         matchesStatus(talent, status) &&
         (query === undefined ||
           talent.name.toLowerCase().includes(query) ||
-          talent.id.toLowerCase().includes(query)),
+          talent.id.toLowerCase().includes(query))
     )
     .sort((a, b) => {
       const order = Temporal.Instant.compare(
         Temporal.Instant.from(a.updated_at),
-        Temporal.Instant.from(b.updated_at),
-      )
+        Temporal.Instant.from(b.updated_at)
+      );
 
-      return sort === 'desc' ? -order : order
-    })
+      return sort === "desc" ? -order : order;
+    });
 }

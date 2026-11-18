@@ -1,26 +1,27 @@
-import { notFound } from 'next/navigation'
-import { fetchOldestVideoDate, fetchScheduleToday } from '@/lib/data/schedule'
+import { notFound } from "next/navigation";
+
+import { fetchOldestVideoDate, fetchScheduleToday } from "@/lib/data/schedule";
 import {
   getScheduleWeekRange,
   getWeekStart,
   isWeekInRange,
   parseScheduleDate,
   type ScheduleWeekRange,
-} from '@/lib/schedule'
+} from "@/lib/schedule";
 
 /**
  * `params` of `/schedule/[date]`. `/schedule` has none, and shows the week
  * that includes today.
  */
-export type SchedulePageParams = PageProps<'/schedule/[date]'>['params']
+export type SchedulePageParams = PageProps<"/schedule/[date]">["params"];
 
 export interface ScheduleWeek {
   /** The weeks that can be shown. Links to the other weeks are not shown */
-  range: ScheduleWeekRange
+  range: ScheduleWeekRange;
   /** Today in `TIME_ZONE`, at the time `fetchScheduleToday` was cached */
-  today: Temporal.PlainDate
+  today: Temporal.PlainDate;
   /** The Sunday of the week the page shows */
-  weekStart: Temporal.PlainDate
+  weekStart: Temporal.PlainDate;
 }
 
 /**
@@ -32,34 +33,34 @@ export interface ScheduleWeek {
  * fetchers are cached, so they run only once.
  */
 export async function resolveScheduleWeek(
-  params?: SchedulePageParams | undefined,
+  params?: SchedulePageParams | undefined
 ): Promise<ScheduleWeek> {
-  let day: Temporal.PlainDate | null = null
+  let day: Temporal.PlainDate | null = null;
 
   if (params) {
-    const { date } = await params
+    const { date } = await params;
 
-    day = parseScheduleDate(date)
+    day = parseScheduleDate(date);
 
     if (!day) {
-      notFound()
+      notFound();
     }
   }
 
   const [todayValue, oldestValue] = await Promise.all([
     fetchScheduleToday(),
     fetchOldestVideoDate(),
-  ])
-  const today = Temporal.PlainDate.from(todayValue)
+  ]);
+  const today = Temporal.PlainDate.from(todayValue);
   const range = getScheduleWeekRange({
     oldestDate: oldestValue ? Temporal.PlainDate.from(oldestValue) : null,
     today,
-  })
-  const weekStart = getWeekStart(day ?? today)
+  });
+  const weekStart = getWeekStart(day ?? today);
 
   if (!isWeekInRange(weekStart, range)) {
-    notFound()
+    notFound();
   }
 
-  return { range, today, weekStart }
+  return { range, today, weekStart };
 }

@@ -1,24 +1,24 @@
-import { Scraper } from '../scraper.js'
+import { Scraper } from "../scraper.js";
 import type {
   AddPastVideosOptions,
   AddPastVideosResult,
   RefreshVideoResult,
   SyncAccountResult,
-} from '../types.js'
-import type { YouTubeChannelFields } from './accounts.js'
-import { addNewYouTubeVideos } from './add-new-videos.js'
-import { addPastYouTubeVideos } from './add-past-videos.js'
+} from "../types.js";
+import type { YouTubeChannelFields } from "./accounts.js";
+import { addNewYouTubeVideos } from "./add-new-videos.js";
+import { addPastYouTubeVideos } from "./add-past-videos.js";
 import {
   refreshYouTubeVideos,
   removeUnavailableYouTubeVideos,
-} from './check-videos.js'
-import { YouTubeFetcher } from './fetcher.js'
-import { refreshYouTubeVideo } from './refresh-video.js'
+} from "./check-videos.js";
+import { YouTubeFetcher } from "./fetcher.js";
+import { refreshYouTubeVideo } from "./refresh-video.js";
 import {
   syncYouTubeChannels,
   syncYouTubeChannelsOfTalent,
-} from './sync-accounts.js'
-import type { YouTubeScraperOptions } from './types.js'
+} from "./sync-accounts.js";
+import type { YouTubeScraperOptions } from "./types.js";
 
 /**
  * Keeps YouTube videos and channels in the database in sync with YouTube.
@@ -28,22 +28,22 @@ import type { YouTubeScraperOptions } from './types.js'
  * `refreshLiveVideos` until they end.
  */
 export class YouTubeScraper extends Scraper {
-  readonly provider = 'youtube'
+  readonly provider = "youtube";
 
-  readonly #fetcher: YouTubeFetcher
+  readonly #fetcher: YouTubeFetcher;
 
   constructor({ client, concurrency, ...options }: YouTubeScraperOptions) {
-    super(options)
+    super(options);
 
     this.#fetcher = new YouTubeFetcher({
       client,
       concurrency,
       logger: options.logger,
-    })
+    });
   }
 
   async addNewVideos(now?: Temporal.Instant): Promise<boolean> {
-    return (await addNewYouTubeVideos(this.#context(now))) > 0
+    return (await addNewYouTubeVideos(this.#context(now))) > 0;
   }
 
   /**
@@ -51,43 +51,43 @@ export class YouTubeScraper extends Scraper {
    * endings. Videos YouTube no longer returns are soft-deleted.
    */
   async refreshLiveVideos(now?: Temporal.Instant): Promise<boolean> {
-    return (await refreshYouTubeVideos(this.#context(now), 'live')) > 0
+    return (await refreshYouTubeVideos(this.#context(now), "live")) > 0;
   }
 
   async refreshRecentVideos(now?: Temporal.Instant): Promise<boolean> {
-    return (await refreshYouTubeVideos(this.#context(now), 'recent')) > 0
+    return (await refreshYouTubeVideos(this.#context(now), "recent")) > 0;
   }
 
   refreshVideo(
     videoId: string,
-    now?: Temporal.Instant,
+    now?: Temporal.Instant
   ): Promise<RefreshVideoResult> {
-    return refreshYouTubeVideo(this.#context(now), videoId)
+    return refreshYouTubeVideo(this.#context(now), videoId);
   }
 
   async removeUnavailableVideos(now?: Temporal.Instant): Promise<boolean> {
-    return (await removeUnavailableYouTubeVideos(this.#context(now))) > 0
+    return (await removeUnavailableYouTubeVideos(this.#context(now))) > 0;
   }
 
   async syncAccounts(now?: Temporal.Instant): Promise<boolean> {
-    return (await syncYouTubeChannels(this.#context(now))) > 0
+    return (await syncYouTubeChannels(this.#context(now))) > 0;
   }
 
   syncTalentAccounts(
     talentId: string,
-    now?: Temporal.Instant,
+    now?: Temporal.Instant
   ): Promise<SyncAccountResult<YouTubeChannelFields>[]> {
-    return syncYouTubeChannelsOfTalent(this.#context(now), talentId)
+    return syncYouTubeChannelsOfTalent(this.#context(now), talentId);
   }
 
   addPastVideos({
     now,
     ...options
   }: AddPastVideosOptions): Promise<AddPastVideosResult> {
-    return addPastYouTubeVideos(this.#context(now), options)
+    return addPastYouTubeVideos(this.#context(now), options);
   }
 
   #context(now: Temporal.Instant | undefined) {
-    return this.createContext(this.#fetcher, now)
+    return this.createContext(this.#fetcher, now);
   }
 }

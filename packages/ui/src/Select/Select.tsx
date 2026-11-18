@@ -1,11 +1,12 @@
-import type { VariantProps } from 'class-variance-authority'
-import { ChevronDown } from 'lucide-react'
-import type { ComponentPropsWithRef } from 'react'
-import { inputVariants } from '../Input/Input.js'
-import { twMerge } from '../tw-merge.js'
+import type { VariantProps } from "class-variance-authority";
+import { ChevronDown } from "lucide-react";
+import type { ComponentPropsWithRef } from "react";
 
-export type SelectProps = Omit<ComponentPropsWithRef<'select'>, 'size'> &
-  VariantProps<typeof inputVariants>
+import { inputVariants } from "../Input/Input.js";
+import { twMerge } from "../tw-merge.js";
+
+export type SelectProps = Omit<ComponentPropsWithRef<"select">, "size"> &
+  VariantProps<typeof inputVariants>;
 
 /**
  * セレクトボックス。`Input` と同じ高さ・枠・角丸・フォーカス表示にする。
@@ -22,11 +23,11 @@ export function Select({
   ...props
 }: SelectProps) {
   return (
-    <div className={twMerge('relative w-full', className)}>
+    <div className={twMerge("relative w-full", className)}>
       <select
         className={twMerge(
           inputVariants({ inputSize, variant }),
-          'peer cursor-pointer appearance-none pr-10',
+          "peer cursor-pointer appearance-none pr-10"
         )}
         {...props}
       />
@@ -35,5 +36,5 @@ export function Select({
         className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted peer-disabled:opacity-50"
       />
     </div>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-import retryableFetch from '@shinju-date/retryable-fetch'
+import retryableFetch from "@shinju-date/retryable-fetch";
 
 export interface DownloadImageOptions {
   /**
@@ -6,15 +6,15 @@ export interface DownloadImageOptions {
    * with `If-None-Match`, and counts as unchanged when the platform confirms
    * it (`304 Not Modified`, or the same ETag again).
    */
-  etag?: string | null | undefined
+  etag?: string | null | undefined;
 }
 
 /** An image downloaded from its platform, not stored yet. */
 export interface DownloadedImage {
-  body: ArrayBuffer
+  body: ArrayBuffer;
   /** `null` when the platform did not send a `Content-Type`. */
-  contentType: string | null
-  etag: string | null
+  contentType: string | null;
+  etag: string | null;
 }
 
 /**
@@ -26,37 +26,37 @@ export interface DownloadedImage {
  */
 export async function downloadImage(
   url: string,
-  { etag }: DownloadImageOptions = {},
+  { etag }: DownloadImageOptions = {}
 ): Promise<DownloadedImage | null> {
   const response = await retryableFetch(url, {
-    ...(etag ? { headers: { 'If-None-Match': etag } } : {}),
-  })
+    ...(etag ? { headers: { "If-None-Match": etag } } : {}),
+  });
 
   if (!response.ok && response.status !== 304) {
     // The body is read to reuse the socket.
-    await response.arrayBuffer()
+    await response.arrayBuffer();
 
-    throw new Error(`Failed to download an image (${response.status}): ${url}`)
+    throw new Error(`Failed to download an image (${response.status}): ${url}`);
   }
 
-  const responseEtag = response.headers.get('ETag')
+  const responseEtag = response.headers.get("ETag");
 
   if (response.status === 304 || (etag && responseEtag === etag)) {
     // The body is read to reuse the socket.
-    await response.arrayBuffer()
+    await response.arrayBuffer();
 
-    return null
+    return null;
   }
 
-  const contentType = response.headers.get('Content-Type')
-  const body = await response.arrayBuffer()
+  const contentType = response.headers.get("Content-Type");
+  const body = await response.arrayBuffer();
 
   // Without a Content-Type, decoding the image tells whether it is one.
-  if (contentType !== null && !contentType.startsWith('image/')) {
+  if (contentType !== null && !contentType.startsWith("image/")) {
     throw new TypeError(
-      `Expected an image but received "${contentType}": ${url}`,
-    )
+      `Expected an image but received "${contentType}": ${url}`
+    );
   }
 
-  return { body, contentType, etag: responseEtag }
+  return { body, contentType, etag: responseEtag };
 }

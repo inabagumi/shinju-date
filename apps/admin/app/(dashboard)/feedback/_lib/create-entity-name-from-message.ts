@@ -1,4 +1,4 @@
-const MAX_LENGTH = 40
+const MAX_LENGTH = 40;
 
 /**
  * Creates the name of a feedback for the audit log: the first 40 characters
@@ -9,7 +9,7 @@ const MAX_LENGTH = 40
  * not valid in `jsonb`, and the audit log entry would not be recorded.
  */
 export function createEntityNameFromMessage(message: string): string {
-  const characters = Array.from(message.replaceAll(/\s+/g, ' ').trim())
+  const characters = Array.from(message.replaceAll(/\s+/g, " ").trim());
 
-  return characters.slice(0, MAX_LENGTH).join('')
+  return characters.slice(0, MAX_LENGTH).join("");
 }

@@ -97,9 +97,9 @@ search:popular:all_time          ZINCRBY +1
 ### 時間減衰の重み
 
 ```typescript
-const WEIGHT_DAILY = 10.0 // 日次データの重み
-const WEIGHT_WEEKLY = 5.0 // 週次データの重み
-const WEIGHT_ALL_TIME = 1.0 // 全期間データの重み
+const WEIGHT_DAILY = 10.0; // 日次データの重み
+const WEIGHT_WEEKLY = 5.0; // 週次データの重み
+const WEIGHT_ALL_TIME = 1.0; // 全期間データの重み
 ```
 
 これらの重みにより、最近の検索が過去の検索よりも大きく評価されます。

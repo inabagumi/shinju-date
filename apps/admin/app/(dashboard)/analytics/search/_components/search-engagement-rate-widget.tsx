@@ -1,14 +1,16 @@
-import { StatTile } from '@shinju-date/ui'
-import { getSearchEngagementRate } from '@/lib/analytics/get-search-quality-metrics'
-import { WidgetHeader } from '../../_components/widget-header'
-import { resolvePeriod } from '../../_lib/resolve-period'
-import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
-import { ENGAGEMENT_RATE_RATINGS, rate } from '../_lib/metric-ratings'
-import { MetricLegend } from './metric-legend'
-import { MetricNoData } from './metric-no-data'
+import { StatTile } from "@shinju-date/ui";
+
+import { getSearchEngagementRate } from "@/lib/analytics/get-search-quality-metrics";
+
+import { WidgetHeader } from "../../_components/widget-header";
+import { resolvePeriod } from "../../_lib/resolve-period";
+import type { AnalyticsSearchParams } from "../../_lib/search-params-schema";
+import { ENGAGEMENT_RATE_RATINGS, rate } from "../_lib/metric-ratings";
+import { MetricLegend } from "./metric-legend";
+import { MetricNoData } from "./metric-no-data";
 
 interface Props {
-  searchParams: Promise<AnalyticsSearchParams>
+  searchParams: Promise<AnalyticsSearchParams>;
 }
 
 /**
@@ -19,9 +21,9 @@ function SearchEngagementRateWidgetComponent({
   dateRange,
   selectedDate,
 }: {
-  engagementRate: number | null
-  dateRange: { startDate: string; endDate: string }
-  selectedDate: string | null
+  engagementRate: number | null;
+  dateRange: { startDate: string; endDate: string };
+  selectedDate: string | null;
 }) {
   return (
     <div>
@@ -50,17 +52,17 @@ function SearchEngagementRateWidgetComponent({
         unit="%"
       />
     </div>
-  )
+  );
 }
 
 /**
  * Async server component that fetches and displays search engagement rate widget
  */
 export async function SearchEngagementRateWidget({ searchParams }: Props) {
-  const { dateRange, selectedDate } = await searchParams
+  const { dateRange, selectedDate } = await searchParams;
 
-  const range = resolvePeriod({ dateRange, selectedDate })
-  const engagementRate = await getSearchEngagementRate({ range })
+  const range = resolvePeriod({ dateRange, selectedDate });
+  const engagementRate = await getSearchEngagementRate({ range });
 
   return (
     <SearchEngagementRateWidgetComponent
@@ -68,5 +70,5 @@ export async function SearchEngagementRateWidget({ searchParams }: Props) {
       engagementRate={engagementRate}
       selectedDate={selectedDate}
     />
-  )
+  );
 }

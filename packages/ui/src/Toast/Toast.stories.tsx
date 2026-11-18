@@ -1,13 +1,15 @@
-import { useState } from 'react'
-import preview from '#.storybook/preview'
-import { Button } from '../Button/Button'
+import { useState } from "react";
+
+import preview from "#.storybook/preview";
+
+import { Button } from "../Button/Button";
 import {
   Toast,
   ToastClose,
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from './Toast'
+} from "./Toast";
 
 const meta = preview.meta({
   component: Toast,
@@ -20,15 +22,15 @@ const meta = preview.meta({
     ),
   ],
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs'],
-  title: 'Components/Toast',
-})
+  tags: ["autodocs"],
+  title: "Components/Toast",
+});
 
 export const Success = meta.story({
   render: () => {
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(false);
 
     return (
       <>
@@ -43,13 +45,13 @@ export const Success = meta.story({
           <ToastClose />
         </Toast>
       </>
-    )
+    );
   },
-})
+});
 
 export const Danger = meta.story({
   render: () => {
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(false);
 
     return (
       <>
@@ -66,13 +68,13 @@ export const Danger = meta.story({
           <ToastClose />
         </Toast>
       </>
-    )
+    );
   },
-})
+});
 
 export const Warning = meta.story({
   render: () => {
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(false);
 
     return (
       <>
@@ -89,13 +91,13 @@ export const Warning = meta.story({
           <ToastClose />
         </Toast>
       </>
-    )
+    );
   },
-})
+});
 
 export const Default = meta.story({
   render: () => {
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(false);
 
     return (
       <>
@@ -107,6 +109,6 @@ export const Default = meta.story({
           <ToastClose />
         </Toast>
       </>
-    )
+    );
   },
-})
+});

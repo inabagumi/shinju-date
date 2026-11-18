@@ -1,4 +1,4 @@
-import { formatNumber } from '@shinju-date/helpers'
+import { formatNumber } from "@shinju-date/helpers";
 import {
   EmptyState,
   Skeleton,
@@ -8,32 +8,33 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@shinju-date/ui'
-import type { ReactNode } from 'react'
-import { TableSkeleton } from '@/components/table-skeleton'
+} from "@shinju-date/ui";
+import type { ReactNode } from "react";
+
+import { TableSkeleton } from "@/components/table-skeleton";
 
 export interface RankingItem {
-  key: string
-  label: ReactNode
-  value: number
+  key: string;
+  label: ReactNode;
+  value: number;
 }
 
 interface RankingTableProps {
-  items: RankingItem[]
+  items: RankingItem[];
   /** 名前の列の見出し（「キーワード」「動画」など） */
-  labelHeading: string
+  labelHeading: string;
   /** 回数の列の見出し */
-  valueHeading?: string
+  valueHeading?: string;
 }
 
 /** 順位・名前・回数を並べるランキングの表 */
 export function RankingTable({
   items,
   labelHeading,
-  valueHeading = '回数',
+  valueHeading = "回数",
 }: RankingTableProps) {
   if (items.length === 0) {
-    return <EmptyState title="データがありません" />
+    return <EmptyState title="データがありません" />;
   }
 
   return (
@@ -61,7 +62,7 @@ export function RankingTable({
         ))}
       </TableBody>
     </Table>
-  )
+  );
 }
 
 /** 読み込み中の `RankingTable`。順位・名前・回数の3列を並べる */
@@ -70,20 +71,20 @@ export function RankingTableSkeleton() {
     <TableSkeleton
       columns={[
         {
-          align: 'end',
+          align: "end",
           cell: <Skeleton className="h-4 w-5" />,
-          className: 'w-16',
-          id: 'rank',
+          className: "w-16",
+          id: "rank",
         },
-        { cell: <Skeleton className="h-4 w-48" />, id: 'label' },
+        { cell: <Skeleton className="h-4 w-48" />, id: "label" },
         {
-          align: 'end',
+          align: "end",
           cell: <Skeleton className="h-4 w-10" />,
-          className: 'w-24',
-          id: 'value',
+          className: "w-24",
+          id: "value",
         },
       ]}
       rows={10}
     />
-  )
+  );
 }

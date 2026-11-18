@@ -1,9 +1,10 @@
-import { z } from 'zod'
+import { z } from "zod";
+
 import {
   getDefaultDateRange,
   parseDate,
   validateRange,
-} from '@/lib/analytics/date-window'
+} from "@/lib/analytics/date-window";
 
 /**
  * Validate a date range ensuring both dates are selectable, start <= end and
@@ -11,16 +12,16 @@ import {
  */
 function parseDateRange(
   startDate: string,
-  endDate: string,
+  endDate: string
 ): { startDate: string; endDate: string } | null {
-  const start = parseDate(startDate)
-  const end = parseDate(endDate)
+  const start = parseDate(startDate);
+  const end = parseDate(endDate);
 
   if (!start || !end || validateRange(start, end) !== null) {
-    return null
+    return null;
   }
 
-  return { endDate: end.toString(), startDate: start.toString() }
+  return { endDate: end.toString(), startDate: start.toString() };
 }
 
 /**
@@ -35,10 +36,10 @@ export const analyticsSearchParamsSchema = z
       .optional()
       .transform((val) => {
         if (Array.isArray(val)) {
-          val = val[0]
+          val = val[0];
         }
-        if (!val) return undefined
-        return parseDate(val)?.toString() ?? null
+        if (!val) return undefined;
+        return parseDate(val)?.toString() ?? null;
       }),
 
     // Start date of the range (from parameter)
@@ -47,9 +48,9 @@ export const analyticsSearchParamsSchema = z
       .optional()
       .transform((val) => {
         if (Array.isArray(val)) {
-          val = val[0]
+          val = val[0];
         }
-        return val || undefined
+        return val || undefined;
       }),
 
     // Active tab for tabbed interfaces (tab parameter)
@@ -58,9 +59,9 @@ export const analyticsSearchParamsSchema = z
       .optional()
       .transform((val) => {
         if (Array.isArray(val)) {
-          val = val[0]
+          val = val[0];
         }
-        return val || undefined
+        return val || undefined;
       }),
 
     // End date of the range (to parameter)
@@ -69,33 +70,33 @@ export const analyticsSearchParamsSchema = z
       .optional()
       .transform((val) => {
         if (Array.isArray(val)) {
-          val = val[0]
+          val = val[0];
         }
-        return val || undefined
+        return val || undefined;
       }),
   })
   .transform((data) => {
-    const { from, to, date, tab } = data
+    const { from, to, date, tab } = data;
 
     // Determine the date range for the chart
-    let dateRange: { startDate: string; endDate: string }
+    let dateRange: { startDate: string; endDate: string };
 
     // If both from and to are provided, use them for the chart range
     if (from && to) {
-      dateRange = parseDateRange(from, to) ?? getDefaultDateRange()
+      dateRange = parseDateRange(from, to) ?? getDefaultDateRange();
     } else {
       // Fall back to default range
-      dateRange = getDefaultDateRange()
+      dateRange = getDefaultDateRange();
     }
 
     // The selected date is used for filtering rankings independently
-    const selectedDate = date || null
+    const selectedDate = date || null;
 
     return {
       dateRange,
       selectedDate,
       tab: tab || null,
-    }
-  })
+    };
+  });
 
-export type AnalyticsSearchParams = z.infer<typeof analyticsSearchParamsSchema>
+export type AnalyticsSearchParams = z.infer<typeof analyticsSearchParamsSchema>;

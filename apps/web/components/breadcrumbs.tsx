@@ -1,20 +1,21 @@
-import Link from 'next/link'
-import type { ReactNode } from 'react'
-import { SITE_NAME as siteName } from '@/lib/site'
+import Link from "next/link";
+import type { ReactNode } from "react";
+
+import { SITE_NAME as siteName } from "@/lib/site";
 
 export interface BreadcrumbItem {
   /** 省略すると現在のページとして、リンクにせずに表示する */
-  href?: string | undefined
-  name: ReactNode
+  href?: string | undefined;
+  name: ReactNode;
 }
 
 interface BreadcrumbsProps {
   /** トップページより下の階層。トップページは自動で先頭に付く */
-  items: BreadcrumbItem[]
+  items: BreadcrumbItem[];
 }
 
 export default function Breadcrumbs({ items }: BreadcrumbsProps) {
-  const allItems: BreadcrumbItem[] = [{ href: '/', name: siteName }, ...items]
+  const allItems: BreadcrumbItem[] = [{ href: "/", name: siteName }, ...items];
 
   return (
     <nav aria-label="パンくずリスト">
@@ -24,8 +25,8 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
         itemType="https://schema.org/BreadcrumbList"
       >
         {allItems.map((item, index) => {
-          const position = index + 1
-          const isCurrent = position === allItems.length
+          const position = index + 1;
+          const isCurrent = position === allItems.length;
 
           return (
             <li
@@ -44,15 +45,15 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
                   <span itemProp="name">{item.name}</span>
                 </Link>
               ) : (
-                <span aria-current={isCurrent ? 'page' : undefined}>
+                <span aria-current={isCurrent ? "page" : undefined}>
                   <span itemProp="name">{item.name}</span>
                 </span>
               )}
               <meta content={String(position)} itemProp="position" />
             </li>
-          )
+          );
         })}
       </ol>
     </nav>
-  )
+  );
 }

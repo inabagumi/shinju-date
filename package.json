@@ -1,30 +1,12 @@
 {
-  "author": "Haneru Developers",
+  "name": "@shinju-date/monorepo",
+  "version": "1.0.0",
+  "private": true,
   "description": "SHINJU DATE is a web service for searching videos.",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "onFail": "download",
-      "version": "12.21.0"
-    },
-    "runtime": {
-      "name": "node",
-      "onFail": "download",
-      "version": "26.13.1"
-    }
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.6.8",
-    "oxfmt": "0.79.0",
-    "supabase": "3.2.0",
-    "turbo": "2.11.11",
-    "typescript": "catalog:",
-    "ultracite": "8.3.0"
-  },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "name": "@shinju-date/monorepo",
-  "private": true,
+  "author": "Haneru Developers",
+  "type": "module",
   "scripts": {
     "build": "turbo build",
     "check": "biome check && oxfmt --check",
@@ -44,6 +26,24 @@
     "typecheck": "turbo typecheck",
     "typegen": "turbo typegen"
   },
-  "type": "module",
-  "version": "1.0.0"
+  "devDependencies": {
+    "@biomejs/biome": "2.6.8",
+    "oxfmt": "0.79.0",
+    "supabase": "3.2.0",
+    "turbo": "2.11.11",
+    "typescript": "catalog:",
+    "ultracite": "8.3.0"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.21.0",
+      "onFail": "download"
+    },
+    "runtime": {
+      "name": "node",
+      "version": "26.13.1",
+      "onFail": "download"
+    }
+  }
 }

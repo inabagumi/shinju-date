@@ -1,8 +1,8 @@
-import type { CacheTag } from '@shinju-date/constants'
-import { logger } from '@shinju-date/logger'
+import type { CacheTag } from "@shinju-date/constants";
+import { logger } from "@shinju-date/logger";
 
 interface RevalidateOptions {
-  signal?: AbortSignal | undefined
+  signal?: AbortSignal | undefined;
 }
 
 /**
@@ -17,13 +17,13 @@ interface RevalidateOptions {
  */
 export async function revalidateTags(
   tags: CacheTag[],
-  { signal }: RevalidateOptions = {},
+  { signal }: RevalidateOptions = {}
 ): Promise<void> {
-  const revalidateUrl = process.env['REVALIDATE_URL']
-  const secretToken = process.env['REVALIDATE_SECRET_TOKEN']
+  const revalidateUrl = process.env["REVALIDATE_URL"];
+  const secretToken = process.env["REVALIDATE_SECRET_TOKEN"];
 
   if (!revalidateUrl || tags.length === 0) {
-    return
+    return;
   }
 
   try {
@@ -32,28 +32,28 @@ export async function revalidateTags(
         tags,
       }),
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...(secretToken ? { Authorization: `Bearer ${secretToken}` } : {}),
       },
-      method: 'POST',
+      method: "POST",
       signal: signal ?? null,
-    })
+    });
 
     if (!res.ok) {
-      const errorBody = await res.json().catch(() => ({}))
-      throw new Error('Webキャッシュの再検証に失敗しました', {
+      const errorBody = await res.json().catch(() => ({}));
+      throw new Error("Webキャッシュの再検証に失敗しました", {
         cause: errorBody,
-      })
+      });
     }
 
-    logger.info('Webキャッシュの再検証をリクエストしました', {
-      tags: tags.join(', '),
-    })
+    logger.info("Webキャッシュの再検証をリクエストしました", {
+      tags: tags.join(", "),
+    });
   } catch (error) {
-    logger.error('Webキャッシュの再検証中にエラーが発生しました', {
+    logger.error("Webキャッシュの再検証中にエラーが発生しました", {
       error,
-      tags: tags.join(', '),
-    })
+      tags: tags.join(", "),
+    });
     // エラーをスローせず、ログのみ記録する
     // これにより、キャッシュ再検証の失敗がメイン処理に影響しない
   }

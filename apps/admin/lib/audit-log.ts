@@ -1,70 +1,71 @@
-import type { default as Database, Enums, Tables } from '@shinju-date/database'
-import { logger } from '@shinju-date/logger'
-import type { AccountChanges } from '@shinju-date/scraper'
-import type { TypedSupabaseClient } from '@/lib/supabase'
+import type { default as Database, Enums, Tables } from "@shinju-date/database";
+import { logger } from "@shinju-date/logger";
+import type { AccountChanges } from "@shinju-date/scraper";
 
-export type AuditAction = Enums<'audit_action'>
+import type { TypedSupabaseClient } from "@/lib/supabase";
+
+export type AuditAction = Enums<"audit_action">;
 
 type AuditLogJson = Exclude<
-  Database['public']['Functions']['insert_audit_log']['Args']['p_details'],
+  Database["public"]["Functions"]["insert_audit_log"]["Args"]["p_details"],
   undefined
->
+>;
 
 type AuditLogEntriesJson =
-  Database['public']['Functions']['insert_audit_logs']['Args']['p_entries']
+  Database["public"]["Functions"]["insert_audit_logs"]["Args"]["p_entries"];
 
 /** Values of `audit_logs.target_table`: what an audit log entry is about. */
 export const AUDIT_TARGET_TABLES = {
-  ANNOUNCEMENTS: 'announcements',
-  AUTH_USERS: 'auth.users',
-  FEATURE_REQUESTS: 'feature_requests',
-  RECOMMENDED_QUERIES: 'redis:recommended_queries',
-  SYSTEM: 'redis:system',
-  TALENTS: 'talents',
-  TERMS: 'terms',
-  VIDEO_BACKFILL: 'redis:video-backfill',
-  VIDEOS: 'videos',
-} as const
+  ANNOUNCEMENTS: "announcements",
+  AUTH_USERS: "auth.users",
+  FEATURE_REQUESTS: "feature_requests",
+  RECOMMENDED_QUERIES: "redis:recommended_queries",
+  SYSTEM: "redis:system",
+  TALENTS: "talents",
+  TERMS: "terms",
+  VIDEO_BACKFILL: "redis:video-backfill",
+  VIDEOS: "videos",
+} as const;
 
 /**
  * The former name of `talents`. Entries recorded before the rename keep it
  * as their target table; no new entry is recorded against it.
  */
-export const LEGACY_TALENTS_TARGET_TABLE = 'channels'
+export const LEGACY_TALENTS_TARGET_TABLE = "channels";
 
 export type AuditTargetTable =
-  (typeof AUDIT_TARGET_TABLES)[keyof typeof AUDIT_TARGET_TABLES]
+  (typeof AUDIT_TARGET_TABLES)[keyof typeof AUDIT_TARGET_TABLES];
 
 /** The name of the record, shown in the activity log instead of its ID. */
 export interface EntityRef {
-  entityName: string
+  entityName: string;
 }
 
 /** The columns that changed, with their values before and after. */
 export interface EntityChanges<T> extends EntityRef {
   changes: {
-    after: Partial<T>
-    before: Partial<T>
-  }
+    after: Partial<T>;
+    before: Partial<T>;
+  };
 }
 
 /** The `videos` columns that syncing a video can change. */
 export type VideoSyncFields = Pick<
-  Tables<'videos'>,
-  | 'deleted_at'
-  | 'deleted_reason'
-  | 'duration'
-  | 'published_at'
-  | 'status'
-  | 'title'
-  | 'video_kind'
->
+  Tables<"videos">,
+  | "deleted_at"
+  | "deleted_reason"
+  | "duration"
+  | "published_at"
+  | "status"
+  | "title"
+  | "video_kind"
+>;
 
 export interface AccountEmailUpdateDetails extends EntityRef {
   /** The old address is not known when the change is confirmed. */
   changes: {
-    after: { email: string }
-  }
+    after: { email: string };
+  };
 }
 
 /**
@@ -72,23 +73,23 @@ export interface AccountEmailUpdateDetails extends EntityRef {
  * left out, because it is long: only whether there is one is recorded.
  */
 export type FeatureRequestUpdateDetails =
-  | EntityChanges<Pick<Tables<'feature_requests'>, 'status'>>
-  | EntityChanges<{ hasMemo: boolean }>
+  | EntityChanges<Pick<Tables<"feature_requests">, "status">>
+  | EntityChanges<{ hasMemo: boolean }>;
 
 /** An account of a talent that changed when the talent was synced. */
 export interface TalentSyncAccount {
   /** The values before and after, when the name or handle changed. */
-  changes?: AccountChanges
+  changes?: AccountChanges;
   /** Present only when the stored icon was created, replaced or removed. */
-  iconUpdated?: boolean
+  iconUpdated?: boolean;
   /** Primary key of the account row (`youtube_channels` / `twitch_users`). */
-  id: string
-  name: string | null
+  id: string;
+  name: string | null;
 }
 
 export interface TalentSyncDetails extends EntityRef {
-  accounts: TalentSyncAccount[]
-  platform: Enums<'platform_type'>
+  accounts: TalentSyncAccount[];
+  platform: Enums<"platform_type">;
 }
 
 /**
@@ -96,50 +97,50 @@ export interface TalentSyncDetails extends EntityRef {
  * talent. The entry is about the talent, and `account` is the account row.
  */
 export interface TalentAccountDetails<T> extends EntityRef {
-  account: T
+  account: T;
 }
 
 type TwitchUserAccount = Pick<
-  Tables<'twitch_users'>,
-  'id' | 'name' | 'twitch_login_name' | 'twitch_user_id'
->
+  Tables<"twitch_users">,
+  "id" | "name" | "twitch_login_name" | "twitch_user_id"
+>;
 
 type YouTubeChannelAccount = Pick<
-  Tables<'youtube_channels'>,
-  'id' | 'name' | 'youtube_channel_id' | 'youtube_handle'
->
+  Tables<"youtube_channels">,
+  "id" | "name" | "youtube_channel_id" | "youtube_handle"
+>;
 
 /** Backfill of the accounts of one talent on one platform. */
 export interface TalentVideoBackfillDetails extends EntityRef {
-  accounts: { accountId: string; name: string }[]
-  platform: Enums<'platform_type'>
+  accounts: { accountId: string; name: string }[];
+  platform: Enums<"platform_type">;
 }
 
 interface VideoBackfillRequestDetails extends EntityRef {
   /** Accounts that could not be queued because of an error. */
-  failed: number
+  failed: number;
   /** Accounts left out because they were being backfilled already. */
-  skipped: number
+  skipped: number;
 }
 
 /** A check of all talents for videos that are not saved. */
 export interface VideoBackfillRunDetails extends VideoBackfillRequestDetails {
   /** Accounts that were queued. */
-  accounts: number
-  scope: 'all'
+  accounts: number;
+  scope: "all";
   /** Accounts of active talents, by platform. */
-  targets: Record<Enums<'platform_type'>, number>
+  targets: Record<Enums<"platform_type">, number>;
 }
 
 /** A retry of the backfills that failed. */
 export interface VideoBackfillRetryDetails extends VideoBackfillRequestDetails {
   accounts: {
-    accountId: string
-    name: string
-    provider: Enums<'platform_type'>
-    talentId: string
-  }[]
-  scope: 'retry'
+    accountId: string;
+    name: string;
+    provider: Enums<"platform_type">;
+    talentId: string;
+  }[];
+  scope: "retry";
 }
 
 /**
@@ -148,137 +149,137 @@ export interface VideoBackfillRetryDetails extends VideoBackfillRequestDetails {
  */
 interface AuditLogDefinitions {
   ACCOUNT_EMAIL_UPDATE: {
-    details: AccountEmailUpdateDetails
-    target: typeof AUDIT_TARGET_TABLES.AUTH_USERS
-  }
+    details: AccountEmailUpdateDetails;
+    target: typeof AUDIT_TARGET_TABLES.AUTH_USERS;
+  };
   ACCOUNT_PASSWORD_UPDATE: {
-    details: undefined
-    target: typeof AUDIT_TARGET_TABLES.AUTH_USERS
-  }
+    details: undefined;
+    target: typeof AUDIT_TARGET_TABLES.AUTH_USERS;
+  };
   ANNOUNCEMENT_CREATE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.ANNOUNCEMENTS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.ANNOUNCEMENTS;
+  };
   ANNOUNCEMENT_DELETE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.ANNOUNCEMENTS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.ANNOUNCEMENTS;
+  };
   ANNOUNCEMENT_UPDATE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.ANNOUNCEMENTS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.ANNOUNCEMENTS;
+  };
   CHANNEL_ACTIVATE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.TALENTS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.TALENTS;
+  };
   CHANNEL_CREATE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.TALENTS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.TALENTS;
+  };
   CHANNEL_DELETE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.TALENTS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.TALENTS;
+  };
   CHANNEL_RESTORE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.TALENTS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.TALENTS;
+  };
   CHANNEL_RETIRE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.TALENTS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.TALENTS;
+  };
   CHANNEL_SYNC: {
-    details: TalentSyncDetails
-    target: typeof AUDIT_TARGET_TABLES.TALENTS
-  }
+    details: TalentSyncDetails;
+    target: typeof AUDIT_TARGET_TABLES.TALENTS;
+  };
   CHANNEL_UPDATE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.TALENTS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.TALENTS;
+  };
   FEATURE_REQUEST_UPDATE: {
-    details: FeatureRequestUpdateDetails
-    target: typeof AUDIT_TARGET_TABLES.FEATURE_REQUESTS
-  }
+    details: FeatureRequestUpdateDetails;
+    target: typeof AUDIT_TARGET_TABLES.FEATURE_REQUESTS;
+  };
   MAINTENANCE_MODE_DISABLE: {
-    details: undefined
-    target: typeof AUDIT_TARGET_TABLES.SYSTEM
-  }
+    details: undefined;
+    target: typeof AUDIT_TARGET_TABLES.SYSTEM;
+  };
   MAINTENANCE_MODE_ENABLE: {
-    details: undefined
-    target: typeof AUDIT_TARGET_TABLES.SYSTEM
-  }
+    details: undefined;
+    target: typeof AUDIT_TARGET_TABLES.SYSTEM;
+  };
   RECOMMENDED_QUERY_CREATE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.RECOMMENDED_QUERIES
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.RECOMMENDED_QUERIES;
+  };
   RECOMMENDED_QUERY_DELETE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.RECOMMENDED_QUERIES
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.RECOMMENDED_QUERIES;
+  };
   TERM_CREATE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.TERMS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.TERMS;
+  };
   TERM_DELETE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.TERMS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.TERMS;
+  };
   TERM_UPDATE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.TERMS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.TERMS;
+  };
   TWITCH_USER_CREATE: {
-    details: TalentAccountDetails<TwitchUserAccount>
-    target: typeof AUDIT_TARGET_TABLES.TALENTS
-  }
+    details: TalentAccountDetails<TwitchUserAccount>;
+    target: typeof AUDIT_TARGET_TABLES.TALENTS;
+  };
   TWITCH_USER_DELETE: {
-    details: TalentAccountDetails<TwitchUserAccount>
-    target: typeof AUDIT_TARGET_TABLES.TALENTS
-  }
+    details: TalentAccountDetails<TwitchUserAccount>;
+    target: typeof AUDIT_TARGET_TABLES.TALENTS;
+  };
   VIDEO_BACKFILL:
     | {
-        details: TalentVideoBackfillDetails
-        target: typeof AUDIT_TARGET_TABLES.TALENTS
+        details: TalentVideoBackfillDetails;
+        target: typeof AUDIT_TARGET_TABLES.TALENTS;
       }
     | {
-        details: VideoBackfillRetryDetails | VideoBackfillRunDetails
-        target: typeof AUDIT_TARGET_TABLES.VIDEO_BACKFILL
-      }
+        details: VideoBackfillRetryDetails | VideoBackfillRunDetails;
+        target: typeof AUDIT_TARGET_TABLES.VIDEO_BACKFILL;
+      };
   VIDEO_DELETE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.VIDEOS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.VIDEOS;
+  };
   VIDEO_RESTORE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.VIDEOS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.VIDEOS;
+  };
   VIDEO_SYNC: {
-    details: EntityChanges<VideoSyncFields>
-    target: typeof AUDIT_TARGET_TABLES.VIDEOS
-  }
+    details: EntityChanges<VideoSyncFields>;
+    target: typeof AUDIT_TARGET_TABLES.VIDEOS;
+  };
   VIDEO_UPDATE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.VIDEOS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.VIDEOS;
+  };
   VIDEO_VISIBILITY_TOGGLE: {
-    details: EntityRef
-    target: typeof AUDIT_TARGET_TABLES.VIDEOS
-  }
+    details: EntityRef;
+    target: typeof AUDIT_TARGET_TABLES.VIDEOS;
+  };
   YOUTUBE_CHANNEL_CREATE: {
-    details: TalentAccountDetails<YouTubeChannelAccount>
-    target: typeof AUDIT_TARGET_TABLES.TALENTS
-  }
+    details: TalentAccountDetails<YouTubeChannelAccount>;
+    target: typeof AUDIT_TARGET_TABLES.TALENTS;
+  };
   YOUTUBE_CHANNEL_DELETE: {
-    details: TalentAccountDetails<YouTubeChannelAccount>
-    target: typeof AUDIT_TARGET_TABLES.TALENTS
-  }
+    details: TalentAccountDetails<YouTubeChannelAccount>;
+    target: typeof AUDIT_TARGET_TABLES.TALENTS;
+  };
 }
 
 /** What an audit log entry of the action records in `details`. */
 export type AuditLogDetails<A extends AuditAction> =
-  AuditLogDefinitions[A]['details']
+  AuditLogDefinitions[A]["details"];
 
-type AuditLogTarget<A extends AuditAction> = AuditLogDefinitions[A]['target']
+type AuditLogTarget<A extends AuditAction> = AuditLogDefinitions[A]["target"];
 
 /**
  * The target table of each action. An action whose entries are about more
@@ -308,7 +309,7 @@ const AUDIT_LOG_TARGETS = {
   TWITCH_USER_CREATE: AUDIT_TARGET_TABLES.TALENTS,
   TWITCH_USER_DELETE: AUDIT_TARGET_TABLES.TALENTS,
   VIDEO_BACKFILL: (details) =>
-    'scope' in details
+    "scope" in details
       ? AUDIT_TARGET_TABLES.VIDEO_BACKFILL
       : AUDIT_TARGET_TABLES.TALENTS,
   VIDEO_DELETE: AUDIT_TARGET_TABLES.VIDEOS,
@@ -321,48 +322,48 @@ const AUDIT_LOG_TARGETS = {
 } satisfies {
   [A in AuditAction]:
     | AuditLogTarget<A>
-    | ((details: AuditLogDetails<A>) => AuditLogTarget<A>)
-}
+    | ((details: AuditLogDetails<A>) => AuditLogTarget<A>);
+};
 
 /** The details argument of `createAuditLog`, left out when there are none. */
 type AuditLogDetailsArgs<A extends AuditAction> = [AuditLogDetails<A>] extends [
   undefined,
 ]
   ? []
-  : [details: AuditLogDetails<A>]
+  : [details: AuditLogDetails<A>];
 
 /** The `details` of an `AuditLogEntry`, left out when the action has none. */
 type AuditLogEntryDetails<A extends AuditAction> = [
   AuditLogDetails<A>,
 ] extends [undefined]
   ? { details?: undefined }
-  : { details: AuditLogDetails<A> }
+  : { details: AuditLogDetails<A> };
 
 /** One entry for `createAuditLogs`, with the details that the action records. */
 export type AuditLogEntry = {
   [A in AuditAction]: {
-    action: A
-    targetRecordId: string | null
-  } & AuditLogEntryDetails<A>
-}[AuditAction]
+    action: A;
+    targetRecordId: string | null;
+  } & AuditLogEntryDetails<A>;
+}[AuditAction];
 
 /** An element of the `p_entries` array of `insert_audit_logs`. */
 interface AuditLogRow {
-  action: AuditAction
-  details: AuditLogJson
-  target_record_id: string | null
-  target_table: AuditTargetTable
+  action: AuditAction;
+  details: AuditLogJson;
+  target_record_id: string | null;
+  target_table: AuditTargetTable;
 }
 
 /** Returns the table that an entry of the action with the details is about. */
 export function getAuditTargetTable<A extends AuditAction>(
   action: A,
-  details: AuditLogDetails<A>,
+  details: AuditLogDetails<A>
 ): AuditTargetTable {
   const target: AuditTargetTable | ((details: never) => AuditTargetTable) =
-    AUDIT_LOG_TARGETS[action]
+    AUDIT_LOG_TARGETS[action];
 
-  return typeof target === 'function' ? target(details as never) : target
+  return typeof target === "function" ? target(details as never) : target;
 }
 
 /**
@@ -371,7 +372,7 @@ export function getAuditTargetTable<A extends AuditAction>(
  * assignable to `Json`.
  */
 function toAuditLogJson(details: unknown): AuditLogJson {
-  return (details ?? null) as AuditLogJson
+  return (details ?? null) as AuditLogJson;
 }
 
 /**
@@ -389,22 +390,22 @@ export async function createAuditLog<A extends AuditAction>(
   ...[details]: AuditLogDetailsArgs<A>
 ): Promise<void> {
   try {
-    const { error } = await supabaseClient.rpc('insert_audit_log', {
+    const { error } = await supabaseClient.rpc("insert_audit_log", {
       p_action: action,
       p_details: toAuditLogJson(details),
       p_target_table: getAuditTargetTable(action, details),
       ...(targetRecordId ? { p_target_record_id: targetRecordId } : {}),
-    })
+    });
 
     if (error) {
-      throw error
+      throw error;
     }
   } catch (error) {
-    logger.error('監査ログの記録に失敗しました', {
+    logger.error("監査ログの記録に失敗しました", {
       action,
       error,
       targetRecordId: targetRecordId ?? undefined,
-    })
+    });
   }
 }
 
@@ -417,10 +418,10 @@ export async function createAuditLog<A extends AuditAction>(
  */
 export async function createAuditLogs(
   supabaseClient: TypedSupabaseClient,
-  entries: readonly AuditLogEntry[],
+  entries: readonly AuditLogEntry[]
 ): Promise<void> {
   if (entries.length === 0) {
-    return
+    return;
   }
 
   const rows = entries.map(
@@ -430,26 +431,26 @@ export async function createAuditLogs(
       // `createAuditLog` leaves out an empty ID, so it is recorded as NULL
       target_record_id: targetRecordId || null,
       target_table: getAuditTargetTable(action, details as never),
-    }),
-  )
+    })
+  );
 
   try {
-    const { error } = await supabaseClient.rpc('insert_audit_logs', {
+    const { error } = await supabaseClient.rpc("insert_audit_logs", {
       // An interface has no index signature, so TypeScript cannot see that
       // the rows are assignable to `Json`.
       p_entries: rows as unknown as AuditLogEntriesJson,
-    })
+    });
 
     if (error) {
-      throw error
+      throw error;
     }
   } catch (error) {
-    logger.error('監査ログの記録に失敗しました', {
-      action: [...new Set(rows.map((row) => row.action))].join(','),
+    logger.error("監査ログの記録に失敗しました", {
+      action: [...new Set(rows.map((row) => row.action))].join(","),
       error,
       targetRecordId: rows
         .flatMap((row) => (row.target_record_id ? [row.target_record_id] : []))
-        .join(','),
-    })
+        .join(","),
+    });
   }
 }

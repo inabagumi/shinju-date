@@ -1,29 +1,29 @@
-import { range } from '@shinju-date/helpers'
-import { Skeleton, twMerge } from '@shinju-date/ui'
-import type { ReactNode } from 'react'
+import { range } from "@shinju-date/helpers";
+import { Skeleton, twMerge } from "@shinju-date/ui";
+import type { ReactNode } from "react";
 
 export interface TableSkeletonColumn {
   /** 列の中身を右に寄せる（数値や操作の列） */
-  align?: 'end'
+  align?: "end";
   /** セルの中身。省略すると、1行の文字の `Skeleton`（`h-4 w-24`） */
-  cell?: ReactNode
+  cell?: ReactNode;
   /** `<th>` と `<td>` に付けるクラス（読み込み後の列と同じ幅など） */
-  className?: string
+  className?: string;
   /** 見出しのない列（選択や操作など）は `false` */
-  header?: boolean
+  header?: boolean;
   /** 列を見分ける名前（React の key） */
-  id: string
+  id: string;
 }
 
 interface TableSkeletonProps {
   /** 列の定義。読み込み後の表の列と、同じ数・同じ並びにする */
-  columns: TableSkeletonColumn[]
+  columns: TableSkeletonColumn[];
   /** 表の上に置く帯（絞り込み・一括操作・索引など）の代わり。下の余白も含めて渡す */
-  filterBar?: ReactNode
+  filterBar?: ReactNode;
   /** 行の数。読み込み後の1ページの件数に合わせる */
-  rows?: number
+  rows?: number;
   /** `<table>` に付けるクラス（読み込み後の `Table` と同じ `min-w-*` など） */
-  tableClassName?: string
+  tableClassName?: string;
 }
 
 /**
@@ -40,18 +40,18 @@ export function TableSkeleton({
     <div aria-hidden="true">
       {filterBar}
       <div className="w-full overflow-hidden rounded-container border border-border bg-surface">
-        <table className={twMerge('w-full border-collapse', tableClassName)}>
+        <table className={twMerge("w-full border-collapse", tableClassName)}>
           <thead className="bg-muted">
             <tr className="border-b border-border">
               {columns.map((column) => (
                 <th
-                  className={twMerge('px-4 py-3', column.className)}
+                  className={twMerge("px-4 py-3", column.className)}
                   key={column.id}
                 >
                   <div
                     className={twMerge(
-                      'flex',
-                      column.align === 'end' && 'justify-end',
+                      "flex",
+                      column.align === "end" && "justify-end"
                     )}
                   >
                     {column.header === false ? (
@@ -72,13 +72,13 @@ export function TableSkeleton({
               >
                 {columns.map((column) => (
                   <td
-                    className={twMerge('px-4 py-3', column.className)}
+                    className={twMerge("px-4 py-3", column.className)}
                     key={column.id}
                   >
                     <div
                       className={twMerge(
-                        'flex',
-                        column.align === 'end' && 'justify-end',
+                        "flex",
+                        column.align === "end" && "justify-end"
                       )}
                     >
                       {column.cell ?? <Skeleton className="h-4 w-24" />}
@@ -91,13 +91,13 @@ export function TableSkeleton({
         </table>
       </div>
     </div>
-  )
+  );
 }
 
 interface FilterBarSkeletonProps {
   /** `md` 以上で横に並ぶ絞り込みの代わり */
-  children: ReactNode
-  className?: string
+  children: ReactNode;
+  className?: string;
 }
 
 /**
@@ -108,21 +108,21 @@ export function FilterBarSkeleton({
   className,
 }: FilterBarSkeletonProps) {
   return (
-    <div className={twMerge('flex flex-col gap-3', className)}>
+    <div className={twMerge("flex flex-col gap-3", className)}>
       <Skeleton className="h-9 w-28 md:hidden" />
       <div className="hidden gap-3 md:flex md:flex-row md:flex-wrap md:items-end">
         {children}
       </div>
     </div>
-  )
+  );
 }
 
 /** 読み込み中の、見出し付きの入力欄（`Select`・`Input` など）。幅は `className` で指定する */
 export function FieldSkeleton({ className }: { className?: string }) {
   return (
-    <div className={twMerge('flex flex-col gap-1', className)}>
+    <div className={twMerge("flex flex-col gap-1", className)}>
       <Skeleton className="h-5 w-24" />
       <Skeleton className="h-10 w-full" />
     </div>
-  )
+  );
 }

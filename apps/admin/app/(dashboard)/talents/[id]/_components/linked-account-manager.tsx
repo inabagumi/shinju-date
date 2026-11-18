@@ -1,79 +1,81 @@
-'use client'
+"use client";
 
-import { EmptyState, Button as UIButton } from '@shinju-date/ui'
-import { ExternalLink, Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
-import { useActionToast } from '@/components/action-toast'
-import { type ActionResult, ConfirmDialog } from '@/components/confirm-dialog'
+import { EmptyState, Button as UIButton } from "@shinju-date/ui";
+import { ExternalLink, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+
+import { useActionToast } from "@/components/action-toast";
+import { type ActionResult, ConfirmDialog } from "@/components/confirm-dialog";
 import {
   ErrorMessage,
   FormField,
   type FormState,
   Input,
   Label,
-} from '@/components/form'
-import { FormDialog } from '@/components/form-dialog'
-import { Panel } from '@/components/panel'
+} from "@/components/form";
+import { FormDialog } from "@/components/form-dialog";
+import { Panel } from "@/components/panel";
 
 /** 一覧に表示する、外部のサービスのアカウント1件 */
 export interface LinkedAccount {
   /** データベースの行の ID。削除のアクションに渡す */
-  id: string
+  id: string;
   /** 外部のサービスの API から取得した名前 */
-  name: string | null
+  name: string | null;
   /** 外部のサービスでのアカウントの ID */
-  serviceId: string
+  serviceId: string;
   /** 外部のサービスでのハンドルやログイン名 */
-  handle: string | null
+  handle: string | null;
   /** 外部のサービスのページの URL。作れないときは `null` */
-  url: string | null
+  url: string | null;
 }
 
 /** 追加のダイアログの入力欄 */
 export interface LinkedAccountField {
   /** フォームの項目名。追加のアクションが `FormData` から読む */
-  name: string
-  label: string
+  name: string;
+  label: string;
   /** 入力欄の下に置く補足（入力の例など） */
-  description: string
-  placeholder: string
+  description: string;
+  placeholder: string;
 }
 
 export interface LinkedAccountLabels {
   /** アカウントの種類（例: `YouTubeチャンネル`）。見出しや確認の文に使う */
-  account: string
+  account: string;
   /** 追加のボタン */
-  add: string
+  add: string;
   /** 追加のダイアログの説明 */
-  addDescription: string
+  addDescription: string;
   /** 一覧が空のときの文 */
-  empty: string
+  empty: string;
   /** 外部のサービスの名前（例: `YouTube`） */
-  service: string
+  service: string;
   /** カードの項目名 */
-  name: string
-  serviceId: string
-  handle: string
+  name: string;
+  serviceId: string;
+  handle: string;
 }
 
 /** `ChannelManager` などの、定義を渡すだけの部品が受け取るもの */
 export interface LinkedAccountListProps<T> {
-  talentId: string
-  accounts: T[]
-  isDeleted: boolean
+  talentId: string;
+  accounts: T[];
+  isDeleted: boolean;
 }
 
-export interface LinkedAccountManagerProps<T>
-  extends LinkedAccountListProps<T> {
-  labels: LinkedAccountLabels
-  field: LinkedAccountField
+export interface LinkedAccountManagerProps<
+  T,
+> extends LinkedAccountListProps<T> {
+  labels: LinkedAccountLabels;
+  field: LinkedAccountField;
   addAction: (
     currentState: FormState,
-    formData: FormData,
-  ) => FormState | Promise<FormState>
-  removeAction: (accountId: string, talentId: string) => Promise<ActionResult>
+    formData: FormData
+  ) => FormState | Promise<FormState>;
+  removeAction: (accountId: string, talentId: string) => Promise<ActionResult>;
   /** 1件のアカウントを、一覧に表示する形にする */
-  getAccount: (account: T) => LinkedAccount
+  getAccount: (account: T) => LinkedAccount;
 }
 
 /**
@@ -91,21 +93,23 @@ export function LinkedAccountManager<T>({
   getAccount,
 }: LinkedAccountManagerProps<T>) {
   // Kept after the dialog closes so that its content stays while it fades out.
-  const [removalTarget, setRemovalTarget] = useState<LinkedAccount | null>(null)
-  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
-  const { showToast } = useActionToast()
-  const removeLabel = `${labels.account}を削除`
+  const [removalTarget, setRemovalTarget] = useState<LinkedAccount | null>(
+    null
+  );
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
+  const { showToast } = useActionToast();
+  const removeLabel = `${labels.account}を削除`;
 
   // 失敗はダイアログの中に出し、成功したらダイアログを閉じてトーストで知らせる
   const handleRemove = async (accountId: string) => {
-    const result = await removeAction(accountId, talentId)
+    const result = await removeAction(accountId, talentId);
 
     if (result.success) {
-      showToast('success', `${labels.account}を削除しました。`)
+      showToast("success", `${labels.account}を削除しました。`);
     }
 
-    return result
-  }
+    return result;
+  };
 
   return (
     <div>
@@ -153,7 +157,7 @@ export function LinkedAccountManager<T>({
                         {labels.name}
                       </span>
                       <p className="mt-1 text-meta">
-                        {account.name || '未取得'}
+                        {account.name || "未取得"}
                       </p>
                       <p className="mt-1 text-caption text-muted">
                         {labels.service} APIから自動更新される{labels.name}
@@ -195,8 +199,8 @@ export function LinkedAccountManager<T>({
                     aria-label={removeLabel}
                     className="shrink-0 px-2"
                     onClick={() => {
-                      setRemovalTarget(account)
-                      setIsRemoveDialogOpen(true)
+                      setRemovalTarget(account);
+                      setIsRemoveDialogOpen(true);
                     }}
                     size="sm"
                     title={removeLabel}
@@ -227,7 +231,7 @@ export function LinkedAccountManager<T>({
         {removalTarget && (
           <>
             <p className="font-semibold">
-              {removalTarget.name || removalTarget.handle || '未取得'}
+              {removalTarget.name || removalTarget.handle || "未取得"}
             </p>
             <code className="mt-1 block font-mono text-caption break-all">
               {removalTarget.serviceId}
@@ -236,5 +240,5 @@ export function LinkedAccountManager<T>({
         )}
       </ConfirmDialog>
     </div>
-  )
+  );
 }

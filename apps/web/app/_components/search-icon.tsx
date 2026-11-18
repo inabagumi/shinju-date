@@ -1,9 +1,10 @@
-import type { SVGProps } from 'react'
+import type { SVGProps } from "react";
+
 import {
   SEARCH_ICON_CIRCLE,
   SEARCH_ICON_PATH,
   SEARCH_ICON_VIEW_BOX,
-} from '@/lib/svg-symbols'
+} from "@/lib/svg-symbols";
 
 export default function SearchIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -15,5 +16,5 @@ export default function SearchIcon(props: SVGProps<SVGSVGElement>) {
       />
       <path d={SEARCH_ICON_PATH} fill="currentColor" />
     </svg>
-  )
+  );
 }

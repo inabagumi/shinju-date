@@ -1,9 +1,9 @@
-import { googleFontsHandlers } from './handlers/google-fonts.js'
-import { resendHandlers } from './handlers/resend.js'
-import { supabaseHandlers } from './handlers/supabase/index.js'
-import { twitchHandlers } from './handlers/twitch.js'
-import { upstashHandlers } from './handlers/upstash/index.js'
-import { youtubeHandlers } from './handlers/youtube.js'
+import { googleFontsHandlers } from "./handlers/google-fonts.js";
+import { resendHandlers } from "./handlers/resend.js";
+import { supabaseHandlers } from "./handlers/supabase/index.js";
+import { twitchHandlers } from "./handlers/twitch.js";
+import { upstashHandlers } from "./handlers/upstash/index.js";
+import { youtubeHandlers } from "./handlers/youtube.js";
 
 /**
  * All mock handlers
@@ -16,7 +16,7 @@ export const allHandlers = [
   ...twitchHandlers,
   ...upstashHandlers,
   ...youtubeHandlers,
-]
+];
 
 /**
  * The `@msw/data` collections of the mock database, which the Supabase mock
@@ -47,13 +47,13 @@ export {
   videos,
   youtubeChannels,
   youtubeVideos,
-} from './collections.js'
+} from "./collections.js";
 export {
   MOCK_DELETED_TALENT_ID,
   MOCK_RETIRED_TALENT_ID,
   MOCK_TALENT_IDS,
   MOCK_TALENT_WITHOUT_VIDEOS_ID,
-} from './seeds/accounts.js'
+} from "./seeds/accounts.js";
 export {
   googleFontsHandlers,
   resendHandlers,
@@ -61,9 +61,9 @@ export {
   twitchHandlers,
   upstashHandlers,
   youtubeHandlers,
-}
+};
 
 /**
  * Default export for convenience
  */
-export default allHandlers
+export default allHandlers;

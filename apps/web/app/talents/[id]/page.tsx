@@ -1,47 +1,49 @@
-import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
-import PageMain from '@/components/page-main'
-import { SearchResultsSkeleton } from '@/components/search-results'
-import { fetchTalent } from '@/lib/data/talents'
-import { createPageMetadata } from '@/lib/metadata'
-import { getTalentCalendarPath, getTalentPath } from '@/lib/talent-links'
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+
+import PageMain from "@/components/page-main";
+import { SearchResultsSkeleton } from "@/components/search-results";
+import { fetchTalent } from "@/lib/data/talents";
+import { createPageMetadata } from "@/lib/metadata";
+import { getTalentCalendarPath, getTalentPath } from "@/lib/talent-links";
+
 import {
   TalentPageHeading,
   TalentPageHeadingSkeleton,
-} from './_components/talent-page-header'
-import { TalentStreamTendency } from './_components/talent-stream-tendency'
+} from "./_components/talent-page-header";
+import { TalentStreamTendency } from "./_components/talent-stream-tendency";
 import {
   TalentVideoKindFilterNav,
   TalentVideoKindFilterNavSkeleton,
   TalentVideos,
-} from './_components/talent-videos'
+} from "./_components/talent-videos";
 
 export async function generateMetadata({
   params,
-}: Pick<PageProps<'/talents/[id]'>, 'params'>): Promise<Metadata> {
-  const { id } = await params
-  const talent = await fetchTalent(id)
+}: Pick<PageProps<"/talents/[id]">, "params">): Promise<Metadata> {
+  const { id } = await params;
+  const talent = await fetchTalent(id);
 
   if (!talent) {
-    notFound()
+    notFound();
   }
 
   const metadata = createPageMetadata({
     path: getTalentPath(talent.id),
     title: talent.name,
-    type: 'profile',
-  })
+    type: "profile",
+  });
 
   return {
     ...metadata,
     alternates: {
       ...metadata.alternates,
       types: {
-        'text/calendar': getTalentCalendarPath(talent.id),
+        "text/calendar": getTalentCalendarPath(talent.id),
       },
     },
-  }
+  };
 }
 
 /**
@@ -51,7 +53,7 @@ export async function generateMetadata({
 export default function TalentPage({
   params,
   searchParams,
-}: PageProps<'/talents/[id]'>) {
+}: PageProps<"/talents/[id]">) {
   return (
     <PageMain>
       {/*
@@ -79,5 +81,5 @@ export default function TalentPage({
         <TalentVideos params={params} searchParams={searchParams} />
       </Suspense>
     </PageMain>
-  )
+  );
 }

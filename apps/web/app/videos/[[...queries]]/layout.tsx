@@ -1,10 +1,11 @@
-import type { ReactNode } from 'react'
-import PageMain from '@/components/page-main'
+import type { ReactNode } from "react";
+
+import PageMain from "@/components/page-main";
 
 interface Props {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export default function VideosLayout({ children }: Props) {
-  return <PageMain>{children}</PageMain>
+  return <PageMain>{children}</PageMain>;
 }

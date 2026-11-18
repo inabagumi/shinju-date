@@ -1,57 +1,59 @@
-'use client'
+"use client";
 
-import { formatNumber } from '@shinju-date/helpers'
-import { Button, Skeleton } from '@shinju-date/ui'
-import { useRouter } from 'next/navigation'
-import { useEffect, useRef } from 'react'
-import { AsyncPanelBody } from '@/components/async-panel-body'
+import { formatNumber } from "@shinju-date/helpers";
+import { Button, Skeleton } from "@shinju-date/ui";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
+
+import { AsyncPanelBody } from "@/components/async-panel-body";
 import {
   BackfillAccountRow,
   BackfillAccountRowSkeleton,
-} from '@/components/backfill-account-row'
-import { BackfillStatusBadge } from '@/components/backfill-status-badge'
-import { ConfirmDialog } from '@/components/confirm-dialog'
-import { Panel, PanelSkeleton } from '@/components/panel'
-import { PLATFORM_LABELS } from '@/components/platform-badge'
-import { formatDateTimeFromISO } from '@/lib/format'
-import { useBackfillRequest } from '@/lib/use-backfill-request'
+} from "@/components/backfill-account-row";
+import { BackfillStatusBadge } from "@/components/backfill-status-badge";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { Panel, PanelSkeleton } from "@/components/panel";
+import { PLATFORM_LABELS } from "@/components/platform-badge";
+import { formatDateTimeFromISO } from "@/lib/format";
+import { useBackfillRequest } from "@/lib/use-backfill-request";
 import {
   type PolledResourceFailure,
   usePolledResource,
-} from '@/lib/use-polled-resource'
+} from "@/lib/use-polled-resource";
+
 import {
   getVideoBackfillStatusAction,
   requestVideoBackfillAction,
-} from '../../_actions/backfill'
-import type { VideoBackfillStatus } from '../../_lib/get-video-backfill-status'
+} from "../../_actions/backfill";
+import type { VideoBackfillStatus } from "../../_lib/get-video-backfill-status";
 
 /** How often progress is refreshed while a job is queued or running. */
-const POLL_INTERVAL_MS = 5_000
+const POLL_INTERVAL_MS = 5_000;
 
-const TITLE = '過去動画の取り込み'
+const TITLE = "過去動画の取り込み";
 const DESCRIPTION =
-  'プラットフォーム上にあってデータベースにない過去の動画を、すべての履歴をさかのぼって取り込みます。登録済みの動画はそのまま残ります。'
+  "プラットフォーム上にあってデータベースにない過去の動画を、すべての履歴をさかのぼって取り込みます。登録済みの動画はそのまま残ります。";
 
-const PROVIDERS = ['youtube', 'twitch'] as const
+const PROVIDERS = ["youtube", "twitch"] as const;
 
 /** 取り込み状況を取り直す。アクションの `data` を、`usePolledResource` が受け取る形にする */
 async function fetchVideoBackfillStatus(
-  talentId: string,
+  talentId: string
 ): Promise<VideoBackfillStatus | PolledResourceFailure> {
-  const result = await getVideoBackfillStatusAction(talentId)
+  const result = await getVideoBackfillStatusAction(talentId);
 
   if (!result.success) {
-    return result
+    return result;
   }
 
-  return result.data ?? { success: false }
+  return result.data ?? { success: false };
 }
 
 interface VideoBackfillPanelProps {
   /** サーバーコンポーネントで取得した、アカウントごとの取り込み状況 */
-  initialData: VideoBackfillStatus
-  talentId: string
-  talentName: string
+  initialData: VideoBackfillStatus;
+  talentId: string;
+  talentName: string;
 }
 
 /**
@@ -63,18 +65,18 @@ export function VideoBackfillPanel({
   talentId,
   talentName,
 }: VideoBackfillPanelProps) {
-  const router = useRouter()
+  const router = useRouter();
   const { data, error, reload } = usePolledResource({
     fetcher: () => fetchVideoBackfillStatus(talentId),
     initialData,
     intervalMs: POLL_INTERVAL_MS,
     isActive: ({ accounts }) => accounts.some((account) => account.active),
-  })
-  const request = useBackfillRequest(requestVideoBackfillAction, reload)
+  });
+  const request = useBackfillRequest(requestVideoBackfillAction, reload);
 
-  const { accounts } = data
-  const added = accounts.reduce((total, account) => total + account.added, 0)
-  const previousAdded = useRef(added)
+  const { accounts } = data;
+  const added = accounts.reduce((total, account) => total + account.added, 0);
+  const previousAdded = useRef(added);
 
   // Show the videos that were just added in the list below. Data that came
   // from the server was rendered together with that list, so it needs no
@@ -82,29 +84,29 @@ export function VideoBackfillPanel({
   // keeps adding videos).
   useEffect(() => {
     if (added > previousAdded.current && data !== initialData) {
-      router.refresh()
+      router.refresh();
     }
 
-    previousAdded.current = added
-  }, [added, data, initialData, router])
+    previousAdded.current = added;
+  }, [added, data, initialData, router]);
 
   if (accounts.length === 0) {
-    return null
+    return null;
   }
 
   return (
     <Panel
       actions={PROVIDERS.map((provider) => {
-        const label = PLATFORM_LABELS[provider]
+        const label = PLATFORM_LABELS[provider];
         const targets = accounts.filter(
-          (account) => account.provider === provider,
-        )
+          (account) => account.provider === provider
+        );
         // While only some accounts are queued or being read, the others can
         // still be requested: the request skips the ones that are active.
-        const isActive = targets.every((account) => account.active)
+        const isActive = targets.every((account) => account.active);
 
         if (targets.length === 0) {
-          return null
+          return null;
         }
 
         return (
@@ -131,7 +133,7 @@ export function VideoBackfillPanel({
               ))}
             </ul>
           </ConfirmDialog>
-        )
+        );
       })}
       description={DESCRIPTION}
       title={TITLE}
@@ -148,12 +150,12 @@ export function VideoBackfillPanel({
             >
               {account.status !== null && (
                 <p className="text-meta text-muted tabular-nums">
-                  {formatNumber(account.added)}件追加 ·{' '}
+                  {formatNumber(account.added)}件追加 ·{" "}
                   {formatNumber(account.pages)}
                   ページ確認
                   {account.updatedAt && (
                     <>
-                      {' · '}
+                      {" · "}
                       <time dateTime={account.updatedAt}>
                         {formatDateTimeFromISO(account.updatedAt)}
                       </time>
@@ -166,7 +168,7 @@ export function VideoBackfillPanel({
         </ul>
       </AsyncPanelBody>
     </Panel>
-  )
+  );
 }
 
 /** 読み込み中の `VideoBackfillPanel`。アカウント1件ぶんの行を置く */
@@ -181,5 +183,5 @@ export function VideoBackfillPanelSkeleton() {
         <BackfillAccountRowSkeleton />
       </ul>
     </PanelSkeleton>
-  )
+  );
 }

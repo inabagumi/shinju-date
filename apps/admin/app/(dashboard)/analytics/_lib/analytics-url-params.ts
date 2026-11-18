@@ -1,4 +1,4 @@
-import type { SearchParamUpdates } from '@/lib/search-params-href'
+import type { SearchParamUpdates } from "@/lib/search-params-href";
 
 /**
  * 期間（`from` と `to`）を書き換えるときに、`useUpdateSearchParams` に渡すパラメータを返す。
@@ -11,7 +11,7 @@ import type { SearchParamUpdates } from '@/lib/search-params-href'
  */
 export function getDateRangeUpdates(
   selectedDate: string | null,
-  dateRange: { startDate: string; endDate: string },
+  dateRange: { startDate: string; endDate: string }
 ): SearchParamUpdates {
   return {
     from: dateRange.startDate,
@@ -19,27 +19,27 @@ export function getDateRangeUpdates(
     ...(selectedDate && !isWithinRange(selectedDate, dateRange)
       ? { date: null }
       : {}),
-  }
+  };
 }
 
 function isWithinRange(
   date: string,
-  dateRange: { startDate: string; endDate: string },
+  dateRange: { startDate: string; endDate: string }
 ): boolean {
   try {
-    const target = Temporal.PlainDate.from(date)
+    const target = Temporal.PlainDate.from(date);
 
     return (
       Temporal.PlainDate.compare(
         target,
-        Temporal.PlainDate.from(dateRange.startDate),
+        Temporal.PlainDate.from(dateRange.startDate)
       ) >= 0 &&
       Temporal.PlainDate.compare(
         target,
-        Temporal.PlainDate.from(dateRange.endDate),
+        Temporal.PlainDate.from(dateRange.endDate)
       ) <= 0
-    )
+    );
   } catch {
-    return false
+    return false;
   }
 }

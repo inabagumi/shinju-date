@@ -27,9 +27,9 @@
 ```typescript
 // React コンポーネントのProps
 interface ButtonProps {
-  label: string
-  onClick: () => void
-  disabled?: boolean
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
 }
 
 export function Button({ label, onClick, disabled }: ButtonProps) {
@@ -38,9 +38,9 @@ export function Button({ label, onClick, disabled }: ButtonProps) {
 
 // 関数のオプション
 interface FetchOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
-  headers?: Record<string, string>
-  body?: unknown
+  method?: "GET" | "POST" | "PUT" | "DELETE";
+  headers?: Record<string, string>;
+  body?: unknown;
 }
 
 async function fetchData(url: string, options?: FetchOptions) {
@@ -49,12 +49,12 @@ async function fetchData(url: string, options?: FetchOptions) {
 
 // 拡張の例
 interface BaseProps {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 interface ExtendedProps extends BaseProps {
-  description: string
+  description: string;
 }
 ```
 
@@ -63,17 +63,17 @@ interface ExtendedProps extends BaseProps {
 ```typescript
 // ❌ Props に type を使用
 type ButtonProps = {
-  label: string
-  onClick: () => void
-  disabled?: boolean
-}
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+};
 
 // ❌ オプションに type を使用
 type FetchOptions = {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
-  headers?: Record<string, string>
-  body?: unknown
-}
+  method?: "GET" | "POST" | "PUT" | "DELETE";
+  headers?: Record<string, string>;
+  body?: unknown;
+};
 ```
 
 ### 例外: type を使用する場合
@@ -84,9 +84,9 @@ type FetchOptions = {
 
 ```typescript
 // ✅ ユニオン型は type を使用
-type Status = 'pending' | 'approved' | 'rejected'
-type Result = Success | Error
-type ID = string | number
+type Status = "pending" | "approved" | "rejected";
+type Result = Success | Error;
+type ID = string | number;
 ```
 
 #### 2. インターセクション型（Intersection Types）
@@ -94,16 +94,16 @@ type ID = string | number
 ```typescript
 // ✅ インターセクション型は type を使用
 interface WithTimestamps {
-  createdAt: Date
-  updatedAt: Date
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface User {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
-type UserWithTimestamps = User & WithTimestamps
+type UserWithTimestamps = User & WithTimestamps;
 ```
 
 #### 3. マップド型（Mapped Types）
@@ -111,40 +111,40 @@ type UserWithTimestamps = User & WithTimestamps
 ```typescript
 // ✅ マップド型は type を使用
 type Readonly<T> = {
-  readonly [P in keyof T]: T[P]
-}
+  readonly [P in keyof T]: T[P];
+};
 
 type Partial<T> = {
-  [P in keyof T]?: T[P]
-}
+  [P in keyof T]?: T[P];
+};
 ```
 
 #### 4. 条件型（Conditional Types）
 
 ```typescript
 // ✅ 条件型は type を使用
-type NonNullable<T> = T extends null | undefined ? never : T
-type ReturnType<T> = T extends (...args: any[]) => infer R ? R : any
+type NonNullable<T> = T extends null | undefined ? never : T;
+type ReturnType<T> = T extends (...args: any[]) => infer R ? R : any;
 ```
 
 #### 5. タプル型（Tuple Types）
 
 ```typescript
 // ✅ タプル型は type を使用
-type Point = [number, number]
-type RGB = [number, number, number]
+type Point = [number, number];
+type RGB = [number, number, number];
 ```
 
 #### 6. 関数型の単純な定義
 
 ```typescript
 // ✅ 関数型の簡潔な定義は type を使用可能
-type EventHandler = (event: Event) => void
-type Predicate<T> = (value: T) => boolean
+type EventHandler = (event: Event) => void;
+type Predicate<T> = (value: T) => boolean;
 
 // ただし、interface でも定義可能
 interface EventHandler {
-  (event: Event): void
+  (event: Event): void;
 }
 ```
 
@@ -157,14 +157,14 @@ interface EventHandler {
    ```typescript
    // Before
    type MyComponentProps = {
-     title: string
-     children: React.ReactNode
-   }
+     title: string;
+     children: React.ReactNode;
+   };
 
    // After
    interface MyComponentProps {
-     title: string
-     children: React.ReactNode
+     title: string;
+     children: React.ReactNode;
    }
    ```
 
@@ -172,13 +172,13 @@ interface EventHandler {
 
    ```typescript
    // Before
-   type ButtonProps = ComponentPropsWithoutRef<'button'> & {
-     variant?: 'primary' | 'secondary'
-   }
+   type ButtonProps = ComponentPropsWithoutRef<"button"> & {
+     variant?: "primary" | "secondary";
+   };
 
    // After
-   interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
-     variant?: 'primary' | 'secondary'
+   interface ButtonProps extends ComponentPropsWithoutRef<"button"> {
+     variant?: "primary" | "secondary";
    }
    ```
 
@@ -186,13 +186,16 @@ interface EventHandler {
 
    ```typescript
    // type が必要な場合
-   type InputProps = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
-     inputSize?: 'sm' | 'md' | 'lg'
-   }
+   type InputProps = Omit<ComponentPropsWithoutRef<"input">, "size"> & {
+     inputSize?: "sm" | "md" | "lg";
+   };
 
    // interface で表現可能な場合
-   interface InputProps extends Omit<ComponentPropsWithoutRef<'input'>, 'size'> {
-     inputSize?: 'sm' | 'md' | 'lg'
+   interface InputProps extends Omit<
+     ComponentPropsWithoutRef<"input">,
+     "size"
+   > {
+     inputSize?: "sm" | "md" | "lg";
    }
    ```
 
@@ -245,19 +248,19 @@ refactor(admin): convert type definitions to interface
 ```typescript
 // ✅ 正しい
 async function getTalent(id: string) {
-  'use cache: remote'
+  "use cache: remote";
 
-  cacheLife('hours')
-  cacheTag(CACHE_TAGS.TALENTS)
+  cacheLife("hours");
+  cacheTag(CACHE_TAGS.TALENTS);
 
-  return await db.query(/* ... */)
+  return await db.query(/* ... */);
 }
 
 // ❌ 間違い: ディレクティブと設定の後に空行がない
 async function getTalent(id: string) {
-  'use cache: remote'
-  cacheLife('hours')
-  return await db.query(/* ... */)
+  "use cache: remote";
+  cacheLife("hours");
+  return await db.query(/* ... */);
 }
 ```
 
@@ -382,21 +385,21 @@ Suspense の中で `notFound()` を呼ぶと、すでにシェルを返し始め
 export const REDIS_KEYS = {
   // ... 既存のキー
   // Dashboard summary trend snapshots (format: prefix + YYYYMMDD)
-  SUMMARY_STATS_PREFIX: 'summary:stats:',
-} as const
+  SUMMARY_STATS_PREFIX: "summary:stats:",
+} as const;
 ```
 
 ```typescript
-import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
-import { formatDateKey } from '@shinju-date/temporal-fns'
+import { REDIS_KEYS, TIME_ZONE } from "@shinju-date/constants";
+import { formatDateKey } from "@shinju-date/temporal-fns";
 
 // ✅ 正しい
-const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-const key = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDateKey(now)}` // summary:stats:20251111
-await redis.set(key, data, { ex: 30 * 24 * 60 * 60 }) // 30日
+const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE);
+const key = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDateKey(now)}`; // summary:stats:20251111
+await redis.set(key, data, { ex: 30 * 24 * 60 * 60 }); // 30日
 
 // ❌ 間違い: キーを直接書き、TTL がない
-await redis.set('summary:stats:2025-11-11', data)
+await redis.set("summary:stats:2025-11-11", data);
 ```
 
 ## 時刻の扱い
@@ -417,12 +420,12 @@ await redis.set('summary:stats:2025-11-11', data)
   - `pnpm run check` が、`'Asia/Tokyo'` を含む文字列をエラーにする（`config/biome/no-hardcoded-time-zone.grit`）。`TIME_ZONE` の定義と、テストのファイルは対象外
 
 ```typescript
-import { TIME_ZONE } from '@shinju-date/constants'
+import { TIME_ZONE } from "@shinju-date/constants";
 
-const now = Temporal.Now.instant() // 現在の絶対時刻（UTC）
-const isoString = now.toString() // 保存や送信のための文字列
-const fromString = Temporal.Instant.from('2025-11-01T12:00:00Z') // 文字列から戻す
-const tokyoTime = now.toZonedDateTimeISO(TIME_ZONE) // 日本時間で表示する
+const now = Temporal.Now.instant(); // 現在の絶対時刻（UTC）
+const isoString = now.toString(); // 保存や送信のための文字列
+const fromString = Temporal.Instant.from("2025-11-01T12:00:00Z"); // 文字列から戻す
+const tokyoTime = now.toZonedDateTimeISO(TIME_ZONE); // 日本時間で表示する
 ```
 
 ### データベースに保存する
@@ -432,14 +435,14 @@ const tokyoTime = now.toZonedDateTimeISO(TIME_ZONE) // 日本時間で表示す�
 `toDBString` は、秒未満を切り捨て、UTC の ISO 8601 の文字列にします。YouTube API から取った日時と、`Temporal.Now` で作った日時の精度がそろい、意図しないデータの更新を防げます。`toString()` を直接使うと、秒未満が残り、データの不整合の原因になります。
 
 ```typescript
-import { toDBString } from '@shinju-date/temporal-fns'
+import { toDBString } from "@shinju-date/temporal-fns";
 
-const now = Temporal.Now.instant()
+const now = Temporal.Now.instant();
 
 await supabase
-  .from('announcements')
+  .from("announcements")
   .update({ start_at: toDBString(now) }) // ✅ now.toString() は使わない
-  .eq('id', announcementId)
+  .eq("id", announcementId);
 ```
 
 `updated_at` は、UPDATE で書きません。すべてのテーブルに、行を更新するとデータベースの現在時刻（秒に切り捨て）を入れるトリガー（`handle_updated_at`）が付いており、書いた値は使われないためです。ほかの列を変えずに `updated_at` だけを進めるときは、`touch_talent` / `touch_thumbnail` のように、トリガーを動かすデータベースの関数を呼びます。INSERT のときは、1回の処理で挿入する行の時刻を揃えるため、`created_at` / `updated_at` に `toDBString(now)` を入れてかまいません。
@@ -460,18 +463,18 @@ await supabase
   - `_actions/` の外に `'use server'` で始まるファイルがあると、このテストが失敗する
 
 ```typescript
-'use server'
+"use server";
 
-import { type ActionResult, adminAction } from '@/lib/action'
+import { type ActionResult, adminAction } from "@/lib/action";
 
 export const deleteSomethingAction = adminAction(
-  'deleteSomethingAction',
+  "deleteSomethingAction",
   async ({ supabaseClient }, id: string): Promise<ActionResult> => {
     // ... 更新処理
 
-    return { success: true }
-  },
-)
+    return { success: true };
+  }
+);
 ```
 
 ## 管理者のロールと RLS
@@ -516,12 +519,12 @@ CREATE POLICY "some_table: admins can update"
 
 公開サイト（`apps/web`）の部品は、どこで使うかで置き場所を分けます。置き場所を見れば影響の範囲が分かり、1つのルートのための変更で、ほかのルートを確かめ直さずに済むようにするためです。
 
-| 置き場所                    | 置くもの                                                                                                                            |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web/components/`      | 2つ以上のルートで使うコンポーネント                                                                                                 |
-| `apps/web/app/_components/` | ルートのレイアウト（ヘッダー、フッター、検索モーダル、お知らせ）だけが使うコンポーネント                                            |
-| 各ルートの `_components/`   | そのルートだけが使うコンポーネント（例: 動画の一覧の絞り込みは `apps/web/app/videos/[[...queries]]/_components/video-filters.tsx`） |
-| `apps/web/lib/`             | フックと、表示に関係しない関数・定数（例: `use-today.ts`、`talent-profile-image.ts`、`svg-symbols.ts`）                             |
+| 置き場所 | 置くもの |
+| --- | --- |
+| `apps/web/components/` | 2つ以上のルートで使うコンポーネント |
+| `apps/web/app/_components/` | ルートのレイアウト（ヘッダー、フッター、検索モーダル、お知らせ）だけが使うコンポーネント |
+| 各ルートの `_components/` | そのルートだけが使うコンポーネント（例: 動画の一覧の絞り込みは `apps/web/app/videos/[[...queries]]/_components/video-filters.tsx`） |
+| `apps/web/lib/` | フックと、表示に関係しない関数・定数（例: `use-today.ts`、`talent-profile-image.ts`、`svg-symbols.ts`） |
 
 - コンポーネントのファイルには、表示に関係しない関数を置かない。OG 画像（`opengraph-image.tsx`）などのコンポーネントではないファイルが使う関数と定数は、`lib/` に置き、コンポーネントもそこから読み込む
 - 1つのルートだけが使う関数は、そのルートの `_lib/` に置いてもよい（例: `apps/web/app/talents/[id]/_lib/og-image.ts`）

@@ -26,14 +26,14 @@
 
 ## ファイル
 
-| ファイル         | 中身                                                               |
-| ---------------- | ------------------------------------------------------------------ |
-| `src/types.ts`   | ジョブと結果の型                                                   |
-| `src/keys.ts`    | Redis のキーの作り方と、有効期限の定数                             |
-| `src/jobs.ts`    | 状態の遷移（`BACKFILL_JOB_TRANSITIONS`）と判定（`getJobActivity`） |
-| `src/scripts.ts` | Lua のスクリプトと、それを呼び出す関数                             |
-| `src/queue.ts`   | `BackfillQueue`                                                    |
-| `src/runs.ts`    | 全アカウントのチェック（`BackfillRuns`）                           |
+| ファイル | 中身 |
+| --- | --- |
+| `src/types.ts` | ジョブと結果の型 |
+| `src/keys.ts` | Redis のキーの作り方と、有効期限の定数 |
+| `src/jobs.ts` | 状態の遷移（`BACKFILL_JOB_TRANSITIONS`）と判定（`getJobActivity`） |
+| `src/scripts.ts` | Lua のスクリプトと、それを呼び出す関数 |
+| `src/queue.ts` | `BackfillQueue` |
+| `src/runs.ts` | 全アカウントのチェック（`BackfillRuns`） |
 
 ## 全アカウントのチェック（`BackfillRuns`）
 
@@ -64,14 +64,14 @@ Redis のジョブは最後の変更から 7 日で消えるため、終えた�
 
 キーはすべて `@shinju-date/constants` の `REDIS_KEYS` で管理し、7 日間の TTL を設定します（処理中のジョブのロックは `BackfillQueue` の `leaseSeconds`、チェックの依頼中のロックは `BACKFILL_RUN_LOCK_SECONDS`）。
 
-| キー                                                               | 内容                     |
-| ------------------------------------------------------------------ | ------------------------ |
-| `VIDEO_BACKFILL_JOB_PREFIX` + ジョブ ID                            | ジョブ（JSON）           |
-| `VIDEO_BACKFILL_LOCK_PREFIX` + ジョブ ID                           | 処理中のロック           |
-| `VIDEO_BACKFILL_QUEUE`                                             | 待機中のジョブ ID の一覧 |
-| `VIDEO_BACKFILL_RUN`                                               | 最新のチェック（JSON）   |
-| `VIDEO_BACKFILL_RUN_LOCK`                                          | チェックの依頼中のロック |
-| `VIDEO_BACKFILL_RUN_RESULT_PREFIX` + チェック ID + `:` + ジョブ ID | 終了した子ジョブの結果   |
+| キー | 内容 |
+| --- | --- |
+| `VIDEO_BACKFILL_JOB_PREFIX` + ジョブ ID | ジョブ（JSON） |
+| `VIDEO_BACKFILL_LOCK_PREFIX` + ジョブ ID | 処理中のロック |
+| `VIDEO_BACKFILL_QUEUE` | 待機中のジョブ ID の一覧 |
+| `VIDEO_BACKFILL_RUN` | 最新のチェック（JSON） |
+| `VIDEO_BACKFILL_RUN_LOCK` | チェックの依頼中のロック |
+| `VIDEO_BACKFILL_RUN_RESULT_PREFIX` + チェック ID + `:` + ジョブ ID | 終了した子ジョブの結果 |
 
 ## 使い方
 
@@ -80,51 +80,51 @@ import {
   BackfillQueue,
   BackfillRuns,
   getBackfillRunResultKeys,
-} from '@shinju-date/video-backfill'
+} from "@shinju-date/video-backfill";
 
 // 管理画面: 依頼する
-const queue = new BackfillQueue(redisClient)
+const queue = new BackfillQueue(redisClient);
 
-await queue.enqueue({ accountId, provider: 'youtube', requestedBy, talentId })
+await queue.enqueue({ accountId, provider: "youtube", requestedBy, talentId });
 
 // バッチ: 処理する（ロックは、実行の最長の時間と余裕のぶん）
 const worker = new BackfillQueue(redisClient, {
   maxRunSeconds: maxDuration,
   // 終えた子ジョブの結果を、チェックのために、ジョブと一緒に残す
   finishedJobKeys: getBackfillRunResultKeys,
-})
-const claim = await worker.claim()
+});
+const claim = await worker.claim();
 
 if (claim) {
-  let result
+  let result;
 
   try {
     const page = await scraper.addPastVideos({
       accountId,
       cursor: claim.job.cursor,
-    })
+    });
 
     result = await worker.recordPage(claim, {
       added: page.added,
       done: page.cursor === null,
       nextCursor: page.cursor,
-    })
+    });
   } catch (error) {
     result = await worker.recordFailure(claim, error, {
       permanent: error instanceof AccountNotFoundError,
-    })
+    });
   }
 
-  if (result.status === 'lost') {
+  if (result.status === "lost") {
     // ロックが切れた: このジョブの処理をやめる
   }
 }
 
 // 管理画面: 全アカウントのチェックを依頼し、進捗を読む
-const runs = new BackfillRuns(redisClient)
+const runs = new BackfillRuns(redisClient);
 
-await runs.start(accounts, { requestedBy })
-const progress = await runs.getLatest()
+await runs.start(accounts, { requestedBy });
+const progress = await runs.getLatest();
 ```
 
 ## テスト

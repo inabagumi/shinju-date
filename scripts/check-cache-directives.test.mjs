@@ -5,20 +5,21 @@
  *   node --test scripts/check-cache-directives.test.mjs
  */
 
-import assert from 'node:assert/strict'
-import { describe, it } from 'node:test'
-import { findMissingBlankLines } from './check-cache-directives.mjs'
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+
+import { findMissingBlankLines } from "./check-cache-directives.mjs";
 
 /**
  * @param {string} source
  * @param {string} [fileName]
  */
-function lines(source, fileName = 'fixture.ts') {
-  return findMissingBlankLines(source, fileName).map(({ line }) => line)
+function lines(source, fileName = "fixture.ts") {
+  return findMissingBlankLines(source, fileName).map(({ line }) => line);
 }
 
-describe('findMissingBlankLines', () => {
-  it('accepts blank lines after the directive and the cache functions', () => {
+describe("findMissingBlankLines", () => {
+  it("accepts blank lines after the directive and the cache functions", () => {
     const source = `export async function getTalent() {
   'use cache: remote'
 
@@ -27,34 +28,34 @@ describe('findMissingBlankLines', () => {
 
   return await fetchTalent()
 }
-`
+`;
 
-    assert.deepEqual(lines(source), [])
-  })
+    assert.deepEqual(lines(source), []);
+  });
 
-  it('reports a statement right after the directive', () => {
+  it("reports a statement right after the directive", () => {
     const source = `export async function getTalent() {
   'use cache'
   return await fetchTalent()
 }
-`
+`;
 
-    assert.deepEqual(lines(source), [3])
-  })
+    assert.deepEqual(lines(source), [3]);
+  });
 
-  it('reports the cache functions right after the directive', () => {
+  it("reports the cache functions right after the directive", () => {
     const source = `export async function getTalent() {
   'use cache: private'
   cacheLife('minutes')
 
   return await fetchTalent()
 }
-`
+`;
 
-    assert.deepEqual(lines(source), [3])
-  })
+    assert.deepEqual(lines(source), [3]);
+  });
 
-  it('reports a statement right after the cache functions', () => {
+  it("reports a statement right after the cache functions", () => {
     const source = `export async function getTalent() {
   'use cache: remote'
 
@@ -62,12 +63,12 @@ describe('findMissingBlankLines', () => {
   cacheTag('talents')
   return await fetchTalent()
 }
-`
+`;
 
-    assert.deepEqual(lines(source), [6])
-  })
+    assert.deepEqual(lines(source), [6]);
+  });
 
-  it('reports a comment that is not separated by a blank line', () => {
+  it("reports a comment that is not separated by a blank line", () => {
     const source = `export async function getTalent() {
   'use cache: remote'
   // Cached for an hour
@@ -75,12 +76,12 @@ describe('findMissingBlankLines', () => {
 
   return await fetchTalent()
 }
-`
+`;
 
-    assert.deepEqual(lines(source), [4])
-  })
+    assert.deepEqual(lines(source), [4]);
+  });
 
-  it('accepts the directive and the cache functions at the end of a block', () => {
+  it("accepts the directive and the cache functions at the end of a block", () => {
     const source = `export async function warm() {
   'use cache'
 }
@@ -88,20 +89,20 @@ describe('findMissingBlankLines', () => {
 export async function tag(id) {
   cacheTag(id)
 }
-`
+`;
 
-    assert.deepEqual(lines(source, 'fixture.js'), [])
-  })
+    assert.deepEqual(lines(source, "fixture.js"), []);
+  });
 
-  it('checks the directive at the top of a file', () => {
+  it("checks the directive at the top of a file", () => {
     const source = `'use cache'
 export async function getTalent() {}
-`
+`;
 
-    assert.deepEqual(lines(source), [2])
-  })
+    assert.deepEqual(lines(source), [2]);
+  });
 
-  it('checks arrow functions, methods and nested blocks in TSX', () => {
+  it("checks arrow functions, methods and nested blocks in TSX", () => {
     const source = `const getTalent = async () => {
   'use cache: remote'
   return <div />
@@ -117,12 +118,12 @@ class Repository {
     }
   }
 }
-`
+`;
 
-    assert.deepEqual(lines(source, 'fixture.tsx'), [3, 12])
-  })
+    assert.deepEqual(lines(source, "fixture.tsx"), [3, 12]);
+  });
 
-  it('ignores other directives and other functions', () => {
+  it("ignores other directives and other functions", () => {
     const source = `'use client'
 import { useState } from 'react'
 
@@ -131,8 +132,8 @@ export async function getTalent() {
   revalidateTag('talents')
   return 'use cache'
 }
-`
+`;
 
-    assert.deepEqual(lines(source), [])
-  })
-})
+    assert.deepEqual(lines(source), []);
+  });
+});

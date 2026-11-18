@@ -1,32 +1,32 @@
-import { ApiClient } from '@twurple/api'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { ApiClient } from "@twurple/api";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-describe('getTwitchApiClient', () => {
+describe("getTwitchApiClient", () => {
   beforeEach(() => {
-    vi.resetModules()
-  })
+    vi.resetModules();
+  });
 
   afterEach(() => {
-    vi.unstubAllEnvs()
-  })
+    vi.unstubAllEnvs();
+  });
 
-  it('throws when credentials are missing', async () => {
-    vi.stubEnv('TWITCH_CLIENT_ID', '')
-    vi.stubEnv('TWITCH_CLIENT_SECRET', '')
+  it("throws when credentials are missing", async () => {
+    vi.stubEnv("TWITCH_CLIENT_ID", "");
+    vi.stubEnv("TWITCH_CLIENT_SECRET", "");
 
-    const { getTwitchApiClient } = await import('./client.js')
+    const { getTwitchApiClient } = await import("./client.js");
 
-    expect(() => getTwitchApiClient()).toThrow(/Client ID and Client Secret/)
-  })
+    expect(() => getTwitchApiClient()).toThrow(/Client ID and Client Secret/);
+  });
 
-  it('creates one client from the credentials in the environment', async () => {
-    vi.stubEnv('TWITCH_CLIENT_ID', 'test-client-id')
-    vi.stubEnv('TWITCH_CLIENT_SECRET', 'test-client-secret')
+  it("creates one client from the credentials in the environment", async () => {
+    vi.stubEnv("TWITCH_CLIENT_ID", "test-client-id");
+    vi.stubEnv("TWITCH_CLIENT_SECRET", "test-client-secret");
 
-    const { getTwitchApiClient } = await import('./client.js')
-    const client = getTwitchApiClient()
+    const { getTwitchApiClient } = await import("./client.js");
+    const client = getTwitchApiClient();
 
-    expect(client).toBeInstanceOf(ApiClient)
-    expect(getTwitchApiClient()).toBe(client)
-  })
-})
+    expect(client).toBeInstanceOf(ApiClient);
+    expect(getTwitchApiClient()).toBe(client);
+  });
+});

@@ -1,20 +1,21 @@
-import type { TablesUpdate } from '@shinju-date/database'
-import type { TypedSupabaseClient, WriteContext } from '../../types.js'
-import { updateVideo } from '../database/videos.js'
-import { DatabaseError } from '../errors.js'
-import { removeThumbnail, type Thumbnail } from './thumbnail.js'
+import type { TablesUpdate } from "@shinju-date/database";
+
+import type { TypedSupabaseClient, WriteContext } from "../../types.js";
+import { updateVideo } from "../database/videos.js";
+import { DatabaseError } from "../errors.js";
+import { removeThumbnail, type Thumbnail } from "./thumbnail.js";
 
 export interface ReplaceThumbnailOptions {
   /**
    * Stores the new thumbnail, or returns `null` when there is none to store.
    * Only called once, before the video is updated.
    */
-  create: () => Promise<Thumbnail | null>
+  create: () => Promise<Thumbnail | null>;
   /** Other columns to update along with the thumbnail. */
-  fields: Omit<TablesUpdate<'videos'>, 'thumbnail_id' | 'updated_at'>
+  fields: Omit<TablesUpdate<"videos">, "thumbnail_id" | "updated_at">;
   /** The thumbnail the video uses now (`videos.thumbnail_id`), if any. */
-  previousThumbnailId: string | null
-  videoId: string
+  previousThumbnailId: string | null;
+  videoId: string;
 }
 
 /**
@@ -25,14 +26,14 @@ export interface ReplaceThumbnailOptions {
  */
 async function touchThumbnail(
   supabaseClient: TypedSupabaseClient,
-  thumbnailId: string,
+  thumbnailId: string
 ): Promise<void> {
-  const { error } = await supabaseClient.rpc('touch_thumbnail', {
+  const { error } = await supabaseClient.rpc("touch_thumbnail", {
     p_thumbnail_id: thumbnailId,
-  })
+  });
 
   if (error) {
-    throw new DatabaseError('Failed to update a replaced thumbnail', error)
+    throw new DatabaseError("Failed to update a replaced thumbnail", error);
   }
 }
 
@@ -55,35 +56,35 @@ async function touchThumbnail(
  */
 export async function replaceThumbnail(
   context: WriteContext,
-  { create, fields, previousThumbnailId, videoId }: ReplaceThumbnailOptions,
+  { create, fields, previousThumbnailId, videoId }: ReplaceThumbnailOptions
 ): Promise<Thumbnail | null> {
-  const { supabaseClient } = context
-  const thumbnail = await create()
+  const { supabaseClient } = context;
+  const thumbnail = await create();
 
   if (!thumbnail) {
     if (Object.keys(fields).length > 0) {
-      await updateVideo(supabaseClient, videoId, fields)
+      await updateVideo(supabaseClient, videoId, fields);
     }
 
-    return null
+    return null;
   }
 
   try {
     // Before the video: should this fail, nothing has changed yet, and should
     // the video fail, the previous thumbnail is merely kept a little longer.
     if (previousThumbnailId && previousThumbnailId !== thumbnail.id) {
-      await touchThumbnail(supabaseClient, previousThumbnailId)
+      await touchThumbnail(supabaseClient, previousThumbnailId);
     }
 
     await updateVideo(supabaseClient, videoId, {
       ...fields,
       thumbnail_id: thumbnail.id,
-    })
+    });
   } catch (error) {
-    await removeThumbnail(context, thumbnail)
+    await removeThumbnail(context, thumbnail);
 
-    throw error
+    throw error;
   }
 
-  return thumbnail
+  return thumbnail;
 }

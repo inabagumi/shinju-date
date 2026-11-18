@@ -1,10 +1,10 @@
 interface CreateErrorResponseOptions {
-  status?: number
+  status?: number;
 }
 
 export function createErrorResponse(
   message: string,
-  { status = 500 }: CreateErrorResponseOptions,
+  { status = 500 }: CreateErrorResponseOptions
 ) {
   return Response.json(
     {
@@ -12,9 +12,9 @@ export function createErrorResponse(
     },
     {
       headers: {
-        'Cache-Control': 'no-store',
+        "Cache-Control": "no-store",
       },
       status,
-    },
-  )
+    }
+  );
 }

@@ -1,6 +1,28 @@
 {
-  "author": "Haneru Developers",
+  "name": "@shinju-date/health-checkers",
+  "version": "1.0.0",
+  "private": true,
   "description": "Health check utilities for web services",
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "author": "Haneru Developers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git",
+    "directory": "packages/health-checkers"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
   "devDependencies": {
     "@shinju-date/config": "workspace:*",
     "@supabase/supabase-js": "catalog:",
@@ -10,30 +32,8 @@
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
-  },
-  "homepage": "https://shinju.date/",
-  "license": "MIT",
-  "name": "@shinju-date/health-checkers",
   "peerDependencies": {
     "@supabase/supabase-js": "^2.119.0",
     "@upstash/redis": "^1.41.0"
-  },
-  "private": true,
-  "repository": {
-    "directory": "packages/health-checkers",
-    "type": "git",
-    "url": "https://github.com/inabagumi/shinju-date.git"
-  },
-  "scripts": {
-    "build": "tsdown",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
-  },
-  "type": "module",
-  "version": "1.0.0"
+  }
 }

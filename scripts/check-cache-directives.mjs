@@ -21,31 +21,32 @@
  * new files that are not ignored) are checked.
  */
 
-import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import ts from 'typescript'
+import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+import ts from "typescript";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const SOURCE_PATTERNS = [
-  '*.cjs',
-  '*.cts',
-  '*.js',
-  '*.jsx',
-  '*.mjs',
-  '*.mts',
-  '*.ts',
-  '*.tsx',
-]
+  "*.cjs",
+  "*.cts",
+  "*.js",
+  "*.jsx",
+  "*.mjs",
+  "*.mts",
+  "*.ts",
+  "*.tsx",
+];
 
 /** Files placed by the `skills` CLI, which are not edited by hand */
-const IGNORED_FILES = [/^\.agents\//, /^\.claude\//]
+const IGNORED_FILES = [/^\.agents\//, /^\.claude\//];
 
-const CACHE_FUNCTIONS = new Set(['cacheLife', 'cacheTag'])
+const CACHE_FUNCTIONS = new Set(["cacheLife", "cacheTag"]);
 
-const BLANK_LINE_PATTERN = /\n[ \t]*\r?\n/
+const BLANK_LINE_PATTERN = /\n[ \t]*\r?\n/;
 
 /**
  * @typedef {object} Problem
@@ -57,10 +58,10 @@ const BLANK_LINE_PATTERN = /\n[ \t]*\r?\n/
 /** @param {string} fileName */
 function getScriptKind(fileName) {
   if (/\.[cm]?tsx?$/.test(fileName)) {
-    return fileName.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS
+    return fileName.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   }
 
-  return fileName.endsWith('x') ? ts.ScriptKind.JSX : ts.ScriptKind.JS
+  return fileName.endsWith("x") ? ts.ScriptKind.JSX : ts.ScriptKind.JS;
 }
 
 /** @param {ts.Statement} statement */
@@ -68,23 +69,23 @@ function isCacheDirective(statement) {
   return (
     ts.isExpressionStatement(statement) &&
     ts.isStringLiteral(statement.expression) &&
-    statement.expression.text.startsWith('use cache')
-  )
+    statement.expression.text.startsWith("use cache")
+  );
 }
 
 /** @param {ts.Statement} statement */
 function isCacheFunctionCall(statement) {
   if (!ts.isExpressionStatement(statement)) {
-    return false
+    return false;
   }
 
-  const { expression } = statement
+  const { expression } = statement;
 
   return (
     ts.isCallExpression(expression) &&
     ts.isIdentifier(expression.expression) &&
     CACHE_FUNCTIONS.has(expression.expression.text)
-  )
+  );
 }
 
 /**
@@ -101,11 +102,11 @@ export function findMissingBlankLines(sourceText, fileName) {
     sourceText,
     ts.ScriptTarget.Latest,
     true,
-    getScriptKind(fileName),
-  )
+    getScriptKind(fileName)
+  );
 
   /** @type {Problem[]} */
-  const problems = []
+  const problems = [];
 
   /**
    * @param {ts.Statement} statement
@@ -113,40 +114,40 @@ export function findMissingBlankLines(sourceText, fileName) {
    * @param {string} message
    */
   function requireBlankLine(statement, next, message) {
-    const between = sourceText.slice(statement.end, next.getStart(sourceFile))
+    const between = sourceText.slice(statement.end, next.getStart(sourceFile));
 
     if (BLANK_LINE_PATTERN.test(between)) {
-      return
+      return;
     }
 
     const { character, line } = sourceFile.getLineAndCharacterOfPosition(
-      next.getStart(sourceFile),
-    )
+      next.getStart(sourceFile)
+    );
 
-    problems.push({ column: character + 1, line: line + 1, message })
+    problems.push({ column: character + 1, line: line + 1, message });
   }
 
   /** @param {readonly ts.Statement[]} statements */
   function checkStatements(statements) {
     for (const [index, statement] of statements.entries()) {
-      const next = statements[index + 1]
+      const next = statements[index + 1];
 
       if (!next) {
-        break
+        break;
       }
 
       if (isCacheDirective(statement)) {
         requireBlankLine(
           statement,
           next,
-          `'use cache' のディレクティブの後に空行を入れてください。`,
-        )
+          `'use cache' のディレクティブの後に空行を入れてください。`
+        );
       } else if (isCacheFunctionCall(statement) && !isCacheFunctionCall(next)) {
         requireBlankLine(
           statement,
           next,
-          'cacheLife() と cacheTag() の並びの後に空行を入れてください。',
-        )
+          "cacheLife() と cacheTag() の並びの後に空行を入れてください。"
+        );
       }
     }
   }
@@ -159,80 +160,80 @@ export function findMissingBlankLines(sourceText, fileName) {
       ts.isModuleBlock(node) ||
       ts.isCaseOrDefaultClause(node)
     ) {
-      checkStatements(node.statements)
+      checkStatements(node.statements);
     }
 
-    ts.forEachChild(node, visit)
+    ts.forEachChild(node, visit);
   }
 
-  visit(sourceFile)
+  visit(sourceFile);
 
-  return problems
+  return problems;
 }
 
 /** List the files Git tracks and the new files that are not ignored. */
 function listSourceFiles() {
   const output = execFileSync(
-    'git',
+    "git",
     [
-      'ls-files',
-      '-z',
-      '--cached',
-      '--others',
-      '--exclude-standard',
-      '--deduplicate',
-      '--',
+      "ls-files",
+      "-z",
+      "--cached",
+      "--others",
+      "--exclude-standard",
+      "--deduplicate",
+      "--",
       ...SOURCE_PATTERNS,
     ],
-    { cwd: root, encoding: 'utf8' },
-  )
+    { cwd: root, encoding: "utf8" }
+  );
 
   return output
-    .split('\0')
+    .split("\0")
     .filter(Boolean)
-    .filter((file) => !IGNORED_FILES.some((pattern) => pattern.test(file)))
+    .filter((file) => !IGNORED_FILES.some((pattern) => pattern.test(file)));
 }
 
 function main() {
-  const args = process.argv.slice(2)
-  const files = args.length > 0 ? args : listSourceFiles()
-  let count = 0
+  const args = process.argv.slice(2);
+  const files = args.length > 0 ? args : listSourceFiles();
+  let count = 0;
 
   for (const file of files) {
-    let sourceText
+    let sourceText;
 
     try {
-      sourceText = readFileSync(resolve(root, file), 'utf8')
+      sourceText = readFileSync(resolve(root, file), "utf8");
     } catch (error) {
       // A tracked file that was deleted but not yet staged
-      if (error?.code === 'ENOENT') {
-        continue
+      if (error?.code === "ENOENT") {
+        continue;
       }
 
-      throw error
+      throw error;
     }
 
     if (
-      !sourceText.includes('use cache') &&
+      !sourceText.includes("use cache") &&
       !/\bcache(Life|Tag)\(/.test(sourceText)
     ) {
-      continue
+      continue;
     }
 
     for (const { column, line, message } of findMissingBlankLines(
       sourceText,
-      file,
+      file
     )) {
-      console.error(`${file}:${line}:${column} ${message}`)
-      count++
+      console.error(`${file}:${line}:${column} ${message}`);
+      count++;
     }
   }
 
   if (count > 0) {
     console.error(
-      `\n${count} 件の問題があります。AGENTS.md の「キャッシュのディレクティブ」を参照。`,
-    )
-    process.exitCode = 1
+      `\n${count} 件の問題があります。AGENTS.md の「キャッシュのディレクティブ」を参照。`
+    );
+    process.exitCode = 1;
   }
 }
 
@@ -240,5 +241,5 @@ if (
   process.argv[1] &&
   resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
-  main()
+  main();
 }

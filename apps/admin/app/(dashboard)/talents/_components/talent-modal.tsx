@@ -1,14 +1,16 @@
-'use client'
+"use client";
 
-import { Button } from '@shinju-date/ui'
-import { Plus } from 'lucide-react'
-import { ErrorMessage, FormField, Input, Label } from '@/components/form'
-import { FormDialog } from '@/components/form-dialog'
-import { createTalentAction } from '../_actions'
+import { Button } from "@shinju-date/ui";
+import { Plus } from "lucide-react";
+
+import { ErrorMessage, FormField, Input, Label } from "@/components/form";
+import { FormDialog } from "@/components/form-dialog";
+
+import { createTalentAction } from "../_actions";
 import {
   TALENT_READING_DESCRIPTION,
   TALENT_READING_PLACEHOLDER,
-} from '../_lib/talent-reading-description'
+} from "../_lib/talent-reading-description";
 
 export function TalentModal() {
   return (
@@ -49,5 +51,5 @@ export function TalentModal() {
         <ErrorMessage />
       </FormField>
     </FormDialog>
-  )
+  );
 }

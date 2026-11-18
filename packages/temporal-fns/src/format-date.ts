@@ -1,7 +1,7 @@
-import { padNumber } from './pad-number.js'
+import { padNumber } from "./pad-number.js";
 
 interface FormatDateOptions {
-  includeYear?: boolean
+  includeYear?: boolean;
 }
 
 /**
@@ -12,12 +12,12 @@ interface FormatDateOptions {
  */
 export function formatDate(
   timestamp: Temporal.ZonedDateTime | Temporal.PlainDate,
-  options: FormatDateOptions = {},
+  options: FormatDateOptions = {}
 ): string {
-  const { includeYear = true } = options
-  const monthAndDay = `${padNumber(timestamp.month)}/${padNumber(timestamp.day)}`
+  const { includeYear = true } = options;
+  const monthAndDay = `${padNumber(timestamp.month)}/${padNumber(timestamp.day)}`;
 
   return includeYear
     ? `${timestamp.year.toString(10)}/${monthAndDay}`
-    : monthAndDay
+    : monthAndDay;
 }

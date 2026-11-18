@@ -1,65 +1,67 @@
-import { range } from '@shinju-date/helpers'
-import { Alert, EmptyState, PageHeader, Skeleton } from '@shinju-date/ui'
-import { Video } from 'lucide-react'
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
-import { BackLink } from '@/components/back-link'
+import { range } from "@shinju-date/helpers";
+import { Alert, EmptyState, PageHeader, Skeleton } from "@shinju-date/ui";
+import { Video } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+
+import { BackLink } from "@/components/back-link";
 import {
   DetailList,
   DetailListSkeleton,
   DetailRow,
   Panel,
   PanelSkeleton,
-} from '@/components/panel'
-import { VideoStatusBadge } from '@/components/video-status-badge'
-import { VideoThumbnail } from '@/components/video-thumbnail'
-import { WidgetErrorBoundary } from '@/components/widget-error-boundary'
-import { formatDateTimeFromISO } from '@/lib/format'
-import { TalentStatusBadge } from '../_components/talent-status-badge'
-import { getRecentVideosForTalent } from '../_lib/get-recent-videos'
-import { getTalent } from '../_lib/get-talent'
-import { getVideoBackfillStatus } from '../_lib/get-video-backfill-status'
-import { ChannelManager } from './_components/channel-manager'
-import { EditTalentForm } from './_components/edit-talent-form'
-import { SyncTalentButton } from './_components/sync-talent-button'
-import { TalentLifecycleActions } from './_components/talent-lifecycle-actions'
-import { TwitchUserManager } from './_components/twitch-user-manager'
+} from "@/components/panel";
+import { VideoStatusBadge } from "@/components/video-status-badge";
+import { VideoThumbnail } from "@/components/video-thumbnail";
+import { WidgetErrorBoundary } from "@/components/widget-error-boundary";
+import { formatDateTimeFromISO } from "@/lib/format";
+
+import { TalentStatusBadge } from "../_components/talent-status-badge";
+import { getRecentVideosForTalent } from "../_lib/get-recent-videos";
+import { getTalent } from "../_lib/get-talent";
+import { getVideoBackfillStatus } from "../_lib/get-video-backfill-status";
+import { ChannelManager } from "./_components/channel-manager";
+import { EditTalentForm } from "./_components/edit-talent-form";
+import { SyncTalentButton } from "./_components/sync-talent-button";
+import { TalentLifecycleActions } from "./_components/talent-lifecycle-actions";
+import { TwitchUserManager } from "./_components/twitch-user-manager";
 import {
   VideoBackfillPanel,
   VideoBackfillPanelSkeleton,
-} from './_components/video-backfill-panel'
+} from "./_components/video-backfill-panel";
 
 export async function generateMetadata({
   params,
-}: Pick<PageProps<'/talents/[id]'>, 'params'>): Promise<Metadata> {
-  const { id } = await params
+}: Pick<PageProps<"/talents/[id]">, "params">): Promise<Metadata> {
+  const { id } = await params;
 
-  const talent = await getTalent(id)
+  const talent = await getTalent(id);
 
   if (!talent) {
     return {
-      title: 'タレントが見つかりません',
-    }
+      title: "タレントが見つかりません",
+    };
   }
 
   return {
     title: `${talent.name} - タレント詳細`,
-  }
+  };
 }
 
 interface VideoBackfillProps {
-  talentId: string
-  talentName: string
+  talentId: string;
+  talentName: string;
 }
 
 /** 過去動画の取り込みの最初の状況をサーバーで取得して、パネルに渡す */
 async function VideoBackfill({ talentId, talentName }: VideoBackfillProps) {
-  const initialData = await getVideoBackfillStatus(talentId)
+  const initialData = await getVideoBackfillStatus(talentId);
 
   if (!initialData) {
-    return null
+    return null;
   }
 
   return (
@@ -68,22 +70,22 @@ async function VideoBackfill({ talentId, talentName }: VideoBackfillProps) {
       talentId={talentId}
       talentName={talentName}
     />
-  )
+  );
 }
 
 async function TalentProfile({
   params,
-}: Pick<PageProps<'/talents/[id]'>, 'params'>) {
-  const { id } = await params
+}: Pick<PageProps<"/talents/[id]">, "params">) {
+  const { id } = await params;
 
-  const talent = await getTalent(id)
+  const talent = await getTalent(id);
 
   if (!talent) {
-    notFound()
+    notFound();
   }
 
-  const isDeleted = talent.deleted_at !== null
-  const isRetired = !isDeleted && talent.status === 'retired'
+  const isDeleted = talent.deleted_at !== null;
+  const isRetired = !isDeleted && talent.status === "retired";
 
   return (
     <>
@@ -193,7 +195,7 @@ async function TalentProfile({
                     {formatDateTimeFromISO(talent.deleted_at)}
                   </time>
                 ) : (
-                  '-'
+                  "-"
                 )}
               </DetailRow>
             )}
@@ -206,25 +208,25 @@ async function TalentProfile({
             actions={<TalentLifecycleActions talent={talent} />}
             description={
               isRetired
-                ? 'アクティブに戻すか、タレントを削除します。削除すると紐づく動画も非公開になります。'
-                : '引退にするか、タレントを削除します。削除すると紐づく動画も非公開になります。'
+                ? "アクティブに戻すか、タレントを削除します。削除すると紐づく動画も非公開になります。"
+                : "引退にするか、タレントを削除します。削除すると紐づく動画も非公開になります。"
             }
             title="状態の変更"
           />
         )}
       </div>
     </>
-  )
+  );
 }
 
 /** 「最新動画」に表示する件数 */
-const RECENT_VIDEOS_LIMIT = 5
+const RECENT_VIDEOS_LIMIT = 5;
 
 async function RecentVideosSection({
   params,
-}: Pick<PageProps<'/talents/[id]'>, 'params'>) {
-  const { id } = await params
-  const recentVideos = await getRecentVideosForTalent(id, RECENT_VIDEOS_LIMIT)
+}: Pick<PageProps<"/talents/[id]">, "params">) {
+  const { id } = await params;
+  const recentVideos = await getRecentVideosForTalent(id, RECENT_VIDEOS_LIMIT);
 
   return (
     <Panel
@@ -266,13 +268,13 @@ async function RecentVideosSection({
         </ul>
       )}
     </Panel>
-  )
+  );
 }
 
 /** 読み込み中の、YouTube チャンネルと Twitch ユーザーの管理の区画。1件ぶんの枠を置く */
 interface AccountManagerSkeletonProps {
-  description: string
-  title: string
+  description: string;
+  title: string;
 }
 
 function AccountManagerSkeleton({
@@ -295,7 +297,7 @@ function AccountManagerSkeleton({
         <Skeleton className="size-8 shrink-0" />
       </div>
     </PanelSkeleton>
-  )
+  );
 }
 
 /**
@@ -355,7 +357,7 @@ function TalentProfileSkeleton() {
         />
       </div>
     </div>
-  )
+  );
 }
 
 /** 読み込み中の `RecentVideosSection`。取得する件数ぶんの行を並べる */
@@ -382,12 +384,12 @@ function RecentVideosSectionSkeleton() {
         ))}
       </div>
     </PanelSkeleton>
-  )
+  );
 }
 
 export default function TalentDetailPage({
   params,
-}: PageProps<'/talents/[id]'>) {
+}: PageProps<"/talents/[id]">) {
   return (
     <div>
       {/* Back button - static, renders immediately */}
@@ -405,5 +407,5 @@ export default function TalentDetailPage({
         <RecentVideosSection params={params} />
       </Suspense>
     </div>
-  )
+  );
 }

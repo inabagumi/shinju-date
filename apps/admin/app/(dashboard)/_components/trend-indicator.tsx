@@ -1,11 +1,11 @@
-import { formatNumber } from '@shinju-date/helpers'
-import { StatTile, type StatTileTone, twMerge } from '@shinju-date/ui'
-import Link from 'next/link'
-import type { ReactNode } from 'react'
+import { formatNumber } from "@shinju-date/helpers";
+import { StatTile, type StatTileTone, twMerge } from "@shinju-date/ui";
+import Link from "next/link";
+import type { ReactNode } from "react";
 
 interface TrendProps {
-  change: string
-  changeTone: StatTileTone
+  change: string;
+  changeTone: StatTileTone;
 }
 
 /**
@@ -17,35 +17,35 @@ export function getTrendProps(
   value: number | null,
   {
     invert = false,
-    label = '前日比',
-  }: { invert?: boolean; label?: string } = {},
+    label = "前日比",
+  }: { invert?: boolean; label?: string } = {}
 ): TrendProps {
   if (value === null) {
-    return { change: `${label}: データなし`, changeTone: 'neutral' }
+    return { change: `${label}: データなし`, changeTone: "neutral" };
   }
 
   if (value === 0) {
     return {
       change: `− ${label}: ${formatNumber(value)}`,
-      changeTone: 'neutral',
-    }
+      changeTone: "neutral",
+    };
   }
 
-  const isPositive = value > 0
-  const isGood = invert ? !isPositive : isPositive
+  const isPositive = value > 0;
+  const isGood = invert ? !isPositive : isPositive;
 
   return {
-    change: `${isPositive ? '↑' : '↓'} ${label}: ${isPositive ? '+' : ''}${formatNumber(value)}`,
-    changeTone: isGood ? 'positive' : 'negative',
-  }
+    change: `${isPositive ? "↑" : "↓"} ${label}: ${isPositive ? "+" : ""}${formatNumber(value)}`,
+    changeTone: isGood ? "positive" : "negative",
+  };
 }
 
 interface StatTileLinkProps {
-  className?: string
-  dayChange: number | null
-  href: string
-  label: ReactNode
-  value: number
+  className?: string;
+  dayChange: number | null;
+  href: string;
+  label: ReactNode;
+  value: number;
 }
 
 /** 一覧などの詳しい画面へ移動できる統計のタイル。前日比を添える */
@@ -58,7 +58,7 @@ export function StatTileLink({
 }: StatTileLinkProps) {
   return (
     <Link
-      className={twMerge('group block rounded-container focus-ring', className)}
+      className={twMerge("group block rounded-container focus-ring", className)}
       href={href}
     >
       <StatTile
@@ -68,5 +68,5 @@ export function StatTileLink({
         {...getTrendProps(dayChange)}
       />
     </Link>
-  )
+  );
 }

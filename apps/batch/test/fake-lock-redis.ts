@@ -1,6 +1,6 @@
 interface SetOptions {
-  ex?: number
-  nx?: boolean
+  ex?: number;
+  nx?: boolean;
 }
 
 /**
@@ -9,28 +9,28 @@ interface SetOptions {
  */
 export class FakeLockRedis {
   /** Makes the next script fail, like Redis does when it is unreachable. */
-  evalFails = false
-  readonly ttls = new Map<string, number>()
-  readonly values = new Map<string, string>()
+  evalFails = false;
+  readonly ttls = new Map<string, number>();
+  readonly values = new Map<string, string>();
 
   async set(
     key: string,
     value: string,
-    { ex, nx }: SetOptions = {},
-  ): Promise<'OK' | null> {
+    { ex, nx }: SetOptions = {}
+  ): Promise<"OK" | null> {
     if (nx && this.values.has(key)) {
-      return null
+      return null;
     }
 
-    this.values.set(key, value)
+    this.values.set(key, value);
 
     if (ex === undefined) {
-      this.ttls.delete(key)
+      this.ttls.delete(key);
     } else {
-      this.ttls.set(key, ex)
+      this.ttls.set(key, ex);
     }
 
-    return 'OK'
+    return "OK";
   }
 
   /**
@@ -40,36 +40,36 @@ export class FakeLockRedis {
    */
   async eval(script: string, keys: string[], args: string[]): Promise<number> {
     if (this.evalFails) {
-      this.evalFails = false
+      this.evalFails = false;
 
-      throw new Error('Redis is down')
+      throw new Error("Redis is down");
     }
 
-    if (!script.startsWith('-- batch:release-lock\n')) {
-      throw new Error('Unexpected script')
+    if (!script.startsWith("-- batch:release-lock\n")) {
+      throw new Error("Unexpected script");
     }
 
-    const [key = ''] = keys
-    const [value] = args
+    const [key = ""] = keys;
+    const [value] = args;
 
     if (this.values.get(key) !== value) {
-      return 0
+      return 0;
     }
 
-    this.delete(key)
+    this.delete(key);
 
-    return 1
+    return 1;
   }
 
   /** Removes the key, as when it runs out. */
   delete(key: string): void {
-    this.values.delete(key)
-    this.ttls.delete(key)
+    this.values.delete(key);
+    this.ttls.delete(key);
   }
 
   clear(): void {
-    this.evalFails = false
-    this.values.clear()
-    this.ttls.clear()
+    this.evalFails = false;
+    this.values.clear();
+    this.ttls.clear();
   }
 }

@@ -1,18 +1,19 @@
-import type { youtube_v3 as youtube } from '@googleapis/youtube'
+import type { youtube_v3 as youtube } from "@googleapis/youtube";
+
 import {
   type BatchOptions,
   requestInBatches,
   YOUTUBE_DATA_API_MAX_RESULTS,
-} from './batches.js'
-import { type ClientOptions, getYouTubeClient } from './client.js'
-import type { FilteredYouTubeVideo } from './types.js'
+} from "./batches.js";
+import { type ClientOptions, getYouTubeClient } from "./client.js";
+import type { FilteredYouTubeVideo } from "./types.js";
 
 interface GetVideosOptions extends ClientOptions, BatchOptions {
-  ids: string[]
+  ids: string[];
 }
 
 interface GetVideoIdsOptions extends ClientOptions, BatchOptions {
-  ids: string[]
+  ids: string[];
 }
 
 /**
@@ -23,12 +24,12 @@ interface GetVideoIdsOptions extends ClientOptions, BatchOptions {
  * returns it with every video.
  */
 export function isFilteredYouTubeVideo(
-  video: youtube.Schema$Video,
+  video: youtube.Schema$Video
 ): video is FilteredYouTubeVideo {
   return (
-    typeof video.id === 'string' &&
-    typeof video.snippet?.publishedAt === 'string'
-  )
+    typeof video.id === "string" &&
+    typeof video.snippet?.publishedAt === "string"
+  );
 }
 
 /**
@@ -47,11 +48,11 @@ export async function* getVideos({
     } = await client.videos.list({
       id: batch,
       maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
-      part: ['contentDetails', 'liveStreamingDetails', 'snippet'],
-    })
+      part: ["contentDetails", "liveStreamingDetails", "snippet"],
+    });
 
-    return (items ?? []).filter(isFilteredYouTubeVideo)
-  })
+    return (items ?? []).filter(isFilteredYouTubeVideo);
+  });
 }
 
 /**
@@ -72,11 +73,11 @@ export async function* getVideoIds({
     } = await client.videos.list({
       id: batch,
       maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
-      part: ['id'],
-    })
+      part: ["id"],
+    });
 
     return (items ?? []).flatMap((item) =>
-      typeof item.id === 'string' ? [item.id] : [],
-    )
-  })
+      typeof item.id === "string" ? [item.id] : []
+    );
+  });
 }

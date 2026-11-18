@@ -1,8 +1,9 @@
-import { REDIS_KEYS } from '@shinju-date/constants'
-import { redisClient } from './redis'
+import { REDIS_KEYS } from "@shinju-date/constants";
+
+import { redisClient } from "./redis";
 
 export interface OncePerWindowLimiter {
-  limit(identifier: string): Promise<{ success: boolean }>
+  limit(identifier: string): Promise<{ success: boolean }>;
 }
 
 /**
@@ -20,33 +21,33 @@ export interface OncePerWindowLimiter {
  */
 export async function limitOncePerWindow(
   identifier: string,
-  windowSeconds: number,
+  windowSeconds: number
 ): Promise<{ success: boolean }> {
-  const windowMilliseconds = windowSeconds * 1000
+  const windowMilliseconds = windowSeconds * 1000;
   const window = Math.floor(
-    Temporal.Now.instant().epochMilliseconds / windowMilliseconds,
-  )
-  const key = `${REDIS_KEYS.RATELIMIT_CRON_PREFIX}${identifier}:${window}`
+    Temporal.Now.instant().epochMilliseconds / windowMilliseconds
+  );
+  const key = `${REDIS_KEYS.RATELIMIT_CRON_PREFIX}${identifier}:${window}`;
 
   const [count] = await redisClient
     .multi()
     .incr(key)
     .expire(key, windowSeconds)
-    .exec<[number, number]>()
+    .exec<[number, number]>();
 
-  return { success: count === 1 }
+  return { success: count === 1 };
 }
 
 function oncePer(duration: Temporal.DurationLike): OncePerWindowLimiter {
-  const windowSeconds = Temporal.Duration.from(duration).total('seconds')
+  const windowSeconds = Temporal.Duration.from(duration).total("seconds");
 
   return {
     limit: (identifier) => limitOncePerWindow(identifier, windowSeconds),
-  }
+  };
 }
 
 /**
  * `/videos/backfill` lets its runs overlap, so it is limited to one run in
  * each window instead of being locked like the other cron jobs.
  */
-export const videosBackfill = oncePer({ seconds: 30 })
+export const videosBackfill = oncePer({ seconds: 30 });

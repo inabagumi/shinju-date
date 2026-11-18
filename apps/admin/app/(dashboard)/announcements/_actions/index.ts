@@ -1,39 +1,41 @@
-'use server'
+"use server";
 
-import { CACHE_TAGS } from '@shinju-date/constants'
-import { toDBString } from '@shinju-date/temporal-fns'
-import { revalidateTags } from '@shinju-date/web-cache'
-import { revalidatePath } from 'next/cache'
+import { CACHE_TAGS } from "@shinju-date/constants";
+import { toDBString } from "@shinju-date/temporal-fns";
+import { revalidateTags } from "@shinju-date/web-cache";
+import { revalidatePath } from "next/cache";
+
 import {
   ActionError,
   type ActionResult,
   adminAction,
   adminFormAction,
-} from '@/lib/action'
-import { createAuditLog } from '@/lib/audit-log'
+} from "@/lib/action";
+import { createAuditLog } from "@/lib/audit-log";
+
 import {
   ANNOUNCEMENT_HIDDEN_FIELDS,
   announcementSchema,
   updateAnnouncementSchema,
-} from '../_lib/schema'
+} from "../_lib/schema";
 
-const ID_REQUIRED_ERROR = 'IDが指定されていません。'
+const ID_REQUIRED_ERROR = "IDが指定されていません。";
 
 async function revalidateAnnouncements(): Promise<void> {
-  revalidatePath('/announcements')
-  revalidatePath('/', 'page')
-  await revalidateTags([CACHE_TAGS.ANNOUNCEMENTS])
+  revalidatePath("/announcements");
+  revalidatePath("/", "page");
+  await revalidateTags([CACHE_TAGS.ANNOUNCEMENTS]);
 }
 
 export const createAnnouncementAction = adminFormAction(
-  'createAnnouncementAction',
+  "createAnnouncementAction",
   announcementSchema,
   async (
     { supabaseClient },
-    { enabled, end_at: end, level, message, start_at: start },
+    { enabled, end_at: end, level, message, start_at: start }
   ) => {
     const { data: newAnnouncement, error } = await supabaseClient
-      .from('announcements')
+      .from("announcements")
       .insert({
         enabled,
         end_at: toDBString(end),
@@ -41,36 +43,36 @@ export const createAnnouncementAction = adminFormAction(
         message,
         start_at: toDBString(start),
       })
-      .select('id, message')
-      .single()
+      .select("id, message")
+      .single();
 
     if (error) {
-      throw error
+      throw error;
     }
 
     await createAuditLog(
       supabaseClient,
-      'ANNOUNCEMENT_CREATE',
+      "ANNOUNCEMENT_CREATE",
       newAnnouncement.id,
       {
         entityName: newAnnouncement.message.substring(0, 50),
-      },
-    )
+      }
+    );
 
-    await revalidateAnnouncements()
+    await revalidateAnnouncements();
   },
-  { hiddenFields: ANNOUNCEMENT_HIDDEN_FIELDS },
-)
+  { hiddenFields: ANNOUNCEMENT_HIDDEN_FIELDS }
+);
 
 export const updateAnnouncementAction = adminFormAction(
-  'updateAnnouncementAction',
+  "updateAnnouncementAction",
   updateAnnouncementSchema,
   async (
     { supabaseClient },
-    { enabled, end_at: end, id, level, message, start_at: start },
+    { enabled, end_at: end, id, level, message, start_at: start }
   ) => {
     const { data: updatedAnnouncement, error } = await supabaseClient
-      .from('announcements')
+      .from("announcements")
       .update({
         enabled,
         end_at: toDBString(end),
@@ -78,48 +80,48 @@ export const updateAnnouncementAction = adminFormAction(
         message,
         start_at: toDBString(start),
       })
-      .eq('id', id)
-      .select('message')
-      .single()
+      .eq("id", id)
+      .select("message")
+      .single();
 
     if (error) {
-      throw error
+      throw error;
     }
 
-    await createAuditLog(supabaseClient, 'ANNOUNCEMENT_UPDATE', id, {
+    await createAuditLog(supabaseClient, "ANNOUNCEMENT_UPDATE", id, {
       entityName: updatedAnnouncement.message.substring(0, 50),
-    })
+    });
 
-    await revalidateAnnouncements()
+    await revalidateAnnouncements();
   },
   // `id` も隠しフィールドで、画面に対応する入力欄がない
-  { hiddenFields: [...ANNOUNCEMENT_HIDDEN_FIELDS, 'id'] },
-)
+  { hiddenFields: [...ANNOUNCEMENT_HIDDEN_FIELDS, "id"] }
+);
 
 export const deleteAnnouncementAction = adminAction(
-  'deleteAnnouncementAction',
+  "deleteAnnouncementAction",
   async ({ supabaseClient }, id: string): Promise<ActionResult> => {
     if (!id) {
-      throw new ActionError(ID_REQUIRED_ERROR)
+      throw new ActionError(ID_REQUIRED_ERROR);
     }
 
     const { data: deletedAnnouncement, error } = await supabaseClient
-      .from('announcements')
+      .from("announcements")
       .delete()
-      .eq('id', id)
-      .select('message')
-      .single()
+      .eq("id", id)
+      .select("message")
+      .single();
 
     if (error) {
-      throw error
+      throw error;
     }
 
-    await createAuditLog(supabaseClient, 'ANNOUNCEMENT_DELETE', id, {
+    await createAuditLog(supabaseClient, "ANNOUNCEMENT_DELETE", id, {
       entityName: deletedAnnouncement.message.substring(0, 50),
-    })
+    });
 
-    await revalidateAnnouncements()
+    await revalidateAnnouncements();
 
-    return { success: true }
-  },
-)
+    return { success: true };
+  }
+);

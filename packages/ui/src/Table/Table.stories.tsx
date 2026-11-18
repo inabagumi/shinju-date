@@ -1,7 +1,9 @@
-import { expect, within } from 'storybook/test'
-import preview from '#.storybook/preview'
-import { Badge } from '../Badge/Badge'
-import { EmptyState } from '../EmptyState/EmptyState'
+import { expect, within } from "storybook/test";
+
+import preview from "#.storybook/preview";
+
+import { Badge } from "../Badge/Badge";
+import { EmptyState } from "../EmptyState/EmptyState";
 import {
   Table,
   TableBody,
@@ -9,62 +11,62 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from './Table'
+} from "./Table";
 
 const meta = preview.meta({
   component: Table,
   parameters: {
-    layout: 'padded',
+    layout: "padded",
   },
-  tags: ['autodocs'],
-  title: 'Components/Table',
-})
+  tags: ["autodocs"],
+  title: "Components/Table",
+});
 
 interface Video {
-  duration: string
-  id: string
-  publishedAt: string
-  status: '公開中' | '削除済み' | '非表示'
-  title: string
+  duration: string;
+  id: string;
+  publishedAt: string;
+  status: "公開中" | "削除済み" | "非表示";
+  title: string;
 }
 
 const videos: Video[] = [
   {
-    duration: '1:02:15',
-    id: '1',
-    publishedAt: '2026/11/14 21:00',
-    status: '公開中',
-    title: '【雑談】週末のおしゃべり配信',
+    duration: "1:02:15",
+    id: "1",
+    publishedAt: "2026/11/14 21:00",
+    status: "公開中",
+    title: "【雑談】週末のおしゃべり配信",
   },
   {
-    duration: '0:12:48',
-    id: '2',
-    publishedAt: '2026/11/13 19:30',
-    status: '非表示',
-    title: '【歌ってみた】オリジナル曲のカバー',
+    duration: "0:12:48",
+    id: "2",
+    publishedAt: "2026/11/13 19:30",
+    status: "非表示",
+    title: "【歌ってみた】オリジナル曲のカバー",
   },
   {
-    duration: '3:45:00',
-    id: '3',
-    publishedAt: '2026/11/12 22:00',
-    status: '削除済み',
-    title: '【ゲーム実況】長時間の耐久配信',
+    duration: "3:45:00",
+    id: "3",
+    publishedAt: "2026/11/12 22:00",
+    status: "削除済み",
+    title: "【ゲーム実況】長時間の耐久配信",
   },
-]
+];
 
 const statusVariants = {
-  公開中: 'success',
-  削除済み: 'danger',
-  非表示: 'neutral',
-} as const satisfies Record<Video['status'], string>
+  公開中: "success",
+  削除済み: "danger",
+  非表示: "neutral",
+} as const satisfies Record<Video["status"], string>;
 
 export const Default = meta.story({
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
+    const canvas = within(canvasElement);
 
-    await expect(canvas.getByRole('table')).toBeInTheDocument()
-    await expect(canvas.getAllByRole('columnheader')).toHaveLength(4)
-    await expect(canvas.getAllByRole('row')).toHaveLength(videos.length + 1)
+    await expect(canvas.getByRole("table")).toBeInTheDocument();
+    await expect(canvas.getAllByRole("columnheader")).toHaveLength(4);
+    await expect(canvas.getAllByRole("row")).toHaveLength(videos.length + 1);
   },
   render: () => (
     <Table>
@@ -96,7 +98,7 @@ export const Default = meta.story({
       </TableBody>
     </Table>
   ),
-})
+});
 
 export const Wrapping = meta.story({
   render: () => (
@@ -120,7 +122,7 @@ export const Wrapping = meta.story({
       </TableBody>
     </Table>
   ),
-})
+});
 
 export const Overflow = meta.story({
   render: () => (
@@ -128,10 +130,10 @@ export const Overflow = meta.story({
       <Table>
         <TableHeader>
           <TableRow>
-            {['タイトル', 'チャンネル', '公開日時', '再生時間', '状態'].map(
+            {["タイトル", "チャンネル", "公開日時", "再生時間", "状態"].map(
               (label) => (
                 <TableHead key={label}>{label}</TableHead>
-              ),
+              )
             )}
           </TableRow>
         </TableHeader>
@@ -151,7 +153,7 @@ export const Overflow = meta.story({
       </Table>
     </div>
   ),
-})
+});
 
 export const Empty = meta.story({
   render: () => (
@@ -171,4 +173,4 @@ export const Empty = meta.story({
       </TableBody>
     </Table>
   ),
-})
+});

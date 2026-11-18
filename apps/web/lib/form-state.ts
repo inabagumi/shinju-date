@@ -1,16 +1,16 @@
-import { z } from 'zod'
+import { z } from "zod";
 
 export interface FormState<FieldName extends string = string> {
-  error?: string
-  fieldErrors?: Partial<Record<FieldName, string>>
-  message?: string
-  success: boolean
+  error?: string;
+  fieldErrors?: Partial<Record<FieldName, string>>;
+  message?: string;
+  success: boolean;
   /**
    * Submitted values to restore when the submission fails. React resets
    * uncontrolled fields after a form action completes, so forms pass these to
    * `defaultValue` to keep what the user entered.
    */
-  values?: Partial<Record<FieldName, string>>
+  values?: Partial<Record<FieldName, string>>;
 }
 
 /**
@@ -20,19 +20,19 @@ export interface FormState<FieldName extends string = string> {
  */
 export function getFormValues<FieldName extends string>(
   formData: FormData,
-  fieldNames: readonly FieldName[],
+  fieldNames: readonly FieldName[]
 ): Partial<Record<FieldName, string>> {
-  const values: Partial<Record<FieldName, string>> = {}
+  const values: Partial<Record<FieldName, string>> = {};
 
   for (const fieldName of fieldNames) {
-    const value = formData.get(fieldName)
+    const value = formData.get(fieldName);
 
-    if (typeof value === 'string') {
-      values[fieldName] = value
+    if (typeof value === "string") {
+      values[fieldName] = value;
     }
   }
 
-  return values
+  return values;
 }
 
 /**
@@ -43,25 +43,25 @@ export function getFormValues<FieldName extends string>(
  * joined into `error`.
  */
 export function toValidationErrorState<FieldName extends string>(
-  error: z.ZodError,
+  error: z.ZodError
 ): FormState<FieldName> {
-  const { fieldErrors, formErrors } = z.flattenError(error)
-  const firstFieldErrors: Partial<Record<FieldName, string>> = {}
+  const { fieldErrors, formErrors } = z.flattenError(error);
+  const firstFieldErrors: Partial<Record<FieldName, string>> = {};
 
   for (const [field, messages] of Object.entries(fieldErrors) as [
     FieldName,
     string[] | undefined,
   ][]) {
-    const [firstMessage] = messages ?? []
+    const [firstMessage] = messages ?? [];
 
     if (firstMessage) {
-      firstFieldErrors[field] = firstMessage
+      firstFieldErrors[field] = firstMessage;
     }
   }
 
   return {
-    ...(formErrors.length > 0 && { error: formErrors.join(', ') }),
+    ...(formErrors.length > 0 && { error: formErrors.join(", ") }),
     fieldErrors: firstFieldErrors,
     success: false,
-  }
+  };
 }

@@ -1,8 +1,9 @@
-import type { default as DefaultDatabase } from '@shinju-date/database'
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { publicEnv, serverEnv } from '@/lib/env'
+import type { default as DefaultDatabase } from "@shinju-date/database";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-let supabaseAdminClient: SupabaseClient<DefaultDatabase> | undefined
+import { publicEnv, serverEnv } from "@/lib/env";
+
+let supabaseAdminClient: SupabaseClient<DefaultDatabase> | undefined;
 
 /**
  * The client with the service role key, which bypasses RLS. Use it only in
@@ -14,8 +15,8 @@ let supabaseAdminClient: SupabaseClient<DefaultDatabase> | undefined
 export function getSupabaseAdminClient(): SupabaseClient<DefaultDatabase> {
   supabaseAdminClient ??= createClient<DefaultDatabase>(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,
-    serverEnv.SUPABASE_SERVICE_ROLE_KEY,
-  )
+    serverEnv.SUPABASE_SERVICE_ROLE_KEY
+  );
 
-  return supabaseAdminClient
+  return supabaseAdminClient;
 }

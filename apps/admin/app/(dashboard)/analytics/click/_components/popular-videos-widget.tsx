@@ -1,17 +1,18 @@
-import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
-import { RankingWidget } from '../../_components/ranking-widget'
-import { resolvePeriod } from '../../_lib/resolve-period'
-import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
+import { getPopularVideos } from "@/lib/analytics/get-popular-videos";
+
+import { RankingWidget } from "../../_components/ranking-widget";
+import { resolvePeriod } from "../../_lib/resolve-period";
+import type { AnalyticsSearchParams } from "../../_lib/search-params-schema";
 
 interface Props {
-  searchParams: Promise<AnalyticsSearchParams>
+  searchParams: Promise<AnalyticsSearchParams>;
 }
 
 /** 最もクリックされている動画のランキング */
 export async function PopularVideosWidget({ searchParams }: Props) {
-  const { dateRange, selectedDate } = await searchParams
-  const range = resolvePeriod({ dateRange, selectedDate })
-  const videos = await getPopularVideos({ limit: 20, range })
+  const { dateRange, selectedDate } = await searchParams;
+  const range = resolvePeriod({ dateRange, selectedDate });
+  const videos = await getPopularVideos({ limit: 20, range });
 
   return (
     <RankingWidget
@@ -28,5 +29,5 @@ export async function PopularVideosWidget({ searchParams }: Props) {
       title="人気動画ランキング"
       valueHeading="クリック数"
     />
-  )
+  );
 }

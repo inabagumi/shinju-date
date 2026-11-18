@@ -1,6 +1,7 @@
-import { Suspense } from 'react'
-import { LastSyncTimestamp, SyncSkeleton } from './last-sync-timestamp'
-import { NavigationBar } from './navigation-bar'
+import { Suspense } from "react";
+
+import { LastSyncTimestamp, SyncSkeleton } from "./last-sync-timestamp";
+import { NavigationBar } from "./navigation-bar";
 
 export function Header() {
   return (
@@ -11,5 +12,5 @@ export function Header() {
         </Suspense>
       }
     />
-  )
+  );
 }

@@ -1,145 +1,148 @@
-import { renderHook } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { renderHook } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import {
   useSearchParamsHref,
   useUpdateSearchParams,
-} from './use-update-search-params'
+} from "./use-update-search-params";
 
 const mocks = vi.hoisted(() => ({
-  pathname: '/videos',
+  pathname: "/videos",
   push: vi.fn(),
   replace: vi.fn(),
   searchParams: new URLSearchParams(),
-}))
+}));
 
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   usePathname: () => mocks.pathname,
   useRouter: () => ({ push: mocks.push, replace: mocks.replace }),
   useSearchParams: () => mocks.searchParams,
-}))
+}));
 
 function renderUpdate() {
-  return renderHook(() => useUpdateSearchParams()).result.current
+  return renderHook(() => useUpdateSearchParams()).result.current;
 }
 
-describe('useUpdateSearchParams', () => {
+describe("useUpdateSearchParams", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.pathname = '/videos'
-    mocks.searchParams = new URLSearchParams()
-  })
+    vi.clearAllMocks();
+    mocks.pathname = "/videos";
+    mocks.searchParams = new URLSearchParams();
+  });
 
-  it('sets a value with replace by default', () => {
-    renderUpdate()({ search: 'abc' })
+  it("sets a value with replace by default", () => {
+    renderUpdate()({ search: "abc" });
 
-    expect(mocks.replace).toHaveBeenCalledWith('/videos?search=abc')
-    expect(mocks.push).not.toHaveBeenCalled()
-  })
+    expect(mocks.replace).toHaveBeenCalledWith("/videos?search=abc");
+    expect(mocks.push).not.toHaveBeenCalled();
+  });
 
-  it('navigates with push when history is push', () => {
-    renderUpdate()({ search: 'abc' }, { history: 'push' })
+  it("navigates with push when history is push", () => {
+    renderUpdate()({ search: "abc" }, { history: "push" });
 
-    expect(mocks.push).toHaveBeenCalledWith('/videos?search=abc')
-    expect(mocks.replace).not.toHaveBeenCalled()
-  })
+    expect(mocks.push).toHaveBeenCalledWith("/videos?search=abc");
+    expect(mocks.replace).not.toHaveBeenCalled();
+  });
 
-  it('builds the URL from the current pathname', () => {
-    mocks.pathname = '/analytics/click'
+  it("builds the URL from the current pathname", () => {
+    mocks.pathname = "/analytics/click";
 
-    renderUpdate()({ tab: 'talents' })
+    renderUpdate()({ tab: "talents" });
 
-    expect(mocks.replace).toHaveBeenCalledWith('/analytics/click?tab=talents')
-  })
+    expect(mocks.replace).toHaveBeenCalledWith("/analytics/click?tab=talents");
+  });
 
-  it('keeps the parameters that are not specified', () => {
+  it("keeps the parameters that are not specified", () => {
     mocks.searchParams = new URLSearchParams(
-      'search=old&talentId=1&talentId=2&sortField=published_at',
-    )
+      "search=old&talentId=1&talentId=2&sortField=published_at"
+    );
 
-    renderUpdate()({ search: 'new' })
-
-    expect(mocks.replace).toHaveBeenCalledWith(
-      '/videos?search=new&talentId=1&talentId=2&sortField=published_at',
-    )
-  })
-
-  it('keeps a parameter whose value is undefined', () => {
-    mocks.searchParams = new URLSearchParams('search=abc')
-
-    renderUpdate()({ search: undefined, status: 'LIVE' })
-
-    expect(mocks.replace).toHaveBeenCalledWith('/videos?search=abc&status=LIVE')
-  })
-
-  it('sets an array as multiple values with the same name', () => {
-    mocks.searchParams = new URLSearchParams('status=UPCOMING&search=abc')
-
-    renderUpdate()({ status: ['LIVE', 'ENDED'] })
+    renderUpdate()({ search: "new" });
 
     expect(mocks.replace).toHaveBeenCalledWith(
-      '/videos?search=abc&status=LIVE&status=ENDED',
-    )
-  })
+      "/videos?search=new&talentId=1&talentId=2&sortField=published_at"
+    );
+  });
+
+  it("keeps a parameter whose value is undefined", () => {
+    mocks.searchParams = new URLSearchParams("search=abc");
+
+    renderUpdate()({ search: undefined, status: "LIVE" });
+
+    expect(mocks.replace).toHaveBeenCalledWith(
+      "/videos?search=abc&status=LIVE"
+    );
+  });
+
+  it("sets an array as multiple values with the same name", () => {
+    mocks.searchParams = new URLSearchParams("status=UPCOMING&search=abc");
+
+    renderUpdate()({ status: ["LIVE", "ENDED"] });
+
+    expect(mocks.replace).toHaveBeenCalledWith(
+      "/videos?search=abc&status=LIVE&status=ENDED"
+    );
+  });
 
   it.each([
-    ['null', null],
-    ['an empty string', ''],
-    ['an empty array', []],
-  ])('removes the parameter when the value is %s', (_, value) => {
+    ["null", null],
+    ["an empty string", ""],
+    ["an empty array", []],
+  ])("removes the parameter when the value is %s", (_, value) => {
     mocks.searchParams = new URLSearchParams(
-      'search=abc&status=LIVE&status=ENDED',
-    )
+      "search=abc&status=LIVE&status=ENDED"
+    );
 
-    renderUpdate()({ search: value, status: value })
+    renderUpdate()({ search: value, status: value });
 
-    expect(mocks.replace).toHaveBeenCalledWith('/videos')
-  })
+    expect(mocks.replace).toHaveBeenCalledWith("/videos");
+  });
 
-  it('removes page by default', () => {
-    mocks.searchParams = new URLSearchParams('search=old&page=3')
+  it("removes page by default", () => {
+    mocks.searchParams = new URLSearchParams("search=old&page=3");
 
-    renderUpdate()({ search: 'new' })
+    renderUpdate()({ search: "new" });
 
-    expect(mocks.replace).toHaveBeenCalledWith('/videos?search=new')
-  })
+    expect(mocks.replace).toHaveBeenCalledWith("/videos?search=new");
+  });
 
-  it('keeps page when resetPage is false', () => {
-    mocks.searchParams = new URLSearchParams('search=abc&page=3')
+  it("keeps page when resetPage is false", () => {
+    mocks.searchParams = new URLSearchParams("search=abc&page=3");
 
-    renderUpdate()({ date: '2026-11-10' }, { resetPage: false })
+    renderUpdate()({ date: "2026-11-10" }, { resetPage: false });
 
     expect(mocks.replace).toHaveBeenCalledWith(
-      '/videos?search=abc&page=3&date=2026-11-10',
-    )
-  })
+      "/videos?search=abc&page=3&date=2026-11-10"
+    );
+  });
 
-  it('sets page when page is specified', () => {
-    mocks.searchParams = new URLSearchParams('search=abc&page=3')
+  it("sets page when page is specified", () => {
+    mocks.searchParams = new URLSearchParams("search=abc&page=3");
 
-    renderUpdate()({ page: '4' }, { history: 'push', resetPage: false })
+    renderUpdate()({ page: "4" }, { history: "push", resetPage: false });
 
-    expect(mocks.push).toHaveBeenCalledWith('/videos?search=abc&page=4')
-  })
-})
+    expect(mocks.push).toHaveBeenCalledWith("/videos?search=abc&page=4");
+  });
+});
 
-describe('useSearchParamsHref', () => {
+describe("useSearchParamsHref", () => {
   beforeEach(() => {
-    mocks.pathname = '/videos'
-    mocks.searchParams = new URLSearchParams()
-  })
+    mocks.pathname = "/videos";
+    mocks.searchParams = new URLSearchParams();
+  });
 
-  it('returns the URL without navigating', () => {
-    mocks.searchParams = new URLSearchParams('search=abc&page=3')
+  it("returns the URL without navigating", () => {
+    mocks.searchParams = new URLSearchParams("search=abc&page=3");
 
-    const { result } = renderHook(() => useSearchParamsHref())
+    const { result } = renderHook(() => useSearchParamsHref());
 
-    expect(result.current({ sortOrder: 'asc' })).toBe(
-      '/videos?search=abc&sortOrder=asc',
-    )
-    expect(result.current({ page: '4' }, { resetPage: false })).toBe(
-      '/videos?search=abc&page=4',
-    )
-    expect(mocks.push).not.toHaveBeenCalled()
-    expect(mocks.replace).not.toHaveBeenCalled()
-  })
-})
+    expect(result.current({ sortOrder: "asc" })).toBe(
+      "/videos?search=abc&sortOrder=asc"
+    );
+    expect(result.current({ page: "4" }, { resetPage: false })).toBe(
+      "/videos?search=abc&page=4"
+    );
+    expect(mocks.push).not.toHaveBeenCalled();
+    expect(mocks.replace).not.toHaveBeenCalled();
+  });
+});

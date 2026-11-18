@@ -1,154 +1,155 @@
-import { CACHE_TAGS } from '@shinju-date/constants'
-import type { Enums, Tables } from '@shinju-date/database'
-import { logger } from '@shinju-date/logger'
+import { CACHE_TAGS } from "@shinju-date/constants";
+import type { Enums, Tables } from "@shinju-date/database";
+import { logger } from "@shinju-date/logger";
 import {
   parseTwitchUserIdentifier,
   resolveTwitchUser,
   type TwitchUser,
   type TwitchUserIdentifier,
-} from '@shinju-date/twitch-api-client'
-import { revalidateTags } from '@shinju-date/web-cache'
+} from "@shinju-date/twitch-api-client";
+import { revalidateTags } from "@shinju-date/web-cache";
 import {
   type FilteredYouTubeChannel,
   parseYouTubeChannelIdentifier,
   resolveYouTubeChannel,
   type YouTubeChannelIdentifier,
-} from '@shinju-date/youtube-api-client'
-import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js'
-import { revalidatePath } from 'next/cache'
-import { ActionError } from '@/lib/action'
-import { type AuditLogDetails, createAuditLog } from '@/lib/audit-log'
-import type { TypedSupabaseClient } from '@/lib/supabase'
+} from "@shinju-date/youtube-api-client";
+import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
+
+import { ActionError } from "@/lib/action";
+import { type AuditLogDetails, createAuditLog } from "@/lib/audit-log";
+import type { TypedSupabaseClient } from "@/lib/supabase";
 import {
   isNotFoundError,
   UNIQUE_VIOLATION_ERROR_CODE,
-} from '@/lib/supabase/query'
-import { syncTwitchUserIconSafely } from '@/lib/twitch-user-icon'
-import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
+} from "@/lib/supabase/query";
+import { syncTwitchUserIconSafely } from "@/lib/twitch-user-icon";
+import { syncYouTubeChannelIconSafely } from "@/lib/youtube-channel-icon";
 
 /** タレントに結び付けられるアカウントのプラットフォーム */
-export type AccountPlatform = Enums<'platform_type'>
+export type AccountPlatform = Enums<"platform_type">;
 
 /** プラットフォームごとに違う型 */
 interface AccountTypes {
   twitch: {
     /** 監査ログに残す、アカウントの行の列 */
-    account: AuditLogDetails<'TWITCH_USER_CREATE'>['account']
-    identifier: TwitchUserIdentifier
-    remote: TwitchUser
-    table: 'twitch_users'
-  }
+    account: AuditLogDetails<"TWITCH_USER_CREATE">["account"];
+    identifier: TwitchUserIdentifier;
+    remote: TwitchUser;
+    table: "twitch_users";
+  };
   youtube: {
-    account: AuditLogDetails<'YOUTUBE_CHANNEL_CREATE'>['account']
-    identifier: YouTubeChannelIdentifier
-    remote: FilteredYouTubeChannel
-    table: 'youtube_channels'
-  }
+    account: AuditLogDetails<"YOUTUBE_CHANNEL_CREATE">["account"];
+    identifier: YouTubeChannelIdentifier;
+    remote: FilteredYouTubeChannel;
+    table: "youtube_channels";
+  };
 }
 
 /** 結び付いているタレントの名前を埋め込んだ、アカウントの行 */
-type AccountRow<P extends AccountPlatform> = AccountTypes[P]['account'] & {
-  talent: Pick<Tables<'talents'>, 'name'>
-}
+type AccountRow<P extends AccountPlatform> = AccountTypes[P]["account"] & {
+  talent: Pick<Tables<"talents">, "name">;
+};
 
 /** 画面に出すエラーの文 */
 interface AccountMessages {
   /** 同じタレントに登録済み */
-  alreadyLinked: string
+  alreadyLinked: string;
   /** API に接続できない */
-  apiFailed: string
+  apiFailed: string;
   /** API の認証情報が設定されていない */
-  credentialsMissing: string
+  credentialsMissing: string;
   /** ほかのタレントに登録済み */
-  linkedToOtherTalent: string
+  linkedToOtherTalent: string;
   /** プラットフォームに、アカウントが見つからない */
-  notFound: string
+  notFound: string;
   /** 削除するアカウントかタレントの ID が空 */
-  unlinkIdsRequired: string
+  unlinkIdsRequired: string;
   /** 削除するアカウントが見つからない */
-  unlinkNotFound: string
+  unlinkNotFound: string;
 }
 
 /** プラットフォームごとの定義 */
 interface AccountDefinition<P extends AccountPlatform> {
   /** 行を作ったあとと削除の前に読み、監査ログに残す列 */
-  accountColumns: readonly (keyof AccountTypes[P]['account'] & string)[]
+  accountColumns: readonly (keyof AccountTypes[P]["account"] & string)[];
   /** エラーを結び付ける、フォームの入力欄の名前 */
-  field: string
+  field: string;
   /** API の認証情報が設定されていないことを示すエラーかどうか */
-  isCredentialsError(error: unknown): boolean
-  messages: AccountMessages
+  isCredentialsError(error: unknown): boolean;
+  messages: AccountMessages;
   /** 入力（ID、ハンドル、URL など）を解釈する。解釈できなければ `null` */
-  parse(input: string): AccountTypes[P]['identifier'] | null
+  parse(input: string): AccountTypes[P]["identifier"] | null;
   /** 追加の監査ログを、タレントを対象にして残す */
   recordLink(
     supabaseClient: TypedSupabaseClient,
     talentId: string,
-    account: AccountRow<P>,
-  ): Promise<void>
+    account: AccountRow<P>
+  ): Promise<void>;
   /** 削除の監査ログを、タレントを対象にして残す */
   recordUnlink(
     supabaseClient: TypedSupabaseClient,
     talentId: string,
-    account: AccountRow<P>,
-  ): Promise<void>
+    account: AccountRow<P>
+  ): Promise<void>;
   /** プラットフォーム側の ID を入れる列。すべてのタレントを通して一意 */
-  remoteIdColumn: keyof Tables<AccountTypes[P]['table']> & string
+  remoteIdColumn: keyof Tables<AccountTypes[P]["table"]> & string;
   /** API でアカウントを解決する。見つからなければ `null` */
   resolve(
-    identifier: AccountTypes[P]['identifier'],
-  ): Promise<AccountTypes[P]['remote'] | null>
+    identifier: AccountTypes[P]["identifier"]
+  ): Promise<AccountTypes[P]["remote"] | null>;
   /** 作った行に、アイコンを同期する。失敗しても例外を投げない */
   syncIcon(
-    remote: AccountTypes[P]['remote'],
-    accountId: string,
-  ): Promise<unknown>
+    remote: AccountTypes[P]["remote"],
+    accountId: string
+  ): Promise<unknown>;
   /** アカウントを保存するテーブル */
-  table: AccountTypes[P]['table']
+  table: AccountTypes[P]["table"];
   /** API が返したアカウントから作る、保存する行 */
   toRow(
-    remote: AccountTypes[P]['remote'],
-    talentId: string,
-  ): Omit<AccountTypes[P]['account'], 'id'> &
-    Pick<Tables<AccountTypes[P]['table']>, 'talent_id'>
+    remote: AccountTypes[P]["remote"],
+    talentId: string
+  ): Omit<AccountTypes[P]["account"], "id"> &
+    Pick<Tables<AccountTypes[P]["table"]>, "talent_id">;
 }
 
 const ACCOUNT_DEFINITIONS: {
-  [P in AccountPlatform]: AccountDefinition<P>
+  [P in AccountPlatform]: AccountDefinition<P>;
 } = {
   twitch: {
-    accountColumns: ['id', 'name', 'twitch_login_name', 'twitch_user_id'],
-    field: 'twitch_user',
+    accountColumns: ["id", "name", "twitch_login_name", "twitch_user_id"],
+    field: "twitch_user",
     isCredentialsError: (error) =>
       error instanceof TypeError &&
-      error.message.includes('Client ID and Client Secret'),
+      error.message.includes("Client ID and Client Secret"),
     messages: {
-      alreadyLinked: 'このTwitchユーザーは既に登録されています。',
+      alreadyLinked: "このTwitchユーザーは既に登録されています。",
       apiFailed:
-        'Twitch APIへの接続に失敗しました。しばらくしてから再度お試しください。',
+        "Twitch APIへの接続に失敗しました。しばらくしてから再度お試しください。",
       credentialsMissing:
-        'Twitch APIの認証情報が設定されていません。管理者に連絡してください。',
+        "Twitch APIの認証情報が設定されていません。管理者に連絡してください。",
       linkedToOtherTalent:
-        'このTwitchユーザーは別のタレントに既に登録されています。',
+        "このTwitchユーザーは別のタレントに既に登録されています。",
       notFound:
-        'Twitchでユーザーが見つかりませんでした。入力内容を確認してください。',
+        "Twitchでユーザーが見つかりませんでした。入力内容を確認してください。",
       unlinkIdsRequired:
-        'TwitchユーザーIDまたはタレントIDが指定されていません。',
+        "TwitchユーザーIDまたはタレントIDが指定されていません。",
       unlinkNotFound:
-        '指定されたTwitchユーザーが見つかりません。既に削除されているか、存在しないIDが指定されています。',
+        "指定されたTwitchユーザーが見つかりません。既に削除されているか、存在しないIDが指定されています。",
     },
     parse: parseTwitchUserIdentifier,
     recordLink: (supabaseClient, talentId, { talent, ...account }) =>
-      createAuditLog(supabaseClient, 'TWITCH_USER_CREATE', talentId, {
+      createAuditLog(supabaseClient, "TWITCH_USER_CREATE", talentId, {
         account,
         entityName: talent.name,
       }),
     recordUnlink: (supabaseClient, talentId, { talent, ...account }) =>
-      createAuditLog(supabaseClient, 'TWITCH_USER_DELETE', talentId, {
+      createAuditLog(supabaseClient, "TWITCH_USER_DELETE", talentId, {
         account,
         entityName: talent.name,
       }),
-    remoteIdColumn: 'twitch_user_id',
+    remoteIdColumn: "twitch_user_id",
     resolve: resolveTwitchUser,
     syncIcon: (user, accountId) =>
       syncTwitchUserIconSafely(user, {
@@ -156,7 +157,7 @@ const ACCOUNT_DEFINITIONS: {
         profile_images: null,
         twitch_user_id: user.id,
       }),
-    table: 'twitch_users',
+    table: "twitch_users",
     toRow: (user, talentId) => ({
       name: user.display_name,
       talent_id: talentId,
@@ -165,36 +166,36 @@ const ACCOUNT_DEFINITIONS: {
     }),
   },
   youtube: {
-    accountColumns: ['id', 'name', 'youtube_channel_id', 'youtube_handle'],
-    field: 'youtube_channel_id',
+    accountColumns: ["id", "name", "youtube_channel_id", "youtube_handle"],
+    field: "youtube_channel_id",
     isCredentialsError: (error) =>
-      error instanceof TypeError && error.message.includes('API Key'),
+      error instanceof TypeError && error.message.includes("API Key"),
     messages: {
-      alreadyLinked: 'このチャンネルは既に登録されています。',
+      alreadyLinked: "このチャンネルは既に登録されています。",
       apiFailed:
-        'YouTube APIへの接続に失敗しました。しばらくしてから再度お試しください。',
+        "YouTube APIへの接続に失敗しました。しばらくしてから再度お試しください。",
       credentialsMissing:
-        'YouTube APIキーが設定されていません。管理者に連絡してください。',
+        "YouTube APIキーが設定されていません。管理者に連絡してください。",
       linkedToOtherTalent:
-        'このチャンネルは別のタレントに既に登録されています。',
+        "このチャンネルは別のタレントに既に登録されています。",
       notFound:
-        'YouTubeでチャンネルが見つかりませんでした。入力内容を確認してください。',
-      unlinkIdsRequired: 'チャンネルIDまたはタレントIDが指定されていません。',
+        "YouTubeでチャンネルが見つかりませんでした。入力内容を確認してください。",
+      unlinkIdsRequired: "チャンネルIDまたはタレントIDが指定されていません。",
       unlinkNotFound:
-        '指定されたチャンネルが見つかりません。既に削除されているか、存在しないIDが指定されています。',
+        "指定されたチャンネルが見つかりません。既に削除されているか、存在しないIDが指定されています。",
     },
     parse: parseYouTubeChannelIdentifier,
     recordLink: (supabaseClient, talentId, { talent, ...account }) =>
-      createAuditLog(supabaseClient, 'YOUTUBE_CHANNEL_CREATE', talentId, {
+      createAuditLog(supabaseClient, "YOUTUBE_CHANNEL_CREATE", talentId, {
         account,
         entityName: talent.name,
       }),
     recordUnlink: (supabaseClient, talentId, { talent, ...account }) =>
-      createAuditLog(supabaseClient, 'YOUTUBE_CHANNEL_DELETE', talentId, {
+      createAuditLog(supabaseClient, "YOUTUBE_CHANNEL_DELETE", talentId, {
         account,
         entityName: talent.name,
       }),
-    remoteIdColumn: 'youtube_channel_id',
+    remoteIdColumn: "youtube_channel_id",
     resolve: resolveYouTubeChannel,
     syncIcon: (channel, accountId) =>
       syncYouTubeChannelIconSafely(channel, {
@@ -202,7 +203,7 @@ const ACCOUNT_DEFINITIONS: {
         profile_images: null,
         youtube_channel_id: channel.id,
       }),
-    table: 'youtube_channels',
+    table: "youtube_channels",
     toRow: (channel, talentId) => ({
       name: channel.snippet.title,
       talent_id: talentId,
@@ -210,13 +211,13 @@ const ACCOUNT_DEFINITIONS: {
       youtube_handle: channel.snippet.customUrl || null,
     }),
   },
-}
+};
 
 /** API で解決し、どのタレントにも登録されていないことを確かめたアカウント */
 export interface ResolvedAccount<P extends AccountPlatform = AccountPlatform> {
-  platform: P
+  platform: P;
   /** API が返したアカウント */
-  remote: AccountTypes[P]['remote']
+  remote: AccountTypes[P]["remote"];
 }
 
 export interface ResolveAccountOptions {
@@ -225,10 +226,10 @@ export interface ResolveAccountOptions {
    * 呼ぶ側で、`talents/_lib/talent-schema.ts` のスキーマ（`youtubeChannelInputSchema`
    * など）を通して検証しておく
    */
-  input: string
-  supabaseClient: TypedSupabaseClient
+  input: string;
+  supabaseClient: TypedSupabaseClient;
   /** 結び付ける先のタレント。登録済みのときのエラーの文を、このタレントかどうかで変える */
-  talentId?: string
+  talentId?: string;
 }
 
 export interface LinkAccountOptions<P extends AccountPlatform> {
@@ -236,25 +237,25 @@ export interface LinkAccountOptions<P extends AccountPlatform> {
    * 入力された文字列（`ResolveAccountOptions` の `input` と同じく、検証しておく）。
    * 先に `resolveAccount` で解決してあるときは、その結果
    */
-  input: string | ResolvedAccount<P>
-  supabaseClient: TypedSupabaseClient
-  talentId: string
+  input: string | ResolvedAccount<P>;
+  supabaseClient: TypedSupabaseClient;
+  talentId: string;
 }
 
 export interface UnlinkAccountOptions {
   /** アカウントの行の ID（`youtube_channels.id` / `twitch_users.id`） */
-  accountId: string
-  supabaseClient: TypedSupabaseClient
-  talentId: string
+  accountId: string;
+  supabaseClient: TypedSupabaseClient;
+  talentId: string;
 }
 
 /** 定義のうち、テーブルの問い合わせに使う、プラットフォームの型によらない部分 */
 interface AccountTableDefinition {
-  accountColumns: readonly string[]
-  field: string
-  messages: AccountMessages
-  remoteIdColumn: string
-  table: AccountTypes[AccountPlatform]['table']
+  accountColumns: readonly string[];
+  field: string;
+  messages: AccountMessages;
+  remoteIdColumn: string;
+  table: AccountTypes[AccountPlatform]["table"];
 }
 
 /**
@@ -266,14 +267,14 @@ interface AccountTableDefinition {
  */
 function accountsTable(
   supabaseClient: TypedSupabaseClient,
-  { table }: AccountTableDefinition,
+  { table }: AccountTableDefinition
 ) {
-  return (supabaseClient as SupabaseClient).from(table)
+  return (supabaseClient as SupabaseClient).from(table);
 }
 
 /** 監査ログに残す列と、結び付いているタレントの名前を読む `select` */
 function accountSelect({ accountColumns }: AccountTableDefinition): string {
-  return `${accountColumns.join(', ')}, talent:talents (name)`
+  return `${accountColumns.join(", ")}, talent:talents (name)`;
 }
 
 /**
@@ -289,23 +290,23 @@ function accountSelect({ accountColumns }: AccountTableDefinition): string {
  */
 export async function touchTalent(
   supabaseClient: TypedSupabaseClient,
-  talentId: string,
+  talentId: string
 ): Promise<PostgrestError | null> {
-  const { error } = await supabaseClient.rpc('touch_talent', {
+  const { error } = await supabaseClient.rpc("touch_talent", {
     p_talent_id: talentId,
-  })
+  });
 
   if (error) {
-    logger.error('タレントの更新日時の更新に失敗しました', { error, talentId })
+    logger.error("タレントの更新日時の更新に失敗しました", { error, talentId });
   }
 
-  return error
+  return error;
 }
 
 async function revalidateTalent(talentId: string): Promise<void> {
-  revalidatePath(`/talents/${talentId}`)
-  revalidatePath('/talents')
-  await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
+  revalidatePath(`/talents/${talentId}`);
+  revalidatePath("/talents");
+  await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS]);
 }
 
 /**
@@ -316,18 +317,18 @@ async function assertNotLinked(
   definition: AccountTableDefinition,
   supabaseClient: TypedSupabaseClient,
   remoteId: string,
-  talentId: string | undefined,
+  talentId: string | undefined
 ): Promise<void> {
   const { data: linked, error } = await accountsTable(
     supabaseClient,
-    definition,
+    definition
   )
-    .select('talent_id')
+    .select("talent_id")
     .eq(definition.remoteIdColumn, remoteId)
-    .maybeSingle<{ talent_id: string }>()
+    .maybeSingle<{ talent_id: string }>();
 
   if (error) {
-    throw error
+    throw error;
   }
 
   if (linked) {
@@ -335,8 +336,8 @@ async function assertNotLinked(
       linked.talent_id === talentId
         ? definition.messages.alreadyLinked
         : definition.messages.linkedToOtherTalent,
-      { field: definition.field },
-    )
+      { field: definition.field }
+    );
   }
 }
 
@@ -353,43 +354,43 @@ async function assertNotLinked(
  */
 export async function resolveAccount<P extends AccountPlatform>(
   platform: P,
-  { input, supabaseClient, talentId }: ResolveAccountOptions,
+  { input, supabaseClient, talentId }: ResolveAccountOptions
 ): Promise<ResolvedAccount<P>> {
-  const definition: AccountDefinition<P> = ACCOUNT_DEFINITIONS[platform]
-  const { field, messages } = definition
+  const definition: AccountDefinition<P> = ACCOUNT_DEFINITIONS[platform];
+  const { field, messages } = definition;
 
-  const identifier = definition.parse(input)
+  const identifier = definition.parse(input);
 
   if (!identifier) {
     throw new TypeError(
-      `検証を通っていない入力が渡されました（platform: ${platform}）`,
-    )
+      `検証を通っていない入力が渡されました（platform: ${platform}）`
+    );
   }
 
-  let remote: AccountTypes[P]['remote'] | null
+  let remote: AccountTypes[P]["remote"] | null;
 
   try {
-    remote = await definition.resolve(identifier)
+    remote = await definition.resolve(identifier);
   } catch (error) {
     if (definition.isCredentialsError(error)) {
-      throw new ActionError(messages.credentialsMissing)
+      throw new ActionError(messages.credentialsMissing);
     }
 
-    logger.error('アカウントを解決する API の呼び出しに失敗しました', {
+    logger.error("アカウントを解決する API の呼び出しに失敗しました", {
       error,
       platform,
-    })
+    });
 
-    throw new ActionError(messages.apiFailed)
+    throw new ActionError(messages.apiFailed);
   }
 
   if (!remote) {
-    throw new ActionError(messages.notFound, { field })
+    throw new ActionError(messages.notFound, { field });
   }
 
-  await assertNotLinked(definition, supabaseClient, remote.id, talentId)
+  await assertNotLinked(definition, supabaseClient, remote.id, talentId);
 
-  return { platform, remote }
+  return { platform, remote };
 }
 
 /**
@@ -403,40 +404,40 @@ export async function resolveAccount<P extends AccountPlatform>(
  */
 export async function linkAccount<P extends AccountPlatform>(
   platform: P,
-  { input, supabaseClient, talentId }: LinkAccountOptions<P>,
+  { input, supabaseClient, talentId }: LinkAccountOptions<P>
 ): Promise<void> {
   if (!talentId) {
-    throw new ActionError('タレントIDが指定されていません。')
+    throw new ActionError("タレントIDが指定されていません。");
   }
 
-  const definition: AccountDefinition<P> = ACCOUNT_DEFINITIONS[platform]
+  const definition: AccountDefinition<P> = ACCOUNT_DEFINITIONS[platform];
   const { remote } =
-    typeof input === 'string'
+    typeof input === "string"
       ? await resolveAccount(platform, { input, supabaseClient, talentId })
-      : input
+      : input;
 
   const { data: account, error } = await accountsTable(
     supabaseClient,
-    definition,
+    definition
   )
     .insert(definition.toRow(remote, talentId))
     .select(accountSelect(definition))
-    .single<AccountRow<P>>()
+    .single<AccountRow<P>>();
 
   if (error) {
     // 確かめたあとに、別の操作で登録された場合は、登録済みとして知らせる
     if (error.code === UNIQUE_VIOLATION_ERROR_CODE) {
-      await assertNotLinked(definition, supabaseClient, remote.id, talentId)
+      await assertNotLinked(definition, supabaseClient, remote.id, talentId);
     }
 
-    throw error
+    throw error;
   }
 
   // アイコンの取得に失敗しても、追加は成功として扱う（次回の同期で取得し直す）
-  await definition.syncIcon(remote, account.id)
-  await touchTalent(supabaseClient, talentId)
-  await definition.recordLink(supabaseClient, talentId, account)
-  await revalidateTalent(talentId)
+  await definition.syncIcon(remote, account.id);
+  await touchTalent(supabaseClient, talentId);
+  await definition.recordLink(supabaseClient, talentId, account);
+  await revalidateTalent(talentId);
 }
 
 /**
@@ -449,49 +450,49 @@ export async function linkAccount<P extends AccountPlatform>(
  */
 export async function unlinkAccount<P extends AccountPlatform>(
   platform: P,
-  { accountId, supabaseClient, talentId }: UnlinkAccountOptions,
+  { accountId, supabaseClient, talentId }: UnlinkAccountOptions
 ): Promise<void> {
-  const definition: AccountDefinition<P> = ACCOUNT_DEFINITIONS[platform]
-  const { messages } = definition
+  const definition: AccountDefinition<P> = ACCOUNT_DEFINITIONS[platform];
+  const { messages } = definition;
 
   if (!accountId || !talentId) {
-    throw new ActionError(messages.unlinkIdsRequired)
+    throw new ActionError(messages.unlinkIdsRequired);
   }
 
   // 監査ログに残す値を、削除の前に読む
   const { data: account, error: fetchError } = await accountsTable(
     supabaseClient,
-    definition,
+    definition
   )
     .select(accountSelect(definition))
-    .eq('id', accountId)
-    .eq('talent_id', talentId)
-    .single<AccountRow<P>>()
+    .eq("id", accountId)
+    .eq("talent_id", talentId)
+    .single<AccountRow<P>>();
 
   if (fetchError) {
     if (isNotFoundError(fetchError)) {
-      logger.warn('削除対象のアカウントが見つかりませんでした', {
+      logger.warn("削除対象のアカウントが見つかりませんでした", {
         accountId,
         platform,
         talentId,
-      })
+      });
 
-      throw new ActionError(messages.unlinkNotFound)
+      throw new ActionError(messages.unlinkNotFound);
     }
 
-    throw fetchError
+    throw fetchError;
   }
 
   const { error } = await accountsTable(supabaseClient, definition)
     .delete()
-    .eq('id', accountId)
-    .eq('talent_id', talentId)
+    .eq("id", accountId)
+    .eq("talent_id", talentId);
 
   if (error) {
-    throw error
+    throw error;
   }
 
-  await touchTalent(supabaseClient, talentId)
-  await definition.recordUnlink(supabaseClient, talentId, account)
-  await revalidateTalent(talentId)
+  await touchTalent(supabaseClient, talentId);
+  await definition.recordUnlink(supabaseClient, talentId, account);
+  await revalidateTalent(talentId);
 }

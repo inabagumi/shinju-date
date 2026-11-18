@@ -1,10 +1,11 @@
-import { HttpResponse, http } from 'msw'
-import sharp from 'sharp'
-import type { setupSupabase } from './supabase.js'
+import { HttpResponse, http } from "msw";
+import sharp from "sharp";
 
-type MockSupabase = ReturnType<typeof setupSupabase>
+import type { setupSupabase } from "./supabase.js";
 
-const STORAGE_URL = 'https://fake.supabase.test/storage/v1/object'
+type MockSupabase = ReturnType<typeof setupSupabase>;
+
+const STORAGE_URL = "https://fake.supabase.test/storage/v1/object";
 
 /** Creates a solid-colour JPEG of the given size. */
 export function createImage(width: number, height: number): Promise<Buffer> {
@@ -17,20 +18,20 @@ export function createImage(width: number, height: number): Promise<Buffer> {
     },
   })
     .jpeg()
-    .toBuffer()
+    .toBuffer();
 }
 
 export interface ServedImage {
-  body: Buffer
+  body: Buffer;
   /** Whether the CDN answers conditional requests with 304 (default: true). */
-  conditional?: boolean
-  contentType?: string
-  etag?: string | null
+  conditional?: boolean;
+  contentType?: string;
+  etag?: string | null;
 }
 
 export interface ImageRequest {
-  ifNoneMatch: string | null
-  url: string
+  ifNoneMatch: string | null;
+  url: string;
 }
 
 /**
@@ -43,74 +44,74 @@ export function serveImage(
   {
     body,
     conditional = true,
-    contentType = 'image/jpeg',
+    contentType = "image/jpeg",
     etag = '"etag-1"',
-  }: ServedImage,
+  }: ServedImage
 ): ImageRequest[] {
-  const requests: ImageRequest[] = []
+  const requests: ImageRequest[] = [];
 
   supabase.server.use(
     http.get(url, ({ request }) => {
-      const ifNoneMatch = request.headers.get('If-None-Match')
-      const headers: Record<string, string> = { 'Content-Type': contentType }
+      const ifNoneMatch = request.headers.get("If-None-Match");
+      const headers: Record<string, string> = { "Content-Type": contentType };
 
-      requests.push({ ifNoneMatch, url: request.url })
+      requests.push({ ifNoneMatch, url: request.url });
 
       if (etag) {
-        headers['ETag'] = etag
+        headers["ETag"] = etag;
 
         if (conditional && ifNoneMatch === etag) {
-          return new HttpResponse(null, { headers, status: 304 })
+          return new HttpResponse(null, { headers, status: 304 });
         }
       }
 
       return HttpResponse.arrayBuffer(new Uint8Array(body).buffer, {
         headers,
-      })
-    }),
-  )
+      });
+    })
+  );
 
-  return requests
+  return requests;
 }
 
 export interface StorageCalls {
   /** Paths passed to `remove`, one array per call. */
-  removed: string[][]
+  removed: string[][];
   /** Uploaded objects, by path within the bucket. */
-  uploads: { body: Buffer; contentType: string | null; path: string }[]
+  uploads: { body: Buffer; contentType: string | null; path: string }[];
 }
 
 /** Records uploads to and removals from a storage bucket. */
 export function mockStorage(
   supabase: MockSupabase,
-  bucket: string,
+  bucket: string
 ): StorageCalls {
-  const bucketUrl = `${STORAGE_URL}/${bucket}`
-  const calls: StorageCalls = { removed: [], uploads: [] }
+  const bucketUrl = `${STORAGE_URL}/${bucket}`;
+  const calls: StorageCalls = { removed: [], uploads: [] };
 
   supabase.server.use(
     http.post(`${bucketUrl}/*`, async ({ request }) => {
       const path = new URL(request.url).pathname.replace(
         `/storage/v1/object/${bucket}/`,
-        '',
-      )
+        ""
+      );
 
       calls.uploads.push({
         body: Buffer.from(await request.arrayBuffer()),
-        contentType: request.headers.get('Content-Type'),
+        contentType: request.headers.get("Content-Type"),
         path,
-      })
+      });
 
-      return HttpResponse.json({ Key: `${bucket}/${path}` })
+      return HttpResponse.json({ Key: `${bucket}/${path}` });
     }),
     http.delete(bucketUrl, async ({ request }) => {
-      const { prefixes } = (await request.json()) as { prefixes: string[] }
+      const { prefixes } = (await request.json()) as { prefixes: string[] };
 
-      calls.removed.push(prefixes)
+      calls.removed.push(prefixes);
 
-      return HttpResponse.json([])
-    }),
-  )
+      return HttpResponse.json([]);
+    })
+  );
 
-  return calls
+  return calls;
 }

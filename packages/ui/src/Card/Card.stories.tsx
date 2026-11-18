@@ -1,20 +1,21 @@
-import preview from '#.storybook/preview'
-import { Card, CardContent, CardHeader } from './Card'
+import preview from "#.storybook/preview";
+
+import { Card, CardContent, CardHeader } from "./Card";
 
 const meta = preview.meta({
   argTypes: {
     variant: {
-      control: 'select',
-      options: ['default'],
+      control: "select",
+      options: ["default"],
     },
   },
   component: Card,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs'],
-  title: 'Components/Card',
-})
+  tags: ["autodocs"],
+  title: "Components/Card",
+});
 
 export const Default = meta.story({
   args: {
@@ -28,9 +29,9 @@ export const Default = meta.story({
         </CardContent>
       </>
     ),
-    variant: 'default',
+    variant: "default",
   },
-})
+});
 
 export const VideoCard = meta.story({
   args: {
@@ -50,7 +51,7 @@ export const VideoCard = meta.story({
         </CardContent>
       </>
     ),
-    style: { width: '320px' },
-    variant: 'default',
+    style: { width: "320px" },
+    variant: "default",
   },
-})
+});

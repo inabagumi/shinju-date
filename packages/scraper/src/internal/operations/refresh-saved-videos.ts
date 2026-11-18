@@ -1,18 +1,18 @@
-import type { VideoFields, WriteContext } from '../../types.js'
-import { countChanges } from '../concurrency.js'
-import { RECENT_VIDEO_COUNT, WRITE_CONCURRENCY } from '../constants.js'
-import { updateVideo } from '../database/index.js'
-import { DatabaseError } from '../errors.js'
-import type { PlatformAdapter, SavedVideoBase } from '../platform.js'
-import { deleteMissingVideos } from './delete-missing-videos.js'
-import { diffVideoFields } from './diff-video-fields.js'
+import type { VideoFields, WriteContext } from "../../types.js";
+import { countChanges } from "../concurrency.js";
+import { RECENT_VIDEO_COUNT, WRITE_CONCURRENCY } from "../constants.js";
+import { updateVideo } from "../database/index.js";
+import { DatabaseError } from "../errors.js";
+import type { PlatformAdapter, SavedVideoBase } from "../platform.js";
+import { deleteMissingVideos } from "./delete-missing-videos.js";
+import { diffVideoFields } from "./diff-video-fields.js";
 
 /**
  * Which saved videos a refresh looks at:
  * - `live`: every scheduled or live video
  * - `recent`: the newest finished videos
  */
-export type RefreshScope = 'live' | 'recent'
+export type RefreshScope = "live" | "recent";
 
 export interface RefreshVideoHooks<TVideo, TSaved> {
   /**
@@ -21,20 +21,22 @@ export interface RefreshVideoHooks<TVideo, TSaved> {
    *
    * @returns Whether it changed the saved video.
    */
-  afterRefresh?: (saved: TSaved, fetched: TVideo) => Promise<boolean>
+  afterRefresh?: (saved: TSaved, fetched: TVideo) => Promise<boolean>;
 }
 
-export interface RefreshSavedVideosOptions<TVideo, TSaved>
-  extends RefreshVideoHooks<TVideo, TSaved> {
-  scope: RefreshScope
+export interface RefreshSavedVideosOptions<
+  TVideo,
+  TSaved,
+> extends RefreshVideoHooks<TVideo, TSaved> {
+  scope: RefreshScope;
 }
 
 /** What refreshing one saved video did. */
 export interface VideoRefresh {
   /** Whether anything changed, the work of `afterRefresh` included. */
-  changed: boolean
+  changed: boolean;
   /** The columns that changed, with their new values. */
-  changes: Partial<VideoFields>
+  changes: Partial<VideoFields>;
 }
 
 /**
@@ -43,35 +45,35 @@ export interface VideoRefresh {
 async function getVideosToRefresh<TVideo, TSaved extends SavedVideoBase>(
   { supabaseClient }: WriteContext,
   adapter: PlatformAdapter<TVideo, TSaved>,
-  scope: RefreshScope,
+  scope: RefreshScope
 ): Promise<TSaved[]> {
   const query = supabaseClient
-    .from('videos')
+    .from("videos")
     // The talent is embedded only to filter on its status.
     .select(`${adapter.savedVideoColumns}, talent:talents!inner(id)`)
-    .eq('platform', adapter.platform)
-    .is('deleted_at', null)
-    .is('talent.deleted_at', null)
-    .eq('talent.status', 'active')
-    .order('published_at', { ascending: false })
+    .eq("platform", adapter.platform)
+    .is("deleted_at", null)
+    .is("talent.deleted_at", null)
+    .eq("talent.status", "active")
+    .order("published_at", { ascending: false });
 
   const { data, error } =
-    scope === 'recent'
+    scope === "recent"
       ? await query
-          .in('status', ['ENDED', 'PUBLISHED'])
+          .in("status", ["ENDED", "PUBLISHED"])
           .limit(RECENT_VIDEO_COUNT)
-      : await query.in('status', ['UPCOMING', 'LIVE'])
+      : await query.in("status", ["UPCOMING", "LIVE"]);
 
   if (error) {
     throw new DatabaseError(
       `Failed to load ${adapter.platform} videos to refresh`,
-      error,
-    )
+      error
+    );
   }
 
   // `savedVideoColumns` is a plain string here, so the rows cannot be typed
   // from it; the adapter guarantees they are `TSaved`.
-  return data as unknown as TSaved[]
+  return data as unknown as TSaved[];
 }
 
 /**
@@ -83,18 +85,18 @@ async function applyRefresh<TVideo, TSaved extends SavedVideoBase>(
   adapter: PlatformAdapter<TVideo, TSaved>,
   saved: TSaved,
   fetched: TVideo,
-  { afterRefresh }: RefreshVideoHooks<TVideo, TSaved>,
+  { afterRefresh }: RefreshVideoHooks<TVideo, TSaved>
 ): Promise<VideoRefresh> {
-  const changes = diffVideoFields(saved, adapter.toFields(fetched, now))
-  const fieldsChanged = Object.keys(changes).length > 0
+  const changes = diffVideoFields(saved, adapter.toFields(fetched, now));
+  const fieldsChanged = Object.keys(changes).length > 0;
 
   if (fieldsChanged) {
-    await updateVideo(supabaseClient, saved.id, changes)
+    await updateVideo(supabaseClient, saved.id, changes);
   }
 
-  const hookChanged = afterRefresh ? await afterRefresh(saved, fetched) : false
+  const hookChanged = afterRefresh ? await afterRefresh(saved, fetched) : false;
 
-  return { changed: fieldsChanged || hookChanged, changes }
+  return { changed: fieldsChanged || hookChanged, changes };
 }
 
 /**
@@ -107,49 +109,49 @@ async function applyRefresh<TVideo, TSaved extends SavedVideoBase>(
 export async function refreshSavedVideos<TVideo, TSaved extends SavedVideoBase>(
   context: WriteContext,
   adapter: PlatformAdapter<TVideo, TSaved>,
-  { scope, ...hooks }: RefreshSavedVideosOptions<TVideo, TSaved>,
+  { scope, ...hooks }: RefreshSavedVideosOptions<TVideo, TSaved>
 ): Promise<number> {
-  const { logger, reportError } = context
-  const savedVideos = await getVideosToRefresh(context, adapter, scope)
+  const { logger, reportError } = context;
+  const savedVideos = await getVideosToRefresh(context, adapter, scope);
 
   if (savedVideos.length === 0) {
-    return 0
+    return 0;
   }
 
   const savedById = new Map(
-    savedVideos.map((saved) => [adapter.getPlatformVideoId(saved), saved]),
-  )
-  const { fetchedById, missingIds } = await adapter.lookUp(savedVideos)
+    savedVideos.map((saved) => [adapter.getPlatformVideoId(saved), saved])
+  );
+  const { fetchedById, missingIds } = await adapter.lookUp(savedVideos);
 
   const updatedCount = await countChanges(
     [...fetchedById],
     WRITE_CONCURRENCY,
     async ([id, fetched]) => {
-      const saved = savedById.get(id)
+      const saved = savedById.get(id);
 
       return saved
         ? (await applyRefresh(context, adapter, saved, fetched, hooks)).changed
-        : false
+        : false;
     },
-    (error, [id]) => reportError(error, { [`${adapter.platform}VideoId`]: id }),
-  )
+    (error, [id]) => reportError(error, { [`${adapter.platform}VideoId`]: id })
+  );
 
   if (updatedCount > 0) {
-    logger.info('動画を更新しました', {
+    logger.info("動画を更新しました", {
       count: updatedCount,
       platform: adapter.platform,
       scope,
-    })
+    });
   }
 
   const deletedCount = await deleteMissingVideos(
     context,
     adapter,
     missingIds,
-    savedVideos,
-  )
+    savedVideos
+  );
 
-  return updatedCount + deletedCount
+  return updatedCount + deletedCount;
 }
 
 /**
@@ -165,20 +167,20 @@ export async function refreshSavedVideo<TVideo, TSaved extends SavedVideoBase>(
   context: WriteContext,
   adapter: PlatformAdapter<TVideo, TSaved>,
   saved: TSaved,
-  hooks: RefreshVideoHooks<TVideo, TSaved> = {},
-): Promise<VideoRefresh | 'unavailable' | null> {
-  const { fetchedById, missingIds } = await adapter.lookUp([saved])
-  const fetched = fetchedById.get(adapter.getPlatformVideoId(saved))
+  hooks: RefreshVideoHooks<TVideo, TSaved> = {}
+): Promise<VideoRefresh | "unavailable" | null> {
+  const { fetchedById, missingIds } = await adapter.lookUp([saved]);
+  const fetched = fetchedById.get(adapter.getPlatformVideoId(saved));
 
   if (fetched) {
-    return applyRefresh(context, adapter, saved, fetched, hooks)
+    return applyRefresh(context, adapter, saved, fetched, hooks);
   }
 
   if (missingIds.length === 0) {
-    return null
+    return null;
   }
 
-  await deleteMissingVideos(context, adapter, missingIds, [saved])
+  await deleteMissingVideos(context, adapter, missingIds, [saved]);
 
-  return 'unavailable'
+  return "unavailable";
 }

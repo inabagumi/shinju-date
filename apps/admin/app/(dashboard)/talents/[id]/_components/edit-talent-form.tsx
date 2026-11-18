@@ -1,45 +1,47 @@
-'use client'
+"use client";
 
-import type { Tables } from '@shinju-date/database'
-import { Button as UIButton, Input as UIInput } from '@shinju-date/ui'
-import { useId, useState } from 'react'
-import type { FormState } from '@/components/form'
+import type { Tables } from "@shinju-date/database";
+import { Button as UIButton, Input as UIInput } from "@shinju-date/ui";
+import { useId, useState } from "react";
+
+import type { FormState } from "@/components/form";
 import Form, {
   ErrorMessage,
   FormField,
   Input,
   Label,
   SubmitButton,
-} from '@/components/form'
-import { DetailList, DetailRow, Panel } from '@/components/panel'
-import { updateTalentAction } from '../../_actions'
+} from "@/components/form";
+import { DetailList, DetailRow, Panel } from "@/components/panel";
+
+import { updateTalentAction } from "../../_actions";
 import {
   TALENT_READING_DESCRIPTION,
   TALENT_READING_PLACEHOLDER,
-} from '../../_lib/talent-reading-description'
+} from "../../_lib/talent-reading-description";
 
 type Talent = Pick<
-  Tables<'talents'>,
-  'id' | 'name' | 'reading' | 'theme_color'
+  Tables<"talents">,
+  "id" | "name" | "reading" | "theme_color"
 > & {
   youtube_channels: Pick<
-    Tables<'youtube_channels'>,
-    'id' | 'name' | 'youtube_channel_id' | 'youtube_handle'
-  >[]
-}
+    Tables<"youtube_channels">,
+    "id" | "name" | "youtube_channel_id" | "youtube_handle"
+  >[];
+};
 
 interface EditTalentFormProps {
-  talent: Talent
+  talent: Talent;
 }
 
 interface ColorInputProps {
-  defaultValue: string | null
-  id?: string
-  name: string
+  defaultValue: string | null;
+  id?: string;
+  name: string;
 }
 
 function ColorInput({ defaultValue, id, name }: ColorInputProps) {
-  const [color, setColor] = useState(defaultValue ?? '#000000')
+  const [color, setColor] = useState(defaultValue ?? "#000000");
 
   return (
     <div className="flex items-center gap-2">
@@ -60,25 +62,25 @@ function ColorInput({ defaultValue, id, name }: ColorInputProps) {
         value={color}
       />
     </div>
-  )
+  );
 }
 
 export function EditTalentForm({ talent }: EditTalentFormProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const themeColorId = useId()
+  const [isEditing, setIsEditing] = useState(false);
+  const themeColorId = useId();
 
   const handleAction = async (
     currentState: FormState,
-    formData: FormData,
+    formData: FormData
   ): Promise<FormState> => {
-    const result = await updateTalentAction(currentState, formData)
+    const result = await updateTalentAction(currentState, formData);
 
     if (result.success) {
-      setIsEditing(false)
+      setIsEditing(false);
     }
 
-    return result
-  }
+    return result;
+  };
 
   if (!isEditing) {
     return (
@@ -140,7 +142,7 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
                       <dt className="text-caption font-semibold text-muted">
                         チャンネル名
                       </dt>
-                      <dd className="mt-1">{channel.name || 'N/A'}</dd>
+                      <dd className="mt-1">{channel.name || "N/A"}</dd>
                       <dd className="mt-1 text-caption text-muted">
                         YouTube APIから自動更新される名前
                       </dd>
@@ -176,7 +178,7 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
           </DetailRow>
         </DetailList>
       </Panel>
-    )
+    );
   }
 
   return (
@@ -201,7 +203,7 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
         <FormField name="reading">
           <Label>読み仮名（任意）</Label>
           <Input
-            defaultValue={talent.reading ?? ''}
+            defaultValue={talent.reading ?? ""}
             placeholder={TALENT_READING_PLACEHOLDER}
           />
           <p className="mt-1 text-caption text-muted">
@@ -233,5 +235,5 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
         </div>
       </Form>
     </Panel>
-  )
+  );
 }

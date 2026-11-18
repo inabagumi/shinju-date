@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import * as Sentry from '@sentry/nextjs'
-import { Button, PageHeader } from '@shinju-date/ui'
-import Link from 'next/link'
-import { useEffect } from 'react'
+import * as Sentry from "@sentry/nextjs";
+import { Button, PageHeader } from "@shinju-date/ui";
+import Link from "next/link";
+import { useEffect } from "react";
 
 interface DashboardErrorProps {
-  error: unknown
-  retry: () => void
+  error: unknown;
+  retry: () => void;
 }
 
 /**
@@ -16,15 +16,15 @@ interface DashboardErrorProps {
  */
 export default function DashboardError({ error, retry }: DashboardErrorProps) {
   useEffect(() => {
-    Sentry.captureException(error)
-  }, [error])
+    Sentry.captureException(error);
+  }, [error]);
 
   const digest =
     error instanceof Error &&
-    'digest' in error &&
-    typeof error.digest === 'string'
+    "digest" in error &&
+    typeof error.digest === "string"
       ? error.digest
-      : null
+      : null;
 
   return (
     <div>
@@ -49,5 +49,5 @@ export default function DashboardError({ error, retry }: DashboardErrorProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

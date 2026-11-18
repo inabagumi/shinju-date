@@ -6,27 +6,27 @@
  * the client set (`code` may be a string).
  */
 export function getErrorStatus(error: unknown): number | undefined {
-  if (typeof error !== 'object' || error === null) {
-    return undefined
+  if (typeof error !== "object" || error === null) {
+    return undefined;
   }
 
   const candidate = error as {
-    code?: unknown
-    response?: { status?: unknown }
-    status?: unknown
-  }
+    code?: unknown;
+    response?: { status?: unknown };
+    status?: unknown;
+  };
 
   for (const value of [
     candidate.status,
     candidate.response?.status,
     candidate.code,
   ]) {
-    const status = typeof value === 'string' ? Number(value) : value
+    const status = typeof value === "string" ? Number(value) : value;
 
-    if (typeof status === 'number' && Number.isInteger(status)) {
-      return status
+    if (typeof status === "number" && Number.isInteger(status)) {
+      return status;
     }
   }
 
-  return undefined
+  return undefined;
 }

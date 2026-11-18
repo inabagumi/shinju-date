@@ -1,14 +1,15 @@
-'use client'
+"use client";
 
-import * as Sentry from '@sentry/nextjs'
-import { Button } from '@shinju-date/ui'
-import Link from 'next/link'
-import { useEffect } from 'react'
-import SimpleDocument from '@/components/simple-document'
+import * as Sentry from "@sentry/nextjs";
+import { Button } from "@shinju-date/ui";
+import Link from "next/link";
+import { useEffect } from "react";
+
+import SimpleDocument from "@/components/simple-document";
 
 interface ErrorPageProps {
-  error: unknown
-  retry: () => void
+  error: unknown;
+  retry: () => void;
 }
 
 /**
@@ -17,8 +18,8 @@ interface ErrorPageProps {
  */
 export default function ErrorPage({ error, retry }: ErrorPageProps) {
   useEffect(() => {
-    Sentry.captureException(error)
-  }, [error])
+    Sentry.captureException(error);
+  }, [error]);
 
   return (
     <SimpleDocument title="ページを表示できませんでした">
@@ -41,5 +42,5 @@ export default function ErrorPage({ error, retry }: ErrorPageProps) {
         </ul>
       </div>
     </SimpleDocument>
-  )
+  );
 }

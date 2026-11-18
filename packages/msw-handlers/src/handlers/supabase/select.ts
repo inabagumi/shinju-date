@@ -1,11 +1,11 @@
-import { PostgrestError, parseError } from './errors.js'
-import { type Filter, filtersAt, getColumn, matchesFilters } from './query.js'
+import { PostgrestError, parseError } from "./errors.js";
+import { type Filter, filtersAt, getColumn, matchesFilters } from "./query.js";
 import {
   type AnyTableDefinition,
   findTable,
   getRows,
   type TableName,
-} from './tables.js'
+} from "./tables.js";
 
 /**
  * A single entry of a PostgREST `select` parameter.
@@ -17,15 +17,15 @@ import {
  * - `wildcard`: `*`
  */
 type SelectNode =
-  | { kind: 'column'; alias: string; column: string }
+  | { kind: "column"; alias: string; column: string }
   | {
-      kind: 'relation'
-      alias: string
-      fields: SelectNode[]
-      inner: boolean
-      relation: string
+      kind: "relation";
+      alias: string;
+      fields: SelectNode[];
+      inner: boolean;
+      relation: string;
     }
-  | { kind: 'wildcard' }
+  | { kind: "wildcard" };
 
 /**
  * Split a select string on commas that are not nested inside parentheses.
@@ -34,27 +34,27 @@ type SelectNode =
  * `['thumbnail:thumbnails(id,path)', 'talent:talents(id,name)']`.
  */
 function splitSelectFields(selectStr: string): string[] {
-  const fields: string[] = []
-  let depth = 0
-  let current = ''
+  const fields: string[] = [];
+  let depth = 0;
+  let current = "";
 
   for (const char of selectStr) {
-    if (char === '(') {
-      depth += 1
-    } else if (char === ')') {
-      depth = Math.max(0, depth - 1)
+    if (char === "(") {
+      depth += 1;
+    } else if (char === ")") {
+      depth = Math.max(0, depth - 1);
     }
 
-    if (char === ',' && depth === 0) {
-      fields.push(current)
-      current = ''
+    if (char === "," && depth === 0) {
+      fields.push(current);
+      current = "";
     } else {
-      current += char
+      current += char;
     }
   }
-  fields.push(current)
+  fields.push(current);
 
-  return fields.map((field) => field.trim()).filter((field) => field !== '')
+  return fields.map((field) => field.trim()).filter((field) => field !== "");
 }
 
 /**
@@ -64,55 +64,55 @@ function splitSelectFields(selectStr: string): string[] {
  */
 function parseSelect(selectStr: string): SelectNode[] {
   return splitSelectFields(selectStr).map((field): SelectNode => {
-    if (field === '*') {
-      return { kind: 'wildcard' }
+    if (field === "*") {
+      return { kind: "wildcard" };
     }
 
     // alias:relation!hint(fields) where alias and hints are optional
     const relationMatch = field.match(
-      /^(?:(\w+):)?(\w+)((?:!\w+)*)\s*\(([\s\S]*)\)$/,
-    )
+      /^(?:(\w+):)?(\w+)((?:!\w+)*)\s*\(([\s\S]*)\)$/
+    );
     if (relationMatch) {
-      const [, alias, relation = '', hints = '', nestedFields = ''] =
-        relationMatch
+      const [, alias, relation = "", hints = "", nestedFields = ""] =
+        relationMatch;
       return {
         alias: alias ?? relation,
         fields: parseSelect(nestedFields),
-        inner: hints.split('!').includes('inner'),
-        kind: 'relation',
+        inner: hints.split("!").includes("inner"),
+        kind: "relation",
         relation,
-      }
+      };
     }
 
     // alias:column::cast where alias and cast are optional
-    const columnMatch = field.match(/^(?:(\w+):)?(\w+)(?:::\w+)?$/)
+    const columnMatch = field.match(/^(?:(\w+):)?(\w+)(?:::\w+)?$/);
 
     if (!columnMatch) {
       throw parseError(
         `failed to parse select parameter (${selectStr})`,
-        `unsupported field "${field}": the mock supports columns, aliases, casts and embedded resources`,
-      )
+        `unsupported field "${field}": the mock supports columns, aliases, casts and embedded resources`
+      );
     }
 
-    const [, alias, column = field] = columnMatch
-    return { alias: alias ?? column, column, kind: 'column' }
-  })
+    const [, alias, column = field] = columnMatch;
+    return { alias: alias ?? column, column, kind: "column" };
+  });
 }
 
 /** The paths of the embedded resources of a select, such as `['talent']`. */
 function getEmbeddedPaths(
   nodes: readonly SelectNode[],
-  parent: readonly string[] = [],
+  parent: readonly string[] = []
 ): string[][] {
   return nodes.flatMap((node) => {
-    if (node.kind !== 'relation') {
-      return []
+    if (node.kind !== "relation") {
+      return [];
     }
 
-    const path = [...parent, node.alias]
+    const path = [...parent, node.alias];
 
-    return [path, ...getEmbeddedPaths(node.fields, path)]
-  })
+    return [path, ...getEmbeddedPaths(node.fields, path)];
+  });
 }
 
 /**
@@ -122,21 +122,21 @@ function getEmbeddedPaths(
  */
 function checkEmbeddedFilters(
   nodes: readonly SelectNode[],
-  filters: readonly Filter[],
+  filters: readonly Filter[]
 ): void {
   const paths = new Set(
-    getEmbeddedPaths(nodes).map((path) => JSON.stringify(path)),
-  )
+    getEmbeddedPaths(nodes).map((path) => JSON.stringify(path))
+  );
 
   for (const { path } of filters) {
     if (path.length > 0 && !paths.has(JSON.stringify(path))) {
-      const name = path.join('.')
+      const name = path.join(".");
 
       throw new PostgrestError(400, {
-        code: 'PGRST108',
+        code: "PGRST108",
         hint: `Verify that '${name}' is included in the 'select' query parameter.`,
         message: `'${name}' is not an embedded resource in this request`,
-      })
+      });
     }
   }
 }
@@ -148,31 +148,31 @@ function checkEmbeddedFilters(
  */
 function findRelation(
   table: AnyTableDefinition | undefined,
-  relationName: string,
+  relationName: string
 ) {
-  const relation = table?.relations.find(({ table }) => table === relationName)
-  const target = relation && findTable(relation.table)
+  const relation = table?.relations.find(({ table }) => table === relationName);
+  const target = relation && findTable(relation.table);
 
   if (!relation || !target) {
     throw new PostgrestError(400, {
-      code: 'PGRST200',
+      code: "PGRST200",
       details: `Searched for a foreign key relationship between '${table?.name}' and '${relationName}' in the schema 'public', but no matches were found.`,
-      hint: 'Add the relation to the table definition of the mock (src/handlers/supabase/tables.ts).',
+      hint: "Add the relation to the table definition of the mock (src/handlers/supabase/tables.ts).",
       message: `Could not find a relationship between '${table?.name}' and '${relationName}' in the schema cache`,
-    })
+    });
   }
 
-  return { relation, target }
+  return { relation, target };
 }
 
 /** Check that every embedded resource of a select has a relation. */
 function checkRelations(
   nodes: readonly SelectNode[],
-  table: AnyTableDefinition | undefined,
+  table: AnyTableDefinition | undefined
 ): void {
   for (const node of nodes) {
-    if (node.kind === 'relation') {
-      checkRelations(node.fields, findRelation(table, node.relation).target)
+    if (node.kind === "relation") {
+      checkRelations(node.fields, findRelation(table, node.relation).target);
     }
   }
 }
@@ -185,14 +185,14 @@ function checkRelations(
 export function validateSelect(
   selectStr: string,
   tableName: TableName,
-  filters: readonly Filter[] = [],
+  filters: readonly Filter[] = []
 ): SelectNode[] {
-  const nodes = parseSelect(selectStr)
+  const nodes = parseSelect(selectStr);
 
-  checkEmbeddedFilters(nodes, filters)
-  checkRelations(nodes, findTable(tableName))
+  checkEmbeddedFilters(nodes, filters);
+  checkRelations(nodes, findTable(tableName));
 
-  return nodes
+  return nodes;
 }
 
 /** The rows of an embedded resource that match its filters. */
@@ -200,20 +200,20 @@ async function resolveRelation(
   table: AnyTableDefinition | undefined,
   relationName: string,
   row: object,
-  filters: readonly Filter[],
+  filters: readonly Filter[]
 ): Promise<{ rows: object[]; table: AnyTableDefinition; many: boolean }> {
-  const { relation, target } = findRelation(table, relationName)
-  const value = getColumn(row, relation.column)
+  const { relation, target } = findRelation(table, relationName);
+  const value = getColumn(row, relation.column);
   const related =
     value == null
       ? []
       : (await getRows(target)).filter(
           (relatedRow) =>
             getColumn(relatedRow, relation.referencedColumn) === value &&
-            matchesFilters(relatedRow, filters, target.uuidColumns),
-        )
+            matchesFilters(relatedRow, filters, target.uuidColumns)
+        );
 
-  return { many: relation.many, rows: related, table: target }
+  return { many: relation.many, rows: related, table: target };
 }
 
 /**
@@ -226,26 +226,26 @@ async function projectRow(
   nodes: readonly SelectNode[],
   table: AnyTableDefinition | undefined,
   filters: readonly Filter[],
-  path: readonly string[],
+  path: readonly string[]
 ): Promise<Record<string, unknown> | null> {
-  const result: Record<string, unknown> = {}
+  const result: Record<string, unknown> = {};
 
   for (const node of nodes) {
-    if (node.kind === 'wildcard') {
-      Object.assign(result, row)
-    } else if (node.kind === 'column') {
+    if (node.kind === "wildcard") {
+      Object.assign(result, row);
+    } else if (node.kind === "column") {
       if (node.column in row) {
-        result[node.alias] = getColumn(row, node.column)
+        result[node.alias] = getColumn(row, node.column);
       }
     } else {
-      const relationPath = [...path, node.alias]
+      const relationPath = [...path, node.alias];
       const related = await resolveRelation(
         table,
         node.relation,
         row,
-        filtersAt(filters, relationPath),
-      )
-      const projected: Record<string, unknown>[] = []
+        filtersAt(filters, relationPath)
+      );
+      const projected: Record<string, unknown>[] = [];
 
       for (const relatedRow of related.rows) {
         const output = await projectRow(
@@ -253,29 +253,29 @@ async function projectRow(
           node.fields,
           related.table,
           filters,
-          relationPath,
-        )
+          relationPath
+        );
 
         if (output) {
-          projected.push(output)
+          projected.push(output);
         }
       }
 
       if (node.inner && projected.length === 0) {
-        return null
+        return null;
       }
 
-      result[node.alias] = related.many ? projected : (projected[0] ?? null)
+      result[node.alias] = related.many ? projected : (projected[0] ?? null);
     }
   }
 
-  return result
+  return result;
 }
 
 /** A row of a table and what the select of a query returns for it. */
 export interface SelectedRow<Row extends object = object> {
-  output: object
-  row: Row
+  output: object;
+  row: Row;
 }
 
 /**
@@ -292,26 +292,26 @@ export async function selectRows<Row extends object>(
   rows: readonly Row[],
   selectStr: string,
   tableName: TableName,
-  filters: readonly Filter[] = [],
+  filters: readonly Filter[] = []
 ): Promise<SelectedRow<Row>[]> {
-  const nodes = validateSelect(selectStr, tableName, filters)
+  const nodes = validateSelect(selectStr, tableName, filters);
 
-  if (selectStr === '*') {
-    return rows.map((row) => ({ output: row, row }))
+  if (selectStr === "*") {
+    return rows.map((row) => ({ output: row, row }));
   }
 
-  const table = findTable(tableName)
-  const selected: SelectedRow<Row>[] = []
+  const table = findTable(tableName);
+  const selected: SelectedRow<Row>[] = [];
 
   for (const row of rows) {
-    const output = await projectRow(row, nodes, table, filters, [])
+    const output = await projectRow(row, nodes, table, filters, []);
 
     if (output) {
-      selected.push({ output, row })
+      selected.push({ output, row });
     }
   }
 
-  return selected
+  return selected;
 }
 
 /**
@@ -322,9 +322,9 @@ export async function applySelect(
   rows: readonly object[],
   selectStr: string,
   tableName: TableName,
-  filters: readonly Filter[] = [],
+  filters: readonly Filter[] = []
 ): Promise<object[]> {
   return (await selectRows(rows, selectStr, tableName, filters)).map(
-    ({ output }) => output,
-  )
+    ({ output }) => output
+  );
 }

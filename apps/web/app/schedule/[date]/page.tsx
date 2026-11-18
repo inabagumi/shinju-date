@@ -1,14 +1,16 @@
-import type { Metadata } from 'next'
-import { createPageMetadata } from '@/lib/metadata'
-import { getSchedulePath } from '@/lib/schedule'
-import SchedulePageContent from '../_components/schedule-page-content'
-import { resolveScheduleWeek } from '../_lib/resolve-schedule-week'
-import { getScheduleWeekTitle } from '../_lib/week-title'
+import type { Metadata } from "next";
+
+import { createPageMetadata } from "@/lib/metadata";
+import { getSchedulePath } from "@/lib/schedule";
+
+import SchedulePageContent from "../_components/schedule-page-content";
+import { resolveScheduleWeek } from "../_lib/resolve-schedule-week";
+import { getScheduleWeekTitle } from "../_lib/week-title";
 
 export async function generateMetadata({
   params,
-}: Pick<PageProps<'/schedule/[date]'>, 'params'>): Promise<Metadata> {
-  const { weekStart } = await resolveScheduleWeek(params)
+}: Pick<PageProps<"/schedule/[date]">, "params">): Promise<Metadata> {
+  const { weekStart } = await resolveScheduleWeek(params);
 
   return createPageMetadata({
     // 検索エンジンには `/schedule` だけを載せる
@@ -16,8 +18,8 @@ export async function generateMetadata({
     // 日曜以外の日付でも、その週の日曜の URL を正規の URL にする
     path: getSchedulePath(weekStart),
     title: getScheduleWeekTitle(weekStart),
-    type: 'article',
-  })
+    type: "article",
+  });
 }
 
 /**
@@ -26,6 +28,6 @@ export async function generateMetadata({
  */
 export default function ScheduleWeekPage({
   params,
-}: PageProps<'/schedule/[date]'>) {
-  return <SchedulePageContent params={params} />
+}: PageProps<"/schedule/[date]">) {
+  return <SchedulePageContent params={params} />;
 }

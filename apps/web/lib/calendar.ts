@@ -1,12 +1,14 @@
-import { max, min } from '@shinju-date/temporal-fns'
+import { max, min } from "@shinju-date/temporal-fns";
 import {
   convertTimestampToArray,
   createEvents,
   type EventAttributes,
-} from 'ics'
-import type { CalendarVideo } from '@/lib/data/videos'
-import { SITE_NAME as siteName } from './site'
-import { getVideoUrl } from './video-url'
+} from "ics";
+
+import type { CalendarVideo } from "@/lib/data/videos";
+
+import { SITE_NAME as siteName } from "./site";
+import { getVideoUrl } from "./video-url";
 
 /**
  * The calendar apps fetch the subscribed URLs periodically, so let the CDN
@@ -14,28 +16,28 @@ import { getVideoUrl } from './video-url'
  * `fetchCalendarVideos` anyway.
  */
 const CALENDAR_CACHE_CONTROL =
-  'public, max-age=300, s-maxage=900, stale-while-revalidate=3600'
+  "public, max-age=300, s-maxage=900, stale-while-revalidate=3600";
 
 interface GetPublishedAtAndEndedAtOptions {
-  now: Temporal.ZonedDateTime
+  now: Temporal.ZonedDateTime;
 }
 
 type GetPublishedAtAndEndedAtResult = [
   publishedAt: Temporal.ZonedDateTime,
   endedAt: Temporal.ZonedDateTime,
-]
+];
 
 export function getPublishedAtAndEndedAt(
   video: CalendarVideo,
-  { now }: GetPublishedAtAndEndedAtOptions,
+  { now }: GetPublishedAtAndEndedAtOptions
 ): GetPublishedAtAndEndedAtResult {
   const publishedAt = Temporal.Instant.from(
-    video.published_at,
-  ).toZonedDateTimeISO(now.timeZoneId)
-  const duration = Temporal.Duration.from(video.duration)
+    video.published_at
+  ).toZonedDateTimeISO(now.timeZoneId);
+  const duration = Temporal.Duration.from(video.duration);
   const endedAt =
     duration.total({
-      unit: 'second',
+      unit: "second",
     }) > 0
       ? publishedAt.add(duration)
       : min(
@@ -45,75 +47,75 @@ export function getPublishedAtAndEndedAt(
             }),
             now.add({
               minutes: 30,
-            }),
+            })
           ),
           publishedAt.add({
             hours: 12,
-          }),
-        )
+          })
+        );
 
-  return [publishedAt, endedAt]
+  return [publishedAt, endedAt];
 }
 
 export function createCalendarResponse(events: EventAttributes[]): Response {
-  const { error, value } = createEvents(events)
+  const { error, value } = createEvents(events);
 
   if (error && !value) {
-    return new Response('500 Internal Server Error\n', {
+    return new Response("500 Internal Server Error\n", {
       headers: {
-        'Cache-Control': 'no-store',
-        'Content-Type': 'text/plain; charset=UTF-8',
+        "Cache-Control": "no-store",
+        "Content-Type": "text/plain; charset=UTF-8",
       },
       status: 500,
-    })
+    });
   }
 
   return new Response(value, {
     headers: {
-      'Cache-Control': CALENDAR_CACHE_CONTROL,
-      'Content-Type': 'text/calendar; charset=UTF-8',
+      "Cache-Control": CALENDAR_CACHE_CONTROL,
+      "Content-Type": "text/calendar; charset=UTF-8",
     },
-  })
+  });
 }
 
 interface CreateEventAttributesListOptions {
-  now: Temporal.ZonedDateTime
+  now: Temporal.ZonedDateTime;
 }
 
 export function createEventAttributesList(
   videos: CalendarVideo[],
-  { now }: CreateEventAttributesListOptions,
+  { now }: CreateEventAttributesListOptions
 ): EventAttributes[] {
-  const events: EventAttributes[] = []
+  const events: EventAttributes[] = [];
 
   for (const video of videos) {
-    const url = getVideoUrl(video)
+    const url = getVideoUrl(video);
 
     if (!url) {
-      continue
+      continue;
     }
 
     const [publishedAt, endedAt] = getPublishedAtAndEndedAt(video, {
       now,
-    })
-    const location = video.platform === 'twitch' ? 'Twitch' : 'YouTube'
+    });
+    const location = video.platform === "twitch" ? "Twitch" : "YouTube";
 
     events.push({
       calName: video.talent.name,
       description: url,
-      end: convertTimestampToArray(endedAt.epochMilliseconds, 'utc'),
-      endInputType: 'utc',
-      endOutputType: 'utc',
+      end: convertTimestampToArray(endedAt.epochMilliseconds, "utc"),
+      endInputType: "utc",
+      endOutputType: "utc",
       location,
       productId: siteName,
-      start: convertTimestampToArray(publishedAt.epochMilliseconds, 'utc'),
-      startInputType: 'utc',
-      startOutputType: 'utc',
+      start: convertTimestampToArray(publishedAt.epochMilliseconds, "utc"),
+      startInputType: "utc",
+      startOutputType: "utc",
       title: video.title,
       uid: `${video.id}@shinju.date`,
       url,
-    })
+    });
   }
 
-  return events
+  return events;
 }

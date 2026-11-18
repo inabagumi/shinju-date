@@ -1,77 +1,78 @@
-import { DUMMY_THUMBNAIL_PNG } from '@shinju-date/constants'
-import { createErrorResponse } from '@shinju-date/helpers'
-import { type NextRequest, NextResponse } from 'next/server'
-import { getSupabaseAdminClient } from '@/lib/supabase/admin'
+import { DUMMY_THUMBNAIL_PNG } from "@shinju-date/constants";
+import { createErrorResponse } from "@shinju-date/helpers";
+import { type NextRequest, NextResponse } from "next/server";
 
-const SIGNED_URL_EXPIRES_IN = 60 // 1 minute
+import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+
+const SIGNED_URL_EXPIRES_IN = 60; // 1 minute
 
 export async function GET(
   request: NextRequest,
-  ctx: RouteContext<'/images/thumbnails/[id]'>,
+  ctx: RouteContext<"/images/thumbnails/[id]">
 ) {
-  const { id } = await ctx.params
+  const { id } = await ctx.params;
   const { data: thumbnail, error } = await getSupabaseAdminClient()
-    .from('thumbnails')
-    .select('path')
-    .eq('id', id)
-    .maybeSingle()
+    .from("thumbnails")
+    .select("path")
+    .eq("id", id)
+    .maybeSingle();
 
   if (error || !thumbnail) {
-    return createErrorResponse('Failed to fetch thumbnail', { status: 404 })
+    return createErrorResponse("Failed to fetch thumbnail", { status: 404 });
   }
 
   const { data, error: signedUrlError } = await getSupabaseAdminClient()
-    .storage.from('thumbnails')
-    .createSignedUrl(thumbnail.path, SIGNED_URL_EXPIRES_IN)
+    .storage.from("thumbnails")
+    .createSignedUrl(thumbnail.path, SIGNED_URL_EXPIRES_IN);
 
   if (signedUrlError) {
-    return createErrorResponse('Failed to create signed URL', { status: 500 })
+    return createErrorResponse("Failed to create signed URL", { status: 500 });
   }
 
-  const fetchHeaders = new Headers(request.headers)
+  const fetchHeaders = new Headers(request.headers);
 
-  fetchHeaders.delete('Host')
-  fetchHeaders.delete('Cookie')
+  fetchHeaders.delete("Host");
+  fetchHeaders.delete("Cookie");
 
   try {
     const res = await fetch(data.signedUrl, {
       headers: fetchHeaders,
-    })
+    });
 
     // If fetch fails or returns an error status, return a dummy image
     if (!res.ok) {
       return new NextResponse(DUMMY_THUMBNAIL_PNG, {
         headers: {
-          'Accept-Ranges': 'none',
-          'Cache-Control': `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
-          'Content-Type': 'image/png',
+          "Accept-Ranges": "none",
+          "Cache-Control": `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
+          "Content-Type": "image/png",
         },
-      })
+      });
     }
 
     const headers = new Headers({
-      'Accept-Ranges': res.headers.get('Accept-Ranges') || 'none',
-      'Cache-Control': `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
-      'Content-Type': res.headers.get('Content-Type') || 'image/jpeg',
-    })
-    const contentLength = res.headers.get('Content-Length')
+      "Accept-Ranges": res.headers.get("Accept-Ranges") || "none",
+      "Cache-Control": `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
+      "Content-Type": res.headers.get("Content-Type") || "image/jpeg",
+    });
+    const contentLength = res.headers.get("Content-Length");
 
     if (contentLength) {
-      headers.set('Content-Length', contentLength)
+      headers.set("Content-Length", contentLength);
     }
 
     return new NextResponse(res.body, {
       headers,
       status: res.status,
-    })
+    });
   } catch (_error) {
     // If fetch throws an error (e.g., network error), return a dummy image
     return new NextResponse(DUMMY_THUMBNAIL_PNG, {
       headers: {
-        'Accept-Ranges': 'none',
-        'Cache-Control': `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
-        'Content-Type': 'image/png',
+        "Accept-Ranges": "none",
+        "Cache-Control": `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
+        "Content-Type": "image/png",
       },
-    })
+    });
   }
 }

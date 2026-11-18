@@ -74,9 +74,9 @@ MSWはサーバー側（Node.js）でだけ動かします。Supabase、Upstash�
 
 ```typescript
 const { data } = await supabase
-  .from('videos')
-  .select('id, title, thumbnails(path, blur_data_url)')
-  .limit(10)
+  .from("videos")
+  .select("id, title, thumbnails(path, blur_data_url)")
+  .limit(10);
 ```
 
 ### 2. Upstash Redisモック
@@ -132,9 +132,9 @@ ENABLE_MSW=true pnpm --filter @shinju-date/web dev
 ```typescript
 // サーバーコンポーネントやServer Actionの中で
 const { data: videos } = await supabase
-  .from('videos')
-  .select('id, title, thumbnails(path, blur_data_url)')
-  .limit(10)
+  .from("videos")
+  .select("id, title, thumbnails(path, blur_data_url)")
+  .limit(10);
 ```
 
 ブラウザのコンソールには何も表示されません。開発サーバーを起動したターミナル（標準エラー出力）に、次のメッセージが表示されます：
@@ -166,11 +166,11 @@ const { data: videos } = await supabase
 ### テスト環境
 
 ```typescript
-import { server } from '@shinju-date/msw-handlers/server'
+import { server } from "@shinju-date/msw-handlers/server";
 
-beforeAll(() => server.listen())
-afterEach(() => server.resetHandlers())
-afterAll(() => server.close())
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 ```
 
 ## ビルド方法
@@ -352,15 +352,15 @@ ENABLE_MSW=true pnpm run dev
 
 ```typescript
 // Copilotはモックレスポンスから構造を理解
-const { data: videos } = await supabase.from('videos').select('*')
+const { data: videos } = await supabase.from("videos").select("*");
 
 videos?.forEach((video) => {
   // ✅ Copilotが提案: title, duration, talent_id など
-  console.log(video.title)
+  console.log(video.title);
 
   // ✅ Copilotはネストされた構造も理解
-  console.log(video.thumbnails?.path)
-})
+  console.log(video.thumbnails?.path);
+});
 ```
 
 ## セキュリティ

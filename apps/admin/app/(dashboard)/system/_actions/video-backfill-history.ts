@@ -1,22 +1,24 @@
-'use server'
+"use server";
 
-import { logger } from '@shinju-date/logger'
-import { BackfillQueue } from '@shinju-date/video-backfill'
-import { ActionError, type ActionResult, adminAction } from '@/lib/action'
-import { createAuditLog } from '@/lib/audit-log'
-import { getRedisClient } from '@/lib/redis'
-import { getBackfillAccounts } from '../_lib/backfill-accounts'
+import { logger } from "@shinju-date/logger";
+import { BackfillQueue } from "@shinju-date/video-backfill";
+
+import { ActionError, type ActionResult, adminAction } from "@/lib/action";
+import { createAuditLog } from "@/lib/audit-log";
+import { getRedisClient } from "@/lib/redis";
+
+import { getBackfillAccounts } from "../_lib/backfill-accounts";
 import {
   getLatestFailures,
   readVideoBackfillHistory,
   toFailedAccounts,
   type VideoBackfillHistory,
-} from '../_lib/get-video-backfill-history'
+} from "../_lib/get-video-backfill-history";
 
 /** 失敗した過去動画の取り込みをキューに追加し直せたときに、画面に知らせること */
 interface VideoBackfillRetrySummary {
   /** 成功のトーストに出す文 */
-  message: string
+  message: string;
 }
 
 /**
@@ -24,12 +26,12 @@ interface VideoBackfillRetrySummary {
  * 定期的な再取得に使う。
  */
 export const getVideoBackfillHistoryAction = adminAction(
-  'getVideoBackfillHistoryAction',
+  "getVideoBackfillHistoryAction",
   async ({ supabaseClient }): Promise<ActionResult<VideoBackfillHistory>> => ({
     data: await readVideoBackfillHistory(supabaseClient),
     success: true,
-  }),
-)
+  })
+);
 
 /**
  * 最後の過去動画の取り込みが失敗したアカウントを、まとめてキューに追加し直す。
@@ -44,7 +46,7 @@ export const getVideoBackfillHistoryAction = adminAction(
  * - 一部のアカウントだけを追加できなかったときは、成功として返し、`warnings` で知らせる
  */
 export const retryFailedVideoBackfillJobsAction = adminAction(
-  'retryFailedVideoBackfillJobsAction',
+  "retryFailedVideoBackfillJobsAction",
   async ({
     supabaseClient,
     user,
@@ -52,16 +54,16 @@ export const retryFailedVideoBackfillJobsAction = adminAction(
     const [latestFailures, { all }] = await Promise.all([
       getLatestFailures(supabaseClient),
       getBackfillAccounts(supabaseClient),
-    ])
-    const accounts = toFailedAccounts(latestFailures, all)
+    ]);
+    const accounts = toFailedAccounts(latestFailures, all);
 
     if (accounts.length === 0) {
-      throw new ActionError('失敗した過去動画の取り込みはありません。')
+      throw new ActionError("失敗した過去動画の取り込みはありません。");
     }
 
-    const queue = new BackfillQueue(getRedisClient())
-    const enqueued: typeof accounts = []
-    let failed = 0
+    const queue = new BackfillQueue(getRedisClient());
+    const enqueued: typeof accounts = [];
+    let failed = 0;
 
     // One account that cannot be queued does not stop the others, and the
     // ones that were queued are recorded in any case.
@@ -72,26 +74,26 @@ export const retryFailedVideoBackfillJobsAction = adminAction(
           provider: account.provider,
           requestedBy: user.id,
           talentId: account.talentId,
-        })
+        });
 
         if (result.enqueued) {
-          enqueued.push(account)
+          enqueued.push(account);
         }
       } catch (error) {
-        failed++
-        logger.error('過去動画の取り込みをキューに追加できませんでした', {
+        failed++;
+        logger.error("過去動画の取り込みをキューに追加できませんでした", {
           accountId: account.accountId,
           error,
           provider: account.provider,
           talentId: account.talentId,
-        })
+        });
       }
     }
 
-    const skipped = accounts.length - enqueued.length - failed
+    const skipped = accounts.length - enqueued.length - failed;
 
     if (enqueued.length > 0) {
-      await createAuditLog(supabaseClient, 'VIDEO_BACKFILL', null, {
+      await createAuditLog(supabaseClient, "VIDEO_BACKFILL", null, {
         accounts: enqueued.map(({ accountId, name, provider, talentId }) => ({
           accountId,
           name,
@@ -100,22 +102,22 @@ export const retryFailedVideoBackfillJobsAction = adminAction(
         })),
         entityName: `失敗した過去動画の取り込みの再試行（${enqueued.length}件）`,
         failed,
-        scope: 'retry',
+        scope: "retry",
         skipped,
-      })
+      });
     }
 
     if (enqueued.length === 0) {
       throw new ActionError(
         failed > 0
-          ? '失敗した過去動画の取り込みをキューに追加できませんでした。'
-          : '失敗した過去動画の取り込みは、すべて再試行中です。',
-      )
+          ? "失敗した過去動画の取り込みをキューに追加できませんでした。"
+          : "失敗した過去動画の取り込みは、すべて再試行中です。"
+      );
     }
 
     const message = `失敗した過去動画の取り込みを${enqueued.length}件キューに追加しました${
-      skipped > 0 ? `（再試行中の${skipped}件は除く）` : ''
-    }。`
+      skipped > 0 ? `（再試行中の${skipped}件は除く）` : ""
+    }。`;
 
     return {
       data: { message },
@@ -127,6 +129,6 @@ export const retryFailedVideoBackfillJobsAction = adminAction(
             ],
           }
         : {}),
-    }
-  },
-)
+    };
+  }
+);

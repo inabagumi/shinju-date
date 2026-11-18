@@ -1,9 +1,9 @@
-import { HttpResponse, http } from 'msw'
+import { HttpResponse, http } from "msw";
 
 export const resendHandlers = [
-  http.post('https://api.resend.com/emails', async () => {
+  http.post("https://api.resend.com/emails", async () => {
     return HttpResponse.json({
-      id: 're_123456789',
-    })
+      id: "re_123456789",
+    });
   }),
-]
+];

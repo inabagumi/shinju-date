@@ -1,7 +1,7 @@
-import { twMerge } from '@shinju-date/ui'
-import type { MDXComponents } from 'mdx/types'
-import NextLink, { type LinkProps } from 'next/link'
-import type { ComponentPropsWithoutRef } from 'react'
+import { twMerge } from "@shinju-date/ui";
+import type { MDXComponents } from "mdx/types";
+import NextLink, { type LinkProps } from "next/link";
+import type { ComponentPropsWithoutRef } from "react";
 
 function Link({
   children,
@@ -11,39 +11,39 @@ function Link({
   onTouchStart,
   onClick,
   ...props
-}: ComponentPropsWithoutRef<'a'>) {
+}: ComponentPropsWithoutRef<"a">) {
   const linkClassName = twMerge(
-    'text-accent underline underline-offset-2 hover:decoration-2',
-    className,
-  )
+    "text-accent underline underline-offset-2 hover:decoration-2",
+    className
+  );
 
-  if (href?.startsWith('/')) {
-    const linkProps: Partial<LinkProps> = {}
+  if (href?.startsWith("/")) {
+    const linkProps: Partial<LinkProps> = {};
 
-    if (typeof onMouseEnter === 'function') {
-      linkProps.onMouseEnter = onMouseEnter
+    if (typeof onMouseEnter === "function") {
+      linkProps.onMouseEnter = onMouseEnter;
     }
 
-    if (typeof onTouchStart === 'function') {
-      linkProps.onTouchStart = onTouchStart
+    if (typeof onTouchStart === "function") {
+      linkProps.onTouchStart = onTouchStart;
     }
 
-    if (typeof onClick === 'function') {
-      linkProps.onClick = onClick
+    if (typeof onClick === "function") {
+      linkProps.onClick = onClick;
     }
 
     return (
       <NextLink className={linkClassName} href={href} {...props} {...linkProps}>
         {children}
       </NextLink>
-    )
+    );
   }
 
   return (
     <a className={linkClassName} href={href} {...props}>
       {children}
     </a>
-  )
+  );
 }
 
 /**
@@ -55,8 +55,8 @@ const documentComponents: MDXComponents = {
   h2: ({ className, ...props }) => (
     <h2
       className={twMerge(
-        'mt-12 mb-4 text-heading font-bold first:mt-0',
-        className,
+        "mt-12 mb-4 text-heading font-bold first:mt-0",
+        className
       )}
       {...props}
     />
@@ -64,41 +64,41 @@ const documentComponents: MDXComponents = {
   h3: ({ className, ...props }) => (
     <h3
       className={twMerge(
-        'mt-8 mb-2 text-body leading-normal font-semibold first:mt-0',
-        className,
+        "mt-8 mb-2 text-body leading-normal font-semibold first:mt-0",
+        className
       )}
       {...props}
     />
   ),
   hr: ({ className, ...props }) => (
-    <hr className={twMerge('my-12 border-border', className)} {...props} />
+    <hr className={twMerge("my-12 border-border", className)} {...props} />
   ),
   li: ({ className, ...props }) => (
-    <li className={twMerge('pl-1', className)} {...props} />
+    <li className={twMerge("pl-1", className)} {...props} />
   ),
   ol: ({ className, ...props }) => (
     <ol
-      className={twMerge('my-4 list-decimal space-y-2 pl-6', className)}
+      className={twMerge("my-4 list-decimal space-y-2 pl-6", className)}
       {...props}
     />
   ),
   p: ({ className, ...props }) => (
-    <p className={twMerge('my-4', className)} {...props} />
+    <p className={twMerge("my-4", className)} {...props} />
   ),
   strong: ({ className, ...props }) => (
-    <strong className={twMerge('font-bold', className)} {...props} />
+    <strong className={twMerge("font-bold", className)} {...props} />
   ),
   ul: ({ className, ...props }) => (
     <ul
-      className={twMerge('my-4 list-disc space-y-2 pl-6', className)}
+      className={twMerge("my-4 list-disc space-y-2 pl-6", className)}
       {...props}
     />
   ),
-}
+};
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
     ...documentComponents,
     ...components,
-  }
+  };
 }

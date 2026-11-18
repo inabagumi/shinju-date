@@ -15,15 +15,15 @@
 export function range(start: number, stop?: number, step = 1): number[] {
   // Single argument case: range(stop)
   if (stop === undefined) {
-    stop = start
-    start = 0
+    stop = start;
+    start = 0;
   }
 
   // Validate step
   if (step === 0) {
-    throw new RangeError('Range step cannot be zero')
+    throw new RangeError("Range step cannot be zero");
   }
 
-  const length = Math.max(0, Math.ceil((stop - start) / step))
-  return Array.from({ length }, (_, i) => start + i * step)
+  const length = Math.max(0, Math.ceil((stop - start) / step));
+  return Array.from({ length }, (_, i) => start + i * step);
 }

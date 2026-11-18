@@ -1,5 +1,27 @@
 {
+  "name": "@shinju-date/web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Public website frontend for SHINJU DATE (https://shinju.date)",
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
   "author": "Haneru Developers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git",
+    "directory": "apps/web"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "build:msw": "NODE_OPTIONS=\"--import @shinju-date/msw-handlers/register\" ENABLE_MSW=true next build",
+    "dev": "next --port 3000",
+    "start": "next start --port 3000",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "typegen": "next typegen"
+  },
   "dependencies": {
     "@mdx-js/react": "3.1.1",
     "@radix-ui/react-slot": "catalog:",
@@ -36,7 +58,6 @@
     "ufo": "1.6.4",
     "zod": "catalog:"
   },
-  "description": "Public website frontend for SHINJU DATE (https://shinju.date)",
   "devDependencies": {
     "@mdx-js/loader": "3.1.1",
     "@next/mdx": "16.4.6",
@@ -61,26 +82,5 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
-  },
-  "homepage": "https://shinju.date/",
-  "license": "MIT",
-  "name": "@shinju-date/web",
-  "private": true,
-  "repository": {
-    "directory": "apps/web",
-    "type": "git",
-    "url": "https://github.com/inabagumi/shinju-date.git"
-  },
-  "scripts": {
-    "build": "next build",
-    "build:msw": "NODE_OPTIONS=\"--import @shinju-date/msw-handlers/register\" ENABLE_MSW=true next build",
-    "dev": "next --port 3000",
-    "start": "next start --port 3000",
-    "test": "vitest run",
-    "test:e2e": "playwright test",
-    "typecheck": "tsc --noEmit",
-    "typegen": "next typegen"
-  },
-  "type": "module",
-  "version": "1.0.0"
+  }
 }

@@ -1,20 +1,19 @@
-'use client'
+"use client";
 
-import type { ComponentPropsWithoutRef } from 'react'
+import type { ComponentPropsWithoutRef } from "react";
 
 // Note: We need to omit 'onChange' from button props because:
 // 1. React button elements DO have an onChange handler (FormEventHandler)
 // 2. Our custom onChange has an incompatible signature: (checked: boolean) => void
 // 3. Without omitting, TypeScript would complain about the signature mismatch
-interface ToggleSwitchProps
-  extends Omit<
-    ComponentPropsWithoutRef<'button'>,
-    'children' | 'onClick' | 'onChange' | 'type'
-  > {
-  checked: boolean
-  disabled?: boolean
-  label?: string
-  onChange?: (checked: boolean) => void
+interface ToggleSwitchProps extends Omit<
+  ComponentPropsWithoutRef<"button">,
+  "children" | "onClick" | "onChange" | "type"
+> {
+  checked: boolean;
+  disabled?: boolean;
+  label?: string;
+  onChange?: (checked: boolean) => void;
 }
 
 export default function ToggleSwitch({
@@ -26,17 +25,17 @@ export default function ToggleSwitch({
 }: ToggleSwitchProps) {
   const handleClick = () => {
     if (!disabled && onChange) {
-      onChange(!checked)
+      onChange(!checked);
     }
-  }
+  };
 
   return (
     <button
       aria-checked={checked}
       aria-label={label}
-      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors focus-ring ${
-        checked ? 'border-accent bg-accent' : 'border-border bg-border'
-      } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border focus-ring transition-colors ${
+        checked ? "border-accent bg-accent" : "border-border bg-border"
+      } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
       disabled={disabled}
       onClick={handleClick}
       role="switch"
@@ -46,10 +45,10 @@ export default function ToggleSwitch({
       <span
         className={`inline-block size-4 transform rounded-full transition-transform ${
           checked
-            ? 'translate-x-6 bg-accent-foreground'
-            : 'translate-x-1 bg-surface'
+            ? "translate-x-6 bg-accent-foreground"
+            : "translate-x-1 bg-surface"
         }`}
       />
     </button>
-  )
+  );
 }

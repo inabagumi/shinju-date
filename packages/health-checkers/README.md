@@ -14,13 +14,13 @@
 import {
   checkRedisHealth,
   checkSupabaseHealth,
-} from '@shinju-date/health-checkers'
+} from "@shinju-date/health-checkers";
 
 // データベースヘルスチェック
-const dbHealth = await checkSupabaseHealth(supabaseClient)
+const dbHealth = await checkSupabaseHealth(supabaseClient);
 
 // Redis ヘルスチェック
-const redisHealth = await checkRedisHealth(redisClient)
+const redisHealth = await checkRedisHealth(redisClient);
 ```
 
 複数のチェックをまとめて実行する `runHealthChecks` と、チェックの結果から readiness のレスポンス（失敗したときは 503）を作る `createReadinessResponse` もあります。

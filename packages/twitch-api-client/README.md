@@ -40,13 +40,13 @@ import {
   getVideosByUser,
   getStreamsByUserIds,
   getClips,
-} from '@shinju-date/twitch-api-client'
+} from "@shinju-date/twitch-api-client";
 
-const identifier = parseTwitchUserIdentifier('https://www.twitch.tv/example')
-const user = identifier ? await resolveTwitchUser(identifier) : null
+const identifier = parseTwitchUserIdentifier("https://www.twitch.tv/example");
+const user = identifier ? await resolveTwitchUser(identifier) : null;
 
-for await (const stream of getStreamsByUserIds({ userIds: ['125328655'] })) {
-  console.log(stream.title, stream.id)
+for await (const stream of getStreamsByUserIds({ userIds: ["125328655"] })) {
+  console.log(stream.title, stream.id);
 }
 ```
 
@@ -57,17 +57,17 @@ The helpers for the placeholder IDs of live streams (`toLiveTwitchVideoId` / `is
 Every function that calls Helix takes an optional `client` (a twurple `ApiClient`). Without it, the shared client made from `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` is used. Tests pass their own:
 
 ```typescript
-import type { ApiClient } from '@twurple/api'
+import type { ApiClient } from "@twurple/api";
 
 const client = {
   videos: { getVideosByIds: async () => [] },
-} as unknown as ApiClient
+} as unknown as ApiClient;
 
-for await (const video of getVideos({ client, ids: ['1'] })) {
+for await (const video of getVideos({ client, ids: ["1"] })) {
   // ...
 }
 
-const user = await resolveTwitchUser(identifier, { client })
+const user = await resolveTwitchUser(identifier, { client });
 ```
 
 ### Lookups by ID
@@ -77,9 +77,9 @@ const user = await resolveTwitchUser(identifier, { client })
 `getUsers`, `getVideos`, `getClips` and `getStreamsByUserIds` accept any number of IDs and split them into batches of `TWITCH_API_MAX_RESULTS` (100). The batches are requested one after another. Pass `schedule` to run each request through it instead: every batch is requested at once, and `schedule` decides how many requests run at a time.
 
 ```typescript
-import PQueue from 'p-queue'
+import PQueue from "p-queue";
 
-const queue = new PQueue({ concurrency: 5 })
+const queue = new PQueue({ concurrency: 5 });
 
 for await (const video of getVideos({
   ids: videoIds,

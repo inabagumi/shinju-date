@@ -1,133 +1,138 @@
-'use client'
+"use client";
 
-import type { Tables } from '@shinju-date/database'
-import { range } from '@shinju-date/helpers'
-import { FilterBar, MultiSelect, type MultiSelectOption } from '@shinju-date/ui'
-import { useSearchParams } from 'next/navigation'
-import { SearchInput } from '@/components/search-input'
-import { FieldSkeleton, FilterBarSkeleton } from '@/components/table-skeleton'
-import { useUpdateSearchParams } from '@/lib/use-update-search-params'
+import type { Tables } from "@shinju-date/database";
+import { range } from "@shinju-date/helpers";
+import {
+  FilterBar,
+  MultiSelect,
+  type MultiSelectOption,
+} from "@shinju-date/ui";
+import { useSearchParams } from "next/navigation";
+
+import { SearchInput } from "@/components/search-input";
+import { FieldSkeleton, FilterBarSkeleton } from "@/components/table-skeleton";
+import { useUpdateSearchParams } from "@/lib/use-update-search-params";
 
 type Talent = Pick<
-  Tables<'talents'>,
-  'id' | 'name' | 'created_at' | 'updated_at'
->
+  Tables<"talents">,
+  "id" | "name" | "created_at" | "updated_at"
+>;
 
 type FilterKey =
-  | 'deleted'
-  | 'talentId'
-  | 'visible'
-  | 'status'
-  | 'platform'
-  | 'videoKind'
+  | "deleted"
+  | "talentId"
+  | "visible"
+  | "status"
+  | "platform"
+  | "videoKind";
 
 interface FilterField {
-  key: FilterKey
-  label: string
-  options: MultiSelectOption[]
-  placeholder: string
-  value: string[]
+  key: FilterKey;
+  label: string;
+  options: MultiSelectOption[];
+  placeholder: string;
+  value: string[];
 }
 
 interface Props {
-  talents: Talent[]
+  talents: Talent[];
 }
 
 export function VideoFilters({ talents }: Props) {
-  const updateSearchParams = useUpdateSearchParams()
-  const searchParams = useSearchParams()
+  const updateSearchParams = useUpdateSearchParams();
+  const searchParams = useSearchParams();
 
   // Get current filter values from URL (support arrays)
-  const currentTalentIds = searchParams.getAll('talentId')
-  const currentDeleted = searchParams.getAll('deleted')
-  const currentVisible = searchParams.getAll('visible')
-  const currentStatus = searchParams.getAll('status')
-  const currentPlatform = searchParams.getAll('platform')
-  const currentVideoKind = searchParams.getAll('videoKind')
+  const currentTalentIds = searchParams.getAll("talentId");
+  const currentDeleted = searchParams.getAll("deleted");
+  const currentVisible = searchParams.getAll("visible");
+  const currentStatus = searchParams.getAll("status");
+  const currentPlatform = searchParams.getAll("platform");
+  const currentVideoKind = searchParams.getAll("videoKind");
 
   // Removes `page` so that the results start from page 1
   const handleMultiSelectChange = (key: FilterKey, values: string[]) => {
-    updateSearchParams({ [key]: values })
-  }
+    updateSearchParams({ [key]: values });
+  };
 
   // Define options for each filter
   const talentOptions: MultiSelectOption[] = talents.map((talent) => ({
     label: talent.name,
     value: talent.id,
-  }))
+  }));
 
   const visibilityOptions: MultiSelectOption[] = [
-    { label: '表示中', value: 'true' },
-    { label: '非表示', value: 'false' },
-  ]
+    { label: "表示中", value: "true" },
+    { label: "非表示", value: "false" },
+  ];
 
   const statusOptions: MultiSelectOption[] = [
-    { label: '待機中', value: 'UPCOMING' },
-    { label: '配信中', value: 'LIVE' },
-    { label: '配信済み', value: 'ENDED' },
-    { label: '公開済み', value: 'PUBLISHED' },
-  ]
+    { label: "待機中", value: "UPCOMING" },
+    { label: "配信中", value: "LIVE" },
+    { label: "配信済み", value: "ENDED" },
+    { label: "公開済み", value: "PUBLISHED" },
+  ];
 
   const platformOptions: MultiSelectOption[] = [
-    { label: 'YouTube', value: 'youtube' },
-    { label: 'Twitch', value: 'twitch' },
-  ]
+    { label: "YouTube", value: "youtube" },
+    { label: "Twitch", value: "twitch" },
+  ];
 
   const deletedOptions: MultiSelectOption[] = [
-    { label: '未削除', value: 'false' },
-    { label: '削除済み', value: 'true' },
-  ]
+    { label: "未削除", value: "false" },
+    { label: "削除済み", value: "true" },
+  ];
 
   const videoKindOptions: MultiSelectOption[] = [
-    { label: '通常動画', value: 'standard' },
-    { label: 'ショート動画', value: 'short' },
-  ]
+    { label: "通常動画", value: "standard" },
+    { label: "ショート動画", value: "short" },
+  ];
 
   const filters: FilterField[] = [
     {
-      key: 'talentId',
-      label: 'タレント',
+      key: "talentId",
+      label: "タレント",
       options: talentOptions,
-      placeholder: 'すべてのタレント',
+      placeholder: "すべてのタレント",
       value: currentTalentIds,
     },
     {
-      key: 'status',
-      label: '動画ステータス',
+      key: "status",
+      label: "動画ステータス",
       options: statusOptions,
-      placeholder: 'すべて',
+      placeholder: "すべて",
       value: currentStatus,
     },
     {
-      key: 'platform',
-      label: 'プラットフォーム',
+      key: "platform",
+      label: "プラットフォーム",
       options: platformOptions,
-      placeholder: 'すべて',
+      placeholder: "すべて",
       value: currentPlatform,
     },
     {
-      key: 'videoKind',
-      label: '動画種別',
+      key: "videoKind",
+      label: "動画種別",
       options: videoKindOptions,
-      placeholder: 'すべて',
+      placeholder: "すべて",
       value: currentVideoKind,
     },
     {
-      key: 'visible',
-      label: '公開状態',
+      key: "visible",
+      label: "公開状態",
       options: visibilityOptions,
-      placeholder: 'すべて',
+      placeholder: "すべて",
       value: currentVisible,
     },
     {
-      key: 'deleted',
-      label: '削除状態',
+      key: "deleted",
+      label: "削除状態",
       options: deletedOptions,
-      placeholder: 'すべて',
+      placeholder: "すべて",
       value: currentDeleted,
     },
-  ]
-  const appliedCount = filters.filter(({ value }) => value.length > 0).length
+  ];
+  const appliedCount = filters.filter(({ value }) => value.length > 0).length;
 
   return (
     <div className="mb-4 flex flex-col gap-3">
@@ -166,7 +171,7 @@ export function VideoFilters({ talents }: Props) {
         ))}
       </FilterBar>
     </div>
-  )
+  );
 }
 
 /** 読み込み中の `VideoFilters`。検索欄と、6つの絞り込み（`filters`）を並べる */
@@ -183,5 +188,5 @@ export function VideoFiltersSkeleton() {
         ))}
       </FilterBarSkeleton>
     </div>
-  )
+  );
 }

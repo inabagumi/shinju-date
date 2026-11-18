@@ -1,28 +1,30 @@
-import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
-import { cacheLife } from 'next/cache'
-import { ImageResponse } from 'next/og'
-import sharp from 'sharp'
-import { SITE_THEME_COLOR } from '@/lib/site'
-import { LOGO_PATH, LOGO_VIEW_BOX } from '@/lib/svg-symbols'
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+
+import { cacheLife } from "next/cache";
+import { ImageResponse } from "next/og";
+import sharp from "sharp";
+
+import { SITE_THEME_COLOR } from "@/lib/site";
+import { LOGO_PATH, LOGO_VIEW_BOX } from "@/lib/svg-symbols";
 
 /** The size of the Open Graph images of the pages */
-export const OG_IMAGE_SIZE = { height: 630, width: 1200 }
+export const OG_IMAGE_SIZE = { height: 630, width: 1200 };
 
 /** The type of the Open Graph images of the pages */
-export const OG_IMAGE_CONTENT_TYPE = 'image/png'
+export const OG_IMAGE_CONTENT_TYPE = "image/png";
 
-const TEXT_COLOR = SITE_THEME_COLOR
-const LOGO_HEIGHT = 48
-const LOGO_WIDTH = (LOGO_HEIGHT * 256) / 80
+const TEXT_COLOR = SITE_THEME_COLOR;
+const LOGO_HEIGHT = 48;
+const LOGO_WIDTH = (LOGO_HEIGHT * 256) / 80;
 
 /** The key visual, which the home page also shows */
-const KEY_VISUAL_PATH = join(process.cwd(), 'app/_assets/hero.jpg')
+const KEY_VISUAL_PATH = join(process.cwd(), "app/_assets/hero.jpg");
 /** The key visual takes the right half of the image */
 const KEY_VISUAL_SIZE = {
   height: OG_IMAGE_SIZE.height,
   width: OG_IMAGE_SIZE.width / 2,
-}
+};
 
 /**
  * The center of the key visual, cut out to the right half of the image, as a
@@ -33,16 +35,16 @@ const KEY_VISUAL_SIZE = {
  * so the cache is not remote.
  */
 async function loadKeyVisual(): Promise<string> {
-  'use cache'
+  "use cache";
 
-  cacheLife('max')
+  cacheLife("max");
 
   const jpeg = await sharp(await readFile(KEY_VISUAL_PATH))
-    .resize(KEY_VISUAL_SIZE.width, KEY_VISUAL_SIZE.height, { fit: 'cover' })
+    .resize(KEY_VISUAL_SIZE.width, KEY_VISUAL_SIZE.height, { fit: "cover" })
     .jpeg({ quality: 85 })
-    .toBuffer()
+    .toBuffer();
 
-  return `data:image/jpeg;base64,${jpeg.toString('base64')}`
+  return `data:image/jpeg;base64,${jpeg.toString("base64")}`;
 }
 
 /**
@@ -54,35 +56,35 @@ async function loadKeyVisual(): Promise<string> {
  * characters by itself.
  */
 export async function createOgImage(title: string): Promise<ImageResponse> {
-  const keyVisualURL = await loadKeyVisual()
+  const keyVisualURL = await loadKeyVisual();
 
   return new ImageResponse(
     <div
       style={{
-        backgroundColor: '#ffffff',
-        display: 'flex',
-        height: '100%',
-        width: '100%',
+        backgroundColor: "#ffffff",
+        display: "flex",
+        height: "100%",
+        width: "100%",
       }}
     >
       <div
         style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: '72px 64px',
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          padding: "72px 64px",
           width: OG_IMAGE_SIZE.width - KEY_VISUAL_SIZE.width,
         }}
       >
         <div
           style={{
             color: TEXT_COLOR,
-            display: 'block',
+            display: "block",
             fontSize: 56,
             fontWeight: 700,
             lineClamp: 4,
             lineHeight: 1.4,
-            wordBreak: 'break-word',
+            wordBreak: "break-word",
           }}
         >
           {title}
@@ -104,6 +106,6 @@ export async function createOgImage(title: string): Promise<ImageResponse> {
         width={KEY_VISUAL_SIZE.width}
       />
     </div>,
-    OG_IMAGE_SIZE,
-  )
+    OG_IMAGE_SIZE
+  );
 }

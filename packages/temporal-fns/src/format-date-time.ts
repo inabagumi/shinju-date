@@ -1,8 +1,8 @@
-import { formatDate } from './format-date.js'
-import { formatTime } from './format-time.js'
+import { formatDate } from "./format-date.js";
+import { formatTime } from "./format-time.js";
 
 interface FormatDateTimeOptions {
-  includeSeconds?: boolean
+  includeSeconds?: boolean;
 }
 
 /**
@@ -10,21 +10,21 @@ interface FormatDateTimeOptions {
  */
 export function formatDateTime(
   timestamp: Temporal.ZonedDateTime,
-  options: FormatDateTimeOptions = {},
+  options: FormatDateTimeOptions = {}
 ): string {
-  const { includeSeconds = false } = options
+  const { includeSeconds = false } = options;
 
-  return `${formatDate(timestamp)} ${formatTime(timestamp, { includeSeconds })}`
+  return `${formatDate(timestamp)} ${formatTime(timestamp, { includeSeconds })}`;
 }
 
 export function formatDateTimeWithSeconds(
-  timestamp: Temporal.ZonedDateTime,
+  timestamp: Temporal.ZonedDateTime
 ): string {
-  return formatDateTime(timestamp, { includeSeconds: true })
+  return formatDateTime(timestamp, { includeSeconds: true });
 }
 
 interface FormatDateTimeFromISOOptions extends FormatDateTimeOptions {
-  timeZone: string
+  timeZone: string;
 }
 
 /**
@@ -42,11 +42,11 @@ interface FormatDateTimeFromISOOptions extends FormatDateTimeOptions {
  */
 export function formatDateTimeFromISO(
   isoString: string,
-  options: FormatDateTimeFromISOOptions,
+  options: FormatDateTimeFromISOOptions
 ): string {
-  const { includeSeconds = true, timeZone } = options
+  const { includeSeconds = true, timeZone } = options;
   const zonedDateTime =
-    Temporal.Instant.from(isoString).toZonedDateTimeISO(timeZone)
+    Temporal.Instant.from(isoString).toZonedDateTimeISO(timeZone);
 
-  return formatDateTime(zonedDateTime, { includeSeconds })
+  return formatDateTime(zonedDateTime, { includeSeconds });
 }

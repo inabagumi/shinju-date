@@ -10,26 +10,26 @@
  *   otherwise repeat the same page forever.
  */
 export async function* paginateById<T extends { id: string }>(
-  getPage: (cursor: string | undefined) => Promise<T[]>,
+  getPage: (cursor: string | undefined) => Promise<T[]>
 ): AsyncGenerator<T[], void, undefined> {
-  let cursor: string | undefined
+  let cursor: string | undefined;
 
   while (true) {
-    const page = await getPage(cursor)
-    const lastId = page.at(-1)?.id
+    const page = await getPage(cursor);
+    const lastId = page.at(-1)?.id;
 
     if (lastId === undefined) {
-      return
+      return;
     }
 
     if (cursor !== undefined && lastId <= cursor) {
       throw new Error(
-        `Pagination did not advance: the page after "${cursor}" ends at "${lastId}"`,
-      )
+        `Pagination did not advance: the page after "${cursor}" ends at "${lastId}"`
+      );
     }
 
-    cursor = lastId
+    cursor = lastId;
 
-    yield page
+    yield page;
   }
 }

@@ -1,7 +1,7 @@
 /**
  * スキップリンクの移動先。各ページの `<main>` に `id` として付ける。
  */
-export const MAIN_CONTENT_ID = 'main-content'
+export const MAIN_CONTENT_ID = "main-content";
 
 /**
  * キーボード操作でヘッダーを飛ばして本文へ移動するためのリンク。
@@ -15,5 +15,5 @@ export default function SkipLink() {
     >
       本文へスキップ
     </a>
-  )
+  );
 }

@@ -1,5 +1,5 @@
-import { definePackageConfig } from '@shinju-date/config/tsdown'
+import { definePackageConfig } from "@shinju-date/config/tsdown";
 
 export default definePackageConfig({
-  entry: ['./src/index.ts', './src/testing/index.ts'],
-})
+  entry: ["./src/index.ts", "./src/testing/index.ts"],
+});

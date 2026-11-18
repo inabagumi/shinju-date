@@ -1,13 +1,15 @@
-'use client'
+"use client";
 
-import { Button } from '@shinju-date/ui'
-import { ConfirmDialog } from '@/components/confirm-dialog'
-import { deleteTermAction } from '../_actions'
+import { Button } from "@shinju-date/ui";
+
+import { ConfirmDialog } from "@/components/confirm-dialog";
+
+import { deleteTermAction } from "../_actions";
 
 interface DeleteTermButtonProps {
-  id: string
+  id: string;
   /** 確認文に出す用語 */
-  term: string
+  term: string;
 }
 
 /** 用語の一覧の、行ごとの削除のボタン。確認のダイアログを開いてから削除する */
@@ -25,5 +27,5 @@ export function DeleteTermButton({ id, term }: DeleteTermButtonProps) {
         </Button>
       }
     />
-  )
+  );
 }

@@ -1,19 +1,20 @@
-'use client'
+"use client";
 
-import { useMemo } from 'react'
-import { formatShortDate } from '@/lib/date-heading'
-import { useToday } from '@/lib/use-today'
+import { useMemo } from "react";
+
+import { formatShortDate } from "@/lib/date-heading";
+import { useToday } from "@/lib/use-today";
 
 interface ScheduleDayHeaderProps {
-  count: number
+  count: number;
   /** `YYYY-MM-DD` */
-  date: string
-  headingId: string
+  date: string;
+  headingId: string;
   /**
    * サーバーで描画したときの今日（`YYYY-MM-DD`）。ハイドレーションまでの
    * 「今日」の基準で、その後はブラウザの現在時刻を使う
    */
-  referenceDate: string
+  referenceDate: string;
 }
 
 /**
@@ -28,9 +29,9 @@ export default function ScheduleDayHeader({
   headingId,
   referenceDate,
 }: ScheduleDayHeaderProps) {
-  const today = useToday(referenceDate)
-  const date = useMemo(() => Temporal.PlainDate.from(rawDate), [rawDate])
-  const isToday = today.equals(date)
+  const today = useToday(referenceDate);
+  const date = useMemo(() => Temporal.PlainDate.from(rawDate), [rawDate]);
+  const isToday = today.equals(date);
 
   return (
     <header
@@ -43,7 +44,7 @@ export default function ScheduleDayHeader({
           id={headingId}
         >
           <time
-            aria-current={isToday ? 'date' : undefined}
+            aria-current={isToday ? "date" : undefined}
             dateTime={date.toString()}
           >
             {formatShortDate(date)}
@@ -60,5 +61,5 @@ export default function ScheduleDayHeader({
         {count}件
       </p>
     </header>
-  )
+  );
 }

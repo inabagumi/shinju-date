@@ -2,14 +2,14 @@
  * Parsed YouTube channel identifier from user input (ID, handle, or URL).
  */
 export type YouTubeChannelIdentifier =
-  | { kind: 'id'; id: string }
-  | { kind: 'handle'; handle: string }
+  | { kind: "id"; id: string }
+  | { kind: "handle"; handle: string };
 
 /** YouTube channel ID: UC + 22 characters (24 total). */
-const YOUTUBE_CHANNEL_ID_PATTERN = /^UC[\w-]{22}$/
+const YOUTUBE_CHANNEL_ID_PATTERN = /^UC[\w-]{22}$/;
 
 /** YouTube handle body (without @): 3–30 chars of letters, digits, underscore, hyphen, period. */
-const YOUTUBE_HANDLE_PATTERN = /^[\w.-]{3,30}$/
+const YOUTUBE_HANDLE_PATTERN = /^[\w.-]{3,30}$/;
 
 /**
  * Parses free-form user input into a YouTube channel ID or handle.
@@ -25,56 +25,56 @@ const YOUTUBE_HANDLE_PATTERN = /^[\w.-]{3,30}$/
  * @returns Parsed identifier, or `null` if the input cannot be interpreted
  */
 export function parseYouTubeChannelIdentifier(
-  raw: string,
+  raw: string
 ): YouTubeChannelIdentifier | null {
-  const input = raw.trim()
+  const input = raw.trim();
   if (!input) {
-    return null
+    return null;
   }
 
   const asUrl =
-    input.startsWith('http://') || input.startsWith('https://')
+    input.startsWith("http://") || input.startsWith("https://")
       ? input
       : /^(?:www\.)?(?:m\.)?youtube\.com\//i.test(input)
         ? `https://${input}`
-        : null
+        : null;
 
   if (asUrl) {
     try {
-      const url = new URL(asUrl)
-      const host = url.hostname.replace(/^www\./, '').toLowerCase()
+      const url = new URL(asUrl);
+      const host = url.hostname.replace(/^www\./, "").toLowerCase();
 
       if (
-        host === 'youtube.com' ||
-        host === 'm.youtube.com' ||
-        host === 'music.youtube.com'
+        host === "youtube.com" ||
+        host === "m.youtube.com" ||
+        host === "music.youtube.com"
       ) {
         const channelMatch = url.pathname.match(
-          /^\/channel\/(UC[\w-]{22})(?:\/|$)/i,
-        )
+          /^\/channel\/(UC[\w-]{22})(?:\/|$)/i
+        );
         if (channelMatch?.[1]) {
-          return { id: channelMatch[1], kind: 'id' }
+          return { id: channelMatch[1], kind: "id" };
         }
 
-        const handleMatch = url.pathname.match(/^\/@([\w.-]+)(?:\/|$)/)
+        const handleMatch = url.pathname.match(/^\/@([\w.-]+)(?:\/|$)/);
         if (handleMatch?.[1]) {
-          return { handle: handleMatch[1], kind: 'handle' }
+          return { handle: handleMatch[1], kind: "handle" };
         }
 
-        const customMatch = url.pathname.match(/^\/c\/([^/?#]+)(?:\/|$)/)
+        const customMatch = url.pathname.match(/^\/c\/([^/?#]+)(?:\/|$)/);
         if (customMatch?.[1]) {
           return {
             handle: decodeURIComponent(customMatch[1]),
-            kind: 'handle',
-          }
+            kind: "handle",
+          };
         }
 
-        const userMatch = url.pathname.match(/^\/user\/([^/?#]+)(?:\/|$)/)
+        const userMatch = url.pathname.match(/^\/user\/([^/?#]+)(?:\/|$)/);
         if (userMatch?.[1]) {
           return {
             handle: decodeURIComponent(userMatch[1]),
-            kind: 'handle',
-          }
+            kind: "handle",
+          };
         }
       }
     } catch {
@@ -83,13 +83,13 @@ export function parseYouTubeChannelIdentifier(
   }
 
   if (YOUTUBE_CHANNEL_ID_PATTERN.test(input)) {
-    return { id: input, kind: 'id' }
+    return { id: input, kind: "id" };
   }
 
-  const handle = input.startsWith('@') ? input.slice(1) : input
+  const handle = input.startsWith("@") ? input.slice(1) : input;
   if (YOUTUBE_HANDLE_PATTERN.test(handle)) {
-    return { handle, kind: 'handle' }
+    return { handle, kind: "handle" };
   }
 
-  return null
+  return null;
 }

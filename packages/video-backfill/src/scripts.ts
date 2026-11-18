@@ -1,11 +1,12 @@
-import { REDIS_KEYS } from '@shinju-date/constants'
-import type { Redis } from '@upstash/redis'
-import { BACKFILL_JOB_TTL_SECONDS, jobKey, lockKey } from './keys.js'
+import { REDIS_KEYS } from "@shinju-date/constants";
+import type { Redis } from "@upstash/redis";
+
+import { BACKFILL_JOB_TTL_SECONDS, jobKey, lockKey } from "./keys.js";
 import type {
   BackfillClaim,
   BackfillJob,
   BackfillWriteResult,
-} from './types.js'
+} from "./types.js";
 
 /**
  * Saves a job and queues it, but only if the job is still the version the
@@ -38,7 +39,7 @@ if redis.call('EXISTS', KEYS[3]) == 1 then return 0 end
 redis.call('LPUSH', KEYS[2], ARGV[4])
 redis.call('EXPIRE', KEYS[2], ARGV[3])
 redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
-return 1`
+return 1`;
 
 /**
  * Takes the next job off the queue, locks it and saves it as `running` with
@@ -78,7 +79,7 @@ while true do
     end
     redis.call('DEL', lock)
   end
-end`
+end`;
 
 /**
  * Saves a claimed job, only while its lock holds the claim's token.
@@ -91,7 +92,7 @@ end`
 export const SAVE_SCRIPT = `-- video-backfill:save
 if redis.call('GET', KEYS[2]) ~= ARGV[1] then return 0 end
 redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
-return 1`
+return 1`;
 
 /**
  * Saves a claimed job that finished, also to the keys given after its lock
@@ -111,7 +112,7 @@ for i = 3, #KEYS do
   redis.call('SET', KEYS[i], ARGV[2], 'EX', ARGV[3])
 end
 redis.call('DEL', KEYS[2])
-return 1`
+return 1`;
 
 /**
  * Puts a claimed job back at the end of the queue, saves it as pending and
@@ -136,41 +137,41 @@ redis.call('LPUSH', KEYS[1], ARGV[1])
 redis.call('EXPIRE', KEYS[1], ARGV[3])
 redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3])
 redis.call('DEL', KEYS[3])
-return 1`
+return 1`;
 
 /** A job as it is stored, with whether a worker holds its lock. */
 export interface StoredJob {
-  job: BackfillJob
-  locked: boolean
+  job: BackfillJob;
+  locked: boolean;
 }
 
 /** Reads jobs by ID, in the same order; `null` for IDs without a job. */
 export async function readJobs(
   redis: Redis,
-  ids: readonly string[],
+  ids: readonly string[]
 ): Promise<(StoredJob | null)[]> {
   if (ids.length === 0) {
-    return []
+    return [];
   }
 
   const [jobs, locks] = await Promise.all([
     redis.mget<(BackfillJob | null)[]>(...ids.map(jobKey)),
     redis.mget<(unknown | null)[]>(...ids.map(lockKey)),
-  ])
+  ]);
 
   return jobs.map((job, index) =>
-    job ? { job, locked: locks[index] != null } : null,
-  )
+    job ? { job, locked: locks[index] != null } : null
+  );
 }
 
 /** The version of a job; 0 for one saved before versions existed. */
 function getVersion(job: BackfillJob): number {
-  return job.version ?? 0
+  return job.version ?? 0;
 }
 
 /** The job as it is written next: with its version incremented. */
 function nextVersion(job: BackfillJob): BackfillJob {
-  return { ...job, version: getVersion(job) + 1 }
+  return { ...job, version: getVersion(job) + 1 };
 }
 
 /**
@@ -183,30 +184,30 @@ function nextVersion(job: BackfillJob): BackfillJob {
 export async function enqueueJob(
   redis: Redis,
   job: BackfillJob,
-  current: BackfillJob | null,
+  current: BackfillJob | null
 ): Promise<BackfillJob | null> {
   const saved: BackfillJob = {
     ...job,
     version: current ? getVersion(current) + 1 : 1,
-  }
+  };
   const queued = await redis.eval<[string, string, number, string], number>(
     ENQUEUE_SCRIPT,
     [jobKey(job.id), REDIS_KEYS.VIDEO_BACKFILL_QUEUE, lockKey(job.id)],
     [
-      current ? String(getVersion(current)) : '',
+      current ? String(getVersion(current)) : "",
       JSON.stringify(saved),
       BACKFILL_JOB_TTL_SECONDS,
       job.id,
-    ],
-  )
+    ]
+  );
 
-  return queued === 1 ? saved : null
+  return queued === 1 ? saved : null;
 }
 
 export interface ClaimJobOptions {
   /** How long the claim is locked, in seconds. */
-  leaseSeconds: number
-  now: Temporal.Instant
+  leaseSeconds: number;
+  now: Temporal.Instant;
 }
 
 /**
@@ -217,9 +218,9 @@ export interface ClaimJobOptions {
  */
 export async function claimJob(
   redis: Redis,
-  { leaseSeconds, now }: ClaimJobOptions,
+  { leaseSeconds, now }: ClaimJobOptions
 ): Promise<BackfillClaim | null> {
-  const token = crypto.randomUUID()
+  const token = crypto.randomUUID();
   const reply = await redis.eval<
     [string, number, string, number],
     BackfillJob | string | null
@@ -230,18 +231,19 @@ export async function claimJob(
       REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX,
       REDIS_KEYS.VIDEO_BACKFILL_LOCK_PREFIX,
     ],
-    [token, leaseSeconds, now.toString(), BACKFILL_JOB_TTL_SECONDS],
-  )
+    [token, leaseSeconds, now.toString(), BACKFILL_JOB_TTL_SECONDS]
+  );
 
   if (reply == null) {
-    return null
+    return null;
   }
 
   // `@upstash/redis` parses the JSON of the reply unless it was created
   // without automatic deserialization.
-  const job: BackfillJob = typeof reply === 'string' ? JSON.parse(reply) : reply
+  const job: BackfillJob =
+    typeof reply === "string" ? JSON.parse(reply) : reply;
 
-  return { job, token }
+  return { job, token };
 }
 
 /** Runs a write of a claimed job, with its version incremented. */
@@ -250,30 +252,30 @@ async function writeClaimed(
   script: string,
   keys: string[],
   args: (job: string) => unknown[],
-  job: BackfillJob,
+  job: BackfillJob
 ): Promise<BackfillWriteResult> {
-  const saved = nextVersion(job)
+  const saved = nextVersion(job);
   const reply = await redis.eval<unknown[], number>(
     script,
     keys,
-    args(JSON.stringify(saved)),
-  )
+    args(JSON.stringify(saved))
+  );
 
-  return reply === 1 ? { job: saved, status: 'saved' } : { status: 'lost' }
+  return reply === 1 ? { job: saved, status: "saved" } : { status: "lost" };
 }
 
 /** Saves a claimed job with {@link SAVE_SCRIPT}, and keeps it claimed. */
 export function saveJob(
   redis: Redis,
-  { job, token }: BackfillClaim,
+  { job, token }: BackfillClaim
 ): Promise<BackfillWriteResult> {
   return writeClaimed(
     redis,
     SAVE_SCRIPT,
     [jobKey(job.id), lockKey(job.id)],
     (value) => [token, value, BACKFILL_JOB_TTL_SECONDS],
-    job,
-  )
+    job
+  );
 }
 
 /**
@@ -283,27 +285,27 @@ export function saveJob(
 export function finishJob(
   redis: Redis,
   { job, token }: BackfillClaim,
-  copies: readonly string[] = [],
+  copies: readonly string[] = []
 ): Promise<BackfillWriteResult> {
   return writeClaimed(
     redis,
     FINISH_SCRIPT,
     [jobKey(job.id), lockKey(job.id), ...copies],
     (value) => [token, value, BACKFILL_JOB_TTL_SECONDS],
-    job,
-  )
+    job
+  );
 }
 
 /** Puts a claimed job back in the queue with {@link REQUEUE_SCRIPT}. */
 export function requeueJob(
   redis: Redis,
-  { job, token }: BackfillClaim,
+  { job, token }: BackfillClaim
 ): Promise<BackfillWriteResult> {
   return writeClaimed(
     redis,
     REQUEUE_SCRIPT,
     [REDIS_KEYS.VIDEO_BACKFILL_QUEUE, jobKey(job.id), lockKey(job.id)],
     (value) => [job.id, value, BACKFILL_JOB_TTL_SECONDS, token],
-    job,
-  )
+    job
+  );
 }

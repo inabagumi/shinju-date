@@ -1,9 +1,9 @@
-import type { VideoKindFilter } from './video-kind-filter'
+import type { VideoKindFilter } from "./video-kind-filter";
 
 interface VideosQueryKeyParams {
-  kind: VideoKindFilter
-  query: string
-  talentIds: readonly string[]
+  kind: VideoKindFilter;
+  query: string;
+  talentIds: readonly string[];
 }
 
 /**
@@ -12,20 +12,20 @@ interface VideosQueryKeyParams {
  */
 export const queryKeys = {
   /** お知らせのバナー */
-  announcement: () => ['announcement'] as const,
+  announcement: () => ["announcement"] as const,
   /** ホームの配信中・新着動画・ショート */
-  dashboardVideos: () => ['dashboard-videos'] as const,
+  dashboardVideos: () => ["dashboard-videos"] as const,
   /** 検索モーダルのおすすめの検索キーワード */
   searchModalRecommendedQueries: () =>
-    ['search-modal', 'recommended-queries'] as const,
+    ["search-modal", "recommended-queries"] as const,
   /** 検索モーダルのサジェスト。入力の文字ごとにキャッシュする */
   searchModalSuggestions: (query: string) =>
-    ['search-modal', 'suggestions', query] as const,
+    ["search-modal", "suggestions", query] as const,
   /** 検索モーダルでタレントの候補に使うタレントの一覧 */
-  searchModalTalents: () => ['search-modal', 'talents'] as const,
+  searchModalTalents: () => ["search-modal", "talents"] as const,
   /** ホームの配信予定 */
-  upcomingVideos: () => ['upcoming-videos'] as const,
+  upcomingVideos: () => ["upcoming-videos"] as const,
   /** 動画の一覧（検索の結果） */
   videos: ({ kind, query, talentIds }: VideosQueryKeyParams) =>
-    ['videos', { kind, query, talentIds }] as const,
-}
+    ["videos", { kind, query, talentIds }] as const,
+};

@@ -5,9 +5,10 @@ import Form, {
   Label,
   SubmitButton,
   SuccessMessage,
-} from '@/components/form'
-import { Panel } from '@/components/panel'
-import { updateUserPasswordAction } from '../_actions'
+} from "@/components/form";
+import { Panel } from "@/components/panel";
+
+import { updateUserPasswordAction } from "../_actions";
 
 export function PasswordUpdateForm() {
   return (
@@ -54,5 +55,5 @@ export function PasswordUpdateForm() {
         <SubmitButton>パスワードを更新</SubmitButton>
       </Form>
     </Panel>
-  )
+  );
 }

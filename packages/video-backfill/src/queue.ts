@@ -1,4 +1,5 @@
-import type { Redis } from '@upstash/redis'
+import type { Redis } from "@upstash/redis";
+
 import {
   BACKFILL_MAX_ATTEMPTS,
   createRequestedJob,
@@ -6,8 +7,8 @@ import {
   moveJob,
   withFailure,
   withPage,
-} from './jobs.js'
-import { getBackfillJobId, getLeaseSeconds } from './keys.js'
+} from "./jobs.js";
+import { getBackfillJobId, getLeaseSeconds } from "./keys.js";
 import {
   claimJob,
   enqueueJob,
@@ -15,7 +16,7 @@ import {
   readJobs,
   requeueJob,
   saveJob,
-} from './scripts.js'
+} from "./scripts.js";
 import type {
   BackfillClaim,
   BackfillFailureOptions,
@@ -25,7 +26,7 @@ import type {
   BackfillRequest,
   BackfillWriteResult,
   EnqueueResult,
-} from './types.js'
+} from "./types.js";
 
 /**
  * Queue of backfill jobs in Redis, one job per platform account.
@@ -45,11 +46,11 @@ import type {
  */
 export class BackfillQueue {
   /** How long a claim is locked, in seconds. */
-  readonly leaseSeconds: number
+  readonly leaseSeconds: number;
   /** Failures in a row that a job may have before it is given up. */
-  readonly maxAttempts: number
-  readonly #finishedJobKeys: BackfillQueueOptions['finishedJobKeys']
-  readonly #redis: Redis
+  readonly maxAttempts: number;
+  readonly #finishedJobKeys: BackfillQueueOptions["finishedJobKeys"];
+  readonly #redis: Redis;
 
   constructor(
     redis: Redis,
@@ -57,28 +58,28 @@ export class BackfillQueue {
       finishedJobKeys,
       maxAttempts = BACKFILL_MAX_ATTEMPTS,
       maxRunSeconds,
-    }: BackfillQueueOptions = {},
+    }: BackfillQueueOptions = {}
   ) {
-    this.leaseSeconds = getLeaseSeconds(maxRunSeconds)
-    this.maxAttempts = maxAttempts
-    this.#finishedJobKeys = finishedJobKeys
-    this.#redis = redis
+    this.leaseSeconds = getLeaseSeconds(maxRunSeconds);
+    this.maxAttempts = maxAttempts;
+    this.#finishedJobKeys = finishedJobKeys;
+    this.#redis = redis;
   }
 
   /** Gets jobs by ID, in the same order; `null` for IDs without a job. */
   async getJobs(
     ids: readonly string[],
-    now: Temporal.Instant = Temporal.Now.instant(),
+    now: Temporal.Instant = Temporal.Now.instant()
   ): Promise<(BackfillJobState | null)[]> {
-    const stored = await readJobs(this.#redis, ids)
+    const stored = await readJobs(this.#redis, ids);
 
     return stored.map(
       (entry) =>
         entry && {
           ...getJobActivity(entry.job, { locked: entry.locked, now }),
           job: entry.job,
-        },
-    )
+        }
+    );
   }
 
   /**
@@ -88,28 +89,28 @@ export class BackfillQueue {
    */
   async enqueue(
     request: BackfillRequest,
-    now: Temporal.Instant = Temporal.Now.instant(),
+    now: Temporal.Instant = Temporal.Now.instant()
   ): Promise<EnqueueResult> {
-    const id = getBackfillJobId(request.provider, request.accountId)
-    const [current] = await this.getJobs([id], now)
+    const id = getBackfillJobId(request.provider, request.accountId);
+    const [current] = await this.getJobs([id], now);
 
     if (current?.active) {
-      return { enqueued: false, job: current.job }
+      return { enqueued: false, job: current.job };
     }
 
     const queued = await enqueueJob(
       this.#redis,
       createRequestedJob(request, current?.job ?? null, now),
-      current?.job ?? null,
-    )
+      current?.job ?? null
+    );
 
     if (queued) {
-      return { enqueued: true, job: queued }
+      return { enqueued: true, job: queued };
     }
 
-    const [latest] = await this.getJobs([id], now)
+    const [latest] = await this.getJobs([id], now);
 
-    return { enqueued: false, job: latest?.job ?? null }
+    return { enqueued: false, job: latest?.job ?? null };
   }
 
   /**
@@ -117,9 +118,9 @@ export class BackfillQueue {
    * marks it `running`, in one call to Redis; `null` when the queue is empty.
    */
   async claim(
-    now: Temporal.Instant = Temporal.Now.instant(),
+    now: Temporal.Instant = Temporal.Now.instant()
   ): Promise<BackfillClaim | null> {
-    return claimJob(this.#redis, { leaseSeconds: this.leaseSeconds, now })
+    return claimJob(this.#redis, { leaseSeconds: this.leaseSeconds, now });
   }
 
   /**
@@ -132,22 +133,22 @@ export class BackfillQueue {
   async recordPage(
     { job, token }: BackfillClaim,
     page: BackfillPage,
-    now: Temporal.Instant = Temporal.Now.instant(),
+    now: Temporal.Instant = Temporal.Now.instant()
   ): Promise<BackfillWriteResult> {
-    const progressed = withPage(job, page)
+    const progressed = withPage(job, page);
 
     if (page.done) {
-      return this.#finish({ job: progressed, token }, 'complete', now)
+      return this.#finish({ job: progressed, token }, "complete", now);
     }
 
-    const saved = moveJob(progressed, 'recordPage', now)
+    const saved = moveJob(progressed, "recordPage", now);
 
     return saveJob(this.#redis, { job: saved, token }).catch(async (error) => {
       // Otherwise the job would stay claimed until its lease expires.
-      await this.requeue({ job: progressed, token }, now).catch(() => {})
+      await this.requeue({ job: progressed, token }, now).catch(() => {});
 
-      throw error
-    })
+      throw error;
+    });
   }
 
   /**
@@ -160,13 +161,13 @@ export class BackfillQueue {
     { job, token }: BackfillClaim,
     error: unknown,
     { permanent = false }: BackfillFailureOptions = {},
-    now: Temporal.Instant = Temporal.Now.instant(),
+    now: Temporal.Instant = Temporal.Now.instant()
   ): Promise<BackfillWriteResult> {
-    const failed = withFailure(job, error)
+    const failed = withFailure(job, error);
 
     return permanent || failed.attempts >= this.maxAttempts
-      ? this.#finish({ job: failed, token }, 'fail', now)
-      : this.requeue({ job: failed, token }, now)
+      ? this.#finish({ job: failed, token }, "fail", now)
+      : this.requeue({ job: failed, token }, now);
   }
 
   /**
@@ -175,25 +176,25 @@ export class BackfillQueue {
    */
   async requeue(
     { job, token }: BackfillClaim,
-    now: Temporal.Instant = Temporal.Now.instant(),
+    now: Temporal.Instant = Temporal.Now.instant()
   ): Promise<BackfillWriteResult> {
-    const pending = moveJob(job, 'requeue', now)
+    const pending = moveJob(job, "requeue", now);
 
-    return requeueJob(this.#redis, { job: pending, token })
+    return requeueJob(this.#redis, { job: pending, token });
   }
 
   /** Saves a job as `done` or `failed`, with its copies, and releases it. */
   #finish(
     { job, token }: BackfillClaim,
-    operation: 'complete' | 'fail',
-    now: Temporal.Instant,
+    operation: "complete" | "fail",
+    now: Temporal.Instant
   ): Promise<BackfillWriteResult> {
-    const finished = moveJob(job, operation, now)
+    const finished = moveJob(job, operation, now);
 
     return finishJob(
       this.#redis,
       { job: finished, token },
-      this.#finishedJobKeys?.(finished),
-    )
+      this.#finishedJobKeys?.(finished)
+    );
   }
 }

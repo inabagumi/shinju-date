@@ -1,145 +1,150 @@
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { useState } from 'react'
-import { describe, expect, test, vi } from 'vitest'
-import ToggleSwitch from './toggle-switch'
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { useState } from "react";
+import { describe, expect, test, vi } from "vitest";
+
+import ToggleSwitch from "./toggle-switch";
 
 interface ControlledToggleSwitchProps {
-  defaultChecked?: boolean
-  onChange?: (checked: boolean) => void
+  defaultChecked?: boolean;
+  onChange?: (checked: boolean) => void;
 }
 
 function ControlledToggleSwitch({
   defaultChecked = false,
   onChange,
 }: ControlledToggleSwitchProps) {
-  const [checked, setChecked] = useState(defaultChecked)
+  const [checked, setChecked] = useState(defaultChecked);
 
   return (
     <ToggleSwitch
       checked={checked}
       label="メンテナンスモード"
       onChange={(nextChecked) => {
-        setChecked(nextChecked)
-        onChange?.(nextChecked)
+        setChecked(nextChecked);
+        onChange?.(nextChecked);
       }}
     />
-  )
+  );
 }
 
-describe('ToggleSwitch', () => {
-  test('renders a switch with the label and the checked state', () => {
+describe("ToggleSwitch", () => {
+  test("renders a switch with the label and the checked state", () => {
     const { rerender } = render(
-      <ToggleSwitch checked={false} label="メンテナンスモード" />,
-    )
+      <ToggleSwitch checked={false} label="メンテナンスモード" />
+    );
 
-    const toggle = screen.getByRole('switch', { name: 'メンテナンスモード' })
+    const toggle = screen.getByRole("switch", { name: "メンテナンスモード" });
 
-    expect(toggle).toHaveAttribute('aria-checked', 'false')
-    expect(toggle).toHaveAttribute('type', 'button')
+    expect(toggle).toHaveAttribute("aria-checked", "false");
+    expect(toggle).toHaveAttribute("type", "button");
 
-    rerender(<ToggleSwitch checked label="メンテナンスモード" />)
+    rerender(<ToggleSwitch checked label="メンテナンスモード" />);
 
-    expect(toggle).toHaveAttribute('aria-checked', 'true')
-  })
+    expect(toggle).toHaveAttribute("aria-checked", "true");
+  });
 
-  test('calls onChange with the opposite of checked on click', async () => {
-    const user = userEvent.setup()
-    const onChange = vi.fn()
+  test("calls onChange with the opposite of checked on click", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
     const { rerender } = render(
       <ToggleSwitch
         checked={false}
         label="メンテナンスモード"
         onChange={onChange}
-      />,
-    )
+      />
+    );
 
-    await user.click(screen.getByRole('switch', { name: 'メンテナンスモード' }))
+    await user.click(
+      screen.getByRole("switch", { name: "メンテナンスモード" })
+    );
 
-    expect(onChange).toHaveBeenCalledExactlyOnceWith(true)
+    expect(onChange).toHaveBeenCalledExactlyOnceWith(true);
 
-    onChange.mockClear()
+    onChange.mockClear();
     rerender(
-      <ToggleSwitch checked label="メンテナンスモード" onChange={onChange} />,
-    )
+      <ToggleSwitch checked label="メンテナンスモード" onChange={onChange} />
+    );
 
-    await user.click(screen.getByRole('switch', { name: 'メンテナンスモード' }))
+    await user.click(
+      screen.getByRole("switch", { name: "メンテナンスモード" })
+    );
 
-    expect(onChange).toHaveBeenCalledExactlyOnceWith(false)
-  })
+    expect(onChange).toHaveBeenCalledExactlyOnceWith(false);
+  });
 
-  test('toggles aria-checked when the parent updates checked', async () => {
-    const user = userEvent.setup()
-    render(<ControlledToggleSwitch />)
+  test("toggles aria-checked when the parent updates checked", async () => {
+    const user = userEvent.setup();
+    render(<ControlledToggleSwitch />);
 
-    const toggle = screen.getByRole('switch', { name: 'メンテナンスモード' })
+    const toggle = screen.getByRole("switch", { name: "メンテナンスモード" });
 
-    await user.click(toggle)
+    await user.click(toggle);
 
-    expect(toggle).toHaveAttribute('aria-checked', 'true')
+    expect(toggle).toHaveAttribute("aria-checked", "true");
 
-    await user.click(toggle)
+    await user.click(toggle);
 
-    expect(toggle).toHaveAttribute('aria-checked', 'false')
-  })
+    expect(toggle).toHaveAttribute("aria-checked", "false");
+  });
 
-  test('toggles with the Space and Enter keys', async () => {
-    const user = userEvent.setup()
-    const onChange = vi.fn()
-    render(<ControlledToggleSwitch onChange={onChange} />)
+  test("toggles with the Space and Enter keys", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ControlledToggleSwitch onChange={onChange} />);
 
-    const toggle = screen.getByRole('switch', { name: 'メンテナンスモード' })
+    const toggle = screen.getByRole("switch", { name: "メンテナンスモード" });
 
-    await user.tab()
+    await user.tab();
 
-    expect(toggle).toHaveFocus()
+    expect(toggle).toHaveFocus();
 
-    await user.keyboard(' ')
+    await user.keyboard(" ");
 
-    expect(toggle).toHaveAttribute('aria-checked', 'true')
+    expect(toggle).toHaveAttribute("aria-checked", "true");
 
-    await user.keyboard('{Enter}')
+    await user.keyboard("{Enter}");
 
-    expect(toggle).toHaveAttribute('aria-checked', 'false')
-    expect(onChange.mock.calls).toEqual([[true], [false]])
-  })
+    expect(toggle).toHaveAttribute("aria-checked", "false");
+    expect(onChange.mock.calls).toEqual([[true], [false]]);
+  });
 
-  test('does not toggle when disabled', async () => {
-    const user = userEvent.setup()
-    const onChange = vi.fn()
+  test("does not toggle when disabled", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
     render(
       <ToggleSwitch
         checked={false}
         disabled
         label="メンテナンスモード"
         onChange={onChange}
-      />,
-    )
+      />
+    );
 
-    const toggle = screen.getByRole('switch', { name: 'メンテナンスモード' })
+    const toggle = screen.getByRole("switch", { name: "メンテナンスモード" });
 
-    expect(toggle).toBeDisabled()
+    expect(toggle).toBeDisabled();
 
-    await user.click(toggle)
-    await user.tab()
+    await user.click(toggle);
+    await user.tab();
 
     // 無効のときは、フォーカスも移らない
-    expect(toggle).not.toHaveFocus()
+    expect(toggle).not.toHaveFocus();
 
-    await user.keyboard(' {Enter}')
+    await user.keyboard(" {Enter}");
 
-    expect(onChange).not.toHaveBeenCalled()
-    expect(toggle).toHaveAttribute('aria-checked', 'false')
-  })
+    expect(onChange).not.toHaveBeenCalled();
+    expect(toggle).toHaveAttribute("aria-checked", "false");
+  });
 
-  test('works without onChange', async () => {
-    const user = userEvent.setup()
-    render(<ToggleSwitch checked={false} label="メンテナンスモード" />)
+  test("works without onChange", async () => {
+    const user = userEvent.setup();
+    render(<ToggleSwitch checked={false} label="メンテナンスモード" />);
 
-    const toggle = screen.getByRole('switch', { name: 'メンテナンスモード' })
+    const toggle = screen.getByRole("switch", { name: "メンテナンスモード" });
 
-    await user.click(toggle)
+    await user.click(toggle);
 
-    expect(toggle).toHaveAttribute('aria-checked', 'false')
-  })
-})
+    expect(toggle).toHaveAttribute("aria-checked", "false");
+  });
+});

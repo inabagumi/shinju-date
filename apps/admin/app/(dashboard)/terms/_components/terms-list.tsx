@@ -1,4 +1,4 @@
-import { range } from '@shinju-date/helpers'
+import { range } from "@shinju-date/helpers";
 import {
   Button,
   EmptyState,
@@ -9,25 +9,27 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@shinju-date/ui'
-import { BookOpen } from 'lucide-react'
-import { Fragment } from 'react'
-import { SearchInput } from '@/components/search-input'
-import { TableSkeleton } from '@/components/table-skeleton'
-import type { TermGroup } from '../_lib/group-terms'
-import { DeleteTermButton } from './delete-term-button'
-import { TermModal } from './term-modal'
+} from "@shinju-date/ui";
+import { BookOpen } from "lucide-react";
+import { Fragment } from "react";
+
+import { SearchInput } from "@/components/search-input";
+import { TableSkeleton } from "@/components/table-skeleton";
+
+import type { TermGroup } from "../_lib/group-terms";
+import { DeleteTermButton } from "./delete-term-button";
+import { TermModal } from "./term-modal";
 
 interface Term {
-  id: string
-  term: string
-  readings: string[]
-  synonyms: string[]
+  id: string;
+  term: string;
+  readings: string[];
+  synonyms: string[];
 }
 
 /** 頭文字のグループの行の ID。索引のリンク先にする */
 function getGroupId(group: string): string {
-  return `group-${group}`
+  return `group-${group}`;
 }
 
 /**
@@ -44,14 +46,14 @@ export function TermsToolbar() {
       />
       <TermModal />
     </div>
-  )
+  );
 }
 
 interface TermsListProps {
   /** 検索と頭文字のグループ分けを済ませた用語 */
-  groups: TermGroup<Term>[]
+  groups: TermGroup<Term>[];
   /** URL の `search`。前後の空白を取り除いたもの */
-  search: string | undefined
+  search: string | undefined;
 }
 
 /**
@@ -63,9 +65,9 @@ export function TermsList({ groups, search }: TermsListProps) {
     return (
       <EmptyState
         icon={<BookOpen />}
-        title={search ? '検索結果がありません。' : '用語がありません。'}
+        title={search ? "検索結果がありません。" : "用語がありません。"}
       />
-    )
+    );
   }
 
   return (
@@ -118,10 +120,10 @@ export function TermsList({ groups, search }: TermsListProps) {
                 <TableRow key={term.id}>
                   <TableCell className="font-semibold">{term.term}</TableCell>
                   <TableCell className="whitespace-normal text-muted">
-                    {term.readings.join('、') || '—'}
+                    {term.readings.join("、") || "—"}
                   </TableCell>
                   <TableCell className="whitespace-normal text-muted">
-                    {term.synonyms.join('、') || '—'}
+                    {term.synonyms.join("、") || "—"}
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-4">
@@ -136,7 +138,7 @@ export function TermsList({ groups, search }: TermsListProps) {
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
 
 /** 読み込み中の `TermsList`。頭文字の索引と、4列の表を並べる */
@@ -144,18 +146,18 @@ export function TermsListSkeleton() {
   return (
     <TableSkeleton
       columns={[
-        { cell: <Skeleton className="h-4 w-24" />, id: 'term' },
-        { cell: <Skeleton className="h-4 w-32" />, id: 'readings' },
-        { cell: <Skeleton className="h-4 w-40" />, id: 'synonyms' },
+        { cell: <Skeleton className="h-4 w-24" />, id: "term" },
+        { cell: <Skeleton className="h-4 w-32" />, id: "readings" },
+        { cell: <Skeleton className="h-4 w-40" />, id: "synonyms" },
         {
-          align: 'end',
+          align: "end",
           cell: (
             <div className="flex gap-4">
               <Skeleton className="h-7 w-14" />
               <Skeleton className="h-7 w-14" />
             </div>
           ),
-          id: 'actions',
+          id: "actions",
         },
       ]}
       filterBar={
@@ -167,5 +169,5 @@ export function TermsListSkeleton() {
       }
       rows={6}
     />
-  )
+  );
 }

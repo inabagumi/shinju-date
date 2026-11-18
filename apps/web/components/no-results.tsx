@@ -1,15 +1,16 @@
-import { Button } from '@shinju-date/ui'
-import Link from 'next/link'
-import RecommendedQueries from './recommended-queries'
+import { Button } from "@shinju-date/ui";
+import Link from "next/link";
+
+import RecommendedQueries from "./recommended-queries";
 
 interface NoResultsProps {
   /** 絞り込みを解除したページのパス。渡すと解除するリンクを出す */
-  clearFiltersHref?: string | undefined
+  clearFiltersHref?: string | undefined;
   /** 見つからなかったときに次に試すことの案内 */
-  hint?: string
-  message: string
-  recommendedQueries?: string[]
-  title?: string
+  hint?: string;
+  message: string;
+  recommendedQueries?: string[];
+  title?: string;
 }
 
 export default function NoResults({
@@ -48,5 +49,5 @@ export default function NoResults({
         </Button>
       </div>
     </div>
-  )
+  );
 }

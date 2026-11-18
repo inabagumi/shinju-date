@@ -87,10 +87,7 @@ jobs:
       redis:
         image: redis:8.4.0-bookworm@sha256:c22af04bb576503bf16b3e34a1fd2fd82de0f765afd866d2e380145e0af30d78
         options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 5
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 5
       serverless-redis-http:
         image: hiett/serverless-redis-http:0.0.10@sha256:65128347949bca511e448fd7238780d624573d74c22b79155a7563db19e9b678
         env:
@@ -100,10 +97,7 @@ jobs:
         ports:
           - 8079:80
         options: >-
-          --health-cmd "wget --spider -q http://127.0.0.1:80/"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
+          --health-cmd "wget --spider -q http://127.0.0.1:80/" --health-interval 5s --health-timeout 3s --health-retries 10
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

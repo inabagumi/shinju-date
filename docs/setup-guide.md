@@ -55,13 +55,13 @@ Docker を起動してから、リポジトリのルートで次のコマンド�
 
 このスクリプトは、次のことを順に行います。初回は Docker イメージを取得するため、数分かかる場合があります。
 
-| 順  | 行うこと                                                  | 実行するコマンド              | 説明                                                    |
-| --- | --------------------------------------------------------- | ----------------------------- | ------------------------------------------------------- |
-| 1   | 依存関係のインストール                                    | `pnpm install`                | monorepo のすべての依存関係を入れます                   |
-| 2   | Supabase の起動（初回は、マイグレーションとシードも適用） | `pnpm exec supabase start`    | [3. ローカルSupabase環境](#3-ローカルsupabase環境)      |
-| 3   | Redis の起動                                              | `docker compose up -d --wait` | [4. ローカルRedis環境](#4-ローカルredis環境)            |
-| 4   | 3つのアプリの `.env.local` の作成                         | （スクリプトの中で作ります）  | [5.1. `.env.local` ファイル](#51-envlocal-ファイル)     |
-| 5   | 内部パッケージの型定義（`.d.ts`）の生成                   | `pnpm typegen`                | TypeScript の型チェックと、エディタの自動補完に必要です |
+| 順 | 行うこと | 実行するコマンド | 説明 |
+| --- | --- | --- | --- |
+| 1 | 依存関係のインストール | `pnpm install` | monorepo のすべての依存関係を入れます |
+| 2 | Supabase の起動（初回は、マイグレーションとシードも適用） | `pnpm exec supabase start` | [3. ローカルSupabase環境](#3-ローカルsupabase環境) |
+| 3 | Redis の起動 | `docker compose up -d --wait` | [4. ローカルRedis環境](#4-ローカルredis環境) |
+| 4 | 3つのアプリの `.env.local` の作成 | （スクリプトの中で作ります） | [5.1. `.env.local` ファイル](#51-envlocal-ファイル) |
+| 5 | 内部パッケージの型定義（`.d.ts`）の生成 | `pnpm typegen` | TypeScript の型チェックと、エディタの自動補完に必要です |
 
 何度実行しても、同じ結果になります。Supabase と Redis が起動済みなら何もせず、すでにある `.env.local` は上書きしません。`.env.local` をサンプルから作り直すときは、`--force` を付けます。
 
@@ -262,12 +262,12 @@ Docker Composeが動作しない場合は、MSW（Mock Service Worker）を使�
 
 `./scripts/setup-dev.sh` は、3つのアプリ（`apps/web`、`apps/admin`、`apps/batch`）のそれぞれで、`.env.local.sample` を元に `.env.local` を作り、次の変数に、ローカルの Supabase と Redis の値を入れます。
 
-| 変数                            | 入れる値                                                 |
-| ------------------------------- | -------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | `pnpm exec supabase status -o env` の `API_URL`          |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `pnpm exec supabase status -o env` の `ANON_KEY`         |
-| `SUPABASE_SERVICE_ROLE_KEY`     | `pnpm exec supabase status -o env` の `SERVICE_ROLE_KEY` |
-| `UPSTASH_REDIS_REST_TOKEN`      | `config/dev-secrets.env` の `SRH_TOKEN`                  |
+| 変数 | 入れる値 |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | `pnpm exec supabase status -o env` の `API_URL` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `pnpm exec supabase status -o env` の `ANON_KEY` |
+| `SUPABASE_SERVICE_ROLE_KEY` | `pnpm exec supabase status -o env` の `SERVICE_ROLE_KEY` |
+| `UPSTASH_REDIS_REST_TOKEN` | `config/dev-secrets.env` の `SRH_TOKEN` |
 
 - サンプルにない変数は足しません（`apps/batch` のサンプルには、`NEXT_PUBLIC_SUPABASE_ANON_KEY` がありません）。
 - `apps/admin` と `apps/batch` では、`ENABLE_MSW=true` も有効にします。この2つのアプリは、YouTube と Twitch の API キー（`GOOGLE_API_KEY`、`TWITCH_CLIENT_ID`、`TWITCH_CLIENT_SECRET`）がないと、`ENABLE_MSW=true` でない限り起動しないためです。MSW が Supabase と Redis を模擬するのは、偽の URL（`https://fake.supabase.test`、`https://fake.upstash.test`）に送った通信だけなので、ローカルの Supabase と Redis にはそのままつながり、YouTube と Twitch の API だけがモックになります。本物の API キーを使うときは、キーを設定し、`ENABLE_MSW=true` の行を消してください。

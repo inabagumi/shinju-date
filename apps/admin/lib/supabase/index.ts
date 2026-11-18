@@ -1,12 +1,13 @@
-import type { default as DefaultDatabase } from '@shinju-date/database'
-import { createServerClient } from '@supabase/ssr'
-import type { SupabaseClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
-import { getSupabaseConfig } from '@/lib/supabase/config'
-import { withMockSessionCookie } from '@/lib/supabase/mock-session'
+import type { default as DefaultDatabase } from "@shinju-date/database";
+import { createServerClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
+
+import { getSupabaseConfig } from "@/lib/supabase/config";
+import { withMockSessionCookie } from "@/lib/supabase/mock-session";
 
 export type TypedSupabaseClient<Database = DefaultDatabase> =
-  SupabaseClient<Database>
+  SupabaseClient<Database>;
 
 /**
  * Creates a Supabase client for use in Server Components and Server Actions.
@@ -15,18 +16,18 @@ export type TypedSupabaseClient<Database = DefaultDatabase> =
 export async function createSupabaseServerClient<
   Database = DefaultDatabase,
 >(): Promise<SupabaseClient<Database>> {
-  const { cookieOptions, key, url } = getSupabaseConfig()
-  const cookieStore = await cookies()
+  const { cookieOptions, key, url } = getSupabaseConfig();
+  const cookieStore = await cookies();
 
   return createServerClient<Database>(url, key, {
     cookies: {
       getAll() {
-        return withMockSessionCookie(url, cookieStore.getAll())
+        return withMockSessionCookie(url, cookieStore.getAll());
       },
       setAll(cookiesToSet) {
         try {
           for (const { name, value, options } of cookiesToSet) {
-            cookieStore.set(name, value, { ...options, ...cookieOptions })
+            cookieStore.set(name, value, { ...options, ...cookieOptions });
           }
         } catch {
           // The `setAll` method was called from a Server Component.
@@ -35,5 +36,5 @@ export async function createSupabaseServerClient<
         }
       },
     },
-  })
+  });
 }

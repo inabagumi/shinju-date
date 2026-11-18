@@ -1,41 +1,43 @@
-import Link from 'next/link'
+import Link from "next/link";
+
 import {
   AUDIT_TARGET_TABLES,
   LEGACY_TALENTS_TARGET_TABLE,
-} from '@/lib/audit-log'
-import { getEntityName } from '../_lib/audit-log-details'
-import type { Log } from '../_lib/get-audit-logs'
+} from "@/lib/audit-log";
+
+import { getEntityName } from "../_lib/audit-log-details";
+import type { Log } from "../_lib/get-audit-logs";
 
 const getAdminPagePath = (table: string, id: string): string | null => {
   switch (table) {
     case AUDIT_TARGET_TABLES.TALENTS:
     case LEGACY_TALENTS_TARGET_TABLE:
-      return `/talents/${id}`
+      return `/talents/${id}`;
     case AUDIT_TARGET_TABLES.VIDEOS:
-      return `/videos/${id}`
+      return `/videos/${id}`;
     case AUDIT_TARGET_TABLES.TERMS:
-      return '/terms'
+      return "/terms";
     case AUDIT_TARGET_TABLES.FEATURE_REQUESTS:
-      return `/feedback/${id}`
+      return `/feedback/${id}`;
     default:
-      return null
+      return null;
   }
-}
+};
 
 export function AuditLogTarget({ log }: { log: Log }) {
-  const displayName = getEntityName(log.details) ?? log.target_record_id
+  const displayName = getEntityName(log.details) ?? log.target_record_id;
 
   if (!log.target_table || !displayName) {
-    return null
+    return null;
   }
 
-  const path = getAdminPagePath(log.target_table, log.target_record_id)
+  const path = getAdminPagePath(log.target_table, log.target_record_id);
 
   const content = (
     <code className="rounded-control bg-muted px-1.5 py-0.5 text-caption font-semibold">
       {displayName}
     </code>
-  )
+  );
 
   if (path) {
     return (
@@ -45,7 +47,7 @@ export function AuditLogTarget({ log }: { log: Log }) {
           {content}
         </Link>
       </div>
-    )
+    );
   }
 
   return (
@@ -53,5 +55,5 @@ export function AuditLogTarget({ log }: { log: Log }) {
       <span className="text-muted">{log.target_table}: </span>
       {content}
     </div>
-  )
+  );
 }

@@ -1,6 +1,8 @@
-import { Suspense } from 'react'
-import PageHeader from '@/components/page-header'
-import PageMain from '@/components/page-main'
+import { Suspense } from "react";
+
+import PageHeader from "@/components/page-header";
+import PageMain from "@/components/page-main";
+
 import {
   ScheduleDays,
   ScheduleDaysSkeleton,
@@ -9,7 +11,7 @@ import {
   ScheduleWeekNavigation,
   ScheduleWeekNavigationSkeleton,
   type ScheduleWeekSectionProps,
-} from './schedule-week'
+} from "./schedule-week";
 
 /**
  * `/schedule` と `/schedule/[date]` の中身。2つのルートの違いは「どの週か」の
@@ -22,7 +24,7 @@ export default function SchedulePageContent({
   return (
     <PageMain>
       <PageHeader
-        breadcrumbs={[{ name: '配信スケジュール' }]}
+        breadcrumbs={[{ name: "配信スケジュール" }]}
         title="配信スケジュール"
       />
 
@@ -38,5 +40,5 @@ export default function SchedulePageContent({
         <ScheduleDays params={params} />
       </Suspense>
     </PageMain>
-  )
+  );
 }

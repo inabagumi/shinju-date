@@ -1,16 +1,21 @@
-import { logger } from '@shinju-date/logger'
-import { twMerge } from '@shinju-date/ui'
-import { ChevronRight } from 'lucide-react'
-import { fetchTalentStreamStarts } from '@/lib/data/talents'
-import { WEEKDAYS } from '@/lib/date-heading'
+import { logger } from "@shinju-date/logger";
+import { twMerge } from "@shinju-date/ui";
+import { ChevronRight } from "lucide-react";
+
+import { fetchTalentStreamStarts } from "@/lib/data/talents";
+import { WEEKDAYS } from "@/lib/date-heading";
 import {
   countStreamsByWeekdayAndHour,
   getStreamCountLevel,
   STREAM_TENDENCY_DAYS,
   STREAM_TENDENCY_MIN_STREAMS,
   summarizeStreamTendency,
-} from '@/lib/stream-tendency'
-import { getShownTalent, type TalentPageParams } from '../_lib/get-shown-talent'
+} from "@/lib/stream-tendency";
+
+import {
+  getShownTalent,
+  type TalentPageParams,
+} from "../_lib/get-shown-talent";
 
 /**
  * The background of a cell for each level of `getStreamCountLevel`. It is
@@ -18,25 +23,25 @@ import { getShownTalent, type TalentPageParams } from '../_lib/get-shown-talent'
  * told apart in both the light and the dark themes.
  */
 const LEVEL_CLASS_NAMES = [
-  'bg-muted',
-  'bg-accent/25',
-  'bg-accent/50',
-  'bg-accent/75',
-  'bg-accent',
-] as const
+  "bg-muted",
+  "bg-accent/25",
+  "bg-accent/50",
+  "bg-accent/75",
+  "bg-accent",
+] as const;
 
 /**
  * The hours whose numbers are shown above the columns. The headings are read
  * out from the hidden text for every hour, as the browsers put a space between
  * a shown number and a hidden suffix.
  */
-const LABELED_HOURS = new Set([0, 6, 12, 18])
+const LABELED_HOURS = new Set([0, 6, 12, 18]);
 
-const HOURS = Array.from({ length: 24 }, (_, hour) => hour)
+const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
 interface StreamTendencyProps {
   /** The counts of `countStreamsByWeekdayAndHour` */
-  counts: number[][]
+  counts: number[][];
 }
 
 /**
@@ -55,14 +60,14 @@ interface StreamTendencyProps {
  */
 export function StreamTendency({ counts }: StreamTendencyProps) {
   const { busiestHour, busiestWeekday, max, total } =
-    summarizeStreamTendency(counts)
+    summarizeStreamTendency(counts);
 
   if (
     total < STREAM_TENDENCY_MIN_STREAMS ||
     busiestHour === null ||
     busiestWeekday === null
   ) {
-    return null
+    return null;
   }
 
   return (
@@ -130,21 +135,21 @@ export function StreamTendency({ counts }: StreamTendencyProps) {
                   <span className="sr-only">{weekday}曜日</span>
                 </th>
                 {HOURS.map((hour) => {
-                  const count = counts[weekdayIndex]?.[hour] ?? 0
+                  const count = counts[weekdayIndex]?.[hour] ?? 0;
 
                   return (
                     <td className="p-0" key={hour}>
                       <span
                         className={twMerge(
-                          'block aspect-square',
-                          LEVEL_CLASS_NAMES[getStreamCountLevel(count, max)],
+                          "block aspect-square",
+                          LEVEL_CLASS_NAMES[getStreamCountLevel(count, max)]
                         )}
                         data-testid="stream-tendency-cell"
                       >
                         <span className="sr-only">{count}回</span>
                       </span>
                     </td>
-                  )
+                  );
                 })}
               </tr>
             ))}
@@ -152,11 +157,11 @@ export function StreamTendency({ counts }: StreamTendencyProps) {
         </table>
       </details>
     </section>
-  )
+  );
 }
 
 interface TalentStreamTendencyProps {
-  params: TalentPageParams
+  params: TalentPageParams;
 }
 
 /**
@@ -167,19 +172,19 @@ interface TalentStreamTendencyProps {
 export async function TalentStreamTendency({
   params,
 }: TalentStreamTendencyProps) {
-  const talent = await getShownTalent(params)
-  let starts: string[]
+  const talent = await getShownTalent(params);
+  let starts: string[];
 
   try {
-    starts = await fetchTalentStreamStarts(talent.id)
+    starts = await fetchTalentStreamStarts(talent.id);
   } catch (error) {
-    logger.error('Failed to fetch the streams of the talent', {
+    logger.error("Failed to fetch the streams of the talent", {
       error,
       talentId: talent.id,
-    })
+    });
 
-    return null
+    return null;
   }
 
-  return <StreamTendency counts={countStreamsByWeekdayAndHour(starts)} />
+  return <StreamTendency counts={countStreamsByWeekdayAndHour(starts)} />;
 }

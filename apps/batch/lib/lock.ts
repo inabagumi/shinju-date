@@ -1,5 +1,6 @@
-import { REDIS_KEYS } from '@shinju-date/constants'
-import { redisClient } from './redis'
+import { REDIS_KEYS } from "@shinju-date/constants";
+
+import { redisClient } from "./redis";
 
 /**
  * Deletes the lock only if it still holds the value of the run that took
@@ -9,10 +10,10 @@ export const RELEASE_LOCK_SCRIPT = `-- batch:release-lock
 if redis.call('GET', KEYS[1]) == ARGV[1] then
   return redis.call('DEL', KEYS[1])
 end
-return 0`
+return 0`;
 
 function getLockKey(identifier: string): string {
-  return `${REDIS_KEYS.CRON_LOCK_PREFIX}${identifier}`
+  return `${REDIS_KEYS.CRON_LOCK_PREFIX}${identifier}`;
 }
 
 /**
@@ -23,15 +24,15 @@ function getLockKey(identifier: string): string {
  */
 export async function acquireLock(
   identifier: string,
-  ttlSeconds: number,
+  ttlSeconds: number
 ): Promise<string | null> {
-  const value = crypto.randomUUID()
+  const value = crypto.randomUUID();
   const result = await redisClient.set(getLockKey(identifier), value, {
     ex: ttlSeconds,
     nx: true,
-  })
+  });
 
-  return result === 'OK' ? value : null
+  return result === "OK" ? value : null;
 }
 
 /**
@@ -44,13 +45,13 @@ export async function acquireLock(
  */
 export async function releaseLock(
   identifier: string,
-  value: string,
+  value: string
 ): Promise<boolean> {
   const deleted = await redisClient.eval<[string], number>(
     RELEASE_LOCK_SCRIPT,
     [getLockKey(identifier)],
-    [value],
-  )
+    [value]
+  );
 
-  return deleted === 1
+  return deleted === 1;
 }

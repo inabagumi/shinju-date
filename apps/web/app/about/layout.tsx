@@ -1,15 +1,15 @@
-import SimpleDocument from '@/components/simple-document'
-import { createPageMetadata } from '@/lib/metadata'
-import { SITE_NAME } from '@/lib/site'
+import SimpleDocument from "@/components/simple-document";
+import { createPageMetadata } from "@/lib/metadata";
+import { SITE_NAME } from "@/lib/site";
 
-const TITLE = `${SITE_NAME}とは?`
+const TITLE = `${SITE_NAME}とは?`;
 
 export const metadata = createPageMetadata({
-  path: '/about',
+  path: "/about",
   title: TITLE,
-  type: 'article',
-})
+  type: "article",
+});
 
-export default function AboutLayout({ children }: LayoutProps<'/about'>) {
-  return <SimpleDocument title={TITLE}>{children}</SimpleDocument>
+export default function AboutLayout({ children }: LayoutProps<"/about">) {
+  return <SimpleDocument title={TITLE}>{children}</SimpleDocument>;
 }

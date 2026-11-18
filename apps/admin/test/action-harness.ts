@@ -1,7 +1,9 @@
-import type { User } from '@supabase/supabase-js'
-import { beforeEach, expect, vi } from 'vitest'
-import type { AuditAction, AuditLogEntry } from '@/lib/audit-log'
-import { type FakeSupabase, setupSupabase } from './supabase'
+import type { User } from "@supabase/supabase-js";
+import { beforeEach, expect, vi } from "vitest";
+
+import type { AuditAction, AuditLogEntry } from "@/lib/audit-log";
+
+import { type FakeSupabase, setupSupabase } from "./supabase";
 
 /**
  * The modules every Server Action talks to, replaced for the action tests.
@@ -27,50 +29,50 @@ const mocks = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
   revalidateTags: vi.fn(async () => {}),
   state: { supabase: null as FakeSupabase | null },
-}))
+}));
 
 function currentClient() {
   if (!mocks.state.supabase) {
-    throw new Error('Call setupActionTest() before running a Server Action.')
+    throw new Error("Call setupActionTest() before running a Server Action.");
   }
 
-  return mocks.state.supabase.client
+  return mocks.state.supabase.client;
 }
 
-vi.mock('@/lib/auth', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/auth')>()),
+vi.mock("@/lib/auth", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/auth")>()),
   requireAuthenticatedUser: mocks.requireAuthenticatedUser,
-}))
-vi.mock('@/lib/supabase', () => ({
+}));
+vi.mock("@/lib/supabase", () => ({
   createSupabaseServerClient: mocks.createSupabaseServerClient,
-}))
-vi.mock('@/lib/supabase/admin', () => ({
+}));
+vi.mock("@/lib/supabase/admin", () => ({
   getSupabaseAdminClient: () => currentClient(),
-}))
-vi.mock('@/lib/audit-log', () => ({
+}));
+vi.mock("@/lib/audit-log", () => ({
   createAuditLog: mocks.createAuditLog,
   createAuditLogs: mocks.createAuditLogs,
-}))
-vi.mock('@/lib/redis', () => ({ getRedisClient: mocks.getRedisClient }))
-vi.mock('next/cache', () => ({ revalidatePath: mocks.revalidatePath }))
-vi.mock('@shinju-date/web-cache', () => ({
+}));
+vi.mock("@/lib/redis", () => ({ getRedisClient: mocks.getRedisClient }));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
+vi.mock("@shinju-date/web-cache", () => ({
   revalidateTags: mocks.revalidateTags,
-}))
-vi.mock('@shinju-date/logger', () => ({ logger: mocks.logger }))
+}));
+vi.mock("@shinju-date/logger", () => ({ logger: mocks.logger }));
 
 /** The administrator that `signIn()` signs in by default. */
 export const TEST_USER = {
-  app_metadata: { role: 'admin' },
-  aud: 'authenticated',
-  created_at: '2024-01-01T00:00:00Z',
-  email: 'admin@example.com',
-  id: 'test-user-id',
+  app_metadata: { role: "admin" },
+  aud: "authenticated",
+  created_at: "2024-01-01T00:00:00Z",
+  email: "admin@example.com",
+  id: "test-user-id",
   user_metadata: {},
-} satisfies User
+} satisfies User;
 
 interface RevalidationExpectation {
-  paths?: string[]
-  tags?: string[][]
+  paths?: string[];
+  tags?: string[][];
 }
 
 /**
@@ -82,30 +84,30 @@ interface RevalidationExpectation {
  * Call it once at the top level of the test file.
  */
 export function setupActionTest() {
-  const supabase = setupSupabase()
+  const supabase = setupSupabase();
 
-  mocks.state.supabase = supabase
+  mocks.state.supabase = supabase;
 
   function signIn(user: Partial<User> = {}): void {
     mocks.requireAuthenticatedUser.mockResolvedValue({
       supabaseClient: supabase.client,
       user: { ...TEST_USER, ...user },
-    })
+    });
   }
 
   function signOut(): void {
-    mocks.requireAuthenticatedUser.mockResolvedValue(null)
+    mocks.requireAuthenticatedUser.mockResolvedValue(null);
   }
 
   beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.createAuditLog.mockImplementation(async () => {})
-    mocks.createAuditLogs.mockImplementation(async () => {})
-    mocks.createSupabaseServerClient.mockResolvedValue(supabase.client)
-    mocks.getRedisClient.mockImplementation(() => ({}))
-    mocks.revalidateTags.mockImplementation(async () => {})
-    signIn()
-  })
+    vi.clearAllMocks();
+    mocks.createAuditLog.mockImplementation(async () => {});
+    mocks.createAuditLogs.mockImplementation(async () => {});
+    mocks.createSupabaseServerClient.mockResolvedValue(supabase.client);
+    mocks.getRedisClient.mockImplementation(() => ({}));
+    mocks.revalidateTags.mockImplementation(async () => {});
+    signIn();
+  });
 
   return {
     /** `createAuditLog()` of `@/lib/audit-log`. */
@@ -125,8 +127,8 @@ export function setupActionTest() {
     ): void {
       expect(mocks.createAuditLog).toHaveBeenCalledWith(
         supabase.client,
-        ...args,
-      )
+        ...args
+      );
     },
     /**
      * Asserts that these audit log entries were recorded with one call of
@@ -136,19 +138,19 @@ export function setupActionTest() {
     expectAuditLogs(entries: AuditLogEntry[]): void {
       expect(mocks.createAuditLogs).toHaveBeenCalledExactlyOnceWith(
         supabase.client,
-        entries,
-      )
-      expect(mocks.createAuditLog).not.toHaveBeenCalled()
+        entries
+      );
+      expect(mocks.createAuditLog).not.toHaveBeenCalled();
     },
     /** Asserts that no audit log entry was recorded. */
     expectNoAuditLog(): void {
-      expect(mocks.createAuditLog).not.toHaveBeenCalled()
-      expect(mocks.createAuditLogs).not.toHaveBeenCalled()
+      expect(mocks.createAuditLog).not.toHaveBeenCalled();
+      expect(mocks.createAuditLogs).not.toHaveBeenCalled();
     },
     /** Asserts that nothing was revalidated. */
     expectNotRevalidated(): void {
-      expect(mocks.revalidatePath).not.toHaveBeenCalled()
-      expect(mocks.revalidateTags).not.toHaveBeenCalled()
+      expect(mocks.revalidatePath).not.toHaveBeenCalled();
+      expect(mocks.revalidateTags).not.toHaveBeenCalled();
     },
     /** Asserts that each of these paths and sets of tags was revalidated. */
     expectRevalidated({
@@ -156,11 +158,11 @@ export function setupActionTest() {
       tags = [],
     }: RevalidationExpectation): void {
       for (const path of paths) {
-        expect(mocks.revalidatePath).toHaveBeenCalledWith(path)
+        expect(mocks.revalidatePath).toHaveBeenCalledWith(path);
       }
 
       for (const tagSet of tags) {
-        expect(mocks.revalidateTags).toHaveBeenCalledWith(tagSet)
+        expect(mocks.revalidateTags).toHaveBeenCalledWith(tagSet);
       }
     },
     /** `getRedisClient()` of `@/lib/redis`; returns an empty object. */
@@ -179,7 +181,7 @@ export function setupActionTest() {
     signOut,
     /** The fake Supabase that both clients talk to. */
     supabase,
-  }
+  };
 }
 
-export type ActionTest = ReturnType<typeof setupActionTest>
+export type ActionTest = ReturnType<typeof setupActionTest>;

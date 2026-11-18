@@ -1,37 +1,37 @@
 {
-  "author": "Haneru Developers",
-  "dependencies": {
-    "@shinju-date/constants": "workspace:*",
-    "@shinju-date/database": "workspace:*"
-  },
+  "name": "@shinju-date/helpers",
+  "version": "1.0.0",
+  "private": true,
   "description": "",
-  "devDependencies": {
-    "@shinju-date/config": "workspace:*",
-    "@types/node": "catalog:",
-    "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "author": "Haneru Developers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git",
+    "directory": "packages/helpers"
   },
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "homepage": "https://shinju.date/",
-  "license": "MIT",
-  "name": "@shinju-date/helpers",
-  "private": true,
-  "repository": {
-    "directory": "packages/helpers",
-    "type": "git",
-    "url": "https://github.com/inabagumi/shinju-date.git"
-  },
   "scripts": {
     "build": "tsdown",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "type": "module",
-  "version": "1.0.0"
+  "dependencies": {
+    "@shinju-date/constants": "workspace:*",
+    "@shinju-date/database": "workspace:*"
+  },
+  "devDependencies": {
+    "@shinju-date/config": "workspace:*",
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
 }

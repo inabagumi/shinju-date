@@ -1,11 +1,13 @@
-import { expect, userEvent, within } from 'storybook/test'
-import preview from '#.storybook/preview'
-import { Input } from '../Input/Input'
-import { Select } from './Select'
+import { expect, userEvent, within } from "storybook/test";
+
+import preview from "#.storybook/preview";
+
+import { Input } from "../Input/Input";
+import { Select } from "./Select";
 
 const meta = preview.meta({
   args: {
-    'aria-label': '並び順',
+    "aria-label": "並び順",
     children: (
       <>
         <option value="published_at">公開日時が新しい順</option>
@@ -16,46 +18,46 @@ const meta = preview.meta({
   },
   argTypes: {
     disabled: {
-      control: 'boolean',
+      control: "boolean",
     },
     inputSize: {
-      control: 'select',
-      options: ['sm', 'md', 'lg'],
+      control: "select",
+      options: ["sm", "md", "lg"],
     },
     variant: {
-      control: 'select',
-      options: ['default', 'danger'],
+      control: "select",
+      options: ["default", "danger"],
     },
   },
   component: Select,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs'],
-  title: 'Components/Select',
-})
+  tags: ["autodocs"],
+  title: "Components/Select",
+});
 
 export const Default = meta.story({
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const select = canvas.getByRole('combobox', { name: '並び順' })
+    const canvas = within(canvasElement);
+    const select = canvas.getByRole("combobox", { name: "並び順" });
 
-    await userEvent.selectOptions(select, 'title')
-    await expect(select).toHaveValue('title')
+    await userEvent.selectOptions(select, "title");
+    await expect(select).toHaveValue("title");
   },
-})
+});
 
 export const ErrorState = meta.story({
   args: {
-    variant: 'danger',
+    variant: "danger",
   },
-})
+});
 
 export const Disabled = meta.story({
   args: {
     disabled: true,
   },
-})
+});
 
 export const Sizes = meta.story({
   render: (args) => (
@@ -65,7 +67,7 @@ export const Sizes = meta.story({
       <Select {...args} inputSize="lg" />
     </div>
   ),
-})
+});
 
 /** `Input` と並べても高さ・枠・角丸がそろう */
 export const NextToInput = meta.story({
@@ -75,4 +77,4 @@ export const NextToInput = meta.story({
       <Select {...args} />
     </div>
   ),
-})
+});

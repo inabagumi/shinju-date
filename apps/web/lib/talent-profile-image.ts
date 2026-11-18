@@ -1,10 +1,10 @@
-import type { ProfileImage, TalentListItem } from '@/lib/data/talents'
+import type { ProfileImage, TalentListItem } from "@/lib/data/talents";
 
 /** `TalentDetail` and `TalentListItem` both have the accounts */
 export type TalentAccounts = Pick<
   TalentListItem,
-  'twitch_users' | 'youtube_channels'
->
+  "twitch_users" | "youtube_channels"
+>;
 
 /**
  * The icon of a talent: the icon of a YouTube channel, then that of a Twitch
@@ -14,11 +14,11 @@ export type TalentAccounts = Pick<
  * way, so a talent with several of them always gets the same icon.
  */
 export function getTalentProfileImage(
-  talent: TalentAccounts,
+  talent: TalentAccounts
 ): ProfileImage | null {
-  const accounts = [...talent.youtube_channels, ...talent.twitch_users]
+  const accounts = [...talent.youtube_channels, ...talent.twitch_users];
 
   return (
     accounts.find((account) => account.profile_image)?.profile_image ?? null
-  )
+  );
 }

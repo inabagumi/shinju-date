@@ -1,11 +1,12 @@
-import { logger } from '@shinju-date/logger'
+import { logger } from "@shinju-date/logger";
 import {
   type ProfileImageSyncResult,
   type SavedYouTubeChannelIcon,
   type SyncYouTubeChannelIconOptions,
   syncYouTubeChannelIcon,
-} from '@shinju-date/scraper/youtube'
-import { getSupabaseAdminClient } from '@/lib/supabase/admin'
+} from "@shinju-date/scraper/youtube";
+
+import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 /**
  * YouTube チャンネルのアイコンを YouTube に合わせて保存・差し替える。
@@ -18,30 +19,30 @@ import { getSupabaseAdminClient } from '@/lib/supabase/admin'
  * @returns 同期結果。失敗した場合は `null`
  */
 export async function syncYouTubeChannelIconSafely(
-  channel: SyncYouTubeChannelIconOptions['channel'],
-  saved: SavedYouTubeChannelIcon,
+  channel: SyncYouTubeChannelIconOptions["channel"],
+  saved: SavedYouTubeChannelIcon
 ): Promise<ProfileImageSyncResult | null> {
   try {
     return await syncYouTubeChannelIcon({
       channel,
       saved,
       supabaseClient: getSupabaseAdminClient(),
-    })
+    });
   } catch (error) {
     // エラーオブジェクトをそのまま渡さず、名前とメッセージだけを記録する
-    logger.warn('YouTubeチャンネルのアイコンを同期できませんでした', {
+    logger.warn("YouTubeチャンネルのアイコンを同期できませんでした", {
       errorMessage: error instanceof Error ? error.message : String(error),
       errorName: error instanceof Error ? error.name : typeof error,
       youtubeChannelId: saved.youtube_channel_id,
-    })
+    });
 
-    return null
+    return null;
   }
 }
 
 /** アイコンに変更があったかどうか（失敗・変更なしは `false`） */
 export function hasProfileImageChanged(
-  result: ProfileImageSyncResult | null,
-): result is Exclude<ProfileImageSyncResult, 'unchanged'> {
-  return result !== null && result !== 'unchanged'
+  result: ProfileImageSyncResult | null
+): result is Exclude<ProfileImageSyncResult, "unchanged"> {
+  return result !== null && result !== "unchanged";
 }

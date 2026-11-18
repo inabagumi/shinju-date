@@ -1,4 +1,4 @@
-import { formatDateKey } from './format-date-key.js'
+import { formatDateKey } from "./format-date-key.js";
 
 /**
  * Get the Monday of the week for a given date.
@@ -22,8 +22,8 @@ import { formatDateKey } from './format-date-key.js'
  * ```
  */
 export function getMondayOfWeek(dateTime: Temporal.ZonedDateTime): string {
-  const dayOfWeek = dateTime.dayOfWeek // 1 = Monday, 7 = Sunday
-  const daysToSubtract = dayOfWeek - 1
-  const monday = dateTime.subtract({ days: daysToSubtract })
-  return formatDateKey(monday)
+  const dayOfWeek = dateTime.dayOfWeek; // 1 = Monday, 7 = Sunday
+  const daysToSubtract = dayOfWeek - 1;
+  const monday = dateTime.subtract({ days: daysToSubtract });
+  return formatDateKey(monday);
 }

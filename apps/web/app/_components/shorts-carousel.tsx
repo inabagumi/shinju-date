@@ -1,16 +1,17 @@
-'use client'
+"use client";
 
-import useEmblaCarousel from 'embla-carousel-react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
-import VideoCard, { VideoCardSkeleton } from '@/components/video-card'
-import type { Video } from '@/lib/data/videos'
+import useEmblaCarousel from "embla-carousel-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+
+import VideoCard, { VideoCardSkeleton } from "@/components/video-card";
+import type { Video } from "@/lib/data/videos";
 
 const SLIDE_CLASS_NAME =
-  'min-w-0 shrink-0 basis-[85%] md:basis-[calc(25%-1.125rem)]'
+  "min-w-0 shrink-0 basis-[85%] md:basis-[calc(25%-1.125rem)]";
 
 const NAVIGATION_BUTTON_CLASS_NAME =
-  'rounded-full border border-border bg-surface p-2 text-foreground shadow-overlay transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50'
+  "rounded-full border border-border bg-surface p-2 text-foreground shadow-overlay transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50";
 
 export function ShortsCarouselSkeleton() {
   return (
@@ -22,49 +23,49 @@ export function ShortsCarouselSkeleton() {
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 export default function ShortsCarousel({ videos }: { videos: Video[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: 'start',
-    containScroll: 'trimSnaps',
+    align: "start",
+    containScroll: "trimSnaps",
     dragFree: false,
     slidesToScroll: 1,
-  })
+  });
 
-  const [canScrollPrev, setCanScrollPrev] = useState(false)
-  const [canScrollNext, setCanScrollNext] = useState(false)
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
 
   const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev()
-  }, [emblaApi])
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
 
   const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext()
-  }, [emblaApi])
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
 
   const onSelect = useCallback(() => {
-    if (!emblaApi) return
-    setCanScrollPrev(emblaApi.canScrollPrev())
-    setCanScrollNext(emblaApi.canScrollNext())
-  }, [emblaApi])
+    if (!emblaApi) return;
+    setCanScrollPrev(emblaApi.canScrollPrev());
+    setCanScrollNext(emblaApi.canScrollNext());
+  }, [emblaApi]);
 
   useEffect(() => {
-    if (!emblaApi) return
+    if (!emblaApi) return;
 
-    onSelect()
-    emblaApi.on('select', onSelect)
-    emblaApi.on('reInit', onSelect)
+    onSelect();
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
 
     return () => {
-      emblaApi.off('select', onSelect)
-      emblaApi.off('reInit', onSelect)
-    }
-  }, [emblaApi, onSelect])
+      emblaApi.off("select", onSelect);
+      emblaApi.off("reInit", onSelect);
+    };
+  }, [emblaApi, onSelect]);
 
   if (videos.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -101,8 +102,8 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
               <div className={SLIDE_CLASS_NAME} key={video.id}>
                 <VideoCard
                   dateTimeFormatOptions={{
-                    dateStyle: 'short',
-                    timeStyle: 'short',
+                    dateStyle: "short",
+                    timeStyle: "short",
                   }}
                   value={video}
                   variant="short"
@@ -113,5 +114,5 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
         </div>
       </div>
     </div>
-  )
+  );
 }

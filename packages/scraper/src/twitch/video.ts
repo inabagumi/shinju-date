@@ -1,21 +1,22 @@
-import type { Tables } from '@shinju-date/database'
-import { toDBString } from '@shinju-date/temporal-fns'
-import { getTwitchVideoStatus } from '@shinju-date/twitch-api-client'
+import type { Tables } from "@shinju-date/database";
+import { toDBString } from "@shinju-date/temporal-fns";
+import { getTwitchVideoStatus } from "@shinju-date/twitch-api-client";
+
 import {
   DEFAULT_THUMBNAIL_HEIGHT,
   DEFAULT_THUMBNAIL_WIDTH,
   resolveThumbnailTemplateUrl,
   type ThumbnailSource,
-} from '../internal/thumbnails/index.js'
-import type { TwitchClip, TwitchStream, TwitchVideo } from './types.js'
+} from "../internal/thumbnails/index.js";
+import type { TwitchClip, TwitchStream, TwitchVideo } from "./types.js";
 
-export type TwitchVideoType = NonNullable<Tables<'twitch_videos'>['type']>
+export type TwitchVideoType = NonNullable<Tables<"twitch_videos">["type"]>;
 
 /** The `videos` columns that mirror what Twitch reports for a video. */
 export type TwitchVideoFields = Pick<
-  Tables<'videos'>,
-  'duration' | 'published_at' | 'status' | 'title'
->
+  Tables<"videos">,
+  "duration" | "published_at" | "status" | "title"
+>;
 
 /**
  * Maps a Helix video to the columns we keep in sync with Twitch.
@@ -24,11 +25,11 @@ export function toVideoFields(video: TwitchVideo): TwitchVideoFields {
   return {
     duration: video.duration,
     published_at: toDBString(
-      Temporal.Instant.from(video.published_at || video.created_at),
+      Temporal.Instant.from(video.published_at || video.created_at)
     ),
     status: getTwitchVideoStatus(video.type),
     title: video.title,
-  }
+  };
 }
 
 /**
@@ -38,9 +39,9 @@ export function toClipFields(clip: TwitchClip): TwitchVideoFields {
   return {
     duration: clip.duration,
     published_at: toDBString(Temporal.Instant.from(clip.created_at)),
-    status: getTwitchVideoStatus('clip'),
+    status: getTwitchVideoStatus("clip"),
     title: clip.title,
-  }
+  };
 }
 
 /**
@@ -48,18 +49,18 @@ export function toClipFields(clip: TwitchClip): TwitchVideoFields {
  */
 export function toLiveFields(stream: TwitchStream): TwitchVideoFields {
   return {
-    duration: 'P0D',
+    duration: "P0D",
     published_at: toDBString(Temporal.Instant.from(stream.started_at)),
-    status: 'LIVE',
+    status: "LIVE",
     title: stream.title,
-  }
+  };
 }
 
 /**
  * Twitch serves this placeholder while a VOD's own thumbnail is still being
  * generated.
  */
-const PROCESSING_THUMBNAIL_PATTERN = /\/_404\/404_processing_/
+const PROCESSING_THUMBNAIL_PATTERN = /\/_404\/404_processing_/;
 
 /**
  * Turns a Twitch thumbnail template URL into a downloadable image.
@@ -69,15 +70,15 @@ const PROCESSING_THUMBNAIL_PATTERN = /\/_404\/404_processing_/
  * after it, and neither should be stored as the video's thumbnail.
  */
 export function getThumbnailSource(
-  templateUrl: string,
+  templateUrl: string
 ): ThumbnailSource | null {
   if (!templateUrl || PROCESSING_THUMBNAIL_PATTERN.test(templateUrl)) {
-    return null
+    return null;
   }
 
   return {
     height: DEFAULT_THUMBNAIL_HEIGHT,
     url: resolveThumbnailTemplateUrl(templateUrl),
     width: DEFAULT_THUMBNAIL_WIDTH,
-  }
+  };
 }

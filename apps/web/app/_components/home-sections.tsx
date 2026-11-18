@@ -1,43 +1,45 @@
-'use client'
+"use client";
 
-import { useQuery } from '@tanstack/react-query'
-import { ChevronRight } from 'lucide-react'
+import { useQuery } from "@tanstack/react-query";
+import { ChevronRight } from "lucide-react";
+
 import {
   NavigationLink,
   NavigationLinkIcon,
-} from '@/components/navigation-link'
+} from "@/components/navigation-link";
 import VideoCardList, {
   VideoCardListSkeleton,
-} from '@/components/video-card-list'
+} from "@/components/video-card-list";
 import {
   fetchDashboardVideos,
   fetchUpcomingVideos,
   type UpcomingVideos,
   type Video,
-} from '@/lib/data/videos'
-import { queryKeys } from '@/lib/query-keys'
-import { getSchedulePath } from '@/lib/schedule'
+} from "@/lib/data/videos";
+import { queryKeys } from "@/lib/query-keys";
+import { getSchedulePath } from "@/lib/schedule";
+
 import HomeSection, {
   HomeSectionCount,
   HomeSectionCountSkeleton,
-} from './home-section'
-import ShortsCarousel, { ShortsCarouselSkeleton } from './shorts-carousel'
-import Timeline, { TimelineSkeleton } from './timeline'
+} from "./home-section";
+import ShortsCarousel, { ShortsCarouselSkeleton } from "./shorts-carousel";
+import Timeline, { TimelineSkeleton } from "./timeline";
 
 /** 新着動画は1段ぶん（PC 4列・タブレット 2列×2段・モバイル 4件）だけ表示する */
-const RECENT_VIDEOS_LIMIT = 4
+const RECENT_VIDEOS_LIMIT = 4;
 
 const DATE_TIME_FORMAT_OPTIONS = {
-  dateStyle: 'short',
-  timeStyle: 'short',
-} as const
+  dateStyle: "short",
+  timeStyle: "short",
+} as const;
 
-const REFETCH_INTERVAL = 60_000
+const REFETCH_INTERVAL = 60_000;
 
 export interface DashboardVideos {
-  live: Video[]
-  recent: Video[]
-  shorts: Video[]
+  live: Video[];
+  recent: Video[];
+  shorts: Video[];
 }
 
 /**
@@ -50,13 +52,13 @@ function useDashboardVideos(prefetchedData: DashboardVideos): DashboardVideos {
     queryFn: () => fetchDashboardVideos(),
     queryKey: queryKeys.dashboardVideos(),
     refetchInterval: REFETCH_INTERVAL,
-  })
+  });
 
-  return data
+  return data;
 }
 
 interface DashboardSectionProps {
-  prefetchedData: DashboardVideos
+  prefetchedData: DashboardVideos;
 }
 
 function LiveTitle() {
@@ -65,17 +67,17 @@ function LiveTitle() {
       <span aria-hidden="true" className="size-2.5 rounded-full bg-live" />
       配信中
     </>
-  )
+  );
 }
 
 /**
  * 配信中の動画。1件もないときはセクションごと表示しない。
  */
 export function LiveSection({ prefetchedData }: DashboardSectionProps) {
-  const { live } = useDashboardVideos(prefetchedData)
+  const { live } = useDashboardVideos(prefetchedData);
 
   if (live.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -90,7 +92,7 @@ export function LiveSection({ prefetchedData }: DashboardSectionProps) {
         variant="grid"
       />
     </HomeSection>
-  )
+  );
 }
 
 /** タイムラインの下に置く、週ごとのスケジュールへのリンク */
@@ -104,11 +106,11 @@ function ScheduleLink() {
         </NavigationLinkIcon>
       </NavigationLink>
     </p>
-  )
+  );
 }
 
 interface ScheduleSectionProps {
-  prefetchedData: UpcomingVideos
+  prefetchedData: UpcomingVideos;
 }
 
 /**
@@ -120,7 +122,7 @@ export function ScheduleSection({ prefetchedData }: ScheduleSectionProps) {
     queryFn: () => fetchUpcomingVideos(),
     queryKey: queryKeys.upcomingVideos(),
     refetchInterval: REFETCH_INTERVAL,
-  })
+  });
 
   return (
     <HomeSection
@@ -137,7 +139,7 @@ export function ScheduleSection({ prefetchedData }: ScheduleSectionProps) {
 
       <ScheduleLink />
     </HomeSection>
-  )
+  );
 }
 
 export function ScheduleSectionSkeleton() {
@@ -146,7 +148,7 @@ export function ScheduleSectionSkeleton() {
       <TimelineSkeleton />
       <ScheduleLink />
     </HomeSection>
-  )
+  );
 }
 
 function VideosLink() {
@@ -157,15 +159,15 @@ function VideosLink() {
         <ChevronRight />
       </NavigationLinkIcon>
     </NavigationLink>
-  )
+  );
 }
 
 /**
  * 直近の動画を1段ぶん表示し、続きは動画一覧へ案内する。
  */
 export function RecentSection({ prefetchedData }: DashboardSectionProps) {
-  const { recent } = useDashboardVideos(prefetchedData)
-  const values = recent.slice(0, RECENT_VIDEOS_LIMIT)
+  const { recent } = useDashboardVideos(prefetchedData);
+  const values = recent.slice(0, RECENT_VIDEOS_LIMIT);
 
   return (
     <HomeSection aside={<VideosLink />} title="新着動画">
@@ -180,7 +182,7 @@ export function RecentSection({ prefetchedData }: DashboardSectionProps) {
         <p className="text-body text-muted">新着動画はありません</p>
       )}
     </HomeSection>
-  )
+  );
 }
 
 export function RecentSectionSkeleton() {
@@ -192,17 +194,17 @@ export function RecentSectionSkeleton() {
         variant="row"
       />
     </HomeSection>
-  )
+  );
 }
 
 /**
  * ショートのカルーセル。1件もないときはセクションごと表示しない。
  */
 export function ShortsSection({ prefetchedData }: DashboardSectionProps) {
-  const { shorts } = useDashboardVideos(prefetchedData)
+  const { shorts } = useDashboardVideos(prefetchedData);
 
   if (shorts.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -212,7 +214,7 @@ export function ShortsSection({ prefetchedData }: DashboardSectionProps) {
     >
       <ShortsCarousel videos={shorts} />
     </HomeSection>
-  )
+  );
 }
 
 export function ShortsSectionSkeleton() {
@@ -220,5 +222,5 @@ export function ShortsSectionSkeleton() {
     <HomeSection aside={<HomeSectionCountSkeleton />} title="ショート">
       <ShortsCarouselSkeleton />
     </HomeSection>
-  )
+  );
 }

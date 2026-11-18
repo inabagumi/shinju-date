@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+
 import {
   Table,
   TableBody,
@@ -7,7 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from './Table'
+} from "./Table";
 
 function renderTable() {
   return render(
@@ -22,48 +23,48 @@ function renderTable() {
           <TableCell className="whitespace-normal">動画のタイトル</TableCell>
         </TableRow>
       </TableBody>
-    </Table>,
-  )
+    </Table>
+  );
 }
 
-describe('Table', () => {
-  it('scrolls horizontally inside the bordered container', () => {
-    renderTable()
+describe("Table", () => {
+  it("scrolls horizontally inside the bordered container", () => {
+    renderTable();
 
-    const table = screen.getByRole('table')
+    const table = screen.getByRole("table");
 
-    expect(table).toHaveClass('table-fixed')
+    expect(table).toHaveClass("table-fixed");
     expect(table.parentElement).toHaveClass(
-      'overflow-x-auto',
-      'rounded-container',
-      'border',
-    )
-  })
+      "overflow-x-auto",
+      "rounded-container",
+      "border"
+    );
+  });
 
-  it('lets keyboard users focus the scroll container', () => {
-    renderTable()
+  it("lets keyboard users focus the scroll container", () => {
+    renderTable();
 
-    const container = screen.getByRole('table').parentElement
+    const container = screen.getByRole("table").parentElement;
 
-    expect(container).toHaveAttribute('tabindex', '0')
-    expect(container).toHaveClass('focus-ring')
-  })
+    expect(container).toHaveAttribute("tabindex", "0");
+    expect(container).toHaveClass("focus-ring");
+  });
 
-  it('renders column headers with the column scope', () => {
-    renderTable()
+  it("renders column headers with the column scope", () => {
+    renderTable();
 
-    const header = screen.getByRole('columnheader', { name: 'タイトル' })
+    const header = screen.getByRole("columnheader", { name: "タイトル" });
 
-    expect(header).toHaveAttribute('scope', 'col')
-    expect(header).toHaveClass('text-caption', 'text-muted')
-  })
+    expect(header).toHaveAttribute("scope", "col");
+    expect(header).toHaveClass("text-caption", "text-muted");
+  });
 
-  it('lets cells opt in to wrapping', () => {
-    renderTable()
+  it("lets cells opt in to wrapping", () => {
+    renderTable();
 
-    const cell = screen.getByRole('cell', { name: '動画のタイトル' })
+    const cell = screen.getByRole("cell", { name: "動画のタイトル" });
 
-    expect(cell).toHaveClass('whitespace-normal')
-    expect(cell).not.toHaveClass('whitespace-nowrap')
-  })
-})
+    expect(cell).toHaveClass("whitespace-normal");
+    expect(cell).not.toHaveClass("whitespace-nowrap");
+  });
+});

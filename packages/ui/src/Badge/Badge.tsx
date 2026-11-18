@@ -1,12 +1,13 @@
-import { cva, type VariantProps } from 'class-variance-authority'
-import type { ComponentPropsWithRef } from 'react'
-import { twMerge } from '../tw-merge.js'
+import { cva, type VariantProps } from "class-variance-authority";
+import type { ComponentPropsWithRef } from "react";
+
+import { twMerge } from "../tw-merge.js";
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-control border px-2 py-0.5 text-caption font-semibold whitespace-nowrap',
+  "inline-flex items-center rounded-control border px-2 py-0.5 text-caption font-semibold whitespace-nowrap",
   {
     defaultVariants: {
-      variant: 'info',
+      variant: "info",
     },
     variants: {
       /**
@@ -14,18 +15,18 @@ const badgeVariants = cva(
        * など）は `danger`、中立（終了・非表示など）は `neutral`
        */
       variant: {
-        danger: 'border-danger/30 bg-danger/10 text-danger',
-        info: 'border-accent/30 bg-accent/10 text-accent',
-        neutral: 'border-border text-muted',
-        success: 'border-success/30 bg-success/10 text-success',
-        warning: 'border-warning/30 bg-warning/10 text-warning',
+        danger: "border-danger/30 bg-danger/10 text-danger",
+        info: "border-accent/30 bg-accent/10 text-accent",
+        neutral: "border-border text-muted",
+        success: "border-success/30 bg-success/10 text-success",
+        warning: "border-warning/30 bg-warning/10 text-warning",
       },
     },
-  },
-)
+  }
+);
 
-export type BadgeProps = ComponentPropsWithRef<'span'> &
-  VariantProps<typeof badgeVariants>
+export type BadgeProps = ComponentPropsWithRef<"span"> &
+  VariantProps<typeof badgeVariants>;
 
 export function Badge({ variant, className, ...props }: BadgeProps) {
   return (
@@ -33,5 +34,5 @@ export function Badge({ variant, className, ...props }: BadgeProps) {
       className={twMerge(badgeVariants({ variant }), className)}
       {...props}
     />
-  )
+  );
 }

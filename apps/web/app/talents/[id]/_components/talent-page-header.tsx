@@ -1,23 +1,28 @@
-import { twMerge } from '@shinju-date/ui'
-import { CalendarPlus, ExternalLink } from 'lucide-react'
-import LiveBadge from '@/components/live-badge'
-import PageHeader, { PageHeaderSkeleton } from '@/components/page-header'
-import TalentIcon from '@/components/talent-icon'
+import { twMerge } from "@shinju-date/ui";
+import { CalendarPlus, ExternalLink } from "lucide-react";
+
+import LiveBadge from "@/components/live-badge";
+import PageHeader, { PageHeaderSkeleton } from "@/components/page-header";
+import TalentIcon from "@/components/talent-icon";
 import {
   LIVE_RING_CLASS_NAME,
   NextStream,
-} from '@/components/talent-stream-status'
-import { TextLink, TextLinkIcon } from '@/components/text-link'
+} from "@/components/talent-stream-status";
+import { TextLink, TextLinkIcon } from "@/components/text-link";
 import {
   fetchTalentStreamStatusesSafe,
   type TalentDetail,
   type TalentStreamStatus,
-} from '@/lib/data/talents'
-import { getTalentLinks, type TalentLink } from '@/lib/talent-links'
-import { getShownTalent, type TalentPageParams } from '../_lib/get-shown-talent'
+} from "@/lib/data/talents";
+import { getTalentLinks, type TalentLink } from "@/lib/talent-links";
+
+import {
+  getShownTalent,
+  type TalentPageParams,
+} from "../_lib/get-shown-talent";
 
 interface TalentLinkItemProps {
-  link: TalentLink
+  link: TalentLink;
 }
 
 function TalentLinkItem({ link }: TalentLinkItemProps) {
@@ -29,7 +34,7 @@ function TalentLinkItem({ link }: TalentLinkItemProps) {
           <ExternalLink />
         </TextLinkIcon>
       </TextLink>
-    )
+    );
   }
 
   // The calendar is not a page, so it is not a `next/link` link
@@ -40,11 +45,11 @@ function TalentLinkItem({ link }: TalentLinkItemProps) {
       </TextLinkIcon>
       {link.label}
     </TextLink>
-  )
+  );
 }
 
 interface StreamStatusLineProps {
-  streamStatus?: TalentStreamStatus | undefined
+  streamStatus?: TalentStreamStatus | undefined;
 }
 
 /**
@@ -59,7 +64,7 @@ function StreamStatusLine({ streamStatus }: StreamStatusLineProps) {
       <p className="mb-2">
         <LiveBadge />
       </p>
-    )
+    );
   }
 
   if (streamStatus?.nextStreamAt) {
@@ -70,16 +75,16 @@ function StreamStatusLine({ streamStatus }: StreamStatusLineProps) {
           startsAt={streamStatus.nextStreamAt}
         />
       </p>
-    )
+    );
   }
 
-  return null
+  return null;
 }
 
 interface TalentPageHeaderProps {
   /** Whether the talent is live and when it streams next, if known */
-  streamStatus?: TalentStreamStatus | undefined
-  talent: TalentDetail
+  streamStatus?: TalentStreamStatus | undefined;
+  talent: TalentDetail;
 }
 
 /**
@@ -94,12 +99,12 @@ export function TalentPageHeader({
   streamStatus,
   talent,
 }: TalentPageHeaderProps) {
-  const isLive = streamStatus?.isLive ?? false
+  const isLive = streamStatus?.isLive ?? false;
 
   return (
     <PageHeader
       breadcrumbs={[
-        { href: '/talents', name: 'タレント一覧' },
+        { href: "/talents", name: "タレント一覧" },
         { name: talent.name },
       ]}
       description={
@@ -127,11 +132,11 @@ export function TalentPageHeader({
         </span>
       }
     />
-  )
+  );
 }
 
 interface TalentPageHeadingProps {
-  params: TalentPageParams
+  params: TalentPageParams;
 }
 
 /**
@@ -144,16 +149,16 @@ export async function TalentPageHeading({ params }: TalentPageHeadingProps) {
   const [talent, streamStatuses] = await Promise.all([
     getShownTalent(params),
     fetchTalentStreamStatusesSafe(),
-  ])
+  ]);
 
   return (
     <TalentPageHeader
       streamStatus={streamStatuses[talent.id]}
       talent={talent}
     />
-  )
+  );
 }
 
 export function TalentPageHeadingSkeleton() {
-  return <PageHeaderSkeleton description icon />
+  return <PageHeaderSkeleton description icon />;
 }

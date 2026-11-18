@@ -1,20 +1,21 @@
-import PageHeader from '@/components/page-header'
-import PageMain from '@/components/page-main'
-import { createPageMetadata } from '@/lib/metadata'
-import { ContactForm } from './_components/contact-form'
-import { isContactFormEnabled } from './_lib/utils'
+import PageHeader from "@/components/page-header";
+import PageMain from "@/components/page-main";
+import { createPageMetadata } from "@/lib/metadata";
 
-const TITLE = 'お問い合わせ'
+import { ContactForm } from "./_components/contact-form";
+import { isContactFormEnabled } from "./_lib/utils";
+
+const TITLE = "お問い合わせ";
 
 export const metadata = createPageMetadata({
   description:
-    'SHINJU DATEに関するお問い合わせフォームです。不具合報告や機能要望をお寄せください。',
-  path: '/contact',
+    "SHINJU DATEに関するお問い合わせフォームです。不具合報告や機能要望をお寄せください。",
+  path: "/contact",
   title: TITLE,
-})
+});
 
 export default async function ContactPage() {
-  const enabled = isContactFormEnabled()
+  const enabled = isContactFormEnabled();
 
   return (
     <PageMain>
@@ -39,5 +40,5 @@ export default async function ContactPage() {
         )}
       </div>
     </PageMain>
-  )
+  );
 }

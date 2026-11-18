@@ -1,18 +1,19 @@
-import type { default as DefaultDatabase } from '@shinju-date/database'
-import retryableFetch from '@shinju-date/retryable-fetch'
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { serverEnv } from './env'
+import type { default as DefaultDatabase } from "@shinju-date/database";
+import retryableFetch from "@shinju-date/retryable-fetch";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+import { serverEnv } from "./env";
 
 export type TypedSupabaseClient<Database = DefaultDatabase> =
-  SupabaseClient<Database>
+  SupabaseClient<Database>;
 
 export function createSupabaseClient<Database = DefaultDatabase>(
   url: string | undefined = serverEnv.NEXT_PUBLIC_SUPABASE_URL,
   key: string | undefined = serverEnv.SUPABASE_SERVICE_ROLE_KEY,
-  options?: NonNullable<Parameters<typeof createClient<Database>>[2]>,
+  options?: NonNullable<Parameters<typeof createClient<Database>>[2]>
 ): SupabaseClient<Database> {
   if (!url || !key) {
-    throw new TypeError('Supabase URL and key are required.')
+    throw new TypeError("Supabase URL and key are required.");
   }
 
   return createClient<Database>(url, key, {
@@ -21,7 +22,7 @@ export function createSupabaseClient<Database = DefaultDatabase>(
       ...options?.global,
       fetch: options?.global?.fetch ?? retryableFetch,
     },
-  })
+  });
 }
 
-export const supabaseClient = createSupabaseClient()
+export const supabaseClient = createSupabaseClient();

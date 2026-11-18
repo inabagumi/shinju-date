@@ -1,43 +1,44 @@
-import { toDBString } from '@shinju-date/temporal-fns'
-import type { VideoFields } from '../../types.js'
+import { toDBString } from "@shinju-date/temporal-fns";
+
+import type { VideoFields } from "../../types.js";
 
 const VIDEO_FIELD_KEYS = [
-  'duration',
-  'published_at',
-  'status',
-  'title',
-  'video_kind',
-] as const satisfies readonly (keyof VideoFields)[]
+  "duration",
+  "published_at",
+  "status",
+  "title",
+  "video_kind",
+] as const satisfies readonly (keyof VideoFields)[];
 
 /** The {@link VideoFields} that changed, with their value on each side. */
 export interface VideoFieldChanges {
-  after: Partial<VideoFields>
-  before: Partial<VideoFields>
+  after: Partial<VideoFields>;
+  before: Partial<VideoFields>;
 }
 
 function isSameValue<K extends keyof VideoFields>(
   key: K,
   a: VideoFields[K],
-  b: VideoFields[K],
+  b: VideoFields[K]
 ): boolean {
   // The database and the platforms format the same instant differently, and
   // the database keeps whole seconds only (see `toDBString`).
-  if (key === 'published_at') {
+  if (key === "published_at") {
     return (
       toDBString(Temporal.Instant.from(a)) ===
       toDBString(Temporal.Instant.from(b))
-    )
+    );
   }
 
-  return a === b
+  return a === b;
 }
 
 function setValue<K extends keyof VideoFields>(
   target: Partial<VideoFields>,
   key: K,
-  value: VideoFields[K],
+  value: VideoFields[K]
 ): void {
-  target[key] = value
+  target[key] = value;
 }
 
 /**
@@ -51,24 +52,24 @@ function setValue<K extends keyof VideoFields>(
  */
 export function diffVideoFields(
   saved: Partial<VideoFields>,
-  next: Partial<VideoFields>,
+  next: Partial<VideoFields>
 ): Partial<VideoFields> {
-  const changes: Partial<VideoFields> = {}
+  const changes: Partial<VideoFields> = {};
 
   for (const key of VIDEO_FIELD_KEYS) {
-    const savedValue = saved[key]
-    const nextValue = next[key]
+    const savedValue = saved[key];
+    const nextValue = next[key];
 
     if (
       savedValue !== undefined &&
       nextValue !== undefined &&
       !isSameValue(key, savedValue, nextValue)
     ) {
-      setValue(changes, key, nextValue)
+      setValue(changes, key, nextValue);
     }
   }
 
-  return changes
+  return changes;
 }
 
 /**
@@ -77,18 +78,18 @@ export function diffVideoFields(
  */
 export function compareVideoFields(
   saved: Partial<VideoFields>,
-  next: Partial<VideoFields>,
+  next: Partial<VideoFields>
 ): VideoFieldChanges {
-  const after = diffVideoFields(saved, next)
-  const before: Partial<VideoFields> = {}
+  const after = diffVideoFields(saved, next);
+  const before: Partial<VideoFields> = {};
 
   for (const key of VIDEO_FIELD_KEYS) {
-    const savedValue = saved[key]
+    const savedValue = saved[key];
 
     if (key in after && savedValue !== undefined) {
-      setValue(before, key, savedValue)
+      setValue(before, key, savedValue);
     }
   }
 
-  return { after, before }
+  return { after, before };
 }

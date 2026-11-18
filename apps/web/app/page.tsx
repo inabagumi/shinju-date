@@ -1,11 +1,13 @@
-import type { Metadata } from 'next'
-import Image from 'next/image'
-import { Suspense } from 'react'
-import PageMain from '@/components/page-main'
-import { fetchDashboardVideos, fetchUpcomingVideos } from '@/lib/data/videos'
-import { createPageMetadata } from '@/lib/metadata'
-import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE } from '@/lib/site'
-import hero from './_assets/hero.jpg'
+import type { Metadata } from "next";
+import Image from "next/image";
+import { Suspense } from "react";
+
+import PageMain from "@/components/page-main";
+import { fetchDashboardVideos, fetchUpcomingVideos } from "@/lib/data/videos";
+import { createPageMetadata } from "@/lib/metadata";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE } from "@/lib/site";
+
+import hero from "./_assets/hero.jpg";
 import {
   type DashboardVideos,
   LiveSection,
@@ -15,40 +17,40 @@ import {
   ScheduleSectionSkeleton,
   ShortsSection,
   ShortsSectionSkeleton,
-} from './_components/home-sections'
+} from "./_components/home-sections";
 
 export const metadata: Metadata = createPageMetadata({
   absoluteTitle: `${SITE_NAME} - ${SITE_TAGLINE}`,
   description: SITE_DESCRIPTION,
-  path: '/',
+  path: "/",
   title: SITE_NAME,
-})
+});
 
 interface DashboardSectionProps {
-  dashboardVideos: Promise<DashboardVideos>
+  dashboardVideos: Promise<DashboardVideos>;
 }
 
 async function HomeLive({ dashboardVideos }: DashboardSectionProps) {
-  return <LiveSection prefetchedData={await dashboardVideos} />
+  return <LiveSection prefetchedData={await dashboardVideos} />;
 }
 
 async function HomeSchedule() {
-  const upcomingVideos = await fetchUpcomingVideos()
+  const upcomingVideos = await fetchUpcomingVideos();
 
-  return <ScheduleSection prefetchedData={upcomingVideos} />
+  return <ScheduleSection prefetchedData={upcomingVideos} />;
 }
 
 async function HomeRecent({ dashboardVideos }: DashboardSectionProps) {
-  return <RecentSection prefetchedData={await dashboardVideos} />
+  return <RecentSection prefetchedData={await dashboardVideos} />;
 }
 
 async function HomeShorts({ dashboardVideos }: DashboardSectionProps) {
-  return <ShortsSection prefetchedData={await dashboardVideos} />
+  return <ShortsSection prefetchedData={await dashboardVideos} />;
 }
 
 export default function HomePage() {
   // 配信中・新着動画・ショートは1回の取得を3つのセクションで分け合う
-  const dashboardVideos = fetchDashboardVideos()
+  const dashboardVideos = fetchDashboardVideos();
 
   return (
     <>
@@ -101,5 +103,5 @@ export default function HomePage() {
         </Suspense>
       </PageMain>
     </>
-  )
+  );
 }

@@ -1,23 +1,24 @@
-import { toDBString } from '@shinju-date/temporal-fns'
-import mime from 'mime'
-import { nanoid } from 'nanoid'
-import type { TypedSupabaseClient, WriteContext } from '../../types.js'
-import { DatabaseError } from '../errors.js'
+import { toDBString } from "@shinju-date/temporal-fns";
+import mime from "mime";
+import { nanoid } from "nanoid";
+
+import type { TypedSupabaseClient, WriteContext } from "../../types.js";
+import { DatabaseError } from "../errors.js";
 import {
   createBlurDataURL,
   downloadImage,
   removeImage,
   removeStoredImages,
   storeImage,
-} from '../images/index.js'
+} from "../images/index.js";
 
-export const THUMBNAILS_BUCKET = 'thumbnails'
+export const THUMBNAILS_BUCKET = "thumbnails";
 
 /** An image on the source platform to copy into our storage. */
 export interface ThumbnailSource {
-  height: number
-  url: string
-  width: number
+  height: number;
+  url: string;
+  width: number;
 }
 
 export interface CreateThumbnailOptions {
@@ -25,27 +26,27 @@ export interface CreateThumbnailOptions {
    * The ETag of the image the video uses now. When given, the image is only
    * downloaded and stored if it changed since (see {@link createThumbnail}).
    */
-  etag?: string | null
+  etag?: string | null;
   /**
    * Folder the image is stored under. Use the platform video ID so stored
    * objects can be traced back to their video.
    */
-  folder: string
-  now: Temporal.Instant
-  source: ThumbnailSource
-  supabaseClient: TypedSupabaseClient
+  folder: string;
+  now: Temporal.Instant;
+  source: ThumbnailSource;
+  supabaseClient: TypedSupabaseClient;
 }
 
 /** What {@link removeThumbnail} needs from the run. */
 export type ThumbnailRemovalContext = Pick<
   WriteContext,
-  'reportError' | 'supabaseClient'
->
+  "reportError" | "supabaseClient"
+>;
 
 /** A stored thumbnail: its `thumbnails` row ID and storage path. */
 export interface Thumbnail {
-  id: string
-  path: string
+  id: string;
+  path: string;
 }
 
 /**
@@ -67,32 +68,32 @@ export async function createThumbnail({
   source,
   supabaseClient,
 }: CreateThumbnailOptions): Promise<Thumbnail | null> {
-  const downloaded = await downloadImage(source.url, { etag })
+  const downloaded = await downloadImage(source.url, { etag });
 
   if (!downloaded) {
-    return null
+    return null;
   }
 
-  const contentType = downloaded.contentType ?? 'image/jpeg'
-  const image = downloaded.body
+  const contentType = downloaded.contentType ?? "image/jpeg";
+  const image = downloaded.body;
   // Decoding first means a broken image is rejected before anything is stored.
-  const blurDataURL = await createBlurDataURL(image)
-  const extension = mime.getExtension(contentType) ?? 'jpg'
+  const blurDataURL = await createBlurDataURL(image);
+  const extension = mime.getExtension(contentType) ?? "jpg";
   const thumbnail: Thumbnail = {
     id: crypto.randomUUID(),
     path: `${folder}/${nanoid()}.${extension}`,
-  }
+  };
 
   await storeImage(supabaseClient, {
     bucket: THUMBNAILS_BUCKET,
     contentType,
     image,
     path: thumbnail.path,
-  })
+  });
 
-  const timestamp = toDBString(now)
+  const timestamp = toDBString(now);
   const { error: insertError } = await supabaseClient
-    .from('thumbnails')
+    .from("thumbnails")
     .insert({
       blur_data_url: blurDataURL,
       created_at: timestamp,
@@ -102,7 +103,7 @@ export async function createThumbnail({
       path: thumbnail.path,
       updated_at: timestamp,
       width: source.width,
-    })
+    });
 
   if (insertError) {
     await removeStoredImages(supabaseClient, {
@@ -111,12 +112,12 @@ export async function createThumbnail({
     }).catch(() => {
       // Ignored: the insert error is the one to throw, and an object without
       // its row is never served.
-    })
+    });
 
-    throw new DatabaseError('Failed to insert a thumbnail', insertError)
+    throw new DatabaseError("Failed to insert a thumbnail", insertError);
   }
 
-  return thumbnail
+  return thumbnail;
 }
 
 /**
@@ -128,22 +129,24 @@ export async function createThumbnail({
  */
 export async function removeThumbnail(
   { reportError, supabaseClient }: ThumbnailRemovalContext,
-  thumbnail: Thumbnail,
+  thumbnail: Thumbnail
 ): Promise<void> {
   try {
     const removed = await removeImage(supabaseClient, {
       bucket: THUMBNAILS_BUCKET,
       image: thumbnail,
-      table: 'thumbnails',
-    })
+      table: "thumbnails",
+    });
 
     if (!removed) {
-      throw new Error(`The thumbnail is still used by a video: ${thumbnail.id}`)
+      throw new Error(
+        `The thumbnail is still used by a video: ${thumbnail.id}`
+      );
     }
   } catch (error) {
     reportError(error, {
       thumbnailId: thumbnail.id,
       thumbnailPath: thumbnail.path,
-    })
+    });
   }
 }

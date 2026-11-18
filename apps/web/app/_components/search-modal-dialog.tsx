@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   Dialog,
@@ -6,22 +6,23 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-} from '@shinju-date/ui'
-import { Suspense, useCallback } from 'react'
-import { SearchModalContent } from './search-modal-content'
-import { useSearchModal } from './search-modal-context'
+} from "@shinju-date/ui";
+import { Suspense, useCallback } from "react";
+
+import { SearchModalContent } from "./search-modal-content";
+import { useSearchModal } from "./search-modal-context";
 
 export function SearchModalDialog() {
-  const { isOpen, closeModal } = useSearchModal()
+  const { isOpen, closeModal } = useSearchModal();
 
   const handleClose = useCallback(
     (open: boolean) => {
       if (!open) {
-        closeModal()
+        closeModal();
       }
     },
-    [closeModal],
-  )
+    [closeModal]
+  );
 
   return (
     <Dialog onOpenChange={handleClose} open={isOpen}>
@@ -43,5 +44,5 @@ export function SearchModalDialog() {
         </DialogContent>
       </DialogPortal>
     </Dialog>
-  )
+  );
 }

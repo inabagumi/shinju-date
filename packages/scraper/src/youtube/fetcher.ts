@@ -1,4 +1,4 @@
-import type { youtube_v3 as youtube } from '@googleapis/youtube'
+import type { youtube_v3 as youtube } from "@googleapis/youtube";
 import {
   getChannels,
   getErrorStatus,
@@ -7,13 +7,14 @@ import {
   getVideoIds,
   getVideos,
   YOUTUBE_DATA_API_MAX_RESULTS,
-} from '@shinju-date/youtube-api-client'
-import { unique } from '../internal/batch.js'
-import { DEFAULT_RECENT_VIDEOS_LIMIT, Fetcher } from '../internal/fetcher.js'
+} from "@shinju-date/youtube-api-client";
+
+import { unique } from "../internal/batch.js";
 import type {
   RecentVideosOptions,
   VideoLookupResult,
-} from '../internal/fetcher-types.js'
+} from "../internal/fetcher-types.js";
+import { DEFAULT_RECENT_VIDEOS_LIMIT, Fetcher } from "../internal/fetcher.js";
 import type {
   UploadPage,
   YouTubeChannel,
@@ -21,7 +22,7 @@ import type {
   YouTubeRecentVideosResult,
   YouTubeUpload,
   YouTubeVideo,
-} from './types.js'
+} from "./types.js";
 
 /**
  * Reads channels and videos from the YouTube Data API.
@@ -32,14 +33,14 @@ export class YouTubeFetcher extends Fetcher<
   YouTubeVideo,
   YouTubeUpload
 > {
-  readonly provider = 'youtube'
+  readonly provider = "youtube";
 
-  readonly #client: youtube.Youtube | undefined
+  readonly #client: youtube.Youtube | undefined;
 
   constructor({ client, ...options }: YouTubeFetcherOptions = {}) {
-    super(options)
+    super(options);
 
-    this.#client = client
+    this.#client = client;
   }
 
   /**
@@ -47,10 +48,10 @@ export class YouTubeFetcher extends Fetcher<
    */
   async getAccounts(accountIds: readonly string[]): Promise<YouTubeChannel[]> {
     const { found } = await this.fetchByIds(accountIds, (ids) =>
-      getChannels({ client: this.#client, ids, schedule: this.request }),
-    )
+      getChannels({ client: this.#client, ids, schedule: this.request })
+    );
 
-    return found
+    return found;
   }
 
   /**
@@ -61,35 +62,35 @@ export class YouTubeFetcher extends Fetcher<
    */
   async getRecentVideos(
     accountIds: readonly string[],
-    { limit = DEFAULT_RECENT_VIDEOS_LIMIT }: RecentVideosOptions = {},
+    { limit = DEFAULT_RECENT_VIDEOS_LIMIT }: RecentVideosOptions = {}
   ): Promise<YouTubeRecentVideosResult> {
-    const requestedIds = unique(accountIds)
-    const channels = await this.getAccounts(requestedIds)
+    const requestedIds = unique(accountIds);
+    const channels = await this.getAccounts(requestedIds);
     const channelById = new Map(
-      channels.map((channel) => [channel.id, channel]),
-    )
+      channels.map((channel) => [channel.id, channel])
+    );
 
     const { failures, results } = await this.fetchPerAccount(
       [...channelById.keys()],
       (channelId) =>
-        this.#getUploadedVideoIds(channelById.get(channelId), limit),
-    )
+        this.#getUploadedVideoIds(channelById.get(channelId), limit)
+    );
 
     return {
       failures,
       missingAccountIds: requestedIds.filter((id) => !channelById.has(id)),
       videos: results.flatMap(({ accountId, value }) =>
-        value.map((videoId) => ({ channelId: accountId, videoId })),
+        value.map((videoId) => ({ channelId: accountId, videoId }))
       ),
-    }
+    };
   }
 
   async #getUploadedVideoIds(
     channel: YouTubeChannel | undefined,
-    limit: number,
+    limit: number
   ): Promise<string[]> {
     if (!channel) {
-      return []
+      return [];
     }
 
     try {
@@ -98,17 +99,17 @@ export class YouTubeFetcher extends Fetcher<
           client: this.#client,
           maxResults: Math.min(limit, YOUTUBE_DATA_API_MAX_RESULTS),
           playlistID: channel.contentDetails.relatedPlaylists.uploads,
-        }),
-      )
+        })
+      );
 
-      return unique(items.map((item) => item.contentDetails.videoId))
+      return unique(items.map((item) => item.contentDetails.videoId));
     } catch (error) {
       // The uploads playlist of a channel without any upload does not exist.
       if (getErrorStatus(error) === 404) {
-        return []
+        return [];
       }
 
-      throw error
+      throw error;
     }
   }
 
@@ -120,12 +121,12 @@ export class YouTubeFetcher extends Fetcher<
    */
   async getUploadPage(
     channelId: string,
-    { cursor }: { cursor?: string | null | undefined } = {},
+    { cursor }: { cursor?: string | null | undefined } = {}
   ): Promise<UploadPage | null> {
-    const [channel] = await this.getAccounts([channelId])
+    const [channel] = await this.getAccounts([channelId]);
 
     if (!channel) {
-      return null
+      return null;
     }
 
     try {
@@ -135,31 +136,31 @@ export class YouTubeFetcher extends Fetcher<
           maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
           pageToken: cursor ?? undefined,
           playlistID: channel.contentDetails.relatedPlaylists.uploads,
-        }),
-      )
+        })
+      );
 
       return {
         cursor: nextPageToken,
         videoIds: unique(items.map((item) => item.contentDetails.videoId)),
-      }
+      };
     } catch (error) {
       // The uploads playlist of a channel without any upload does not exist.
       if (getErrorStatus(error) === 404) {
-        return { cursor: null, videoIds: [] }
+        return { cursor: null, videoIds: [] };
       }
 
-      throw error
+      throw error;
     }
   }
 
   async getVideos(
-    videoIds: readonly string[],
+    videoIds: readonly string[]
   ): Promise<VideoLookupResult<YouTubeVideo>> {
     const { found, missingIds } = await this.fetchByIds(videoIds, (ids) =>
-      getVideos({ client: this.#client, ids, schedule: this.request }),
-    )
+      getVideos({ client: this.#client, ids, schedule: this.request })
+    );
 
-    return { missingIds, videos: found }
+    return { missingIds, videos: found };
   }
 
   /**
@@ -170,17 +171,17 @@ export class YouTubeFetcher extends Fetcher<
    * every saved video cheap enough for full sweeps.
    */
   async findMissingVideoIds(videoIds: readonly string[]): Promise<string[]> {
-    const requestedIds = unique(videoIds)
+    const requestedIds = unique(videoIds);
     const foundIds = new Set(
       await Array.fromAsync(
         getVideoIds({
           client: this.#client,
           ids: requestedIds,
           schedule: this.request,
-        }),
-      ),
-    )
+        })
+      )
+    );
 
-    return requestedIds.filter((id) => !foundIds.has(id))
+    return requestedIds.filter((id) => !foundIds.has(id));
   }
 }

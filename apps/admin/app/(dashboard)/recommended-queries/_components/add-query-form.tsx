@@ -1,23 +1,25 @@
-'use client'
+"use client";
 
-import { Button, Input } from '@shinju-date/ui'
-import { useState } from 'react'
-import { useServerAction } from '@/lib/use-server-action'
-import { addQueryAction } from '../_actions'
+import { Button, Input } from "@shinju-date/ui";
+import { useState } from "react";
+
+import { useServerAction } from "@/lib/use-server-action";
+
+import { addQueryAction } from "../_actions";
 
 /** 手動のおすすめクエリを追加するフォーム。成功したら、入力を空にしてトーストで知らせる */
 export function AddQueryForm() {
-  const [newQuery, setNewQuery] = useState('')
+  const [newQuery, setNewQuery] = useState("");
   const addQuery = useServerAction(addQueryAction, {
-    errorText: '追加に失敗しました。',
-    onSuccess: () => setNewQuery(''),
-    successText: 'クエリを追加しました。',
-  })
-  const { isPending } = addQuery
+    errorText: "追加に失敗しました。",
+    onSuccess: () => setNewQuery(""),
+    successText: "クエリを追加しました。",
+  });
+  const { isPending } = addQuery;
 
   const handleAddQuery = () => {
-    void addQuery.run(newQuery)
-  }
+    void addQuery.run(newQuery);
+  };
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -33,8 +35,8 @@ export function AddQueryForm() {
           id="new-query"
           onChange={(e) => setNewQuery(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleAddQuery()
+            if (e.key === "Enter") {
+              handleAddQuery();
             }
           }}
           placeholder="クエリを入力..."
@@ -47,8 +49,8 @@ export function AddQueryForm() {
         onClick={handleAddQuery}
         type="button"
       >
-        {isPending ? '追加中...' : '追加'}
+        {isPending ? "追加中..." : "追加"}
       </Button>
     </div>
-  )
+  );
 }

@@ -1,5 +1,27 @@
 {
+  "name": "@shinju-date/admin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Content management admin dashboard for SHINJU DATE",
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
   "author": "Haneru Developers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git",
+    "directory": "apps/admin"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "build:msw": "NODE_OPTIONS=\"--import @shinju-date/msw-handlers/register\" ENABLE_MSW=true next build",
+    "dev": "next --port 4000",
+    "start": "next start --port 4000",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "typegen": "next typegen"
+  },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
     "@dnd-kit/sortable": "10.0.0",
@@ -35,7 +57,6 @@
     "temporal-polyfill": "catalog:",
     "zod": "catalog:"
   },
-  "description": "Content management admin dashboard for SHINJU DATE",
   "devDependencies": {
     "@playwright/test": "catalog:",
     "@shinju-date/config": "workspace:*",
@@ -57,26 +78,5 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
-  },
-  "homepage": "https://shinju.date/",
-  "license": "MIT",
-  "name": "@shinju-date/admin",
-  "private": true,
-  "repository": {
-    "directory": "apps/admin",
-    "type": "git",
-    "url": "https://github.com/inabagumi/shinju-date.git"
-  },
-  "scripts": {
-    "build": "next build",
-    "build:msw": "NODE_OPTIONS=\"--import @shinju-date/msw-handlers/register\" ENABLE_MSW=true next build",
-    "dev": "next --port 4000",
-    "start": "next start --port 4000",
-    "test": "vitest run",
-    "test:e2e": "playwright test",
-    "typecheck": "tsc --noEmit",
-    "typegen": "next typegen"
-  },
-  "type": "module",
-  "version": "1.0.0"
+  }
 }

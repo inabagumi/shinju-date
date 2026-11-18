@@ -1,5 +1,5 @@
-import { withSentry } from '@shinju-date/instrumentation/next-config'
-import type { NextConfig } from 'next'
+import { withSentry } from "@shinju-date/instrumentation/next-config";
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
@@ -11,30 +11,30 @@ const nextConfig: NextConfig = {
       {
         headers: [
           {
-            key: 'Document-Policy',
-            value: 'js-profiling',
+            key: "Document-Policy",
+            value: "js-profiling",
           },
         ],
-        source: '/:path*',
+        source: "/:path*",
       },
-    ])
+    ]);
   },
   partialPrefetching: true,
   reactCompiler: true,
   reactStrictMode: true,
   serverExternalPackages: [
-    '@sentry/profiling-node',
-    'msw',
-    '@mswjs/interceptors',
+    "@sentry/profiling-node",
+    "msw",
+    "@mswjs/interceptors",
   ],
   turbopack: {
     rules: {
       // Compile Tailwind CSS with its Turbopack loader instead of PostCSS.
-      '*.css': {
-        loaders: ['@tailwindcss/turbopack'],
+      "*.css": {
+        loaders: ["@tailwindcss/turbopack"],
       },
     },
   },
-}
+};
 
-export default withSentry(nextConfig)
+export default withSentry(nextConfig);

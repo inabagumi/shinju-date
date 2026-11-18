@@ -66,9 +66,9 @@ pnpm --filter @shinju-date/web build:msw
 ```typescript
 // packages/instrumentation/src/server.ts
 if (enableMsw) {
-  if (process.env['NEXT_RUNTIME'] === 'nodejs') {
-    const { startServer } = await import('@shinju-date/msw-handlers/server')
-    startServer()
+  if (process.env["NEXT_RUNTIME"] === "nodejs") {
+    const { startServer } = await import("@shinju-date/msw-handlers/server");
+    startServer();
   }
 }
 ```
@@ -80,19 +80,19 @@ The apps call Supabase, Upstash, and other services only on the server (Server C
 For `apps/batch` and testing:
 
 ```typescript
-import { server } from '@shinju-date/msw-handlers/server'
+import { server } from "@shinju-date/msw-handlers/server";
 
 // In tests
-beforeAll(() => server.listen())
-afterEach(() => server.resetHandlers())
-afterAll(() => server.close())
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 // For batch processing
-import { startServer, stopServer } from '@shinju-date/msw-handlers/server'
+import { startServer, stopServer } from "@shinju-date/msw-handlers/server";
 
-startServer() // Start mocking
+startServer(); // Start mocking
 // Your batch logic here
-stopServer() // Stop mocking
+stopServer(); // Stop mocking
 ```
 
 ### Individual Handler Usage
@@ -100,14 +100,14 @@ stopServer() // Stop mocking
 You can also import specific handlers:
 
 ```typescript
-import { supabaseHandlers, upstashHandlers } from '@shinju-date/msw-handlers'
-import { setupServer } from 'msw/node'
+import { supabaseHandlers, upstashHandlers } from "@shinju-date/msw-handlers";
+import { setupServer } from "msw/node";
 
 // Use only Supabase handlers
-const server = setupServer(...supabaseHandlers)
+const server = setupServer(...supabaseHandlers);
 
 // Or mix with custom handlers
-const server = setupServer(...supabaseHandlers, ...myCustomHandlers)
+const server = setupServer(...supabaseHandlers, ...myCustomHandlers);
 ```
 
 ## Supported APIs
@@ -159,13 +159,13 @@ PATCH and DELETE change only the rows that match all the filters (filters on emb
 
 The mock does not ignore what it does not support, so that a query does not silently get a result that differs from PostgREST. It returns the errors of PostgREST (`{ code, message, details, hint }`) instead:
 
-| Code       | Status | When                                                                                                                                                                                                                                |
-| ---------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PGRST100` | 400    | An operator that is not in the table above (the message names it, such as `fts` or `cs`), a modifier such as `eq(any)`, a filter of another form, a spread (`...talents(name)`) in `select`, and an `order` by an embedded resource |
-| `PGRST108` | 400    | A filter on a resource that is not embedded in `select`                                                                                                                                                                             |
-| `PGRST200` | 400    | An embedded resource that the table definition has no relation to                                                                                                                                                                   |
-| `PGRST202` | 404    | A function without a handler                                                                                                                                                                                                        |
-| `PGRST205` | 404    | A table without a definition                                                                                                                                                                                                        |
+| Code | Status | When |
+| --- | --- | --- |
+| `PGRST100` | 400 | An operator that is not in the table above (the message names it, such as `fts` or `cs`), a modifier such as `eq(any)`, a filter of another form, a spread (`...talents(name)`) in `select`, and an `order` by an embedded resource |
+| `PGRST108` | 400 | A filter on a resource that is not embedded in `select` |
+| `PGRST200` | 400 | An embedded resource that the table definition has no relation to |
+| `PGRST202` | 404 | A function without a handler |
+| `PGRST205` | 404 | A table without a definition |
 
 When an app needs one of them, implement it in `src/handlers/supabase/query.ts` (filters and `order`) or `src/handlers/supabase/select.ts` (`select`).
 
@@ -193,16 +193,16 @@ The package mocks the REST API of Upstash Redis: a single command (`POST /` with
 
 The commands are implemented in `src/handlers/upstash/commands.ts`, with the options and the errors of Redis:
 
-| Group       | Commands                                                                                                                                                                                                                                                                                                |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Keys        | `DEL`, `EXISTS`, `EXPIRE` (`NX`, `XX`, `GT`, `LT`), `TTL`                                                                                                                                                                                                                                               |
-| Strings     | `GET`, `MGET`, `SET` (`NX`, `XX`, `GET`, `EX`, `PX`, `EXAT`, `PXAT`, `KEEPTTL`), `SETEX`, `INCR`                                                                                                                                                                                                        |
-| Lists       | `LPUSH`, `RPOP`                                                                                                                                                                                                                                                                                         |
-| Sets        | `SADD`, `SREM`, `SMEMBERS`, `SCARD`                                                                                                                                                                                                                                                                     |
-| Sorted sets | `ZADD` (`NX`, `XX`, `GT`, `LT`, `CH`, `INCR`), `ZINCRBY`, `ZSCORE`, `ZCARD`, `ZRANGE` (`BYSCORE`, `REV`, `LIMIT`, `WITHSCORES`), `ZUNIONSTORE` (`WEIGHTS`, `AGGREGATE`)                                                                                                                                 |
-| Hashes      | `HINCRBY`, `HGETALL`                                                                                                                                                                                                                                                                                    |
-| Scripts     | `EVAL` of the scripts of `@shinju-date/video-backfill` (`-- video-backfill:enqueue`, `claim`, `save`, `finish`, `requeue` and `run-unlock`, with the emulations of `@shinju-date/video-backfill/testing`) and of the locks of batch (`-- batch:release-lock`), emulated with the commands that they run |
-| Server      | `PING`                                                                                                                                                                                                                                                                                                  |
+| Group | Commands |
+| --- | --- |
+| Keys | `DEL`, `EXISTS`, `EXPIRE` (`NX`, `XX`, `GT`, `LT`), `TTL` |
+| Strings | `GET`, `MGET`, `SET` (`NX`, `XX`, `GET`, `EX`, `PX`, `EXAT`, `PXAT`, `KEEPTTL`), `SETEX`, `INCR` |
+| Lists | `LPUSH`, `RPOP` |
+| Sets | `SADD`, `SREM`, `SMEMBERS`, `SCARD` |
+| Sorted sets | `ZADD` (`NX`, `XX`, `GT`, `LT`, `CH`, `INCR`), `ZINCRBY`, `ZSCORE`, `ZCARD`, `ZRANGE` (`BYSCORE`, `REV`, `LIMIT`, `WITHSCORES`), `ZUNIONSTORE` (`WEIGHTS`, `AGGREGATE`) |
+| Hashes | `HINCRBY`, `HGETALL` |
+| Scripts | `EVAL` of the scripts of `@shinju-date/video-backfill` (`-- video-backfill:enqueue`, `claim`, `save`, `finish`, `requeue` and `run-unlock`, with the emulations of `@shinju-date/video-backfill/testing`) and of the locks of batch (`-- batch:release-lock`), emulated with the commands that they run |
+| Server | `PING` |
 
 A command that is not implemented returns the error of Redis, `ERR unknown command '<name>', with args beginning with: …`, with 400 (`@upstash/redis` throws it). In a pipeline, only that command gets the error; a transaction with it is discarded (`EXECABORT`), like Redis does. `EVAL` of another script also returns an error, as Lua cannot run in the mock.
 
@@ -212,12 +212,12 @@ A command that is not implemented returns the error of Redis, `ERR unknown comma
 
 ```typescript
 // The handlers automatically mock calls like:
-await redisClient.zrange('videos:clicked:20231023', 0, 10, {
+await redisClient.zrange("videos:clicked:20231023", 0, 10, {
   rev: true,
   withScores: true,
-})
+});
 
-await redisClient.ping()
+await redisClient.ping();
 ```
 
 ### Twitch API
@@ -251,25 +251,25 @@ The Supabase mock reads and writes the `@msw/data` collections of `src/collectio
 
 `seedCollections()` replaces the rows of the collections with the seed data. The data is made by the scenarios in `src/seeds/`, each of which takes the data that it needs (such as the talents) as arguments:
 
-| File                  | Scenario                                                                                                        |
-| --------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `accounts.ts`         | Talents (`MOCK_TALENT_IDS` and others), their YouTube channels, Twitch users and icons                          |
-| `videos.ts`           | Thumbnails, videos and streams of every status, shorts, finished streams of the first talent, and Twitch videos |
-| `schedule.ts`         | Streams of the schedule of the current week, the previous and the next weeks, and one on air now                |
-| `announcements.ts`    | An announcement shown now                                                                                       |
-| `terms.ts`            | Search terms with their readings and synonyms                                                                   |
-| `feature-requests.ts` | Feature requests from the feedback form                                                                         |
-| `backfills.ts`        | The history of backfill jobs, including a failed one                                                            |
-| `audit-logs.ts`       | Audit logs of the mock user                                                                                     |
+| File | Scenario |
+| --- | --- |
+| `accounts.ts` | Talents (`MOCK_TALENT_IDS` and others), their YouTube channels, Twitch users and icons |
+| `videos.ts` | Thumbnails, videos and streams of every status, shorts, finished streams of the first talent, and Twitch videos |
+| `schedule.ts` | Streams of the schedule of the current week, the previous and the next weeks, and one on air now |
+| `announcements.ts` | An announcement shown now |
+| `terms.ts` | Search terms with their readings and synonyms |
+| `feature-requests.ts` | Feature requests from the feedback form |
+| `backfills.ts` | The history of backfill jobs, including a failed one |
+| `audit-logs.ts` | Audit logs of the mock user |
 
 faker has a fixed seed, and the times are made from `now` (the current time when it is omitted), so the same `now` always gives the same data. The times are saved like the apps save them, with `toDBString()` of `@shinju-date/temporal-fns` (in seconds, without milliseconds).
 
 ```typescript
-import { seedCollections, videos } from '@shinju-date/msw-handlers'
+import { seedCollections, videos } from "@shinju-date/msw-handlers";
 
-await seedCollections({ now: Temporal.Instant.from('2026-11-15T12:00:00Z') })
+await seedCollections({ now: Temporal.Instant.from("2026-11-15T12:00:00Z") });
 
-const visibleVideos = videos.findMany((q) => q.where({ visible: true }))
+const visibleVideos = videos.findMany((q) => q.where({ visible: true }));
 ```
 
 The handlers seed the collections once with the current time (`ensureCollectionsSeeded()`) when they are loaded.
@@ -302,8 +302,8 @@ export const myTable = new Collection({
     name: z.string(),
     status: z.enum(Constants.public.Enums.my_status),
     updated_at: z.string(),
-  }) satisfies z.ZodType<Tables<'my_table'>>,
-})
+  }) satisfies z.ZodType<Tables<"my_table">>,
+});
 ```
 
 Add it to `COLLECTIONS` in the same file, so that `seedCollections()` empties it before seeding.
@@ -313,19 +313,19 @@ Add it to `COLLECTIONS` in the same file, so that `seedCollections()` empties it
 ```typescript
 export function createMyRows(
   context: SeedContext,
-  { talents }: { talents: readonly Tables<'talents'>[] },
-): Tables<'my_table'>[] {
+  { talents }: { talents: readonly Tables<"talents">[] }
+): Tables<"my_table">[] {
   return talents.map((talent) => {
-    const createdAt = randomPast(context, 30)
+    const createdAt = randomPast(context, 30);
 
     return {
       created_at: createdAt,
       id: context.faker.string.uuid(),
       name: talent.name,
-      status: 'active',
+      status: "active",
       updated_at: createdAt,
-    }
-  })
+    };
+  });
 }
 ```
 
@@ -334,7 +334,7 @@ Make the times from `context.now` with `toDBString()` (or `randomPast()` and `ra
 3. **Add a table definition** to `TABLES` in `src/handlers/supabase/tables.ts`. The table then gets the GET, HEAD, POST, PATCH and DELETE handlers:
 
 ```typescript
-const myTable: WritableTableDefinition<'my_table'> = {
+const myTable: WritableTableDefinition<"my_table"> = {
   collection: asMockCollection(myTableCollection),
   // The columns that have defaults (or are nullable)
   defaults: () => ({
@@ -342,11 +342,11 @@ const myTable: WritableTableDefinition<'my_table'> = {
     id: crypto.randomUUID(),
     updated_at: now(),
   }),
-  kind: 'table',
-  name: 'my_table',
+  kind: "table",
+  name: "my_table",
   // Every `NOT NULL` column, with or without a default (the type checks
   // that none is missing)
-  notNullColumns: notNullColumns<'my_table'>({
+  notNullColumns: notNullColumns<"my_table">({
     created_at: true,
     id: true,
     name: true,
@@ -356,19 +356,19 @@ const myTable: WritableTableDefinition<'my_table'> = {
   // Embedded resources that `select` can resolve, such as `talents(name)`
   relations: [
     {
-      column: 'talent_id',
+      column: "talent_id",
       many: false,
-      referencedColumn: 'id',
-      table: 'talents',
+      referencedColumn: "id",
+      table: "talents",
     },
   ],
   // Unique constraints other than the primary key (`id`)
-  unique: [{ columns: ['name'], name: 'my_table_name_key' }],
+  unique: [{ columns: ["name"], name: "my_table_name_key" }],
   // Whether a trigger sets `updated_at` when a row is updated
   updatedAtTrigger: true,
   // The columns of the `uuid` type, compared regardless of case
-  uuidColumns: ['id', 'talent_id'],
-}
+  uuidColumns: ["id", "talent_id"],
+};
 ```
 
 A view is defined with `kind: 'view'` and a `rows` function instead of a collection, and is only read.
@@ -381,18 +381,18 @@ To add new Redis data types:
 
 ```typescript
 // Add new data type in createRedisDataFactory()
-redisData.set('my:custom:key', faker.lorem.words())
+redisData.set("my:custom:key", faker.lorem.words());
 ```
 
 2. **Or create custom data**:
 
 ```typescript
-import { createCustomRedisData } from './factories'
+import { createCustomRedisData } from "./factories";
 
 const customData = createCustomRedisData({
-  'my:key': 'my value',
-  'another:key': { complex: 'object' },
-})
+  "my:key": "my value",
+  "another:key": { complex: "object" },
+});
 ```
 
 ## Development
@@ -424,13 +424,13 @@ See [Next.js Apps (Server Side)](#nextjs-apps-server-side). MSW starts from `ins
 ### Vitest Tests
 
 ```typescript
+import { server } from "@shinju-date/msw-handlers/server";
 // vitest.setup.ts
-import { beforeAll, afterEach, afterAll } from 'vitest'
-import { server } from '@shinju-date/msw-handlers/server'
+import { beforeAll, afterEach, afterAll } from "vitest";
 
-beforeAll(() => server.listen())
-afterEach(() => server.resetHandlers())
-afterAll(() => server.close())
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 ```
 
 ### GitHub Copilot Enhancement
@@ -440,15 +440,15 @@ With consistent mock responses, GitHub Copilot can provide more accurate complet
 ```typescript
 // Copilot will understand the data structure from mocks
 const { data: videos } = await supabase
-  .from('videos')
-  .select('id, title, thumbnails(path, blur_data_url)')
-  .limit(10)
+  .from("videos")
+  .select("id, title, thumbnails(path, blur_data_url)")
+  .limit(10);
 
 // Now Copilot knows 'videos' has the expected structure
 videos?.forEach((video) => {
-  console.log(video.title) // ✅ Copilot suggests 'title'
-  console.log(video.thumbnails?.path) // ✅ Copilot suggests nested structure
-})
+  console.log(video.title); // ✅ Copilot suggests 'title'
+  console.log(video.thumbnails?.path); // ✅ Copilot suggests nested structure
+});
 ```
 
 ## Troubleshooting

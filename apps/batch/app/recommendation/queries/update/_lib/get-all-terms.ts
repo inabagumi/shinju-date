@@ -1,16 +1,17 @@
-import { throwIfError } from '@shinju-date/scraper'
-import type { TypedSupabaseClient } from '@/lib/supabase'
+import { throwIfError } from "@shinju-date/scraper";
+
+import type { TypedSupabaseClient } from "@/lib/supabase";
 
 /**
  * How many terms one request reads. It must not exceed `max_rows` of
  * PostgREST (1,000 in `supabase/config.toml`).
  */
-export const TERMS_PAGE_SIZE = 1_000
+export const TERMS_PAGE_SIZE = 1_000;
 
 interface Term {
-  id: string
-  synonyms: string[]
-  term: string
+  id: string;
+  synonyms: string[];
+  term: string;
 }
 
 /**
@@ -27,37 +28,37 @@ interface Term {
  */
 export async function* getAllTerms(
   supabase: TypedSupabaseClient,
-  { pageSize = TERMS_PAGE_SIZE }: { pageSize?: number } = {},
+  { pageSize = TERMS_PAGE_SIZE }: { pageSize?: number } = {}
 ): AsyncGenerator<Term, void, undefined> {
-  let cursor: string | undefined
+  let cursor: string | undefined;
 
   while (true) {
     let query = supabase
-      .from('terms')
-      .select('id, term, synonyms')
-      .order('id', { ascending: true })
-      .limit(pageSize)
+      .from("terms")
+      .select("id, term, synonyms")
+      .order("id", { ascending: true })
+      .limit(pageSize);
 
     if (cursor !== undefined) {
-      query = query.gt('id', cursor)
+      query = query.gt("id", cursor);
     }
 
-    const page = throwIfError(await query, 'Failed to load terms')
+    const page = throwIfError(await query, "Failed to load terms");
 
-    const lastId = page.at(-1)?.id
+    const lastId = page.at(-1)?.id;
 
     if (lastId === undefined) {
-      return
+      return;
     }
 
     if (cursor !== undefined && lastId <= cursor) {
       throw new Error(
-        `Pagination did not advance: the page after "${cursor}" ends at "${lastId}"`,
-      )
+        `Pagination did not advance: the page after "${cursor}" ends at "${lastId}"`
+      );
     }
 
-    cursor = lastId
+    cursor = lastId;
 
-    yield* page
+    yield* page;
   }
 }

@@ -1,33 +1,35 @@
-'use client'
+"use client";
 
-import { range } from '@shinju-date/helpers'
-import { Skeleton } from '@shinju-date/ui'
-import { useSearchParams } from 'next/navigation'
-import { use } from 'react'
-import { useUpdateSearchParams } from '@/lib/use-update-search-params'
-import { getDateRangeUpdates } from '../_lib/analytics-url-params'
-import type { AnalyticsSearchParams } from '../_lib/search-params-schema'
-import DateRangePicker, { type DateRange } from './date-range-picker'
+import { range } from "@shinju-date/helpers";
+import { Skeleton } from "@shinju-date/ui";
+import { useSearchParams } from "next/navigation";
+import { use } from "react";
+
+import { useUpdateSearchParams } from "@/lib/use-update-search-params";
+
+import { getDateRangeUpdates } from "../_lib/analytics-url-params";
+import type { AnalyticsSearchParams } from "../_lib/search-params-schema";
+import DateRangePicker, { type DateRange } from "./date-range-picker";
 
 interface Props {
-  searchParams: Promise<AnalyticsSearchParams>
+  searchParams: Promise<AnalyticsSearchParams>;
 }
 
 /**
  * Client component wrapper for DateRangePicker that handles URL navigation
  */
 export function DateRangePickerClient({ searchParams }: Props) {
-  const urlSearchParams = useSearchParams()
-  const updateSearchParams = useUpdateSearchParams()
-  const { dateRange } = use(searchParams)
+  const urlSearchParams = useSearchParams();
+  const updateSearchParams = useUpdateSearchParams();
+  const { dateRange } = use(searchParams);
 
   const handleDateRangeChange = (newDateRange: DateRange) => {
     updateSearchParams(
-      getDateRangeUpdates(urlSearchParams.get('date'), newDateRange),
-    )
-  }
+      getDateRangeUpdates(urlSearchParams.get("date"), newDateRange)
+    );
+  };
 
-  return <DateRangePicker onChange={handleDateRangeChange} value={dateRange} />
+  return <DateRangePicker onChange={handleDateRangeChange} value={dateRange} />;
 }
 
 /**
@@ -57,5 +59,5 @@ export function DateRangePickerSkeleton() {
         <Skeleton className="h-4 w-40" />
       </div>
     </div>
-  )
+  );
 }

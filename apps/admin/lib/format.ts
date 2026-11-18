@@ -1,8 +1,8 @@
-import { TIME_ZONE } from '@shinju-date/constants'
-import { formatDateTimeFromISO as formatDateTimeFromISOInTimeZone } from '@shinju-date/temporal-fns'
+import { TIME_ZONE } from "@shinju-date/constants";
+import { formatDateTimeFromISO as formatDateTimeFromISOInTimeZone } from "@shinju-date/temporal-fns";
 
 interface FormatDateTimeFromISOOptions {
-  includeSeconds?: boolean
+  includeSeconds?: boolean;
 }
 
 /**
@@ -11,10 +11,10 @@ interface FormatDateTimeFromISOOptions {
  */
 export function formatDateTimeFromISO(
   isoString: string,
-  options: FormatDateTimeFromISOOptions = {},
+  options: FormatDateTimeFromISOOptions = {}
 ): string {
   return formatDateTimeFromISOInTimeZone(isoString, {
     ...options,
     timeZone: TIME_ZONE,
-  })
+  });
 }

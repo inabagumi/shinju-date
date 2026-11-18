@@ -1,42 +1,44 @@
-import { PageHeader } from '@shinju-date/ui'
-import type { Metadata } from 'next'
-import { Suspense } from 'react'
-import { WidgetErrorBoundary } from '@/components/widget-error-boundary'
+import { PageHeader } from "@shinju-date/ui";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+
+import { WidgetErrorBoundary } from "@/components/widget-error-boundary";
+
 import {
   RecentActivity,
   RecentActivitySkeleton,
-} from '../_components/recent-activity'
+} from "../_components/recent-activity";
 import {
   MaintenanceModePanel,
   MaintenanceModePanelSkeleton,
-} from './_components/maintenance-mode-panel'
+} from "./_components/maintenance-mode-panel";
 import {
   VideoBackfillHistoryPanel,
   VideoBackfillHistoryPanelSkeleton,
-} from './_components/video-backfill-history-panel'
+} from "./_components/video-backfill-history-panel";
 import {
   VideoBackfillRunPanel,
   VideoBackfillRunPanelSkeleton,
-} from './_components/video-backfill-run-panel'
-import { getVideoBackfillHistory } from './_lib/get-video-backfill-history'
-import { getVideoBackfillRun } from './_lib/get-video-backfill-run'
+} from "./_components/video-backfill-run-panel";
+import { getVideoBackfillHistory } from "./_lib/get-video-backfill-history";
+import { getVideoBackfillRun } from "./_lib/get-video-backfill-run";
 
 export const metadata: Metadata = {
-  title: 'システム',
-}
+  title: "システム",
+};
 
 /** 取得漏れチェックの最初の進捗をサーバーで取得して、パネルに渡す */
 async function VideoBackfillRun() {
-  const initialData = await getVideoBackfillRun()
+  const initialData = await getVideoBackfillRun();
 
-  return <VideoBackfillRunPanel initialData={initialData} />
+  return <VideoBackfillRunPanel initialData={initialData} />;
 }
 
 /** 過去動画の取り込みの最初の履歴をサーバーで取得して、パネルに渡す */
 async function VideoBackfillHistory() {
-  const initialData = await getVideoBackfillHistory()
+  const initialData = await getVideoBackfillHistory();
 
-  return <VideoBackfillHistoryPanel initialData={initialData} />
+  return <VideoBackfillHistoryPanel initialData={initialData} />;
 }
 
 export default function SystemPage() {
@@ -72,5 +74,5 @@ export default function SystemPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,16 +1,19 @@
-import type { ComponentPropsWithRef, ReactNode } from 'react'
-import { twMerge } from '../tw-merge.js'
+import type { ComponentPropsWithRef, ReactNode } from "react";
 
-export interface EmptyStateProps
-  extends Omit<ComponentPropsWithRef<'div'>, 'children' | 'title'> {
+import { twMerge } from "../tw-merge.js";
+
+export interface EmptyStateProps extends Omit<
+  ComponentPropsWithRef<"div">,
+  "children" | "title"
+> {
   /** 見出しの下に置く操作ボタン（「追加」など） */
-  action?: ReactNode
+  action?: ReactNode;
   /** 見出しの下に表示する補足 */
-  description?: ReactNode
+  description?: ReactNode;
   /** 見出しの上に表示するアイコン。読み上げからは除く */
-  icon?: ReactNode
+  icon?: ReactNode;
   /** 1行の見出し（「動画がありません」など） */
-  title: ReactNode
+  title: ReactNode;
 }
 
 /**
@@ -28,8 +31,8 @@ export function EmptyState({
   return (
     <div
       className={twMerge(
-        'flex flex-col items-center gap-2 px-4 py-8 text-center',
-        className,
+        "flex flex-col items-center gap-2 px-4 py-8 text-center",
+        className
       )}
       {...props}
     >
@@ -46,5 +49,5 @@ export function EmptyState({
       )}
       {action && <div className="mt-2">{action}</div>}
     </div>
-  )
+  );
 }

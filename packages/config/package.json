@@ -1,19 +1,17 @@
 {
-  "author": "Haneru Developers",
-  "dependencies": {
-    "@tsconfig/next": "2.0.7",
-    "@tsconfig/strictest": "2.0.9"
-  },
+  "name": "@shinju-date/config",
+  "version": "1.0.0",
+  "private": true,
   "description": "Shared build and test configuration for SHINJU DATE packages and apps",
-  "devDependencies": {
-    "@playwright/test": "catalog:",
-    "@types/node": "catalog:",
-    "@vitejs/plugin-react": "catalog:",
-    "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:",
-    "vitest": "catalog:"
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "author": "Haneru Developers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git",
+    "directory": "packages/config"
   },
+  "type": "module",
   "exports": {
     "./playwright": {
       "types": "./playwright.ts",
@@ -32,9 +30,22 @@
       "default": "./vitest.ts"
     }
   },
-  "homepage": "https://shinju.date/",
-  "license": "MIT",
-  "name": "@shinju-date/config",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tsconfig/next": "2.0.7",
+    "@tsconfig/strictest": "2.0.9"
+  },
+  "devDependencies": {
+    "@playwright/test": "catalog:",
+    "@types/node": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
   "peerDependencies": {
     "@playwright/test": "^1.65.1",
     "@vitejs/plugin-react": "^6.3.0",
@@ -54,16 +65,5 @@
     "vitest": {
       "optional": true
     }
-  },
-  "private": true,
-  "repository": {
-    "directory": "packages/config",
-    "type": "git",
-    "url": "https://github.com/inabagumi/shinju-date.git"
-  },
-  "scripts": {
-    "typecheck": "tsc --noEmit"
-  },
-  "type": "module",
-  "version": "1.0.0"
+  }
 }

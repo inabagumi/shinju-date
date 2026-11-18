@@ -1,15 +1,16 @@
-import { Skeleton } from '@shinju-date/ui'
-import type { ReactNode } from 'react'
-import { formatDateLabel, formatDateRange } from '../_lib/format-date'
+import { Skeleton } from "@shinju-date/ui";
+import type { ReactNode } from "react";
+
+import { formatDateLabel, formatDateRange } from "../_lib/format-date";
 
 interface WidgetHeaderProps {
   /** 見出しの右端に置く操作（エクスポートなど） */
-  actions?: ReactNode
+  actions?: ReactNode;
   /** 集計の期間。日付が選ばれているときは `selectedDate` を優先して示す */
-  dateRange?: { startDate: string; endDate: string }
-  description?: ReactNode
-  selectedDate?: string | null
-  title: ReactNode
+  dateRange?: { startDate: string; endDate: string };
+  description?: ReactNode;
+  selectedDate?: string | null;
+  title: ReactNode;
 }
 
 /**
@@ -44,16 +45,16 @@ export function WidgetHeader({
       </div>
       {description && <p className="text-meta text-muted">{description}</p>}
     </div>
-  )
+  );
 }
 
 interface WidgetHeaderSkeletonProps {
   /** エクスポートのボタンを置く */
-  actions?: boolean
+  actions?: boolean;
   /** 見出しの横に集計の期間を置く */
-  period?: boolean
+  period?: boolean;
   /** 見出し。読み込み後と同じ文言を渡す */
-  title: ReactNode
+  title: ReactNode;
 }
 
 /** 読み込み中の `WidgetHeader`。見出しは文字のまま描き、期間・説明・操作を `Skeleton` で描く */
@@ -78,5 +79,5 @@ export function WidgetHeaderSkeleton({
         <Skeleton className="h-4 w-2/3" />
       </div>
     </div>
-  )
+  );
 }

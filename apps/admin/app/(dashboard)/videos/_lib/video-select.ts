@@ -21,4 +21,4 @@ export const VIDEO_SELECT = `
     type,
     twitch_user:twitch_users (twitch_login_name)
   )
-`
+`;

@@ -1,22 +1,23 @@
-import type { TablesInsert, TablesUpdate } from '@shinju-date/database'
-import { chunk } from '@shinju-date/helpers'
-import { toDBString } from '@shinju-date/temporal-fns'
-import type { TypedSupabaseClient } from '../../types.js'
-import { IN_FILTER_CHUNK_SIZE, SOFT_DELETE_CHUNK_SIZE } from '../constants.js'
-import { DatabaseError } from '../errors.js'
+import type { TablesInsert, TablesUpdate } from "@shinju-date/database";
+import { chunk } from "@shinju-date/helpers";
+import { toDBString } from "@shinju-date/temporal-fns";
 
-export type NewVideo = Omit<TablesInsert<'videos'>, 'id'>
+import type { TypedSupabaseClient } from "../../types.js";
+import { IN_FILTER_CHUNK_SIZE, SOFT_DELETE_CHUNK_SIZE } from "../constants.js";
+import { DatabaseError } from "../errors.js";
+
+export type NewVideo = Omit<TablesInsert<"videos">, "id">;
 
 /** The platform-specific row that identifies a video on its source platform. */
 export type NewPlatformVideo =
   | {
-      platform: 'youtube'
-      values: Omit<TablesInsert<'youtube_videos'>, 'id' | 'video_id'>
+      platform: "youtube";
+      values: Omit<TablesInsert<"youtube_videos">, "id" | "video_id">;
     }
   | {
-      platform: 'twitch'
-      values: Omit<TablesInsert<'twitch_videos'>, 'id' | 'video_id'>
-    }
+      platform: "twitch";
+      values: Omit<TablesInsert<"twitch_videos">, "id" | "video_id">;
+    };
 
 /**
  * Inserts a video together with its platform row (`insert_video`, which
@@ -29,24 +30,24 @@ export type NewPlatformVideo =
 export async function insertVideo(
   supabaseClient: TypedSupabaseClient,
   video: NewVideo,
-  platformVideo: NewPlatformVideo,
+  platformVideo: NewPlatformVideo
 ): Promise<string | null> {
-  const { data, error } = await supabaseClient.rpc('insert_video', {
+  const { data, error } = await supabaseClient.rpc("insert_video", {
     p_platform: platformVideo.platform,
     p_platform_video: platformVideo.values,
     p_video: video,
-  })
+  });
 
   if (error) {
     throw new DatabaseError(
       `Failed to insert a ${platformVideo.platform} video`,
-      error,
-    )
+      error
+    );
   }
 
   // The generated types do not tell that the function returns `NULL` when
   // the platform video already exists.
-  return data as string | null
+  return data as string | null;
 }
 
 /**
@@ -58,21 +59,21 @@ export async function insertVideo(
 export async function updateVideo(
   supabaseClient: TypedSupabaseClient,
   videoId: string,
-  values: Omit<TablesUpdate<'videos'>, 'updated_at'>,
+  values: Omit<TablesUpdate<"videos">, "updated_at">
 ): Promise<void> {
   const { error } = await supabaseClient
-    .from('videos')
+    .from("videos")
     .update(values)
-    .eq('id', videoId)
+    .eq("id", videoId);
 
   if (error) {
-    throw new DatabaseError('Failed to update a video', error)
+    throw new DatabaseError("Failed to update a video", error);
   }
 }
 
 export interface SoftDeleteVideosOptions {
-  now: Temporal.Instant
-  videoIds: readonly string[]
+  now: Temporal.Instant;
+  videoIds: readonly string[];
 }
 
 /**
@@ -87,26 +88,26 @@ export interface SoftDeleteVideosOptions {
  */
 export async function softDeleteUnavailableVideos(
   supabaseClient: TypedSupabaseClient,
-  { now, videoIds }: SoftDeleteVideosOptions,
+  { now, videoIds }: SoftDeleteVideosOptions
 ): Promise<number> {
-  const deletedAt = toDBString(now)
-  let deletedCount = 0
+  const deletedAt = toDBString(now);
+  let deletedCount = 0;
 
   for (const ids of chunk(videoIds, SOFT_DELETE_CHUNK_SIZE)) {
-    const { data, error } = await supabaseClient.rpc('soft_delete_videos', {
+    const { data, error } = await supabaseClient.rpc("soft_delete_videos", {
       p_deleted_at: deletedAt,
-      p_reason: 'unavailable',
+      p_reason: "unavailable",
       p_video_ids: ids,
-    })
+    });
 
     if (error) {
-      throw new DatabaseError('Failed to soft-delete videos', error)
+      throw new DatabaseError("Failed to soft-delete videos", error);
     }
 
-    deletedCount += data.length
+    deletedCount += data.length;
   }
 
-  return deletedCount
+  return deletedCount;
 }
 
 /**
@@ -115,24 +116,24 @@ export async function softDeleteUnavailableVideos(
  */
 export async function findSavedYouTubeVideoIds(
   supabaseClient: TypedSupabaseClient,
-  youtubeVideoIds: readonly string[],
+  youtubeVideoIds: readonly string[]
 ): Promise<Set<string>> {
-  const savedIds = new Set<string>()
+  const savedIds = new Set<string>();
 
   for (const ids of chunk(youtubeVideoIds, IN_FILTER_CHUNK_SIZE)) {
     const { data, error } = await supabaseClient
-      .from('youtube_videos')
-      .select('youtube_video_id')
-      .in('youtube_video_id', ids)
+      .from("youtube_videos")
+      .select("youtube_video_id")
+      .in("youtube_video_id", ids);
 
     if (error) {
-      throw new DatabaseError('Failed to look up YouTube videos', error)
+      throw new DatabaseError("Failed to look up YouTube videos", error);
     }
 
     for (const row of data) {
-      savedIds.add(row.youtube_video_id)
+      savedIds.add(row.youtube_video_id);
     }
   }
 
-  return savedIds
+  return savedIds;
 }

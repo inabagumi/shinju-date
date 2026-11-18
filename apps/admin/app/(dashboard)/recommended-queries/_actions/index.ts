@@ -1,56 +1,58 @@
-'use server'
+"use server";
 
-import { CACHE_TAGS, REDIS_KEYS } from '@shinju-date/constants'
-import { revalidateTags } from '@shinju-date/web-cache'
-import { revalidatePath } from 'next/cache'
-import { type ActionResult, adminAction, parseActionInput } from '@/lib/action'
-import { createAuditLog } from '@/lib/audit-log'
-import { getRedisClient } from '@/lib/redis'
-import { recommendedQuerySchema } from '../_lib/schema'
+import { CACHE_TAGS, REDIS_KEYS } from "@shinju-date/constants";
+import { revalidateTags } from "@shinju-date/web-cache";
+import { revalidatePath } from "next/cache";
+
+import { type ActionResult, adminAction, parseActionInput } from "@/lib/action";
+import { createAuditLog } from "@/lib/audit-log";
+import { getRedisClient } from "@/lib/redis";
+
+import { recommendedQuerySchema } from "../_lib/schema";
 
 async function revalidateRecommendedQueries(): Promise<void> {
-  revalidatePath('/recommended-queries')
-  revalidatePath('/', 'page')
-  await revalidateTags([CACHE_TAGS.RECOMMENDATION_QUERIES])
+  revalidatePath("/recommended-queries");
+  revalidatePath("/", "page");
+  await revalidateTags([CACHE_TAGS.RECOMMENDATION_QUERIES]);
 }
 
 export const addQueryAction = adminAction(
-  'addQueryAction',
+  "addQueryAction",
   async ({ supabaseClient }, query: string): Promise<ActionResult> => {
-    const trimmedQuery = parseActionInput(recommendedQuerySchema, query)
+    const trimmedQuery = parseActionInput(recommendedQuerySchema, query);
 
     await getRedisClient().sadd(
       REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED,
-      trimmedQuery,
-    )
+      trimmedQuery
+    );
 
-    await createAuditLog(supabaseClient, 'RECOMMENDED_QUERY_CREATE', null, {
+    await createAuditLog(supabaseClient, "RECOMMENDED_QUERY_CREATE", null, {
       entityName: trimmedQuery,
-    })
+    });
 
-    await revalidateRecommendedQueries()
+    await revalidateRecommendedQueries();
 
-    return { success: true }
-  },
-)
+    return { success: true };
+  }
+);
 
 export const deleteQueryAction = adminAction(
-  'deleteQueryAction',
+  "deleteQueryAction",
   async ({ supabaseClient }, query: string): Promise<ActionResult> => {
     // 追加のときに前後の空白を除いているので、除いた値で削除する
-    const trimmedQuery = parseActionInput(recommendedQuerySchema, query)
+    const trimmedQuery = parseActionInput(recommendedQuerySchema, query);
 
     await getRedisClient().srem(
       REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED,
-      trimmedQuery,
-    )
+      trimmedQuery
+    );
 
-    await createAuditLog(supabaseClient, 'RECOMMENDED_QUERY_DELETE', null, {
+    await createAuditLog(supabaseClient, "RECOMMENDED_QUERY_DELETE", null, {
       entityName: trimmedQuery,
-    })
+    });
 
-    await revalidateRecommendedQueries()
+    await revalidateRecommendedQueries();
 
-    return { success: true }
-  },
-)
+    return { success: true };
+  }
+);

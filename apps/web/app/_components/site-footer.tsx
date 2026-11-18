@@ -1,15 +1,17 @@
-import Link from 'next/link'
-import type { ReactNode } from 'react'
-import { SITE_NAME as siteName } from '@/lib/site'
-import { ContactLink } from './contact-link'
-import { NavLink } from './nav-link'
+import Link from "next/link";
+import type { ReactNode } from "react";
+
+import { SITE_NAME as siteName } from "@/lib/site";
+
+import { ContactLink } from "./contact-link";
+import { NavLink } from "./nav-link";
 
 const footerLinkClassName =
-  'flex min-h-11 items-center rounded-control underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground'
+  "flex min-h-11 items-center rounded-control underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground";
 
 interface FooterLinkGroupProps {
-  children: ReactNode
-  title: string
+  children: ReactNode;
+  title: string;
 }
 
 function FooterLinkGroup({ children, title }: FooterLinkGroupProps) {
@@ -18,7 +20,7 @@ function FooterLinkGroup({ children, title }: FooterLinkGroupProps) {
       <h2 className="text-meta font-bold">{title}</h2>
       <ul className="mt-2 text-meta">{children}</ul>
     </div>
-  )
+  );
 }
 
 /**
@@ -110,5 +112,5 @@ export function SiteFooter() {
         </nav>
       </div>
     </footer>
-  )
+  );
 }

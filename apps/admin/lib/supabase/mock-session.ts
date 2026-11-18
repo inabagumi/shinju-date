@@ -1,8 +1,8 @@
-import { serverEnv } from '@/lib/env'
+import { serverEnv } from "@/lib/env";
 
 interface Cookie {
-  name: string
-  value: string
+  name: string;
+  value: string;
 }
 
 /**
@@ -21,30 +21,29 @@ interface Cookie {
  */
 export async function withMockSessionCookie(
   supabaseURL: string,
-  cookies: Cookie[],
+  cookies: Cookie[]
 ): Promise<Cookie[]> {
   if (!serverEnv.ENABLE_MSW || !serverEnv.MSW_SUPABASE_AUTHENTICATED) {
-    return cookies
+    return cookies;
   }
 
   // supabase-js の既定のストレージキーと同じ名前
-  const storageKey = `sb-${new URL(supabaseURL).hostname.split('.')[0]}-auth-token`
+  const storageKey = `sb-${new URL(supabaseURL).hostname.split(".")[0]}-auth-token`;
 
   // セッションの Cookie は `.0`、`.1` のように分割されることがある
   if (
     cookies.some(
-      ({ name }) => name === storageKey || name.startsWith(`${storageKey}.`),
+      ({ name }) => name === storageKey || name.startsWith(`${storageKey}.`)
     )
   ) {
-    return cookies
+    return cookies;
   }
 
-  const { MOCK_SUPABASE_SESSION } = await import(
-    '@shinju-date/msw-handlers/session'
-  )
+  const { MOCK_SUPABASE_SESSION } =
+    await import("@shinju-date/msw-handlers/session");
 
   return [
     ...cookies,
     { name: storageKey, value: JSON.stringify(MOCK_SUPABASE_SESSION) },
-  ]
+  ];
 }

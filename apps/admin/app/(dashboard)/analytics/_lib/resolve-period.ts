@@ -1,5 +1,6 @@
-import type { Period } from '@/lib/analytics/period'
-import type { AnalyticsSearchParams } from './search-params-schema'
+import type { Period } from "@/lib/analytics/period";
+
+import type { AnalyticsSearchParams } from "./search-params-schema";
 
 /**
  * URL のパラメータから、ウィジェットが集計する期間を決める。
@@ -8,15 +9,15 @@ import type { AnalyticsSearchParams } from './search-params-schema'
 export function resolvePeriod({
   dateRange,
   selectedDate,
-}: Pick<AnalyticsSearchParams, 'dateRange' | 'selectedDate'>): Period {
+}: Pick<AnalyticsSearchParams, "dateRange" | "selectedDate">): Period {
   if (selectedDate) {
-    const date = Temporal.PlainDate.from(selectedDate).toString()
+    const date = Temporal.PlainDate.from(selectedDate).toString();
 
-    return { end: date, start: date }
+    return { end: date, start: date };
   }
 
   return {
     end: Temporal.PlainDate.from(dateRange.endDate).toString(),
     start: Temporal.PlainDate.from(dateRange.startDate).toString(),
-  }
+  };
 }

@@ -1,13 +1,13 @@
-import { Input, Select, Textarea, twMerge } from '@shinju-date/ui'
+import { Input, Select, Textarea, twMerge } from "@shinju-date/ui";
 
 function getErrorId(inputId: string | undefined): string | undefined {
-  return inputId ? `${inputId}-error` : undefined
+  return inputId ? `${inputId}-error` : undefined;
 }
 
 interface FieldLabelProps {
-  htmlFor: string | undefined
-  label: string
-  required: boolean | undefined
+  htmlFor: string | undefined;
+  label: string;
+  required: boolean | undefined;
 }
 
 function FieldLabel({ htmlFor, label, required }: FieldLabelProps) {
@@ -16,38 +16,40 @@ function FieldLabel({ htmlFor, label, required }: FieldLabelProps) {
       className="mb-2 block text-meta font-semibold text-foreground"
       htmlFor={htmlFor}
     >
-      {label}{' '}
+      {label}{" "}
       {required && (
         <span aria-hidden="true" className="text-danger">
           *
         </span>
       )}
     </label>
-  )
+  );
 }
 
 interface FieldErrorProps {
-  error: string | undefined
-  id: string | undefined
+  error: string | undefined;
+  id: string | undefined;
 }
 
 function FieldError({ error, id }: FieldErrorProps) {
   if (!error) {
-    return null
+    return null;
   }
 
   return (
     <p className="mt-1 text-meta text-danger" id={id}>
       {error}
     </p>
-  )
+  );
 }
 
-interface InputFieldProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
-  label?: string
-  required?: boolean
-  error?: string | undefined
+interface InputFieldProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "size"
+> {
+  label?: string;
+  required?: boolean;
+  error?: string | undefined;
 }
 
 export function InputField({
@@ -59,8 +61,8 @@ export function InputField({
   ref,
   ...props
 }: InputFieldProps & { ref?: React.Ref<HTMLInputElement> }) {
-  const inputId = id || props.name
-  const errorId = error ? getErrorId(inputId) : undefined
+  const inputId = id || props.name;
+  const errorId = error ? getErrorId(inputId) : undefined;
 
   return (
     <div>
@@ -76,18 +78,17 @@ export function InputField({
         inputSize="lg"
         ref={ref}
         required={required}
-        variant={error ? 'danger' : 'default'}
+        variant={error ? "danger" : "default"}
       />
       <FieldError error={error} id={errorId} />
     </div>
-  )
+  );
 }
 
-interface TextareaFieldProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label?: string
-  required?: boolean
-  error?: string | undefined
+interface TextareaFieldProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+  required?: boolean;
+  error?: string | undefined;
 }
 
 export function TextareaField({
@@ -99,8 +100,8 @@ export function TextareaField({
   ref,
   ...props
 }: TextareaFieldProps & { ref?: React.Ref<HTMLTextAreaElement> }) {
-  const inputId = id || props.name
-  const errorId = error ? getErrorId(inputId) : undefined
+  const inputId = id || props.name;
+  const errorId = error ? getErrorId(inputId) : undefined;
 
   return (
     <div>
@@ -111,23 +112,22 @@ export function TextareaField({
         {...props}
         aria-describedby={errorId}
         aria-invalid={error ? true : undefined}
-        className={twMerge('px-4 py-3', className)}
+        className={twMerge("px-4 py-3", className)}
         id={inputId}
         ref={ref}
         required={required}
-        variant={error ? 'danger' : 'default'}
+        variant={error ? "danger" : "default"}
       />
       <FieldError error={error} id={errorId} />
     </div>
-  )
+  );
 }
 
-interface SelectFieldProps
-  extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string
-  required?: boolean
-  error?: string | undefined
-  children: React.ReactNode
+interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string;
+  required?: boolean;
+  error?: string | undefined;
+  children: React.ReactNode;
 }
 
 export function SelectField({
@@ -140,8 +140,8 @@ export function SelectField({
   ref,
   ...props
 }: SelectFieldProps & { ref?: React.Ref<HTMLSelectElement> }) {
-  const inputId = id || props.name
-  const errorId = error ? getErrorId(inputId) : undefined
+  const inputId = id || props.name;
+  const errorId = error ? getErrorId(inputId) : undefined;
 
   return (
     <div>
@@ -157,19 +157,18 @@ export function SelectField({
         inputSize="lg"
         ref={ref}
         required={required}
-        variant={error ? 'danger' : 'default'}
+        variant={error ? "danger" : "default"}
       >
         {children}
       </Select>
       <FieldError error={error} id={errorId} />
     </div>
-  )
+  );
 }
 
-interface CheckboxFieldProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: React.ReactNode
-  error?: string | undefined
+interface CheckboxFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: React.ReactNode;
+  error?: string | undefined;
 }
 
 export function CheckboxField({
@@ -179,8 +178,8 @@ export function CheckboxField({
   id,
   ...props
 }: CheckboxFieldProps) {
-  const inputId = id || props.name
-  const errorId = error ? getErrorId(inputId) : undefined
+  const inputId = id || props.name;
+  const errorId = error ? getErrorId(inputId) : undefined;
 
   return (
     <div>
@@ -189,7 +188,7 @@ export function CheckboxField({
           {...props}
           aria-describedby={errorId}
           aria-invalid={error ? true : undefined}
-          className={twMerge('size-4 accent-accent focus-ring', className)}
+          className={twMerge("size-4 accent-accent focus-ring", className)}
           id={inputId}
           type="checkbox"
         />
@@ -197,5 +196,5 @@ export function CheckboxField({
       </label>
       <FieldError error={error} id={errorId} />
     </div>
-  )
+  );
 }

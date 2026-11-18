@@ -1,36 +1,37 @@
-import type { FilteredYouTubePlaylistItem } from '@shinju-date/youtube-api-client'
-import type { SavedYouTubeVideo } from '../../youtube/saved-video.js'
-import type { YouTubeChannel, YouTubeVideo } from '../../youtube/types.js'
+import type { FilteredYouTubePlaylistItem } from "@shinju-date/youtube-api-client";
+
+import type { SavedYouTubeVideo } from "../../youtube/saved-video.js";
+import type { YouTubeChannel, YouTubeVideo } from "../../youtube/types.js";
 
 /** Active talents with one YouTube channel each, as the crawls load them. */
 export const YOUTUBE_TALENTS = [
   {
-    id: 'talent-1',
-    youtube_channels: [{ id: 'channel-row-1', youtube_channel_id: 'UCaaa' }],
+    id: "talent-1",
+    youtube_channels: [{ id: "channel-row-1", youtube_channel_id: "UCaaa" }],
   },
   {
-    id: 'talent-2',
-    youtube_channels: [{ id: 'channel-row-2', youtube_channel_id: 'UCbbb' }],
+    id: "talent-2",
+    youtube_channels: [{ id: "channel-row-2", youtube_channel_id: "UCbbb" }],
   },
-]
+];
 
 /** Builds the channel `id` for tests, with `snippet` if given. */
 export function createChannel(
-  id = 'UCaaa',
-  snippet: YouTubeChannel['snippet'] = { title: `Channel ${id}` },
+  id = "UCaaa",
+  snippet: YouTubeChannel["snippet"] = { title: `Channel ${id}` }
 ): YouTubeChannel {
   return {
     contentDetails: { relatedPlaylists: { uploads: `UU${id.slice(2)}` } },
     id,
     snippet,
-  }
+  };
 }
 
 /** Builds an item of an uploads playlist for tests. */
 export function createPlaylistItem(
-  videoId = 'yt-1',
+  videoId = "yt-1"
 ): FilteredYouTubePlaylistItem {
-  return { contentDetails: { videoId } }
+  return { contentDetails: { videoId } };
 }
 
 /**
@@ -38,15 +39,15 @@ export function createPlaylistItem(
  * and thumbnail are named after its ID.
  */
 export function createVideo(
-  overrides: Partial<YouTubeVideo> = {},
+  overrides: Partial<YouTubeVideo> = {}
 ): YouTubeVideo {
-  const id = overrides.id ?? 'yt-1'
+  const id = overrides.id ?? "yt-1";
 
   return {
-    contentDetails: { duration: 'PT10M' },
+    contentDetails: { duration: "PT10M" },
     id,
     snippet: {
-      publishedAt: '2024-05-01T10:00:00Z',
+      publishedAt: "2024-05-01T10:00:00Z",
       thumbnails: {
         maxres: {
           height: 720,
@@ -57,7 +58,7 @@ export function createVideo(
       title: `Video ${id}`,
     },
     ...overrides,
-  }
+  };
 }
 
 /**
@@ -67,26 +68,26 @@ export function createVideo(
  * `thumbnail_id` and has no ETag, so it is never downloaded again.
  */
 export function createSavedVideo(
-  youtubeVideoId = 'yt-1',
-  overrides: Partial<SavedYouTubeVideo> = {},
+  youtubeVideoId = "yt-1",
+  overrides: Partial<SavedYouTubeVideo> = {}
 ): SavedYouTubeVideo {
   const thumbnailId =
     overrides.thumbnail_id === undefined
       ? `thumb-${youtubeVideoId}`
-      : overrides.thumbnail_id
+      : overrides.thumbnail_id;
 
   return {
-    duration: 'P0D',
+    duration: "P0D",
     id: `video-${youtubeVideoId}`,
-    published_at: '2024-05-01T13:00:00+00:00',
-    status: 'UPCOMING',
+    published_at: "2024-05-01T13:00:00+00:00",
+    status: "UPCOMING",
     thumbnail: thumbnailId
       ? { etag: null, id: thumbnailId, path: `${youtubeVideoId}/old.jpg` }
       : null,
     thumbnail_id: thumbnailId,
     title: `Video ${youtubeVideoId}`,
-    video_kind: 'standard',
+    video_kind: "standard",
     youtube_video: { youtube_video_id: youtubeVideoId },
     ...overrides,
-  }
+  };
 }

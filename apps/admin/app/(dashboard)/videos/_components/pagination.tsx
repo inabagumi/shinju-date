@@ -1,32 +1,33 @@
-'use client'
+"use client";
 
-import { Button } from '@shinju-date/ui'
-import Link from 'next/link'
-import { useSearchParamsHref } from '@/lib/use-update-search-params'
+import { Button } from "@shinju-date/ui";
+import Link from "next/link";
+
+import { useSearchParamsHref } from "@/lib/use-update-search-params";
 
 interface Props {
-  currentPage: number
-  totalPages: number
+  currentPage: number;
+  totalPages: number;
 }
 
 export default function Pagination({ currentPage, totalPages }: Props) {
-  const createHref = useSearchParamsHref()
+  const createHref = useSearchParamsHref();
 
   // Keep the current query parameters other than `page`
   const createPageUrl = (page: number) =>
-    createHref({ page: page.toString() }, { resetPage: false })
-  const pages = []
-  const maxPagesToShow = 5
+    createHref({ page: page.toString() }, { resetPage: false });
+  const pages = [];
+  const maxPagesToShow = 5;
 
-  let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2))
-  const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1)
+  let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+  const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
 
   if (endPage - startPage < maxPagesToShow - 1) {
-    startPage = Math.max(1, endPage - maxPagesToShow + 1)
+    startPage = Math.max(1, endPage - maxPagesToShow + 1);
   }
 
   for (let i = startPage; i <= endPage; i++) {
-    pages.push(i)
+    pages.push(i);
   }
 
   return (
@@ -54,10 +55,10 @@ export default function Pagination({ currentPage, totalPages }: Props) {
           asChild
           key={page}
           size="md"
-          variant={page === currentPage ? 'primary' : 'secondary'}
+          variant={page === currentPage ? "primary" : "secondary"}
         >
           <Link
-            aria-current={page === currentPage ? 'page' : undefined}
+            aria-current={page === currentPage ? "page" : undefined}
             href={createPageUrl(page)}
           >
             {page}
@@ -82,5 +83,5 @@ export default function Pagination({ currentPage, totalPages }: Props) {
         </Button>
       )}
     </nav>
-  )
+  );
 }

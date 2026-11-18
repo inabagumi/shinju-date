@@ -1,16 +1,19 @@
-'use client'
+"use client";
 
-import { Select, type SelectProps } from '@shinju-date/ui'
-import { useUpdateSearchParams } from '@/lib/use-update-search-params'
+import { Select, type SelectProps } from "@shinju-date/ui";
 
-export interface SearchParamSelectProps
-  extends Omit<SelectProps, 'defaultValue' | 'onChange' | 'value'> {
+import { useUpdateSearchParams } from "@/lib/use-update-search-params";
+
+export interface SearchParamSelectProps extends Omit<
+  SelectProps,
+  "defaultValue" | "onChange" | "value"
+> {
   /** 値を持つ URL のパラメータの名前 */
-  paramName: string
+  paramName: string;
   /** 既定の値。この値を選んだときは、URL にパラメータを付けない */
-  defaultValue: string
+  defaultValue: string;
   /** 今の値（ページで URL のパラメータを解釈したもの） */
-  value: string
+  value: string;
 }
 
 /**
@@ -23,19 +26,19 @@ export function SearchParamSelect({
   value,
   ...props
 }: SearchParamSelectProps) {
-  const updateSearchParams = useUpdateSearchParams()
+  const updateSearchParams = useUpdateSearchParams();
 
   return (
     <Select
       {...props}
       onChange={(event) => {
-        const nextValue = event.target.value
+        const nextValue = event.target.value;
 
         updateSearchParams({
           [paramName]: nextValue === defaultValue ? null : nextValue,
-        })
+        });
       }}
       value={value}
     />
-  )
+  );
 }

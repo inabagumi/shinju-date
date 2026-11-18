@@ -1,13 +1,13 @@
-import { replaceThumbnail } from '../internal/thumbnails/index.js'
-import type { WriteContext } from '../types.js'
+import { replaceThumbnail } from "../internal/thumbnails/index.js";
+import type { WriteContext } from "../types.js";
 import {
   isLivePlaceholder,
   type SavedTwitchVideo,
   updateTwitchVideo,
-} from './saved-video.js'
-import { createTwitchThumbnail } from './thumbnail.js'
-import type { TwitchVideo } from './types.js'
-import { toVideoFields } from './video.js'
+} from "./saved-video.js";
+import { createTwitchThumbnail } from "./thumbnail.js";
+import type { TwitchVideo } from "./types.js";
+import { toVideoFields } from "./video.js";
 
 export interface AttachArchiveOptions {
   /**
@@ -15,7 +15,7 @@ export interface AttachArchiveOptions {
    * linked to its archive then, and keeps describing the stream until the
    * live sync ends it.
    */
-  stillLive: boolean
+  stillLive: boolean;
 }
 
 /**
@@ -29,7 +29,7 @@ export async function attachArchive(
   context: WriteContext,
   saved: SavedTwitchVideo,
   archive: TwitchVideo,
-  { stillLive }: AttachArchiveOptions,
+  { stillLive }: AttachArchiveOptions
 ): Promise<boolean> {
   // Link first: should a later step fail, the row keeps its status and a
   // later run finishes the job, instead of leaving an ended row without its
@@ -38,11 +38,11 @@ export async function attachArchive(
     await updateTwitchVideo(context.supabaseClient, saved.twitch_video.id, {
       twitch_video_id: archive.id,
       type: archive.type,
-    })
+    });
   }
 
   if (stillLive) {
-    return false
+    return false;
   }
 
   // The preview of the stream gives way to the thumbnail of the archive. The
@@ -57,7 +57,7 @@ export async function attachArchive(
     fields: toVideoFields(archive),
     previousThumbnailId: saved.thumbnail_id,
     videoId: saved.id,
-  })
+  });
 
-  return true
+  return true;
 }

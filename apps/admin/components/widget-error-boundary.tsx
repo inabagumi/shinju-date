@@ -1,20 +1,21 @@
-'use client'
+"use client";
 
-import * as Sentry from '@sentry/nextjs'
-import { Button } from '@shinju-date/ui'
-import { AlertTriangle } from 'lucide-react'
-import { catchError, type ErrorInfo } from 'next/error'
-import { useEffect } from 'react'
-import { Panel } from './panel'
+import * as Sentry from "@sentry/nextjs";
+import { Button } from "@shinju-date/ui";
+import { AlertTriangle } from "lucide-react";
+import { catchError, type ErrorInfo } from "next/error";
+import { useEffect } from "react";
+
+import { Panel } from "./panel";
 
 interface WidgetErrorBoundaryProps {
   /** The heading of the widget, shown in place of it when it fails */
-  title: string
+  title: string;
 }
 
 interface WidgetErrorFallbackProps extends WidgetErrorBoundaryProps {
-  error: unknown
-  retry: () => void
+  error: unknown;
+  retry: () => void;
 }
 
 /**
@@ -27,8 +28,8 @@ export function WidgetErrorFallback({
   title,
 }: WidgetErrorFallbackProps) {
   useEffect(() => {
-    Sentry.captureException(error)
-  }, [error])
+    Sentry.captureException(error);
+  }, [error]);
 
   return (
     <Panel role="alert" title={title}>
@@ -42,18 +43,18 @@ export function WidgetErrorFallback({
         </Button>
       </div>
     </Panel>
-  )
+  );
 }
 
 function renderFallback(
   props: WidgetErrorBoundaryProps,
-  { error, retry }: ErrorInfo,
+  { error, retry }: ErrorInfo
 ) {
-  return <WidgetErrorFallback {...props} error={error} retry={retry} />
+  return <WidgetErrorFallback {...props} error={error} retry={retry} />;
 }
 
 /**
  * Keeps an error thrown by one widget inside that widget, so that the rest
  * of the page keeps showing. Put it outside the widget's `<Suspense>`.
  */
-export const WidgetErrorBoundary = catchError(renderFallback)
+export const WidgetErrorBoundary = catchError(renderFallback);

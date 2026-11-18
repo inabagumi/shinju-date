@@ -1,14 +1,16 @@
-import type { Tables } from '@shinju-date/database'
-import { Skeleton } from '@shinju-date/ui'
-import { Markdown } from '@/components/markdown'
-import { Panel, PanelSkeleton } from '@/components/panel'
-import { formatDateTimeFromISO } from '@/lib/format'
-import { FeedbackMemoForm } from './feedback-memo-form'
-import { FeedbackReadToggle } from './feedback-read-toggle'
-import { FeedbackStatusForm } from './feedback-status-form'
+import type { Tables } from "@shinju-date/database";
+import { Skeleton } from "@shinju-date/ui";
+
+import { Markdown } from "@/components/markdown";
+import { Panel, PanelSkeleton } from "@/components/panel";
+import { formatDateTimeFromISO } from "@/lib/format";
+
+import { FeedbackMemoForm } from "./feedback-memo-form";
+import { FeedbackReadToggle } from "./feedback-read-toggle";
+import { FeedbackStatusForm } from "./feedback-status-form";
 
 interface FeatureRequestDetailProps {
-  featureRequest: Tables<'feature_requests'>
+  featureRequest: Tables<"feature_requests">;
 }
 
 /**
@@ -18,8 +20,8 @@ interface FeatureRequestDetailProps {
 export function FeatureRequestDetail({
   featureRequest,
 }: FeatureRequestDetailProps) {
-  const createdAtFormatted = formatDateTimeFromISO(featureRequest.created_at)
-  const updatedAtFormatted = formatDateTimeFromISO(featureRequest.updated_at)
+  const createdAtFormatted = formatDateTimeFromISO(featureRequest.created_at);
+  const updatedAtFormatted = formatDateTimeFromISO(featureRequest.updated_at);
 
   return (
     <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
@@ -80,7 +82,7 @@ export function FeatureRequestDetail({
         </Panel>
       </div>
     </div>
-  )
+  );
 }
 
 /**
@@ -113,7 +115,7 @@ export function FeatureRequestDetailSkeleton() {
       <div className="space-y-6">
         <PanelSkeleton title="基本情報">
           <div className="space-y-3">
-            {['created_at', 'updated_at'].map((item) => (
+            {["created_at", "updated_at"].map((item) => (
               <div className="space-y-1" key={item}>
                 <Skeleton className="h-5 w-16" />
                 <Skeleton className="h-6 w-40" />
@@ -140,5 +142,5 @@ export function FeatureRequestDetailSkeleton() {
         </PanelSkeleton>
       </div>
     </div>
-  )
+  );
 }

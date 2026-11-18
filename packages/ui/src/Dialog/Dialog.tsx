@@ -1,11 +1,12 @@
-import * as DialogPrimitive from '@radix-ui/react-dialog'
-import type { ComponentPropsWithRef } from 'react'
-import { twMerge } from '../tw-merge.js'
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import type { ComponentPropsWithRef } from "react";
 
-export const Dialog = DialogPrimitive.Root
-export const DialogTrigger = DialogPrimitive.Trigger
-export const DialogClose = DialogPrimitive.Close
-export const DialogPortal = DialogPrimitive.Portal
+import { twMerge } from "../tw-merge.js";
+
+export const Dialog = DialogPrimitive.Root;
+export const DialogTrigger = DialogPrimitive.Trigger;
+export const DialogClose = DialogPrimitive.Close;
+export const DialogPortal = DialogPrimitive.Portal;
 
 export function DialogOverlay({
   className,
@@ -14,12 +15,12 @@ export function DialogOverlay({
   return (
     <DialogPrimitive.Overlay
       className={twMerge(
-        'fixed inset-0 bg-black/50 motion-safe:data-[state=closed]:animate-fade-out motion-safe:data-[state=open]:animate-fade-in',
-        className,
+        "fixed inset-0 bg-black/50 motion-safe:data-[state=closed]:animate-fade-out motion-safe:data-[state=open]:animate-fade-in",
+        className
       )}
       {...props}
     />
-  )
+  );
 }
 
 export function DialogContent({
@@ -30,14 +31,14 @@ export function DialogContent({
   return (
     <DialogPrimitive.Content
       className={twMerge(
-        'fixed top-1/2 left-1/2 max-h-[85vh] w-[90vw] max-w-[450px] -translate-x-1/2 -translate-y-1/2 rounded-container bg-surface p-6 text-foreground shadow-overlay motion-safe:data-[state=closed]:animate-scale-out motion-safe:data-[state=open]:animate-scale-in',
-        className,
+        "fixed top-1/2 left-1/2 max-h-[85vh] w-[90vw] max-w-[450px] -translate-x-1/2 -translate-y-1/2 rounded-container bg-surface p-6 text-foreground shadow-overlay motion-safe:data-[state=closed]:animate-scale-out motion-safe:data-[state=open]:animate-scale-in",
+        className
       )}
       {...props}
     >
       {children}
     </DialogPrimitive.Content>
-  )
+  );
 }
 
 export function DialogTitle({
@@ -47,12 +48,12 @@ export function DialogTitle({
   return (
     <DialogPrimitive.Title
       className={twMerge(
-        'mb-4 text-heading font-bold text-foreground',
-        className,
+        "mb-4 text-heading font-bold text-foreground",
+        className
       )}
       {...props}
     />
-  )
+  );
 }
 
 export function DialogDescription({
@@ -61,8 +62,8 @@ export function DialogDescription({
 }: ComponentPropsWithRef<typeof DialogPrimitive.Description>) {
   return (
     <DialogPrimitive.Description
-      className={twMerge('mb-6 text-meta text-muted', className)}
+      className={twMerge("mb-6 text-meta text-muted", className)}
       {...props}
     />
-  )
+  );
 }

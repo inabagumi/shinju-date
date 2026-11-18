@@ -3,7 +3,7 @@ import {
   type ReactElement,
   type ReactNode,
   Suspense,
-} from 'react'
+} from "react";
 
 /**
  * サーバーコンポーネントの戻り値をたどり、最初の `<Suspense>` の子を返す。
@@ -11,24 +11,24 @@ import {
  */
 export function findSuspenseChildren(node: ReactNode): unknown {
   if (!isValidElement(node)) {
-    return undefined
+    return undefined;
   }
 
-  const { children } = (node as ReactElement<{ children?: ReactNode }>).props
+  const { children } = (node as ReactElement<{ children?: ReactNode }>).props;
 
   if (node.type === Suspense) {
-    return children
+    return children;
   }
 
   for (const child of Array.isArray(children) ? children : [children]) {
-    const found = findSuspenseChildren(child)
+    const found = findSuspenseChildren(child);
 
     if (found !== undefined) {
-      return found
+      return found;
     }
   }
 
-  return undefined
+  return undefined;
 }
 
 /**
@@ -38,33 +38,36 @@ export function findSuspenseChildren(node: ReactNode): unknown {
  */
 export function findAllSuspenseChildren(node: ReactNode): unknown[] {
   if (Array.isArray(node)) {
-    return node.flatMap((child: ReactNode) => findAllSuspenseChildren(child))
+    return node.flatMap((child: ReactNode) => findAllSuspenseChildren(child));
   }
 
   if (!isValidElement(node)) {
-    return []
+    return [];
   }
 
-  const props = node.props as { children?: ReactNode } & Record<string, unknown>
+  const props = node.props as { children?: ReactNode } & Record<
+    string,
+    unknown
+  >;
 
   if (node.type === Suspense) {
-    return [props.children]
+    return [props.children];
   }
 
   return Object.values(props).flatMap((value) =>
-    findAllSuspenseChildren(value as ReactNode),
-  )
+    findAllSuspenseChildren(value as ReactNode)
+  );
 }
 
 /**
  * 非同期のサーバーコンポーネントの要素を、関数として呼んで実行する
  */
 export async function runServerComponent(element: unknown): Promise<ReactNode> {
-  if (!isValidElement(element) || typeof element.type !== 'function') {
-    throw new Error('The element is not a function component.')
+  if (!isValidElement(element) || typeof element.type !== "function") {
+    throw new Error("The element is not a function component.");
   }
 
-  const component = element.type as (props: unknown) => Promise<ReactNode>
+  const component = element.type as (props: unknown) => Promise<ReactNode>;
 
-  return component(element.props)
+  return component(element.props);
 }

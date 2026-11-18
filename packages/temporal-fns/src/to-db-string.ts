@@ -6,13 +6,13 @@
  * @returns An ISO 8601 string in UTC, truncated to the second (e.g., "2025-11-02T03:30:00Z").
  */
 export function toDBString(
-  date: Temporal.Instant | Temporal.ZonedDateTime,
+  date: Temporal.Instant | Temporal.ZonedDateTime
 ): string {
   const instant =
-    date instanceof Temporal.ZonedDateTime ? date.toInstant() : date
+    date instanceof Temporal.ZonedDateTime ? date.toInstant() : date;
 
   return instant.toString({
-    roundingMode: 'floor',
-    smallestUnit: 'second',
-  })
+    roundingMode: "floor",
+    smallestUnit: "second",
+  });
 }

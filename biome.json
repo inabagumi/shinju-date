@@ -46,9 +46,7 @@
             },
             "patterns": [
               {
-                "group": [
-                  "temporal-polyfill/**"
-                ],
+                "group": ["temporal-polyfill/**"],
                 "message": "Temporal はグローバルを使ってください。AGENTS.md の「時刻の扱い」を参照。"
               }
             ]
@@ -65,9 +63,7 @@
   },
   "overrides": [
     {
-      "includes": [
-        "packages/ui/src/tw-merge.ts"
-      ],
+      "includes": ["packages/ui/src/tw-merge.ts"],
       "linter": {
         "rules": {
           "style": {
@@ -77,9 +73,7 @@
       }
     },
     {
-      "includes": [
-        "**/instrumentation-client.ts"
-      ],
+      "includes": ["**/instrumentation-client.ts"],
       "linter": {
         "rules": {
           "style": {
@@ -89,10 +83,7 @@
       }
     },
     {
-      "includes": [
-        "**/*.test.*",
-        "**/e2e/**"
-      ],
+      "includes": ["**/*.test.*", "**/e2e/**"],
       "linter": {
         "rules": {
           "style": {
@@ -125,16 +116,9 @@
     }
   ],
   "tailwind": {
-    "attributes": [
-      "class",
-      "className"
-    ],
-    "mergeFunctions": [
-      "twMerge"
-    ],
-    "variantFunctions": [
-      "cva"
-    ]
+    "attributes": ["class", "className"],
+    "mergeFunctions": ["twMerge"],
+    "variantFunctions": ["cva"]
   },
   "vcs": {
     "clientKind": "git",

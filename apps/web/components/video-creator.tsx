@@ -1,11 +1,13 @@
-import { twMerge } from '@shinju-date/ui'
-import type { Video } from '@/lib/data/videos'
-import { getVideoCreator } from '@/lib/video-creator'
-import { Avatar, AvatarFallback, AvatarImage } from './avatar'
+import { twMerge } from "@shinju-date/ui";
+
+import type { Video } from "@/lib/data/videos";
+import { getVideoCreator } from "@/lib/video-creator";
+
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 
 interface VideoCreatorProps {
-  className?: string
-  value: Video
+  className?: string;
+  value: Video;
 }
 
 /**
@@ -14,15 +16,15 @@ interface VideoCreatorProps {
  * links of its own. The text style comes from the surrounding element.
  */
 export default function VideoCreator({ className, value }: VideoCreatorProps) {
-  const creator = getVideoCreator(value)
+  const creator = getVideoCreator(value);
 
   if (!creator) {
-    return null
+    return null;
   }
 
   return (
     <span
-      className={twMerge('flex min-w-0 items-center gap-1.5', className)}
+      className={twMerge("flex min-w-0 items-center gap-1.5", className)}
       data-testid="video-creator"
     >
       {/*
@@ -40,18 +42,18 @@ export default function VideoCreator({ className, value }: VideoCreatorProps) {
         {creator.name}
       </span>
     </span>
-  )
+  );
 }
 
 interface VideoCreatorSkeletonProps {
-  className?: string
+  className?: string;
 }
 
 export function VideoCreatorSkeleton({ className }: VideoCreatorSkeletonProps) {
   return (
-    <span className={twMerge('flex items-center gap-1.5', className)}>
+    <span className={twMerge("flex items-center gap-1.5", className)}>
       <span className="inline-block size-5 shrink-0 animate-pulse rounded-full bg-muted" />
       <span className="inline-block h-3 w-20 animate-pulse rounded-control bg-muted" />
     </span>
-  )
+  );
 }

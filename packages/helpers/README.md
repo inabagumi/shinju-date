@@ -26,18 +26,18 @@ import {
   getVideoExternalUrl,
   isMaintenanceMode,
   range,
-} from '@shinju-date/helpers'
+} from "@shinju-date/helpers";
 
-createErrorResponse('Not Found', { status: 404 }) // { "error": "Not Found" } を返す Response
+createErrorResponse("Not Found", { status: 404 }); // { "error": "Not Found" } を返す Response
 
-formatNumber(12345) // '12,345'
+formatNumber(12345); // '12,345'
 
-getVideoExternalUrl({ platform: 'youtube', youtubeVideoId: 'abc' }) // 'https://www.youtube.com/watch?v=abc'
+getVideoExternalUrl({ platform: "youtube", youtubeVideoId: "abc" }); // 'https://www.youtube.com/watch?v=abc'
 
-await isMaintenanceMode(redisClient) // true または false
+await isMaintenanceMode(redisClient); // true または false
 
-range(3) // [0, 1, 2]
-range(2, 5) // [2, 3, 4]
+range(3); // [0, 1, 2]
+range(2, 5); // [2, 3, 4]
 ```
 
 公開している関数と型は [`src/index.ts`](src/index.ts) を見てください。

@@ -1,10 +1,10 @@
-import { createErrorResponse } from '@shinju-date/helpers'
-import type { z } from 'zod'
+import { createErrorResponse } from "@shinju-date/helpers";
+import type { z } from "zod";
 
 function formatIssue(issue: z.core.$ZodIssue): string {
-  const path = issue.path.map(String).join('.')
+  const path = issue.path.map(String).join(".");
 
-  return path ? `${path}: ${issue.message}` : issue.message
+  return path ? `${path}: ${issue.message}` : issue.message;
 }
 
 /**
@@ -15,17 +15,17 @@ function formatIssue(issue: z.core.$ZodIssue): string {
  */
 export function parseQuery<T extends z.ZodType>(
   schema: T,
-  request: Request,
+  request: Request
 ): z.output<T> | Response {
-  const { searchParams } = new URL(request.url)
-  const result = schema.safeParse(Object.fromEntries(searchParams.entries()))
+  const { searchParams } = new URL(request.url);
+  const result = schema.safeParse(Object.fromEntries(searchParams.entries()));
 
   if (!result.success) {
     return createErrorResponse(
-      `Invalid query parameters. ${result.error.issues.map(formatIssue).join('; ')}`,
-      { status: 400 },
-    )
+      `Invalid query parameters. ${result.error.issues.map(formatIssue).join("; ")}`,
+      { status: 400 }
+    );
   }
 
-  return result.data
+  return result.data;
 }
