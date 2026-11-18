@@ -32,7 +32,7 @@
     "oxlint": "catalog:",
     "stylelint": "17.16.0",
     "stylelint-config-idiomatic-order": "10.0.0",
-    "stylelint-config-standard": "40.0.0",
+    "stylelint-config-standard": "41.0.0",
     "supabase": "3.2.0",
     "turbo": "2.11.11",
     "typescript": "catalog:",
