@@ -47,14 +47,119 @@ export interface BackfillJob {
   updatedAt: string
 }
 
-export interface BackfillJobState {
+/**
+ * How a job moves between statuses: for each operation, the statuses it
+ * moves a job from, and the status it moves it to. Every write of
+ * {@link BackfillQueue} follows it, and throws a
+ * {@link BackfillTransitionError} for a job whose status is not among the
+ * operation's `from`: e.g. a job that finished cannot make progress or be
+ * put back by a worker, only be requested again.
+ */
+export const BACKFILL_JOB_TRANSITIONS = {
+  /**
+   * A worker takes a job off the queue. `running` when it was queued twice
+   * and the lease of the first claim ran out. {@link CLAIM_SCRIPT} skips the
+   * queue entries of other jobs.
+   */
+  claim: { from: ['pending', 'running'], to: 'running' },
+  /** A worker read the last page of a claimed job. */
+  complete: { from: ['running'], to: 'done' },
+  /**
+   * An admin requests a job that is not queued or being read ({@link
+   * getJobActivity}): one that finished, or that was interrupted.
+   */
+  enqueue: { from: ['done', 'failed', 'pending', 'running'], to: 'pending' },
+  /** A worker gives up a claimed job. */
+  fail: { from: ['running'], to: 'failed' },
+  /** A worker read a page of a claimed job, and keeps it. */
+  recordPage: { from: ['running'], to: 'running' },
+  /** A worker puts a claimed job back, to continue or to retry later. */
+  requeue: { from: ['running'], to: 'pending' },
+} as const satisfies Record<
+  string,
+  { from: readonly BackfillJobStatus[]; to: BackfillJobStatus }
+>
+
+export type BackfillJobOperation = keyof typeof BACKFILL_JOB_TRANSITIONS
+
+/**
+ * Thrown for an operation on a job whose status it does not move from, as
+ * {@link BACKFILL_JOB_TRANSITIONS} says.
+ */
+export class BackfillTransitionError extends Error {
+  override name = 'BackfillTransitionError'
+  readonly jobId: string
+  readonly operation: BackfillJobOperation
+  readonly status: BackfillJobStatus
+
+  constructor(
+    jobId: string,
+    operation: BackfillJobOperation,
+    status: BackfillJobStatus,
+  ) {
+    super(
+      `A backfill job that is ${status} cannot move to ${BACKFILL_JOB_TRANSITIONS[operation].to} (${operation}): ${jobId}`,
+    )
+    this.jobId = jobId
+    this.operation = operation
+    this.status = status
+  }
+}
+
+/** Tells whether an operation may move a job that has the given status. */
+export function canTransition(
+  operation: BackfillJobOperation,
+  status: BackfillJobStatus,
+): boolean {
+  const { from }: { from: readonly BackfillJobStatus[] } =
+    BACKFILL_JOB_TRANSITIONS[operation]
+
+  return from.includes(status)
+}
+
+/**
+ * Moves a job by an operation.
+ *
+ * @throws {BackfillTransitionError} When the operation does not move a job
+ *   that has its status.
+ */
+function transition<T extends BackfillJob>(
+  job: T,
+  operation: BackfillJobOperation,
+): T {
+  if (!canTransition(operation, job.status)) {
+    throw new BackfillTransitionError(job.id, operation, job.status)
+  }
+
+  return { ...job, status: BACKFILL_JOB_TRANSITIONS[operation].to }
+}
+
+/**
+ * Status of a job as it is shown to admins. `interrupted` is a job that is
+ * `pending` or `running` but neither queued nor being read: it stopped
+ * without finishing (e.g. its worker timed out, or it was lost) and can be
+ * requested again to resume.
+ */
+export type BackfillActivityStatus = BackfillJobStatus | 'interrupted'
+
+export interface BackfillJobActivity {
   /**
    * Whether the job is queued or being read. An active job cannot be
-   * requested again; a `pending` or `running` job that is not active was
-   * interrupted (e.g. its worker timed out) and can be.
+   * requested again; one that is interrupted can.
    */
   active: boolean
+  status: BackfillActivityStatus
+}
+
+export interface BackfillJobState extends BackfillJobActivity {
   job: BackfillJob
+}
+
+export interface GetJobActivityOptions {
+  /** Whether a worker holds the lock of the job. */
+  locked: boolean
+  /** Current time (default: the system clock). */
+  now?: Temporal.Instant
 }
 
 export interface BackfillRequest {
@@ -99,12 +204,20 @@ export type BackfillWriteResult =
 /** How long jobs and the queue are kept after their last change (7 days). */
 export const BACKFILL_JOB_TTL_SECONDS = 7 * 24 * 60 * 60
 
+/** Runs in a row that may fail before a job is given up, by default. */
+export const BACKFILL_MAX_ATTEMPTS = 3
+
 /**
- * How long a worker holds a job it claimed. Must be longer than a worker may
- * run, so that a job is never read by two workers at once; a job whose worker
- * died is free again once it runs out.
+ * How long a worker may run, by default, in seconds. The lease of a claim
+ * is made from it ({@link BackfillQueueOptions.maxRunSeconds}).
  */
-export const BACKFILL_LEASE_SECONDS = 6 * 60
+export const BACKFILL_DEFAULT_MAX_RUN_SECONDS = 5 * 60
+
+/**
+ * Time added to the longest a worker may run to make the lease of a claim,
+ * for the time a claim takes to reach Redis and clocks that differ.
+ */
+export const BACKFILL_LEASE_MARGIN_SECONDS = 60
 
 /**
  * A job that waited this long in the queue is considered lost (e.g. dropped
@@ -263,26 +376,71 @@ redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3])
 redis.call('DEL', KEYS[3])
 return 1`
 
-function isActive(
-  job: BackfillJob,
-  locked: boolean,
-  now: Temporal.Instant,
-): boolean {
+/**
+ * Tells whether a job is queued or being read, and how it is shown to
+ * admins: a `pending` job is queued until it waited
+ * {@link BACKFILL_PENDING_TIMEOUT_SECONDS}, and a `running` one is being
+ * read while its worker holds the lock; otherwise it is `interrupted`.
+ */
+export function getJobActivity(
+  job: Pick<BackfillJob, 'status' | 'updatedAt'>,
+  { locked, now = Temporal.Now.instant() }: GetJobActivityOptions,
+): BackfillJobActivity {
+  let active: boolean
+
   switch (job.status) {
     case 'pending':
-      return (
+      active =
         Temporal.Instant.compare(
           Temporal.Instant.from(job.updatedAt).add({
             seconds: BACKFILL_PENDING_TIMEOUT_SECONDS,
           }),
           now,
         ) > 0
-      )
+      break
     case 'running':
-      return locked
+      active = locked
+      break
     default:
-      return false
+      return { active: false, status: job.status }
   }
+
+  return { active, status: active ? job.status : 'interrupted' }
+}
+
+export interface BackfillQueueOptions {
+  /**
+   * Runs in a row that may fail before a job is given up (default:
+   * {@link BACKFILL_MAX_ATTEMPTS}).
+   */
+  maxAttempts?: number
+  /**
+   * The longest a worker may run, in seconds, such as the `maxDuration` of
+   * the route that works off the queue (default:
+   * {@link BACKFILL_DEFAULT_MAX_RUN_SECONDS}). A claim is locked for this
+   * plus {@link BACKFILL_LEASE_MARGIN_SECONDS}, so that a job is never read
+   * by two workers at once; a job whose worker died is free again once the
+   * lock runs out.
+   */
+  maxRunSeconds?: number
+}
+
+/** The result of reading one page of a claimed job. */
+export interface BackfillPage {
+  /** Videos saved from the page. */
+  added: number
+  /** Whether the history ended with the page; the job is then done. */
+  done: boolean
+  /** Where reading continues. */
+  nextCursor: string | null
+}
+
+export interface BackfillFailureOptions {
+  /**
+   * Whether retrying cannot help (e.g. the account is gone), so that the job
+   * is given up at once.
+   */
+  permanent?: boolean
 }
 
 /**
@@ -290,21 +448,37 @@ function isActive(
  *
  * The admin app requests jobs ({@link enqueue}) and shows their progress
  * ({@link getJobs}); the batch app works them off a page at a time:
- * {@link claim} a job, read pages while its time lasts, then either
- * {@link complete} it, {@link fail} it or {@link requeue} it to continue in a
- * later run. Jobs are read in turns, so one long history does not hold up the
- * others.
+ * {@link claim} a job, read pages and record each one ({@link recordPage})
+ * while its time lasts, then {@link requeue} it to continue in a later run.
+ * A page that cannot be read is recorded with {@link recordFailure}, which
+ * retries the job in a later run or gives it up. Jobs are read in turns, so
+ * one long history does not hold up the others.
  *
- * A claimed job is locked for {@link BACKFILL_LEASE_SECONDS}, so it is never
- * read twice at once even if it was queued twice. The lock holds a token made
- * for the claim ({@link BackfillClaim}), and the writes of a worker are made
- * only while it does: once the lease runs out and another worker claims the
- * job, the first worker's writes are ignored and return `lost`.
+ * Every write follows {@link BACKFILL_JOB_TRANSITIONS}, and the fields of a
+ * job are changed only here.
+ *
+ * A claimed job is locked for {@link leaseSeconds}, so it is never read
+ * twice at once even if it was queued twice. The lock holds a token made for
+ * the claim ({@link BackfillClaim}), and the writes of a worker are made only
+ * while it does: once the lease runs out and another worker claims the job,
+ * the first worker's writes are ignored and return `lost`.
  */
 export class BackfillQueue {
+  /** How long a claim is locked, in seconds. */
+  readonly leaseSeconds: number
+  /** Runs in a row that may fail before a job is given up. */
+  readonly maxAttempts: number
   readonly #redis: Redis
 
-  constructor(redis: Redis) {
+  constructor(
+    redis: Redis,
+    {
+      maxAttempts = BACKFILL_MAX_ATTEMPTS,
+      maxRunSeconds = BACKFILL_DEFAULT_MAX_RUN_SECONDS,
+    }: BackfillQueueOptions = {},
+  ) {
+    this.leaseSeconds = Math.ceil(maxRunSeconds) + BACKFILL_LEASE_MARGIN_SECONDS
+    this.maxAttempts = maxAttempts
     this.#redis = redis
   }
 
@@ -328,7 +502,10 @@ export class BackfillQueue {
       const job = jobs[index]
 
       return job
-        ? { active: isActive(job, locks[index] != null, now), job }
+        ? {
+            ...getJobActivity(job, { locked: locks[index] != null, now }),
+            job,
+          }
         : null
     })
   }
@@ -348,6 +525,10 @@ export class BackfillQueue {
 
     if (current?.active) {
       return { enqueued: false, job: current.job }
+    }
+
+    if (current) {
+      transition(current.job, 'enqueue')
     }
 
     const resumed =
@@ -415,7 +596,7 @@ export class BackfillQueue {
         REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX,
         REDIS_KEYS.VIDEO_BACKFILL_LOCK_PREFIX,
       ],
-      [token, BACKFILL_LEASE_SECONDS, now.toString(), BACKFILL_JOB_TTL_SECONDS],
+      [token, this.leaseSeconds, now.toString(), BACKFILL_JOB_TTL_SECONDS],
     )
 
     if (reply == null) {
@@ -431,41 +612,70 @@ export class BackfillQueue {
   }
 
   /**
-   * Records the progress of a claimed job.
+   * Records a page of a claimed job that was read: adds its videos and pages
+   * to the progress, moves the cursor on and clears the failures. When the
+   * history ended with it, the job is done and released; otherwise it stays
+   * claimed, to read the next page or to {@link requeue} it.
+   *
+   * When the progress cannot be saved, the job is put back in the queue with
+   * it if possible, so that it does not wait until it is requested again,
+   * and the error is thrown.
    */
-  async update(
+  async recordPage(
     { job, token }: BackfillClaim,
+    { added, done, nextCursor }: BackfillPage,
     now: Temporal.Instant = Temporal.Now.instant(),
   ): Promise<BackfillWriteResult> {
-    const updated: BackfillJob = { ...job, updatedAt: now.toString() }
-    const saved = await this.#redis.eval<[string, string, number], number>(
-      SAVE_SCRIPT,
-      [jobKey(job.id), lockKey(job.id)],
-      [token, JSON.stringify(updated), BACKFILL_JOB_TTL_SECONDS],
-    )
+    const progressed: BackfillJob = {
+      ...job,
+      added: job.added + added,
+      attempts: 0,
+      cursor: nextCursor,
+      error: null,
+      pages: job.pages + 1,
+    }
 
-    return saved === 1 ? { job: updated, status: 'saved' } : { status: 'lost' }
+    if (done) {
+      return this.#finish(progressed, 'complete', token, now)
+    }
+
+    try {
+      return await this.#save(progressed, token, now)
+    } catch (error) {
+      try {
+        await this.requeue({ job: progressed, token }, now)
+      } catch {
+        // The job stays claimed until its lease runs out; the error that
+        // stopped the save is the one to report.
+      }
+
+      throw error
+    }
   }
 
   /**
-   * Marks a claimed job `done` and releases it.
+   * Records a page of a claimed job that could not be read: counts the
+   * attempt and keeps the error. The job is given up (`failed`) when the
+   * error is permanent or the attempts reached {@link maxAttempts}, and put
+   * back in the queue to retry in a later run otherwise. Either way it is
+   * released.
    */
-  async complete(
+  async recordFailure(
     { job, token }: BackfillClaim,
+    error: unknown,
+    { permanent = false }: BackfillFailureOptions = {},
     now: Temporal.Instant = Temporal.Now.instant(),
   ): Promise<BackfillWriteResult> {
-    return this.#finish({ ...job, error: null, status: 'done' }, token, now)
-  }
+    const attempts = job.attempts + 1
+    const failed: BackfillJob = {
+      ...job,
+      attempts,
+      error: error instanceof Error ? error.message : String(error),
+    }
 
-  /**
-   * Marks a claimed job `failed` and releases it.
-   */
-  async fail(
-    { job, token }: BackfillClaim,
-    error: string,
-    now: Temporal.Instant = Temporal.Now.instant(),
-  ): Promise<BackfillWriteResult> {
-    return this.#finish({ ...job, error, status: 'failed' }, token, now)
+    return permanent || attempts >= this.maxAttempts
+      ? this.#finish(failed, 'fail', token, now)
+      : this.requeue({ job: failed, token }, now)
   }
 
   /**
@@ -477,8 +687,7 @@ export class BackfillQueue {
     now: Temporal.Instant = Temporal.Now.instant(),
   ): Promise<BackfillWriteResult> {
     const pending: BackfillJob = {
-      ...job,
-      status: 'pending',
+      ...transition(job, 'requeue'),
       updatedAt: now.toString(),
     }
     const queued = await this.#redis.eval<
@@ -493,14 +702,34 @@ export class BackfillQueue {
     return queued === 1 ? { job: pending, status: 'saved' } : { status: 'lost' }
   }
 
+  async #save(
+    job: BackfillJob,
+    token: string,
+    now: Temporal.Instant,
+  ): Promise<BackfillWriteResult> {
+    const updated: BackfillJob = {
+      ...transition(job, 'recordPage'),
+      updatedAt: now.toString(),
+    }
+    const saved = await this.#redis.eval<[string, string, number], number>(
+      SAVE_SCRIPT,
+      [jobKey(job.id), lockKey(job.id)],
+      [token, JSON.stringify(updated), BACKFILL_JOB_TTL_SECONDS],
+    )
+
+    return saved === 1 ? { job: updated, status: 'saved' } : { status: 'lost' }
+  }
+
+  /** Saves a claimed job as `done` or `failed` and releases it. */
   async #finish(
     job: BackfillJob,
+    operation: 'complete' | 'fail',
     token: string,
     now: Temporal.Instant,
   ): Promise<BackfillWriteResult> {
     const timestamp = now.toString()
     const finished: BackfillJob = {
-      ...job,
+      ...transition(job, operation),
       finishedAt: timestamp,
       updatedAt: timestamp,
     }

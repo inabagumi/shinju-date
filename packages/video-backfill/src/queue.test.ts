@@ -6,13 +6,20 @@ import {
   useScopedRedis,
 } from '../test/redis.js'
 import {
+  BACKFILL_DEFAULT_MAX_RUN_SECONDS,
+  BACKFILL_JOB_TRANSITIONS,
   BACKFILL_JOB_TTL_SECONDS,
-  BACKFILL_LEASE_SECONDS,
+  BACKFILL_LEASE_MARGIN_SECONDS,
+  BACKFILL_MAX_ATTEMPTS,
   type BackfillClaim,
   type BackfillJob,
   BackfillQueue,
   type BackfillRequest,
+  BackfillTransitionError,
+  type BackfillWriteResult,
+  canTransition,
   getBackfillJobId,
+  getJobActivity,
   getRunResultKey,
 } from './index.js'
 
@@ -39,6 +46,31 @@ async function claimJob(queue: BackfillQueue, at: Temporal.Instant) {
   return claim
 }
 
+/**
+ * The claim to keep writing with after a write, failing the test when the
+ * lock was lost.
+ */
+function next(
+  { token }: BackfillClaim,
+  result: BackfillWriteResult,
+): BackfillClaim {
+  if (result.status !== 'saved') {
+    throw new Error('Expected the write to be saved')
+  }
+
+  return { job: result.job, token }
+}
+
+/** A page that is not the last one. */
+function page(added: number, nextCursor: string) {
+  return { added, done: false, nextCursor }
+}
+
+/** The last page of a history. */
+function lastPage(added = 0) {
+  return { added, done: true, nextCursor: null }
+}
+
 /** The claim with changes made to its job. */
 function withChanges(
   { job, token }: BackfillClaim,
@@ -51,11 +83,13 @@ describeOnEachRedis((createClient) => {
   describe('BackfillQueue', () => {
     const getScopedRedis = useScopedRedis(createClient)
 
-    function createQueue() {
+    function createQueue(
+      options?: ConstructorParameters<typeof BackfillQueue>[1],
+    ) {
       const scoped = getScopedRedis()
 
       return {
-        queue: new BackfillQueue(scoped.redis),
+        queue: new BackfillQueue(scoped.redis, options),
         redis: scoped.redis,
         scoped,
       }
@@ -128,10 +162,12 @@ describeOnEachRedis((createClient) => {
       scoped.beforeNextScript(async () => {
         await queue.enqueue({ ...request, requestedBy: 'user-2' }, now)
         const claim = await claimJob(queue, later(1))
-        await queue.requeue(
-          withChanges(claim, { added: 4, cursor: 'page-2' }),
+        const recorded = await queue.recordPage(
+          claim,
+          page(4, 'page-2'),
           later(2),
         )
+        await queue.requeue(next(claim, recorded), later(2))
       })
 
       await expect(queue.enqueue(request, later(3))).resolves.toMatchObject({
@@ -148,7 +184,12 @@ describeOnEachRedis((createClient) => {
 
       await queue.enqueue(request, now)
       const claim = await claimJob(queue, later(1))
-      await queue.fail(claim, 'quota exceeded', later(2))
+      await queue.recordFailure(
+        claim,
+        new Error('quota exceeded'),
+        { permanent: true },
+        later(2),
+      )
 
       // A stale queue entry is claimed between the request's read and write.
       scoped.beforeNextScript(async () => {
@@ -198,6 +239,7 @@ describeOnEachRedis((createClient) => {
         {
           active: true,
           job: expect.objectContaining({ cursor: null, status: 'running' }),
+          status: 'running',
         },
       ])
     })
@@ -229,7 +271,7 @@ describeOnEachRedis((createClient) => {
         }),
         token: expect.any(String),
       })
-      await expectTtl(redis, lockKey, BACKFILL_LEASE_SECONDS)
+      await expectTtl(redis, lockKey, queue.leaseSeconds)
       await expect(queue.claim(later(1))).resolves.toMatchObject({
         job: { id: 'youtube:channel-row-2' },
       })
@@ -253,7 +295,11 @@ describeOnEachRedis((createClient) => {
       const { queue, redis } = createQueue()
 
       await queue.enqueue(request, now)
-      await queue.complete(await claimJob(queue, later(1)), later(2))
+      await queue.recordPage(
+        await claimJob(queue, later(1)),
+        lastPage(),
+        later(2),
+      )
       await redis.lpush(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, jobId, 'youtube:gone')
 
       await expect(queue.claim(later(3))).resolves.toBeNull()
@@ -266,12 +312,14 @@ describeOnEachRedis((createClient) => {
       await queue.enqueue(request, now)
       await queue.enqueue({ ...request, accountId: 'channel-row-2' }, now)
       const claim = await claimJob(queue, later(1))
+      const recorded = await queue.recordPage(
+        claim,
+        page(3, 'page-2'),
+        later(2),
+      )
 
       await expect(
-        queue.requeue(
-          withChanges(claim, { added: 3, cursor: 'page-2', pages: 1 }),
-          later(2),
-        ),
+        queue.requeue(next(claim, recorded), later(2)),
       ).resolves.toMatchObject({ status: 'saved' })
 
       expect(await redis.exists(lockKey)).toBe(0)
@@ -284,46 +332,255 @@ describeOnEachRedis((createClient) => {
           job: expect.objectContaining({
             added: 3,
             cursor: 'page-2',
+            pages: 1,
             status: 'pending',
           }),
+          status: 'pending',
         },
       ])
     })
 
-    it('records progress and the outcome', async () => {
+    it('records a page of a job and keeps it claimed', async () => {
       const { queue, redis } = createQueue()
 
       await queue.enqueue(request, now)
       const claim = await claimJob(queue, later(1))
-      const progress = withChanges(claim, { added: 2, pages: 1 })
 
-      await expect(queue.update(progress, later(2))).resolves.toEqual({
-        job: { ...progress.job, updatedAt: later(2).toString() },
+      await expect(
+        queue.recordPage(claim, page(2, 'page-2'), later(2)),
+      ).resolves.toEqual({
+        job: {
+          ...claim.job,
+          added: 2,
+          cursor: 'page-2',
+          pages: 1,
+          updatedAt: later(2).toString(),
+        },
         status: 'saved',
       })
       await expect(queue.getJobs([jobId], later(2))).resolves.toEqual([
         {
           active: true,
           job: expect.objectContaining({ added: 2, status: 'running' }),
+          status: 'running',
         },
       ])
+      expect(await redis.get(lockKey)).toBe(claim.token)
+    })
 
-      const failed = await queue.fail(progress, 'quota exceeded', later(3))
+    it('completes a job with its last page and releases it', async () => {
+      const { queue, redis } = createQueue()
 
-      expect(failed).toEqual({
+      await queue.enqueue(request, now)
+      const claim = await claimJob(queue, later(1))
+      const first = next(
+        claim,
+        await queue.recordPage(claim, page(2, 'page-2'), later(2)),
+      )
+      const done = await queue.recordPage(first, lastPage(1), later(3))
+
+      expect(done).toEqual({
         job: expect.objectContaining({
-          added: 2,
-          error: 'quota exceeded',
+          added: 3,
+          cursor: null,
+          error: null,
           finishedAt: later(3).toString(),
-          status: 'failed',
+          pages: 2,
+          status: 'done',
         }),
         status: 'saved',
       })
       expect(await redis.exists(lockKey)).toBe(0)
       await expect(queue.getJobs([jobId, 'twitch:none'])).resolves.toEqual([
-        { active: false, job: failed.status === 'saved' && failed.job },
+        {
+          active: false,
+          job: done.status === 'saved' && done.job,
+          status: 'done',
+        },
         null,
       ])
+    })
+
+    it('retries a job that fails until the attempts run out', async () => {
+      const { queue, redis } = createQueue()
+
+      await queue.enqueue(request, now)
+
+      for (let attempt = 1; attempt < BACKFILL_MAX_ATTEMPTS; attempt++) {
+        const claim = await claimJob(queue, later(attempt))
+
+        await expect(
+          queue.recordFailure(
+            claim,
+            new Error('quota exceeded'),
+            {},
+            later(attempt),
+          ),
+        ).resolves.toMatchObject({
+          job: {
+            attempts: attempt,
+            error: 'quota exceeded',
+            status: 'pending',
+          },
+          status: 'saved',
+        })
+        expect(
+          await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1),
+        ).toEqual([jobId])
+      }
+
+      const last = await claimJob(queue, later(BACKFILL_MAX_ATTEMPTS))
+
+      await expect(
+        queue.recordFailure(last, 'quota exceeded', {}, later(10)),
+      ).resolves.toMatchObject({
+        job: {
+          attempts: BACKFILL_MAX_ATTEMPTS,
+          error: 'quota exceeded',
+          finishedAt: later(10).toString(),
+          status: 'failed',
+        },
+        status: 'saved',
+      })
+      expect(await redis.exists(lockKey)).toBe(0)
+      expect(
+        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1),
+      ).toEqual([])
+    })
+
+    it('gives a job up after the attempts the queue was made with', async () => {
+      const { queue } = createQueue({ maxAttempts: 1 })
+
+      await queue.enqueue(request, now)
+
+      await expect(
+        queue.recordFailure(await claimJob(queue, later(1)), 'error'),
+      ).resolves.toMatchObject({ job: { attempts: 1, status: 'failed' } })
+    })
+
+    it('gives a job up at once when the error is permanent', async () => {
+      const { queue } = createQueue()
+
+      await queue.enqueue(request, now)
+
+      await expect(
+        queue.recordFailure(await claimJob(queue, later(1)), 'gone', {
+          permanent: true,
+        }),
+      ).resolves.toMatchObject({
+        job: { attempts: 1, error: 'gone', status: 'failed' },
+      })
+    })
+
+    it('counts the failures in a row only', async () => {
+      const { queue } = createQueue()
+
+      await queue.enqueue(request, now)
+      await queue.recordFailure(await claimJob(queue, later(1)), 'error')
+      const claim = await claimJob(queue, later(2))
+
+      expect(claim.job).toMatchObject({ attempts: 1, error: 'error' })
+      await expect(
+        queue.recordPage(claim, page(1, 'page-2'), later(3)),
+      ).resolves.toMatchObject({ job: { attempts: 0, error: null } })
+    })
+
+    it('puts a job back with its progress when the page cannot be saved', async () => {
+      const { queue, redis, scoped } = createQueue()
+
+      await queue.enqueue(request, now)
+      const claim = await claimJob(queue, later(1))
+
+      scoped.beforeNextScript(async () => {
+        throw new Error('redis unavailable')
+      })
+
+      await expect(
+        queue.recordPage(claim, page(3, 'page-2'), later(2)),
+      ).rejects.toThrow('redis unavailable')
+      expect(await redis.exists(lockKey)).toBe(0)
+      expect(
+        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1),
+      ).toEqual([jobId])
+      await expect(queue.getJobs([jobId], later(2))).resolves.toEqual([
+        expect.objectContaining({
+          job: expect.objectContaining({
+            added: 3,
+            cursor: 'page-2',
+            pages: 1,
+            status: 'pending',
+          }),
+        }),
+      ])
+    })
+
+    it('keeps the error of the save when the job cannot be put back either', async () => {
+      const { queue, redis, scoped } = createQueue()
+
+      await queue.enqueue(request, now)
+      const claim = await claimJob(queue, later(1))
+
+      await redis.set(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 'not a list')
+      scoped.beforeNextScript(async () => {
+        throw new Error('redis unavailable')
+      })
+
+      await expect(
+        queue.recordPage(claim, page(3, 'page-2'), later(2)),
+      ).rejects.toThrow('redis unavailable')
+      expect(await redis.get(lockKey)).toBe(claim.token)
+    })
+
+    it('refuses to move a job in a way the transitions do not allow', async () => {
+      const { queue, redis } = createQueue()
+
+      await queue.enqueue(request, now)
+      const claim = await claimJob(queue, later(1))
+      const done = next(
+        claim,
+        await queue.recordPage(claim, lastPage(), later(2)),
+      )
+      // The job as saved, and a stale lock that would let a write through.
+      const saved = await redis.get(
+        `${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${jobId}`,
+      )
+
+      await redis.set(lockKey, claim.token)
+
+      await expect(
+        queue.recordPage(done, page(1, 'page-2'), later(3)),
+      ).rejects.toThrow(BackfillTransitionError)
+      await expect(
+        queue.recordPage(done, lastPage(), later(3)),
+      ).rejects.toThrow(BackfillTransitionError)
+      await expect(
+        queue.recordFailure(done, 'error', {}, later(3)),
+      ).rejects.toThrow(BackfillTransitionError)
+      await expect(queue.requeue(done, later(3))).rejects.toThrow(
+        BackfillTransitionError,
+      )
+      // A job that was not claimed cannot finish either.
+      await expect(
+        queue.recordPage(withChanges(claim, { status: 'pending' }), lastPage()),
+      ).rejects.toThrow('that is pending cannot move to done')
+
+      expect(
+        await redis.get(`${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${jobId}`),
+      ).toEqual(saved)
+      expect(
+        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1),
+      ).toEqual([])
+    })
+
+    it('locks a claim for as long as a worker may run, and a little more', async () => {
+      const { queue, redis } = createQueue({ maxRunSeconds: 120 })
+
+      expect(queue.leaseSeconds).toBe(120 + BACKFILL_LEASE_MARGIN_SECONDS)
+
+      await queue.enqueue(request, now)
+      await claimJob(queue, later(1))
+
+      await expectTtl(redis, lockKey, 120 + BACKFILL_LEASE_MARGIN_SECONDS)
     })
 
     it('resumes a failed job where it stopped', async () => {
@@ -331,9 +588,10 @@ describeOnEachRedis((createClient) => {
 
       await queue.enqueue(request, now)
       const claim = await claimJob(queue, later(1))
-      await queue.fail(
-        withChanges(claim, { added: 5, cursor: 'page-3' }),
+      await queue.recordFailure(
+        next(claim, await queue.recordPage(claim, page(5, 'page-3'))),
         'error',
+        { permanent: true },
       )
 
       await expect(
@@ -355,8 +613,9 @@ describeOnEachRedis((createClient) => {
 
       await queue.enqueue(request, now)
       const claim = await claimJob(queue, later(1))
-      await queue.complete(
-        withChanges(claim, { added: 5, cursor: null, pages: 4 }),
+      await queue.recordPage(
+        next(claim, await queue.recordPage(claim, page(4, 'page-2'))),
+        lastPage(1),
       )
 
       await expect(queue.enqueue(request, later(5))).resolves.toMatchObject({
@@ -374,7 +633,11 @@ describeOnEachRedis((createClient) => {
       await redis.del(lockKey)
 
       await expect(queue.getJobs([jobId], later(10))).resolves.toEqual([
-        { active: false, job: expect.objectContaining({ status: 'running' }) },
+        {
+          active: false,
+          job: expect.objectContaining({ status: 'running' }),
+          status: 'interrupted',
+        },
       ])
       await expect(queue.enqueue(request, later(10))).resolves.toMatchObject({
         enqueued: true,
@@ -418,23 +681,24 @@ describeOnEachRedis((createClient) => {
       await redis.del(lockKey)
       await queue.enqueue(request, later(10))
       const current = await claimJob(queue, later(11))
-      const lost = withChanges(stale, { added: 9, cursor: 'stale-page' })
-
-      await expect(queue.update(lost, later(12))).resolves.toEqual({
-        status: 'lost',
-      })
-      await expect(queue.complete(lost, later(12))).resolves.toEqual({
-        status: 'lost',
-      })
-      await expect(queue.fail(lost, 'error', later(12))).resolves.toEqual({
-        status: 'lost',
-      })
-      await expect(queue.requeue(lost, later(12))).resolves.toEqual({
+      await expect(
+        queue.recordPage(stale, page(9, 'stale-page'), later(12)),
+      ).resolves.toEqual({ status: 'lost' })
+      await expect(
+        queue.recordPage(stale, lastPage(9), later(12)),
+      ).resolves.toEqual({ status: 'lost' })
+      await expect(
+        queue.recordFailure(stale, 'error', {}, later(12)),
+      ).resolves.toEqual({ status: 'lost' })
+      await expect(
+        queue.recordFailure(stale, 'error', { permanent: true }, later(12)),
+      ).resolves.toEqual({ status: 'lost' })
+      await expect(queue.requeue(stale, later(12))).resolves.toEqual({
         status: 'lost',
       })
 
       await expect(queue.getJobs([jobId], later(12))).resolves.toEqual([
-        { active: true, job: current.job },
+        { active: true, job: current.job, status: 'running' },
       ])
       expect(await redis.get(lockKey)).toBe(current.token)
       expect(
@@ -442,7 +706,9 @@ describeOnEachRedis((createClient) => {
       ).toEqual([])
 
       // The worker that holds the job still writes it.
-      await expect(queue.complete(current, later(13))).resolves.toMatchObject({
+      await expect(
+        queue.recordPage(current, lastPage(), later(13)),
+      ).resolves.toMatchObject({
         job: { status: 'done' },
         status: 'saved',
       })
@@ -456,10 +722,10 @@ describeOnEachRedis((createClient) => {
       await redis.del(lockKey)
 
       await expect(
-        queue.update(withChanges(claim, { added: 1 }), later(10)),
+        queue.recordPage(claim, page(1, 'page-2'), later(10)),
       ).resolves.toEqual({ status: 'lost' })
       await expect(queue.getJobs([jobId], later(10))).resolves.toEqual([
-        { active: false, job: claim.job },
+        { active: false, job: claim.job, status: 'interrupted' },
       ])
     })
 
@@ -506,14 +772,18 @@ describeOnEachRedis((createClient) => {
 
       await queue.enqueue({ ...request, runId: 'run-1' }, now)
       const claim = await claimJob(queue, later(1))
-      await queue.fail(withChanges(claim, { cursor: 'page-3' }), 'error')
+      await queue.recordFailure(
+        next(claim, await queue.recordPage(claim, page(0, 'page-3'))),
+        'error',
+        { permanent: true },
+      )
 
       await expect(queue.enqueue(request, later(5))).resolves.toMatchObject({
         job: { cursor: 'page-3', runId: 'run-1' },
       })
 
       const resumed = await claimJob(queue, later(6))
-      await queue.fail(resumed, 'error')
+      await queue.recordFailure(resumed, 'error', { permanent: true })
 
       await expect(
         queue.enqueue({ ...request, runId: 'run-2' }, later(10)),
@@ -524,7 +794,7 @@ describeOnEachRedis((createClient) => {
       const { queue } = createQueue()
 
       await queue.enqueue({ ...request, runId: 'run-1' }, now)
-      await queue.complete(await claimJob(queue, later(1)))
+      await queue.recordPage(await claimJob(queue, later(1)), lastPage())
 
       await expect(queue.enqueue(request, later(5))).resolves.toMatchObject({
         job: { runId: null },
@@ -535,8 +805,9 @@ describeOnEachRedis((createClient) => {
       const { queue, redis } = createQueue()
 
       await queue.enqueue({ ...request, runId: 'run-1' }, now)
-      const done = await queue.complete(
-        withChanges(await claimJob(queue, later(1)), { added: 3 }),
+      const done = await queue.recordPage(
+        await claimJob(queue, later(1)),
+        lastPage(3),
         later(2),
       )
       const resultKey = getRunResultKey('run-1', jobId)
@@ -552,7 +823,7 @@ describeOnEachRedis((createClient) => {
       const { queue, scoped } = createQueue()
 
       await queue.enqueue(request, now)
-      await queue.complete(await claimJob(queue, later(1)))
+      await queue.recordPage(await claimJob(queue, later(1)), lastPage())
 
       expect(
         scoped
@@ -568,5 +839,105 @@ describeOnEachRedis((createClient) => {
 describe('getBackfillJobId', () => {
   it('identifies a job by platform and account', () => {
     expect(jobId).toBe('youtube:channel-row-1')
+  })
+})
+
+describe('BACKFILL_JOB_TRANSITIONS', () => {
+  it('lets a job be requested again from any status', () => {
+    for (const status of ['done', 'failed', 'pending', 'running'] as const) {
+      expect(canTransition('enqueue', status)).toBe(true)
+    }
+  })
+
+  it('lets a worker move only a job it claimed', () => {
+    for (const operation of [
+      'complete',
+      'fail',
+      'recordPage',
+      'requeue',
+    ] as const) {
+      expect(canTransition(operation, 'running')).toBe(true)
+
+      for (const status of ['done', 'failed', 'pending'] as const) {
+        expect(canTransition(operation, status)).toBe(false)
+      }
+    }
+  })
+
+  it('does not hand out a job that finished', () => {
+    expect(canTransition('claim', 'pending')).toBe(true)
+    expect(canTransition('claim', 'done')).toBe(false)
+    expect(canTransition('claim', 'failed')).toBe(false)
+  })
+
+  it('names the status each operation moves a job to', () => {
+    expect(
+      Object.fromEntries(
+        Object.entries(BACKFILL_JOB_TRANSITIONS).map(([operation, { to }]) => [
+          operation,
+          to,
+        ]),
+      ),
+    ).toEqual({
+      claim: 'running',
+      complete: 'done',
+      enqueue: 'pending',
+      fail: 'failed',
+      recordPage: 'running',
+      requeue: 'pending',
+    })
+  })
+})
+
+describe('getJobActivity', () => {
+  const at = (status: BackfillJob['status'], minutesAgo = 1) => ({
+    status,
+    updatedAt: later(-minutesAgo).toString(),
+  })
+
+  it('tells a job that is queued or being read', () => {
+    expect(getJobActivity(at('pending'), { locked: false, now })).toEqual({
+      active: true,
+      status: 'pending',
+    })
+    expect(getJobActivity(at('running'), { locked: true, now })).toEqual({
+      active: true,
+      status: 'running',
+    })
+  })
+
+  it('tells a job that stopped without finishing as interrupted', () => {
+    // Its worker died and the lock ran out.
+    expect(getJobActivity(at('running'), { locked: false, now })).toEqual({
+      active: false,
+      status: 'interrupted',
+    })
+    // It waited too long in the queue.
+    expect(getJobActivity(at('pending', 61), { locked: false, now })).toEqual({
+      active: false,
+      status: 'interrupted',
+    })
+  })
+
+  it('tells a job that finished as it finished', () => {
+    expect(getJobActivity(at('done'), { locked: false, now })).toEqual({
+      active: false,
+      status: 'done',
+    })
+    expect(getJobActivity(at('failed'), { locked: true, now })).toEqual({
+      active: false,
+      status: 'failed',
+    })
+  })
+})
+
+describe('BackfillQueue options', () => {
+  it('locks a claim for as long as a worker may run by default, and a little more', () => {
+    const queue = new BackfillQueue({} as never)
+
+    expect(queue.leaseSeconds).toBe(
+      BACKFILL_DEFAULT_MAX_RUN_SECONDS + BACKFILL_LEASE_MARGIN_SECONDS,
+    )
+    expect(queue.maxAttempts).toBe(BACKFILL_MAX_ATTEMPTS)
   })
 })
