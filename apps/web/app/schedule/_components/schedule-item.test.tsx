@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { ScheduleVideo } from '@/lib/data/schedule'
+import { createScheduleVideoItem } from '@/test/factories'
 import ScheduleItem, {
   getScheduleVideoUrl,
   getTitleLines,
@@ -11,35 +12,33 @@ const profileImage = {
   id: '00000000-0000-4000-8000-000000000001',
 }
 
-function createVideo(overrides: Partial<ScheduleVideo> = {}): ScheduleVideo {
-  return {
-    duration: 'P0D',
-    id: 'video-1',
-    platform: 'youtube',
-    // 21:00 on 14 November in Japan
-    published_at: '2026-11-14T12:00:00Z',
-    status: 'UPCOMING',
-    talent: { id: 'talent-1', name: '朝霧ミオ', theme_color: '#FF6B9D' },
-    title: '【歌枠】アニソン縛り歌ってみた！',
-    twitch_video: null,
-    video_kind: 'standard',
-    youtube_video: {
-      youtube_channel: {
-        name: 'チャンネル名',
-        profile_image: profileImage,
-        youtube_handle: '@channel',
-      },
-      youtube_video_id: 'YT_video1abc',
+const VIDEO = createScheduleVideoItem({
+  duration: 'P0D',
+  id: 'video-1',
+  platform: 'youtube',
+  // 21:00 on 14 November in Japan
+  published_at: '2026-11-14T12:00:00Z',
+  status: 'UPCOMING',
+  talent: { id: 'talent-1', name: '朝霧ミオ', theme_color: '#FF6B9D' },
+  title: '【歌枠】アニソン縛り歌ってみた！',
+  twitch_video: null,
+  video_kind: 'standard',
+  youtube_video: {
+    youtube_channel: {
+      name: 'チャンネル名',
+      profile_image: profileImage,
+      youtube_handle: '@channel',
     },
-    ...overrides,
-  }
-}
+    youtube_video_id: 'YT_video1abc',
+  },
+})
 
 function createTwitchVideo(
   overrides: Partial<ScheduleVideo> = {},
   twitchLoginName: string | null = 'mio',
 ): ScheduleVideo {
-  return createVideo({
+  return createScheduleVideoItem({
+    ...VIDEO,
     platform: 'twitch',
     status: 'ENDED',
     twitch_video: {
@@ -62,7 +61,7 @@ function getItem() {
 
 describe('ScheduleItem', () => {
   test('should show the start, the talent and the title', () => {
-    render(<ScheduleItem value={createVideo()} />)
+    render(<ScheduleItem value={VIDEO} />)
 
     const item = getItem()
 
@@ -78,7 +77,7 @@ describe('ScheduleItem', () => {
   })
 
   test('should keep the whole title in the title attribute', () => {
-    render(<ScheduleItem value={createVideo()} />)
+    render(<ScheduleItem value={VIDEO} />)
 
     expect(screen.getByText('アニソン縛り歌ってみた！')).toHaveAttribute(
       'title',
@@ -90,7 +89,9 @@ describe('ScheduleItem', () => {
     const title =
       '【歌枠】今日も歌います #歌枠リレー【朝霧ミオ / ななしいんく】'
 
-    render(<ScheduleItem value={createVideo({ title })} />)
+    render(
+      <ScheduleItem value={createScheduleVideoItem({ ...VIDEO, title })} />,
+    )
 
     const titleElement = screen.getByTitle(title)
 
@@ -101,7 +102,10 @@ describe('ScheduleItem', () => {
   test('should show the first label between the first line and the title', () => {
     render(
       <ScheduleItem
-        value={createVideo({ title: '【Minecraft】【雑談】夜の肝試し' })}
+        value={createScheduleVideoItem({
+          ...VIDEO,
+          title: '【Minecraft】【雑談】夜の肝試し',
+        })}
       />,
     )
 
@@ -120,7 +124,8 @@ describe('ScheduleItem', () => {
   test('should show up to three hashtags after the label', () => {
     render(
       <ScheduleItem
-        value={createVideo({
+        value={createScheduleVideoItem({
+          ...VIDEO,
           title: '【Minecraft】夜の肝試し #マイクラ肝試し2026 #a #b #c',
         })}
       />,
@@ -134,7 +139,10 @@ describe('ScheduleItem', () => {
   test('should show the hashtags without a label', () => {
     render(
       <ScheduleItem
-        value={createVideo({ title: '夜の肝試し #マイクラ肝試し2026' })}
+        value={createScheduleVideoItem({
+          ...VIDEO,
+          title: '夜の肝試し #マイクラ肝試し2026',
+        })}
       />,
     )
 
@@ -144,14 +152,18 @@ describe('ScheduleItem', () => {
   })
 
   test('should not show the line without labels and hashtags', () => {
-    render(<ScheduleItem value={createVideo({ title: '今日も歌います' })} />)
+    render(
+      <ScheduleItem
+        value={createScheduleVideoItem({ ...VIDEO, title: '今日も歌います' })}
+      />,
+    )
 
     expect(screen.queryByTestId('schedule-item-tags')).toBeNull()
     expect(getItem().textContent).toBe('21:00朝霧ミオ今日も歌います')
   })
 
   test('should link like a video card', () => {
-    render(<ScheduleItem value={createVideo()} />)
+    render(<ScheduleItem value={VIDEO} />)
 
     const item = getItem()
 
@@ -165,13 +177,17 @@ describe('ScheduleItem', () => {
   })
 
   test('should not show a thumbnail', () => {
-    render(<ScheduleItem value={createVideo()} />)
+    render(<ScheduleItem value={VIDEO} />)
 
     expect(screen.queryByTestId('video-card-thumbnail')).toBeNull()
   })
 
   test('should mark the stream on air with the text', () => {
-    render(<ScheduleItem value={createVideo({ status: 'LIVE' })} />)
+    render(
+      <ScheduleItem
+        value={createScheduleVideoItem({ ...VIDEO, status: 'LIVE' })}
+      />,
+    )
 
     expect(screen.getByText('配信中')).toHaveClass('bg-live')
   })
@@ -179,7 +195,9 @@ describe('ScheduleItem', () => {
   test.each(['ENDED', 'PUBLISHED', 'UPCOMING'] as const)(
     'should not mark a video that is %s',
     (status) => {
-      render(<ScheduleItem value={createVideo({ status })} />)
+      render(
+        <ScheduleItem value={createScheduleVideoItem({ ...VIDEO, status })} />,
+      )
 
       expect(screen.queryByText('配信中')).toBeNull()
       // No status text between the start and the talent
@@ -188,7 +206,7 @@ describe('ScheduleItem', () => {
   )
 
   test('should draw the line with the theme color of the talent', () => {
-    render(<ScheduleItem value={createVideo()} />)
+    render(<ScheduleItem value={VIDEO} />)
 
     const item = getItem()
 
@@ -206,7 +224,8 @@ describe('ScheduleItem', () => {
   ])('should use the border color for the theme color %j', (themeColor) => {
     render(
       <ScheduleItem
-        value={createVideo({
+        value={createScheduleVideoItem({
+          ...VIDEO,
           talent: { id: 'talent-1', name: '朝霧ミオ', theme_color: themeColor },
         })}
       />,
@@ -220,7 +239,7 @@ describe('ScheduleItem', () => {
   })
 
   test('should not use the theme color for the text', () => {
-    render(<ScheduleItem value={createVideo()} />)
+    render(<ScheduleItem value={VIDEO} />)
 
     for (const element of getItem().querySelectorAll('*')) {
       expect(element.getAttribute('class') ?? '').not.toMatch(/--talent-color/)
@@ -241,7 +260,11 @@ describe('ScheduleItem', () => {
   test('should render nothing without a link', () => {
     const { container } = render(
       <ScheduleItem
-        value={createVideo({ twitch_video: null, youtube_video: null })}
+        value={createScheduleVideoItem({
+          ...VIDEO,
+          twitch_video: null,
+          youtube_video: null,
+        })}
       />,
     )
 
@@ -251,7 +274,7 @@ describe('ScheduleItem', () => {
 
 describe('ScheduleItem (on a wide screen)', () => {
   test('should have a frame to stand out from the ground', () => {
-    render(<ScheduleItem value={createVideo()} />)
+    render(<ScheduleItem value={VIDEO} />)
 
     // The fill is opaque, so the items below do not show through an expanded
     // one
@@ -259,7 +282,7 @@ describe('ScheduleItem (on a wide screen)', () => {
   })
 
   test('should fill the placement and float with a shadow when expanded', () => {
-    render(<ScheduleItem value={createVideo()} />)
+    render(<ScheduleItem value={VIDEO} />)
 
     expect(getItem()).toHaveClass(
       'lg:flex-1',
@@ -272,7 +295,11 @@ describe('ScheduleItem (on a wide screen)', () => {
   })
 
   test('should keep the same order of the contents when it is narrow', () => {
-    render(<ScheduleItem value={createVideo({ status: 'LIVE' })} />)
+    render(
+      <ScheduleItem
+        value={createScheduleVideoItem({ ...VIDEO, status: 'LIVE' })}
+      />,
+    )
 
     // The start and the talent are always there, so the first line does not
     // move when the item is expanded
@@ -286,7 +313,7 @@ describe('ScheduleItem (on a wide screen)', () => {
   })
 
   test('should show the labels and hashtags only when expanded', () => {
-    render(<ScheduleItem titleLines={1} value={createVideo()} />)
+    render(<ScheduleItem titleLines={1} value={VIDEO} />)
 
     // Shown, the line would leave no room for the title in an item of an hour
     expect(screen.getByTestId('schedule-item-tags')).toHaveClass(
