@@ -14,7 +14,7 @@ import {
 export const maxDuration = 60;
 
 export const POST = async (request: Request): Promise<Response> =>
-  runCronJob(
+  await runCronJob(
     request,
     VIDEOS_CASCADE_FROM_TALENTS_JOB,
     async () => {

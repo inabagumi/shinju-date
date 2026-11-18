@@ -10,7 +10,7 @@ import { updateTermPopularity } from "./_lib/update-term-popularity";
 export const maxDuration = 60;
 
 export const POST = async (request: Request): Promise<Response> =>
-  runCronJob(request, TERMS_POPULARITY_UPDATE_JOB, async () => {
+  await runCronJob(request, TERMS_POPULARITY_UPDATE_JOB, async () => {
     const result = await updateTermPopularity(redisClient, supabaseClient);
 
     logger.info("用語の人気度更新が正常に完了しました", result);

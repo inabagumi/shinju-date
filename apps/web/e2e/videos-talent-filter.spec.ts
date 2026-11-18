@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
-const TALENT_PARAM_PATTERN = /[?&]talent=[0-9a-f-]{36}/;
+const TALENT_PARAM_PATTERN = /[?&]talent=[0-9a-f-]{36}/u;
 
 /** タレントの複数選択を開いて、指定したタレントを選ぶ */
 const selectTalent = async (page: Page, trigger: string, name: string) => {
@@ -29,7 +29,7 @@ test.describe("Videos - Talent filter", () => {
       getSelectedTalentList(page).getByText("朝霧ミオ")
     ).toBeVisible();
     await expect(page.locator("header p.tabular-nums")).toHaveText(
-      /^[\d,]+件$/
+      /^[\d,]+件$/u
     );
 
     // 開き直しても同じ条件になり、検索エンジンには載せない
@@ -39,12 +39,12 @@ test.describe("Videos - Talent filter", () => {
     ).toBeVisible();
     await expect(page.locator('head meta[name="robots"]')).toHaveAttribute(
       "content",
-      /noindex/
+      /noindex/u
     );
 
     await selectTalent(page, "朝霧ミオ", "凪沢ユラ");
 
-    await expect(page).toHaveURL(/talent=.+&talent=/);
+    await expect(page).toHaveURL(/talent=.+&talent=/u);
     await expect(
       getSelectedTalentList(page).getByRole("link", { name: "絞り込みを解除" })
     ).toBeVisible();
@@ -53,7 +53,7 @@ test.describe("Videos - Talent filter", () => {
       .getByRole("link", { name: "凪沢ユラを外す" })
       .click();
 
-    await expect(page).not.toHaveURL(/talent=.+&talent=/);
+    await expect(page).not.toHaveURL(/talent=.+&talent=/u);
     await expect(
       getSelectedTalentList(page).getByText("凪沢ユラ")
     ).not.toBeVisible();
@@ -62,7 +62,7 @@ test.describe("Videos - Talent filter", () => {
       .getByRole("link", { name: "朝霧ミオを外す" })
       .click();
 
-    await expect(page).toHaveURL(/\/videos$/);
+    await expect(page).toHaveURL(/\/videos$/u);
     await expect(getSelectedTalentList(page)).toHaveCount(0);
   });
 
@@ -77,7 +77,7 @@ test.describe("Videos - Talent filter", () => {
       .getByRole("link", { name: "ショート" })
       .click();
 
-    await expect(page).toHaveURL(/kind=short/);
+    await expect(page).toHaveURL(/kind=short/u);
     await expect(page).toHaveURL(TALENT_PARAM_PATTERN);
     await expect(
       getSelectedTalentList(page).getByText("白露ネネ")
@@ -96,7 +96,7 @@ test.describe("Videos - Talent filter", () => {
     await expect(getSelectedTalentList(page)).toHaveCount(0);
     await expect(page.locator('head meta[name="robots"]')).not.toHaveAttribute(
       "content",
-      /noindex/
+      /noindex/u
     );
   });
 

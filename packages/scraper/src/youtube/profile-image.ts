@@ -56,7 +56,7 @@ export const selectYouTubeChannelIconUrl = (
 
   const squares = candidates
     .filter(({ height, width }) => width > 0 && width === height)
-    .sort((a, b) => a.width - b.width);
+    .toSorted((a, b) => a.width - b.width);
   const square =
     squares.find(({ width }) => width >= MAX_PROFILE_IMAGE_SIZE) ??
     squares.at(-1);
@@ -66,15 +66,17 @@ export const selectYouTubeChannelIconUrl = (
   }
 
   // Later keys are larger sizes, so they win ties between unknown sizes.
-  const largest = candidates.reduce<IconCandidate | undefined>(
-    (current, candidate) =>
-      !current ||
+  let largest: IconCandidate | undefined;
+
+  for (const candidate of candidates) {
+    if (
+      !largest ||
       Math.min(candidate.width, candidate.height) >=
-        Math.min(current.width, current.height)
-        ? candidate
-        : current,
-    undefined
-  );
+        Math.min(largest.width, largest.height)
+    ) {
+      largest = candidate;
+    }
+  }
 
   return largest?.url ?? null;
 };
@@ -110,7 +112,7 @@ export interface SyncYouTubeChannelIconOptions {
  * The icon is only downloaded and stored again when it changed on YouTube
  * (see `syncProfileImage`).
  *
- * @throws When the icon cannot be downloaded, stored or assigned. The channel
+ * @throws {Error} When the icon cannot be downloaded, stored or assigned. The channel
  *   keeps its current icon then.
  */
 export const syncYouTubeChannelIcon = ({

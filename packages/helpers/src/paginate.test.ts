@@ -5,15 +5,15 @@ import type { Page } from "./paginate.js";
 
 const pages = <T>(...list: Page<T>[]) => {
   const fetchPage = vi.fn<(cursor: string | undefined) => Promise<Page<T>>>(
-    async (cursor) => {
+    (cursor) => {
       const index = cursor === undefined ? 0 : Number(cursor);
       const page = list[index];
 
       if (!page) {
-        throw new Error(`Unexpected cursor: ${cursor}`);
+        return Promise.reject(new Error(`Unexpected cursor: ${cursor}`));
       }
 
-      return page;
+      return Promise.resolve(page);
     }
   );
 
@@ -30,8 +30,9 @@ describe(paginate, () => {
     expect(fetchPage).toHaveBeenCalledExactlyOnceWith(undefined);
   });
 
-  it("treats an undefined or empty position as the last page", async () => {
-    for (const next of [undefined, ""]) {
+  it.each([{ next: undefined }, { next: "" }])(
+    "treats an undefined or empty position ($next) as the last page",
+    async ({ next }) => {
       const fetchPage = pages({ items: ["a"], next });
 
       await expect(Array.fromAsync(paginate(fetchPage))).resolves.toStrictEqual(
@@ -39,7 +40,7 @@ describe(paginate, () => {
       );
       expect(fetchPage).toHaveBeenCalledOnce();
     }
-  });
+  );
 
   it("follows the position of the next page until there is none", async () => {
     const fetchPage = pages(
@@ -78,10 +79,14 @@ describe(paginate, () => {
       { items: [3], next: null }
     );
 
-    for await (const item of paginate(fetchPage)) {
-      expect(item).toBe(1);
-      break;
-    }
+    const iterator = paginate(fetchPage);
+
+    await expect(iterator.next()).resolves.toStrictEqual({
+      done: false,
+      value: 1,
+    });
+    // What `break` in `for await` does
+    await iterator.return();
 
     expect(fetchPage).toHaveBeenCalledOnce();
   });

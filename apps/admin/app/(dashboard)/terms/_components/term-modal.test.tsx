@@ -19,15 +19,12 @@ import {
 import type { createTermAction, updateTermAction } from "../_actions";
 
 const mocks = vi.hoisted(() => {
-  let release: () => void = () => {};
-  const sortableInputListLoaded = new Promise<void>((resolve) => {
-    release = resolve;
-  });
+  const sortableInputListLoaded = Promise.withResolvers<undefined>();
 
   return {
     createTermAction: vi.fn<typeof createTermAction>(),
-    releaseSortableInputList: () => release(),
-    sortableInputListLoaded,
+    releaseSortableInputList: () => sortableInputListLoaded.resolve(undefined),
+    sortableInputListLoaded: sortableInputListLoaded.promise,
     updateTermAction: vi.fn<typeof updateTermAction>(),
   };
 });
@@ -71,6 +68,37 @@ const waitForSortableInputList = async (dialog: HTMLElement) => {
       within(dialog).getByRole("button", { name: "読み方を追加" })
     ).toBeEnabled();
   });
+};
+
+/**
+ * jsdom はレイアウトを計算しないため、キーボードでの並べ替えに必要な位置を、
+ * 兄弟要素の中の順番から決める
+ */
+const getBoundingClientRect = function getBoundingClientRect(
+  this: HTMLElement
+): DOMRect {
+  const siblings = this.parentElement ? [...this.parentElement.children] : [];
+  const index = Math.max(siblings.indexOf(this), 0);
+
+  return new DOMRect(0, index * 40, 300, 40);
+};
+
+/** Waits for the next animation frame. */
+const waitForAnimationFrame = async (): Promise<void> => {
+  const frame = Promise.withResolvers<number>();
+  requestAnimationFrame(frame.resolve);
+  await frame.promise;
+};
+
+const openEditDialog = () => {
+  render(<TermModal term={term} />);
+
+  fireEvent.click(screen.getByRole("button", { name: "編集" }));
+
+  const dialog = screen.getByRole("dialog", { name: "用語を編集" });
+  const termInput = within(dialog).getByDisplayValue("SHINJU");
+
+  return { dialog, termInput };
 };
 
 describe("TermModal", () => {
@@ -128,17 +156,6 @@ describe("TermModal", () => {
   });
 
   describe("while the sortable list is loading", () => {
-    const openEditDialog = () => {
-      render(<TermModal term={term} />);
-
-      fireEvent.click(screen.getByRole("button", { name: "編集" }));
-
-      const dialog = screen.getByRole("dialog", { name: "用語を編集" });
-      const termInput = within(dialog).getByDisplayValue("SHINJU");
-
-      return { dialog, termInput };
-    };
-
     it("shows the current values that cannot be edited yet right after opening", () => {
       const { dialog, termInput } = openEditDialog();
 
@@ -217,16 +234,7 @@ describe("TermModal", () => {
     beforeAll(() => {
       mocks.releaseSortableInputList();
 
-      // jsdom はレイアウトを計算しないため、キーボードでの並べ替えに必要な
-      // 位置を、兄弟要素の中の順番から決める
-      HTMLElement.prototype.getBoundingClientRect = function () {
-        const siblings = this.parentElement
-          ? [...this.parentElement.children]
-          : [];
-        const index = Math.max(siblings.indexOf(this), 0);
-
-        return new DOMRect(0, index * 40, 300, 40);
-      };
+      HTMLElement.prototype.getBoundingClientRect = getBoundingClientRect;
     });
 
     afterAll(() => {
@@ -295,9 +303,10 @@ describe("TermModal", () => {
 
       // dnd-kit はキーを押すたびに位置を測り直すため、1回ずつ反映を待つ
       for (const code of ["Space", "ArrowDown", "Space"]) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- each key has to be reflected before the next one is pressed
         await act(async () => {
           fireEvent.keyDown(firstSynonymHandle, { code });
-          await new Promise((resolve) => requestAnimationFrame(resolve));
+          await waitForAnimationFrame();
         });
       }
 

@@ -30,7 +30,7 @@ export const syncTwitchUsers = async (
  *
  * @returns One result per saved account of the talent; empty when the talent
  *   has none or was deleted.
- * @throws When the accounts cannot be loaded or Twitch cannot be read.
+ * @throws {Error} When the accounts cannot be loaded or Twitch cannot be read.
  */
 export const syncTwitchUsersOfTalent = (
   context: CrawlContext<TwitchFetcher>,

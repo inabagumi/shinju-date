@@ -1,11 +1,11 @@
 import { countChanges } from "../internal/concurrency.js";
 import { WRITE_CONCURRENCY } from "../internal/constants.js";
 import {
-  findSavedYouTubeVideoIds,
   getActiveAccounts,
   YOUTUBE_CHANNELS,
-} from "../internal/database/index.js";
-import type { TalentAccount } from "../internal/database/index.js";
+} from "../internal/database/talents.js";
+import type { TalentAccount } from "../internal/database/talents.js";
+import { findSavedYouTubeVideoIds } from "../internal/database/videos.js";
 import { saveVideoWithThumbnail } from "../internal/operations/save-video.js";
 import type { CrawlContext } from "../types.js";
 import type { YouTubeFetcher } from "./fetcher.js";
@@ -119,6 +119,6 @@ export const saveNewYouTubeVideos = async (
 
       return true;
     },
-    (error, video) => reportError(error, { youtubeVideoId: video.id })
+    (failure, video) => reportError(failure, { youtubeVideoId: video.id })
   );
 };

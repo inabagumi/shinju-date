@@ -120,7 +120,10 @@ export class BackfillQueue {
   async claim(
     now: Temporal.Instant = Temporal.Now.instant()
   ): Promise<BackfillClaim | null> {
-    return claimJob(this.#redis, { leaseSeconds: this.leaseSeconds, now });
+    return await claimJob(this.#redis, {
+      leaseSeconds: this.leaseSeconds,
+      now,
+    });
   }
 
   /**
@@ -143,12 +146,18 @@ export class BackfillQueue {
 
     const saved = moveJob(progressed, "recordPage", now);
 
-    return saveJob(this.#redis, { job: saved, token }).catch(async (error) => {
+    try {
+      return await saveJob(this.#redis, { job: saved, token });
+    } catch (error) {
       // Otherwise the job would stay claimed until its lease expires.
-      await this.requeue({ job: progressed, token }, now).catch(() => {});
+      try {
+        await this.requeue({ job: progressed, token }, now);
+      } catch {
+        // The error of saving the progress is the one thrown.
+      }
 
       throw error;
-    });
+    }
   }
 
   /**
@@ -165,9 +174,9 @@ export class BackfillQueue {
   ): Promise<BackfillWriteResult> {
     const failed = withFailure(job, error);
 
-    return permanent || failed.attempts >= this.maxAttempts
+    return await (permanent || failed.attempts >= this.maxAttempts
       ? this.#finish({ job: failed, token }, "fail", now)
-      : this.requeue({ job: failed, token }, now);
+      : this.requeue({ job: failed, token }, now));
   }
 
   /**
@@ -180,7 +189,7 @@ export class BackfillQueue {
   ): Promise<BackfillWriteResult> {
     const pending = moveJob(job, "requeue", now);
 
-    return requeueJob(this.#redis, { job: pending, token });
+    return await requeueJob(this.#redis, { job: pending, token });
   }
 
   /** Saves a job as `done` or `failed`, with its copies, and releases it. */

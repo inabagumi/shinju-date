@@ -32,6 +32,6 @@ export default async function getRecommendedQueries(): Promise<RecommendedQuerie
     auto: parseScoredMembers(autoQueriesWithScores).map(
       ({ member, score }): AutoRecommendedQuery => ({ query: member, score })
     ),
-    manual: (manualQueries ?? []).sort(),
+    manual: (manualQueries ?? []).toSorted(),
   };
 }

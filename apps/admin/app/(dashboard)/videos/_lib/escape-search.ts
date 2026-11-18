@@ -8,4 +8,4 @@
 export const escapeSearchString = (search: string): string =>
   // Escape all of them at once, so that the added backslashes are not escaped
   // again
-  search.replaceAll(/[\\%_]/g, "\\$&");
+  search.replaceAll(/[\\%_]/gu, "\\$&");

@@ -28,8 +28,11 @@ const extractDeclarations = (css: string): Map<string, string> => {
   const declarations = new Map<string, string>();
 
   // `--color-*` と、`text-*` だけに効く `--text-color-*`
-  for (const match of css.matchAll(/(--(?:text-)?color-[\w-]+):\s*([^;]+);/g)) {
-    const [, name, value] = match;
+  for (const { groups } of css.matchAll(
+    /(?<name>--(?:text-)?color-[\w-]+):\s*(?<value>[^;]+);/gu
+  )) {
+    const name = groups?.["name"];
+    const value = groups?.["value"];
 
     if (name && value) {
       declarations.set(name, value.trim());
@@ -68,7 +71,7 @@ const linearToSRGB = (value: number): number =>
 const parseHex = (hex: string): LinearRGB => {
   const digits =
     hex.length === 4
-      ? [...hex.slice(1)].map((digit) => digit + digit)
+      ? Array.from(hex.slice(1), (digit) => digit + digit)
       : [hex.slice(1, 3), hex.slice(3, 5), hex.slice(5, 7)];
 
   return digits.map((digit) =>
@@ -103,23 +106,30 @@ const resolveColor = (colors: Map<string, string>, name: string): LinearRGB => {
     throw new Error(`${name} が定義されていません`);
   }
 
-  const reference = value.match(/^var\((--[\w-]+)\)$/);
+  const reference = value.match(/^var\((?<variable>--[\w-]+)\)$/u)?.groups?.[
+    "variable"
+  ];
 
-  if (reference?.[1]) {
-    return resolveColor(colors, reference[1]);
+  if (reference) {
+    return resolveColor(colors, reference);
   }
 
-  if (/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(value)) {
+  if (/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/iu.test(value)) {
     return parseHex(value);
   }
 
-  const oklch = value.match(/^oklch\(([\d.]+)%\s+([\d.]+)\s+([\d.]+|none)\)$/);
+  const oklch = value.match(
+    /^oklch\((?<lightness>[\d.]+)%\s+(?<chroma>[\d.]+)\s+(?<hue>[\d.]+|none)\)$/u
+  )?.groups;
+  const lightness = oklch?.["lightness"];
+  const chroma = oklch?.["chroma"];
+  const hue = oklch?.["hue"];
 
-  if (oklch?.[1] && oklch[2] && oklch[3]) {
+  if (lightness && chroma && hue) {
     return parseOklch(
-      Number(oklch[1]) / 100,
-      Number(oklch[2]),
-      oklch[3] === "none" ? 0 : Number(oklch[3])
+      Number(lightness) / 100,
+      Number(chroma),
+      hue === "none" ? 0 : Number(hue)
     );
   }
 
@@ -140,8 +150,8 @@ const blend = (
   ) as LinearRGB;
 
 const contrastRatio = (a: LinearRGB, b: LinearRGB): number => {
-  const luminance = ([r, g, b]: LinearRGB) =>
-    0.2126 * r + 0.7152 * g + 0.0722 * b;
+  const luminance = ([red, green, blue]: LinearRGB) =>
+    0.2126 * red + 0.7152 * green + 0.0722 * blue;
   const la = luminance(a);
   const lb = luminance(b);
 
@@ -206,8 +216,8 @@ const FOREGROUND_PAIRS = [
 
 describe("semantic colors", () => {
   it("defines every semantic color for light mode", () => {
-    expect([...lightDeclarations.keys()].sort()).toStrictEqual(
-      [...SEMANTIC_COLOR_NAMES].sort()
+    expect([...lightDeclarations.keys()].toSorted()).toStrictEqual(
+      SEMANTIC_COLOR_NAMES.toSorted()
     );
   });
 
@@ -220,7 +230,7 @@ describe("semantic colors", () => {
   it.each([...lightDeclarations, ...darkDeclarations])(
     "%s refers to an existing color with var()",
     (_name, value) => {
-      expect(value).toMatch(/^var\(--color-[\w-]+\)$/);
+      expect(value).toMatch(/^var\(--color-[\w-]+\)$/u);
     }
   );
 

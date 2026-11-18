@@ -8,10 +8,15 @@ export const TALENT_SEARCH_PARAM = "talent";
  * キャッシュを揃えるために使う。
  */
 export const normalizeTalentIds = (ids: readonly string[]): string[] =>
-  [...new Set(ids)].sort();
+  [...new Set(ids)].toSorted();
 
-const toValues = (value: string | string[] | undefined): string[] =>
-  Array.isArray(value) ? value : value ? [value] : [];
+const toValues = (value: string | string[] | undefined): string[] => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  return value ? [value] : [];
+};
 
 /**
  * 検索パラメーターのタレントの値に、UUID の形式でないものが含まれるか。

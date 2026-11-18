@@ -6,10 +6,68 @@ export type YouTubeChannelIdentifier =
   | { kind: "handle"; handle: string };
 
 /** YouTube channel ID: UC + 22 characters (24 total). */
-const YOUTUBE_CHANNEL_ID_PATTERN = /^UC[\w-]{22}$/;
+const YOUTUBE_CHANNEL_ID_PATTERN = /^UC[\w-]{22}$/u;
 
 /** YouTube handle body (without @): 3–30 chars of letters, digits, underscore, hyphen, period. */
-const YOUTUBE_HANDLE_PATTERN = /^[\w.-]{3,30}$/;
+const YOUTUBE_HANDLE_PATTERN = /^[\w.-]{3,30}$/u;
+
+/**
+ * Returns the input as a URL string: as it is when it has a scheme, with
+ * `https://` when it starts with the host of YouTube, and otherwise `null`.
+ *
+ * @param input - The trimmed user input
+ * @returns The URL string, or `null` if the input is not a URL of YouTube
+ */
+const toUrlString = (input: string): string | null => {
+  if (input.startsWith("http://") || input.startsWith("https://")) {
+    return input;
+  }
+
+  return /^(?:www\.)?(?:m\.)?youtube\.com\//iu.test(input)
+    ? `https://${input}`
+    : null;
+};
+
+/**
+ * Parses the path of a channel URL of YouTube. `decodeURIComponent` throws
+ * for a malformed escape sequence.
+ *
+ * @param pathname - The path of the URL
+ * @returns Parsed identifier, or `null` if the path is not of a channel
+ */
+const parseChannelPath = (
+  pathname: string
+): YouTubeChannelIdentifier | null => {
+  const channelMatch = pathname.match(
+    /^\/channel\/(?<id>UC[\w-]{22})(?:\/|$)/iu
+  );
+  if (channelMatch?.groups?.["id"]) {
+    return { id: channelMatch.groups["id"], kind: "id" };
+  }
+
+  const handleMatch = pathname.match(/^\/@(?<handle>[\w.-]+)(?:\/|$)/u);
+  if (handleMatch?.groups?.["handle"]) {
+    return { handle: handleMatch.groups["handle"], kind: "handle" };
+  }
+
+  const customMatch = pathname.match(/^\/c\/(?<name>[^/?#]+)(?:\/|$)/u);
+  if (customMatch?.groups?.["name"]) {
+    return {
+      handle: decodeURIComponent(customMatch.groups["name"]),
+      kind: "handle",
+    };
+  }
+
+  const userMatch = pathname.match(/^\/user\/(?<name>[^/?#]+)(?:\/|$)/u);
+  if (userMatch?.groups?.["name"]) {
+    return {
+      handle: decodeURIComponent(userMatch.groups["name"]),
+      kind: "handle",
+    };
+  }
+
+  return null;
+};
 
 /**
  * Parses free-form user input into a YouTube channel ID or handle.
@@ -32,49 +90,22 @@ export const parseYouTubeChannelIdentifier = (
     return null;
   }
 
-  const asUrl =
-    input.startsWith("http://") || input.startsWith("https://")
-      ? input
-      : /^(?:www\.)?(?:m\.)?youtube\.com\//i.test(input)
-        ? `https://${input}`
-        : null;
+  const asUrl = toUrlString(input);
 
   if (asUrl) {
     try {
       const url = new URL(asUrl);
-      const host = url.hostname.replace(/^www\./, "").toLowerCase();
+      const host = url.hostname.replace(/^www\./u, "").toLowerCase();
 
       if (
         host === "youtube.com" ||
         host === "m.youtube.com" ||
         host === "music.youtube.com"
       ) {
-        const channelMatch = url.pathname.match(
-          /^\/channel\/(UC[\w-]{22})(?:\/|$)/i
-        );
-        if (channelMatch?.[1]) {
-          return { id: channelMatch[1], kind: "id" };
-        }
+        const identifier = parseChannelPath(url.pathname);
 
-        const handleMatch = url.pathname.match(/^\/@([\w.-]+)(?:\/|$)/);
-        if (handleMatch?.[1]) {
-          return { handle: handleMatch[1], kind: "handle" };
-        }
-
-        const customMatch = url.pathname.match(/^\/c\/([^/?#]+)(?:\/|$)/);
-        if (customMatch?.[1]) {
-          return {
-            handle: decodeURIComponent(customMatch[1]),
-            kind: "handle",
-          };
-        }
-
-        const userMatch = url.pathname.match(/^\/user\/([^/?#]+)(?:\/|$)/);
-        if (userMatch?.[1]) {
-          return {
-            handle: decodeURIComponent(userMatch[1]),
-            kind: "handle",
-          };
+        if (identifier) {
+          return identifier;
         }
       }
     } catch {

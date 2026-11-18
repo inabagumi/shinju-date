@@ -16,7 +16,7 @@ describe("getTwitchApiClient", () => {
 
     const { getTwitchApiClient } = await import("./client.js");
 
-    expect(() => getTwitchApiClient()).toThrow(/Client ID and Client Secret/);
+    expect(() => getTwitchApiClient()).toThrow(/Client ID and Client Secret/u);
   });
 
   it("creates one client from the credentials in the environment", async () => {

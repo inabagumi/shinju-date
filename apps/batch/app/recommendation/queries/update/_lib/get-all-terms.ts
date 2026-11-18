@@ -22,8 +22,8 @@ interface Term {
  * `updated_at` skipped or repeated terms at the page boundaries, because the
  * popularity update gives many terms the same `updated_at`.
  *
- * @yields Terms in ascending order of `id`
- * @throws When a page does not move past the previous one, which would
+ * @yields {Term} Terms in ascending order of `id`
+ * @throws {Error} When a page does not move past the previous one, which would
  *   otherwise repeat the same page forever.
  */
 export const getAllTerms = async function* getAllTerms(
@@ -43,6 +43,7 @@ export const getAllTerms = async function* getAllTerms(
       query = query.gt("id", cursor);
     }
 
+    // oxlint-disable-next-line eslint/no-await-in-loop -- each page starts after the last id of the previous one
     const page = throwIfError(await query, "Failed to load terms");
 
     const lastId = page.at(-1)?.id;

@@ -118,7 +118,7 @@ const legacyFormatTimelineDate = (
   value: Temporal.PlainDate,
   base: Temporal.PlainDate
 ): string => {
-  const days = base.until(value, { largestUnit: "day" }).days;
+  const { days } = base.until(value, { largestUnit: "day" });
 
   if (days === 0) {
     return "今日";
@@ -144,7 +144,7 @@ const legacyFormatDateHeading = (
   value: Temporal.PlainDate,
   base: Temporal.PlainDate
 ): string => {
-  const days = base.until(value, { largestUnit: "day" }).days;
+  const { days } = base.until(value, { largestUnit: "day" });
 
   if (days === 0) {
     return "今日";
@@ -189,9 +189,10 @@ describe("the same text as the replaced functions", () => {
     date("2026-01-01"),
     date("2026-11-14"),
   ];
-  const dates = eachDay(date("2024-12-01"), 3 * 366).concat(
-    eachDay(date("2024-02-20"), 20)
-  );
+  const dates = [
+    ...eachDay(date("2024-12-01"), 3 * 366),
+    ...eachDay(date("2024-02-20"), 20),
+  ];
 
   it("formatTimelineDate", () => {
     for (const base of bases) {

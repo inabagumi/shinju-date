@@ -1,9 +1,8 @@
+import { setTimeout as delay } from "node:timers/promises";
+
 import { describe, expect, it } from "vitest";
 
 import { RequestQueue } from "./request-queue.js";
-
-const delay = (ms: number): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, ms));
 
 describe(RequestQueue, () => {
   it("shares its limit across concurrent calls", async () => {
@@ -11,10 +10,10 @@ describe(RequestQueue, () => {
     let running = 0;
     let peak = 0;
     const task = async () => {
-      running++;
+      running += 1;
       peak = Math.max(peak, running);
       await delay(5);
-      running--;
+      running -= 1;
     };
 
     await Promise.all([
@@ -30,13 +29,9 @@ describe(RequestQueue, () => {
     const queue = new RequestQueue();
     const error = new Error("boom");
 
-    const results = await queue.mapSettled([1, 2], async (value) => {
-      if (value === 2) {
-        throw error;
-      }
-
-      return value;
-    });
+    const results = await queue.mapSettled([1, 2], (value) =>
+      value === 2 ? Promise.reject(error) : Promise.resolve(value)
+    );
 
     expect(results).toStrictEqual([
       { status: "fulfilled", value: 1 },

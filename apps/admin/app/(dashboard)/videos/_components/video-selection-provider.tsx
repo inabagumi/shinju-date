@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, use, useState } from "react";
+import { createContext, use, useCallback, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
 import { useVideoAction } from "../_lib/use-video-action";
@@ -69,28 +69,34 @@ export const VideoSelectionProvider = ({
     setSelectedIds((prev) => prev.filter((id) => currentIds.has(id)));
   }
 
-  const setSelected = (id: string, selected: boolean) => {
+  const setSelected = useCallback((id: string, selected: boolean) => {
     setSelectedIds((prev) => {
       const others = prev.filter((selectedId) => selectedId !== id);
 
       return selected ? [...others, id] : others;
     });
-  };
+  }, []);
 
-  const setAllSelected = (selected: boolean) => {
-    setSelectedIds(selected ? videoIds : []);
-  };
+  const setAllSelected = useCallback(
+    (selected: boolean) => {
+      setSelectedIds(selected ? videoIds : []);
+    },
+    [videoIds]
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      openActionDialog: openDialog,
+      selectedIds,
+      setAllSelected,
+      setSelected,
+      videoIds,
+    }),
+    [openDialog, selectedIds, setAllSelected, setSelected, videoIds]
+  );
 
   return (
-    <VideoSelectionContext
-      value={{
-        openActionDialog: openDialog,
-        selectedIds,
-        setAllSelected,
-        setSelected,
-        videoIds,
-      }}
-    >
+    <VideoSelectionContext value={contextValue}>
       {children}
       <VideoActionConfirmDialog {...dialogProps} />
     </VideoSelectionContext>

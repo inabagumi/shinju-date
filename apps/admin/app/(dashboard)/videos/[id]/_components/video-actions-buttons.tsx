@@ -3,7 +3,7 @@
 import type { Tables } from "@shinju-date/database";
 import { Button } from "@shinju-date/ui";
 import { Loader2, Trash2 } from "lucide-react";
-import { createContext, use } from "react";
+import { createContext, use, useCallback } from "react";
 import type { ReactNode } from "react";
 
 import { useServerAction } from "@/lib/use-server-action";
@@ -79,11 +79,14 @@ export const VideoActionsProvider = ({
 }: VideoActionsProviderProps) => {
   const { dialogProps, openDialog } = useVideoAction();
 
-  const openVideoActionDialog = (action: VideoAction) => {
-    openDialog(action, [
-      { id: video.id, title: video.title, visible: video.visible },
-    ]);
-  };
+  const openVideoActionDialog = useCallback(
+    (action: VideoAction) => {
+      openDialog(action, [
+        { id: video.id, title: video.title, visible: video.visible },
+      ]);
+    },
+    [openDialog, video.id, video.title, video.visible]
+  );
 
   return (
     <VideoActionContext value={openVideoActionDialog}>

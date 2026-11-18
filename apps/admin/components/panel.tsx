@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 /** `null`・`undefined`・`false`（`{cond && ...}` の結果）・空文字でない中身か */
 const hasContent = (node: ReactNode): boolean =>
-  node != null && node !== false && node !== "";
+  node !== null && node !== undefined && node !== false && node !== "";
 
 export interface PanelProps extends Omit<CardProps, "title" | "variant"> {
   /** 見出しの右に置く操作ボタンなど */

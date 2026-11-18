@@ -1,7 +1,7 @@
 import type { WriteContext } from "../../types.js";
 import { SWEEP_PAGE_SIZE } from "../constants.js";
-import { paginateById } from "../database/index.js";
-import { DatabaseError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
+import { paginateById } from "../database/pagination.js";
 import type { PlatformAdapter, SavedVideoBase } from "../platform.js";
 import { deleteMissingVideos } from "./delete-missing-videos.js";
 
@@ -57,9 +57,13 @@ export const sweepUnavailableVideos = async <
   for await (const page of paginateById((cursor) =>
     getSweepPage(context, adapter, cursor)
   )) {
-    const missingIds = adapter.findMissing
-      ? await adapter.findMissing(page)
-      : (await adapter.lookUp(page)).missingIds;
+    let missingIds: string[];
+
+    if (adapter.findMissing) {
+      missingIds = await adapter.findMissing(page);
+    } else {
+      ({ missingIds } = await adapter.lookUp(page));
+    }
 
     deletedCount += await deleteMissingVideos(
       context,

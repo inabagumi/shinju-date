@@ -13,15 +13,6 @@ import Form, {
 } from "./form";
 import type { FormState } from "./form";
 
-const createDeferred = <T,>() => {
-  let resolve!: (value: T) => void;
-  const promise = new Promise<T>((res) => {
-    resolve = res;
-  });
-
-  return { promise, resolve };
-};
-
 const renderForm = (action: () => FormState | Promise<FormState>) => {
   render(
     <Form action={action}>
@@ -95,61 +86,61 @@ describe(Form, () => {
   });
 });
 
+const renderFieldsForm = (
+  action: (
+    currentState: FormState,
+    formData: FormData
+  ) => FormState | Promise<FormState>
+) => {
+  render(
+    <Form action={action}>
+      <FormField name="level">
+        <Label>レベル</Label>
+        <Select defaultValue="info">
+          <option value="info">情報</option>
+          <option value="alert">重要</option>
+        </Select>
+        <ErrorMessage />
+      </FormField>
+      {/* 制御されていない入力欄 */}
+      <label>
+        <input
+          defaultChecked={false}
+          name="enabled"
+          type="checkbox"
+          value="true"
+        />
+        有効化
+      </label>
+      <label>
+        メモ
+        <input defaultValue="" name="note" />
+      </label>
+      <SubmitButton>保存</SubmitButton>
+    </Form>
+  );
+};
+
+/** Fills the fields and submits them to an action that rejects them. */
+const fillAndSubmit = () => {
+  const action = vi.fn<
+    (currentState: FormState, formData: FormData) => FormState
+  >(() => ({ errors: { level: ["レベルが正しくありません。"] } }));
+  renderFieldsForm(action);
+
+  fireEvent.change(screen.getByLabelText("レベル"), {
+    target: { value: "alert" },
+  });
+  fireEvent.click(screen.getByLabelText("有効化"));
+  fireEvent.change(screen.getByLabelText("メモ"), {
+    target: { value: "メモの内容" },
+  });
+  submit();
+
+  return action;
+};
+
 describe("Form after a failed submission", () => {
-  const renderFieldsForm = (
-    action: (
-      currentState: FormState,
-      formData: FormData
-    ) => FormState | Promise<FormState>
-  ) => {
-    render(
-      <Form action={action}>
-        <FormField name="level">
-          <Label>レベル</Label>
-          <Select defaultValue="info">
-            <option value="info">情報</option>
-            <option value="alert">重要</option>
-          </Select>
-          <ErrorMessage />
-        </FormField>
-        {/* 制御されていない入力欄 */}
-        <label>
-          <input
-            defaultChecked={false}
-            name="enabled"
-            type="checkbox"
-            value="true"
-          />
-          有効化
-        </label>
-        <label>
-          メモ
-          <input defaultValue="" name="note" />
-        </label>
-        <SubmitButton>保存</SubmitButton>
-      </Form>
-    );
-  };
-
-  /** Fills the fields and submits them to an action that rejects them. */
-  const fillAndSubmit = () => {
-    const action = vi.fn<
-      (currentState: FormState, formData: FormData) => FormState
-    >(() => ({ errors: { level: ["レベルが正しくありません。"] } }));
-    renderFieldsForm(action);
-
-    fireEvent.change(screen.getByLabelText("レベル"), {
-      target: { value: "alert" },
-    });
-    fireEvent.click(screen.getByLabelText("有効化"));
-    fireEvent.change(screen.getByLabelText("メモ"), {
-      target: { value: "メモの内容" },
-    });
-    submit();
-
-    return action;
-  };
-
   it("keeps the select, the checkbox and uncontrolled inputs", async () => {
     fillAndSubmit();
 
@@ -195,7 +186,7 @@ describe("Form after a failed submission", () => {
   });
 
   it("disables the fields and the submit button while submitting", async () => {
-    const deferred = createDeferred<FormState>();
+    const deferred = Promise.withResolvers<FormState>();
     renderFieldsForm(() => deferred.promise);
 
     submit();
@@ -206,6 +197,7 @@ describe("Form after a failed submission", () => {
 
     await act(async () => {
       deferred.resolve({ error: "保存に失敗しました。" });
+      await deferred.promise;
     });
 
     await expect(screen.findByRole("alert")).resolves.toHaveTextContent(
@@ -234,27 +226,27 @@ describe(ErrorMessage, () => {
   });
 });
 
-describe(Checkbox, () => {
-  const renderCheckboxForm = (
-    action: (
-      currentState: FormState,
-      formData: FormData
-    ) => FormState | Promise<FormState>
-  ) => {
-    render(
-      <Form action={action}>
-        <FormField name="enabled">
-          <Label className="mb-0 flex items-center gap-2">
-            <Checkbox defaultChecked={false} />
-            有効化
-          </Label>
-          <ErrorMessage />
-        </FormField>
-        <SubmitButton>保存</SubmitButton>
-      </Form>
-    );
-  };
+const renderCheckboxForm = (
+  action: (
+    currentState: FormState,
+    formData: FormData
+  ) => FormState | Promise<FormState>
+) => {
+  render(
+    <Form action={action}>
+      <FormField name="enabled">
+        <Label className="mb-0 flex items-center gap-2">
+          <Checkbox defaultChecked={false} />
+          有効化
+        </Label>
+        <ErrorMessage />
+      </FormField>
+      <SubmitButton>保存</SubmitButton>
+    </Form>
+  );
+};
 
+describe(Checkbox, () => {
   it("is named by the label of the field", () => {
     renderCheckboxForm(() => ({}));
 
@@ -294,7 +286,7 @@ describe(Checkbox, () => {
   });
 
   it("is disabled while submitting", async () => {
-    const deferred = createDeferred<FormState>();
+    const deferred = Promise.withResolvers<FormState>();
     renderCheckboxForm(() => deferred.promise);
 
     submit();
@@ -304,6 +296,7 @@ describe(Checkbox, () => {
 
     await act(async () => {
       deferred.resolve({});
+      await deferred.promise;
     });
 
     expect(checkbox).toBeEnabled();

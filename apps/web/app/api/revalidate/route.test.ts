@@ -4,6 +4,10 @@ import type { logger } from "@shinju-date/logger";
 import type { revalidateTag } from "next/cache";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { ServerEnv } from "@/lib/env";
+
+import { POST } from "./route";
+
 const mocks = vi.hoisted(() => ({
   revalidateTag: vi.fn<typeof revalidateTag>(),
   serverEnv: {
@@ -27,10 +31,6 @@ vi.mock(import("@shinju-date/logger"), () => ({
     warn: vi.fn<typeof logger.warn>(),
   },
 }));
-
-import type { ServerEnv } from "@/lib/env";
-
-import { POST } from "./route";
 
 const post = (body: string, headers: HeadersInit = {}): Promise<Response> =>
   POST(

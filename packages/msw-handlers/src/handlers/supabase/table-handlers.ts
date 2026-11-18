@@ -116,7 +116,9 @@ const findViolation = <Name extends TableName>(
 ): Response | null => {
   for (const row of writtenRows) {
     for (const column of table.notNullColumns) {
-      if (getColumn(row, column) == null) {
+      const value = getColumn(row, column);
+
+      if (value === null || value === undefined) {
         return HttpResponse.json(
           {
             code: "23502",
@@ -142,7 +144,7 @@ const findViolation = <Name extends TableName>(
       const values = columns.map((column) => getColumn(row, column));
 
       // As in SQL, `NULL` does not equal anything, even `NULL`.
-      if (values.some((value) => value == null)) {
+      if (values.some((value) => value === null || value === undefined)) {
         continue;
       }
 
@@ -174,11 +176,15 @@ const findConflict = <Row extends object>(
   columns: readonly string[]
 ): Row | undefined =>
   rows.find((row) =>
-    columns.every(
-      (column) =>
-        getColumn(values, column) != null &&
-        getColumn(row, column) === getColumn(values, column)
-    )
+    columns.every((column) => {
+      const value = getColumn(values, column);
+
+      return (
+        value !== null &&
+        value !== undefined &&
+        getColumn(row, column) === value
+      );
+    })
   );
 
 /**
@@ -225,12 +231,13 @@ const applyWrite = async <Name extends TableName>(
   { inserts, updates }: WritePlan<Tables<Name>>
 ): Promise<Tables<Name>[] | Response> => {
   const { collection } = table;
-  const undo: (() => Promise<unknown>)[] = [];
+  const undo: (() => unknown)[] = [];
   const writtenRows: Tables<Name>[] = [];
 
   try {
     for (const [record, changes] of updates) {
       const previous = { ...record };
+      // oxlint-disable-next-line no-await-in-loop -- the writes of a transaction are applied one by one, so that they can be undone in reverse
       const updated = await collection.update(record, {
         data(draft) {
           Object.assign(draft, changes);
@@ -250,13 +257,15 @@ const applyWrite = async <Name extends TableName>(
     }
 
     for (const row of inserts) {
+      // oxlint-disable-next-line no-await-in-loop -- the writes of a transaction are applied one by one, so that they can be undone in reverse
       const created = await collection.create(row);
 
-      undo.push(async () => collection.delete(created));
+      undo.push(() => collection.delete(created));
       writtenRows.push(created);
     }
   } catch {
     for (const step of undo.toReversed()) {
+      // oxlint-disable-next-line no-await-in-loop -- the writes are undone one by one in reverse order
       await step();
     }
 
@@ -294,8 +303,8 @@ const createWriteHandlers = <Name extends TableName>(
       const query = parseWriteQuery(request, table.name);
       const prefer = request.headers.get("prefer") ?? "";
       const resolution = prefer.match(
-        /resolution=(ignore|merge)-duplicates/
-      )?.[1];
+        /resolution=(?<resolution>ignore|merge)-duplicates/u
+      )?.groups?.["resolution"];
       const conflictColumns =
         query.onConflict?.split(",").map((column) => column.trim()) ??
         PRIMARY_KEY_COLUMNS;

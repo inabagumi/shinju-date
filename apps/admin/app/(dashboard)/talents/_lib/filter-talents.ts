@@ -32,6 +32,10 @@ const matchesStatus = (
     case "not_deleted": {
       return !isDeleted;
     }
+    default: {
+      const unexpected: never = filter;
+      throw new Error(`Unknown status filter: ${String(unexpected)}`);
+    }
   }
 };
 
@@ -56,7 +60,7 @@ export const filterTalents = <T extends FilterableTalent>(
           talent.name.toLowerCase().includes(query) ||
           talent.id.toLowerCase().includes(query))
     )
-    .sort((a, b) => {
+    .toSorted((a, b) => {
       const order = Temporal.Instant.compare(
         Temporal.Instant.from(a.updated_at),
         Temporal.Instant.from(b.updated_at)

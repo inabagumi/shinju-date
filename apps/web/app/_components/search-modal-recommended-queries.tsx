@@ -11,6 +11,8 @@ interface SearchModalRecommendedQueriesProps {
   talentIds?: readonly string[];
 }
 
+const NO_TALENT_IDS: readonly string[] = [];
+
 const RecommendedQueriesHeading = () => (
   <SearchModalSectionHeading>
     おすすめの検索キーワード
@@ -39,7 +41,7 @@ const RecommendedQueriesSkeleton = () => (
 export const SearchModalRecommendedQueries = ({
   onClickLink,
   queries,
-  talentIds = [],
+  talentIds = NO_TALENT_IDS,
 }: SearchModalRecommendedQueriesProps) => {
   if (queries === null) {
     return (

@@ -96,7 +96,7 @@ describe("POST /videos/update", () => {
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toStrictEqual({
-      error: expect.stringMatching(/^Invalid query parameters\. provider: /),
+      error: expect.stringMatching(/^Invalid query parameters\. provider: /u),
     });
     expect(acquireLock).not.toHaveBeenCalled();
     expect(createScraper).not.toHaveBeenCalled();

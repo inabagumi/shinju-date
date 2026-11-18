@@ -33,13 +33,8 @@ describe(AsyncPanelBody, () => {
   });
 
   it("retries, keeping the button busy until the reload ends", async () => {
-    let finish: () => void = () => {};
-    const onRetry = vi.fn<() => Promise<void>>(
-      () =>
-        new Promise<void>((resolve) => {
-          finish = resolve;
-        })
-    );
+    const reload = Promise.withResolvers<undefined>();
+    const onRetry = vi.fn<() => Promise<void>>(() => reload.promise);
 
     render(
       <AsyncPanelBody error="timeout" onRetry={onRetry}>
@@ -54,7 +49,7 @@ describe(AsyncPanelBody, () => {
     expect(onRetry).toHaveBeenCalledOnce();
     await waitFor(() => expect(button).toBeDisabled());
 
-    finish();
+    reload.resolve(undefined);
 
     await waitFor(() => expect(button).toBeEnabled());
   });

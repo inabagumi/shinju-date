@@ -19,8 +19,9 @@ const SortableInputList = lazy(() =>
 );
 
 const preloadSortableInputList = () => {
-  // 読み込みに失敗しても、モーダルを開いたときに React.lazy がもう一度読み込む
-  loadSortableInputList().catch(() => undefined);
+  loadSortableInputList().catch(() => {
+    // 読み込みに失敗しても、モーダルを開いたときに React.lazy がもう一度読み込む
+  });
 };
 
 interface Term {

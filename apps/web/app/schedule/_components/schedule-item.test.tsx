@@ -197,7 +197,7 @@ describe(ScheduleItem, () => {
 
       expect(screen.queryByText("配信中")).toBeNull();
       // No status text between the start and the talent
-      expect(getItem().textContent).toMatch(/^21:00朝霧ミオ/);
+      expect(getItem().textContent).toMatch(/^21:00朝霧ミオ/u);
     }
   );
 
@@ -238,7 +238,9 @@ describe(ScheduleItem, () => {
     render(<ScheduleItem value={VIDEO} />);
 
     for (const element of getItem().querySelectorAll("*")) {
-      expect(element.getAttribute("class") ?? "").not.toMatch(/--talent-color/);
+      expect(element.getAttribute("class") ?? "").not.toMatch(
+        /--talent-color/u
+      );
     }
   });
 
@@ -287,7 +289,7 @@ describe("ScheduleItem (on a wide screen)", () => {
       "lg:group-focus-within/item:shadow-overlay"
     );
     // The fill does not change on hover
-    expect(getItem().className).not.toMatch(/hover\S*:bg-/);
+    expect(getItem().className).not.toMatch(/hover\S*:bg-/u);
   });
 
   it("should keep the same order of the contents when it is narrow", () => {

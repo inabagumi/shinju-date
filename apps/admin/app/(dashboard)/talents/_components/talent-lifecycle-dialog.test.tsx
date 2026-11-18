@@ -149,12 +149,8 @@ describe("TalentLifecycleDialog", () => {
   });
 
   it("disables the buttons while the action is running", async () => {
-    let resolve: (value: ActionResult) => void = () => {};
-    mocks.deleteTalentAction.mockReturnValue(
-      new Promise((r) => {
-        resolve = r;
-      })
-    );
+    const { promise, resolve } = Promise.withResolvers<ActionResult>();
+    mocks.deleteTalentAction.mockReturnValue(promise);
     renderDialog("delete");
 
     fireEvent.click(screen.getByRole("button", { name: "削除" }));

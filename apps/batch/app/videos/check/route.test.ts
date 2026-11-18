@@ -122,7 +122,7 @@ describe("POST /videos/check", () => {
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toStrictEqual({
-      error: expect.stringMatching(/^Invalid query parameters\. provider: /),
+      error: expect.stringMatching(/^Invalid query parameters\. provider: /u),
     });
     expect(createScraper).not.toHaveBeenCalled();
   });
@@ -132,7 +132,7 @@ describe("POST /videos/check", () => {
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toStrictEqual({
-      error: expect.stringMatching(/^Invalid query parameters\. mode: /),
+      error: expect.stringMatching(/^Invalid query parameters\. mode: /u),
     });
     expect(createScraper).not.toHaveBeenCalled();
   });

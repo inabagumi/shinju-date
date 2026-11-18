@@ -35,7 +35,7 @@ describe(EmptyState, () => {
     const { container } = render(<EmptyState title="データがありません" />);
 
     expect(container.firstElementChild?.className).not.toMatch(
-      /\b(?:h|min-h)-/
+      /\b(?:h|min-h)-/u
     );
   });
 });

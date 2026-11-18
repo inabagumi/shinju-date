@@ -490,7 +490,7 @@ describe("talent sync actions", () => {
     ["syncTalentWithYouTubeAction", syncTalentWithYouTubeAction],
     ["syncTalentWithTwitchAction", syncTalentWithTwitchAction],
     ["syncTalentAccountsAction", syncTalentAccountsAction],
-  ])("%s with an invalid talent ID", (_, action) => {
+  ])("%s with an invalid talent ID", (_name, action) => {
     it.each([
       ["no ID", ""],
       ["an ID that is not a UUID", "talent-1"],

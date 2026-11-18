@@ -178,7 +178,7 @@ describe("VideoFilters toggle", () => {
     render(<VideoFilters talents={[]} />);
 
     const filterBar = screen.getByRole("group", { name: "絞り込み" });
-    const toggle = screen.getByRole("button", { name: /^絞り込み/ });
+    const toggle = screen.getByRole("button", { name: /^絞り込み/u });
 
     expect(toggle).toHaveAttribute("aria-expanded", "false");
     expect(filterBar).toHaveAttribute("data-state", "closed");
@@ -205,7 +205,7 @@ describe("VideoFilters toggle", () => {
     render(<VideoFilters talents={[]} />);
 
     expect(
-      screen.getByRole("button", { name: /^絞り込み.*2件適用中/ })
+      screen.getByRole("button", { name: /^絞り込み.*2件適用中/u })
     ).toBeInTheDocument();
   });
 
@@ -214,7 +214,7 @@ describe("VideoFilters toggle", () => {
     render(<VideoFilters talents={[]} />);
 
     expect(
-      screen.getByRole("button", { name: /^絞り込み/ }).textContent
-    ).not.toMatch(/件適用中/);
+      screen.getByRole("button", { name: /^絞り込み/u }).textContent
+    ).not.toMatch(/件適用中/u);
   });
 });

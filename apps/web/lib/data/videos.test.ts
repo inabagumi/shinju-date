@@ -63,6 +63,14 @@ const seedVideos = (
     ...videoSeed(rows),
   });
 
+const createUpcomingVideo = (publishedAt: string, overrides = {}) =>
+  createVideoOnYouTube(channel, {
+    duration: "P0D",
+    published_at: publishedAt,
+    status: "UPCOMING",
+    ...overrides,
+  });
+
 describe("lib/data/videos", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -387,28 +395,20 @@ describe("lib/data/videos", () => {
       mockNow("2026-11-15T03:34:56Z");
     });
 
-    const upcoming = (publishedAt: string, overrides = {}) =>
-      createVideoOnYouTube(channel, {
-        duration: "P0D",
-        published_at: publishedAt,
-        status: "UPCOMING",
-        ...overrides,
-      });
-
     it("returns the upcoming videos from this hour to a week later by start, with today in Japan", async () => {
-      const first = upcoming("2026-11-15T03:00:00Z");
-      const second = upcoming("2026-11-16T11:00:00Z");
-      const last = upcoming("2026-11-22T03:00:00Z");
+      const first = createUpcomingVideo("2026-11-15T03:00:00Z");
+      const second = createUpcomingVideo("2026-11-16T11:00:00Z");
+      const last = createUpcomingVideo("2026-11-22T03:00:00Z");
 
       await seedVideos([
         second,
         last,
         first,
         // The streams that should have started before this hour are left out
-        upcoming("2026-11-15T02:59:59Z"),
-        upcoming("2026-11-22T03:00:01Z"),
-        upcoming("2026-11-16T11:00:00Z", { status: "LIVE" }),
-        upcoming("2026-11-16T11:00:00Z", { status: "ENDED" }),
+        createUpcomingVideo("2026-11-15T02:59:59Z"),
+        createUpcomingVideo("2026-11-22T03:00:01Z"),
+        createUpcomingVideo("2026-11-16T11:00:00Z", { status: "LIVE" }),
+        createUpcomingVideo("2026-11-16T11:00:00Z", { status: "ENDED" }),
       ]);
 
       const { today, videos } = await fetchUpcomingVideos();
@@ -426,7 +426,7 @@ describe("lib/data/videos", () => {
     it("returns the videos with their thumbnails and channels", async () => {
       const thumbnail = createThumbnail();
       const icon = createProfileImage();
-      const video = upcoming("2026-11-16T11:00:00Z", {
+      const video = createUpcomingVideo("2026-11-16T11:00:00Z", {
         thumbnail_id: thumbnail.id,
         title: "歌枠リレー",
       });
@@ -480,7 +480,7 @@ describe("lib/data/videos", () => {
 
     it("keeps the nearest 100 videos", async () => {
       const rows = Array.from({ length: 101 }, (_, index) =>
-        upcoming(
+        createUpcomingVideo(
           Temporal.Instant.from("2026-11-16T00:00:00Z")
             .add({ minutes: index })
             .toString()
@@ -496,7 +496,7 @@ describe("lib/data/videos", () => {
     });
 
     it("drops the videos without a YouTube or Twitch video", async () => {
-      const shown = upcoming("2026-11-16T11:00:00Z");
+      const shown = createUpcomingVideo("2026-11-16T11:00:00Z");
 
       await seedVideos([
         shown,

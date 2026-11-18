@@ -55,9 +55,12 @@ const createClientMock = (options: {
         onfulfilled?: ((value: QueryResult) => unknown) | null,
         onrejected?: ((reason: unknown) => unknown) | null
       ) {
-        return Promise.resolve()
-          .then(options.onSelectVideos)
-          .then(onfulfilled, onrejected);
+        return (
+          Promise.resolve()
+            .then(options.onSelectVideos)
+            // oxlint-disable-next-line promise/prefer-catch -- a thenable passes both of its callbacks on to then()
+            .then(onfulfilled, onrejected)
+        );
       },
     };
 
@@ -84,12 +87,14 @@ const createClientMock = (options: {
     vi.fn<(table: string) => ReturnType<typeof createQuery>>(createQuery);
   const rpc = vi.fn<
     (name: string, args: Record<string, unknown>) => Promise<QueryResult>
-  >(async (name, args) => {
+  >((name, args) => {
     const call = { args, name };
 
     rpcCalls.push(call);
 
-    return options.onRpc?.(call) ?? { data: args["p_video_ids"], error: null };
+    return Promise.resolve(
+      options.onRpc?.(call) ?? { data: args["p_video_ids"], error: null }
+    );
   });
 
   return { calls, client: { from, rpc }, rpcCalls };
@@ -105,7 +110,7 @@ describe(cascadeVideosFromTalents, () => {
 
     const { client, calls, rpcCalls } = createClientMock({
       onSelectVideos: () => {
-        selectPhase++;
+        selectPhase += 1;
         if (selectPhase === 1) {
           return {
             data: [{ id: "video-1" }, { id: "video-2" }],
@@ -149,7 +154,7 @@ describe(cascadeVideosFromTalents, () => {
     const { client } = createClientMock({
       onRpc: () => ({ data: ["video-2"], error: null }),
       onSelectVideos: () => {
-        selectPhase++;
+        selectPhase += 1;
         return selectPhase === 1
           ? { data: [{ id: "video-1" }, { id: "video-2" }], error: null }
           : { data: [], error: null };
@@ -167,7 +172,7 @@ describe(cascadeVideosFromTalents, () => {
 
     const { client, calls, rpcCalls } = createClientMock({
       onSelectVideos: () => {
-        selectPhase++;
+        selectPhase += 1;
         if (selectPhase === 1) {
           return { data: [], error: null };
         }
@@ -229,7 +234,7 @@ describe(cascadeVideosFromTalents, () => {
 
     const { client } = createClientMock({
       onSelectVideos: () => {
-        selectPhase++;
+        selectPhase += 1;
         if (selectPhase === 1) {
           return {
             data: [{ id: "to-delete" }],
@@ -262,7 +267,7 @@ describe(cascadeVideosFromTalents, () => {
     });
 
     const error = await cascadeVideosFromTalents(client as never).catch(
-      (error: unknown) => error
+      (caughtError: unknown) => caughtError
     );
 
     expect(error).toBeInstanceOf(CascadePhaseError);
@@ -290,7 +295,7 @@ describe(cascadeVideosFromTalents, () => {
     );
 
     const error = await cascadeVideosFromTalents(client as never).catch(
-      (error: unknown) => error
+      (caughtError: unknown) => caughtError
     );
     const causes = (error as Error).cause as AggregateError;
 
@@ -310,7 +315,7 @@ describe(cascadeVideosFromTalents, () => {
 
     const { client, rpcCalls } = createClientMock({
       onSelectVideos: () => {
-        selectPhase++;
+        selectPhase += 1;
         if (selectPhase === 1) {
           return {
             data: [{ id: "to-delete" }],

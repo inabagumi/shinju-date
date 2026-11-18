@@ -68,7 +68,8 @@ export const createCsvExportRoute =
       }
 
       const csvContent = stringify([header, ...items.map(toRow)], {
-        bom: true, // Add BOM for Excel compatibility
+        // Add BOM for Excel compatibility
+        bom: true,
       });
       const dateStr = selectedDate ?? `${range.start}_${range.end}`;
       const filename = `${filenamePrefix}${dateStr}.csv`;

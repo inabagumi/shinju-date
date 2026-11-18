@@ -12,6 +12,8 @@ interface GetClipsOptions extends ClientOptions, BatchOptions {
 /**
  * Gets Twitch clips by ID (slug).
  * IDs that no longer exist are omitted.
+ *
+ * @yields {TwitchClip} The clips that still exist
  */
 export const getClips = async function* getClips({
   client = getTwitchApiClient(),

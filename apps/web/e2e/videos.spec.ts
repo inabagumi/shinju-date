@@ -12,7 +12,7 @@ const NAVIGATION_TIMEOUT = 15_000;
 
 // Video cards link to the video on YouTube or Twitch
 const VIDEO_URL_PATTERN =
-  /^https:\/\/(?:www\.youtube\.com\/watch\?v=|www\.twitch\.tv\/|clips\.twitch\.tv\/)./;
+  /^https:\/\/(?:www\.youtube\.com\/watch\?v=|www\.twitch\.tv\/|clips\.twitch\.tv\/)./u;
 
 /** Video cards are links that contain the heading of the video title */
 const getVideoCards = (page: Page) => {
@@ -25,7 +25,7 @@ const getVideoCards = (page: Page) => {
 
 /** The number of the videos found, shown under the heading */
 const getResultCount = (page: Page) =>
-  page.getByRole("main").getByText(/^[\d,]+件$/);
+  page.getByRole("main").getByText(/^[\d,]+件$/u);
 
 test.describe("Videos page", () => {
   test("should list the videos by date", async ({ page }) => {
@@ -44,10 +44,14 @@ test.describe("Videos page", () => {
       page.getByRole("main").getByRole("heading", { level: 2 }).first()
     ).toBeVisible();
 
-    for (const card of await cards.all()) {
-      await expect(card).toHaveAttribute("href", VIDEO_URL_PATTERN);
-      await expect(card).toHaveAttribute("target", "_blank");
-    }
+    const cardList = await cards.all();
+
+    await Promise.all(
+      cardList.flatMap((card) => [
+        expect(card).toHaveAttribute("href", VIDEO_URL_PATTERN),
+        expect(card).toHaveAttribute("target", "_blank"),
+      ])
+    );
   });
 
   test("should show only the videos that match the search", async ({
@@ -81,9 +85,13 @@ test.describe("Videos page", () => {
     // brackets are part of the name of the card)
     const count = await cards.count();
 
-    for (const card of await cards.all()) {
-      await expect(card).toHaveAccessibleName(new RegExp(QUERY));
-    }
+    const cardList = await cards.all();
+
+    await Promise.all(
+      cardList.map((card) =>
+        expect(card).toHaveAccessibleName(new RegExp(QUERY, "u"))
+      )
+    );
 
     // The count under the heading matches the videos shown
     await expect(getResultCount(page)).toHaveText(`${count}件`);
@@ -130,7 +138,7 @@ test.describe("Open Graph image of the videos page", () => {
 
       await expect(ogImage).toHaveAttribute(
         "content",
-        /\/videos\/opengraph-image\?/
+        /\/videos\/opengraph-image\?/u
       );
       await expect(
         page.locator('meta[property="og:image:alt"]')

@@ -92,7 +92,8 @@ export const AnnouncementBanner = ({
       return announcement;
     },
     queryKey: queryKeys.announcement(),
-    refetchInterval: 1000 * 60, // Refetch every 60 seconds
+    // Refetch every 60 seconds
+    refetchInterval: 1000 * 60,
     refetchIntervalInBackground: true,
     // The message is a React element rendered on the server, not JSON data.
     // Structural sharing would walk the whole element tree (including the

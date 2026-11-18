@@ -2,9 +2,8 @@ import type { NextProxy, NextRequest } from "next/server";
 
 import { updateSession } from "@/lib/supabase/proxy";
 
-export const proxy = async (
-  request: NextRequest
-): Promise<ReturnType<NextProxy>> => updateSession(request);
+export const proxy = (request: NextRequest): ReturnType<NextProxy> =>
+  updateSession(request);
 
 export const config = {
   matcher: [

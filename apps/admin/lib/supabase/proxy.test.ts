@@ -31,6 +31,10 @@ vi.mock(import("@/lib/env"), async (importOriginal) => ({
   serverEnv,
 }));
 
+const stubEnv = (authenticated: boolean) => {
+  serverEnv.MSW_SUPABASE_AUTHENTICATED = authenticated;
+};
+
 /**
  * MSW のモックに対して `updateSession()` を実行し、
  * `MSW_SUPABASE_AUTHENTICATED` の設定が反映されることを確認する。
@@ -47,10 +51,6 @@ describe("updateSession with MSW", () => {
   afterAll(() => {
     server.close();
   });
-
-  const stubEnv = (authenticated: boolean) => {
-    serverEnv.MSW_SUPABASE_AUTHENTICATED = authenticated;
-  };
 
   it("lets requests without cookies through when MSW_SUPABASE_AUTHENTICATED is true", async () => {
     stubEnv(true);

@@ -43,11 +43,11 @@ export interface ScopedRedis {
    * Runs right before the next script, e.g. to let another request or a
    * worker get in between a request's read and its write.
    */
-  beforeNextScript(hook: () => Promise<void>): void;
+  beforeNextScript: (hook: () => Promise<void>) => void;
   /** Deletes every key the test used. */
-  cleanup(): Promise<void>;
+  cleanup: () => Promise<void>;
   /** The keys the test used so far, without the prefix. */
-  keys(): string[];
+  keys: () => string[];
   /** The client to give to the code under test. */
   redis: Redis;
 }

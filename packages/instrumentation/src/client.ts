@@ -15,6 +15,45 @@ export interface InitClientOptions {
 }
 
 /**
+ * Loads `@sentry/nextjs` and initializes it. When it fails, the error is
+ * logged to the console and thrown again.
+ *
+ * @param dsn - The DSN of Sentry
+ * @param options - The sample rates
+ */
+const loadSentry = async (
+  dsn: string,
+  { profileSessionSampleRate, replay, tracesSampleRate }: InitClientOptions
+): Promise<void> => {
+  try {
+    const Sentry = await import("@sentry/nextjs");
+    const environment =
+      process.env["VERCEL_ENV"] ??
+      process.env["NEXT_PUBLIC_VERCEL_ENV"] ??
+      "development";
+
+    Sentry.init({
+      dsn,
+      enabled: environment === "production",
+      environment,
+      integrations: [
+        Sentry.browserTracingIntegration(),
+        Sentry.browserProfilingIntegration(),
+        Sentry.replayIntegration(),
+      ],
+      profileLifecycle: "trace",
+      profileSessionSampleRate,
+      replaysOnErrorSampleRate: replay.onErrorSampleRate,
+      replaysSessionSampleRate: replay.sessionSampleRate,
+      tracesSampleRate,
+    });
+  } catch (error) {
+    console.error("Failed to initialize Sentry:", error);
+    throw error;
+  }
+};
+
+/**
  * Initializes Sentry in the browser when `NEXT_PUBLIC_SENTRY_DSN` is set.
  * Called from `instrumentation-client.ts`.
  *
@@ -22,44 +61,16 @@ export interface InitClientOptions {
  * the first render. When it fails to load, the error is logged to the console
  * and thrown again.
  */
-export const initClient = ({
-  profileSessionSampleRate,
-  replay,
-  tracesSampleRate,
-}: InitClientOptions): void => {
+export const initClient = (options: InitClientOptions): void => {
   const dsn = process.env["NEXT_PUBLIC_SENTRY_DSN"];
 
   if (!dsn) {
     return;
   }
 
-  import("@sentry/nextjs")
-    .then((Sentry) => {
-      const environment =
-        process.env["VERCEL_ENV"] ??
-        process.env["NEXT_PUBLIC_VERCEL_ENV"] ??
-        "development";
-
-      Sentry.init({
-        dsn,
-        enabled: environment === "production",
-        environment,
-        integrations: [
-          Sentry.browserTracingIntegration(),
-          Sentry.browserProfilingIntegration(),
-          Sentry.replayIntegration(),
-        ],
-        profileLifecycle: "trace",
-        profileSessionSampleRate,
-        replaysOnErrorSampleRate: replay.onErrorSampleRate,
-        replaysSessionSampleRate: replay.sessionSampleRate,
-        tracesSampleRate,
-      });
-    })
-    .catch((error: unknown) => {
-      console.error("Failed to initialize Sentry:", error);
-      throw error;
-    });
+  // Not awaited, so that the first render does not wait for Sentry. A failure
+  // is left unhandled, so that it is reported.
+  void loadSentry(dsn, options);
 };
 
 /**

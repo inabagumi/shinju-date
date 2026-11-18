@@ -159,36 +159,39 @@ describe("YouTube Handlers", () => {
     it("returns the icons that the saved profile images were downloaded from", async () => {
       const channels = await getSavedChannels();
 
-      for (const channel of channels) {
-        const profileImage = profileImages
-          .findMany()
-          .find((image) => image.id === channel.profile_image_id);
+      await Promise.all(
+        channels.map(async (channel) => {
+          const profileImage = profileImages
+            .findMany()
+            .find((image) => image.id === channel.profile_image_id);
 
-        if (!profileImage) {
-          continue;
-        }
+          if (!profileImage) {
+            return;
+          }
 
-        const { items } = await get<ChannelListResponse>(
-          `channels?id=${channel.youtube_channel_id}&part=snippet`
-        );
-        const response = await fetch(profileImage.source_url);
+          const { items } = await get<ChannelListResponse>(
+            `channels?id=${channel.youtube_channel_id}&part=snippet`
+          );
+          const response = await fetch(profileImage.source_url);
 
-        expect(items[0]?.snippet.thumbnails.high.url).toBe(
-          profileImage.source_url
-        );
-        expect(response.headers.get("ETag")).toBe(profileImage.etag);
-      }
+          expect(items[0]?.snippet.thumbnails.high.url).toBe(
+            profileImage.source_url
+          );
+          expect(response.headers.get("ETag")).toBe(profileImage.etag);
+        })
+      );
     });
   });
 
   describe("playlistItems.list", () => {
     it("lists the videos of a channel of the Supabase mock, newest first", async () => {
       const [channel] = await getSavedChannels();
-      const expected = (await getSavedVideos())
+      const savedVideos = await getSavedVideos();
+      const expected = savedVideos
         .filter(
           ({ youtubeVideo }) => youtubeVideo.youtube_channel_id === channel?.id
         )
-        .sort((a, b) =>
+        .toSorted((a, b) =>
           Temporal.Instant.compare(b.video.published_at, a.video.published_at)
         )
         .map(({ youtubeVideo }) => youtubeVideo.youtube_video_id);
@@ -197,6 +200,7 @@ describe("YouTube Handlers", () => {
       let pageToken: string | undefined;
 
       do {
+        // oxlint-disable-next-line no-await-in-loop -- each page needs the token of the previous page
         const page: PlaylistItemListResponse = await get(
           `playlistItems?playlistId=${playlistId}&part=contentDetails&maxResults=10${pageToken ? `&pageToken=${pageToken}` : ""}`
         );
@@ -220,7 +224,8 @@ describe("YouTube Handlers", () => {
 
   describe("videos.list", () => {
     it("returns the videos of the Supabase mock by ID", async () => {
-      const savedVideos = (await getSavedVideos()).slice(0, 5);
+      const allVideos = await getSavedVideos();
+      const savedVideos = allVideos.slice(0, 5);
       const { items } = await get<VideoListResponse>(
         `videos?id=${savedVideos.map(({ youtubeVideo }) => youtubeVideo.youtube_video_id).join(",")}&part=contentDetails,liveStreamingDetails,snippet`
       );
@@ -246,21 +251,21 @@ describe("YouTube Handlers", () => {
     ] as const)(
       "returns the details of a stream that is %s",
       async (status, keys) => {
-        const saved = (await getSavedVideos()).find(
-          ({ video }) => video.status === status
-        );
+        const savedVideos = await getSavedVideos();
+        const saved = savedVideos.find(({ video }) => video.status === status);
         const { items } = await get<VideoListResponse>(
           `videos?id=${saved?.youtubeVideo.youtube_video_id}&part=liveStreamingDetails`
         );
         const details = items[0]?.liveStreamingDetails;
 
-        expect(Object.keys(details ?? {}).sort()).toStrictEqual(keys);
+        expect(Object.keys(details ?? {}).toSorted()).toStrictEqual(keys);
         expect(details?.scheduledStartTime).toBe(saved?.video.published_at);
       }
     );
 
     it("returns no details of a stream for a published video", async () => {
-      const saved = (await getSavedVideos()).find(
+      const savedVideos = await getSavedVideos();
+      const saved = savedVideos.find(
         ({ video }) => video.status === "PUBLISHED"
       );
       const { items } = await get<VideoListResponse>(
@@ -292,11 +297,14 @@ describe("YouTube Handlers", () => {
       expect(response.headers.get("Content-Type")).toBe("image/png");
       expect(response.headers.get("ETag")).toBeTruthy();
       // PNG signature
-      expect([...body.slice(0, 4)]).toStrictEqual([0x89, 0x50, 0x4e, 0x47]);
+      expect(body.slice(0, 4)).toStrictEqual(
+        new Uint8Array([0x89, 0x50, 0x4e, 0x47])
+      );
     });
 
     it("answers a matching conditional request with 304", async () => {
-      const etag = (await fetch(iconUrl)).headers.get("ETag") ?? "";
+      const first = await fetch(iconUrl);
+      const etag = first.headers.get("ETag") ?? "";
       const response = await fetch(iconUrl, {
         headers: { "If-None-Match": etag },
       });

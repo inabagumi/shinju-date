@@ -69,6 +69,44 @@ const createVideo = (overrides: Partial<Video> = {}): Video => ({
   ...overrides,
 });
 
+const renderWithToast = () => {
+  render(
+    <ActionToastProvider>
+      <TestVideoList videos={[createVideo()]} />
+    </ActionToastProvider>
+  );
+};
+
+const toggleSelectedVideos = () => {
+  fireEvent.click(screen.getByLabelText("「Test Video」を選択"));
+  fireEvent.click(
+    screen.getByRole("button", { name: "表示/非表示を切り替え" })
+  );
+  fireEvent.click(screen.getByRole("button", { name: "切り替える" }));
+};
+
+const select = (title: string) => {
+  fireEvent.click(screen.getByLabelText(`「${title}」を選択`));
+};
+
+const confirmDelete = () => {
+  fireEvent.change(screen.getByLabelText(/「DELETE」と入力してください/u), {
+    target: { value: "DELETE" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "削除する" }));
+};
+
+const getDateHeader = () =>
+  screen.getByRole("columnheader", { name: /公開日時/u });
+
+// メニューはポインターを押したときかキーで開くため、Enter で開く
+const openMenu = () => {
+  fireEvent.keyDown(
+    screen.getByRole("button", { name: "アクションメニュー" }),
+    { key: "Enter" }
+  );
+};
+
 describe(VideoList, () => {
   it("renders the talent name", () => {
     render(<TestVideoList videos={[createVideo()]} />, {
@@ -125,22 +163,6 @@ describe(VideoList, () => {
     beforeEach(() => {
       vi.clearAllMocks();
     });
-
-    const renderWithToast = () => {
-      render(
-        <ActionToastProvider>
-          <TestVideoList videos={[createVideo()]} />
-        </ActionToastProvider>
-      );
-    };
-
-    const toggleSelectedVideos = () => {
-      fireEvent.click(screen.getByLabelText("「Test Video」を選択"));
-      fireEvent.click(
-        screen.getByRole("button", { name: "表示/非表示を切り替え" })
-      );
-      fireEvent.click(screen.getByRole("button", { name: "切り替える" }));
-    };
 
     it("shows a success toast and clears the selection", async () => {
       vi.mocked(toggleVisibilityAction).mockResolvedValue({
@@ -200,17 +222,6 @@ describe(VideoList, () => {
       id: "00000000-0000-4000-8000-00000000000e",
       title: "Deleted Video",
     });
-
-    const select = (title: string) => {
-      fireEvent.click(screen.getByLabelText(`「${title}」を選択`));
-    };
-
-    const confirmDelete = () => {
-      fireEvent.change(screen.getByLabelText(/「DELETE」と入力してください/), {
-        target: { value: "DELETE" },
-      });
-      fireEvent.click(screen.getByRole("button", { name: "削除する" }));
-    };
 
     beforeEach(() => {
       vi.clearAllMocks();
@@ -335,15 +346,12 @@ describe(VideoList, () => {
   });
 
   describe("sorting", () => {
-    const getDateHeader = () =>
-      screen.getByRole("columnheader", { name: /公開日時/ });
-
     it("links to the reversed order for the current field", () => {
       render(<TestVideoList searchParams="sortOrder=desc" videos={[]} />, {
         wrapper: Wrapper,
       });
 
-      const link = screen.getByRole("link", { name: /更新日時/ });
+      const link = screen.getByRole("link", { name: /更新日時/u });
       expect(link).toHaveAttribute("href", "/videos?sortOrder=asc");
       expect(link).toHaveTextContent("降順で並べ替え中");
       expect(getDateHeader()).toHaveAttribute("aria-sort", "descending");
@@ -359,19 +367,19 @@ describe(VideoList, () => {
         { wrapper: Wrapper }
       );
 
-      expect(screen.getByRole("link", { name: /更新日時/ })).toHaveAttribute(
+      expect(screen.getByRole("link", { name: /更新日時/u })).toHaveAttribute(
         "href",
         "/videos?search=test&sortField=updated_at&sortOrder=desc"
       );
-      expect(screen.getByRole("link", { name: /公開日時/ })).toHaveAttribute(
+      expect(screen.getByRole("link", { name: /公開日時/u })).toHaveAttribute(
         "href",
         "/videos?search=test&sortField=published_at&sortOrder=desc"
       );
-      expect(screen.getByRole("link", { name: /公開日時/ })).toHaveTextContent(
+      expect(screen.getByRole("link", { name: /公開日時/u })).toHaveTextContent(
         "昇順で並べ替え中"
       );
       expect(
-        screen.getByRole("link", { name: /更新日時/ })
+        screen.getByRole("link", { name: /更新日時/u })
       ).not.toHaveTextContent("並べ替え中");
       expect(getDateHeader()).toHaveAttribute("aria-sort", "ascending");
     });
@@ -381,14 +389,6 @@ describe(VideoList, () => {
     beforeEach(() => {
       vi.clearAllMocks();
     });
-
-    // メニューはポインターを押したときかキーで開くため、Enter で開く
-    const openMenu = () => {
-      fireEvent.keyDown(
-        screen.getByRole("button", { name: "アクションメニュー" }),
-        { key: "Enter" }
-      );
-    };
 
     it("links to the video on the platform", () => {
       render(<TestVideoList videos={[createVideo()]} />, { wrapper: Wrapper });

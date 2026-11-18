@@ -4,7 +4,7 @@ import { chunk } from "@shinju-date/helpers";
 import type { QueryData } from "@supabase/supabase-js";
 
 import { IN_FILTER_CHUNK_SIZE } from "../internal/constants.js";
-import { DatabaseError } from "../internal/errors.js";
+import { DatabaseError } from "../internal/database-error.js";
 import type { TypedSupabaseClient } from "../types.js";
 
 /** Columns of the `videos` row of a saved Twitch video. */
@@ -57,6 +57,7 @@ export const findSavedTwitchVideos = async (
   const savedVideos: SavedTwitchVideo[] = [];
 
   for (const ids of chunk([...new Set(values)], IN_FILTER_CHUNK_SIZE)) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- the chunks are sent one at a time to keep the load on the database small
     const { data, error } = await selectSavedTwitchVideos(supabaseClient).in(
       `twitch_video.${column}`,
       ids

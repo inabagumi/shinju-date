@@ -70,6 +70,7 @@ export const retryFailedVideoBackfillJobsAction = adminAction(
     // ones that were queued are recorded in any case.
     for (const account of accounts) {
       try {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- queues the accounts one at a time in order, so each failure is counted and logged separately
         const result = await queue.enqueue({
           accountId: account.accountId,
           provider: account.provider,
@@ -81,7 +82,7 @@ export const retryFailedVideoBackfillJobsAction = adminAction(
           enqueued.push(account);
         }
       } catch (error) {
-        failed++;
+        failed += 1;
         logger.error("過去動画の取り込みをキューに追加できませんでした", {
           accountId: account.accountId,
           error,

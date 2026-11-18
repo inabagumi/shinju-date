@@ -13,7 +13,9 @@ import {
   formatProblem,
 } from "./check-private-urls.mjs";
 
-/** @param {string} text */
+/**
+ * @param {string} text - Text to check
+ */
 const urls = (text) => findPrivateUrls(text).map(({ url }) => url);
 
 describe(findPrivateUrls, () => {
@@ -79,11 +81,13 @@ https://github.com/inabagumi/shinju-date/issues/7329`)
 
 describe(findProblems, () => {
   it("labels the URLs with their sources", () => {
+    /** @type {any} */
+    const emptyBody = null;
     const problems = findProblems([
       { label: "タイトル", text: "fix(web): fix a bug" },
       { label: "本文", text: "Line 1\nhttps://claude.ai/code/session_01Ab" },
       // The body of a pull request is null when it is empty
-      { label: "本文", text: /** @type {any} */ (null) },
+      { label: "本文", text: emptyBody },
     ]);
 
     expect(problems.map(formatProblem)).toStrictEqual([

@@ -36,11 +36,58 @@ const getJson = async <T>(path: string): Promise<T> => {
 
 /** The IDs of the rows, sorted, to compare them regardless of the order. */
 const ids = (rows: readonly { id: string }[]): string[] =>
-  rows.map(({ id }) => id).sort();
+  rows.map(({ id }) => id).toSorted();
+
+/** Whether the upper case of an ID differs, because it has letters. */
+const hasLetters = (id: string) => id !== id.toUpperCase();
+
+/** The ID of a video on YouTube, from the `video_id` of its row. */
+const youtubeVideoId = async () => {
+  const rows = await getJson<{ video_id: string }[]>(
+    "youtube_videos?select=video_id"
+  );
+  const id = rows.map(({ video_id }) => video_id).find(hasLetters);
+
+  expect(id).toBeDefined();
+
+  return id as string;
+};
+
+/** The IDs of the rows of `search_videos_v4` with the given filter. */
+const searchVideoIds = async (filter: string) => {
+  const response = await fetch(
+    `${REST_URL}/rpc/search_videos_v4?select=id&${filter}`,
+    {
+      body: JSON.stringify({ p_perpage: 1000, p_query: "" }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    }
+  );
+
+  expect(response.ok).toBeTruthy();
+
+  return ids((await response.json()) as { id: string }[]);
+};
 
 describe("Supabase filters", () => {
   let videos: Video[];
   let talents: Talent[];
+
+  // The IDs of the seeded talents have no letters, unlike those of videos
+  const findVideoWithLetters = () => {
+    const found = videos.find(({ id }) => hasLetters(id));
+
+    expect(found).toBeDefined();
+
+    return found as Video;
+  };
+
+  const deletedTalentIds = () =>
+    new Set(
+      talents
+        .filter(({ deleted_at }) => deleted_at !== null)
+        .map(({ id }) => id)
+    );
 
   beforeAll(async () => {
     server.listen();
@@ -162,9 +209,16 @@ describe("Supabase filters", () => {
         );
         const termsAfter = await getJson<unknown[]>("terms?select=id");
 
-        for (const response of [patched, deleted, created]) {
+        const responses = [patched, deleted, created];
+        const bodies = await Promise.all(
+          responses.map(
+            async (response) => (await response.json()) as ErrorBody
+          )
+        );
+
+        for (const [index, response] of responses.entries()) {
           expect(response.status).toBe(400);
-          expect(((await response.json()) as ErrorBody).code).toBe(code);
+          expect(bodies[index]?.code).toBe(code);
         }
 
         expect(current).toStrictEqual({
@@ -267,20 +321,8 @@ describe("Supabase filters", () => {
   });
 
   describe("uuid columns", () => {
-    /** Whether the upper case of an ID differs, because it has letters. */
-    const hasLetters = (id: string) => id !== id.toUpperCase();
-
-    // The IDs of the seeded talents have no letters, unlike those of videos
-    const video = () => {
-      const found = videos.find(({ id }) => hasLetters(id));
-
-      expect(found).toBeDefined();
-
-      return found as Video;
-    };
-
     it("matches the IDs in upper case with eq, like PostgreSQL", async () => {
-      const { id } = video();
+      const { id } = findVideoWithLetters();
       const rows = await getJson<Video[]>(
         `videos?select=id&id=eq.${id.toUpperCase()}`
       );
@@ -289,7 +331,7 @@ describe("Supabase filters", () => {
     });
 
     it("leaves out the IDs in upper case with neq", async () => {
-      const { id } = video();
+      const { id } = findVideoWithLetters();
       const rows = await getJson<Video[]>(
         `videos?select=id&id=neq.${id.toUpperCase()}`
       );
@@ -300,7 +342,7 @@ describe("Supabase filters", () => {
     });
 
     it("matches the IDs in upper case with in", async () => {
-      const { id } = video();
+      const { id } = findVideoWithLetters();
       const rows = await getJson<Video[]>(
         `videos?select=id&id=in.(${id.toUpperCase()},00000000-0000-0000-0000-000000000000)`
       );
@@ -309,7 +351,7 @@ describe("Supabase filters", () => {
     });
 
     it("treats the IDs in upper case as the same with isdistinct", async () => {
-      const { id } = video();
+      const { id } = findVideoWithLetters();
       const rows = await getJson<Video[]>(
         `videos?select=id&id=isdistinct.${id.toUpperCase()}`
       );
@@ -318,18 +360,6 @@ describe("Supabase filters", () => {
         ids(videos.filter((row) => row.id !== id))
       );
     });
-
-    /** The ID of a video on YouTube, from the `video_id` of its row. */
-    const youtubeVideoId = async () => {
-      const rows = await getJson<{ video_id: string }[]>(
-        "youtube_videos?select=video_id"
-      );
-      const id = rows.map(({ video_id }) => video_id).find(hasLetters);
-
-      expect(id).toBeDefined();
-
-      return id as string;
-    };
 
     it("matches the references to other tables in upper case", async () => {
       const id = await youtubeVideoId();
@@ -354,7 +384,7 @@ describe("Supabase filters", () => {
     });
 
     it("updates the row of an ID in upper case", async () => {
-      const { id, visible } = video();
+      const { id, visible } = findVideoWithLetters();
       const response = await get(
         `videos?select=id,visible&id=eq.${id.toUpperCase()}`,
         {
@@ -372,40 +402,27 @@ describe("Supabase filters", () => {
     });
 
     it("matches the IDs in upper case in the rows of a database function", async () => {
-      const search = async (filter: string) => {
-        const response = await fetch(
-          `${REST_URL}/rpc/search_videos_v4?select=id&${filter}`,
-          {
-            body: JSON.stringify({ p_perpage: 1000, p_query: "" }),
-            headers: { "Content-Type": "application/json" },
-            method: "POST",
-          }
-        );
-
-        expect(response.ok).toBeTruthy();
-
-        return ids((await response.json()) as { id: string }[]);
-      };
-      const id = (await search("limit=1000")).find(hasLetters);
+      const allIds = await searchVideoIds("limit=1000");
+      const id = allIds.find(hasLetters);
 
       expect(id).toBeDefined();
-      await expect(search(`id=eq.${id?.toUpperCase()}`)).resolves.toStrictEqual(
-        [id]
-      );
+      await expect(
+        searchVideoIds(`id=eq.${id?.toUpperCase()}`)
+      ).resolves.toStrictEqual([id]);
     });
 
     it("still compares the text columns with case", async () => {
       const youtubeVideos = await getJson<{ youtube_video_id: string }[]>(
         "youtube_videos?select=youtube_video_id"
       );
-      const youtubeVideoId = youtubeVideos
+      const textId = youtubeVideos
         .map(({ youtube_video_id }) => youtube_video_id)
         .find(hasLetters);
 
-      expect(youtubeVideoId).toBeDefined();
+      expect(textId).toBeDefined();
 
       const rows = await getJson<unknown[]>(
-        `youtube_videos?select=id&youtube_video_id=eq.${youtubeVideoId?.toUpperCase()}`
+        `youtube_videos?select=id&youtube_video_id=eq.${textId?.toUpperCase()}`
       );
 
       expect(rows).toStrictEqual([]);
@@ -446,7 +463,7 @@ describe("Supabase filters", () => {
         `terms?select=term&readings->>0=eq.${encodeURIComponent(term?.readings[0] ?? "")}`
       );
 
-      expect(rows.map(({ term }) => term)).toContain(term?.term);
+      expect(rows.map((row) => row.term)).toContain(term?.term);
     });
   });
 
@@ -457,7 +474,7 @@ describe("Supabase filters", () => {
         `videos?select=id&or=(id.eq.${first?.id},id.eq.${second?.id})`
       );
 
-      expect(ids(rows)).toStrictEqual([first?.id, second?.id].sort());
+      expect(ids(rows)).toStrictEqual([first?.id, second?.id].toSorted());
     });
 
     it("combines or with the other filters with AND", async () => {
@@ -504,7 +521,7 @@ describe("Supabase filters", () => {
         `videos?select=id&not.or=(id.eq.${first?.id},id.eq.${second?.id})`
       );
 
-      expect(ids(nested)).toStrictEqual([first?.id, second?.id].sort());
+      expect(ids(nested)).toStrictEqual([first?.id, second?.id].toSorted());
       expect(ids(negated)).toStrictEqual(
         ids(videos.filter(({ id }) => id !== first?.id && id !== second?.id))
       );
@@ -517,19 +534,12 @@ describe("Supabase filters", () => {
       );
 
       expect(ids(rows)).toStrictEqual(
-        [first?.id, second?.id, third?.id].sort()
+        [first?.id, second?.id, third?.id].toSorted()
       );
     });
   });
 
   describe("embedded resources", () => {
-    const deletedTalentIds = () =>
-      new Set(
-        talents
-          .filter(({ deleted_at }) => deleted_at !== null)
-          .map(({ id }) => id)
-      );
-
     it("leaves out the rows whose embedded resource does not match with !inner", async () => {
       const talentId = videos[0]?.talent_id;
       const rows = await getJson<{ id: string; talents: { id: string } }[]>(
@@ -590,7 +600,7 @@ describe("Supabase filters", () => {
     });
 
     it("filters the rows of a one-to-many resource", async () => {
-      const [talent] = talents.filter(({ id }) =>
+      const talent = talents.find(({ id }) =>
         videos.some(({ talent_id }) => talent_id === id)
       );
       const [channel] = await getJson<{ id: string; talent_id: string }[]>(

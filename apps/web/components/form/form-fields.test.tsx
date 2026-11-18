@@ -7,13 +7,13 @@ describe("form fields", () => {
   it("InputField passes required to the input", () => {
     render(<InputField label="メールアドレス" name="email" required />);
 
-    expect(screen.getByLabelText(/メールアドレス/)).toBeRequired();
+    expect(screen.getByLabelText(/メールアドレス/u)).toBeRequired();
   });
 
   it("TextareaField passes required to the textarea", () => {
     render(<TextareaField label="機能要望" name="message" required />);
 
-    expect(screen.getByLabelText(/機能要望/)).toBeRequired();
+    expect(screen.getByLabelText(/機能要望/u)).toBeRequired();
   });
 
   it("SelectField passes required to the select", () => {
@@ -23,7 +23,7 @@ describe("form fields", () => {
       </SelectField>
     );
 
-    expect(screen.getByLabelText(/お問い合わせ種別/)).toBeRequired();
+    expect(screen.getByLabelText(/お問い合わせ種別/u)).toBeRequired();
   });
 
   it("fields are not required by default", () => {
@@ -42,7 +42,7 @@ describe("form fields", () => {
       />
     );
 
-    const textarea = screen.getByLabelText(/機能要望/);
+    const textarea = screen.getByLabelText(/機能要望/u);
 
     expect(textarea).toBeInvalid();
     expect(textarea).toHaveAccessibleDescription("機能要望を入力してください");

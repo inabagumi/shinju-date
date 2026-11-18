@@ -54,7 +54,7 @@ export const toLiveFields = (stream: TwitchStream): TwitchVideoFields => ({
  * Twitch serves this placeholder while a VOD's own thumbnail is still being
  * generated.
  */
-const PROCESSING_THUMBNAIL_PATTERN = /\/_404\/404_processing_/;
+const PROCESSING_THUMBNAIL_PATTERN = /\/_404\/404_processing_/u;
 
 /**
  * Turns a Twitch thumbnail template URL into a downloadable image.

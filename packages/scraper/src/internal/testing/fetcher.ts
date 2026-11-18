@@ -62,23 +62,26 @@ const createFakeMethods = <
     missingVideoIds.filter((id) => videoIds.includes(id));
 
   return {
-    findMissingVideoIds: vi.fn(async (videoIds: readonly string[]) =>
-      findMissing(videoIds)
+    findMissingVideoIds: vi.fn((videoIds: readonly string[]) =>
+      Promise.resolve(findMissing(videoIds))
     ),
-    getAccounts: vi.fn(async (accountIds: readonly string[]) =>
-      pick(accounts, accountIds)
+    getAccounts: vi.fn((accountIds: readonly string[]) =>
+      Promise.resolve(pick(accounts, accountIds))
     ),
     getRecentVideos: vi.fn(
-      async (_accountIds: readonly string[], _options?: unknown) => ({
-        failures,
-        missingAccountIds: [] as string[],
-        videos: recentVideos,
+      (_accountIds: readonly string[], _options?: unknown) =>
+        Promise.resolve({
+          failures,
+          missingAccountIds: [] as string[],
+          videos: recentVideos,
+        })
+    ),
+    getVideos: vi.fn((videoIds: readonly string[]) =>
+      Promise.resolve({
+        missingIds: findMissing(videoIds),
+        videos: pick(videos, videoIds),
       })
     ),
-    getVideos: vi.fn(async (videoIds: readonly string[]) => ({
-      missingIds: findMissing(videoIds),
-      videos: pick(videos, videoIds),
-    })),
   };
 };
 
@@ -135,19 +138,22 @@ export const createFakeTwitchFetcher = ({
   const { failures = [] } = options;
   const methods = {
     ...createFakeMethods(options),
-    getClips: vi.fn(async (clipIds: readonly string[]) => ({
-      clips: pick(clips, clipIds),
-      missingIds: missingClipIds.filter((id) => clipIds.includes(id)),
-    })),
-    getLiveStreams: vi.fn(async (_userIds: readonly string[]) => liveStreams),
+    getClips: vi.fn((clipIds: readonly string[]) =>
+      Promise.resolve({
+        clips: pick(clips, clipIds),
+        missingIds: missingClipIds.filter((id) => clipIds.includes(id)),
+      })
+    ),
+    getLiveStreams: vi.fn((_userIds: readonly string[]) =>
+      Promise.resolve(liveStreams)
+    ),
     getRecentVideos: vi.fn(
-      async (
-        _userIds: readonly string[],
-        { type }: TwitchRecentVideosOptions = {}
-      ) =>
-        type === "upload"
-          ? { failures: [], videos: uploads }
-          : { failures, videos: archives }
+      (_userIds: readonly string[], { type }: TwitchRecentVideosOptions = {}) =>
+        Promise.resolve(
+          type === "upload"
+            ? { failures: [], videos: uploads }
+            : { failures, videos: archives }
+        )
     ),
   };
 

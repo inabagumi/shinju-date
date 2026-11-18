@@ -1,7 +1,7 @@
 "use client";
 
 import { TIME_ZONE } from "@shinju-date/constants";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
 interface TimerContextValue {
@@ -37,14 +37,10 @@ export const TimerProvider = ({ children, initialNow }: TimerProviderProps) => {
     };
   }, []);
 
+  const value = useMemo(() => ({ now }), [now]);
+
   return (
-    <TimerContext.Provider
-      value={{
-        now,
-      }}
-    >
-      {children}
-    </TimerContext.Provider>
+    <TimerContext.Provider value={value}>{children}</TimerContext.Provider>
   );
 };
 

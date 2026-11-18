@@ -71,28 +71,66 @@ const renderPanel = (
     { wrapper: ActionToastProvider }
   );
 
+const renderHistory = () => {
+  renderPanel({
+    entries: [
+      createEntry(),
+      createEntry({
+        added: 0,
+        error: "Account not found: channel-row-gone",
+        id: "history-2",
+        name: null,
+        pages: 0,
+        requester: null,
+        scope: "single",
+        status: "failed",
+      }),
+    ],
+  });
+};
+
+/** Renders the failures and clicks the button to retry them. */
+const openRetryDialog = (): HTMLElement => {
+  mocks.getVideoBackfillHistoryAction.mockResolvedValue({
+    data: {
+      entries: [],
+      failures: [createFailure({ active: true })],
+      success: true,
+    },
+    success: true,
+  });
+  mocks.retryFailedVideoBackfillJobsAction.mockResolvedValue({
+    data: {
+      message: "失敗した過去動画の取り込みを1件キューに追加しました。",
+    },
+    success: true,
+  });
+
+  renderPanel({
+    failures: [
+      createFailure(),
+      createFailure({
+        accountId: "channel-row-2",
+        active: true,
+        name: "Main",
+        provider: "youtube",
+      }),
+    ],
+  });
+
+  const button = screen.getByRole("button", {
+    name: "失敗したジョブを再試行",
+  });
+
+  fireEvent.click(button);
+
+  return button;
+};
+
 describe("VideoBackfillHistoryPanel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
-
-  const renderHistory = () => {
-    renderPanel({
-      entries: [
-        createEntry(),
-        createEntry({
-          added: 0,
-          error: "Account not found: channel-row-gone",
-          id: "history-2",
-          name: null,
-          pages: 0,
-          requester: null,
-          scope: "single",
-          status: "failed",
-        }),
-      ],
-    });
-  };
 
   it("shows what past backfills did and who requested them", () => {
     renderHistory();
@@ -151,51 +189,13 @@ describe("VideoBackfillHistoryPanel", () => {
     });
 
     expect(
-      within(failures).getByText(/最後の取り込みが失敗したアカウント: 2件/)
+      within(failures).getByText(/最後の取り込みが失敗したアカウント: 2件/u)
     ).toBeTruthy();
-    expect(within(failures).getByText(/再試行中: 1件/)).toBeTruthy();
+    expect(within(failures).getByText(/再試行中: 1件/u)).toBeTruthy();
     expect(within(failures).getAllByText("quota exceeded")).toHaveLength(2);
     // The account that is retried shows that instead of when it failed.
     expect(within(failures).getByText("再試行中")).toBeTruthy();
   });
-
-  /** Renders the failures and clicks the button to retry them. */
-  const openRetryDialog = (): HTMLElement => {
-    mocks.getVideoBackfillHistoryAction.mockResolvedValue({
-      data: {
-        entries: [],
-        failures: [createFailure({ active: true })],
-        success: true,
-      },
-      success: true,
-    });
-    mocks.retryFailedVideoBackfillJobsAction.mockResolvedValue({
-      data: {
-        message: "失敗した過去動画の取り込みを1件キューに追加しました。",
-      },
-      success: true,
-    });
-
-    renderPanel({
-      failures: [
-        createFailure(),
-        createFailure({
-          accountId: "channel-row-2",
-          active: true,
-          name: "Main",
-          provider: "youtube",
-        }),
-      ],
-    });
-
-    const button = screen.getByRole("button", {
-      name: "失敗したジョブを再試行",
-    });
-
-    fireEvent.click(button);
-
-    return button;
-  };
 
   it("confirms before retrying the failed jobs at once", () => {
     openRetryDialog();
@@ -218,7 +218,7 @@ describe("VideoBackfillHistoryPanel", () => {
 
     // Every failed account is retried now, so nothing is left to request.
     await expect(
-      screen.findByText(/最後の取り込みが失敗したアカウント: 1件/)
+      screen.findByText(/最後の取り込みが失敗したアカウント: 1件/u)
     ).resolves.toBeTruthy();
     expect(button).toHaveProperty("disabled", true);
   });

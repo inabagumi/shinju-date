@@ -59,7 +59,7 @@ export const AnnouncementModal = ({
 
   const isEditing = !!announcement;
 
-  const handleAction = async (
+  const handleAction = (
     currentState: FormState,
     formData: FormData
   ): Promise<FormState> => {

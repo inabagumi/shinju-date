@@ -27,9 +27,11 @@ const mockSupabaseClient = { from } as Partial<
 
 /** Makes the query on the talents table return the error. */
 const respondWithError = (error: { message: string } | null): void => {
-  from.mockReturnValue({
-    select: () => ({ limit: async () => ({ error }) }),
-  });
+  const limit = vi
+    .fn<() => Promise<{ error: { message: string } | null }>>()
+    .mockResolvedValue({ error });
+
+  from.mockReturnValue({ select: () => ({ limit }) });
 };
 
 // Mock Redis client

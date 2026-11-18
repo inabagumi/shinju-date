@@ -38,8 +38,8 @@ const createMockRedis = (results: (string | number)[]) => ({
  */
 const createMockSupabase = (existingTerms: string[]) => {
   const known = new Set(existingTerms.map((term) => term.toLowerCase()));
-  const rpc = vi.fn<Rpc>(
-    async (_name: string, { p_items }: { p_items: RpcItem[] }) => ({
+  const rpc = vi.fn<Rpc>((_name: string, { p_items }: { p_items: RpcItem[] }) =>
+    Promise.resolve({
       data: p_items.filter(({ term }) => known.has(term.toLowerCase())).length,
       error: null,
     })
@@ -49,7 +49,7 @@ const createMockSupabase = (existingTerms: string[]) => {
   return { from, rpc };
 };
 
-const run = async (
+const run = (
   redis: ReturnType<typeof createMockRedis>,
   supabase: { from: unknown; rpc: unknown }
 ) =>

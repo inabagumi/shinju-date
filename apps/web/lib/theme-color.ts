@@ -1,5 +1,5 @@
 /** `#RRGGBB`, the form the admin app stores in `talents.theme_color` */
-const THEME_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
+const THEME_COLOR_PATTERN = /^#[0-9a-f]{6}$/iu;
 
 /**
  * The theme color of a talent, or `null` when it is not set or is not

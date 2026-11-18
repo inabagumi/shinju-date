@@ -78,7 +78,9 @@ export const getPopularTalents = async ({
   return talentScores
     .map(([id, clicks]) => {
       const talent = talentMap.get(id);
-      if (!talent) return null;
+      if (!talent) {
+        return null;
+      }
 
       return { ...talent, clicks };
     })

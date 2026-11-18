@@ -1,5 +1,5 @@
 import type { TypedSupabaseClient } from "../../types.js";
-import { DatabaseError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
 
 /**
  * A table of platform accounts, with the column that holds the ID of an

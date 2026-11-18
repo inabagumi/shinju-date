@@ -19,13 +19,13 @@ test.describe("Login", () => {
     await page.goto("/videos");
 
     // Pages that need a session redirect to the login page
-    await expect(page).toHaveURL(/\/login\?next=%2Fvideos$/);
+    await expect(page).toHaveURL(/\/login\?next=%2Fvideos$/u);
 
     await page.getByLabel("メールアドレス").fill("admin@example.com");
     await page.getByLabel("パスワード").fill("password123");
     await page.getByRole("button", { name: "ログイン" }).click();
 
-    await expect(page).toHaveURL(/\/videos$/);
+    await expect(page).toHaveURL(/\/videos$/u);
     await expect(
       page.getByRole("heading", { level: 1, name: "動画管理" })
     ).toBeVisible();
@@ -43,7 +43,7 @@ test.describe("Login", () => {
         .getByRole("alert")
         .filter({ hasText: "メールアドレスかパスワードが正しくありません。" })
     ).toBeVisible();
-    await expect(page).toHaveURL(/\/login$/);
+    await expect(page).toHaveURL(/\/login$/u);
   });
 
   test("should sign out from the user menu", async ({ page }) => {
@@ -59,13 +59,13 @@ test.describe("Login", () => {
     await page.getByRole("button", { name: "ユーザーメニュー" }).click();
     await page.getByRole("menuitem", { name: "ログアウト" }).click();
 
-    await expect(page).toHaveURL(/\/login$/);
+    await expect(page).toHaveURL(/\/login$/u);
     await expect(
       page.getByRole("heading", { level: 1, name: "Admin UI" })
     ).toBeVisible();
 
     // The session is gone, so the dashboard redirects to the login page
     await page.goto("/");
-    await expect(page).toHaveURL(/\/login$/);
+    await expect(page).toHaveURL(/\/login$/u);
   });
 });

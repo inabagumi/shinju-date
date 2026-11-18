@@ -44,7 +44,7 @@ const getAttributeName = (node: ESTree.JSXAttribute): string =>
 const isInClassNames = (node: ESTree.Node): boolean => {
   let child: ESTree.Node = node;
 
-  for (let parent = node.parent; parent; parent = parent.parent) {
+  for (let { parent } = node; parent; { parent } = parent) {
     if (
       parent.type === "JSXAttribute" &&
       CLASS_ATTRIBUTES.has(getAttributeName(parent))

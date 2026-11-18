@@ -18,6 +18,34 @@ interface UsersResponse {
   }[];
 }
 
+/** The Twitch users of the Supabase mock, with their icons. */
+const getSavedUsers = async () => {
+  await ensureCollectionsSeeded();
+
+  const images = profileImages.findMany();
+
+  return twitchUsers.findMany().map((user) => ({
+    profileImage: images.find((image) => image.id === user.profile_image_id),
+    user,
+  }));
+};
+
+/** The Twitch videos of the Supabase mock, with their users. */
+const getSavedVideos = async () => {
+  await ensureCollectionsSeeded();
+
+  const users = new Map(twitchUsers.findMany().map((user) => [user.id, user]));
+  const savedVideos = new Map(
+    videos.findMany().map((video) => [video.id, video])
+  );
+
+  return twitchVideos.findMany().map((twitchVideo) => ({
+    twitchVideo,
+    user: users.get(twitchVideo.twitch_user_id),
+    video: savedVideos.get(twitchVideo.video_id),
+  }));
+};
+
 const getUsers = async (query: string): Promise<UsersResponse["data"]> => {
   const response = await fetch(`https://api.twitch.tv/helix/users?${query}`);
   const { data } = (await response.json()) as UsersResponse;
@@ -50,20 +78,6 @@ describe("Twitch Handlers", () => {
   });
 
   describe("users", () => {
-    /** The Twitch users of the Supabase mock, with their icons. */
-    const getSavedUsers = async () => {
-      await ensureCollectionsSeeded();
-
-      const images = profileImages.findMany();
-
-      return twitchUsers.findMany().map((user) => ({
-        profileImage: images.find(
-          (image) => image.id === user.profile_image_id
-        ),
-        user,
-      }));
-    };
-
     it("returns the users of the Supabase mock by ID", async () => {
       const saved = await getSavedUsers();
 
@@ -97,23 +111,25 @@ describe("Twitch Handlers", () => {
     });
 
     it("serves the icons that are saved in the Supabase mock", async () => {
-      const saved = (await getSavedUsers()).filter(
-        ({ profileImage }) => profileImage
-      );
+      const savedUsers = await getSavedUsers();
+      const saved = savedUsers.filter(({ profileImage }) => profileImage);
 
       expect(saved.length).toBeGreaterThan(0);
 
-      for (const { profileImage, user } of saved) {
-        const [helixUser] = await getUsers(`id=${user.twitch_user_id}`);
-        const response = await fetch(helixUser?.profile_image_url ?? "");
+      await Promise.all(
+        saved.map(async ({ profileImage, user }) => {
+          const [helixUser] = await getUsers(`id=${user.twitch_user_id}`);
+          const response = await fetch(helixUser?.profile_image_url ?? "");
 
-        expect(helixUser?.profile_image_url).toBe(profileImage?.source_url);
-        expect(response.headers.get("ETag")).toBe(profileImage?.etag);
-      }
+          expect(helixUser?.profile_image_url).toBe(profileImage?.source_url);
+          expect(response.headers.get("ETag")).toBe(profileImage?.etag);
+        })
+      );
     });
 
     it("returns the default icon for a user of the Supabase mock without one", async () => {
-      const [saved] = (await getSavedUsers()).filter(
+      const savedUsers = await getSavedUsers();
+      const saved = savedUsers.find(
         ({ user }) => user.profile_image_id === null
       );
 
@@ -122,7 +138,7 @@ describe("Twitch Handlers", () => {
       const [helixUser] = await getUsers(`id=${saved?.user.twitch_user_id}`);
 
       expect(helixUser?.profile_image_url).toMatch(
-        /^https:\/\/static-cdn\.jtvnw\.net\/user-default-pictures-uv\//
+        /^https:\/\/static-cdn\.jtvnw\.net\/user-default-pictures-uv\//u
       );
     });
 
@@ -159,11 +175,14 @@ describe("Twitch Handlers", () => {
       expect(response.headers.get("Content-Type")).toBe("image/png");
       expect(response.headers.get("ETag")).toBeTruthy();
       // PNG signature
-      expect([...body.slice(0, 4)]).toStrictEqual([0x89, 0x50, 0x4e, 0x47]);
+      expect(body.slice(0, 4)).toStrictEqual(
+        new Uint8Array([0x89, 0x50, 0x4e, 0x47])
+      );
     });
 
     it("answers a matching conditional request with 304", async () => {
-      const etag = (await fetch(iconUrl)).headers.get("ETag") ?? "";
+      const first = await fetch(iconUrl);
+      const etag = first.headers.get("ETag") ?? "";
       const response = await fetch(iconUrl, {
         headers: { "If-None-Match": etag },
       });
@@ -197,24 +216,6 @@ describe("Twitch Handlers", () => {
       return (await response.json()) as HelixPage<Item>;
     };
 
-    /** The Twitch videos of the Supabase mock, with their users. */
-    const getSavedVideos = async () => {
-      await ensureCollectionsSeeded();
-
-      const users = new Map(
-        twitchUsers.findMany().map((user) => [user.id, user])
-      );
-      const savedVideos = new Map(
-        videos.findMany().map((video) => [video.id, video])
-      );
-
-      return twitchVideos.findMany().map((twitchVideo) => ({
-        twitchVideo,
-        user: users.get(twitchVideo.twitch_user_id),
-        video: savedVideos.get(twitchVideo.video_id),
-      }));
-    };
-
     it("lists the archives, highlights and uploads of a user from the Supabase mock, newest first", async () => {
       const saved = await getSavedVideos();
       const userIds = [
@@ -223,29 +224,36 @@ describe("Twitch Handlers", () => {
 
       expect(userIds.length).toBeGreaterThan(1);
 
-      for (const userId of userIds) {
-        const { data } = await getPage<HelixVideo>(
-          `videos?user_id=${userId}&type=all&first=100`
-        );
-        const expected = saved.filter(
-          ({ twitchVideo, user }) =>
-            user?.twitch_user_id === userId &&
-            ["archive", "highlight", "upload"].includes(twitchVideo.type ?? "")
-        );
+      await Promise.all(
+        userIds.map(async (userId) => {
+          const { data } = await getPage<HelixVideo>(
+            `videos?user_id=${userId}&type=all&first=100`
+          );
+          const expected = saved.filter(
+            ({ twitchVideo, user }) =>
+              user?.twitch_user_id === userId &&
+              ["archive", "highlight", "upload"].includes(
+                twitchVideo.type ?? ""
+              )
+          );
 
-        expect(data.map(({ id }) => id).sort()).toStrictEqual(
-          expected.map(({ twitchVideo }) => twitchVideo.twitch_video_id).sort()
-        );
-        expect(data.map(({ published_at }) => published_at)).toStrictEqual(
-          data
-            .map(({ published_at }) => published_at)
-            .toSorted((a, b) => Temporal.Instant.compare(b, a))
-        );
-      }
+          expect(data.map(({ id }) => id).toSorted()).toStrictEqual(
+            expected
+              .map(({ twitchVideo }) => twitchVideo.twitch_video_id)
+              .toSorted()
+          );
+          expect(data.map(({ published_at }) => published_at)).toStrictEqual(
+            data
+              .map(({ published_at }) => published_at)
+              .toSorted((a, b) => Temporal.Instant.compare(b, a))
+          );
+        })
+      );
     });
 
     it("returns the videos in the format of Helix", async () => {
-      const [archive] = (await getSavedVideos()).filter(
+      const savedVideos = await getSavedVideos();
+      const archive = savedVideos.find(
         ({ twitchVideo }) => twitchVideo.type === "archive"
       );
       const { data } = await getPage<HelixVideo>(
@@ -257,7 +265,7 @@ describe("Twitch Handlers", () => {
           duration: "2h34m12s",
           id: archive?.twitchVideo.twitch_video_id,
           published_at: expect.stringMatching(
-            /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
+            /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u
           ),
           stream_id: archive?.twitchVideo.stream_id,
           thumbnail_url: expect.stringContaining("%{width}x%{height}"),
@@ -268,7 +276,8 @@ describe("Twitch Handlers", () => {
     });
 
     it("filters the videos of a user by type", async () => {
-      const [highlight] = (await getSavedVideos()).filter(
+      const savedVideos = await getSavedVideos();
+      const highlight = savedVideos.find(
         ({ twitchVideo }) => twitchVideo.type === "highlight"
       );
       const { data } = await getPage<HelixVideo>(
@@ -281,7 +290,8 @@ describe("Twitch Handlers", () => {
     });
 
     it("pages the videos of a user with a cursor", async () => {
-      const [archive] = (await getSavedVideos()).filter(
+      const savedVideos = await getSavedVideos();
+      const archive = savedVideos.find(
         ({ twitchVideo }) => twitchVideo.type === "archive"
       );
       const userId = archive?.user?.twitch_user_id;
@@ -299,7 +309,8 @@ describe("Twitch Handlers", () => {
     });
 
     it("returns 404 for a lookup by an ID that does not exist, like Helix", async () => {
-      const [archive] = (await getSavedVideos()).filter(
+      const savedVideos = await getSavedVideos();
+      const archive = savedVideos.find(
         ({ twitchVideo }) => twitchVideo.type === "archive"
       );
       const response = await fetch(
@@ -310,24 +321,24 @@ describe("Twitch Handlers", () => {
     });
 
     it("requires one of id, user_id and game_id for videos", async () => {
-      expect((await fetch(`${HELIX_URL}/videos`)).status).toBe(400);
-      expect((await fetch(`${HELIX_URL}/videos?id=1&user_id=2`)).status).toBe(
-        400
-      );
+      const withoutKey = await fetch(`${HELIX_URL}/videos`);
+      const withTwoKeys = await fetch(`${HELIX_URL}/videos?id=1&user_id=2`);
+
+      expect(withoutKey.status).toBe(400);
+      expect(withTwoKeys.status).toBe(400);
     });
 
     it("returns the live streams from the LIVE videos of the Supabase mock", async () => {
-      const [live] = (await getSavedVideos()).filter(
-        ({ video }) => video?.status === "LIVE"
-      );
+      const savedVideos = await getSavedVideos();
+      const live = savedVideos.find(({ video }) => video?.status === "LIVE");
       const userId = live?.user?.twitch_user_id;
-      const others = (await getSavedVideos())
+      const otherUserId = savedVideos
         .map(({ user }) => user?.twitch_user_id)
-        .filter((id) => id !== userId);
+        .find((id) => id !== userId);
       const { data } = await getPage<{ id: string; user_id: string }>(
         `streams?user_id=${userId}`
       );
-      const offline = await getPage<unknown>(`streams?user_id=${others[0]}`);
+      const offline = await getPage<unknown>(`streams?user_id=${otherUserId}`);
 
       expect(live?.twitchVideo.stream_id).toBeTruthy();
       expect(data).toStrictEqual([
@@ -341,7 +352,8 @@ describe("Twitch Handlers", () => {
     });
 
     it("returns the clips of the Supabase mock and leaves out the missing ones", async () => {
-      const [clip] = (await getSavedVideos()).filter(
+      const savedVideos = await getSavedVideos();
+      const clip = savedVideos.find(
         ({ twitchVideo }) => twitchVideo.type === "clip"
       );
       const { data } = await getPage<{
@@ -360,7 +372,8 @@ describe("Twitch Handlers", () => {
     });
 
     it("serves the thumbnails", async () => {
-      const [archive] = (await getSavedVideos()).filter(
+      const savedVideos = await getSavedVideos();
+      const archive = savedVideos.find(
         ({ twitchVideo }) => twitchVideo.type === "archive"
       );
       const {

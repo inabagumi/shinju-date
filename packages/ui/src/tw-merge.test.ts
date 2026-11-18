@@ -21,34 +21,34 @@ const themeCSS = readFileSync(
 
 const extractThemeKeys = (namespace: string): string[] => {
   const keys = [
-    ...themeCSS.matchAll(new RegExp(`--${namespace}-([\\w-]+):`, "g")),
+    ...themeCSS.matchAll(new RegExp(`--${namespace}-([\\w-]+):`, "gu")),
   ].flatMap(([, key]) =>
     // `--text-color-*` は文字色、`--text-*--line-height` は行間
     key && !key.startsWith("color-") && !key.includes("--") ? [key] : []
   );
 
-  return [...new Set(keys)].sort();
+  return [...new Set(keys)].toSorted();
 };
 
 describe("twMerge()", () => {
   it("knows every font size in theme.css", () => {
-    expect([...FONT_SIZES].sort()).toStrictEqual(extractThemeKeys("text"));
+    expect(FONT_SIZES.toSorted()).toStrictEqual(extractThemeKeys("text"));
   });
 
   it("knows every container in theme.css", () => {
-    expect([...CONTAINERS].sort()).toStrictEqual(extractThemeKeys("container"));
+    expect(CONTAINERS.toSorted()).toStrictEqual(extractThemeKeys("container"));
   });
 
   it("knows every radius in theme.css", () => {
-    expect([...RADII].sort()).toStrictEqual(extractThemeKeys("radius"));
+    expect(RADII.toSorted()).toStrictEqual(extractThemeKeys("radius"));
   });
 
   it("knows every shadow in theme.css", () => {
-    expect([...SHADOWS].sort()).toStrictEqual(extractThemeKeys("shadow"));
+    expect(SHADOWS.toSorted()).toStrictEqual(extractThemeKeys("shadow"));
   });
 
   it("knows every animation in theme.css", () => {
-    expect([...ANIMATIONS].sort()).toStrictEqual(extractThemeKeys("animate"));
+    expect(ANIMATIONS.toSorted()).toStrictEqual(extractThemeKeys("animate"));
   });
 
   it("replaces an animation with another one", () => {
@@ -63,12 +63,12 @@ describe("twMerge()", () => {
 
   it("knows every focus ring in theme.css", () => {
     const utilities = [
-      ...themeCSS.matchAll(/@utility ([\w-]*focus-ring[\w-]*)/g),
+      ...themeCSS.matchAll(/@utility (?<name>[\w-]*focus-ring[\w-]*)/gu),
     ]
-      .map(([, name]) => name)
-      .sort();
+      .map(({ groups }) => groups?.["name"])
+      .toSorted();
 
-    expect([...FOCUS_RINGS].sort()).toStrictEqual(utilities);
+    expect(FOCUS_RINGS.toSorted()).toStrictEqual(utilities);
   });
 
   it("replaces a focus ring with another one", () => {

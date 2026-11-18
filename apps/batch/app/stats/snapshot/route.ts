@@ -16,7 +16,7 @@ import { supabaseClient } from "@/lib/supabase";
 export const maxDuration = 60;
 
 export const POST = async (request: Request): Promise<Response> =>
-  runCronJob(request, STATS_SNAPSHOT_JOB, async () => {
+  await runCronJob(request, STATS_SNAPSHOT_JOB, async () => {
     // The target is the previous day in Japan, counted as of its end (the
     // start of today).
     const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE);

@@ -12,6 +12,8 @@ import {
   supabaseRequests,
 } from "@/test/supabase";
 
+import { GET } from "./route";
+
 const mocks = vi.hoisted(() => ({
   serveStorageImage: vi.fn<typeof serveStorageImage>(),
 }));
@@ -19,8 +21,6 @@ const mocks = vi.hoisted(() => ({
 vi.mock(import("@/lib/storage-image"), () => ({
   serveStorageImage: mocks.serveStorageImage,
 }));
-
-import { GET } from "./route";
 
 setupSupabase();
 

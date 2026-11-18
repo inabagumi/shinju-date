@@ -39,20 +39,20 @@ export const Default = meta.story({
     const canvas = within(canvasElement);
 
     // Find and click the trigger button
-    const trigger = canvas.getByRole("button", { name: /select options/i });
+    const trigger = canvas.getByRole("button", { name: /select options/iu });
     await expect(trigger).toBeInTheDocument();
     await userEvent.click(trigger);
 
     // Wait for popover to appear
     await waitFor(() => {
-      const option = within(document.body).getByLabelText(/option 1/i);
+      const option = within(document.body).getByLabelText(/option 1/iu);
       expect(option).toBeInTheDocument();
     });
 
     // Get option elements after popover is visible
     const bodyContext = within(document.body);
-    const option1 = bodyContext.getByLabelText(/option 1/i);
-    const option2 = bodyContext.getByLabelText(/option 2/i);
+    const option1 = bodyContext.getByLabelText(/option 1/iu);
+    const option2 = bodyContext.getByLabelText(/option 2/iu);
 
     // Select Option 1
     await userEvent.click(option1);
@@ -64,7 +64,7 @@ export const Default = meta.story({
 
     // Verify display shows "2件選択中"
     await waitFor(() => {
-      const displayText = canvas.getByText(/2件選択中/i);
+      const displayText = canvas.getByText(/2件選択中/iu);
       expect(displayText).toBeInTheDocument();
     });
 
@@ -91,7 +91,7 @@ export const WithPreselected = meta.story({
     const canvas = within(canvasElement);
 
     // Verify display shows "2件選択中"
-    const displayText = canvas.getByText(/2件選択中/i);
+    const displayText = canvas.getByText(/2件選択中/iu);
     await expect(displayText).toBeInTheDocument();
 
     // Open the popover
@@ -100,19 +100,19 @@ export const WithPreselected = meta.story({
 
     // Wait for popover to appear
     await waitFor(() => {
-      const tokyoOption = within(document.body).getByLabelText(/tokyo/i);
+      const tokyoOption = within(document.body).getByLabelText(/tokyo/iu);
       expect(tokyoOption).toBeInTheDocument();
     });
 
     // Verify preselected items are checked
-    const tokyoOption = within(document.body).getByLabelText(/tokyo/i);
-    const osakaOption = within(document.body).getByLabelText(/osaka/i);
+    const tokyoOption = within(document.body).getByLabelText(/tokyo/iu);
+    const osakaOption = within(document.body).getByLabelText(/osaka/iu);
     await expect(tokyoOption).toBeChecked();
     await expect(osakaOption).toBeChecked();
 
     // Test "Select All" functionality
     const selectAllCheckbox = within(document.body).getByRole("checkbox", {
-      name: /すべて選択/i,
+      name: /すべて選択/iu,
     });
     await expect(selectAllCheckbox).toHaveAttribute("aria-checked", "mixed");
     await userEvent.click(selectAllCheckbox);
@@ -120,7 +120,7 @@ export const WithPreselected = meta.story({
     // Verify all options are checked
     await expect(tokyoOption).toBeChecked();
     await expect(osakaOption).toBeChecked();
-    const kyotoOption = within(document.body).getByLabelText(/kyoto/i);
+    const kyotoOption = within(document.body).getByLabelText(/kyoto/iu);
     await expect(kyotoOption).toBeChecked();
 
     // Test "Deselect All" functionality (clicking the checked checkbox again)

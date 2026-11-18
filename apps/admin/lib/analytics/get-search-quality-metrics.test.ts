@@ -48,20 +48,25 @@ describe("get-search-quality-metrics", () => {
     it("should calculate engagement rate correctly", async () => {
       // Mock Redis responses
       vi.mocked(redisClient.scard)
-        .mockResolvedValueOnce(100) // total sessions
-        .mockResolvedValueOnce(30); // search sessions
+        // total sessions
+        .mockResolvedValueOnce(100)
+        // search sessions
+        .mockResolvedValueOnce(30);
 
       const result = await getSearchEngagementRate({
         range: { end: "2024-01-01", start: "2024-01-01" },
       });
 
-      expect(result).toBe(30); // 30/100 * 100 = 30%
+      // 30/100 * 100 = 30%
+      expect(result).toBe(30);
     });
 
     it("should return null when no sessions exist", async () => {
       vi.mocked(redisClient.scard)
-        .mockResolvedValueOnce(0) // total sessions
-        .mockResolvedValueOnce(0); // search sessions
+        // total sessions
+        .mockResolvedValueOnce(0)
+        // search sessions
+        .mockResolvedValueOnce(0);
 
       const result = await getSearchEngagementRate({
         range: { end: "2024-01-01", start: "2024-01-01" },
@@ -72,8 +77,10 @@ describe("get-search-quality-metrics", () => {
 
     it("should return 0 when sessions exist but none of them searched", async () => {
       vi.mocked(redisClient.scard)
-        .mockResolvedValueOnce(100) // total sessions
-        .mockResolvedValueOnce(0); // search sessions
+        // total sessions
+        .mockResolvedValueOnce(100)
+        // search sessions
+        .mockResolvedValueOnce(0);
 
       const result = await getSearchEngagementRate({
         range: { end: "2024-01-01", start: "2024-01-01" },
@@ -84,16 +91,21 @@ describe("get-search-quality-metrics", () => {
 
     it("should aggregate a date range in a single pipeline", async () => {
       vi.mocked(redisClient.scard)
-        .mockResolvedValueOnce(100) // 2024-01-01 total sessions
-        .mockResolvedValueOnce(30) // 2024-01-01 search sessions
-        .mockResolvedValueOnce(300) // 2024-01-02 total sessions
-        .mockResolvedValueOnce(50); // 2024-01-02 search sessions
+        // 2024-01-01 total sessions
+        .mockResolvedValueOnce(100)
+        // 2024-01-01 search sessions
+        .mockResolvedValueOnce(30)
+        // 2024-01-02 total sessions
+        .mockResolvedValueOnce(300)
+        // 2024-01-02 search sessions
+        .mockResolvedValueOnce(50);
 
       const result = await getSearchEngagementRate({
         range: { end: "2024-01-02", start: "2024-01-01" },
       });
 
-      expect(result).toBe(20); // (30+50) / (100+300) * 100 = 20%
+      // (30+50) / (100+300) * 100 = 20%
+      expect(result).toBe(20);
       expect(redisClient.pipeline).toHaveBeenCalledOnce();
       expect(vi.mocked(redisClient.scard).mock.calls).toStrictEqual([
         [`${REDIS_KEYS.SESSIONS_TOTAL_PREFIX}20240101`],
@@ -148,12 +160,14 @@ describe("get-search-quality-metrics", () => {
 
       expect(result).toHaveLength(2);
       expect(result[0]).toStrictEqual({
-        exitRate: 30, // 30/100 * 100
+        // 30/100 * 100
+        exitRate: 30,
         keyword: "keyword1",
         searchCount: 100,
       });
       expect(result[1]).toStrictEqual({
-        exitRate: 20, // 10/50 * 100
+        // 10/50 * 100
+        exitRate: 20,
         keyword: "keyword2",
         searchCount: 50,
       });
@@ -173,7 +187,8 @@ describe("get-search-quality-metrics", () => {
 
       expect(result).toStrictEqual([
         {
-          exitRate: 15, // 30/200 * 100
+          // 30/200 * 100
+          exitRate: 15,
           keyword: "keyword1",
           searchCount: 200,
         },
@@ -222,7 +237,8 @@ describe("get-search-quality-metrics", () => {
         range: { end: "2024-01-01", start: "2024-01-01" },
       });
 
-      expect(result).toBe(2); // (3+1+2) / 3 = 2
+      // (3+1+2) / 3 = 2
+      expect(result).toBe(2);
     });
 
     it("should aggregate a date range in a single pipeline", async () => {
@@ -235,7 +251,8 @@ describe("get-search-quality-metrics", () => {
         range: { end: "2024-01-03", start: "2024-01-01" },
       });
 
-      expect(result).toBe(3); // (3+1+5) / 3 = 3
+      // (3+1+5) / 3 = 3
+      expect(result).toBe(3);
       expect(redisClient.pipeline).toHaveBeenCalledOnce();
       expect(redisClient.hgetall).toHaveBeenCalledTimes(3);
     });

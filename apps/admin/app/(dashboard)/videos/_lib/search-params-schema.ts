@@ -4,8 +4,21 @@ import { z } from "zod";
 import type { VideoSortField, VideoSortOrder } from "./get-videos";
 
 // Define the valid sort field and order values based on the types
-const VALID_SORT_FIELDS: VideoSortField[] = ["published_at", "updated_at"];
-const VALID_SORT_ORDERS: VideoSortOrder[] = ["asc", "desc"];
+const VALID_SORT_FIELDS: ReadonlySet<VideoSortField> = new Set<VideoSortField>([
+  "published_at",
+  "updated_at",
+]);
+const VALID_SORT_ORDERS: ReadonlySet<VideoSortOrder> = new Set<VideoSortOrder>([
+  "asc",
+  "desc",
+]);
+
+/**
+ * Take the first element if the search parameter is given more than once
+ */
+const getFirstValue = (
+  val: string | string[] | undefined
+): string | undefined => (Array.isArray(val) ? val[0] : val);
 
 /**
  * 1つまたは複数の値を受け取り、enum の値だけを残すスキーマ。
@@ -20,7 +33,9 @@ const enumValuesSchema = <const T extends readonly [string, ...string[]]>(
     .union([z.string(), z.array(z.string())])
     .optional()
     .transform((val): T[number][] | undefined => {
-      if (!val) return undefined;
+      if (!val) {
+        return undefined;
+      }
       const validValues = (Array.isArray(val) ? val : [val]).filter(
         (v): v is T[number] => valueSchema.safeParse(v).success
       );
@@ -38,12 +53,18 @@ export const videoSearchParamsSchema = z.object({
     .union([z.string(), z.array(z.string())])
     .optional()
     .transform((val): boolean[] | undefined => {
-      if (!val) return undefined;
+      if (!val) {
+        return undefined;
+      }
       const values = Array.isArray(val) ? val : [val];
       const boolValues = values
         .map((v) => {
-          if (v === "true") return true;
-          if (v === "false") return false;
+          if (v === "true") {
+            return true;
+          }
+          if (v === "false") {
+            return false;
+          }
           return null;
         })
         .filter((v): v is boolean => v !== null);
@@ -55,11 +76,11 @@ export const videoSearchParamsSchema = z.object({
     .union([z.string(), z.array(z.string())])
     .optional()
     .transform((val) => {
-      if (Array.isArray(val)) {
-        val = val[0]; // Take first element if array
+      const value = getFirstValue(val);
+      if (!value) {
+        return 1;
       }
-      if (!val) return 1;
-      const num = Number(val);
+      const num = Number(value);
       return Number.isSafeInteger(num) && num >= 1 ? num : 1;
     }),
 
@@ -82,11 +103,9 @@ export const videoSearchParamsSchema = z.object({
     .union([z.string(), z.array(z.string())])
     .optional()
     .transform((val) => {
-      if (Array.isArray(val)) {
-        val = val[0];
-      }
-      return VALID_SORT_FIELDS.includes(val as VideoSortField)
-        ? (val as VideoSortField)
+      const value = getFirstValue(val);
+      return VALID_SORT_FIELDS.has(value as VideoSortField)
+        ? (value as VideoSortField)
         : "updated_at";
     }),
 
@@ -95,11 +114,9 @@ export const videoSearchParamsSchema = z.object({
     .union([z.string(), z.array(z.string())])
     .optional()
     .transform((val) => {
-      if (Array.isArray(val)) {
-        val = val[0];
-      }
-      return VALID_SORT_ORDERS.includes(val as VideoSortOrder)
-        ? (val as VideoSortOrder)
+      const value = getFirstValue(val);
+      return VALID_SORT_ORDERS.has(value as VideoSortOrder)
+        ? (value as VideoSortOrder)
         : "desc";
     }),
 
@@ -111,7 +128,9 @@ export const videoSearchParamsSchema = z.object({
     .union([z.string(), z.array(z.string())])
     .optional()
     .transform((val): string[] | undefined => {
-      if (!val) return undefined;
+      if (!val) {
+        return undefined;
+      }
       const values = Array.isArray(val) ? val : [val];
       const nonEmptyValues = values.filter((v) => v.trim() !== "");
       return nonEmptyValues.length > 0 ? nonEmptyValues : undefined;
@@ -125,12 +144,18 @@ export const videoSearchParamsSchema = z.object({
     .union([z.string(), z.array(z.string())])
     .optional()
     .transform((val): boolean[] | undefined => {
-      if (!val) return undefined;
+      if (!val) {
+        return undefined;
+      }
       const values = Array.isArray(val) ? val : [val];
       const boolValues = values
         .map((v) => {
-          if (v === "true") return true;
-          if (v === "false") return false;
+          if (v === "true") {
+            return true;
+          }
+          if (v === "false") {
+            return false;
+          }
           return null;
         })
         .filter((v): v is boolean => v !== null);

@@ -26,7 +26,7 @@ export const maxDuration = 120;
 const TIME_BUDGET = Temporal.Duration.from({ seconds: 50 });
 
 export const POST = async (request: NextRequest): Promise<Response> =>
-  runCronJob(request, VIDEOS_BACKFILL_JOB, async () => {
+  await runCronJob(request, VIDEOS_BACKFILL_JOB, async () => {
     const deadline = Temporal.Now.instant().add(TIME_BUDGET);
     const scrapers = new Map<BackfillProvider, Scraper>();
     const { added } = await workOffBackfillQueue({

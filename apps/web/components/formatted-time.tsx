@@ -8,10 +8,15 @@ import {
 
 import { useNow } from "./timer";
 
+const DEFAULT_OPTIONS: Pick<
+  Intl.DateTimeFormatOptions,
+  "dateStyle" | "timeStyle"
+> = {};
+
 export default function FormattedTime({
   className,
   dateTime,
-  options: { dateStyle = undefined, timeStyle = "short" } = {},
+  options: { dateStyle, timeStyle = "short" } = DEFAULT_OPTIONS,
 }: {
   className?: string | undefined;
   dateTime: Temporal.ZonedDateTime;

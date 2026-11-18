@@ -9,6 +9,8 @@ import {
   setupSupabase,
 } from "@/test/supabase";
 
+import { submitFeedback } from "./actions";
+
 vi.mock(import("botid/server"), () => ({
   checkBotId: vi.fn<typeof checkBotId>().mockResolvedValue({
     bypassed: false,
@@ -17,8 +19,6 @@ vi.mock(import("botid/server"), () => ({
     isVerifiedBot: false,
   }),
 }));
-
-import { submitFeedback } from "./actions";
 
 setupSupabase();
 

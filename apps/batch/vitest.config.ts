@@ -19,6 +19,5 @@ export default defineVitestConfig({
       UPSTASH_REDIS_REST_URL: "https://fake.upstash.test",
     },
     exclude: ["**/node_modules/**", "**/e2e/**"],
-    setupFiles: ["./vitest.setup.ts"],
   },
 });

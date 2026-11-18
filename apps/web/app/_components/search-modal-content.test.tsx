@@ -148,9 +148,9 @@ describe(SearchModalContent, () => {
   });
 
   it("should keep showing the previous suggestions while fetching the new ones", async () => {
-    actions.fetchSuggestions.mockImplementation(async (query) => [
-      { term: `${query} 歌枠` },
-    ]);
+    actions.fetchSuggestions.mockImplementation((query) =>
+      Promise.resolve([{ term: `${query} 歌枠` }])
+    );
 
     await renderContent();
 
@@ -183,6 +183,7 @@ describe(SearchModalContent, () => {
 
     const suggestion = await screen.findByRole("link", { name: "ミオ" });
     expect(
+      // oxlint-disable-next-line eslint/no-bitwise -- compareDocumentPosition returns a bit mask
       section.compareDocumentPosition(suggestion) &
         Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
@@ -384,7 +385,7 @@ describe(SearchModalContent, () => {
     fireEvent.keyDown(getInput(), { key: "ArrowDown" });
     expect(options[0]).toHaveFocus();
 
-    for (let index = 1; index < options.length; index++) {
+    for (let index = 1; index < options.length; index += 1) {
       fireEvent.keyDown(document.activeElement as Element, {
         key: "ArrowDown",
       });
@@ -395,7 +396,7 @@ describe(SearchModalContent, () => {
     fireEvent.keyDown(document.activeElement as Element, { key: "ArrowDown" });
     expect(options.at(-1)).toHaveFocus();
 
-    for (let index = options.length - 2; index >= 0; index--) {
+    for (let index = options.length - 2; index >= 0; index -= 1) {
       fireEvent.keyDown(document.activeElement as Element, { key: "ArrowUp" });
       expect(options[index]).toHaveFocus();
     }

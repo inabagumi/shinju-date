@@ -3,6 +3,8 @@
  * types and expiry times.
  */
 
+import { wrongTypeError } from "./errors.js";
+
 /** The values of the keys of each Redis type. */
 interface RedisValueTypes {
   hash: Map<string, string>;
@@ -22,24 +24,21 @@ export type RedisValue = {
   [Type in RedisType]: { type: Type; value: RedisValueTypes[Type] };
 }[RedisType];
 
+/** An empty list, set, sorted set or hash. */
+const createEmptyValue = (
+  type: Exclude<RedisType, "string">
+): RedisValueOf<Exclude<RedisType, "string">> => {
+  if (type === "list") {
+    return [];
+  }
+
+  return type === "set" ? new Set() : new Map();
+};
+
 interface Entry {
   expiresAt: Temporal.Instant | null;
   value: RedisValue;
 }
-
-/** An error reply of Redis, such as `WRONGTYPE …` or `ERR syntax error`. */
-export class RedisError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "RedisError";
-  }
-}
-
-/** The error of a command on a key of another type. */
-export const wrongTypeError = (): RedisError =>
-  new RedisError(
-    "WRONGTYPE Operation against a key holding the wrong kind of value"
-  );
 
 /**
  * The keys of the mock Redis. A key whose expiry time has passed is removed
@@ -103,9 +102,7 @@ export class MockRedisStore {
       return current;
     }
 
-    const value = (
-      type === "list" ? [] : type === "set" ? new Set() : new Map()
-    ) as RedisValueOf<Type>;
+    const value = createEmptyValue(type) as RedisValueOf<Type>;
 
     this.set(key, { type, value } as RedisValue, { keepTtl: false });
 

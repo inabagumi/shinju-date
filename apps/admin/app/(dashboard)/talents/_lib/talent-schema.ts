@@ -47,7 +47,7 @@ const THEME_COLOR_MESSAGE =
 export const talentThemeColorSchema = z
   .string()
   .trim()
-  .regex(/^#[0-9A-Fa-f]{6}$/, { message: THEME_COLOR_MESSAGE })
+  .regex(/^#[0-9A-Fa-f]{6}$/u, { message: THEME_COLOR_MESSAGE })
   .nullable()
   .optional()
   .transform((value) => value || null);

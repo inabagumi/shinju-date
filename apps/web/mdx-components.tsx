@@ -53,23 +53,27 @@ const Link = ({
  */
 const documentComponents: MDXComponents = {
   a: Link,
-  h2: ({ className, ...props }) => (
+  h2: ({ children, className, ...props }) => (
     <h2
       className={twMerge(
         "mt-12 mb-4 text-heading font-bold first:mt-0",
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </h2>
   ),
-  h3: ({ className, ...props }) => (
+  h3: ({ children, className, ...props }) => (
     <h3
       className={twMerge(
         "mt-8 mb-2 text-body leading-normal font-semibold first:mt-0",
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </h3>
   ),
   hr: ({ className, ...props }) => (
     <hr className={twMerge("my-12 border-border", className)} {...props} />

@@ -7,10 +7,7 @@ interface ContactLinkProps {
   children: React.ReactNode;
 }
 
-export const ContactLink = async ({
-  className,
-  children,
-}: ContactLinkProps) => {
+export const ContactLink = ({ className, children }: ContactLinkProps) => {
   const enabled = isContactFormEnabled();
 
   if (!enabled) {

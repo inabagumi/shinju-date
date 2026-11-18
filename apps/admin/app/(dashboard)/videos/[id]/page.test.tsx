@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { findSuspenseChildren, runServerComponent } from "@/test/suspense";
 
-import type { default as getVideo, VideoDetail } from "../_lib/get-video";
+import type getVideo from "../_lib/get-video";
+import type { VideoDetail } from "../_lib/get-video";
 
 const mocks = vi.hoisted(() => ({
   getVideo: vi.fn<typeof getVideo>(),

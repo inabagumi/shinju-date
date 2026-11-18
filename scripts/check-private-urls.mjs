@@ -20,9 +20,9 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { resolve } from "node:path";
+import path from "node:path";
 
-const root = resolve(import.meta.dirname, "..");
+const root = path.resolve(import.meta.dirname, "..");
 
 /**
  * URLs that most people cannot open. Add a pattern here to check more URLs.
@@ -37,7 +37,7 @@ export const PRIVATE_URL_PATTERNS = [
     // Sessions, artifacts, chats and projects of Claude need the owner's login
     name: "Claude のセッション・アーティファクト・会話・プロジェクト",
     pattern:
-      /https?:\/\/(?:www\.)?claude\.ai\/(?:code\/(?:session_|artifact\/)|artifact\/|chat\/|project\/)[^\s<>()[\]{}"'`]*/gi,
+      /https?:\/\/(?:www\.)?claude\.ai\/(?:code\/(?:session_|artifact\/)|artifact\/|chat\/|project\/)[^\s<>()[\]{}"'`]*/giu,
   },
 ];
 
@@ -45,20 +45,20 @@ export const PRIVATE_URL_PATTERNS = [
  * @typedef {object} PrivateUrl
  * @property {number} line - 1-based line number
  * @property {string} name - Name of the pattern that matched
- * @property {string} url
+ * @property {string} url - URL that matched
  */
 
 /**
  * Find the URLs that most people cannot open.
  *
- * @param {string} text
- * @returns {PrivateUrl[]}
+ * @param {string} text - Text such as a commit message
+ * @returns {PrivateUrl[]} URLs found, in the order of the text
  */
 export const findPrivateUrls = (text) => {
   /** @type {PrivateUrl[]} */
   const found = [];
 
-  for (const [index, lineText] of text.split(/\r?\n/).entries()) {
+  for (const [index, lineText] of text.split(/\r?\n/u).entries()) {
     for (const { name, pattern } of PRIVATE_URL_PATTERNS) {
       for (const match of lineText.matchAll(pattern)) {
         found.push({ line: index + 1, name, url: match[0] });
@@ -72,7 +72,7 @@ export const findPrivateUrls = (text) => {
 /**
  * @typedef {object} Source
  * @property {string} label - Where the text is from, e.g. `commit abc1234`
- * @property {string} text
+ * @property {string} text - Text to check
  */
 
 /**
@@ -82,8 +82,8 @@ export const findPrivateUrls = (text) => {
 /**
  * Find the URLs that most people cannot open in each source.
  *
- * @param {Source[]} sources
- * @returns {Problem[]}
+ * @param {Source[]} sources - Texts to check with their labels
+ * @returns {Problem[]} URLs found, with the labels of their sources
  */
 export const findProblems = (sources) =>
   sources.flatMap(({ label, text }) =>
@@ -93,7 +93,7 @@ export const findProblems = (sources) =>
 /**
  * Format a problem for the log.
  *
- * @param {Problem} problem
+ * @param {Problem} problem - Problem to format
  */
 export const formatProblem = ({ label, line, name, url }) =>
   `${label} (${line} 行目): ${url} (${name})`;
@@ -104,8 +104,8 @@ export const GUIDANCE =
 /**
  * List the commits from `base` to `HEAD` with their messages.
  *
- * @param {string} base
- * @returns {Source[]}
+ * @param {string} base - Base revision, such as `origin/main`
+ * @returns {Source[]} Commit messages labeled with their short hashes
  */
 const listCommits = (base) => {
   const output = execFileSync(
@@ -141,6 +141,6 @@ const main = () => {
   }
 };
 
-if (process.argv[1] && resolve(process.argv[1]) === import.meta.filename) {
+if (process.argv[1] && path.resolve(process.argv[1]) === import.meta.filename) {
   main();
 }

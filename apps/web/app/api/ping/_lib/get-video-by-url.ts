@@ -106,7 +106,7 @@ const getTwitchVideoByURL = async (url: URL): Promise<Video> => {
 
   // clips.twitch.tv/<slug>
   if (url.host === "clips.twitch.tv") {
-    const clipId = pathSegments[0];
+    const [clipId] = pathSegments;
     if (!clipId) {
       throw new TypeError("Clip ID is unknown.");
     }
@@ -207,11 +207,11 @@ const getTwitchVideoByURL = async (url: URL): Promise<Video> => {
 
 export default async function getVideoByURL(url: URL): Promise<Video> {
   if (isYouTubeHost(url.host)) {
-    return getYouTubeVideoByURL(url);
+    return await getYouTubeVideoByURL(url);
   }
 
   if (isTwitchHost(url.host)) {
-    return getTwitchVideoByURL(url);
+    return await getTwitchVideoByURL(url);
   }
 
   throw new TypeError("URLs not supported were given.");

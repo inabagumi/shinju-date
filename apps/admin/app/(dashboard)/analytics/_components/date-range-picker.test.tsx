@@ -15,6 +15,28 @@ const getPressedButtons = () =>
     .filter((button) => button.getAttribute("aria-pressed") === "true")
     .map((button) => button.textContent);
 
+const applyCustomPeriod = (startDate: string, endDate: string) => {
+  const onChange = vi.fn<OnChange>();
+
+  render(
+    <DateRangePicker
+      onChange={onChange}
+      value={{ endDate: "2026-11-10", startDate: "2026-11-03" }}
+    />
+  );
+
+  fireEvent.click(screen.getByRole("button", { name: "カスタム期間を選択" }));
+  fireEvent.change(screen.getByLabelText("開始日"), {
+    target: { value: startDate },
+  });
+  fireEvent.change(screen.getByLabelText("終了日"), {
+    target: { value: endDate },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "適用" }));
+
+  return onChange;
+};
+
 describe(DateRangePicker, () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -103,30 +125,6 @@ describe(DateRangePicker, () => {
   });
 
   describe("custom period", () => {
-    const applyCustomPeriod = (startDate: string, endDate: string) => {
-      const onChange = vi.fn<OnChange>();
-
-      render(
-        <DateRangePicker
-          onChange={onChange}
-          value={{ endDate: "2026-11-10", startDate: "2026-11-03" }}
-        />
-      );
-
-      fireEvent.click(
-        screen.getByRole("button", { name: "カスタム期間を選択" })
-      );
-      fireEvent.change(screen.getByLabelText("開始日"), {
-        target: { value: startDate },
-      });
-      fireEvent.change(screen.getByLabelText("終了日"), {
-        target: { value: endDate },
-      });
-      fireEvent.click(screen.getByRole("button", { name: "適用" }));
-
-      return onChange;
-    };
-
     it("applies a period within the window", () => {
       const onChange = applyCustomPeriod("2026-08-17", "2026-11-14");
 

@@ -29,12 +29,12 @@ const termForm = (
     formData.set(key, value);
   }
 
-  readings.forEach((reading, index) => {
+  for (const [index, reading] of readings.entries()) {
     formData.set(`readings[${index}]`, reading);
-  });
-  synonyms.forEach((synonym, index) => {
+  }
+  for (const [index, synonym] of synonyms.entries()) {
     formData.set(`synonyms[${index}]`, synonym);
-  });
+  }
 
   return formData;
 };

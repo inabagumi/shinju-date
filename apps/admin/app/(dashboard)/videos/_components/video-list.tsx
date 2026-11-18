@@ -56,11 +56,8 @@ interface SortLinkProps {
 /** 見出しの並べ替えのリンク。今の並べ替えの項目には、向きの矢印を付ける */
 const SortLink = ({ field, label, sort, searchParams }: SortLinkProps) => {
   const isCurrent = sort.field === field;
-  const Icon = isCurrent
-    ? sort.order === "asc"
-      ? ArrowUp
-      : ArrowDown
-    : ArrowUpDown;
+  const currentIcon = sort.order === "asc" ? ArrowUp : ArrowDown;
+  const Icon = isCurrent ? currentIcon : ArrowUpDown;
 
   return (
     <Link

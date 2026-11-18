@@ -77,7 +77,7 @@ export interface SyncTwitchUserIconOptions {
  * (see `syncProfileImage`). A user who went back to a default icon loses
  * the stored one.
  *
- * @throws When the icon cannot be downloaded, stored or assigned. The user
+ * @throws {Error} When the icon cannot be downloaded, stored or assigned. The user
  *   keeps its current icon then.
  */
 export const syncTwitchUserIcon = ({

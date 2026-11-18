@@ -78,7 +78,9 @@ export const getPopularVideos = async ({
   return videoScores
     .map(([id, clicks]) => {
       const video = videoMap.get(id);
-      if (!video) return null;
+      if (!video) {
+        return null;
+      }
 
       return { ...video, clicks };
     })

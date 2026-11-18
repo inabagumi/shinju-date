@@ -231,6 +231,7 @@ const VideoDetails = async ({
             action={<VideoDeleteButton />}
             aria-label="動画の削除"
             className="mt-6"
+            // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- Alert (@shinju-date/ui) always renders a div and takes its role as a prop
             role="region"
             title="動画の削除"
             tone="danger"

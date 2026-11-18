@@ -16,7 +16,9 @@ test.describe("Terms", () => {
       const row = page
         .getByRole("row")
         .filter({ has: page.getByRole("cell", { exact: true, name: term }) });
+      // oxlint-disable-next-line eslint/no-await-in-loop -- e2e checks run one at a time, so a failure names the first wrong row
       await expect(row.getByRole("cell").nth(1)).toHaveText(reading);
+      // oxlint-disable-next-line eslint/no-await-in-loop -- e2e checks run one at a time, so a failure names the first wrong row
       await expect(row.getByRole("cell").nth(2)).toHaveText(synonyms);
     }
   });
@@ -81,13 +83,13 @@ test.describe("Terms", () => {
 
       try {
         await expect(
-          page.getByText(/^Draggable item .+ was moved over droppable area /)
+          page.getByText(/^Draggable item .+ was moved over droppable area /u)
         ).toBeAttached({ timeout: 1000 });
         await page.keyboard.press("ArrowDown");
         // Drop only after dnd-kit has moved the row over the next one
         await expect(
           page.getByText(
-            /^Draggable item (\S+) was moved over droppable area (?!\1\.)/
+            /^Draggable item (?<item>\S+) was moved over droppable area (?!\k<item>\.)/u
           )
         ).toBeAttached({ timeout: 1000 });
       } catch (error) {
@@ -131,7 +133,7 @@ test.describe("Terms", () => {
     ).toBeVisible();
 
     await page.getByRole("searchbox", { name: "用語を検索" }).fill("ASMR");
-    await expect(page).toHaveURL(/\/terms\?search=ASMR$/);
+    await expect(page).toHaveURL(/\/terms\?search=ASMR$/u);
 
     await expect(
       page.getByRole("cell", { exact: true, name: "ASMR" })

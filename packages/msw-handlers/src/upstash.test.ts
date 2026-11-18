@@ -6,6 +6,30 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { talents, videos } from "./collections.js";
 import { server } from "./server.js";
 
+/** The pairs of a member and a score of a reply with `withScores`. */
+const toPairs = (result: unknown[]): [unknown, unknown][] => {
+  const pairs: [unknown, unknown][] = [];
+
+  for (let i = 0; i < result.length; i += 2) {
+    pairs.push([result[i], result[i + 1]]);
+  }
+
+  return pairs;
+};
+
+/** Send a command to the REST API of the mock Upstash, and return its result. */
+const send = async (command: unknown[]) => {
+  const response = await fetch("https://fake.upstash.test/", {
+    body: JSON.stringify(command),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+
+  const body = (await response.json()) as { result: unknown };
+
+  return body.result;
+};
+
 describe("Upstash Redis Handlers", () => {
   beforeAll(() => server.listen());
   afterEach(() => server.resetHandlers());
@@ -59,16 +83,6 @@ describe("Upstash Redis Handlers", () => {
       Temporal.Now.plainDateISO(TIME_ZONE).subtract({ days: 1 })
     )}`;
 
-    const toPairs = (result: unknown[]): [unknown, unknown][] => {
-      const pairs: [unknown, unknown][] = [];
-
-      for (let i = 0; i < result.length; i += 2) {
-        pairs.push([result[i], result[i + 1]]);
-      }
-
-      return pairs;
-    };
-
     it("returns members with scores in ascending order with withScores", async () => {
       const result = await redis.zrange<unknown[]>(key, 0, -1, {
         withScores: true,
@@ -84,7 +98,7 @@ describe("Upstash Redis Handlers", () => {
       }
 
       expect(scores).toStrictEqual(
-        [...scores].sort((a, b) => Number(a) - Number(b))
+        scores.toSorted((a, b) => Number(a) - Number(b))
       );
     });
 
@@ -98,7 +112,7 @@ describe("Upstash Redis Handlers", () => {
       expect(scores.length).toBeGreaterThan(0);
       expect(scores).toStrictEqual(scores.map(() => expect.any(Number)));
       expect(scores).toStrictEqual(
-        [...scores].sort((a, b) => Number(b) - Number(a))
+        scores.toSorted((a, b) => Number(b) - Number(a))
       );
     });
 
@@ -154,8 +168,9 @@ describe("Upstash Redis Handlers", () => {
       const videoScores = await getScores(
         `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`
       );
+      const savedVideos = await videos.findMany();
       const visibleVideoIds = new Set(
-        (await videos.findMany())
+        savedVideos
           .filter((video) => video.visible && video.deleted_at === null)
           .map((video) => video.id)
       );
@@ -174,12 +189,12 @@ describe("Upstash Redis Handlers", () => {
       const talentScores = await getScores(
         `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}${dateKey}`
       );
+      const savedVideos = await videos.findMany();
+      const savedTalents = await talents.findMany();
       const talentIdByVideoId = new Map(
-        (await videos.findMany()).map((video) => [video.id, video.talent_id])
+        savedVideos.map((video) => [video.id, video.talent_id])
       );
-      const talentIds = new Set(
-        (await talents.findMany()).map((talent) => talent.id)
-      );
+      const talentIds = new Set(savedTalents.map((talent) => talent.id));
       const expected = new Map<string, number>();
 
       for (const [videoId, score] of videoScores) {
@@ -271,18 +286,6 @@ describe("Upstash Redis Handlers", () => {
   });
 
   describe("commands of the backfill queue", () => {
-    const send = async (command: unknown[]) => {
-      const response = await fetch("https://fake.upstash.test/", {
-        body: JSON.stringify(command),
-        headers: { "Content-Type": "application/json" },
-        method: "POST",
-      });
-
-      const body = (await response.json()) as { result: unknown };
-
-      return body.result;
-    };
-
     it("sets a key only when it is missing with NX", async () => {
       await expect(
         send(["set", "test:lock", "1", "ex", 60, "nx"])

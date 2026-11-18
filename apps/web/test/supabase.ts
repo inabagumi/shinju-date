@@ -130,13 +130,14 @@ export interface SupabaseSeed {
 }
 
 const replace = async <Row>(
-  collection: { clear(): void; create(values: Row): Promise<unknown> },
+  collection: { clear: () => void; create: (values: Row) => Promise<unknown> },
   rows: readonly Row[] = []
 ): Promise<void> => {
   collection.clear();
 
   // One by one, so the mock returns them in this order without `order`
   for (const row of rows) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- The rows are created one by one, so the mock returns them in this order
     await collection.create(row);
   }
 };

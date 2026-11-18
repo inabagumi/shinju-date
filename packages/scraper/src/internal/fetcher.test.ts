@@ -1,3 +1,6 @@
+// oxlint-disable-next-line eslint/max-classes-per-file -- the fetchers of the tests are small subclasses of the example fetcher
+import { setTimeout as delay } from "node:timers/promises";
+
 import { describe, expect, it, vi } from "vitest";
 
 import type {
@@ -5,7 +8,7 @@ import type {
   RecentVideosResult,
   VideoLookupResult,
 } from "./fetcher-types.js";
-import { Fetcher } from "./fetcher.js";
+import { Fetcher, fetchByIds } from "./fetcher.js";
 import type { Logger } from "./logger.js";
 
 interface Account {
@@ -52,7 +55,7 @@ class ExampleFetcher extends Fetcher<Account, Video> {
   }
 
   async getAccounts(accountIds: readonly string[]): Promise<Account[]> {
-    const { found } = await this.fetchByIds(accountIds, (ids) =>
+    const { found } = await fetchByIds(accountIds, (ids) =>
       this.#lookUp(ids, Object.keys(this.#platform.accounts), (id) => ({
         id,
         name: `Account ${id}`,
@@ -67,14 +70,16 @@ class ExampleFetcher extends Fetcher<Account, Video> {
   ): Promise<RecentVideosResult<Video>> {
     const { failures, results } = await this.fetchPerAccount(
       accountIds,
-      async (accountId) => {
+      (accountId) => {
         const videoIds = this.#platform.accounts[accountId] ?? [];
 
         if (videoIds instanceof Error) {
-          throw videoIds;
+          return Promise.reject(videoIds);
         }
 
-        return videoIds.map((id) => ({ id, title: `Video ${id}` }));
+        return Promise.resolve(
+          videoIds.map((id) => ({ id, title: `Video ${id}` }))
+        );
       }
     );
 
@@ -84,7 +89,7 @@ class ExampleFetcher extends Fetcher<Account, Video> {
   async getVideos(
     videoIds: readonly string[]
   ): Promise<VideoLookupResult<Video>> {
-    const { found, missingIds } = await this.fetchByIds(videoIds, (ids) =>
+    const { found, missingIds } = await fetchByIds(videoIds, (ids) =>
       this.#lookUp(ids, this.#platform.videoIds, (id) => ({
         id,
         title: `Video ${id}`,
@@ -170,13 +175,14 @@ describe(Fetcher, () => {
 
     it("rejects a lookup when a request fails", async () => {
       class FailingFetcher extends ExampleFetcher {
+        // oxlint-disable-next-line eslint/class-methods-use-this -- overrides a method of the fetcher
         override async getVideos(
           videoIds: readonly string[]
         ): Promise<VideoLookupResult<Video>> {
-          const { found, missingIds } = await this.fetchByIds(
+          const { found, missingIds } = await fetchByIds(
             videoIds,
             // oxlint-disable-next-line require-yield -- a request that fails yields nothing
-            async function* (): AsyncGenerator<Video> {
+            async function* failingRequest(): AsyncGenerator<Video> {
               throw new Error("boom");
             }
           );
@@ -196,10 +202,10 @@ describe(Fetcher, () => {
       let running = 0;
       let peak = 0;
       const task = async () => {
-        running++;
+        running += 1;
         peak = Math.max(peak, running);
-        await new Promise((resolve) => setTimeout(resolve, 5));
-        running--;
+        await delay(5);
+        running -= 1;
       };
 
       class SlowFetcher extends ExampleFetcher {

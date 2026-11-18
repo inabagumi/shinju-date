@@ -1,7 +1,7 @@
 import { HttpResponse, http } from "msw";
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { StorageError } from "../internal/errors.js";
+import { StorageError } from "../internal/storage-error.js";
 import { TEST_NOW } from "../internal/testing/context.js";
 import {
   createImage,
@@ -139,7 +139,7 @@ describe(syncYouTubeChannelIcon, () => {
     expect(requests).toStrictEqual([
       { ifNoneMatch: null, url: thumbnails.high.url },
     ]);
-    expect(storage.uploads[0]?.path).toMatch(/^youtube\/UCaaa\/[^/]+\.webp$/);
+    expect(storage.uploads[0]?.path).toMatch(/^youtube\/UCaaa\/[^/]+\.webp$/u);
     expect(supabase.written("POST", "profile_images")[0]?.body).toMatchObject({
       height: 256,
       source_url: thumbnails.high.url,

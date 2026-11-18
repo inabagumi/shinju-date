@@ -106,6 +106,7 @@ export const VideoBackfillHistoryPanel = ({
           <Alert
             aria-label="最後の取り込みが失敗したアカウント"
             className="mb-4"
+            // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- Alert (@shinju-date/ui) always renders a div and takes its role as a prop
             role="region"
             title={
               <>

@@ -8,7 +8,8 @@ import {
   unknownCommandError,
 } from "./commands.js";
 import type { RedisReply } from "./commands.js";
-import { MockRedisStore, RedisError } from "./store.js";
+import { RedisError } from "./errors.js";
+import { MockRedisStore } from "./store.js";
 
 /**
  * Mock handlers of the REST API of Upstash Redis, backed by an in-memory
@@ -21,7 +22,8 @@ const UPSTASH_URL = "https://fake.upstash.test";
 // look up the clicked videos and talents.
 await ensureCollectionsSeeded();
 
-const clickableVideos = (await videos.findMany()).filter(
+const allVideos = await videos.findMany();
+const clickableVideos = allVideos.filter(
   (video) => video.visible && video.deleted_at === null
 );
 
@@ -50,7 +52,7 @@ console.error(
         .filter((key) => key.includes(":clicked:"))
         .map((key) => key.split(":").pop())
     ),
-  ].sort()
+  ].toSorted()
 );
 
 /** The reply of a command in a response of Upstash. */

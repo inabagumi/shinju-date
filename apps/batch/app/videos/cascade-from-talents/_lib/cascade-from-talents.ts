@@ -75,7 +75,7 @@ export const cascadeVideosFromTalents = async (
         cause:
           phaseErrors.length === 1
             ? phaseErrors[0]
-            : new AggregateError(phaseErrors),
+            : new AggregateError(phaseErrors, "cascade phases failed"),
         restored,
         softDeleted,
       }

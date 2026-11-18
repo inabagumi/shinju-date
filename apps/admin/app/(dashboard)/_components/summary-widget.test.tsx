@@ -17,7 +17,7 @@ vi.mock(import("../_lib/get-summary-stats"), () => ({
   getSummaryStats: mocks.getSummaryStats,
 }));
 vi.mock(import("./video-stats-chart-ui"), () => ({
-  VideoStatsChartUI: () => <></>,
+  VideoStatsChartUI: () => <div />,
 }));
 
 const { ContentSummaryWidget, VideoSummaryWidget } =
@@ -41,7 +41,7 @@ const stats: WithTrends<SummaryStats> = {
 };
 
 const getTile = (label: string): HTMLElement =>
-  screen.getByRole("link", { name: new RegExp(`^${label}`) });
+  screen.getByRole("link", { name: new RegExp(`^${label}`, "u") });
 
 describe("VideoSummaryWidget", () => {
   beforeEach(() => {

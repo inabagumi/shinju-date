@@ -159,7 +159,7 @@ export const getSearchExitRates = async ({
 
     // Sort by search count (most popular first) and limit results
     return exitRates
-      .sort((a, b) => b.searchCount - a.searchCount)
+      .toSorted((a, b) => b.searchCount - a.searchCount)
       .slice(0, limit);
   } catch (error) {
     logger.error("検索離脱率の計算に失敗しました", { error });

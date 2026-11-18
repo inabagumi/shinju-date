@@ -76,7 +76,7 @@ interface RunSummaryProps {
 const RunSummary = ({ run }: RunSummaryProps) => {
   const total = run.accounts.length;
   const finished = total - run.counts.pending - run.counts.running;
-  const accounts = [...run.accounts].sort(
+  const accounts = run.accounts.toSorted(
     (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]
   );
 
@@ -104,6 +104,7 @@ const RunSummary = ({ run }: RunSummaryProps) => {
           aria-valuemin={0}
           aria-valuenow={finished}
           className="h-2 overflow-hidden rounded-full bg-muted"
+          // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- a styled bar; the native progress element would look different in each browser
           role="progressbar"
         >
           <div

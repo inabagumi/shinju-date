@@ -23,7 +23,9 @@ export const MobileMenu = ({ children }: MobileMenuProps) => {
     const container = containerRef.current;
     const menu = menuRef.current;
 
-    if (!isOpen || !container || !menu) return;
+    if (!isOpen || !container || !menu) {
+      return;
+    }
 
     const close = () => setIsOpen(false);
 

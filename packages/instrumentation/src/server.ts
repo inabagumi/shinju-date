@@ -25,11 +25,11 @@ export const registerServer = async ({
   profileSessionSampleRate,
   tracesSampleRate,
 }: RegisterServerOptions): Promise<void> => {
-  if (enableMsw) {
-    if (process.env["NEXT_RUNTIME"] === "nodejs") {
-      const { startServer } = await import("@shinju-date/msw-handlers/server");
-      startServer();
-    }
+  // The check on NEXT_RUNTIME comes first, so that the bundle of the Edge
+  // runtime folds the condition to `false` and drops the import.
+  if (process.env["NEXT_RUNTIME"] === "nodejs" && enableMsw) {
+    const { startServer } = await import("@shinju-date/msw-handlers/server");
+    startServer();
   }
 
   const dsn = process.env["NEXT_PUBLIC_SENTRY_DSN"];

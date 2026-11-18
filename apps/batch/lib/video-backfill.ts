@@ -197,12 +197,14 @@ const workOnJob = async (
     let page: Awaited<ReturnType<Scraper["addPastVideos"]>>;
 
     try {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- each page is read with the cursor of the previous one, one request at a time for the quota
       page = await scraper.addPastVideos({
         accountId: job.accountId,
         cursor: job.cursor,
         now: clock(),
       });
     } catch (error) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the job is released before the loop ends
       await recordFailure(queue, claim, error, onFinish);
 
       return added;
@@ -211,6 +213,7 @@ const workOnJob = async (
     added += page.added;
 
     const done = page.cursor === null;
+    // oxlint-disable-next-line eslint/no-await-in-loop -- the progress is saved before the next page is read
     const recorded = await queue.recordPage(claim, {
       added: page.added,
       done,
@@ -227,6 +230,7 @@ const workOnJob = async (
         });
       }
 
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the finished job is reported before the loop ends
       await reportFinished(onFinish, recorded, job);
 
       return added;
@@ -239,6 +243,7 @@ const workOnJob = async (
     claim = { job: recorded.job, token };
 
     if (!isBefore(clock, deadline)) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the job is put back before the loop ends
       isSaved(await queue.requeue(claim), job);
 
       return added;
@@ -265,6 +270,7 @@ export const workOffBackfillQueue = async ({
   let added = 0;
 
   while (isBefore(clock, deadline)) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- one job is worked on at a time, until the deadline
     const claim = await queue.claim();
 
     if (!claim) {
@@ -274,11 +280,13 @@ export const workOffBackfillQueue = async ({
     const { job } = claim;
 
     if (seen.has(job.id)) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the job is put back before the loop ends
       isSaved(await queue.requeue(claim), job);
       break;
     }
 
     seen.add(job.id);
+    // oxlint-disable-next-line eslint/no-await-in-loop -- one job is worked on at a time, until the deadline
     added += await workOnJob(
       queue,
       getScraper(job.provider),

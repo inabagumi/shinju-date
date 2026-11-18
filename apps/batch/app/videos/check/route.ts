@@ -44,12 +44,16 @@ export const POST = async (request: NextRequest): Promise<Response> => {
 
   const { mode = "default", provider } = query;
 
-  return runCronJob(request, getVideosCheckJob(provider, mode), async () => {
-    const now = Temporal.Now.instant();
-    const changed = await checkVideos(createScraper(provider), mode, now);
+  return await runCronJob(
+    request,
+    getVideosCheckJob(provider, mode),
+    async () => {
+      const now = Temporal.Now.instant();
+      const changed = await checkVideos(createScraper(provider), mode, now);
 
-    await finishVideoSync({ changed, now, signal: request.signal });
-  });
+      await finishVideoSync({ changed, now, signal: request.signal });
+    }
+  );
 };
 
 export const GET = POST;

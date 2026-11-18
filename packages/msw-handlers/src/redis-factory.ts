@@ -62,7 +62,7 @@ export const createRedisDataFactory = (
 ): Map<string, SortedSetItem[] | Set<string>> => {
   const store = new Map<string, SortedSetItem[] | Set<string>>();
 
-  for (let i = 0; i < dateCount; i++) {
+  for (let i = 0; i < dateCount; i += 1) {
     const dateKey = formatDateKey(today.subtract({ days: i }));
 
     // Videos clicked data (sorted set with scores)
@@ -93,7 +93,7 @@ export const createRedisDataFactory = (
 
     // Search keywords data (set of strings)
     const searchKeywords = new Set<string>();
-    for (let j = 0; j < faker.number.int({ max: 10, min: 3 }); j++) {
+    for (let j = 0; j < faker.number.int({ max: 10, min: 3 }); j += 1) {
       searchKeywords.add(faker.helpers.arrayElement(SEARCH_KEYWORDS));
     }
     store.set(`search:keywords:${dateKey}`, searchKeywords);

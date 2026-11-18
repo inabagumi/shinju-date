@@ -20,15 +20,6 @@ import type {
   UseServerActionOptions,
 } from "./use-server-action";
 
-const createDeferred = <T,>() => {
-  let resolve: (value: T) => void = () => {};
-  const promise = new Promise<T>((r) => {
-    resolve = r;
-  });
-
-  return { promise, resolve };
-};
-
 interface WrapperProps {
   children: ReactNode;
 }
@@ -53,17 +44,17 @@ const getToasts = () =>
   within(screen.getByRole("region")).queryAllByRole("listitem");
 
 const ComponentOutsideProvider = () => {
-  useServerAction(async () => ({ success: true }));
+  useServerAction(() => Promise.resolve({ success: true }));
   return null;
 };
 
 describe(useServerAction, () => {
   it("passes the arguments to the action and shows the success text", async () => {
-    const action = vi.fn<
-      (id: string, value: number) => Promise<ServerActionResult>
-    >(async () => ({
-      success: true,
-    }));
+    const action = vi
+      .fn<(id: string, value: number) => Promise<ServerActionResult>>()
+      .mockResolvedValue({
+        success: true,
+      });
     const onSuccess = vi.fn<(result: ServerActionResult) => void>();
     const { result } = renderServerAction(action, {
       onSuccess,
@@ -84,12 +75,12 @@ describe(useServerAction, () => {
   });
 
   it("builds the success text from the result", async () => {
-    const action = vi.fn<
-      () => Promise<ServerActionResult & { message: string }>
-    >(async () => ({
-      message: "チャンネル情報は既に最新です。",
-      success: true,
-    }));
+    const action = vi
+      .fn<() => Promise<ServerActionResult & { message: string }>>()
+      .mockResolvedValue({
+        message: "チャンネル情報は既に最新です。",
+        success: true,
+      });
     const { result } = renderServerAction(action, {
       successText: (actionResult) => actionResult.message,
     });
@@ -104,9 +95,11 @@ describe(useServerAction, () => {
   });
 
   it("shows no toast on success without successText", async () => {
-    const action = vi.fn<() => Promise<ServerActionResult>>(async () => ({
-      success: true,
-    }));
+    const action = vi
+      .fn<() => Promise<ServerActionResult>>()
+      .mockResolvedValue({
+        success: true,
+      });
     const { result } = renderServerAction(action);
 
     await act(async () => {
@@ -118,10 +111,12 @@ describe(useServerAction, () => {
   });
 
   it("shows the returned error on failure without calling onSuccess", async () => {
-    const action = vi.fn<() => Promise<ServerActionResult>>(async () => ({
-      error: "指定されたタレントが見つかりません。",
-      success: false,
-    }));
+    const action = vi
+      .fn<() => Promise<ServerActionResult>>()
+      .mockResolvedValue({
+        error: "指定されたタレントが見つかりません。",
+        success: false,
+      });
     const onSuccess = vi.fn<(result: ServerActionResult) => void>();
     const { result } = renderServerAction(action, {
       onSuccess,
@@ -140,9 +135,11 @@ describe(useServerAction, () => {
   });
 
   it("shows errorText when the failure has no error", async () => {
-    const action = vi.fn<() => Promise<ServerActionResult>>(async () => ({
-      success: false,
-    }));
+    const action = vi
+      .fn<() => Promise<ServerActionResult>>()
+      .mockResolvedValue({
+        success: false,
+      });
     const { result } = renderServerAction(action, {
       errorText: "同期に失敗しました。",
     });
@@ -157,10 +154,15 @@ describe(useServerAction, () => {
   });
 
   it("shows a warning toast for each warning", async () => {
-    const action = vi.fn<() => Promise<ServerActionResult>>(async () => ({
-      success: true,
-      warnings: ["1件は更新できませんでした。", "監査ログを残せませんでした。"],
-    }));
+    const action = vi
+      .fn<() => Promise<ServerActionResult>>()
+      .mockResolvedValue({
+        success: true,
+        warnings: [
+          "1件は更新できませんでした。",
+          "監査ログを残せませんでした。",
+        ],
+      });
     const { result } = renderServerAction(action, {
       successText: "更新しました。",
     });
@@ -180,9 +182,9 @@ describe(useServerAction, () => {
   });
 
   it("shows the fallback error when the action throws", async () => {
-    const action = vi.fn<() => Promise<ServerActionResult>>(async () => {
-      throw new Error("connection reset");
-    });
+    const action = vi
+      .fn<() => Promise<ServerActionResult>>()
+      .mockRejectedValue(new Error("connection reset"));
     const onSuccess = vi.fn<(result: ServerActionResult) => void>();
     const { result } = renderServerAction<[], ServerActionResult>(action, {
       onSuccess,
@@ -203,7 +205,7 @@ describe(useServerAction, () => {
   });
 
   it("is pending while the action runs", async () => {
-    const deferred = createDeferred<ServerActionResult>();
+    const deferred = Promise.withResolvers<ServerActionResult>();
     const action = vi.fn<() => Promise<ServerActionResult>>(
       () => deferred.promise
     );

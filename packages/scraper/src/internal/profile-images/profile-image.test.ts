@@ -143,7 +143,7 @@ describe("profile images", () => {
       expect(stored).toStrictEqual({
         etag: '"etag-1"',
         id: expect.any(String),
-        path: expect.stringMatching(/^youtube\/UC1\/[\w-]+\.webp$/),
+        path: expect.stringMatching(/^youtube\/UC1\/[\w-]+\.webp$/u),
         sourceUrl: IMAGE_URL,
       });
       expect(storage.uploads).toHaveLength(1);
@@ -156,7 +156,7 @@ describe("profile images", () => {
       ).resolves.toMatchObject({ format: "webp", height: 256, width: 256 });
       expect(supabase.written("POST", "profile_images")[0]?.body).toStrictEqual(
         {
-          blur_data_url: expect.stringMatching(/^data:image\/jpeg;base64,/),
+          blur_data_url: expect.stringMatching(/^data:image\/jpeg;base64,/u),
           created_at: "2024-05-01T12:34:56Z",
           etag: '"etag-1"',
           height: 256,
@@ -185,7 +185,7 @@ describe("profile images", () => {
         supabaseClient: supabase.supabaseClient,
       });
 
-      expect(storage.uploads[0]?.path).toMatch(/^twitch\/100001\//);
+      expect(storage.uploads[0]?.path).toMatch(/^twitch\/100001\//u);
       await expect(
         sharp(storage.uploads[0]?.body).metadata()
       ).resolves.toMatchObject({ height: 88, width: 88 });

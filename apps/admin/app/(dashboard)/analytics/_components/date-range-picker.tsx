@@ -16,8 +16,10 @@ import {
 import { formatDateRange } from "../_lib/format-date";
 
 export interface DateRange {
-  startDate: string; // ISO 8601 date string
-  endDate: string; // ISO 8601 date string
+  // ISO 8601 date string
+  startDate: string;
+  // ISO 8601 date string
+  endDate: string;
 }
 
 interface DateRangePickerProps {
@@ -38,7 +40,8 @@ export default function DateRangePicker({
   const [validationError, setValidationError] = useState("");
 
   const today = getToday();
-  const maxStartDate = getEarliestDate(today); // Allow up to 90 days ago
+  // Allow up to 90 days ago
+  const maxStartDate = getEarliestDate(today);
 
   const presets = [
     {
@@ -174,13 +177,13 @@ export default function DateRangePicker({
     setIsCustomMode(false);
   };
 
-  const handleCustomStartChange = (value: string) => {
-    setCustomStart(value);
+  const handleCustomStartChange = (nextStart: string) => {
+    setCustomStart(nextStart);
     setValidationError("");
   };
 
-  const handleCustomEndChange = (value: string) => {
-    setCustomEnd(value);
+  const handleCustomEndChange = (nextEnd: string) => {
+    setCustomEnd(nextEnd);
     setValidationError("");
   };
 

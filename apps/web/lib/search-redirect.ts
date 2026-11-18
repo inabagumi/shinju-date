@@ -6,7 +6,10 @@ import {
 } from "./video-kind-filter";
 
 /** 検索語を `q` で受け取る旧 URL のパス */
-const LEGACY_SEARCH_PATHNAMES: readonly string[] = ["/search", "/videos"];
+const LEGACY_SEARCH_PATHNAMES: ReadonlySet<string> = new Set([
+  "/search",
+  "/videos",
+]);
 
 /** 検索語を受け渡す旧 URL の検索パラメーターの名前 */
 const LEGACY_QUERY_SEARCH_PARAM = "q";
@@ -21,7 +24,7 @@ const LEGACY_QUERY_SEARCH_PARAM = "q";
 export const getLegacySearchRedirectPath = (url: URL): string | undefined => {
   const { pathname, searchParams } = url;
 
-  if (!LEGACY_SEARCH_PATHNAMES.includes(pathname)) {
+  if (!LEGACY_SEARCH_PATHNAMES.has(pathname)) {
     return undefined;
   }
 

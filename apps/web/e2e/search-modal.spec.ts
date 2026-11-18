@@ -31,6 +31,21 @@ const openSearchModal = async (page: Page) => {
   return searchInput;
 };
 
+const openAndCloseSearchModal = async (page: Page) => {
+  const searchInput = await openSearchModal(page);
+
+  await page.keyboard.press("Escape");
+  await expect(searchInput).toBeHidden();
+};
+
+const getChipList = (page: Page) =>
+  getSearchDialog(page).getByRole("list", {
+    name: "選んでいるタレント",
+  });
+
+const getTalentOption = (page: Page, name: string) =>
+  page.getByRole("region", { name: "タレント" }).getByRole("button", { name });
+
 test.describe("Search Modal - Opening and Closing", () => {
   test("should open search modal when clicking search button", async ({
     page,
@@ -247,14 +262,10 @@ test.describe("Search Modal - Stability Tests", () => {
     await page.goto("/");
     await page.waitForLoadState("networkidle");
 
-    const searchInput = getSearchInput(page);
-
     // Rapidly open and close modal 3 times
-    for (let i = 0; i < 3; i++) {
-      await openSearchModal(page);
-
-      await page.keyboard.press("Escape");
-      await expect(searchInput).toBeHidden();
+    for (let i = 0; i < 3; i += 1) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- Each round opens and closes the same modal, so the rounds must run one after another
+      await openAndCloseSearchModal(page);
     }
   });
 
@@ -310,16 +321,6 @@ test.describe("Search Modal - Stability Tests", () => {
 });
 
 test.describe("Search Modal - Talent", () => {
-  const getChipList = (page: Page) =>
-    getSearchDialog(page).getByRole("list", {
-      name: "選んでいるタレント",
-    });
-
-  const getTalentOption = (page: Page, name: string) =>
-    page
-      .getByRole("region", { name: "タレント" })
-      .getByRole("button", { name });
-
   test("should search a keyword within the selected talent", async ({
     page,
   }) => {
@@ -340,7 +341,8 @@ test.describe("Search Modal - Talent", () => {
 
     await expect(page).toHaveURL(
       new RegExp(
-        `/videos/${encodeURIComponent("歌枠")}\\?talent=[0-9a-f-]{36}$`
+        `/videos/${encodeURIComponent("歌枠")}\\?talent=[0-9a-f-]{36}$`,
+        "u"
       ),
       { timeout: NAVIGATION_TIMEOUT }
     );
@@ -358,7 +360,7 @@ test.describe("Search Modal - Talent", () => {
     await getTalentOption(page, "凪沢ユラ").click();
     await searchInput.press("Enter");
 
-    await expect(page).toHaveURL(/\/videos\?talent=[0-9a-f-]{36}$/, {
+    await expect(page).toHaveURL(/\/videos\?talent=[0-9a-f-]{36}$/u, {
       timeout: NAVIGATION_TIMEOUT,
     });
     await expect(
@@ -388,7 +390,8 @@ test.describe("Search Modal - Talent", () => {
     await expect(getSuggestionLink(page, SUGGESTED_TERM)).toHaveAttribute(
       "href",
       new RegExp(
-        `^/videos/${encodeURIComponent(SUGGESTED_TERM)}\\?talent=[0-9a-f-]{36}$`
+        `^/videos/${encodeURIComponent(SUGGESTED_TERM)}\\?talent=[0-9a-f-]{36}$`,
+        "u"
       )
     );
   });

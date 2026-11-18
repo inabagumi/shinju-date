@@ -25,6 +25,13 @@ const parseDateRange = (
 };
 
 /**
+ * Take the first value when a search parameter is given more than once
+ */
+const getFirstValue = (
+  val: string | string[] | undefined
+): string | undefined => (Array.isArray(val) ? val[0] : val);
+
+/**
  * Zod schema for analytics page search parameters
  * Validates and normalizes from, to, date, and tab parameters with appropriate defaults
  */
@@ -35,11 +42,11 @@ export const analyticsSearchParamsSchema = z
       .union([z.string(), z.array(z.string())])
       .optional()
       .transform((val) => {
-        if (Array.isArray(val)) {
-          val = val[0];
+        const value = getFirstValue(val);
+        if (!value) {
+          return;
         }
-        if (!val) return undefined;
-        return parseDate(val)?.toString() ?? null;
+        return parseDate(value)?.toString() ?? null;
       }),
 
     // Start date of the range (from parameter)
@@ -47,10 +54,8 @@ export const analyticsSearchParamsSchema = z
       .union([z.string(), z.array(z.string())])
       .optional()
       .transform((val) => {
-        if (Array.isArray(val)) {
-          val = val[0];
-        }
-        return val || undefined;
+        const value = getFirstValue(val);
+        return value || undefined;
       }),
 
     // Active tab for tabbed interfaces (tab parameter)
@@ -58,10 +63,8 @@ export const analyticsSearchParamsSchema = z
       .union([z.string(), z.array(z.string())])
       .optional()
       .transform((val) => {
-        if (Array.isArray(val)) {
-          val = val[0];
-        }
-        return val || undefined;
+        const value = getFirstValue(val);
+        return value || undefined;
       }),
 
     // End date of the range (to parameter)
@@ -69,25 +72,20 @@ export const analyticsSearchParamsSchema = z
       .union([z.string(), z.array(z.string())])
       .optional()
       .transform((val) => {
-        if (Array.isArray(val)) {
-          val = val[0];
-        }
-        return val || undefined;
+        const value = getFirstValue(val);
+        return value || undefined;
       }),
   })
   .transform((data) => {
     const { from, to, date, tab } = data;
 
-    // Determine the date range for the chart
-    let dateRange: { startDate: string; endDate: string };
-
-    // If both from and to are provided, use them for the chart range
-    if (from && to) {
-      dateRange = parseDateRange(from, to) ?? getDefaultDateRange();
-    } else {
-      // Fall back to default range
-      dateRange = getDefaultDateRange();
-    }
+    // Determine the date range for the chart: if both from and to are
+    // provided, use them for the chart range, otherwise fall back to the
+    // default range
+    const dateRange: { startDate: string; endDate: string } =
+      from && to
+        ? (parseDateRange(from, to) ?? getDefaultDateRange())
+        : getDefaultDateRange();
 
     // The selected date is used for filtering rankings independently
     const selectedDate = date || null;

@@ -27,11 +27,10 @@ export const POST = async (request: Request): Promise<Response> => {
       return createErrorResponse("Unprocessable Entity", {
         status: 422,
       });
-    } else {
-      return createErrorResponse("Unsupported Media Type", {
-        status: 415,
-      });
     }
+    return createErrorResponse("Unsupported Media Type", {
+      status: 415,
+    });
   }
 
   const trackURL = new URL(pingTo);

@@ -23,7 +23,7 @@ import { LevelBadge, StatusBadge } from "./badges";
 
 /** 削除の確認文に入れるため、本文を50文字までに切り詰める */
 const truncateMessage = (message: string): string =>
-  message.length > 50 ? `${message.substring(0, 50)}...` : message;
+  message.length > 50 ? `${message.slice(0, 50)}...` : message;
 
 const AnnouncementRow = ({
   announcement,

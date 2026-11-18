@@ -39,6 +39,7 @@ const renderPicker = async ({
         <DateRangePickerClient searchParams={searchParams} />
       </Suspense>
     );
+    await searchParams;
   });
 };
 

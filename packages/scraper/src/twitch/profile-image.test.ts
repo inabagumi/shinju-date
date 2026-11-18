@@ -99,7 +99,7 @@ describe(syncTwitchUserIcon, () => {
     ).resolves.toBe("created");
 
     expect(requests).toStrictEqual([{ ifNoneMatch: null, url: ICON_URL }]);
-    expect(storage.uploads[0]?.path).toMatch(/^twitch\/1001\/[^/]+\.webp$/);
+    expect(storage.uploads[0]?.path).toMatch(/^twitch\/1001\/[^/]+\.webp$/u);
     expect(supabase.written("POST", "profile_images")[0]?.body).toMatchObject({
       height: 256,
       source_url: ICON_URL,

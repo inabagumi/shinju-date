@@ -1,3 +1,5 @@
+import { setTimeout as delay } from "node:timers/promises";
+
 import type { youtube_v3 as youtube } from "@googleapis/youtube";
 import { describe, expect, it, vi } from "vitest";
 
@@ -36,40 +38,44 @@ describe(isFilteredYouTubeVideo, () => {
   });
 });
 
+/**
+ * A client whose `videos.list` returns the requested IDs after a short
+ * delay, and records how many requests ran at the same time at most.
+ */
+const createClient = () => {
+  let running = 0;
+  let peak = 0;
+  const list = vi.fn<
+    (params: {
+      id?: string[];
+    }) => Promise<{ data: youtube.Schema$VideoListResponse }>
+  >(async ({ id = [] }) => {
+    running += 1;
+    peak = Math.max(peak, running);
+    await delay(5);
+    running -= 1;
+
+    return { data: { items: id.map((value) => ({ id: value })) } };
+  });
+
+  return {
+    client: { videos: { list } } as unknown as youtube.Youtube,
+    list,
+    peak: () => peak,
+  };
+};
+
+const collect = async <T>(iterable: AsyncIterable<T>): Promise<T[]> => {
+  const items: T[] = [];
+
+  for await (const item of iterable) {
+    items.push(item);
+  }
+
+  return items;
+};
+
 describe("lookups by ID", () => {
-  const createClient = () => {
-    let running = 0;
-    let peak = 0;
-    const list = vi.fn<
-      (params: {
-        id?: string[];
-      }) => Promise<{ data: youtube.Schema$VideoListResponse }>
-    >(async ({ id = [] }) => {
-      running++;
-      peak = Math.max(peak, running);
-      await new Promise((resolve) => setTimeout(resolve, 5));
-      running--;
-
-      return { data: { items: id.map((value) => ({ id: value })) } };
-    });
-
-    return {
-      client: { videos: { list } } as unknown as youtube.Youtube,
-      list,
-      peak: () => peak,
-    };
-  };
-
-  const collect = async <T>(iterable: AsyncIterable<T>): Promise<T[]> => {
-    const items: T[] = [];
-
-    for await (const item of iterable) {
-      items.push(item);
-    }
-
-    return items;
-  };
-
   const ids = Array.from({ length: 120 }, (_, i) => `v${i}`);
 
   it("requests the IDs in batches, one after another by default", async () => {
@@ -90,7 +96,7 @@ describe("lookups by ID", () => {
     const { client, list, peak } = createClient();
     let scheduled = 0;
     const schedule: RequestScheduler = (request) => {
-      scheduled++;
+      scheduled += 1;
 
       return request();
     };

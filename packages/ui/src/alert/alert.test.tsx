@@ -37,11 +37,12 @@ describe(Alert, () => {
     const alert = screen.getByRole(role);
 
     expect(alert).toHaveClass(background, "text-foreground");
-    expect(alert.className).not.toMatch(/\btext-(?:danger|success|warning)\b/);
+    expect(alert.className).not.toMatch(/\btext-(?:danger|success|warning)\b/u);
   });
 
   it("lets the role be overridden", () => {
     render(
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- this test checks that the role prop overrides the default role
       <Alert aria-label="失敗したアカウント" role="region" tone="danger">
         本文
       </Alert>

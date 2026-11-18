@@ -34,7 +34,7 @@ export const syncYouTubeChannels = async (
  *
  * @returns One result per saved channel of the talent; empty when the talent
  *   has none or was deleted.
- * @throws When the channels cannot be loaded or YouTube cannot be read.
+ * @throws {Error} When the channels cannot be loaded or YouTube cannot be read.
  */
 export const syncYouTubeChannelsOfTalent = (
   context: CrawlContext<YouTubeFetcher>,

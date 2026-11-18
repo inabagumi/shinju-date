@@ -6,14 +6,14 @@ import type {
   fetchTalentStreamStatusesSafe,
 } from "@/lib/data/talents";
 
+import { TalentListGrid } from "./talent-list-sections";
+
 const fetchers = vi.hoisted(() => ({
   fetchTalentList: vi.fn<typeof fetchTalentList>(),
   fetchTalentStreamStatusesSafe: vi.fn<typeof fetchTalentStreamStatusesSafe>(),
 }));
 
 vi.mock(import("@/lib/data/talents"), () => fetchers);
-
-import { TalentListGrid } from "./talent-list-sections";
 
 const TALENT_ID = "00000000-0000-4000-8000-000000000001";
 

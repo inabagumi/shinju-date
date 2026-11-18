@@ -32,12 +32,14 @@ const withoutRunId = ({ runId: _runId, ...job }: BackfillJob): BackfillJob =>
   job;
 
 const createSupabaseClient = (error: { message: string } | null = null) => {
-  const upsert = vi.fn<
-    (
-      row: ReturnType<typeof toBackfillHistoryRow>,
-      options: { ignoreDuplicates: boolean; onConflict: string }
-    ) => Promise<{ error: { message: string } | null }>
-  >(async () => ({ error }));
+  const upsert = vi
+    .fn<
+      (
+        row: ReturnType<typeof toBackfillHistoryRow>,
+        options: { ignoreDuplicates: boolean; onConflict: string }
+      ) => Promise<{ error: { message: string } | null }>
+    >()
+    .mockResolvedValue({ error });
   const from = vi.fn<(table: string) => { upsert: typeof upsert }>(() => ({
     upsert,
   }));

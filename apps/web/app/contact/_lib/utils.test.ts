@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ServerEnv } from "@/lib/env";
 
+import { getContactFormConfig, isContactFormEnabled } from "./utils";
+
 const { serverEnv } = vi.hoisted(() => ({
   serverEnv: {
     ADMIN_EMAIL: undefined as string | undefined,
@@ -13,8 +15,6 @@ const { serverEnv } = vi.hoisted(() => ({
 vi.mock(import("@/lib/env"), () => ({
   serverEnv: serverEnv as Partial<ServerEnv> as ServerEnv,
 }));
-
-import { getContactFormConfig, isContactFormEnabled } from "./utils";
 
 const setEnv = (values: Partial<typeof serverEnv>): void => {
   Object.assign(serverEnv, {

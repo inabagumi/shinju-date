@@ -22,10 +22,11 @@ interface TalentIconProps {
 export default function TalentIcon({
   className,
   size,
-  sizes = size ? `${size}px` : undefined,
+  sizes,
   talent,
 }: TalentIconProps) {
   const profileImage = getTalentProfileImage(talent);
+  const imageSizes = sizes ?? (size ? `${size}px` : undefined);
 
   return (
     <Avatar
@@ -35,7 +36,7 @@ export default function TalentIcon({
       size={size}
     >
       {profileImage ? (
-        <AvatarImage image={profileImage} sizes={sizes} />
+        <AvatarImage image={profileImage} sizes={imageSizes} />
       ) : (
         <AvatarFallback />
       )}

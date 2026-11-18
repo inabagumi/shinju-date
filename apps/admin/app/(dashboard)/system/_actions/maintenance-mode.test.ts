@@ -20,14 +20,14 @@ const ACTION_FAILED_ERROR =
   "処理に失敗しました。時間をおいて、もう一度お試しください。";
 
 const redisClient = {
-  del: vi.fn<Redis["del"]>(async () => 1),
-  set: vi.fn<Redis["set"]>(async () => "OK"),
+  del: vi.fn<Redis["del"]>(() => Promise.resolve(1)),
+  set: vi.fn<Redis["set"]>(() => Promise.resolve("OK" as const)),
 };
 
 describe("maintenance mode actions", () => {
   beforeEach(() => {
-    redisClient.del.mockImplementation(async () => 1);
-    redisClient.set.mockImplementation(async () => "OK");
+    redisClient.del.mockResolvedValue(1);
+    redisClient.set.mockResolvedValue("OK");
     test.getRedisClient.mockReturnValue(redisClient);
   });
 

@@ -47,16 +47,20 @@ const mockRedis = ({
     ),
   };
   const redisClient = {
-    get: vi.fn<(key: string) => Promise<unknown>>(
-      async (key) => values[key] ?? null
+    get: vi.fn<(key: string) => Promise<unknown>>((key) =>
+      Promise.resolve(values[key] ?? null)
     ),
-    zcard: vi.fn<(key: string) => Promise<number>>(async (key) =>
-      key === REDIS_KEYS.SEARCH_POPULAR_ALL_TIME ? popularKeywords : 0
+    zcard: vi.fn<(key: string) => Promise<number>>((key) =>
+      Promise.resolve(
+        key === REDIS_KEYS.SEARCH_POPULAR_ALL_TIME ? popularKeywords : 0
+      )
     ),
-    zrange: vi.fn<(key: string) => Promise<unknown[]>>(async (key) =>
-      key === `${REDIS_KEYS.CLICK_VIDEO_PREFIX}20251113`
-        ? Object.entries(clicks).flat()
-        : []
+    zrange: vi.fn<(key: string) => Promise<unknown[]>>((key) =>
+      Promise.resolve(
+        key === `${REDIS_KEYS.CLICK_VIDEO_PREFIX}20251113`
+          ? Object.entries(clicks).flat()
+          : []
+      )
     ),
   };
 

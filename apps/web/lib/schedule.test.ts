@@ -204,37 +204,37 @@ describe(getLengthMinutes, () => {
   });
 });
 
+// 21:00 on 9 November 2026 in Japan
+const video = (
+  id: string,
+  time: string,
+  duration = "P0D",
+  status = "UPCOMING"
+) => {
+  const [hour = 0, minute = 0] = time.split(":").map(Number);
+  const publishedAt = Temporal.ZonedDateTime.from({
+    day: 9,
+    hour,
+    minute,
+    month: 11,
+    timeZone: "Asia/Tokyo",
+    year: 2026,
+  })
+    .toInstant()
+    .toString();
+
+  return { duration, id, published_at: publishedAt, status };
+};
+
+const summarize = (layouts: ScheduleLayout<ReturnType<typeof video>>[]) =>
+  Object.fromEntries(
+    layouts.map(({ column, columns, item, length, start }) => [
+      item.id,
+      { column, columns, length, start },
+    ])
+  );
+
 describe(layoutDay, () => {
-  // 21:00 on 9 November 2026 in Japan
-  const video = (
-    id: string,
-    time: string,
-    duration = "P0D",
-    status = "UPCOMING"
-  ) => {
-    const [hour = 0, minute = 0] = time.split(":").map(Number);
-    const publishedAt = Temporal.ZonedDateTime.from({
-      day: 9,
-      hour,
-      minute,
-      month: 11,
-      timeZone: "Asia/Tokyo",
-      year: 2026,
-    })
-      .toInstant()
-      .toString();
-
-    return { duration, id, published_at: publishedAt, status };
-  };
-
-  const summarize = (layouts: ScheduleLayout<ReturnType<typeof video>>[]) =>
-    Object.fromEntries(
-      layouts.map(({ column, columns, item, length, start }) => [
-        item.id,
-        { column, columns, length, start },
-      ])
-    );
-
   it("should place a video at its start with its length", () => {
     expect(
       summarize(layoutDay([video("a", "21:30", "PT2H", "ENDED")]))

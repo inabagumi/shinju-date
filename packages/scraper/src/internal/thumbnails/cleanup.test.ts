@@ -74,7 +74,7 @@ describe(removeUnusedThumbnails, () => {
     supabase.respondWith({
       "DELETE thumbnails": ({ query }) =>
         (query["id"] ?? "")
-          .replace(/^in\.\((.*)\)$/, "$1")
+          .replace(/^in\.\((?<ids>.*)\)$/u, "$<ids>")
           .split(",")
           .map((id) => ({ id })),
       "GET thumbnails": thumbnails,

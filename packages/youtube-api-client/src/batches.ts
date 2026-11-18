@@ -17,6 +17,12 @@ export interface BatchOptions {
  * Requests `ids` in batches of {@link YOUTUBE_DATA_API_MAX_RESULTS}, the most
  * one request accepts, and yields what each batch returned in the order of
  * the batches.
+ *
+ * @param ids - The IDs to request
+ * @param schedule - Runs the request of each batch, or `undefined` to
+ *   request the batches one after another
+ * @param request - Requests one batch of IDs
+ * @yields {T} What each batch returned, in the order of the batches
  */
 export const requestInBatches = async function* requestInBatches<T>(
   ids: readonly string[],
@@ -27,6 +33,7 @@ export const requestInBatches = async function* requestInBatches<T>(
 
   if (!schedule) {
     for (const batch of batches) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- without a scheduler, the batches are requested one after another to stay within the quota and rate limits
       yield* await request(batch);
     }
 

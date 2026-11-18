@@ -1,7 +1,7 @@
 import { HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 
-import { DatabaseError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
 import {
   alreadySaved,
   postgresError,

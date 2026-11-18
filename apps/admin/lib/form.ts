@@ -6,7 +6,7 @@ export type ParseFormDataResult<T> =
   | { data: T; success: true }
   | { state: FormState; success: false };
 
-const INDEXED_KEY_PATTERN = /^(.+)\[(\d+)\]$/;
+const INDEXED_KEY_PATTERN = /^(?<name>.+)\[(?<index>\d+)\]$/u;
 
 export interface ZodErrorToFormStateOptions {
   /**
@@ -24,23 +24,21 @@ export interface ZodErrorToFormStateOptions {
 export const zodErrorToFormState = (
   error: z.ZodError,
   { hiddenFields = [] }: ZodErrorToFormStateOptions = {}
-): FormState =>
-  error.issues.reduce<FormState>(({ errors: previousErrors = {} }, issue) => {
+): FormState => {
+  const errors = new Map<string, string[]>();
+
+  for (const issue of error.issues) {
     const path = issue.path.join(".");
     const name = hiddenFields.includes(path) ? "generic" : path;
-    const previousMessages = previousErrors[name] ?? [];
+    const previousMessages = errors.get(name) ?? [];
 
-    if (previousMessages.includes(issue.message)) {
-      return { errors: previousErrors };
+    if (!previousMessages.includes(issue.message)) {
+      errors.set(name, [...previousMessages, issue.message]);
     }
+  }
 
-    return {
-      errors: {
-        ...previousErrors,
-        [name]: [...previousMessages, issue.message],
-      },
-    };
-  }, {});
+  return error.issues.length > 0 ? { errors: Object.fromEntries(errors) } : {};
+};
 
 /**
  * `ActionError` を `FormState` に直す。項目（`field`）があればその項目のエラーに、
@@ -64,7 +62,7 @@ const formDataToObject = (formData: FormData): Record<string, unknown> => {
     const match = INDEXED_KEY_PATTERN.exec(key);
 
     if (match) {
-      const [, name = key, index = "0"] = match;
+      const { name = key, index = "0" } = match.groups ?? {};
       const entries = indexedValues.get(name) ?? [];
 
       entries.push([Number(index), value]);
@@ -79,7 +77,7 @@ const formDataToObject = (formData: FormData): Record<string, unknown> => {
     ...values,
     ...[...indexedValues].map(([name, entries]) => [
       name,
-      entries.sort(([a], [b]) => a - b).map(([, value]) => value),
+      entries.toSorted(([a], [b]) => a - b).map(([, value]) => value),
     ]),
   ]);
 };

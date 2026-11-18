@@ -21,10 +21,12 @@ vi.mock(import("@shinju-date/video-backfill"), async (importOriginal) => {
     ...original,
     // The real constructor only keeps the Redis client
     BackfillQueue: class extends original.BackfillQueue {
+      // oxlint-disable-next-line eslint/class-methods-use-this -- overrides an instance method of the real class
       override enqueue(...args: Parameters<BackfillQueue["enqueue"]>) {
         return mocks.enqueue(...args);
       }
 
+      // oxlint-disable-next-line eslint/class-methods-use-this -- overrides an instance method of the real class
       override getJobs(...args: Parameters<BackfillQueue["getJobs"]>) {
         return mocks.getJobs(...args);
       }
@@ -37,6 +39,9 @@ const { supabase } = test;
 
 /** `auth.admin.getUserById()` of the service role client. */
 const getUserById = vi.spyOn(supabase.client.auth.admin, "getUserById");
+
+const job = (id: string) =>
+  createBackfillJob({ added: 0, id, status: "pending" });
 
 describe("video backfill history actions", () => {
   beforeEach(() => {
@@ -119,22 +124,20 @@ describe("video backfill history actions", () => {
     },
   ];
 
-  const job = (id: string) =>
-    createBackfillJob({ added: 0, id, status: "pending" });
-
   describe("getVideoBackfillHistoryAction()", () => {
     beforeEach(() => {
       supabase.on("select", "talents", talents);
       supabase.on("select", "video_backfill_jobs", history);
       supabase.on("select", "video_backfill_latest_jobs", latestFailures);
-      getUserById.mockImplementation(
-        async (id: string) =>
+      getUserById.mockImplementation((id: string) =>
+        Promise.resolve(
           (id === "user-1"
             ? { data: { user: { email: "admin@example.com" } }, error: null }
             : {
                 data: { user: null },
                 error: { message: "User not found" },
               }) as Awaited<ReturnType<typeof getUserById>>
+        )
       );
       mocks.getJobs.mockResolvedValue([
         { active: true, job: job("twitch:twitch-row-1"), status: "pending" },
@@ -238,16 +241,11 @@ describe("video backfill history actions", () => {
       supabase.on("select", "talents", talents);
       supabase.on("select", "video_backfill_latest_jobs", latestFailures);
       mocks.enqueue.mockImplementation(
-        async ({
-          accountId,
-          provider,
-        }: {
-          accountId: string;
-          provider: string;
-        }) => ({
-          enqueued: true,
-          job: job(`${provider}:${accountId}`),
-        })
+        ({ accountId, provider }: { accountId: string; provider: string }) =>
+          Promise.resolve({
+            enqueued: true,
+            job: job(`${provider}:${accountId}`),
+          })
       );
     });
 

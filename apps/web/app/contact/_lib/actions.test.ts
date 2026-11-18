@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServerEnv } from "@/lib/env";
 
+import { submitContactForm } from "./actions";
+
 const DEFAULT_ADMIN_EMAIL = "contact@example.org";
 
 const { sendEmail, serverEnv } = vi.hoisted(() => ({
@@ -39,8 +41,6 @@ vi.mock(import("botid/server"), () => ({
     isVerifiedBot: false,
   }),
 }));
-
-import { submitContactForm } from "./actions";
 
 const createFormData = (values: Record<string, string>): FormData => {
   const formData = new FormData();

@@ -233,10 +233,11 @@ const COLLECTIONS = [
  * `rows` (the order that the mock returns them in without `order`).
  */
 const insert = async <Row>(
-  collection: { create(values: Row): Promise<unknown> },
+  collection: { create: (values: Row) => Promise<unknown> },
   rows: readonly Row[]
 ): Promise<void> => {
   for (const row of rows) {
+    // oxlint-disable-next-line no-await-in-loop -- rows are inserted one by one to keep their order in the collection
     await collection.create(row);
   }
 };

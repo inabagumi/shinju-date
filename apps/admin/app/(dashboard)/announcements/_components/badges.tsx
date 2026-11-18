@@ -33,7 +33,9 @@ const getLevelLabel = (level: string): string => {
 
 // Check if announcement is currently active
 const isActive = (announcement: Tables<"announcements">): boolean => {
-  if (!announcement.enabled) return false;
+  if (!announcement.enabled) {
+    return false;
+  }
 
   const now = Temporal.Now.instant();
   const start = Temporal.Instant.from(announcement.start_at);
@@ -53,11 +55,14 @@ export const StatusBadge = ({
   announcement,
 }: {
   announcement: Tables<"announcements">;
-}) =>
-  isActive(announcement) ? (
-    <Badge variant="success">公開中</Badge>
-  ) : announcement.enabled ? (
-    <Badge variant="neutral">公開予定</Badge>
-  ) : (
-    <Badge variant="neutral">無効</Badge>
-  );
+}) => {
+  if (isActive(announcement)) {
+    return <Badge variant="success">公開中</Badge>;
+  }
+
+  if (announcement.enabled) {
+    return <Badge variant="neutral">公開予定</Badge>;
+  }
+
+  return <Badge variant="neutral">無効</Badge>;
+};

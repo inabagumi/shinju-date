@@ -22,11 +22,11 @@
 
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import path from "node:path";
 
 import ts from "typescript";
 
-const root = resolve(import.meta.dirname, "..");
+const root = path.resolve(import.meta.dirname, "..");
 
 const SOURCE_PATTERNS = [
   "*.cjs",
@@ -40,35 +40,41 @@ const SOURCE_PATTERNS = [
 ];
 
 /** Files placed by the `skills` CLI, which are not edited by hand */
-const IGNORED_FILES = [/^\.agents\//, /^\.claude\//];
+const IGNORED_FILES = [/^\.agents\//u, /^\.claude\//u];
 
 const CACHE_FUNCTIONS = new Set(["cacheLife", "cacheTag"]);
 
-const BLANK_LINE_PATTERN = /\n[ \t]*\r?\n/;
+const BLANK_LINE_PATTERN = /\n[ \t]*\r?\n/u;
 
 /**
  * @typedef {object} Problem
  * @property {number} line - 1-based line number
  * @property {number} column - 1-based column number
- * @property {string} message
+ * @property {string} message - Message to show
  */
 
-/** @param {string} fileName */
+/**
+ * @param {string} fileName - Name of the file, used for its extension
+ */
 const getScriptKind = (fileName) => {
-  if (/\.[cm]?tsx?$/.test(fileName)) {
+  if (/\.[cm]?tsx?$/u.test(fileName)) {
     return fileName.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   }
 
   return fileName.endsWith("x") ? ts.ScriptKind.JSX : ts.ScriptKind.JS;
 };
 
-/** @param {ts.Statement} statement */
+/**
+ * @param {ts.Statement} statement - Statement to check
+ */
 const isCacheDirective = (statement) =>
   ts.isExpressionStatement(statement) &&
   ts.isStringLiteral(statement.expression) &&
   statement.expression.text.startsWith("use cache");
 
-/** @param {ts.Statement} statement */
+/**
+ * @param {ts.Statement} statement - Statement to check
+ */
 const isCacheFunctionCall = (statement) => {
   if (!ts.isExpressionStatement(statement)) {
     return false;
@@ -87,9 +93,9 @@ const isCacheFunctionCall = (statement) => {
  * Find the directives and the runs of cache function calls that are not
  * followed by a blank line.
  *
- * @param {string} sourceText
+ * @param {string} sourceText - Source code of the file
  * @param {string} fileName - Used to choose the parser (TS, TSX, JS or JSX)
- * @returns {Problem[]}
+ * @returns {Problem[]} Problems, in the order of the source code
  */
 export const findMissingBlankLines = (sourceText, fileName) => {
   const sourceFile = ts.createSourceFile(
@@ -104,9 +110,9 @@ export const findMissingBlankLines = (sourceText, fileName) => {
   const problems = [];
 
   /**
-   * @param {ts.Statement} statement
-   * @param {ts.Statement} next
-   * @param {string} message
+   * @param {ts.Statement} statement - Statement that needs a blank line after it
+   * @param {ts.Statement} next - Statement that follows it
+   * @param {string} message - Message for the problem
    */
   const requireBlankLine = (statement, next, message) => {
     const between = sourceText.slice(statement.end, next.getStart(sourceFile));
@@ -122,7 +128,9 @@ export const findMissingBlankLines = (sourceText, fileName) => {
     problems.push({ column: character + 1, line: line + 1, message });
   };
 
-  /** @param {readonly ts.Statement[]} statements */
+  /**
+   * @param {readonly ts.Statement[]} statements - Statements of a block
+   */
   const checkStatements = (statements) => {
     for (const [index, statement] of statements.entries()) {
       const next = statements[index + 1];
@@ -147,7 +155,9 @@ export const findMissingBlankLines = (sourceText, fileName) => {
     }
   };
 
-  /** @param {ts.Node} node */
+  /**
+   * @param {ts.Node} node - Node to visit
+   */
   const visit = (node) => {
     if (
       ts.isSourceFile(node) ||
@@ -198,7 +208,7 @@ const main = () => {
     let sourceText;
 
     try {
-      sourceText = readFileSync(resolve(root, file), "utf-8");
+      sourceText = readFileSync(path.resolve(root, file), "utf-8");
     } catch (error) {
       // A tracked file that was deleted but not yet staged
       if (error?.code === "ENOENT") {
@@ -210,7 +220,7 @@ const main = () => {
 
     if (
       !sourceText.includes("use cache") &&
-      !/\bcache(Life|Tag)\(/.test(sourceText)
+      !/\bcache(?:Life|Tag)\(/u.test(sourceText)
     ) {
       continue;
     }
@@ -220,7 +230,7 @@ const main = () => {
       file
     )) {
       console.error(`${file}:${line}:${column} ${message}`);
-      count++;
+      count += 1;
     }
   }
 
@@ -232,6 +242,6 @@ const main = () => {
   }
 };
 
-if (process.argv[1] && resolve(process.argv[1]) === import.meta.filename) {
+if (process.argv[1] && path.resolve(process.argv[1]) === import.meta.filename) {
   main();
 }

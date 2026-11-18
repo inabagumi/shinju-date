@@ -1,13 +1,15 @@
 export const max = (
   ...values: Temporal.ZonedDateTime[]
 ): Temporal.ZonedDateTime => {
-  if (!values[0]) {
+  const [first, ...rest] = values;
+
+  if (!first) {
     throw new TypeError("At least one argument is required.");
   }
 
-  let result = values[0];
+  let result = first;
 
-  for (const value of values.slice(1)) {
+  for (const value of rest) {
     if (Temporal.ZonedDateTime.compare(result, value) < 0) {
       result = value;
     }

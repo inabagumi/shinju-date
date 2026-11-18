@@ -84,6 +84,7 @@ export const fetchUpcomingVideos = async (): Promise<UpcomingVideos> => {
  * It is cached as long as the videos (`fetchVideos`) are, as it is rendered
  * with them.
  */
+// oxlint-disable-next-line eslint/require-await -- Next.js requires functions with `'use cache'` to be async
 export const fetchCurrentTime = async (): Promise<string> => {
   "use cache: remote";
 
@@ -92,7 +93,7 @@ export const fetchCurrentTime = async (): Promise<string> => {
   return Temporal.Now.zonedDateTimeISO(TIME_ZONE).toString();
 };
 
-const getDefaultBaseTime = async () =>
+const getDefaultBaseTime = (): Temporal.Instant =>
   Temporal.Now.zonedDateTimeISO(TIME_ZONE)
     .startOfDay()
     .add({
@@ -121,7 +122,7 @@ export const fetchVideos = async ({
 
   const baseTime = until
     ? Temporal.Instant.fromEpochNanoseconds(until)
-    : await getDefaultBaseTime();
+    : getDefaultBaseTime();
   const videoKinds = getVideoKinds(kind);
   const videos = unwrap(
     await supabaseClient
@@ -160,7 +161,7 @@ export const countVideos = async ({
   cacheLife("hours");
   cacheTag(CACHE_TAGS.VIDEOS);
 
-  const baseTime = await getDefaultBaseTime();
+  const baseTime = getDefaultBaseTime();
   const videoKinds = getVideoKinds(kind);
 
   return unwrap(

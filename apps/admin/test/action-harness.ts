@@ -2,6 +2,7 @@ import type { User } from "@supabase/supabase-js";
 import { beforeEach, expect, vi } from "vitest";
 
 import type { AuditAction, AuditLogEntry } from "@/lib/audit-log";
+import type * as AuthModule from "@/lib/auth";
 
 import { setupSupabase } from "./supabase";
 import type { FakeSupabase } from "./supabase";
@@ -16,8 +17,8 @@ import type { FakeSupabase } from "./supabase";
  * importing the mocked modules in the test file.
  */
 const mocks = vi.hoisted(() => ({
-  createAuditLog: vi.fn(async () => {}),
-  createAuditLogs: vi.fn(async () => {}),
+  createAuditLog: vi.fn(() => Promise.resolve()),
+  createAuditLogs: vi.fn(() => Promise.resolve()),
   createSupabaseServerClient: vi.fn(),
   getRedisClient: vi.fn(() => ({})),
   logger: {
@@ -28,7 +29,7 @@ const mocks = vi.hoisted(() => ({
   },
   requireAuthenticatedUser: vi.fn(),
   revalidatePath: vi.fn(),
-  revalidateTags: vi.fn(async () => {}),
+  revalidateTags: vi.fn(() => Promise.resolve()),
   state: { supabase: null as FakeSupabase | null },
 }));
 
@@ -41,7 +42,7 @@ const currentClient = () => {
 };
 
 vi.mock("@/lib/auth", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/auth")>()),
+  ...(await importOriginal<typeof AuthModule>()),
   requireAuthenticatedUser: mocks.requireAuthenticatedUser,
 }));
 vi.mock("@/lib/supabase", () => ({
@@ -102,11 +103,11 @@ export const setupActionTest = () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.createAuditLog.mockImplementation(async () => {});
-    mocks.createAuditLogs.mockImplementation(async () => {});
+    mocks.createAuditLog.mockResolvedValue();
+    mocks.createAuditLogs.mockResolvedValue();
     mocks.createSupabaseServerClient.mockResolvedValue(supabase.client);
     mocks.getRedisClient.mockImplementation(() => ({}));
-    mocks.revalidateTags.mockImplementation(async () => {});
+    mocks.revalidateTags.mockResolvedValue();
     signIn();
   });
 

@@ -33,7 +33,13 @@ describe(Panel, () => {
 
   it("draws the frame of a panel and passes other props to it", () => {
     render(
-      <Panel className="lg:col-span-2" id="panel" role="region" title="枠">
+      <Panel
+        className="lg:col-span-2"
+        id="panel"
+        // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- checks that Panel passes the role through to its frame
+        role="region"
+        title="枠"
+      >
         中身
       </Panel>
     );

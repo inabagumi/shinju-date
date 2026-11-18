@@ -140,6 +140,7 @@ describe(Timeline, () => {
     const [card] = within(group).getAllByRole("article");
 
     expect(
+      // oxlint-disable-next-line eslint/no-bitwise -- compareDocumentPosition returns a bit mask
       heading.compareDocumentPosition(card as HTMLElement) &
         Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();

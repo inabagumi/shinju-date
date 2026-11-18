@@ -28,7 +28,7 @@ export const getCombinedRecommendationQueries = async (): Promise<string[]> => {
   ]);
 
   // Combine: manual first, then auto (excluding duplicates)
-  const manualSet = new Set(manualQueries ?? []);
+  const manualSet = new Set(manualQueries);
   const combined = [...manualSet];
 
   for (const query of autoQueries ?? []) {

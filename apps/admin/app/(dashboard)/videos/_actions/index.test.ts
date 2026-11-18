@@ -357,7 +357,7 @@ describe("toggleVisibilityAction()", () => {
     { changedIds = [] }: UpdateOptions = {}
   ) => {
     const targetIds = (request.query["id"] ?? "")
-      .replaceAll(/^in\.\(|\)$/g, "")
+      .replaceAll(/^in\.\(|\)$/gu, "")
       .split(",");
     const currentVisible = request.query["visible"] === "eq.true";
 
@@ -510,7 +510,7 @@ describe.each([
   ["restoreAction", restoreAction],
   ["softDeleteAction", softDeleteAction],
   ["toggleVisibilityAction", toggleVisibilityAction],
-])("%s with invalid ids", (_, action) => {
+])("%s with invalid ids", (_name, action) => {
   it.each([
     ["an empty list", []],
     ["an id that is not a UUID", ["video-1"]],

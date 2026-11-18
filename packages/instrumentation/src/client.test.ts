@@ -1,3 +1,5 @@
+import { setTimeout as delay } from "node:timers/promises";
+
 import type * as Sentry from "@sentry/nextjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -91,7 +93,7 @@ describe("client instrumentation", () => {
       vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", undefined);
 
       initClient(options);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await delay(0);
 
       expect(sentry.init).not.toHaveBeenCalled();
     });

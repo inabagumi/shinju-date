@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  AccountNotFoundError,
-  StalledPaginationError,
-} from "../internal/errors.js";
+import { AccountNotFoundError } from "../internal/account-not-found-error.js";
+import { StalledPaginationError } from "../internal/stalled-pagination-error.js";
 import { TEST_NOW } from "../internal/testing/context.js";
 import {
   newVideoId,
@@ -34,10 +32,9 @@ import type {
 
 vi.mock(import("../internal/thumbnails/index.js"), async (importOriginal) => ({
   ...(await importOriginal()),
-  createThumbnail: vi.fn<typeof Thumbnails.createThumbnail>(async () => ({
-    id: "thumb-new",
-    path: "x/y.jpg",
-  })),
+  createThumbnail: vi.fn<typeof Thumbnails.createThumbnail>(() =>
+    Promise.resolve({ id: "thumb-new", path: "x/y.jpg" })
+  ),
   removeThumbnail: vi.fn<typeof Thumbnails.removeThumbnail>(),
 }));
 
@@ -90,9 +87,8 @@ const createApi = ({
   getVideosByUser: vi.fn<TwitchApi["getVideosByUser"]>(({ type }) =>
     fromArray(type === "upload" ? uploads : archives)
   ),
-  getVideosByUserPage: vi.fn<TwitchApi["getVideosByUserPage"]>(
-    async ({ after }) =>
-      historyPages[after ?? ""] ?? { cursor: null, videos: [] }
+  getVideosByUserPage: vi.fn<TwitchApi["getVideosByUserPage"]>(({ after }) =>
+    Promise.resolve(historyPages[after ?? ""] ?? { cursor: null, videos: [] })
   ),
 });
 
@@ -285,7 +281,7 @@ describe(TwitchScraper, () => {
         supabase
           .insertedVideos()
           .map(({ platformVideo }) => (platformVideo as { type: string }).type)
-          .sort()
+          .toSorted()
       ).toStrictEqual(["archive", "upload"]);
     });
 

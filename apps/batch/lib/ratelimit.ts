@@ -3,7 +3,7 @@ import { REDIS_KEYS } from "@shinju-date/constants";
 import { redisClient } from "./redis";
 
 export interface OncePerWindowLimiter {
-  limit(identifier: string): Promise<{ success: boolean }>;
+  limit: (identifier: string) => Promise<{ success: boolean }>;
 }
 
 /**

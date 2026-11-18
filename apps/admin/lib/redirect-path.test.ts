@@ -18,6 +18,7 @@ describe(getSafeRedirectPath, () => {
 
   it.each([
     "https://example.com/",
+    // oxlint-disable-next-line eslint/no-script-url -- checks that a javascript: URL is rejected
     "javascript:alert(1)",
     "//example.com",
     "/\\example.com",

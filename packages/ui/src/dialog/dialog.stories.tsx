@@ -29,7 +29,7 @@ export const Basic = meta.story({
     const canvas = within(canvasElement);
 
     // Find and click the trigger button
-    const triggerButton = canvas.getByRole("button", { name: /open dialog/i });
+    const triggerButton = canvas.getByRole("button", { name: /open dialog/iu });
     await expect(triggerButton).toBeInTheDocument();
     await userEvent.click(triggerButton);
 
@@ -40,17 +40,17 @@ export const Basic = meta.story({
     });
 
     // Verify dialog content
-    const dialogTitle = within(document.body).getByText(/dialog title/i);
+    const dialogTitle = within(document.body).getByText(/dialog title/iu);
     await expect(dialogTitle).toBeInTheDocument();
 
     const dialogDescription = within(document.body).getByText(
-      /this is a basic dialog/i
+      /this is a basic dialog/iu
     );
     await expect(dialogDescription).toBeInTheDocument();
 
     // Find and click close button
     const closeButton = within(document.body).getByRole("button", {
-      name: /close/i,
+      name: /close/iu,
     });
     await userEvent.click(closeButton);
 
@@ -109,12 +109,61 @@ export const WithActions = meta.story({
   ),
 });
 
+const WithFormDialog = () => {
+  const [name, setName] = useState("");
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>Edit Profile</Button>
+      </DialogTrigger>
+      <DialogPortal>
+        <DialogOverlay />
+        <DialogContent>
+          <DialogTitle>Edit Profile</DialogTitle>
+          <DialogDescription>
+            Make changes to your profile here. Click save when you&apos;re done.
+          </DialogDescription>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              // oxlint-disable-next-line no-alert -- the story shows the submitted value in a native alert on purpose
+              alert(`Saved: ${name}`);
+            }}
+          >
+            <div className="mt-4 flex flex-col gap-2">
+              <label className="text-meta font-medium" htmlFor="name">
+                Name
+              </label>
+              <input
+                className="rounded-control border border-border bg-surface px-4 py-2"
+                id="name"
+                onChange={(e) => setName(e.target.value)}
+                value={name}
+              />
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <DialogClose asChild>
+                <Button type="button" variant="secondary">
+                  Cancel
+                </Button>
+              </DialogClose>
+              <Button type="submit">Save Changes</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </DialogPortal>
+    </Dialog>
+  );
+};
+
 export const WithForm = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
     // Open the dialog
-    const triggerButton = canvas.getByRole("button", { name: /edit profile/i });
+    const triggerButton = canvas.getByRole("button", {
+      name: /edit profile/iu,
+    });
     await userEvent.click(triggerButton);
 
     // Wait for dialog to appear
@@ -124,61 +173,17 @@ export const WithForm = meta.story({
     });
 
     // Find and fill the form input
-    const nameInput = within(document.body).getByLabelText(/name/i);
+    const nameInput = within(document.body).getByLabelText(/name/iu);
     await userEvent.type(nameInput, "John Doe");
     await expect(nameInput).toHaveValue("John Doe");
 
     // Submit the form (this will trigger an alert in the story)
     const saveButton = within(document.body).getByRole("button", {
-      name: /save changes/i,
+      name: /save changes/iu,
     });
     await expect(saveButton).toBeInTheDocument();
   },
-  render: () => {
-    const [name, setName] = useState("");
-    return (
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button>Edit Profile</Button>
-        </DialogTrigger>
-        <DialogPortal>
-          <DialogOverlay />
-          <DialogContent>
-            <DialogTitle>Edit Profile</DialogTitle>
-            <DialogDescription>
-              Make changes to your profile here. Click save when you're done.
-            </DialogDescription>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                alert(`Saved: ${name}`);
-              }}
-            >
-              <div className="mt-4 flex flex-col gap-2">
-                <label className="text-meta font-medium" htmlFor="name">
-                  Name
-                </label>
-                <input
-                  className="rounded-control border border-border bg-surface px-4 py-2"
-                  id="name"
-                  onChange={(e) => setName(e.target.value)}
-                  value={name}
-                />
-              </div>
-              <div className="mt-6 flex justify-end gap-2">
-                <DialogClose asChild>
-                  <Button type="button" variant="secondary">
-                    Cancel
-                  </Button>
-                </DialogClose>
-                <Button type="submit">Save Changes</Button>
-              </div>
-            </form>
-          </DialogContent>
-        </DialogPortal>
-      </Dialog>
-    );
-  },
+  render: () => <WithFormDialog />,
 });
 
 export const LongContent = meta.story({

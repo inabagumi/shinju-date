@@ -11,16 +11,18 @@ describe(useBackfillRequest, () => {
     const calls: string[] = [];
     const action = vi.fn<
       (talentId: string) => Promise<ActionResult<{ message: string }>>
-    >(async (talentId) => {
+    >((talentId) => {
       calls.push(`action:${talentId}`);
 
-      return {
+      return Promise.resolve({
         data: { message: "2件キューに追加しました。" },
         success: true,
-      };
+      });
     });
-    const reload = vi.fn<() => Promise<void>>(async () => {
+    const reload = vi.fn<() => Promise<void>>(() => {
       calls.push("reload");
+
+      return Promise.resolve();
     });
 
     const { result } = renderHook(() => useBackfillRequest(action, reload), {
@@ -34,12 +36,12 @@ describe(useBackfillRequest, () => {
   });
 
   it("reloads the progress even when nothing could be queued", async () => {
-    const action = vi.fn<() => Promise<ActionResult<{ message: string }>>>(
-      async () => ({
+    const action = vi
+      .fn<() => Promise<ActionResult<{ message: string }>>>()
+      .mockResolvedValue({
         error: "既に実行中です。",
         success: false,
-      })
-    );
+      });
     const reload = vi.fn<() => Promise<void>>(async () => {});
 
     const { result } = renderHook(() => useBackfillRequest(action, reload), {

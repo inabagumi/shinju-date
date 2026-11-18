@@ -130,7 +130,7 @@ describe(zodErrorToFormState, () => {
       password: z
         .string()
         .min(8, "8文字以上入力してください。")
-        .regex(/\d/, "数字を含めてください。"),
+        .regex(/\d/u, "数字を含めてください。"),
     });
     const result = schema.safeParse({ password: "abc" });
 

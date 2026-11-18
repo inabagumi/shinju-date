@@ -29,7 +29,7 @@ export const GET = async (request: NextRequest): Promise<Response> => {
     });
   }
 
-  return createVideosCalendarResponse({
+  return await createVideosCalendarResponse({
     kind: parseVideoKindFilter(searchParams.getAll(VIDEO_KIND_SEARCH_PARAM)),
     talentIds: parseTalentIds(talentValues),
   });

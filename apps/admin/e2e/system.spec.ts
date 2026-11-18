@@ -16,7 +16,7 @@ test.describe("System", () => {
     await expect(
       page
         .getByRole("listitem")
-        .filter({ hasText: /^admin@example\.com が.+しました/ })
+        .filter({ hasText: /^admin@example\.com が.+しました/u })
         .first()
     ).toBeVisible();
     await expect(

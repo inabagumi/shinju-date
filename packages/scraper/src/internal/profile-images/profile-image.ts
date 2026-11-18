@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import sharp from "sharp";
 
 import type { TypedSupabaseClient } from "../../types.js";
-import { DatabaseError, StorageError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
 import {
   createBlurDataURL,
   downloadImage,
@@ -12,6 +12,7 @@ import {
   removeStoredImages,
   storeImage,
 } from "../images/index.js";
+import { StorageError } from "../storage-error.js";
 
 export const PROFILE_IMAGES_BUCKET = "profile-images";
 
@@ -55,7 +56,7 @@ export interface DownloadedProfileImage {
  * version-like ETags that are the same for different images.
  *
  * @returns `null` when the icon is unchanged.
- * @throws When the icon cannot be downloaded (including an error response)
+ * @throws {Error} When the icon cannot be downloaded (including an error response)
  *   or is not an image.
  */
 export const downloadProfileImage = async (
@@ -107,7 +108,7 @@ export interface CreateProfileImageOptions {
  * Stores a downloaded icon in the profile-images bucket and registers it in
  * the `profile_images` table. The icon is not assigned to its owner yet.
  *
- * @throws When the image cannot be decoded, stored or registered. Nothing is
+ * @throws {Error} When the image cannot be decoded, stored or registered. Nothing is
  *   left behind in that case.
  */
 export const createProfileImage = async ({
@@ -171,7 +172,7 @@ export const createProfileImage = async ({
  * only removed once the row is gone, so a used icon never loses its image.
  *
  * @returns Whether the icon was deleted (`false` when it is still in use).
- * @throws When the row cannot be deleted for another reason. A failure to
+ * @throws {Error} When the row cannot be deleted for another reason. A failure to
  *   remove the object is ignored: without its row it is never served.
  */
 export const removeProfileImage = async (

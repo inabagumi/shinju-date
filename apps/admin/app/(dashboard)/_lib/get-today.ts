@@ -7,6 +7,7 @@ import { cacheLife } from "next/cache";
  * プリレンダリングの中で現在の時刻を読むとエラーになるため、キャッシュの中で
  * 読む
  */
+// oxlint-disable-next-line eslint/require-await -- Next.js requires functions with 'use cache' to be async
 export const getToday = async (): Promise<string> => {
   "use cache: private";
 

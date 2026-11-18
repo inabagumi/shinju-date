@@ -6,11 +6,13 @@ const store = new Map<string, { count: number; ttl: number | null }>();
 const multi = () => {
   const commands: (() => number)[] = [];
   const transaction = {
-    exec: async () => commands.map((command) => command()),
+    exec: () => Promise.resolve(commands.map((command) => command())),
     expire(key: string, seconds: number) {
       commands.push(() => {
         const entry = store.get(key);
-        if (!entry) return 0;
+        if (!entry) {
+          return 0;
+        }
         entry.ttl = seconds;
         return 1;
       });

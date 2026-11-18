@@ -114,7 +114,7 @@ const scrollUntilCardSpans = async (page: Page, locator: Locator) => {
     .toBe(true);
 };
 
-const getVideoCardBoxes = async (page: Page): Promise<Box[]> =>
+const getVideoCardBoxes = (page: Page): Promise<Box[]> =>
   getVideoCards(page).evaluateAll((elements) =>
     elements.map((element) => {
       const { height, width, x, y } = element.getBoundingClientRect();
@@ -320,7 +320,8 @@ test.describe("Announcement Banner", () => {
 
     await page.clock.fastForward("01:00");
 
-    const response = await (await refetchRequest).response();
+    const refetch = await refetchRequest;
+    const response = await refetch.response();
 
     expect(response?.ok()).toBe(true);
     await expect(getBanner(page)).toContainText(ANNOUNCEMENT_MESSAGE);

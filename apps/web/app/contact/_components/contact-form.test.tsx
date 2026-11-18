@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ContactFormState } from "../_lib/actions";
+import { ContactForm } from "./contact-form";
 
 const { submitContactForm } = vi.hoisted(() => ({
   submitContactForm:
@@ -12,22 +13,22 @@ const { submitContactForm } = vi.hoisted(() => ({
 
 vi.mock(import("../_lib/actions"), () => ({ submitContactForm }));
 
-import { ContactForm } from "./contact-form";
-
 const failWithSubmittedValues = () => {
-  submitContactForm.mockImplementation(async (_, formData) => ({
-    error: "送信中にエラーが発生しました。",
-    success: false,
-    values: Object.fromEntries(
-      [...formData].filter(
-        (entry): entry is [string, string] => typeof entry[1] === "string"
-      )
-    ),
-  }));
+  submitContactForm.mockImplementation((_, formData) =>
+    Promise.resolve({
+      error: "送信中にエラーが発生しました。",
+      success: false,
+      values: Object.fromEntries(
+        [...formData].filter(
+          (entry): entry is [string, string] => typeof entry[1] === "string"
+        )
+      ),
+    })
+  );
 };
 
 const getTypeSelect = () =>
-  screen.getByLabelText(/お問い合わせ種別/) as HTMLSelectElement;
+  screen.getByLabelText(/お問い合わせ種別/u) as HTMLSelectElement;
 
 const getNameInput = () =>
   screen.getByLabelText("お名前（任意）") as HTMLInputElement;
@@ -36,10 +37,10 @@ const getReplyCheckbox = () =>
   screen.getByLabelText("返信を希望する") as HTMLInputElement;
 
 const queryEmailInput = () =>
-  screen.queryByLabelText(/メールアドレス/) as HTMLInputElement | null;
+  screen.queryByLabelText(/メールアドレス/u) as HTMLInputElement | null;
 
 const getMessageTextarea = () =>
-  screen.getByLabelText(/お問い合わせ内容/) as HTMLTextAreaElement;
+  screen.getByLabelText(/お問い合わせ内容/u) as HTMLTextAreaElement;
 
 /** The values of the fields, with `email` undefined when it is not shown. */
 const getFormValues = () => ({
@@ -63,8 +64,11 @@ const fillForm = () => {
 };
 
 const submit = async (container: HTMLElement) => {
-  await act(async () => {
+  // Returning a promise makes `act` wait for the submission as well
+  await act(() => {
     fireEvent.submit(container.querySelector("form") as HTMLFormElement);
+
+    return Promise.resolve();
   });
 };
 

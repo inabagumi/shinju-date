@@ -265,7 +265,7 @@ describe("VideoBackfillPanel", () => {
     );
 
     // The server rendered the list of videos together with this progress.
-    expect(screen.getByText(/15件追加/)).toBeTruthy();
+    expect(screen.getByText(/15件追加/u)).toBeTruthy();
     expect(mocks.router.refresh).not.toHaveBeenCalled();
   });
 });

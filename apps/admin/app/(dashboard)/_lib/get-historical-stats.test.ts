@@ -26,9 +26,10 @@ const snapshot = (totalVideos: number): SummaryStats => ({
 
 /** Keep the snapshots of the given days (`YYYYMMDD`) in Redis. */
 const mockSnapshots = (snapshots: Record<string, unknown>) => {
-  const get = vi.fn<(key: string) => Promise<unknown>>(
-    async (key) =>
+  const get = vi.fn<(key: string) => Promise<unknown>>((key) =>
+    Promise.resolve(
       snapshots[key.slice(REDIS_KEYS.SUMMARY_STATS_PREFIX.length)] ?? null
+    )
   );
 
   vi.mocked(getRedisClient).mockReturnValue(createMockRedisClient({ get }));

@@ -76,7 +76,7 @@ describe("POST /recommendation/queries/update", () => {
     vi.clearAllMocks();
     acquireLock.mockResolvedValue("lock-value");
     redisClient.del.mockResolvedValue(1);
-    getAllTerms.mockImplementation(async function* () {
+    getAllTerms.mockImplementation(async function* getAllTermsMock() {
       yield { id: "1", synonyms: ["ほげ"], term: "Hoge" };
       yield { id: "2", synonyms: [], term: "Fuga" };
     });

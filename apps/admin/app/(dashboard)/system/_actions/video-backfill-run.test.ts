@@ -26,10 +26,12 @@ vi.mock(import("@shinju-date/video-backfill"), async (importOriginal) => {
     ...original,
     // The real constructor only keeps the Redis client
     BackfillRuns: class extends original.BackfillRuns {
+      // oxlint-disable-next-line eslint/class-methods-use-this -- overrides an instance method of the real class
       override getLatest(...args: Parameters<BackfillRuns["getLatest"]>) {
         return mocks.getLatest(...args);
       }
 
+      // oxlint-disable-next-line eslint/class-methods-use-this -- overrides an instance method of the real class
       override start(...args: Parameters<BackfillRuns["start"]>) {
         return mocks.start(...args);
       }
@@ -39,6 +41,21 @@ vi.mock(import("@shinju-date/video-backfill"), async (importOriginal) => {
 
 const test = setupActionTest();
 const { supabase } = test;
+
+/** Makes `start()` report that the request at `index` failed. */
+const failRequest = (
+  requests: readonly BackfillRunRequest[],
+  { onError }: StartBackfillRunOptions,
+  index: number
+): void => {
+  const request = requests[index];
+
+  if (!request || !onError) {
+    throw new Error("start() got neither the request nor onError");
+  }
+
+  onError(request, new Error("redis unavailable"));
+};
 
 describe("video backfill run actions", () => {
   beforeEach(() => {
@@ -94,21 +111,6 @@ describe("video backfill run actions", () => {
     requestedAt: "2026-11-14T00:00:00Z",
     requestedBy: "user-1",
     skipped: 0,
-  };
-
-  /** Makes `start()` report that the request at `index` failed. */
-  const failRequest = (
-    requests: readonly BackfillRunRequest[],
-    { onError }: StartBackfillRunOptions,
-    index: number
-  ): void => {
-    const request = requests[index];
-
-    if (!request || !onError) {
-      throw new Error("start() got neither the request nor onError");
-    }
-
-    onError(request, new Error("redis unavailable"));
   };
 
   describe("requestVideoBackfillRunAction()", () => {
@@ -208,10 +210,15 @@ describe("video backfill run actions", () => {
     });
 
     it("reports the accounts that were skipped or could not be queued", async () => {
-      mocks.start.mockImplementation(async (requests, options) => {
+      mocks.start.mockImplementation((requests, options) => {
         failRequest(requests, options, 1);
 
-        return { failed: 1, run, skipped: 3, status: "started" };
+        return Promise.resolve({
+          failed: 1,
+          run,
+          skipped: 3,
+          status: "started",
+        });
       });
 
       await expect(requestVideoBackfillRunAction()).resolves.toStrictEqual({
@@ -233,10 +240,10 @@ describe("video backfill run actions", () => {
     });
 
     it("reports a failure without an audit log when nothing was queued", async () => {
-      mocks.start.mockImplementation(async (requests, options) => {
+      mocks.start.mockImplementation((requests, options) => {
         failRequest(requests, options, 0);
 
-        return { failed: 2, skipped: 0, status: "empty" };
+        return Promise.resolve({ failed: 2, skipped: 0, status: "empty" });
       });
 
       await expect(requestVideoBackfillRunAction()).resolves.toStrictEqual({

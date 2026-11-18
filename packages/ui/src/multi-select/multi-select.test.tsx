@@ -108,12 +108,12 @@ describe(MultiSelect, () => {
       />
     );
 
-    const button = screen.getByRole("button", { name: /option 1/i });
+    const button = screen.getByRole("button", { name: /option 1/iu });
     await user.click(button);
 
     // Click on Option 1 checkbox (already selected)
     const option1Checkbox = screen.getByRole("checkbox", {
-      name: /option 1/i,
+      name: /option 1/iu,
     });
     await user.click(option1Checkbox);
 

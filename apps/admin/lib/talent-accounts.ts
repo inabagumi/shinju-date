@@ -82,40 +82,40 @@ interface AccountDefinition<P extends AccountPlatform> {
   /** エラーを結び付ける、フォームの入力欄の名前 */
   field: string;
   /** API の認証情報が設定されていないことを示すエラーかどうか */
-  isCredentialsError(error: unknown): boolean;
+  isCredentialsError: (error: unknown) => boolean;
   messages: AccountMessages;
   /** 入力（ID、ハンドル、URL など）を解釈する。解釈できなければ `null` */
-  parse(input: string): AccountTypes[P]["identifier"] | null;
+  parse: (input: string) => AccountTypes[P]["identifier"] | null;
   /** 追加の監査ログを、タレントを対象にして残す */
-  recordLink(
+  recordLink: (
     supabaseClient: TypedSupabaseClient,
     talentId: string,
     account: AccountRow<P>
-  ): Promise<void>;
+  ) => Promise<void>;
   /** 削除の監査ログを、タレントを対象にして残す */
-  recordUnlink(
+  recordUnlink: (
     supabaseClient: TypedSupabaseClient,
     talentId: string,
     account: AccountRow<P>
-  ): Promise<void>;
+  ) => Promise<void>;
   /** プラットフォーム側の ID を入れる列。すべてのタレントを通して一意 */
   remoteIdColumn: keyof Tables<AccountTypes[P]["table"]> & string;
   /** API でアカウントを解決する。見つからなければ `null` */
-  resolve(
+  resolve: (
     identifier: AccountTypes[P]["identifier"]
-  ): Promise<AccountTypes[P]["remote"] | null>;
+  ) => Promise<AccountTypes[P]["remote"] | null>;
   /** 作った行に、アイコンを同期する。失敗しても例外を投げない */
-  syncIcon(
+  syncIcon: (
     remote: AccountTypes[P]["remote"],
     accountId: string
-  ): Promise<unknown>;
+  ) => Promise<unknown>;
   /** アカウントを保存するテーブル */
   table: AccountTypes[P]["table"];
   /** API が返したアカウントから作る、保存する行 */
-  toRow(
+  toRow: (
     remote: AccountTypes[P]["remote"],
     talentId: string
-  ): Omit<AccountTypes[P]["account"], "id"> &
+  ) => Omit<AccountTypes[P]["account"], "id"> &
     Pick<Tables<AccountTypes[P]["table"]>, "talent_id">;
 }
 

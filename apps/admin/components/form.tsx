@@ -22,6 +22,7 @@ import {
   useCallback,
   useContext,
   useId,
+  useMemo,
   useState,
 } from "react";
 import type {
@@ -36,6 +37,8 @@ import type { FormState } from "@/lib/action";
 export type { FormState };
 
 const FormContext = createContext<FormState>({});
+
+const EMPTY_STATE: FormState = {};
 
 interface FormFieldContextValue {
   id?: string;
@@ -70,7 +73,7 @@ interface Props extends Omit<ComponentPropsWithoutRef<"form">, "action"> {
 export default function Form({
   action,
   children,
-  initialState = {},
+  initialState = EMPTY_STATE,
   noValidate = true,
   onSubmit,
   ...props
@@ -164,7 +167,7 @@ export const SubmitButton = ({
   );
 };
 
-interface ErrorMessageProps extends ComponentPropsWithoutRef<"p"> {}
+type ErrorMessageProps = ComponentPropsWithoutRef<"p">;
 
 export const ErrorMessage = ({
   className,
@@ -195,14 +198,16 @@ interface FormFieldProps extends ComponentPropsWithoutRef<"div"> {
 
 export const FormField = ({ name, ...props }: FormFieldProps) => {
   const id = useId();
+  const fieldContext = useMemo(
+    () => ({
+      id,
+      ...(name ? { name } : {}),
+    }),
+    [id, name]
+  );
 
   return (
-    <FormFieldContext.Provider
-      value={{
-        id,
-        ...(name ? { name } : {}),
-      }}
-    >
+    <FormFieldContext.Provider value={fieldContext}>
       <div {...props} />
     </FormFieldContext.Provider>
   );
@@ -269,10 +274,10 @@ export const Input = ({
   );
 };
 
-interface CheckboxProps extends Omit<
+type CheckboxProps = Omit<
   ComponentPropsWithoutRef<"input">,
   "checked" | "type"
-> {}
+>;
 
 /**
  * `FormField` の ID と `name` を付けたチェックボックス。`Label` の `htmlFor`
@@ -310,7 +315,7 @@ export const Checkbox = ({
   );
 };
 
-interface LabelProps extends ComponentPropsWithoutRef<"label"> {}
+type LabelProps = ComponentPropsWithoutRef<"label">;
 
 export const Label = ({ className, htmlFor, ...props }: LabelProps) => {
   const { pending } = useFormStatus();

@@ -4,7 +4,9 @@ import { useMemo, useSyncExternalStore } from "react";
 
 import { useNow } from "@/components/timer";
 
-const subscribeNothing = () => () => {};
+const subscribeNothing = () => () => {
+  // Nothing to unsubscribe from
+};
 
 /**
  * 「今日」を判定する基準の日付。

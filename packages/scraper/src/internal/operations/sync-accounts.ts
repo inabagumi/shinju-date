@@ -8,8 +8,8 @@ import type {
 } from "../../types.js";
 import { diffAccountFields } from "../account-fields.js";
 import { WRITE_CONCURRENCY } from "../constants.js";
-import type { AccountTable } from "../database/index.js";
-import { DatabaseError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
+import type { AccountTable } from "../database/talents.js";
 import type { ProfileImageSyncResult } from "../profile-images/index.js";
 
 /** The columns every saved account is loaded with. */
@@ -33,9 +33,9 @@ export interface SavedAccountQuery {
  * with the platform: how they are loaded and read from the platform, which
  * details are kept in line and how they and the icon are written.
  *
- * @typeParam TAccount - An account as the platform API returns it.
- * @typeParam TSaved - A saved account as loaded with `savedAccountColumns`.
- * @typeParam TFields - The details kept in line with the platform.
+ * @template TAccount - An account as the platform API returns it.
+ * @template TSaved - A saved account as loaded with `savedAccountColumns`.
+ * @template TFields - The details kept in line with the platform.
  */
 export interface AccountAdapter<
   TAccount extends { id: string },
@@ -53,31 +53,31 @@ export interface AccountAdapter<
    * Reads accounts from the platform. IDs it does not return are accounts
    * the platform no longer has.
    */
-  getAccounts(platformIds: readonly string[]): Promise<TAccount[]>;
+  getAccounts: (platformIds: readonly string[]) => Promise<TAccount[]>;
   /** The ID of the saved account on the platform. */
-  getPlatformId(saved: TSaved): string;
+  getPlatformId: (saved: TSaved) => string;
   /**
    * Brings the stored icon of the saved account in line with the platform.
    *
-   * @throws When the icon cannot be downloaded, stored or assigned.
+   * @throws {Error} When the icon cannot be downloaded, stored or assigned.
    */
-  syncIcon(
+  syncIcon: (
     context: WriteContext,
     saved: TSaved,
     account: TAccount
-  ): Promise<ProfileImageSyncResult>;
+  ) => Promise<ProfileImageSyncResult>;
   /** The details of an account as the platform reports them. */
-  toDetails(account: TAccount): TFields;
+  toDetails: (account: TAccount) => TFields;
   /**
    * Writes the details of an account that changed on the platform.
    *
-   * @throws When the account cannot be updated.
+   * @throws {Error} When the account cannot be updated.
    */
-  updateDetails(
+  updateDetails: (
     context: WriteContext,
     saved: TSaved,
     details: TFields
-  ): Promise<void>;
+  ) => Promise<void>;
 }
 
 export interface SyncAccountsOptions {
@@ -92,7 +92,7 @@ export interface SyncAccountsOptions {
  * Loads the saved accounts of non-deleted talents (retired ones included), or
  * of one talent only.
  *
- * @throws When the accounts cannot be loaded.
+ * @throws {Error} When the accounts cannot be loaded.
  */
 const loadSavedAccounts = async <TSaved extends SavedAccountBase>(
   { supabaseClient }: WriteContext,
@@ -225,7 +225,7 @@ const syncAccount = async <
  * the icon are synced independently as well.
  *
  * @returns One result per saved account; empty when there is none.
- * @throws When the accounts cannot be loaded or the platform cannot be read.
+ * @throws {Error} When the accounts cannot be loaded or the platform cannot be read.
  */
 export const syncAccountsWith = async <
   TAccount extends { id: string },

@@ -33,7 +33,7 @@ export const Primary = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const button = canvas.getByRole("button", { name: /primary button/i });
+    const button = canvas.getByRole("button", { name: /primary button/iu });
 
     // Verify button is rendered
     await expect(button).toBeInTheDocument();
@@ -95,7 +95,7 @@ export const Disabled = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const button = canvas.getByRole("button", { name: /disabled button/i });
+    const button = canvas.getByRole("button", { name: /disabled button/iu });
 
     // Verify button is rendered and disabled
     await expect(button).toBeInTheDocument();

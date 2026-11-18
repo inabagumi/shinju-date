@@ -36,6 +36,7 @@ export const FilterBar = ({
     <Collapsible.Root
       aria-label={label}
       className={twMerge("group/filter-bar flex flex-col gap-3", className)}
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- Collapsible.Root renders a div; a fieldset would add its own browser styles (min-inline-size) and form semantics
       role="group"
       {...props}
     >

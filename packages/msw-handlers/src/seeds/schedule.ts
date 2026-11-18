@@ -79,10 +79,11 @@ export const createScheduleVideos = (
         Temporal.ZonedDateTime.compare(start, now) < 0
           ? ("ENDED" as const)
           : ("UPCOMING" as const),
+      // The last title is long enough to check that it does not run out of
+      // the item
       title:
         index === starts.length - 1
-          ? // Long enough to check that it does not run out of the item
-            "〖FORKROAD〗右か左かすきなほうをえらんでね【#ななしいんく公式チャンネル同時視聴コラボ】"
+          ? "〖FORKROAD〗右か左かすきなほうをえらんでね【#ななしいんく公式チャンネル同時視聴コラボ】"
           : `${SCHEDULE_TITLES[index % SCHEDULE_TITLES.length]} #${index + 1}`,
     })),
     {

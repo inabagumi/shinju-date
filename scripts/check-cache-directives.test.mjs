@@ -10,8 +10,8 @@ import { describe, expect, it } from "vitest";
 import { findMissingBlankLines } from "./check-cache-directives.mjs";
 
 /**
- * @param {string} source
- * @param {string} [fileName]
+ * @param {string} source - Source code to check
+ * @param {string} [fileName] - Name of the file, which chooses the parser
  */
 const lines = (source, fileName = "fixture.ts") =>
   findMissingBlankLines(source, fileName).map(({ line }) => line);

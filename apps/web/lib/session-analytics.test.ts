@@ -24,11 +24,13 @@ vi.mock(import("./redis"), () => ({
 }));
 
 vi.mock(import("next/headers"), () => ({
-  headers: async () =>
-    new Headers({
-      "user-agent": "vitest",
-      "x-forwarded-for": "203.0.113.1",
-    }),
+  headers: () =>
+    Promise.resolve(
+      new Headers({
+        "user-agent": "vitest",
+        "x-forwarded-for": "203.0.113.1",
+      })
+    ),
 }));
 
 const DAILY_TTL_SECONDS = 90 * 24 * 60 * 60;

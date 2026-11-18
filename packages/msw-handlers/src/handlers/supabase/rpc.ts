@@ -40,7 +40,8 @@ const getMockAuditLogs = async ({
   p_sort_by: sortBy = "created_at",
   p_sort_direction: sortDirection = "desc",
 }: GetAuditLogsParams) => {
-  const logs = (await auditLogs.findMany()).map((log) => ({
+  const savedLogs = await auditLogs.findMany();
+  const logs = savedLogs.map((log) => ({
     ...log,
     user_email:
       log.user_id === MOCK_SUPABASE_USER.id ? MOCK_SUPABASE_USER.email : null,
@@ -48,13 +49,15 @@ const getMockAuditLogs = async ({
   const direction = sortDirection === "asc" ? 1 : -1;
 
   return logs
-    .sort((a, b) => {
-      const order =
-        sortBy === "created_at"
-          ? a.created_at.localeCompare(b.created_at) * direction
-          : sortBy === "user_email"
-            ? (a.user_email ?? "").localeCompare(b.user_email ?? "") * direction
-            : 0;
+    .toSorted((a, b) => {
+      let order = 0;
+
+      if (sortBy === "created_at") {
+        order = a.created_at.localeCompare(b.created_at) * direction;
+      } else if (sortBy === "user_email") {
+        order =
+          (a.user_email ?? "").localeCompare(b.user_email ?? "") * direction;
+      }
 
       return order || b.created_at.localeCompare(a.created_at);
     })
@@ -102,8 +105,8 @@ const normalizeSearchText = (text: string): string =>
  * katakana with hiragana.
  */
 const normalizeReadingText = (text: string): string =>
-  normalizeSearchText(text).replaceAll(/[\u30A1-\u30F6]/g, (char) =>
-    String.fromCharCode(char.charCodeAt(0) - 0x60)
+  normalizeSearchText(text).replaceAll(/[\u30A1-\u30F6]/gu, (char) =>
+    String.fromCodePoint((char.codePointAt(0) ?? 0) - 0x60)
   );
 
 /**
@@ -111,7 +114,7 @@ const normalizeReadingText = (text: string): string =>
  * the query and, when a term lists it as a synonym, the other synonyms of
  * that term.
  */
-const expandMockQuery = async (query: string): Promise<string[]> => {
+const expandMockQuery = (query: string): string[] => {
   const normalizedQuery = normalizeSearchText(query);
   const expanded = new Set([normalizedQuery]);
 
@@ -132,13 +135,13 @@ const expandMockQuery = async (query: string): Promise<string[]> => {
  * The visible videos of the given talents and kinds whose titles contain the
  * query or one of its synonyms and that were published before `p_until`.
  */
-const filterMockVideos = async ({
+const filterMockVideos = ({
   p_query: query = "",
   p_talent_ids: talentIds = [],
   p_until: until,
   p_video_kinds: videoKinds,
 }: SearchVideosParams) => {
-  const keywords = query === "" ? [] : await expandMockQuery(query);
+  const keywords = query === "" ? [] : expandMockQuery(query);
 
   return videos
     .findMany()
@@ -163,8 +166,8 @@ const filterMockVideos = async ({
  * name of its user or an ID that is not the placeholder of an archive that is
  * not ready yet (`live:{stream_id}`), unless it is a clip.
  */
-const filterShownMockVideos = async (params: SearchVideosParams) => {
-  const matchedVideos = await filterMockVideos(params);
+const filterShownMockVideos = (params: SearchVideosParams) => {
+  const matchedVideos = filterMockVideos(params);
   const visibleTalentIds = new Set(
     talents
       .findMany()
@@ -210,7 +213,9 @@ const pageMockVideos = <T extends { published_at: string }>(
   perpage = 10
 ): T[] =>
   matchedVideos
-    .sort((a, b) => Temporal.Instant.compare(b.published_at, a.published_at))
+    .toSorted((a, b) =>
+      Temporal.Instant.compare(b.published_at, a.published_at)
+    )
     .slice(0, perpage);
 
 /**
@@ -218,19 +223,28 @@ const pageMockVideos = <T extends { published_at: string }>(
  * first. The videos the site does not show are left out before the page size
  * is applied.
  */
-const searchShownMockVideos = async ({
+const searchShownMockVideos = ({
   p_perpage: perpage,
   ...params
 }: SearchVideosParams) =>
-  pageMockVideos(await filterShownMockVideos(params), perpage);
+  pageMockVideos(filterShownMockVideos(params), perpage);
 
 /** Mirrors `count_videos_v2`: the number of the videos the site shows. */
-const countMockVideos = async (params: SearchVideosParams) =>
-  (await filterShownMockVideos(params)).length;
+const countMockVideos = (params: SearchVideosParams) =>
+  filterShownMockVideos(params).length;
 
 interface SuggestionsParams {
   p_query?: string;
 }
+
+/** Compare two strings by their UTF-16 code units, like `Array#sort`. */
+const compareCodeUnits = (a: string, b: string): number => {
+  if (a < b) {
+    return -1;
+  }
+
+  return a > b ? 1 : 0;
+};
 
 /**
  * Mirrors `suggestions_v2`: up to 10 terms that start with the query, then
@@ -238,7 +252,7 @@ interface SuggestionsParams {
  * it. The popularity of the mock terms is not used, so shorter terms come
  * first.
  */
-const suggestMockTerms = async ({ p_query: query = "" }: SuggestionsParams) => {
+const suggestMockTerms = ({ p_query: query = "" }: SuggestionsParams) => {
   const normalizedQuery = normalizeReadingText(query);
   const startsWithQuery = (text: string) =>
     normalizeReadingText(text).startsWith(normalizedQuery);
@@ -255,11 +269,11 @@ const suggestMockTerms = async ({ p_query: query = "" }: SuggestionsParams) => {
   }
 
   return suggestions
-    .sort(
+    .toSorted(
       (a, b) =>
         a.priority - b.priority ||
         a.term.length - b.term.length ||
-        (a.term < b.term ? -1 : a.term > b.term ? 1 : 0)
+        compareCodeUnits(a.term, b.term)
     )
     .slice(0, 10);
 };
@@ -273,7 +287,7 @@ interface UpdateTermsPopularityParams {
  * terms, ignoring the case. The popularity of the mock terms is not used, so
  * nothing is written.
  */
-const updateMockTermsPopularity = async ({
+const updateMockTermsPopularity = ({
   p_items: items = [],
 }: UpdateTermsPopularityParams) => {
   const givenTerms = new Set(
@@ -319,6 +333,7 @@ const setMockThumbnailsDeletedAt = async (
       ids.has(thumbnail.id) &&
       (thumbnail.deleted_at === null) !== (deletedAt === null)
     ) {
+      // oxlint-disable-next-line no-await-in-loop -- the rows are written one by one, like the statements of the database function
       await thumbnails.update(thumbnail, {
         data(draft) {
           draft.deleted_at = deletedAt;
@@ -344,9 +359,10 @@ const softDeleteMockVideos = async ({
   const targets = videos
     .findMany()
     .filter((video) => ids.has(video.id) && video.deleted_at === null)
-    .sort((a, b) => a.id.localeCompare(b.id));
+    .toSorted((a, b) => a.id.localeCompare(b.id));
 
   for (const video of targets) {
+    // oxlint-disable-next-line no-await-in-loop -- the rows are written one by one, like the statements of the database function
     await videos.update(video, {
       data(draft) {
         draft.deleted_at = deletedAt;
@@ -383,9 +399,10 @@ const restoreMockVideos = async ({
         video.deleted_at !== null &&
         (reason === null || video.deleted_reason === reason)
     )
-    .sort((a, b) => a.id.localeCompare(b.id));
+    .toSorted((a, b) => a.id.localeCompare(b.id));
 
   for (const video of targets) {
+    // oxlint-disable-next-line no-await-in-loop -- the rows are written one by one, like the statements of the database function
     await videos.update(video, {
       data(draft) {
         draft.deleted_at = null;
@@ -433,7 +450,8 @@ const insertMockVideo = async ({
     platform === "twitch" ? twitchVideos.findMany() : youtubeVideos.findMany();
   const alreadySaved = PLATFORM_VIDEO_KEYS[platform].some(
     (column) =>
-      platformVideo[column] != null &&
+      platformVideo[column] !== null &&
+      platformVideo[column] !== undefined &&
       savedRows.some((row) => row[column] === platformVideo[column])
   );
 
@@ -456,21 +474,19 @@ const insertMockVideo = async ({
     platform,
   } as Tables<"videos">);
 
-  if (platform === "twitch") {
-    await twitchVideos.create({
-      id: crypto.randomUUID(),
-      stream_id: null,
-      type: null,
-      ...platformValues,
-      video_id: videoId,
-    } as Tables<"twitch_videos">);
-  } else {
-    await youtubeVideos.create({
-      id: crypto.randomUUID(),
-      ...platformValues,
-      video_id: videoId,
-    } as Tables<"youtube_videos">);
-  }
+  await (platform === "twitch"
+    ? twitchVideos.create({
+        id: crypto.randomUUID(),
+        stream_id: null,
+        type: null,
+        ...platformValues,
+        video_id: videoId,
+      } as Tables<"twitch_videos">)
+    : youtubeVideos.create({
+        id: crypto.randomUUID(),
+        ...platformValues,
+        video_id: videoId,
+      } as Tables<"youtube_videos">));
 
   return videoId;
 };
@@ -487,6 +503,7 @@ const touchMockTalent = async ({
   const updatedAt = toDBString(Temporal.Now.instant());
 
   for (const talent of talents.findMany().filter((row) => row.id === id)) {
+    // oxlint-disable-next-line no-await-in-loop -- the rows are written one by one, like the statements of the database function
     await talents.update(talent, {
       data(draft) {
         draft.updated_at = updatedAt;
@@ -510,6 +527,7 @@ const touchMockThumbnail = async ({
   for (const thumbnail of thumbnails
     .findMany()
     .filter((row) => row.id === id)) {
+    // oxlint-disable-next-line no-await-in-loop -- the rows are written one by one, like the statements of the database function
     await thumbnails.update(thumbnail, {
       data(draft) {
         draft.updated_at = updatedAt;
@@ -523,7 +541,7 @@ export const rpcHandlers = [
   rest.post(`${REST_URL}/rpc/suggestions_v2`, async ({ request }) => {
     const body = (await request.json()) as SuggestionsParams;
 
-    return HttpResponse.json(await suggestMockTerms(body));
+    return HttpResponse.json(suggestMockTerms(body));
   }),
 
   rest.post(`${REST_URL}/rpc/search_videos_v4`, async ({ request }) => {
@@ -536,7 +554,7 @@ export const rpcHandlers = [
       url.searchParams.get("select") ?? DEFAULT_SEARCH_VIDEOS_SELECT;
     const selected = await selectRows(
       applySupabaseConditions(
-        await searchShownMockVideos(body),
+        searchShownMockVideos(body),
         query,
         videosTable.uuidColumns
       ),
@@ -556,7 +574,7 @@ export const rpcHandlers = [
   rest.post(`${REST_URL}/rpc/update_terms_popularity`, async ({ request }) => {
     const body = (await request.json()) as UpdateTermsPopularityParams;
 
-    return HttpResponse.json(await updateMockTermsPopularity(body));
+    return HttpResponse.json(updateMockTermsPopularity(body));
   }),
 
   rest.post(`${REST_URL}/rpc/soft_delete_videos`, async ({ request }) => {
@@ -594,7 +612,7 @@ export const rpcHandlers = [
   rest.post(`${REST_URL}/rpc/count_videos_v2`, async ({ request }) => {
     const body = (await request.json()) as SearchVideosParams;
 
-    return HttpResponse.json(await countMockVideos(body));
+    return HttpResponse.json(countMockVideos(body));
   }),
 
   rest.post(`${REST_URL}/rpc/get_audit_logs`, async ({ request }) => {
@@ -637,6 +655,7 @@ export const rpcHandlers = [
     const createdAt = toDBString(Temporal.Now.instant());
 
     for (const entry of entries) {
+      // oxlint-disable-next-line no-await-in-loop -- the logs are inserted one by one to keep their order in the collection
       await auditLogs.create({
         action: entry.action,
         created_at: createdAt,

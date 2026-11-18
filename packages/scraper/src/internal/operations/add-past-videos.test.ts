@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ErrorReporter } from "../../types.js";
+import { AccountNotFoundError } from "../account-not-found-error.js";
 import { BACKFILL_SAVE_CONCURRENCY } from "../constants.js";
-import { YOUTUBE_CHANNELS } from "../database/index.js";
-import { AccountNotFoundError, StalledPaginationError } from "../errors.js";
+import { YOUTUBE_CHANNELS } from "../database/talents.js";
+import { StalledPaginationError } from "../stalled-pagination-error.js";
 import { createTestContext } from "../testing/context.js";
 import { setupSupabase } from "../testing/supabase.js";
 import { addPastVideosWith } from "./add-past-videos.js";
@@ -32,9 +33,9 @@ const account = {
 type FakeAdapter = PastVideoAdapter<null, string>;
 
 const createAdapter = (page: PastVideoPage<string> | null) => {
-  const getPage = vi.fn<FakeAdapter["getPage"]>(async () => page);
-  const saveNew = vi.fn<FakeAdapter["saveNew"]>(
-    async (_context, _account, listed) => listed.length - 1
+  const getPage = vi.fn<FakeAdapter["getPage"]>().mockResolvedValue(page);
+  const saveNew = vi.fn<FakeAdapter["saveNew"]>((_context, _account, listed) =>
+    Promise.resolve(listed.length - 1)
   );
   const adapter: FakeAdapter = {
     accountTable: YOUTUBE_CHANNELS,

@@ -11,6 +11,18 @@ import { twMerge } from "../tw-merge.js";
 const checkboxClassName =
   "mr-2 flex size-5 items-center justify-center rounded-control border border-border bg-surface data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=indeterminate]:border-accent data-[state=indeterminate]:bg-accent";
 
+/** 「すべて選択」のチェックボックスの状態 */
+const getSelectAllState = (
+  selectedCount: number,
+  optionCount: number
+): Checkbox.CheckedState => {
+  if (optionCount > 0 && selectedCount === optionCount) {
+    return true;
+  }
+
+  return selectedCount > 0 ? "indeterminate" : false;
+};
+
 export interface MultiSelectOption {
   label: string;
   value: string;
@@ -43,12 +55,7 @@ export const MultiSelect = ({
   const selectAllId = `${idPrefix}-select-all`;
   const getOptionId = (optionValue: string) =>
     `${idPrefix}-option-${optionValue}`;
-  const selectAllState =
-    options.length > 0 && value.length === options.length
-      ? true
-      : value.length > 0
-        ? "indeterminate"
-        : false;
+  const selectAllState = getSelectAllState(value.length, options.length);
 
   const handleToggle = (optionValue: string) => {
     const newValue = value.includes(optionValue)

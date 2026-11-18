@@ -2,8 +2,11 @@ import { getArchivedStreamId } from "@shinju-date/twitch-api-client";
 
 import { countChanges } from "../internal/concurrency.js";
 import { WRITE_CONCURRENCY } from "../internal/constants.js";
-import { getActiveAccounts, TWITCH_USERS } from "../internal/database/index.js";
-import type { TalentAccount } from "../internal/database/index.js";
+import {
+  getActiveAccounts,
+  TWITCH_USERS,
+} from "../internal/database/talents.js";
+import type { TalentAccount } from "../internal/database/talents.js";
 import { saveVideoWithThumbnail } from "../internal/operations/save-video.js";
 import type { CrawlContext, WriteContext } from "../types.js";
 import { attachArchive } from "./attach-archive.js";
@@ -121,7 +124,7 @@ export const applyNewVideoAction = async (
       return false;
     }
 
-    return saveVideoWithThumbnail(
+    return await saveVideoWithThumbnail(
       context,
       TWITCH_NEW_VIDEOS,
       {
@@ -141,7 +144,7 @@ export const applyNewVideoAction = async (
     );
   }
 
-  return attachArchive(context, action.saved, video, {
+  return await attachArchive(context, action.saved, video, {
     stillLive: liveStream !== undefined,
   });
 };
@@ -260,6 +263,7 @@ export const saveNewTwitchVideos = async (
 
       return true;
     },
-    (error, action) => reportError(error, { twitchVideoId: action.video.id })
+    (failure, action) =>
+      reportError(failure, { twitchVideoId: action.video.id })
   );
 };

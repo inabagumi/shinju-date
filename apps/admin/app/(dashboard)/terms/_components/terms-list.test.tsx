@@ -69,7 +69,7 @@ describe("TermsList", () => {
       ["ア", "#group-ア"],
     ]);
 
-    const groupHeader = screen.getByRole("columnheader", { name: /^ア/ });
+    const groupHeader = screen.getByRole("columnheader", { name: /^ア/u });
     expect(groupHeader).toHaveTextContent("ア1件");
     expect(groupHeader.closest("tr")).toHaveAttribute("id", "group-ア");
   });

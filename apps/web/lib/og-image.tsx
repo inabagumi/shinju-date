@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 
 import { cacheLife } from "next/cache";
 import { ImageResponse } from "next/og";
@@ -19,7 +19,7 @@ const LOGO_HEIGHT = 48;
 const LOGO_WIDTH = (LOGO_HEIGHT * 256) / 80;
 
 /** The key visual, which the home page also shows */
-const KEY_VISUAL_PATH = join(process.cwd(), "app/_assets/hero.jpg");
+const KEY_VISUAL_PATH = path.join(process.cwd(), "app/_assets/hero.jpg");
 /** The key visual takes the right half of the image */
 const KEY_VISUAL_SIZE = {
   height: OG_IMAGE_SIZE.height,

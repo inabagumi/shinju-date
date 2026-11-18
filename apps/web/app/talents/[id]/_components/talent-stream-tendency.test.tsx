@@ -1,9 +1,9 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock(import("@/lib/data/talents"), () => ({}));
-
 import { StreamTendency } from "./talent-stream-tendency";
+
+vi.mock(import("@/lib/data/talents"), () => ({}));
 
 const createCounts = (
   cells: [weekday: number, hour: number, count: number][] = []
@@ -128,7 +128,7 @@ describe(StreamTendency, () => {
 
     for (const className of classNames) {
       expect(className).toMatch(
-        /\bbg-(muted|accent|accent\/25|accent\/50|accent\/75)$/
+        /\bbg-(?:muted|accent|accent\/25|accent\/50|accent\/75)$/u
       );
     }
   });

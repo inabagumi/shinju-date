@@ -9,7 +9,7 @@ export const SCHEDULE_PATH = "/schedule";
 export const SCHEDULE_WEEKS_AHEAD = 4;
 
 /** `YYYY-MM-DD`, the only form `/schedule/[date]` accepts */
-const SCHEDULE_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const SCHEDULE_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/u;
 
 /**
  * Parse the date of `/schedule/[date]`. Returns `null` for values that are not
@@ -194,7 +194,7 @@ export const layoutDay = <T extends PlacedVideo>(
 
       return { column: 0, columns: 1, item, length, start };
     })
-    .sort((a, b) => a.start - b.start || b.length - a.length);
+    .toSorted((a, b) => a.start - b.start || b.length - a.length);
 
   // Split the videos into clusters of the ones that overlap each other, and
   // give each video the first column that is free at its start

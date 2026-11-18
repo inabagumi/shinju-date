@@ -104,7 +104,7 @@ describe("DashboardPopularVideos", () => {
       "/videos/no-id"
     );
     expect(
-      screen.queryByRole("link", { name: /で視聴$/ })
+      screen.queryByRole("link", { name: /で視聴$/u })
     ).not.toBeInTheDocument();
   });
 });

@@ -14,11 +14,13 @@ const always = () => true;
 /**
  * Build an `exports` entry whose conditions keep the given order, which is
  * what the check looks at.
- * @param {[string, string][]} conditions
+ * @param {[string, string][]} conditions - Pairs of a condition and its path
  */
 const entry = (...conditions) => Object.fromEntries(conditions);
 
-/** @param {string} name */
+/**
+ * @param {string} name - Base name of the files in `dist`
+ */
 const typesAndDefault = (name) =>
   entry(["types", `./dist/${name}.d.ts`], ["default", `./dist/${name}.js`]);
 

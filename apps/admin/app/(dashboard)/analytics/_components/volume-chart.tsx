@@ -60,11 +60,16 @@ interface VolumeChartProps {
   searchParams: Promise<AnalyticsSearchParams>;
 }
 
-const sumBy = (data: VolumeChartDatum[], key: string): number =>
-  data.reduce((sum, day) => {
+const sumBy = (data: VolumeChartDatum[], key: string): number => {
+  let sum = 0;
+
+  for (const day of data) {
     const value = day[key];
-    return sum + (typeof value === "number" ? value : 0);
-  }, 0);
+    sum += typeof value === "number" ? value : 0;
+  }
+
+  return sum;
+};
 
 /**
  * 日ごとの件数（クリック数・検索数）の合計とグラフを表示する

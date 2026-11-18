@@ -19,9 +19,10 @@ test.describe("Feedback", () => {
     ).toBeVisible();
 
     for (const message of MESSAGES) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- e2e checks run one at a time, so a failure names the first missing message
       await expect(
         page.getByRole("link", { name: message }).first()
-      ).toHaveAttribute("href", /^\/feedback\/[0-9a-f-]{36}$/);
+      ).toHaveAttribute("href", /^\/feedback\/[0-9a-f-]{36}$/u);
     }
   });
 
@@ -33,7 +34,7 @@ test.describe("Feedback", () => {
     await page.goto("/feedback");
     await page.getByRole("link", { name: message }).click();
 
-    await expect(page).toHaveURL(/\/feedback\/[0-9a-f-]{36}$/);
+    await expect(page).toHaveURL(/\/feedback\/[0-9a-f-]{36}$/u);
     await expect(
       page.getByRole("heading", { level: 1, name: "機能要望詳細" })
     ).toBeVisible();
@@ -63,7 +64,7 @@ test.describe("Feedback", () => {
         .filter({ hasText: message })
         .getByRole("cell")
         .first()
-    ).toHaveText(new RegExp(`^${nextLabel}`));
+    ).toHaveText(new RegExp(`^${nextLabel}`, "u"));
   });
 
   test("should filter the feature requests on the server through the URL", async ({
@@ -72,7 +73,7 @@ test.describe("Feedback", () => {
     await page.goto("/feedback");
 
     await page.getByLabel("既読状態").selectOption("read");
-    await expect(page).toHaveURL(/\/feedback\?read=read$/);
+    await expect(page).toHaveURL(/\/feedback\?read=read$/u);
 
     // Every remaining row is read
     await expect(page.getByRole("row").filter({ hasText: "未読" })).toHaveCount(
@@ -80,6 +81,6 @@ test.describe("Feedback", () => {
     );
 
     await page.getByLabel("既読状態").selectOption("all");
-    await expect(page).toHaveURL(/\/feedback$/);
+    await expect(page).toHaveURL(/\/feedback$/u);
   });
 });

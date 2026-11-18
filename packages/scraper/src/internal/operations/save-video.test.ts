@@ -2,7 +2,7 @@ import { HttpResponse } from "msw";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ErrorReporter } from "../../types.js";
-import type { TalentAccount } from "../database/index.js";
+import type { TalentAccount } from "../database/talents.js";
 import { createTestContext } from "../testing/context.js";
 import { createImage, mockStorage, serveImage } from "../testing/images.js";
 import {
@@ -87,7 +87,7 @@ const mockDatabase = () => {
   };
 
   supabase.respond(({ body, method, query, table }) => {
-    const id = query["id"]?.replace(/^eq\./, "");
+    const id = query["id"]?.replace(/^eq\./u, "");
 
     switch (`${method} ${table}`) {
       case "POST thumbnails": {
@@ -95,7 +95,9 @@ const mockDatabase = () => {
         return [];
       }
       case "DELETE thumbnails": {
-        if (id) rows.thumbnails.delete(id);
+        if (id) {
+          rows.thumbnails.delete(id);
+        }
         return [];
       }
       case "POST rpc/insert_video": {
@@ -147,7 +149,7 @@ describe(saveVideoWithThumbnail, () => {
     const [inserted] = supabase.insertedVideos();
 
     expect(storage.uploads).toStrictEqual([
-      expect.objectContaining({ path: expect.stringMatching(/^video-1\//) }),
+      expect.objectContaining({ path: expect.stringMatching(/^video-1\//u) }),
     ]);
     expect(inserted).toStrictEqual({
       platform: "youtube",
@@ -209,7 +211,7 @@ describe(saveVideoWithThumbnail, () => {
     const lostPaths = uploadedPaths.filter((path) => path !== kept?.path);
 
     expect({
-      saved: results.sort(),
+      saved: results.toSorted(),
       thumbnails: rows.thumbnails.size,
       videos: rows.videos.size,
     }).toStrictEqual({ saved: [false, true], thumbnails: 1, videos: 1 });

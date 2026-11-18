@@ -19,7 +19,7 @@ export const POST = async (request: NextRequest): Promise<Response> => {
 
   const { provider } = query;
 
-  return runCronJob(request, getTalentsUpdateJob(provider), async () => {
+  return await runCronJob(request, getTalentsUpdateJob(provider), async () => {
     const changed = await createScraper(provider).syncAccounts();
 
     if (changed) {

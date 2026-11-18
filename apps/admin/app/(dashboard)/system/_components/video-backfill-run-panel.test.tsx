@@ -65,6 +65,42 @@ const renderPanel = (run: VideoBackfillRun | null) => {
   });
 };
 
+/** Renders the panel without a check, with the actions to request one. */
+const renderWithoutRun = () => {
+  mocks.requestVideoBackfillRunAction.mockResolvedValue({
+    data: {
+      message: "全タレントの取得漏れチェックを3件キューに追加しました。",
+    },
+    success: true,
+  });
+  mocks.getVideoBackfillRunAction.mockResolvedValue({
+    data: {
+      run: createRun({
+        accounts: [createAccount({ active: true, status: "pending" })],
+        active: true,
+        counts: {
+          done: 0,
+          failed: 0,
+          interrupted: 0,
+          pending: 1,
+          running: 0,
+        },
+      }),
+      success: true,
+      targets,
+    },
+    success: true,
+  });
+
+  renderPanel(null);
+};
+
+const clickRequestButton = () => {
+  fireEvent.click(
+    screen.getByRole("button", { name: "取得漏れをチェックする" })
+  );
+};
+
 describe("VideoBackfillRunPanel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -77,42 +113,6 @@ describe("VideoBackfillRunPanel", () => {
     expect(screen.getByText("終了")).toBeTruthy();
     expect(mocks.getVideoBackfillRunAction).not.toHaveBeenCalled();
   });
-
-  /** Renders the panel without a check, with the actions to request one. */
-  const renderWithoutRun = () => {
-    mocks.requestVideoBackfillRunAction.mockResolvedValue({
-      data: {
-        message: "全タレントの取得漏れチェックを3件キューに追加しました。",
-      },
-      success: true,
-    });
-    mocks.getVideoBackfillRunAction.mockResolvedValue({
-      data: {
-        run: createRun({
-          accounts: [createAccount({ active: true, status: "pending" })],
-          active: true,
-          counts: {
-            done: 0,
-            failed: 0,
-            interrupted: 0,
-            pending: 1,
-            running: 0,
-          },
-        }),
-        success: true,
-        targets,
-      },
-      success: true,
-    });
-
-    renderPanel(null);
-  };
-
-  const clickRequestButton = () => {
-    fireEvent.click(
-      screen.getByRole("button", { name: "取得漏れをチェックする" })
-    );
-  };
 
   it("confirms the number of accounts before requesting a check", () => {
     renderWithoutRun();
@@ -176,7 +176,7 @@ describe("VideoBackfillRunPanel", () => {
       true
     );
     expect(screen.getByText("quota exceeded")).toBeTruthy();
-    expect(screen.getByText(/実行中のため除外: 1件/)).toBeTruthy();
+    expect(screen.getByText(/実行中のため除外: 1件/u)).toBeTruthy();
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe(
       "1"
     );

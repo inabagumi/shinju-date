@@ -20,6 +20,12 @@ const runNow: RequestScheduler = (request) => request();
  * Requests `ids` in batches of {@link TWITCH_API_MAX_RESULTS}, the most one
  * request accepts, and yields what each batch returned in the order of the
  * batches. `request` makes its Helix requests through `run`.
+ *
+ * @param ids - The IDs to request
+ * @param schedule - Runs each Helix request, or `undefined` to request the
+ *   batches one after another
+ * @param request - Requests one batch of IDs through `run`
+ * @yields {T} What each batch returned, in the order of the batches
  */
 export const requestInBatches = async function* requestInBatches<T>(
   ids: readonly string[],
@@ -30,6 +36,7 @@ export const requestInBatches = async function* requestInBatches<T>(
 
   if (!schedule) {
     for (const batch of batches) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- without a scheduler, the batches are requested one after another to stay within the rate limits
       yield* await request(batch, runNow);
     }
 

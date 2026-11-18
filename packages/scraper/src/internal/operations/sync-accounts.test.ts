@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ErrorReporter } from "../../types.js";
-import { YOUTUBE_CHANNELS } from "../database/index.js";
+import { YOUTUBE_CHANNELS } from "../database/talents.js";
 import type { ProfileImageSyncResult } from "../profile-images/index.js";
 import { createTestContext } from "../testing/context.js";
 import { postgresError, setupSupabase } from "../testing/supabase.js";
@@ -55,21 +55,23 @@ type FakeAdapter = AccountAdapter<FakeAccount, FakeSaved, FakeFields>;
 const createAdapter = (accounts: FakeAccount[]) => {
   const adapter = {
     accountTable: YOUTUBE_CHANNELS,
-    getAccounts: vi.fn<FakeAdapter["getAccounts"]>(async (ids) =>
-      accounts.filter((account) => ids.includes(account.id))
+    getAccounts: vi.fn<FakeAdapter["getAccounts"]>((ids) =>
+      Promise.resolve(accounts.filter((account) => ids.includes(account.id)))
     ),
     getPlatformId: (saved: FakeSaved) => saved.youtube_channel_id,
     label: "テストのアカウント",
     platformIdKey: "testAccountId",
     savedAccountColumns: "id, name, youtube_channel_id, youtube_handle",
-    syncIcon: vi.fn<FakeAdapter["syncIcon"]>(
-      async (): Promise<ProfileImageSyncResult> => "unchanged"
-    ),
+    syncIcon: vi
+      .fn<FakeAdapter["syncIcon"]>()
+      .mockResolvedValue("unchanged" satisfies ProfileImageSyncResult),
     toDetails: vi.fn<FakeAdapter["toDetails"]>((account) => ({
       name: account.title,
       youtube_handle: account.handle,
     })),
-    updateDetails: vi.fn<FakeAdapter["updateDetails"]>(async () => {}),
+    updateDetails: vi
+      .fn<FakeAdapter["updateDetails"]>()
+      .mockResolvedValue(undefined),
   } satisfies FakeAdapter;
 
   return adapter;

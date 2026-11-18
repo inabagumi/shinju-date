@@ -16,6 +16,8 @@ import {
   videoSeed,
 } from "@/test/supabase";
 
+import { GET } from "./route";
+
 const mocks = vi.hoisted(() => {
   // Entries of the `'use cache'` functions, keyed by their arguments
   const cacheEntries = new Map<string, unknown>();
@@ -80,8 +82,6 @@ vi.mock(import("@/lib/data/talents"), async (importOriginal) => {
   };
 });
 
-import { GET } from "./route";
-
 setupSupabase();
 
 const talent = createTalent({ name: "朝霧ミオ" });
@@ -102,10 +102,13 @@ const get = (id: string): Promise<Response> =>
   });
 
 /** The IDs of the videos of the events of a calendar, sorted */
-const eventIds = async (response: Response): Promise<string[]> =>
-  [...(await response.text()).matchAll(/^UID:(.+)@shinju\.date/gm)]
-    .map(([, id]) => id ?? "")
+const eventIds = async (response: Response): Promise<string[]> => {
+  const text = await response.text();
+
+  return [...text.matchAll(/^UID:(?<id>.+)@shinju\.date/gmu)]
+    .map(({ groups: { id = "" } = {} }) => id)
     .toSorted();
+};
 
 describe("GET /talents/[id].ics", () => {
   beforeEach(async () => {

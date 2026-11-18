@@ -17,21 +17,21 @@ const videoSyncLog = (details: Log["details"]): Log => ({
   user_id: "60000000-0000-0000-0000-000000000001",
 });
 
-describe(LogItem, () => {
-  const renderSyncWithChanges = () => {
-    render(
-      <LogItem
-        log={videoSyncLog({
-          changes: {
-            after: { duration: "PT1H", title: "New Title" },
-            before: { duration: "PT3H", title: "Old Title" },
-          },
-          entityName: "New Title",
-        })}
-      />
-    );
-  };
+const renderSyncWithChanges = () => {
+  render(
+    <LogItem
+      log={videoSyncLog({
+        changes: {
+          after: { duration: "PT1H", title: "New Title" },
+          before: { duration: "PT3H", title: "Old Title" },
+        },
+        entityName: "New Title",
+      })}
+    />
+  );
+};
 
+describe(LogItem, () => {
   it("shows the video title and the synced title change", () => {
     renderSyncWithChanges();
 

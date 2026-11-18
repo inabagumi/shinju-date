@@ -14,7 +14,7 @@
 
 import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import path from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -24,8 +24,8 @@ import {
   TIME_ZONE_FIXTURE,
 } from "./fixtures.ts";
 
-const root = resolve(import.meta.dirname, "../../..");
-const oxlint = join(root, "node_modules", ".bin", "oxlint");
+const root = path.resolve(import.meta.dirname, "../../..");
+const oxlint = path.join(root, "node_modules", ".bin", "oxlint");
 
 const TEMP_DIR_NAME = `__oxlint-config-test-${process.pid}__`;
 const TEMP_PARENTS = ["apps/admin", "apps/batch", "apps/web", "packages/ui"];
@@ -59,7 +59,7 @@ const getExpectedRules = (source: string): Map<string, number[]> => {
   const rules = new Map<string, number[]>();
 
   for (const [index, line] of source.split("\n").entries()) {
-    const rule = /\/\/ report: (\S+)$/u.exec(line)?.[1];
+    const rule = /\/\/ report: (?<rule>\S+)$/u.exec(line)?.groups?.["rule"];
 
     if (rule) {
       rules.set(rule, [...(rules.get(rule) ?? []), index + 1]);
@@ -71,7 +71,8 @@ const getExpectedRules = (source: string): Map<string, number[]> => {
 
 /** `eslint(no-restricted-imports)` -> `no-restricted-imports` */
 const getRuleName = (code: string): string => {
-  const [, plugin, rule] = /^([^(]+)\((.+)\)$/u.exec(code) ?? [];
+  const { plugin, rule } =
+    /^(?<plugin>[^(]+)\((?<rule>.+)\)$/u.exec(code)?.groups ?? {};
 
   if (!(plugin && rule)) {
     return code;
@@ -125,27 +126,27 @@ describe("oxlint.config.ts", () => {
 
   beforeAll(() => {
     for (const parent of TEMP_PARENTS) {
-      const dir = join(parent, TEMP_DIR_NAME);
+      const dir = path.join(parent, TEMP_DIR_NAME);
 
-      fixtures.set(join(dir, "project-rules.tsx"), PROJECT_RULES_FIXTURE);
-      fixtures.set(join(dir, "time-zone.tsx"), TIME_ZONE_FIXTURE);
-      fixtures.set(join(dir, "tailwind.tsx"), TAILWIND_FIXTURE);
+      fixtures.set(path.join(dir, "project-rules.tsx"), PROJECT_RULES_FIXTURE);
+      fixtures.set(path.join(dir, "time-zone.tsx"), TIME_ZONE_FIXTURE);
+      fixtures.set(path.join(dir, "tailwind.tsx"), TAILWIND_FIXTURE);
 
       const [projectRules, timeZone] = LEFT_OUT_FILES[parent] ?? [];
 
       if (projectRules && timeZone) {
-        fixtures.set(join(dir, projectRules), PROJECT_RULES_FIXTURE);
-        fixtures.set(join(dir, timeZone), TIME_ZONE_FIXTURE);
+        fixtures.set(path.join(dir, projectRules), PROJECT_RULES_FIXTURE);
+        fixtures.set(path.join(dir, timeZone), TIME_ZONE_FIXTURE);
       }
     }
 
-    for (const [path, source] of fixtures) {
-      mkdirSync(join(root, dirname(path)), { recursive: true });
-      writeFileSync(join(root, path), source);
+    for (const [file, source] of fixtures) {
+      mkdirSync(path.join(root, path.dirname(file)), { recursive: true });
+      writeFileSync(path.join(root, file), source);
     }
 
     reports = lint([
-      ...TEMP_PARENTS.map((parent) => join(parent, TEMP_DIR_NAME)),
+      ...TEMP_PARENTS.map((parent) => path.join(parent, TEMP_DIR_NAME)),
       "packages/constants/src/index.ts",
       "packages/ui/src/tw-merge.test.ts",
       "packages/ui/src/tw-merge.ts",
@@ -154,7 +155,7 @@ describe("oxlint.config.ts", () => {
 
   afterAll(() => {
     for (const parent of TEMP_PARENTS) {
-      rmSync(join(root, parent, TEMP_DIR_NAME), {
+      rmSync(path.join(root, parent, TEMP_DIR_NAME), {
         force: true,
         recursive: true,
       });
@@ -162,20 +163,20 @@ describe("oxlint.config.ts", () => {
   });
 
   describe.each(TEMP_PARENTS)("in %s", (parent) => {
-    const dir = join(parent, TEMP_DIR_NAME);
+    const dir = path.join(parent, TEMP_DIR_NAME);
     const [projectRules = "", timeZone = ""] = LEFT_OUT_FILES[parent] ?? [];
 
     it.each([...getExpectedRules(PROJECT_RULES_FIXTURE)])(
       "reports %s",
       (rule, lines) => {
-        expect(getLines(join(dir, "project-rules.tsx"), rule)).toStrictEqual(
-          lines
-        );
+        expect(
+          getLines(path.join(dir, "project-rules.tsx"), rule)
+        ).toStrictEqual(lines);
       }
     );
 
     it(`does not report Date in ${projectRules}`, () => {
-      const file = join(dir, projectRules);
+      const file = path.join(dir, projectRules);
 
       expect(getLines(file, "no-restricted-globals")).toStrictEqual([]);
       expect(getLines(file, "no-restricted-imports")).toHaveLength(3);
@@ -184,7 +185,7 @@ describe("oxlint.config.ts", () => {
     it("reports the time zone written directly", () => {
       expect(
         getLines(
-          join(dir, "time-zone.tsx"),
+          path.join(dir, "time-zone.tsx"),
           "shinju-date/no-hardcoded-time-zone"
         )
       ).toStrictEqual(getReportedLines(TIME_ZONE_FIXTURE));
@@ -192,14 +193,14 @@ describe("oxlint.config.ts", () => {
 
     it(`does not report the time zone in ${timeZone}`, () => {
       expect(
-        getLines(join(dir, timeZone), "shinju-date/no-hardcoded-time-zone")
+        getLines(path.join(dir, timeZone), "shinju-date/no-hardcoded-time-zone")
       ).toStrictEqual([]);
     });
 
     it("reports the default scales and dark:", () => {
       expect(
         getLines(
-          join(dir, "tailwind.tsx"),
+          path.join(dir, "tailwind.tsx"),
           "shinju-date/no-default-tailwind-scale"
         )
       ).toStrictEqual(getReportedLines(TAILWIND_FIXTURE));
@@ -209,7 +210,9 @@ describe("oxlint.config.ts", () => {
   it("does not report the definition of TIME_ZONE", () => {
     const file = "packages/constants/src/index.ts";
 
-    expect(readFileSync(join(root, file), "utf-8")).toMatch(/"Asia\/Tokyo"/u);
+    expect(readFileSync(path.join(root, file), "utf-8")).toMatch(
+      /"Asia\/Tokyo"/u
+    );
     expect(getLines(file, "shinju-date/no-hardcoded-time-zone")).toStrictEqual(
       []
     );
@@ -219,8 +222,12 @@ describe("oxlint.config.ts", () => {
     const file = "packages/ui/src/tw-merge.ts";
     const testFile = "packages/ui/src/tw-merge.test.ts";
 
-    expect(readFileSync(join(root, file), "utf-8")).toMatch(/tailwind-merge/u);
-    expect(readFileSync(join(root, testFile), "utf-8")).toMatch(/"text-sm"/u);
+    expect(readFileSync(path.join(root, file), "utf-8")).toMatch(
+      /tailwind-merge/u
+    );
+    expect(readFileSync(path.join(root, testFile), "utf-8")).toMatch(
+      /"text-sm"/u
+    );
     expect(getLines(file, "no-restricted-imports")).toStrictEqual([]);
     expect(
       getLines(testFile, "shinju-date/no-default-tailwind-scale")

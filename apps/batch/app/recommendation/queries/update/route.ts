@@ -86,7 +86,7 @@ const readWeightedQueries = async (
 export const maxDuration = 120;
 
 export const POST = async (request: NextRequest): Promise<Response> =>
-  runCronJob(request, RECOMMENDATION_QUERIES_UPDATE_JOB, async () => {
+  await runCronJob(request, RECOMMENDATION_QUERIES_UPDATE_JOB, async () => {
     const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE);
     const today = formatDateKey(now);
     const mondayOfWeek = getMondayOfWeek(now);
@@ -160,7 +160,7 @@ export const POST = async (request: NextRequest): Promise<Response> =>
     }
 
     // Convert map to array and sort by score descending
-    const matchingQueries = Array.from(matchingQueriesMap.entries()).map(
+    const matchingQueries = [...matchingQueriesMap.entries()].map(
       ([query, score]) => ({ query, score })
     );
     matchingQueries.sort((a, b) => b.score - a.score);

@@ -65,6 +65,13 @@ const seedVideos = (
     ...videoSeed(rows),
   });
 
+const ended = (publishedAt: string, overrides = {}) =>
+  createVideoOnYouTube(channel, {
+    published_at: publishedAt,
+    status: "ENDED",
+    ...overrides,
+  });
+
 describe("lib/data/talent-streams", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -235,13 +242,6 @@ describe("lib/data/talent-streams", () => {
     });
 
     it("returns the starts of the finished streams of the talent for 90 days before today", async () => {
-      const ended = (publishedAt: string, overrides = {}) =>
-        createVideoOnYouTube(channel, {
-          published_at: publishedAt,
-          status: "ENDED",
-          ...overrides,
-        });
-
       await seedVideos([
         ended("2026-11-13T13:00:00Z"),
         // From 0:00 in Japan 90 days before today

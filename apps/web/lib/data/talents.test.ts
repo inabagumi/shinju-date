@@ -34,6 +34,14 @@ const twitchUser = createTwitchUser({
   twitch_login_name: "ritsu",
 });
 
+const withProfileImage = ({
+  blur_data_url,
+  id,
+}: {
+  blur_data_url: string;
+  id: string;
+}) => ({ profile_image: { blur_data_url, id } });
+
 describe("lib/data/talents", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -247,20 +255,18 @@ describe("lib/data/talents", () => {
         ],
       });
 
-      const icon = ({
-        blur_data_url,
-        id,
-      }: {
-        blur_data_url: string;
-        id: string;
-      }) => ({ profile_image: { blur_data_url, id } });
-
       await expect(fetchTalentList()).resolves.toStrictEqual([
         {
           id: talent.id,
           name: "朝霧ミオ",
-          twitch_users: [icon(twitchIconA), icon(twitchIconB)],
-          youtube_channels: [{ profile_image: null }, icon(youtubeIcon)],
+          twitch_users: [
+            withProfileImage(twitchIconA),
+            withProfileImage(twitchIconB),
+          ],
+          youtube_channels: [
+            { profile_image: null },
+            withProfileImage(youtubeIcon),
+          ],
         },
       ]);
     });

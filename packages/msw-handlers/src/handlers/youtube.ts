@@ -70,7 +70,7 @@ const toYouTubeChannel = ({
 });
 
 /** The format of the ID of a channel: `UC` and 22 characters. */
-const CHANNEL_ID_PATTERN = /^UC[\w-]{22}$/;
+const CHANNEL_ID_PATTERN = /^UC[\w-]{22}$/u;
 
 /**
  * The channels of the Supabase mock (`youtube_channels`), so that the apps
@@ -89,7 +89,8 @@ const getSavedChannels = async (): Promise<Tables<"youtube_channels">[]> => {
  * the admin app.
  */
 const findChannelById = async (id: string): Promise<YouTubeChannel | null> => {
-  const channel = (await getSavedChannels()).find(
+  const savedChannels = await getSavedChannels();
+  const channel = savedChannels.find(
     (candidate) => candidate.youtube_channel_id === id
   );
 
@@ -119,8 +120,9 @@ interface MockYouTubeVideo {
  * channel. Deleted videos are left out, as they are no longer on YouTube.
  */
 const getMockYouTubeVideos = async (): Promise<MockYouTubeVideo[]> => {
+  const savedChannels = await getSavedChannels();
   const channelsById = new Map(
-    (await getSavedChannels()).map((channel) => [channel.id, channel])
+    savedChannels.map((channel) => [channel.id, channel])
   );
   const videosById = new Map(
     videos.findMany().map((video) => [video.id, video])
@@ -136,7 +138,7 @@ const getMockYouTubeVideos = async (): Promise<MockYouTubeVideo[]> => {
         ? [{ channel, video, youtubeVideo }]
         : [];
     })
-    .sort((a, b) =>
+    .toSorted((a, b) =>
       Temporal.Instant.compare(b.video.published_at, a.video.published_at)
     );
 };
@@ -177,7 +179,8 @@ const toLiveStreamingDetails = ({
       };
     }
     default: {
-      return undefined;
+      // Videos that are not streams have no details
+      return null;
     }
   }
 };
@@ -251,13 +254,15 @@ export const youtubeHandlers = [
     let items: YouTubeChannel[];
 
     if (ids.length > 0) {
-      items = (await Promise.all(ids.map(findChannelById))).filter(
-        (channel) => channel !== null
-      );
+      const channels = await Promise.all(ids.map(findChannelById));
+
+      items = channels.filter((channel) => channel !== null);
     } else if (handle) {
       const handleKey = normalizeHandle(handle);
 
-      items = (await getSavedChannels())
+      const savedChannels = await getSavedChannels();
+
+      items = savedChannels
         .filter(
           (channel) =>
             channel.youtube_handle !== null &&
@@ -294,17 +299,20 @@ export const youtubeHandlers = [
       return badRequest("Required parameter: playlistId");
     }
 
+    // oxlint-disable-next-line unicorn/prefer-number-coercion -- keeps the lenient parsing of the parameter (Number() would read "" as 0 and "10abc" as NaN)
     const maxResults = Number.parseInt(
       url.searchParams.get("maxResults") ?? "50",
       10
     );
     const pageToken = url.searchParams.get("pageToken");
-    const items = (await getMockYouTubeVideos())
+    const mockVideos = await getMockYouTubeVideos();
+    const items = mockVideos
       .filter(
         ({ channel }) =>
           getYouTubeUploadsPlaylistId(channel.youtube_channel_id) === playlistId
       )
       .map(toPlaylistItem);
+    // oxlint-disable-next-line unicorn/prefer-number-coercion -- keeps the lenient parsing of the token (Number() would read "10abc" as NaN)
     const startIndex = pageToken ? Number.parseInt(pageToken, 10) : 0;
     const paginatedItems = items.slice(startIndex, startIndex + maxResults);
     const nextPageToken =

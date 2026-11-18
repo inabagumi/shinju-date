@@ -1,8 +1,8 @@
 import type { TablesUpdate } from "@shinju-date/database";
 
 import type { TypedSupabaseClient, WriteContext } from "../../types.js";
+import { DatabaseError } from "../database-error.js";
 import { updateVideo } from "../database/videos.js";
-import { DatabaseError } from "../errors.js";
 import { removeThumbnail } from "./thumbnail.js";
 import type { Thumbnail } from "./thumbnail.js";
 
@@ -52,7 +52,7 @@ const touchThumbnail = async (
  * database.
  *
  * @returns The new thumbnail, or `null` when none was stored.
- * @throws When the video (or the previous thumbnail) cannot be updated. The
+ * @throws {Error} When the video (or the previous thumbnail) cannot be updated. The
  *   new thumbnail is removed then, and the video keeps its current one.
  */
 export const replaceThumbnail = async (

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { DatabaseError, StorageError, throwIfError } from "./errors.js";
+import { DatabaseError } from "./database-error.js";
+import { throwIfError } from "./errors.js";
+import { StorageError } from "./storage-error.js";
 
 describe(throwIfError, () => {
   it("returns data when the query succeeded", () => {

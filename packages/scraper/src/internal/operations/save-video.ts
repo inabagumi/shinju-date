@@ -1,8 +1,9 @@
 import { toDBString } from "@shinju-date/temporal-fns";
 
 import type { VideoFields, WriteContext } from "../../types.js";
-import { insertVideo } from "../database/index.js";
-import type { NewPlatformVideo, TalentAccount } from "../database/index.js";
+import type { TalentAccount } from "../database/talents.js";
+import { insertVideo } from "../database/videos.js";
+import type { NewPlatformVideo } from "../database/videos.js";
 import { removeThumbnail } from "../thumbnails/index.js";
 import type { Thumbnail } from "../thumbnails/index.js";
 
@@ -10,7 +11,7 @@ import type { Thumbnail } from "../thumbnails/index.js";
  * What differs between the platforms when a new video is saved: how it maps
  * to its `videos` row and its platform row, and how its thumbnail is stored.
  *
- * @typeParam TNew - A video to save, as the platform describes it.
+ * @template TNew - A video to save, as the platform describes it.
  */
 export interface NewVideoAdapter<TNew> {
   /**
@@ -23,14 +24,14 @@ export interface NewVideoAdapter<TNew> {
    * @returns The stored thumbnail, or `null` when the platform has none yet
    *   or it cannot be stored.
    */
-  createThumbnail(
+  createThumbnail: (
     context: WriteContext,
     video: TNew
-  ): Promise<Thumbnail | null>;
+  ) => Promise<Thumbnail | null>;
   /** The columns of the `videos` row kept in line with the platform. */
-  toFields(video: TNew, now: Temporal.Instant): VideoFields;
+  toFields: (video: TNew, now: Temporal.Instant) => VideoFields;
   /** The platform row that identifies the video on its platform. */
-  toPlatformVideo(video: TNew, account: TalentAccount): NewPlatformVideo;
+  toPlatformVideo: (video: TNew, account: TalentAccount) => NewPlatformVideo;
 }
 
 /**
@@ -42,7 +43,7 @@ export interface NewVideoAdapter<TNew> {
  *
  * @returns Whether the video was saved (`false` when another run saved it
  *   first).
- * @throws When the video cannot be inserted.
+ * @throws {Error} When the video cannot be inserted.
  */
 export const saveVideoWithThumbnail = async <TNew>(
   context: WriteContext,

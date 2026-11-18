@@ -2,7 +2,7 @@ import { HttpResponse, http } from "msw";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import type { ErrorReporter } from "../../types.js";
-import { StorageError } from "../errors.js";
+import { StorageError } from "../storage-error.js";
 import { createImage, mockStorage, serveImage } from "../testing/images.js";
 import { postgresError, setupSupabase } from "../testing/supabase.js";
 import { createThumbnail, removeThumbnail } from "./thumbnail.js";
@@ -34,12 +34,12 @@ describe("thumbnails", () => {
         supabaseClient: supabase.supabaseClient,
       });
 
-      expect(thumbnail?.path).toMatch(/^yt-1\/[\w-]+\.jpe?g$/);
+      expect(thumbnail?.path).toMatch(/^yt-1\/[\w-]+\.jpe?g$/u);
       expect(storage.uploads).toStrictEqual([
         { body: image, contentType: "image/jpeg", path: thumbnail?.path },
       ]);
       expect(supabase.written("POST", "thumbnails")[0]?.body).toStrictEqual({
-        blur_data_url: expect.stringMatching(/^data:image\/jpeg;base64,/),
+        blur_data_url: expect.stringMatching(/^data:image\/jpeg;base64,/u),
         created_at: "2024-05-01T12:34:56Z",
         etag: '"etag-1"',
         height: 720,
@@ -105,7 +105,7 @@ describe("thumbnails", () => {
         supabaseClient: supabase.supabaseClient,
       });
 
-      expect(thumbnail?.path).toMatch(/^yt-1\//);
+      expect(thumbnail?.path).toMatch(/^yt-1\//u);
       expect(requests).toStrictEqual([
         { ifNoneMatch: '"etag-1"', url: IMAGE_URL },
       ]);
@@ -202,7 +202,7 @@ describe("thumbnails", () => {
         })
       ).rejects.toThrow("null value in column");
       expect(storage.removed).toStrictEqual([[storage.uploads[0]?.path]]);
-      expect(storage.uploads[0]?.path).toMatch(/^yt-1\//);
+      expect(storage.uploads[0]?.path).toMatch(/^yt-1\//u);
     });
   });
 

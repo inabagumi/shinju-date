@@ -1,4 +1,9 @@
+import { notFound } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { fetchOldestVideoDate, fetchScheduleToday } from "@/lib/data/schedule";
+
+import { resolveScheduleWeek } from "./resolve-schedule-week";
 
 vi.mock(import("next/navigation"), () => ({
   notFound: vi.fn<typeof notFound>(() => {
@@ -10,12 +15,6 @@ vi.mock(import("@/lib/data/schedule"), () => ({
   fetchOldestVideoDate: vi.fn<typeof fetchOldestVideoDate>(),
   fetchScheduleToday: vi.fn<typeof fetchScheduleToday>(),
 }));
-
-import { notFound } from "next/navigation";
-
-import { fetchOldestVideoDate, fetchScheduleToday } from "@/lib/data/schedule";
-
-import { resolveScheduleWeek } from "./resolve-schedule-week";
 
 const params = (date: string) => Promise.resolve({ date });
 
@@ -38,20 +37,23 @@ describe(resolveScheduleWeek, () => {
   });
 
   it("should return the Sunday of the week of the date", async () => {
-    expect(
-      (await resolveScheduleWeek(params("2026-11-12"))).weekStart.toString()
-    ).toBe("2026-11-08");
-    expect(
-      (await resolveScheduleWeek(params("2026-11-01"))).weekStart.toString()
-    ).toBe("2026-11-01");
+    const { weekStart: thursdayWeekStart } = await resolveScheduleWeek(
+      params("2026-11-12")
+    );
+    const { weekStart: sundayWeekStart } = await resolveScheduleWeek(
+      params("2026-11-01")
+    );
+
+    expect(thursdayWeekStart.toString()).toBe("2026-11-08");
+    expect(sundayWeekStart.toString()).toBe("2026-11-01");
   });
 
   it("should go across the years", async () => {
     vi.mocked(fetchScheduleToday).mockResolvedValue("2026-12-30");
 
-    expect(
-      (await resolveScheduleWeek(params("2027-01-01"))).weekStart.toString()
-    ).toBe("2026-12-27");
+    const { weekStart } = await resolveScheduleWeek(params("2027-01-01"));
+
+    expect(weekStart.toString()).toBe("2026-12-27");
   });
 
   it.each(["2026-W46", "2026-02-30", "today"])(

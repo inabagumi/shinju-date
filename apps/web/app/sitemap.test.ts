@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock(import("@/lib/data/talents"), () => ({
-  fetchActiveTalents: vi.fn<typeof fetchActiveTalents>(),
-}));
-
 import { fetchActiveTalents } from "@/lib/data/talents";
 
 import sitemap from "./sitemap";
+
+vi.mock(import("@/lib/data/talents"), () => ({
+  fetchActiveTalents: vi.fn<typeof fetchActiveTalents>(),
+}));
 
 const TALENT_IDS = [
   "00000000-0000-4000-8000-000000000001",
@@ -22,7 +22,8 @@ describe(sitemap, () => {
   });
 
   it("should include the list of talents and the active talents", async () => {
-    const urls = (await sitemap()).map((item) => new URL(item.url).pathname);
+    const entries = await sitemap();
+    const urls = entries.map((item) => new URL(item.url).pathname);
 
     expect(urls).toContain("/talents");
     expect(urls).toContain(`/talents/${TALENT_IDS[0]}`);
@@ -30,7 +31,8 @@ describe(sitemap, () => {
   });
 
   it("should include only the schedule of the current week", async () => {
-    const urls = (await sitemap()).map((item) => new URL(item.url).pathname);
+    const entries = await sitemap();
+    const urls = entries.map((item) => new URL(item.url).pathname);
 
     expect(urls).toContain("/schedule");
     expect(urls.filter((url) => url.startsWith("/schedule/"))).toStrictEqual(
@@ -41,7 +43,8 @@ describe(sitemap, () => {
   it("should list only the talents fetchActiveTalents returns", async () => {
     vi.mocked(fetchActiveTalents).mockResolvedValue([]);
 
-    const urls = (await sitemap()).map((item) => new URL(item.url).pathname);
+    const entries = await sitemap();
+    const urls = entries.map((item) => new URL(item.url).pathname);
 
     expect(urls.filter((url) => url.startsWith("/talents/"))).toStrictEqual([]);
   });

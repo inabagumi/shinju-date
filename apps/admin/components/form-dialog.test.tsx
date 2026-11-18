@@ -22,17 +22,6 @@ import type { FormDialogProps } from "./form-dialog";
 type Action = FormDialogProps["action"];
 type OnSuccess = NonNullable<FormDialogProps["onSuccess"]>;
 
-const createDeferred = <T,>() => {
-  let resolve!: (value: T) => void;
-  let reject!: (reason?: unknown) => void;
-  const promise = new Promise<T>((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-
-  return { promise, reject, resolve };
-};
-
 interface ErrorCatcherProps {
   children: ReactNode;
 }
@@ -47,7 +36,10 @@ class ErrorCatcher extends Component<ErrorCatcherProps, ErrorCatcherState> {
     return { error };
   }
 
-  override state: ErrorCatcherState = { error: null };
+  constructor(props: ErrorCatcherProps) {
+    super(props);
+    this.state = { error: null };
+  }
 
   override render() {
     const { error } = this.state;
@@ -102,6 +94,50 @@ const getTermInput = (dialog: HTMLElement) =>
 
 const submit = (dialog: HTMLElement) => {
   fireEvent.click(within(dialog).getByRole("button", { name: "追加" }));
+};
+
+/** Submits a dialog whose action returns `state`. */
+const submitReturning = (state: FormState) => {
+  const onSuccess = vi.fn<OnSuccess>();
+  const { action } = renderDialog(() => state, { onSuccess });
+
+  const dialog = openDialog();
+
+  submit(dialog);
+
+  return { action, dialog, onSuccess };
+};
+
+const renderFailingDialog = () => {
+  renderDialog(() => ({
+    error: "用語の追加に失敗しました。",
+    errors: { term: ["用語が長すぎます。"] },
+  }));
+
+  const dialog = openDialog();
+
+  fireEvent.change(getTermInput(dialog), { target: { value: "長い用語" } });
+  submit(dialog);
+
+  return dialog;
+};
+
+const renderThrowingOnce = () => {
+  const onSuccess = vi.fn<OnSuccess>();
+  const { action } = renderDialog(
+    vi
+      .fn<Action>()
+      .mockRejectedValueOnce(new Error("network"))
+      .mockResolvedValueOnce({ success: true }),
+    { onSuccess }
+  );
+
+  const dialog = openDialog();
+
+  fireEvent.change(getTermInput(dialog), { target: { value: "歌枠" } });
+  submit(dialog);
+
+  return { action, dialog, onSuccess };
 };
 
 describe(FormDialog, () => {
@@ -196,18 +232,6 @@ describe(FormDialog, () => {
     expect(onSuccess).not.toHaveBeenCalled();
   });
 
-  /** Submits a dialog whose action returns `state`. */
-  const submitReturning = (state: FormState) => {
-    const onSuccess = vi.fn<OnSuccess>();
-    const { action } = renderDialog(() => state, { onSuccess });
-
-    const dialog = openDialog();
-
-    submit(dialog);
-
-    return { action, dialog, onSuccess };
-  };
-
   it.each<[string, FormState, string]>([
     [
       "`error`",
@@ -249,20 +273,6 @@ describe(FormDialog, () => {
     expect(screen.getByRole("dialog")).toBe(dialog);
     expect(onSuccess).not.toHaveBeenCalled();
   });
-
-  const renderFailingDialog = () => {
-    renderDialog(() => ({
-      error: "用語の追加に失敗しました。",
-      errors: { term: ["用語が長すぎます。"] },
-    }));
-
-    const dialog = openDialog();
-
-    fireEvent.change(getTermInput(dialog), { target: { value: "長い用語" } });
-    submit(dialog);
-
-    return dialog;
-  };
 
   it("shows the errors and keeps the typed value after a failure", async () => {
     const dialog = renderFailingDialog();
@@ -311,24 +321,6 @@ describe(FormDialog, () => {
     expect(getTermInput(reopened)).toHaveValue("初期値");
     expect(within(reopened).queryByRole("alert")).not.toBeInTheDocument();
   });
-
-  const renderThrowingOnce = () => {
-    const onSuccess = vi.fn<OnSuccess>();
-    const { action } = renderDialog(
-      vi
-        .fn<Action>()
-        .mockRejectedValueOnce(new Error("network"))
-        .mockResolvedValueOnce({ success: true }),
-      { onSuccess }
-    );
-
-    const dialog = openDialog();
-
-    fireEvent.change(getTermInput(dialog), { target: { value: "歌枠" } });
-    submit(dialog);
-
-    return { action, dialog, onSuccess };
-  };
 
   it("shows a fallback error and keeps the fields when the action throws", async () => {
     const { dialog, onSuccess } = renderThrowingOnce();
@@ -389,7 +381,7 @@ describe(FormDialog, () => {
       render(
         <ErrorCatcher>
           <FormDialog
-            action={async () => redirect("/login")}
+            action={() => Promise.resolve().then(() => redirect("/login"))}
             submitLabel="追加"
             title="用語を追加"
             trigger={<Button>開く</Button>}
@@ -416,7 +408,7 @@ describe(FormDialog, () => {
   });
 
   it("does not close with Escape, an outside click or the cancel button while submitting", async () => {
-    const deferred = createDeferred<FormState>();
+    const deferred = Promise.withResolvers<FormState>();
 
     renderDialog(() => deferred.promise);
 
@@ -448,7 +440,7 @@ describe(FormDialog, () => {
   });
 
   it("closes with Escape or the cancel button again after a failed submission", async () => {
-    const deferred = createDeferred<FormState>();
+    const deferred = Promise.withResolvers<FormState>();
 
     renderDialog(() => deferred.promise);
 

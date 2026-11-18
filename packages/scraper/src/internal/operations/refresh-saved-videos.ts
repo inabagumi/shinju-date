@@ -1,8 +1,8 @@
 import type { VideoFields, WriteContext } from "../../types.js";
 import { countChanges } from "../concurrency.js";
 import { RECENT_VIDEO_COUNT, WRITE_CONCURRENCY } from "../constants.js";
-import { updateVideo } from "../database/index.js";
-import { DatabaseError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
+import { updateVideo } from "../database/videos.js";
 import type { PlatformAdapter, SavedVideoBase } from "../platform.js";
 import { deleteMissingVideos } from "./delete-missing-videos.js";
 import { diffVideoFields } from "./diff-video-fields.js";
@@ -129,9 +129,19 @@ export const refreshSavedVideos = async <TVideo, TSaved extends SavedVideoBase>(
     async ([id, fetched]) => {
       const saved = savedById.get(id);
 
-      return saved
-        ? (await applyRefresh(context, adapter, saved, fetched, hooks)).changed
-        : false;
+      if (!saved) {
+        return false;
+      }
+
+      const { changed } = await applyRefresh(
+        context,
+        adapter,
+        saved,
+        fetched,
+        hooks
+      );
+
+      return changed;
     },
     (error, [id]) => reportError(error, { [`${adapter.platform}VideoId`]: id })
   );

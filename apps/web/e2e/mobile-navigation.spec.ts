@@ -49,7 +49,7 @@ test.describe("Mobile Navigation", () => {
 
     await menu.getByRole("link", { name: "動画一覧" }).click();
 
-    await expect(page).toHaveURL(/\/videos$/);
+    await expect(page).toHaveURL(/\/videos$/u);
     await expect(menuButton).toHaveAttribute("aria-expanded", "false");
     await expect(menu).toBeHidden();
   });
@@ -131,7 +131,7 @@ test.describe("Desktop Navigation", () => {
 
     await videosLink.click();
 
-    await expect(page).toHaveURL(/\/videos$/);
+    await expect(page).toHaveURL(/\/videos$/u);
     await expect(videosLink).toHaveAttribute("aria-current", "page");
   });
 });

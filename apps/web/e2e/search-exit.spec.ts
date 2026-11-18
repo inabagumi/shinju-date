@@ -104,7 +104,7 @@ test.describe("Search exit", () => {
     await page.getByRole("checkbox", { name: "朝霧ミオ" }).click();
     await page.keyboard.press("Escape");
 
-    await expect(page).toHaveURL(/[?&]talent=/, {
+    await expect(page).toHaveURL(/[?&]talent=/u, {
       timeout: NAVIGATION_TIMEOUT,
     });
 
@@ -122,7 +122,7 @@ test.describe("Search exit", () => {
 
     // The video opens in a new tab
     await context.route(
-      /^https:\/\/(?:www|clips)\.(?:youtube|twitch)\./,
+      /^https:\/\/(?:www|clips)\.(?:youtube|twitch)\./u,
       (route) => route.fulfill({ body: "", contentType: "text/html" })
     );
 
@@ -130,7 +130,8 @@ test.describe("Search exit", () => {
 
     const popupPromise = page.waitForEvent("popup");
     await getVideoCards(page).first().click();
-    await (await popupPromise).close();
+    const popup = await popupPromise;
+    await popup.close();
 
     await goHome(page);
     await page.waitForLoadState("networkidle");

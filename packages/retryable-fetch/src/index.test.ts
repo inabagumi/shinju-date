@@ -12,6 +12,13 @@ const fetchMock = vi.fn<typeof fetch>();
 const respond = (status: number, body = `status ${status}`): Response =>
   new Response(status === 304 ? null : body, { status });
 
+/**
+ * A new response each time, for a mock called more than once: retryableFetch
+ * reads the body of each response it retries.
+ */
+const respondAsync = (status: number, body?: string): Promise<Response> =>
+  Promise.resolve(respond(status, body));
+
 describe(retryableFetch, () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -72,7 +79,8 @@ describe(retryableFetch, () => {
   );
 
   it("returns the last 5xx response after 5 retries", async () => {
-    fetchMock.mockImplementation(async () => respond(503, "unavailable"));
+    // oxlint-disable-next-line vitest/prefer-mock-return-shorthand -- each call needs a new response, because retryableFetch reads its body
+    fetchMock.mockImplementation(() => respondAsync(503, "unavailable"));
 
     const promise = retryableFetch(URL);
     await vi.advanceTimersByTimeAsync(TOTAL_RETRY_DELAY_MS);
@@ -110,9 +118,7 @@ describe(retryableFetch, () => {
   });
 
   it("throws the last network error after 5 retries", async () => {
-    fetchMock.mockImplementation(async () => {
-      throw new TypeError("fetch failed");
-    });
+    fetchMock.mockRejectedValue(new TypeError("fetch failed"));
 
     await Promise.all([
       expect(retryableFetch(URL)).rejects.toThrow("fetch failed"),
@@ -160,7 +166,8 @@ describe(retryableFetch, () => {
   it("stops retrying when the signal is aborted", async () => {
     const controller = new AbortController();
     const reason = new Error("aborted by the caller");
-    fetchMock.mockImplementation(async () => respond(503));
+    // oxlint-disable-next-line vitest/prefer-mock-return-shorthand -- each call needs a new response, because retryableFetch reads its body
+    fetchMock.mockImplementation(() => respondAsync(503));
 
     const abortAfterTheFirstRetry = async () => {
       await vi.advanceTimersByTimeAsync(1000);

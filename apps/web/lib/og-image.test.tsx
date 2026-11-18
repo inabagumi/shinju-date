@@ -1,17 +1,17 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from "vitest";
 
-// Vitest does not run `'use cache'`, whose settings need Next.js
-vi.mock(import("next/cache"), () => ({
-  // A name of a profile or an object, which every overload of cacheLife takes
-  cacheLife: vi.fn<(profile: string | object) => void>(),
-}));
-
 import {
   createOgImage,
   OG_IMAGE_CONTENT_TYPE,
   OG_IMAGE_SIZE,
 } from "./og-image";
+
+// Vitest does not run `'use cache'`, whose settings need Next.js
+vi.mock(import("next/cache"), () => ({
+  // A name of a profile or an object, which every overload of cacheLife takes
+  cacheLife: vi.fn<(profile: string | object) => void>(),
+}));
 
 /** The width and height in the IHDR chunk of a PNG */
 const getPNGSize = (buffer: ArrayBuffer) => {

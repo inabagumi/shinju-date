@@ -13,7 +13,11 @@ import type {
   RecentVideosResult,
   VideoLookupResult,
 } from "../internal/fetcher-types.js";
-import { DEFAULT_RECENT_VIDEOS_LIMIT, Fetcher } from "../internal/fetcher.js";
+import {
+  DEFAULT_RECENT_VIDEOS_LIMIT,
+  Fetcher,
+  fetchByIds,
+} from "../internal/fetcher.js";
 import type {
   ClipLookupResult,
   TwitchApi,
@@ -63,7 +67,7 @@ export class TwitchFetcher extends Fetcher<
    * Gets users by Helix user ID.
    */
   async getAccounts(accountIds: readonly string[]): Promise<TwitchUser[]> {
-    const { found } = await this.fetchByIds(accountIds, (ids) =>
+    const { found } = await fetchByIds(accountIds, (ids) =>
       this.#client.getUsers({ ids, schedule: this.request })
     );
 
@@ -120,7 +124,7 @@ export class TwitchFetcher extends Fetcher<
   async getVideos(
     videoIds: readonly string[]
   ): Promise<VideoLookupResult<TwitchVideo>> {
-    const { found, missingIds } = await this.fetchByIds(videoIds, (ids) =>
+    const { found, missingIds } = await fetchByIds(videoIds, (ids) =>
       this.#client.getVideos({ ids, schedule: this.request })
     );
 
@@ -144,7 +148,7 @@ export class TwitchFetcher extends Fetcher<
    * Gets clips by ID (slug) and reports the IDs Helix did not return.
    */
   async getClips(clipIds: readonly string[]): Promise<ClipLookupResult> {
-    const { found, missingIds } = await this.fetchByIds(clipIds, (ids) =>
+    const { found, missingIds } = await fetchByIds(clipIds, (ids) =>
       this.#client.getClips({ ids, schedule: this.request })
     );
 

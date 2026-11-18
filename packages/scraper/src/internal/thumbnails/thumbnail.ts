@@ -3,7 +3,7 @@ import mime from "mime";
 import { nanoid } from "nanoid";
 
 import type { TypedSupabaseClient, WriteContext } from "../../types.js";
-import { DatabaseError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
 import {
   createBlurDataURL,
   downloadImage,
@@ -58,7 +58,7 @@ export interface Thumbnail {
  * the same ETag again).
  *
  * @returns The stored thumbnail, or `null` when the image is unchanged.
- * @throws When the image cannot be downloaded, stored or registered. Nothing
+ * @throws {Error} When the image cannot be downloaded, stored or registered. Nothing
  *   is left behind in that case.
  */
 export const createThumbnail = async ({

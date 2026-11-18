@@ -14,16 +14,13 @@
  */
 export const range = (start: number, stop?: number, step = 1): number[] => {
   // Single argument case: range(stop)
-  if (stop === undefined) {
-    stop = start;
-    start = 0;
-  }
+  const [from, to] = stop === undefined ? [0, start] : [start, stop];
 
   // Validate step
   if (step === 0) {
     throw new RangeError("Range step cannot be zero");
   }
 
-  const length = Math.max(0, Math.ceil((stop - start) / step));
-  return Array.from({ length }, (_, i) => start + i * step);
+  const length = Math.max(0, Math.ceil((to - from) / step));
+  return Array.from({ length }, (_, i) => from + i * step);
 };

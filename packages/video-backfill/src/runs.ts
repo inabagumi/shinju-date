@@ -8,6 +8,7 @@ import type {
   BackfillActivityStatus,
   BackfillJob,
   BackfillJobActivity,
+  BackfillJobState,
   BackfillProvider,
   BackfillRequest,
 } from "./types.js";
@@ -156,19 +157,66 @@ const toProgress = (
   updatedAt: job.updatedAt,
 });
 
+interface GetRunJobProgressOptions {
+  now: Temporal.Instant;
+  /** What the job did for the check, saved when it finished. */
+  outcome: BackfillJob | null | undefined;
+  runId: string;
+  runJob: BackfillRunJob;
+  /** The job as it is in the queue now. */
+  state: BackfillJobState | null | undefined;
+}
+
+/**
+ * The progress of a job of a check: as it is in the queue while it still
+ * belongs to the check, and otherwise as it finished for the check.
+ */
+const getRunJobProgress = ({
+  now,
+  outcome,
+  runId,
+  runJob,
+  state,
+}: GetRunJobProgressOptions): BackfillRunJobProgress => {
+  if (state && state.job.runId === runId) {
+    return toProgress(runJob, state.job, state);
+  }
+
+  if (outcome) {
+    // Finished, so no worker holds it for the check any more.
+    return toProgress(
+      runJob,
+      outcome,
+      getJobActivity(outcome, { locked: false, now })
+    );
+  }
+
+  // Gone without an outcome, e.g. expired.
+  return {
+    ...runJob,
+    active: false,
+    added: 0,
+    error: null,
+    status: "interrupted",
+    updatedAt: null,
+  };
+};
+
 const mapWithConcurrency = async <T, R>(
   items: readonly T[],
   concurrency: number,
-  callback: (item: T) => Promise<R>
+  mapItem: (item: T) => Promise<R>
 ): Promise<R[]> => {
-  const results = new Array<R>(items.length);
+  const results: R[] = [];
   let next = 0;
 
   const work = async () => {
     while (next < items.length) {
-      const index = next++;
+      const index = next;
 
-      results[index] = await callback(items[index] as T);
+      next += 1;
+      // oxlint-disable-next-line eslint/no-await-in-loop -- each worker maps its items one at a time; `concurrency` workers run at once
+      results[index] = await mapItem(items[index] as T);
     }
   };
 
@@ -236,29 +284,15 @@ export class BackfillRuns {
     let added = 0;
 
     const jobs = run.jobs.map((runJob, index): BackfillRunJobProgress => {
-      const state = states[index];
-      const outcome = outcomes[index];
-      const progress =
-        state && state.job.runId === run.id
-          ? toProgress(runJob, state.job, state)
-          : outcome
-            ? // Finished, so no worker holds it for the check any more.
-              toProgress(
-                runJob,
-                outcome,
-                getJobActivity(outcome, { locked: false, now })
-              )
-            : // Gone without an outcome, e.g. expired.
-              {
-                ...runJob,
-                active: false,
-                added: 0,
-                error: null,
-                status: "interrupted" as const,
-                updatedAt: null,
-              };
+      const progress = getRunJobProgress({
+        now,
+        outcome: outcomes[index],
+        runId: run.id,
+        runJob,
+        state: states[index],
+      });
 
-      counts[progress.status]++;
+      counts[progress.status] += 1;
       added += progress.added;
 
       return progress;

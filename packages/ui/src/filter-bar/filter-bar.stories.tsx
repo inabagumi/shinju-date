@@ -55,7 +55,7 @@ export const Narrow = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const trigger = canvas.getByRole("button", { name: /絞り込み/ });
+    const trigger = canvas.getByRole("button", { name: /絞り込み/u });
 
     const keyword = canvas.getByRole("textbox", {
       hidden: true,

@@ -113,7 +113,7 @@ describe(addNewYouTubeVideos, () => {
       supabase
         .insertedVideos()
         .map(({ platformVideo }) => platformVideo)
-        .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))
+        .toSorted((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))
     ).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({

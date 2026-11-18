@@ -93,8 +93,8 @@ describe("SearchEngagementRateWidget", () => {
     );
 
     expect(screen.getByText("データなし")).toBeInTheDocument();
-    expect(screen.queryByText(/0\.0%/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/改善が必要\)/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/0\.0%/u)).not.toBeInTheDocument();
+    expect(screen.queryByText(/改善が必要\)/u)).not.toBeInTheDocument();
   });
 
   it("shows the rate with its rating when there is data", async () => {
@@ -156,7 +156,7 @@ describe("RepeatSearchRateWidget", () => {
 
     expect(screen.getByText("データなし")).toBeInTheDocument();
     expect(screen.queryByText("解釈:")).not.toBeInTheDocument();
-    expect(screen.queryByText(/低い活動\)/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/低い活動\)/u)).not.toBeInTheDocument();
   });
 
   it("shows the rate with its interpretation when there is data", async () => {
@@ -172,7 +172,7 @@ describe("RepeatSearchRateWidget", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("解釈:")).toBeInTheDocument();
     expect(
-      screen.getByText(/ユーザーは複数の検索を行いながら/)
+      screen.getByText(/ユーザーは複数の検索を行いながら/u)
     ).toBeInTheDocument();
   });
 

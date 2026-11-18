@@ -163,7 +163,7 @@ describe(syncTwitchUsers, () => {
       expect(changed).toBe(1);
       expect(storage.uploads).toStrictEqual([
         expect.objectContaining({
-          path: expect.stringMatching(/^twitch\/1001\//),
+          path: expect.stringMatching(/^twitch\/1001\//u),
         }),
       ]);
       expect(inserted.source_url).toBe(ICON_URL);
@@ -296,18 +296,18 @@ describe(syncTwitchUsers, () => {
   });
 });
 
+/** Fails to write the display name and login of `user-row-1`. */
+const failDetailsOfFirstUser: SupabaseResponder = ({ body, query }) =>
+  query["id"] === "eq.user-row-1" &&
+  body !== null &&
+  typeof body === "object" &&
+  "name" in body
+    ? postgresError("23505", "duplicate key value")
+    : routes["PATCH twitch_users"];
+
 describe(syncTwitchUsersOfTalent, () => {
   const ICON_URL =
     "https://static-cdn.jtvnw.net/jtv_user_pictures/alice-profile_image-300x300.png";
-
-  /** Fails to write the display name and login of `user-row-1`. */
-  const failDetailsOfFirstUser: SupabaseResponder = ({ body, query }) =>
-    query["id"] === "eq.user-row-1" &&
-    body !== null &&
-    typeof body === "object" &&
-    "name" in body
-      ? postgresError("23505", "duplicate key value")
-      : routes["PATCH twitch_users"];
 
   beforeEach(() => {
     vi.clearAllMocks();

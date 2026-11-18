@@ -1,3 +1,5 @@
+import { setTimeout as delay } from "node:timers/promises";
+
 import type { ApiClient } from "@twurple/api";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -84,12 +86,12 @@ describe("Twitch videos API", () => {
     });
 
     it("still returns existing videos when a batch answers 404", async () => {
-      getVideosByIds.mockImplementation(async (ids: string[]) => {
+      getVideosByIds.mockImplementation((ids: string[]) => {
         if (ids.includes("gone")) {
-          throw notFound();
+          return Promise.reject(notFound());
         }
 
-        return ids.map(helixVideo);
+        return Promise.resolve(ids.map(helixVideo));
       });
 
       const videos = await Array.fromAsync(
@@ -113,12 +115,12 @@ describe("Twitch videos API", () => {
 
       await expect(
         Array.fromAsync(getVideos({ client, ids: ["1"] }))
-      ).rejects.toThrow(/500/);
+      ).rejects.toThrow(/500/u);
     });
 
     it("requests the IDs in batches, one after another by default", async () => {
-      getVideosByIds.mockImplementation(async (ids: string[]) =>
-        ids.map(helixVideo)
+      getVideosByIds.mockImplementation((ids: string[]) =>
+        Promise.resolve(ids.map(helixVideo))
       );
       const ids = Array.from({ length: 250 }, (_, i) => `${i}`);
 
@@ -136,10 +138,10 @@ describe("Twitch videos API", () => {
       let running = 0;
       let peak = 0;
       getVideosByIds.mockImplementation(async (ids: string[]) => {
-        running++;
+        running += 1;
         peak = Math.max(peak, running);
-        await new Promise((resolve) => setTimeout(resolve, 5));
-        running--;
+        await delay(5);
+        running -= 1;
 
         if (ids.includes("gone")) {
           throw notFound();
@@ -154,7 +156,7 @@ describe("Twitch videos API", () => {
       ];
       let scheduled = 0;
       const schedule: RequestScheduler = (request) => {
-        scheduled++;
+        scheduled += 1;
 
         return request();
       };

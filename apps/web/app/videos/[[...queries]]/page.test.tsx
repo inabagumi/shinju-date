@@ -24,8 +24,8 @@ import { generateMetadata } from "./page";
 const fetchers = vi.hoisted(() => ({
   countVideos: vi.fn<typeof countVideos>(),
   fetchActiveTalents: vi.fn<typeof fetchActiveTalents>(),
-  fetchCurrentTime: vi.fn<typeof fetchCurrentTime>(
-    async () => "2026-11-14T12:00:00+09:00[Asia/Tokyo]"
+  fetchCurrentTime: vi.fn<typeof fetchCurrentTime>(() =>
+    Promise.resolve("2026-11-14T12:00:00+09:00[Asia/Tokyo]")
   ),
   fetchVideos: vi.fn<typeof fetchVideos>(),
 }));
@@ -57,7 +57,7 @@ interface MockVideoFiltersProps {
 vi.mock(import("@/lib/recommendations/get-display-queries"), () => ({
   getDisplayRecommendationQueries: vi.fn<
     typeof getDisplayRecommendationQueries
-  >(async () => []),
+  >(() => Promise.resolve([])),
 }));
 
 vi.mock(import("./_components/search-query-tracker"), () => ({
@@ -226,13 +226,11 @@ describe("VideosPage", () => {
   });
 });
 
-describe(generateMetadata, () => {
-  // The images of the parent segment are tested in `app/metadata.test.ts`
-  const generatePageMetadata = (
-    props: Parameters<typeof generateMetadata>[0]
-  ) =>
-    generateMetadata(props, Promise.resolve({} as Awaited<ResolvingMetadata>));
+// The images of the parent segment are tested in `app/metadata.test.ts`
+const generatePageMetadata = (props: Parameters<typeof generateMetadata>[0]) =>
+  generateMetadata(props, Promise.resolve({} as Awaited<ResolvingMetadata>));
 
+describe(generateMetadata, () => {
   beforeEach(() => {
     vi.clearAllMocks();
 

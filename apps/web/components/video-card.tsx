@@ -137,6 +137,14 @@ export const VideoCardSkeleton = ({
   </div>
 );
 
+const DEFAULT_DATE_TIME_FORMAT_OPTIONS: Pick<
+  Intl.DateTimeFormatOptions,
+  "dateStyle" | "timeStyle"
+> = {
+  dateStyle: undefined,
+  timeStyle: "short",
+};
+
 interface VideoCardProps {
   className?: string;
   dateTimeFormatOptions?: Pick<
@@ -155,10 +163,7 @@ interface VideoCardProps {
 
 export default function VideoCard({
   className,
-  dateTimeFormatOptions = {
-    dateStyle: undefined,
-    timeStyle: "short",
-  },
+  dateTimeFormatOptions = DEFAULT_DATE_TIME_FORMAT_OPTIONS,
   hideTimeOnMobile = false,
   showUpcomingLabel = false,
   titleAs: Title = "h3",

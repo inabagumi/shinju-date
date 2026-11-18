@@ -1,10 +1,12 @@
 import { DUMMY_THUMBNAIL_PNG } from "@shinju-date/constants";
-import type { default as Database } from "@shinju-date/database";
+// oxlint-disable-next-line import/default -- the default export is type-only (`export type { Database as default }`), which the rule does not see
+import type Database from "@shinju-date/database";
 import { createErrorResponse } from "@shinju-date/helpers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
-const SIGNED_URL_EXPIRES_IN = 60 * 10; // 10 minutes
+// 10 minutes
+const SIGNED_URL_EXPIRES_IN = 60 * 10;
 
 const createFallbackResponse = (): NextResponse =>
   new NextResponse(DUMMY_THUMBNAIL_PNG, {

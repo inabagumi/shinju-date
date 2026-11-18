@@ -129,6 +129,7 @@ describe("NavigationBar", () => {
     // 終わらないままだと、ほかのテストの transition も終わらなくなる
     await act(async () => {
       result.resolve({});
+      await result.promise;
     });
 
     expect(item).not.toHaveAttribute("aria-disabled");

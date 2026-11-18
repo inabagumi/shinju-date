@@ -35,6 +35,7 @@ const COLLECTIONS = {
 
 /** The rows of every collection, as plain JSON. */
 const dumpCollections = (): Record<string, unknown[]> =>
+  // oxlint-disable-next-line unicorn/prefer-structured-clone -- the dump must be plain JSON (structuredClone keeps undefined values and fails on non-cloneable values)
   JSON.parse(
     JSON.stringify(
       Object.fromEntries(
@@ -53,7 +54,7 @@ const getTimestamps = (dump: Record<string, unknown[]>): string[] =>
     .flatMap((row) => Object.values(row as Record<string, unknown>))
     .filter(
       (value): value is string =>
-        typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)
+        typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/u.test(value)
     );
 
 const NOW = Temporal.Instant.from("2026-11-15T12:34:56.789Z");
@@ -96,7 +97,7 @@ describe(seedCollections, () => {
     expect(timestamps.length).toBeGreaterThan(0);
 
     for (const timestamp of timestamps) {
-      expect(timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+      expect(timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u);
     }
   });
 

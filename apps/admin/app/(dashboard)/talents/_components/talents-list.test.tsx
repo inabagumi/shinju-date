@@ -74,36 +74,36 @@ const renderList = (props: Partial<TalentsListProps> = {}) =>
     { wrapper: ActionToastProvider }
   );
 
+/** Renders an active talent with a channel and a deleted one without. */
+const renderTalentRows = (): [HTMLElement, HTMLElement] => {
+  renderList({
+    talents: [
+      createTalent({
+        youtube_channels: [
+          {
+            id: "channel-1",
+            name: "YouTube のチャンネル",
+            youtube_channel_id: "UC0000000000000000000000",
+            youtube_handle: null,
+          },
+        ],
+      }),
+      createTalent({
+        deleted_at: "2025-01-03T00:00:00Z",
+        id: "00000000-0000-4000-8000-000000000002",
+        name: "削除したタレント",
+      }),
+    ],
+  });
+
+  return screen.getAllByRole("row").slice(1) as [HTMLElement, HTMLElement];
+};
+
 describe("TalentsList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.searchParams = new URLSearchParams();
   });
-
-  /** Renders an active talent with a channel and a deleted one without. */
-  const renderTalentRows = (): [HTMLElement, HTMLElement] => {
-    renderList({
-      talents: [
-        createTalent({
-          youtube_channels: [
-            {
-              id: "channel-1",
-              name: "YouTube のチャンネル",
-              youtube_channel_id: "UC0000000000000000000000",
-              youtube_handle: null,
-            },
-          ],
-        }),
-        createTalent({
-          deleted_at: "2025-01-03T00:00:00Z",
-          id: "00000000-0000-4000-8000-000000000002",
-          name: "削除したタレント",
-        }),
-      ],
-    });
-
-    return screen.getAllByRole("row").slice(1) as [HTMLElement, HTMLElement];
-  };
 
   it("renders a row for each talent", () => {
     expect(renderTalentRows()).toHaveLength(2);
@@ -134,7 +134,7 @@ describe("TalentsList", () => {
   it("links the sort header to the opposite order and keeps the filters", () => {
     const { rerender } = renderList({ searchParams: "search=abc&status=all" });
 
-    const header = screen.getByRole("columnheader", { name: /最終更新日時/ });
+    const header = screen.getByRole("columnheader", { name: /最終更新日時/u });
     expect(header).toHaveAttribute("aria-sort", "descending");
     expect(within(header).getByRole("link")).toHaveAttribute(
       "href",

@@ -53,8 +53,7 @@ describe("POST /videos/cascade-from-talents", () => {
   let POST: (request: Request) => Promise<Response>;
 
   beforeEach(async () => {
-    const module = await import("./route");
-    POST = module.POST;
+    ({ POST } = await import("./route"));
     vi.clearAllMocks();
   });
 

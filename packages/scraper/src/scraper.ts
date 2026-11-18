@@ -1,5 +1,6 @@
 import type { Enums } from "@shinju-date/database";
 
+import { silentLogger } from "./internal/logger.js";
 import type { Logger } from "./internal/logger.js";
 import { removeUnusedProfileImages } from "./internal/profile-images/index.js";
 import {
@@ -16,13 +17,6 @@ import type {
   SyncAccountResult,
   TypedSupabaseClient,
 } from "./types.js";
-
-const silentLogger: Logger = {
-  debug() {},
-  error() {},
-  info() {},
-  warn() {},
-};
 
 /**
  * Keeps the videos and accounts of one platform in the database in sync with

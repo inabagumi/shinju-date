@@ -67,11 +67,17 @@ const parseSelect = (selectStr: string): SelectNode[] =>
 
     // alias:relation!hint(fields) where alias and hints are optional
     const relationMatch = field.match(
-      /^(?:(\w+):)?(\w+)((?:!\w+)*)\s*\(([\s\S]*)\)$/
+      /^(?:(?<alias>\w+):)?(?<relation>\w+)(?<hints>(?:!\w+)*)\s*\((?<nestedFields>[\s\S]*)\)$/u
     );
     if (relationMatch) {
-      const [, alias, relation = "", hints = "", nestedFields = ""] =
-        relationMatch;
+      const relationGroups: Record<string, string | undefined> =
+        relationMatch.groups ?? {};
+      const {
+        alias,
+        relation = "",
+        hints = "",
+        nestedFields = "",
+      } = relationGroups;
       return {
         alias: alias ?? relation,
         fields: parseSelect(nestedFields),
@@ -82,7 +88,9 @@ const parseSelect = (selectStr: string): SelectNode[] =>
     }
 
     // alias:column::cast where alias and cast are optional
-    const columnMatch = field.match(/^(?:(\w+):)?(\w+)(?:::\w+)?$/);
+    const columnMatch = field.match(
+      /^(?:(?<alias>\w+):)?(?<column>\w+)(?:::\w+)?$/u
+    );
 
     if (!columnMatch) {
       throw parseError(
@@ -91,7 +99,9 @@ const parseSelect = (selectStr: string): SelectNode[] =>
       );
     }
 
-    const [, alias, column = field] = columnMatch;
+    const columnGroups: Record<string, string | undefined> =
+      columnMatch.groups ?? {};
+    const { alias, column = field } = columnGroups;
     return { alias: alias ?? column, column, kind: "column" };
   });
 
@@ -145,7 +155,9 @@ const findRelation = (
   table: AnyTableDefinition | undefined,
   relationName: string
 ) => {
-  const relation = table?.relations.find(({ table }) => table === relationName);
+  const relation = table?.relations.find(
+    (candidate) => candidate.table === relationName
+  );
   const target = relation && findTable(relation.table);
 
   if (!relation || !target) {
@@ -199,16 +211,47 @@ const resolveRelation = async (
 ): Promise<{ rows: object[]; table: AnyTableDefinition; many: boolean }> => {
   const { relation, target } = findRelation(table, relationName);
   const value = getColumn(row, relation.column);
-  const related =
-    value == null
-      ? []
-      : (await getRows(target)).filter(
-          (relatedRow) =>
-            getColumn(relatedRow, relation.referencedColumn) === value &&
-            matchesFilters(relatedRow, filters, target.uuidColumns)
-        );
+  const targetRows =
+    value === null || value === undefined ? [] : await getRows(target);
+  const related = targetRows.filter(
+    (relatedRow) =>
+      getColumn(relatedRow, relation.referencedColumn) === value &&
+      matchesFilters(relatedRow, filters, target.uuidColumns)
+  );
 
   return { many: relation.many, rows: related, table: target };
+};
+
+/**
+ * The value of an embedded resource in a projected row, or `null` when the
+ * resource has `!inner` and no rows.
+ */
+const projectEmbedded = async (
+  row: object,
+  node: Extract<SelectNode, { kind: "relation" }>,
+  table: AnyTableDefinition | undefined,
+  filters: readonly Filter[],
+  path: readonly string[]
+): Promise<{ value: unknown } | null> => {
+  const relationPath = [...path, node.alias];
+  const related = await resolveRelation(
+    table,
+    node.relation,
+    row,
+    filtersAt(filters, relationPath)
+  );
+  const outputs = await Promise.all(
+    related.rows.map((relatedRow) =>
+      projectRow(relatedRow, node.fields, related.table, filters, relationPath)
+    )
+  );
+  const projected = outputs.filter((output) => output !== null);
+
+  if (node.inner && projected.length === 0) {
+    return null;
+  }
+
+  return { value: related.many ? projected : (projected[0] ?? null) };
 };
 
 /**
@@ -233,34 +276,14 @@ const projectRow = async (
         result[node.alias] = getColumn(row, node.column);
       }
     } else {
-      const relationPath = [...path, node.alias];
-      const related = await resolveRelation(
-        table,
-        node.relation,
-        row,
-        filtersAt(filters, relationPath)
-      );
-      const projected: Record<string, unknown>[] = [];
+      // oxlint-disable-next-line no-await-in-loop -- the nodes are projected in order, so the keys of the output follow the select and a missing `!inner` row stops early
+      const embedded = await projectEmbedded(row, node, table, filters, path);
 
-      for (const relatedRow of related.rows) {
-        const output = await projectRow(
-          relatedRow,
-          node.fields,
-          related.table,
-          filters,
-          relationPath
-        );
-
-        if (output) {
-          projected.push(output);
-        }
-      }
-
-      if (node.inner && projected.length === 0) {
+      if (!embedded) {
         return null;
       }
 
-      result[node.alias] = related.many ? projected : (projected[0] ?? null);
+      result[node.alias] = embedded.value;
     }
   }
 
@@ -296,17 +319,15 @@ export const selectRows = async <Row extends object>(
   }
 
   const table = findTable(tableName);
-  const selected: SelectedRow<Row>[] = [];
+  const outputs = await Promise.all(
+    rows.map((row) => projectRow(row, nodes, table, filters, []))
+  );
 
-  for (const row of rows) {
-    const output = await projectRow(row, nodes, table, filters, []);
+  return rows.flatMap((row, index) => {
+    const output = outputs[index];
 
-    if (output) {
-      selected.push({ output, row });
-    }
-  }
-
-  return selected;
+    return output ? [{ output, row }] : [];
+  });
 };
 
 /**
@@ -318,7 +339,8 @@ export const applySelect = async (
   selectStr: string,
   tableName: TableName,
   filters: readonly Filter[] = []
-): Promise<object[]> =>
-  (await selectRows(rows, selectStr, tableName, filters)).map(
-    ({ output }) => output
-  );
+): Promise<object[]> => {
+  const selected = await selectRows(rows, selectStr, tableName, filters);
+
+  return selected.map(({ output }) => output);
+};

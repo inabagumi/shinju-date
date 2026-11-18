@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { FeedbackFormState } from "../_lib/actions";
+import { FeedbackForm } from "./feedback-form";
 
 const { submitFeedback } = vi.hoisted(() => ({
   submitFeedback:
@@ -12,16 +13,17 @@ const { submitFeedback } = vi.hoisted(() => ({
 
 vi.mock(import("../_lib/actions"), () => ({ submitFeedback }));
 
-import { FeedbackForm } from "./feedback-form";
-
 const getMessageTextarea = () =>
-  screen.getByLabelText(/機能要望/) as HTMLTextAreaElement;
+  screen.getByLabelText(/機能要望/u) as HTMLTextAreaElement;
 
 const submitMessage = async (container: HTMLElement, message: string) => {
   fireEvent.change(getMessageTextarea(), { target: { value: message } });
 
-  await act(async () => {
+  // Returning a promise makes `act` wait for the submission as well
+  await act(() => {
     fireEvent.submit(container.querySelector("form") as HTMLFormElement);
+
+    return Promise.resolve();
   });
 };
 
@@ -31,11 +33,13 @@ describe(FeedbackForm, () => {
   });
 
   it("keeps the entered message when the submission fails", async () => {
-    submitFeedback.mockImplementation(async (_, formData) => ({
-      error: "送信中にエラーが発生しました。",
-      success: false,
-      values: { message: String(formData.get("message")) },
-    }));
+    submitFeedback.mockImplementation((_, formData) =>
+      Promise.resolve({
+        error: "送信中にエラーが発生しました。",
+        success: false,
+        values: { message: String(formData.get("message")) },
+      })
+    );
 
     const { container } = render(<FeedbackForm />);
 

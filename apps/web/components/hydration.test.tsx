@@ -18,7 +18,10 @@ import { TimerProvider } from "./timer";
 import type { VideoCardSkeleton } from "./video-card";
 
 vi.mock(import("@/lib/data/videos"), () => ({
-  fetchVideos: vi.fn<typeof fetchVideos>(() => new Promise(() => {})),
+  // Never resolves, so the results stay loading
+  fetchVideos: vi.fn<typeof fetchVideos>(
+    () => Promise.withResolvers<never>().promise
+  ),
 }));
 
 vi.mock(import("react-intersection-observer"), () => ({
@@ -82,10 +85,13 @@ const renderOnServerAndHydrate = async (children: ReactNode) => {
   const consoleError = vi.spyOn(console, "error");
   const serverHtml = container.innerHTML;
 
-  await act(async () => {
+  // Returning a promise makes `act` wait for the hydration as well
+  await act(() => {
     root = hydrateRoot(container, <Page>{children}</Page>, {
       onRecoverableError,
     });
+
+    return Promise.resolve();
   });
 
   return { consoleError, onRecoverableError, serverHtml };

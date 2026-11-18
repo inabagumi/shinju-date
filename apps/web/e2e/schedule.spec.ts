@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 // Seeded by the MSW mock data (packages/msw-handlers): a stream on air now,
 // 2 streams on each day of the current week (one of them at 21:00 in Japan)
@@ -7,7 +7,7 @@ import type { Page } from "@playwright/test";
 // `【スケジュール】ただいま配信中`, and the item shows it without the label in 【】
 const LIVE_VIDEO_TITLE = "ただいま配信中";
 
-const WEEK_PATH_PATTERN = /^\/schedule\/(\d{4}-\d{2}-\d{2})$/;
+const WEEK_PATH_PATTERN = /^\/schedule\/(?<weekStart>\d{4}-\d{2}-\d{2})$/u;
 
 /** `YYYY-MM-DD` that is `days` days after `date` */
 const addDays = (date: string, days: number): string => {
@@ -17,6 +17,11 @@ const addDays = (date: string, days: number): string => {
     .toISOString()
     .slice(0, 10);
 };
+
+/** The right edge of a box (0 for the missing parts) */
+const getRightEdge = (
+  box: Awaited<ReturnType<Locator["boundingBox"]>>
+): number => (box?.x ?? 0) + (box?.width ?? 0);
 
 const getMain = (page: Page) => page.getByRole("main");
 
@@ -45,8 +50,8 @@ const getCurrentWeekStart = async (page: Page): Promise<string> => {
   await page.goto("/schedule");
 
   const previousPath = await getLinkPath(page, "前の週");
-  const [, previousWeekStart = ""] =
-    previousPath.match(WEEK_PATH_PATTERN) ?? [];
+  const { weekStart: previousWeekStart = "" } =
+    previousPath.match(WEEK_PATH_PATTERN)?.groups ?? {};
 
   return addDays(previousWeekStart, 7);
 };
@@ -86,7 +91,7 @@ test.describe("Schedule page", () => {
     ).toBeVisible();
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      /\/schedule$/
+      /\/schedule$/u
     );
     await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
 
@@ -98,7 +103,7 @@ test.describe("Schedule page", () => {
     ).toBeVisible();
     await expect(liveItem).toHaveAttribute(
       "href",
-      /^https:\/\/www\.youtube\.com\/watch\?v=/
+      /^https:\/\/www\.youtube\.com\/watch\?v=/u
     );
     await expect(liveItem).toHaveAttribute("ping", "/api/ping");
     await expect(liveItem).toHaveAttribute("target", "_blank");
@@ -113,13 +118,16 @@ test.describe("Schedule page", () => {
     await expect(getItems(page).first()).toBeVisible();
 
     // Every day of the current week has a stream at 21:00, at the same height
+    const days = await getDays(page).all();
     const tops = await Promise.all(
-      (await getDays(page).all()).map(async (day) =>
-        Math.round(
-          (await day.locator('[data-start="21:00"]').first().boundingBox())
-            ?.y ?? -1
-        )
-      )
+      days.map(async (day) => {
+        const box = await day
+          .locator('[data-start="21:00"]')
+          .first()
+          .boundingBox();
+
+        return Math.round(box?.y ?? -1);
+      })
     );
 
     expect(new Set(tops).size).toBe(1);
@@ -147,7 +155,9 @@ test.describe("Schedule page", () => {
     // 64px for an hour. The mock starts the live stream within today, so the
     // hour is not cut at the end of the day whenever the test runs (the cut
     // is checked by the unit tests of `layoutDay`)
-    expect(Math.round((await live.boundingBox())?.height ?? 0)).toBe(64);
+    const liveBox = await live.boundingBox();
+
+    expect(Math.round(liveBox?.height ?? 0)).toBe(64);
   });
 
   test("should draw an ended stream as long as it was", async ({ page }) => {
@@ -161,10 +171,12 @@ test.describe("Schedule page", () => {
     const item = getMain(page)
       .locator("li")
       .filter({
-        has: page.getByTestId("schedule-item").filter({ hasText: /#15$/ }),
+        has: page.getByTestId("schedule-item").filter({ hasText: /#15$/u }),
       });
 
-    expect(Math.round((await item.boundingBox())?.height ?? 0)).toBe(96);
+    const itemBox = await item.boundingBox();
+
+    expect(Math.round(itemBox?.height ?? 0)).toBe(96);
   });
 
   test("should put the videos that overlap side by side", async ({ page }) => {
@@ -179,9 +191,8 @@ test.describe("Schedule page", () => {
 
     await expect(items).toHaveCount(4);
 
-    const boxes = await Promise.all(
-      (await items.all()).map((item) => item.boundingBox())
-    );
+    const itemList = await items.all();
+    const boxes = await Promise.all(itemList.map((item) => item.boundingBox()));
 
     expect(new Set(boxes.map((box) => Math.round(box?.y ?? -1))).size).toBe(1);
     expect(new Set(boxes.map((box) => Math.round(box?.x ?? -1))).size).toBe(4);
@@ -207,19 +218,16 @@ test.describe("Schedule page", () => {
     expect(iconAfter).toEqual(iconBefore);
     expect(itemAfter?.width ?? 0).toBeGreaterThan(itemBefore?.width ?? 0);
     // At least to the right end of the day
-    expect(
-      Math.round((itemAfter?.x ?? 0) + (itemAfter?.width ?? 0))
-    ).toBeGreaterThanOrEqual(
-      Math.round((dayBox?.x ?? 0) + (dayBox?.width ?? 0) - 4)
+    expect(Math.round(getRightEdge(itemAfter))).toBeGreaterThanOrEqual(
+      Math.round(getRightEdge(dayBox) - 4)
     );
 
     // The shadow is on the item itself, so the parts match
     const placement = item.locator("xpath=..");
 
-    expect((await placement.boundingBox())?.height).toBeCloseTo(
-      (itemAfter?.height ?? 0) + 2,
-      0
-    );
+    const placementBox = await placement.boundingBox();
+
+    expect(placementBox?.height).toBeCloseTo((itemAfter?.height ?? 0) + 2, 0);
 
     // So does focusing it with the keyboard
     await page.mouse.move(0, 0);
@@ -231,9 +239,10 @@ test.describe("Schedule page", () => {
     const firstBefore = await first.boundingBox();
 
     await first.focus();
-    expect((await first.boundingBox())?.width ?? 0).toBeGreaterThan(
-      firstBefore?.width ?? 0
-    );
+
+    const firstAfter = await first.boundingBox();
+
+    expect(firstAfter?.width ?? 0).toBeGreaterThan(firstBefore?.width ?? 0);
   });
 
   test("should keep every item inside the column of its day", async ({
@@ -275,7 +284,9 @@ test.describe("Schedule page", () => {
     await expect(heading).toBeInViewport();
 
     // Right below the header of the site (56px)
-    expect(Math.round((await heading.boundingBox())?.y ?? 0)).toBeLessThan(120);
+    const headingBox = await heading.boundingBox();
+
+    expect(Math.round(headingBox?.y ?? 0)).toBeLessThan(120);
   });
 
   test("should move between the weeks with the Sunday URLs", async ({
@@ -318,14 +329,14 @@ test.describe("Schedule page", () => {
     await expect(getDays(page)).toHaveCount(7);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      new RegExp(`/schedule/${currentWeekStart}$`)
+      new RegExp(`/schedule/${currentWeekStart}$`, "u")
     );
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
       "content",
-      /noindex/
+      /noindex/u
     );
     await expect(page).toHaveTitle(
-      /^\d{4}年\d+月\d+日〜.+の配信スケジュール - SHINJU DATE$/
+      /^\d{4}年\d+月\d+日〜.+の配信スケジュール - SHINJU DATE$/u
     );
     await expect(getDays(page).first()).toHaveAttribute(
       "id",
@@ -374,9 +385,8 @@ test.describe("Schedule page", () => {
     await expect(getDays(page)).toHaveCount(7);
     await expect(page.getByRole("navigation", { name: "曜日" })).toBeHidden();
 
-    const boxes = await Promise.all(
-      (await getDays(page).all()).map((day) => day.boundingBox())
-    );
+    const days = await getDays(page).all();
+    const boxes = await Promise.all(days.map((day) => day.boundingBox()));
 
     expect(new Set(boxes.map((box) => Math.round(box?.y ?? -1))).size).toBe(1);
     await expectNoHorizontalScroll(page);
@@ -391,9 +401,8 @@ test.describe("Schedule page", () => {
 
       await expect(getDays(page)).toHaveCount(7);
 
-      const boxes = await Promise.all(
-        (await getDays(page).all()).map((day) => day.boundingBox())
-      );
+      const days = await getDays(page).all();
+      const boxes = await Promise.all(days.map((day) => day.boundingBox()));
       const tops = boxes.map((box) => box?.y ?? -1);
 
       expect(new Set(boxes.map((box) => Math.round(box?.x ?? -1))).size).toBe(
@@ -409,11 +418,11 @@ test.describe("Schedule page", () => {
 
       const sundayHref = await links.last().getAttribute("href");
 
-      expect(sundayHref).toMatch(/^#day-\d{4}-\d{2}-\d{2}$/);
+      expect(sundayHref).toMatch(/^#day-\d{4}-\d{2}-\d{2}$/u);
 
       await links.last().click();
 
-      await expect(page).toHaveURL(new RegExp(`${sundayHref}$`));
+      await expect(page).toHaveURL(new RegExp(`${sundayHref}$`, "u"));
       await expect(getDays(page).last()).toBeInViewport();
     });
   }

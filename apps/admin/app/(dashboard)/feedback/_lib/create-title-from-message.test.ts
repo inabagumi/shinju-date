@@ -52,18 +52,21 @@ describe(createTitleFromMessage, () => {
     expect(result).toBe(
       "This is a very long message that exceeds the maxim..."
     );
-    expect(result).toHaveLength(53); // 50 characters + "..."
+    // 50 characters + "..."
+    expect(result).toHaveLength(53);
   });
 
   it("should handle message exactly 50 characters without truncation", () => {
-    const message = "12345678901234567890123456789012345678901234567890"; // exactly 50 chars
+    // exactly 50 chars
+    const message = "12345678901234567890123456789012345678901234567890";
     const result = createTitleFromMessage(message);
     expect(result).toBe(message);
     expect(result).toHaveLength(50);
   });
 
   it("should handle message with 51 characters with truncation", () => {
-    const message = "123456789012345678901234567890123456789012345678901"; // 51 chars
+    // 51 chars
+    const message = "123456789012345678901234567890123456789012345678901";
     const result = createTitleFromMessage(message);
     expect(result).toBe(
       "12345678901234567890123456789012345678901234567890..."

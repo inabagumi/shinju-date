@@ -13,7 +13,7 @@ export const shuffle = <T>(
 ): T[] => {
   const result = [...items];
 
-  for (let i = result.length - 1; i > 0; i--) {
+  for (let i = result.length - 1; i > 0; i -= 1) {
     const j = Math.floor(random() * (i + 1));
     const current = result[i] as T;
     result[i] = result[j] as T;

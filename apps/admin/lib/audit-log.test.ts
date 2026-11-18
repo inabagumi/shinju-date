@@ -10,11 +10,9 @@ const mocks = await vi.hoisted(async () => {
 
   return {
     logger: createMockLogger(),
-    rpc: vi.fn<(...args: unknown[]) => Promise<{ error: unknown }>>(
-      async () => ({
-        error: null,
-      })
-    ),
+    rpc: vi
+      .fn<(...args: unknown[]) => Promise<{ error: unknown }>>()
+      .mockResolvedValue({ error: null }),
   };
 });
 

@@ -1,7 +1,8 @@
 import { HttpResponse, http } from "msw";
 import { describe, expect, it } from "vitest";
 
-import { DatabaseError, StorageError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
+import { StorageError } from "../storage-error.js";
 import { mockStorage } from "../testing/images.js";
 import { postgresError, setupSupabase } from "../testing/supabase.js";
 import {

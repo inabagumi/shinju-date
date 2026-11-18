@@ -76,6 +76,10 @@ export const requestVideoBackfillRunAction = adminAction(
             : "すべてのアカウントで過去動画の取り込みが実行中です。"
         );
       }
+      default: {
+        // The run started: record and report it below
+        break;
+      }
     }
 
     const { failed, run, skipped } = result;

@@ -66,6 +66,7 @@ export const runServerComponent = async (
   }
 
   const component = element.type as (props: unknown) => Promise<ReactNode>;
+  const node = await component(element.props);
 
-  return component(element.props);
+  return node;
 };

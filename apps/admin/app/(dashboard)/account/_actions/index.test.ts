@@ -87,7 +87,7 @@ describe("account actions", () => {
       expect(result).toStrictEqual({ success: true });
       expect(auth.updateUser).toHaveBeenCalledWith(
         { email: "new@example.com" },
-        { emailRedirectTo: expect.stringMatching(/\/api\/auth\/callback$/) }
+        { emailRedirectTo: expect.stringMatching(/\/api\/auth\/callback$/u) }
       );
       test.expectRevalidated({ paths: ["/account"] });
     });

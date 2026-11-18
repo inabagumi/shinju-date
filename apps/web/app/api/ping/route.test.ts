@@ -15,6 +15,8 @@ import {
 import type { VideoOnTwitch, VideoOnYouTube } from "@/test/factories";
 import { seedSupabase, setupSupabase, videoSeed } from "@/test/supabase";
 
+import { POST } from "./route";
+
 const mocks = vi.hoisted(() => ({
   pipeline: {
     // One of the overloads of `exec`, which is generic
@@ -42,8 +44,6 @@ vi.mock(import("@sentry/nextjs"), () => ({
     warn: vi.fn<typeof logger.warn>(),
   } as Partial<typeof logger> as typeof logger,
 }));
-
-import { POST } from "./route";
 
 setupSupabase();
 

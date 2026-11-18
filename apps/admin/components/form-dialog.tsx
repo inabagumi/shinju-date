@@ -124,13 +124,15 @@ export const FormDialog = ({
     try {
       result = await action(currentState, formData);
     } catch (error) {
+      isPendingRef.current = false;
+
       // `redirect()` などの Next.js が使う例外は、そのまま Next.js に渡す
       unstable_rethrow(error);
 
       return { error: SERVER_ACTION_FALLBACK_ERROR };
-    } finally {
-      isPendingRef.current = false;
     }
+
+    isPendingRef.current = false;
 
     if (result.success) {
       setOpen(false);

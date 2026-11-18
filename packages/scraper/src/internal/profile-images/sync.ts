@@ -1,5 +1,5 @@
 import type { TypedSupabaseClient } from "../../types.js";
-import { DatabaseError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
 import {
   createProfileImage,
   downloadProfileImage,
@@ -34,7 +34,7 @@ export interface SyncProfileImageOptions {
 /**
  * Points a channel or user at an icon (or at none).
  *
- * @throws When the owner cannot be updated or no longer exists.
+ * @throws {Error} When the owner cannot be updated or no longer exists.
  */
 const assignProfileImage = async (
   supabaseClient: TypedSupabaseClient,
@@ -90,7 +90,7 @@ const discardProfileImage = async (
  * assigned to its owner before the old one is discarded, so the owner always
  * points at an icon that exists.
  *
- * @throws When the icon cannot be downloaded, stored or assigned. The owner
+ * @throws {Error} When the icon cannot be downloaded, stored or assigned. The owner
  *   keeps its current icon then, and nothing new is left behind.
  */
 export const syncProfileImage = async ({

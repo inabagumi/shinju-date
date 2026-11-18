@@ -3,6 +3,7 @@ import type {
   ErrorReporter,
   TypedSupabaseClient,
 } from "../../types.js";
+import { silentLogger } from "../logger.js";
 
 /** The time crawl tests run at; rows get `2024-05-01T12:00:00Z`. */
 export const TEST_NOW = Temporal.Instant.from("2024-05-01T12:00:00.500Z");
@@ -24,7 +25,7 @@ export const createTestContext = <TFetcher>({
   supabaseClient,
 }: TestContextOptions<TFetcher>): CrawlContext<TFetcher> => ({
   fetcher,
-  logger: { debug() {}, error() {}, info() {}, warn() {} },
+  logger: silentLogger,
   now,
   reportError,
   supabaseClient,

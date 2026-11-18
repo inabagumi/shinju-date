@@ -22,12 +22,16 @@ vi.mock(import("@shinju-date/youtube-api-client"), async (importOriginal) => ({
 }));
 
 // アイコンの同期は service role を使うため、ここではモックして呼び出し内容だけを確認する
-vi.mock(import("@/lib/youtube-channel-icon"), async (importOriginal) => ({
-  hasProfileImageChanged: (await importOriginal()).hasProfileImageChanged,
-  syncYouTubeChannelIconSafely: vi
-    .fn<typeof syncYouTubeChannelIconSafely>()
-    .mockResolvedValue("unchanged"),
-}));
+vi.mock(import("@/lib/youtube-channel-icon"), async (importOriginal) => {
+  const { hasProfileImageChanged } = await importOriginal();
+
+  return {
+    hasProfileImageChanged,
+    syncYouTubeChannelIconSafely: vi
+      .fn<typeof syncYouTubeChannelIconSafely>()
+      .mockResolvedValue("unchanged"),
+  };
+});
 
 const test = setupActionTest();
 
@@ -214,6 +218,7 @@ describe("updateTalentAction()", () => {
       formData.append("name", "Updated Talent");
       formData.append("reading", reading);
 
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the updates are checked in the order they were made
       await updateTalentAction({}, formData);
     }
 
@@ -439,6 +444,12 @@ describe.each(lifecycleActionCases)("$name", (testCase) => {
   });
 });
 
+const expectNothingCompleted = (): void => {
+  test.expectNoAuditLog();
+  test.expectNotRevalidated();
+  expect(syncYouTubeChannelIconSafely).not.toHaveBeenCalled();
+};
+
 describe("createTalentAction()", () => {
   it("should successfully create talent", async () => {
     supabase.on(
@@ -538,12 +549,6 @@ describe("createTalentAction()", () => {
       formData.append("name", "New Talent");
       formData.append("youtube_channel_id", youtubeChannel.id);
       return formData;
-    };
-
-    const expectNothingCompleted = (): void => {
-      test.expectNoAuditLog();
-      test.expectNotRevalidated();
-      expect(syncYouTubeChannelIconSafely).not.toHaveBeenCalled();
     };
 
     beforeEach(() => {

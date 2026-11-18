@@ -43,6 +43,7 @@ const claimJob = async (
 
   try {
     while (true) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- each claim takes the next job off the queue
       const claim = await queue.claim(at);
 
       if (!claim) {
@@ -57,6 +58,7 @@ const claimJob = async (
     }
   } finally {
     for (const claim of skipped) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the jobs are put back in the order they were claimed
       await queue.requeue(claim, at);
     }
   }
@@ -207,9 +209,12 @@ describeOnEachRedis((createClient) => {
       const { redis, runs } = createRuns();
 
       const run = await startRun(runs);
-      const queued = (
-        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-      ).length;
+      const queuedJobs = await redis.lrange(
+        REDIS_KEYS.VIDEO_BACKFILL_QUEUE,
+        0,
+        -1
+      );
+      const queued = queuedJobs.length;
 
       await expect(
         runs.start(requests, { requestedBy: "user-2" }, later(1))
@@ -250,7 +255,7 @@ describeOnEachRedis((createClient) => {
         runs.start(requests, { requestedBy: "user-2" }, now),
       ]);
 
-      expect(results.map((result) => result.status).sort()).toStrictEqual([
+      expect(results.map((result) => result.status).toSorted()).toStrictEqual([
         "busy",
         "started",
       ]);
@@ -281,9 +286,11 @@ describeOnEachRedis((createClient) => {
     it("saves no check when no account could be queued", async () => {
       const { queue, redis, runs } = createRuns();
 
-      for (const request of requests) {
-        await queue.enqueue({ ...request, requestedBy: "user-2" }, now);
-      }
+      await Promise.all(
+        requests.map((request) =>
+          queue.enqueue({ ...request, requestedBy: "user-2" }, now)
+        )
+      );
 
       await expect(
         runs.start(requests, { requestedBy: "user-1" }, now)

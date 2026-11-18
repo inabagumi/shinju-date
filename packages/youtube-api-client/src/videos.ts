@@ -30,7 +30,7 @@ export const isFilteredYouTubeVideo = (
 /**
  * Gets YouTube videos by their IDs
  * @param options - The options for getting videos
- * @yields YouTube video objects
+ * @yields {FilteredYouTubeVideo} YouTube video objects
  */
 export const getVideos = async function* getVideos({
   client = getYouTubeClient(),
@@ -55,7 +55,7 @@ export const getVideos = async function* getVideos({
  * Requests only the `id` part, so it is the cheapest way to detect videos
  * that were deleted or made private (those are omitted from the response).
  * @param options - The options for getting video IDs
- * @yields IDs of the videos YouTube returned
+ * @yields {string} IDs of the videos YouTube returned
  */
 export const getVideoIds = async function* getVideoIds({
   client = getYouTubeClient(),

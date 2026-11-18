@@ -85,7 +85,8 @@ describe("videoSearchParamsSchema.parse", () => {
 
     const result = videoSearchParamsSchema.parse(input);
 
-    expect(result.page).toBe(1); // Should be coerced to minimum of 1
+    // Should be coerced to minimum of 1
+    expect(result.page).toBe(1);
   });
 
   it("should handle boolean transformation for visible field", () => {
@@ -119,7 +120,8 @@ describe("videoSearchParamsSchema.parse", () => {
 
     const result = videoSearchParamsSchema.parse(input);
 
-    expect(result.sortField).toBe("updated_at"); // Should fallback to default
+    // Should fallback to default
+    expect(result.sortField).toBe("updated_at");
   });
 
   it("should fallback to default for invalid sortOrder values", () => {
@@ -127,13 +129,15 @@ describe("videoSearchParamsSchema.parse", () => {
 
     const result = videoSearchParamsSchema.parse(input);
 
-    expect(result.sortOrder).toBe("desc"); // Should fallback to default
+    // Should fallback to default
+    expect(result.sortOrder).toBe("desc");
   });
 
   it("should handle array inputs (URLSearchParams may provide arrays)", () => {
     const input = {
       page: ["3"],
-      search: ["multiple", "values"], // Only first value should be used
+      // Only first value should be used
+      search: ["multiple", "values"],
       talentId: ["3de58e38-8314-41c1-a75a-c1658dae6d5a"],
     };
 
@@ -151,7 +155,8 @@ describe("videoSearchParamsSchema.parse", () => {
 
     const result = videoSearchParamsSchema.parse(input);
 
-    expect(result.page).toBe(1); // Should be coerced to minimum of 1
+    // Should be coerced to minimum of 1
+    expect(result.page).toBe(1);
   });
 
   it("should coerce talentId to number correctly", () => {

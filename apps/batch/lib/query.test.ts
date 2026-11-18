@@ -34,7 +34,7 @@ describe(parseQuery, () => {
     expect(headers.get("Cache-Control")).toBe("no-store");
     await expect((response as Response).json()).resolves.toStrictEqual({
       error: expect.stringMatching(
-        /^Invalid query parameters\. provider: .*"youtube".*"twitch"/
+        /^Invalid query parameters\. provider: .*"youtube".*"twitch"/u
       ),
     });
   });
@@ -49,7 +49,7 @@ describe(parseQuery, () => {
     ) as Response;
     const { error } = await response.json();
 
-    expect(error).toMatch(/provider: /);
-    expect(error).toMatch(/mode: /);
+    expect(error).toMatch(/provider: /u);
+    expect(error).toMatch(/mode: /u);
   });
 });

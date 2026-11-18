@@ -12,7 +12,10 @@ import SearchResults from "./search-results";
 import type { VideoCardSkeleton } from "./video-card";
 
 vi.mock(import("@/lib/data/videos"), () => ({
-  fetchVideos: vi.fn<typeof fetchVideos>(() => new Promise(() => {})),
+  // Never resolves, so the results stay loading
+  fetchVideos: vi.fn<typeof fetchVideos>(
+    () => Promise.withResolvers<never>().promise
+  ),
 }));
 
 vi.mock(import("react-intersection-observer"), () => ({

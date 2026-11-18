@@ -3,7 +3,8 @@ import { toDBString } from "@shinju-date/temporal-fns";
 
 import type { TypedSupabaseClient } from "../../types.js";
 import { IN_FILTER_CHUNK_SIZE } from "../constants.js";
-import { DatabaseError, isForeignKeyViolation } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
+import { isForeignKeyViolation } from "../errors.js";
 import { removeStoredImages } from "../images/index.js";
 import { THUMBNAILS_BUCKET } from "./thumbnail.js";
 import type { Thumbnail } from "./thumbnail.js";
@@ -42,7 +43,7 @@ export interface RemoveUnusedThumbnailsOptions {
  * `thumbnails` be used again by then, the rows are deleted one by one, so
  * that the others still go.
  *
- * @throws When the rows cannot be deleted for another reason.
+ * @throws {Error} When the rows cannot be deleted for another reason.
  */
 const deleteThumbnailRows = async (
   supabaseClient: TypedSupabaseClient,
@@ -70,26 +71,56 @@ const deleteThumbnailRows = async (
   const deleted: Thumbnail[] = [];
 
   for (const thumbnail of thumbnails) {
-    const { data, error } = await supabaseClient
+    // oxlint-disable-next-line eslint/no-await-in-loop -- the rows are deleted one at a time to keep the load on the database small
+    const { data: rows, error: rowError } = await supabaseClient
       .from("thumbnails")
       .delete()
       .eq("id", thumbnail.id)
       .select("id");
 
-    if (error) {
-      if (isForeignKeyViolation(error)) {
+    if (rowError) {
+      if (isForeignKeyViolation(rowError)) {
         continue;
       }
 
-      throw new DatabaseError("Failed to delete an unused thumbnail", error);
+      throw new DatabaseError("Failed to delete an unused thumbnail", rowError);
     }
 
-    if (data.length > 0) {
+    if (rows.length > 0) {
       deleted.push(thumbnail);
     }
   }
 
   return deleted;
+};
+
+/**
+ * Deletes the rows of `thumbnails`, then the images of those that were
+ * deleted. A failure to remove an image is ignored: without its row it is
+ * never served.
+ *
+ * @returns The number of thumbnails deleted.
+ */
+const removeThumbnails = async (
+  supabaseClient: TypedSupabaseClient,
+  thumbnails: readonly Thumbnail[]
+): Promise<number> => {
+  const deleted = await deleteThumbnailRows(supabaseClient, thumbnails);
+
+  if (deleted.length === 0) {
+    return 0;
+  }
+
+  try {
+    await removeStoredImages(supabaseClient, {
+      bucket: THUMBNAILS_BUCKET,
+      paths: deleted.map((thumbnail) => thumbnail.path),
+    });
+  } catch {
+    // Ignored on purpose, see above.
+  }
+
+  return deleted.length;
 };
 
 /**
@@ -104,7 +135,7 @@ const deleteThumbnailRows = async (
  * deleted per run; the next run picks up the rest.
  *
  * @returns The number of thumbnails deleted.
- * @throws When unused thumbnails cannot be listed or deleted. A failure to
+ * @throws {Error} When unused thumbnails cannot be listed or deleted. A failure to
  *   remove an image is ignored: without its row it is never served.
  */
 export const removeUnusedThumbnails = async (
@@ -131,22 +162,8 @@ export const removeUnusedThumbnails = async (
     data.map(({ id, path }): Thumbnail => ({ id, path })),
     IN_FILTER_CHUNK_SIZE
   )) {
-    const deleted = await deleteThumbnailRows(supabaseClient, thumbnails);
-
-    removedCount += deleted.length;
-
-    if (deleted.length === 0) {
-      continue;
-    }
-
-    try {
-      await removeStoredImages(supabaseClient, {
-        bucket: THUMBNAILS_BUCKET,
-        paths: deleted.map((thumbnail) => thumbnail.path),
-      });
-    } catch {
-      // Ignored on purpose, see above.
-    }
+    // oxlint-disable-next-line eslint/no-await-in-loop -- the chunks are removed one at a time to keep the load on the database and Storage small
+    removedCount += await removeThumbnails(supabaseClient, thumbnails);
   }
 
   return removedCount;

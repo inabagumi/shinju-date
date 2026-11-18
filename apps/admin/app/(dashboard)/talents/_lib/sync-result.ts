@@ -71,6 +71,10 @@ export const toSyncResult = (
     case "updated": {
       return { data: { unchanged: false }, success: true };
     }
+    default: {
+      const unexpected: never = outcome;
+      throw new Error(`Unknown sync outcome: ${JSON.stringify(unexpected)}`);
+    }
   }
 };
 
@@ -93,9 +97,6 @@ export const toSyncSummary = (
     const { account, label } = PLATFORMS[platform];
 
     switch (outcome.status) {
-      case "no_accounts": {
-        break;
-      }
       case "failed": {
         failed.push(`${label}: 同期に失敗しました。${outcome.error ?? ""}`);
         break;
@@ -106,6 +107,10 @@ export const toSyncSummary = (
       }
       case "updated": {
         succeeded.push(`${label}: ${account}情報を同期しました。`);
+        break;
+      }
+      default: {
+        // "no_accounts": a platform without accounts is not written
         break;
       }
     }

@@ -22,21 +22,22 @@
 
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import path from "node:path";
 
-const root = resolve(import.meta.dirname, "..");
+const root = path.resolve(import.meta.dirname, "..");
 
 /** Files placed by the `skills` CLI, which are not edited by hand */
-const IGNORED_FILES = [/^\.agents\//, /^\.claude\//];
+const IGNORED_FILES = [/^\.agents\//u, /^\.claude\//u];
 
 /** Top-level directories whose paths in inline code are checked */
 const PATH_PREFIXES = [".github/", "apps/", "docs/", "packages/", "scripts/"];
 
-const INLINE_CODE_PATTERN = /(`+)([^`]+?)\1/g;
-const LINK_DEFINITION_PATTERN = /^ {0,3}\[[^\]]+\]:[ \t]*<?([^\s>]+)>?/gm;
-const SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
-const FENCE_PATTERN = /^\s*(`{3,}|~{3,})/;
-const CLOSING_FENCE_PATTERN = /^\s*(`{3,}|~{3,})[ \t]*$/;
+const INLINE_CODE_PATTERN = /(?<ticks>`+)(?<code>[^`]+?)\k<ticks>/gu;
+const LINK_DEFINITION_PATTERN =
+  /^ {0,3}\[[^\]]+\]:[ \t]*<?(?<target>[^\s>]+)>?/gmu;
+const SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z0-9+.-]*:/u;
+const FENCE_PATTERN = /^\s*(?<fence>`{3,}|~{3,})/u;
+const CLOSING_FENCE_PATTERN = /^\s*(?<fence>`{3,}|~{3,})[ \t]*$/u;
 
 /** @type {Map<string, Set<string>>} */
 const anchorCache = new Map();
@@ -71,7 +72,7 @@ const knownPaths = new Set([""]);
 for (const file of listFiles()) {
   const parts = file.split("/");
 
-  for (let index = 1; index <= parts.length; index++) {
+  for (let index = 1; index <= parts.length; index += 1) {
     knownPaths.add(parts.slice(0, index).join("/"));
   }
 }
@@ -86,7 +87,7 @@ const listMarkdownFiles = () =>
  */
 const globToRegExp = (pattern) => {
   const source = pattern
-    .split(/(\*\*\/|\*\*|\*)/)
+    .split(/(?<wildcard>\*\*\/|\*\*|\*)/u)
     .map((part) => {
       if (part === "**/") {
         return "(?:.*/)?";
@@ -100,18 +101,18 @@ const globToRegExp = (pattern) => {
         return "[^/]*";
       }
 
-      return part.replaceAll(/[.+?^${}()|[\]\\]/g, "\\$&");
+      return part.replaceAll(/[.+?^${}()|[\]\\]/gu, "\\$&");
     })
     .join("");
 
-  return new RegExp(`^${source}$`);
+  return new RegExp(`^${source}$`, "u");
 };
 
 /**
- * @param {string} path - Absolute path, which may contain `*`
+ * @param {string} absolutePath - Absolute path, which may contain `*`
  */
-const pathExists = (path) => {
-  const relativePath = relative(root, path).split("\\").join("/");
+const pathExists = (absolutePath) => {
+  const relativePath = path.relative(root, absolutePath).split("\\").join("/");
 
   if (relativePath.startsWith("..")) {
     return false;
@@ -153,7 +154,7 @@ const blankFences = (lines) => {
       const opening = line.match(FENCE_PATTERN);
 
       if (opening) {
-        fence = opening[1];
+        ({ fence } = opening.groups);
       }
 
       result.push(opening ? "" : line);
@@ -164,8 +165,8 @@ const blankFences = (lines) => {
 
     if (
       closing &&
-      closing[1][0] === fence[0] &&
-      closing[1].length >= fence.length
+      closing.groups.fence[0] === fence[0] &&
+      closing.groups.fence.length >= fence.length
     ) {
       fence = null;
     }
@@ -183,7 +184,8 @@ const blankFences = (lines) => {
  */
 const blankInlineCode = (text) =>
   text.replaceAll(INLINE_CODE_PATTERN, (match) =>
-    match.replaceAll(/[^\n]/g, " ")
+    // Keep the UTF-16 length of each character (an astral character is 2)
+    match.replaceAll(/[^\n]/gu, (char) => " ".repeat(char.length))
   );
 
 /**
@@ -197,7 +199,7 @@ const blankInlineCode = (text) =>
 const readDestination = (text, start) => {
   let index = start;
 
-  while (index < text.length && /\s/.test(text[index])) {
+  while (index < text.length && /\s/u.test(text[index])) {
     index += 1;
   }
 
@@ -210,13 +212,13 @@ const readDestination = (text, start) => {
   let depth = 0;
   let destination = "";
 
-  for (; index < text.length; index++) {
+  for (; index < text.length; index += 1) {
     const char = text[index];
 
     if (char === "\\" && index + 1 < text.length) {
       destination += text[index + 1];
       index += 1;
-    } else if (/\s/.test(char)) {
+    } else if (/\s/u.test(char)) {
       break;
     } else if (char === "(") {
       depth += 1;
@@ -246,7 +248,7 @@ const readDestination = (text, start) => {
 const findLinks = (text) => {
   const links = [];
 
-  for (const match of text.matchAll(/\]\(/g)) {
+  for (const match of text.matchAll(/\]\(/gu)) {
     const target = readDestination(text, match.index + 2);
 
     if (target !== null) {
@@ -255,7 +257,7 @@ const findLinks = (text) => {
   }
 
   for (const match of text.matchAll(LINK_DEFINITION_PATTERN)) {
-    links.push({ index: match.index, target: match[1] });
+    links.push({ index: match.index, target: match.groups.target });
   }
 
   return links;
@@ -267,12 +269,15 @@ const findLinks = (text) => {
  * @param {string} heading - Text of a heading
  */
 const slugify = (heading) => {
-  let text = heading.replaceAll(/!?\[([^\]]*)\]\([^)]*\)/g, "$1");
+  let text = heading.replaceAll(
+    /!?\[(?<label>[^\]]*)\]\([^)]*\)/gu,
+    "$<label>"
+  );
   let previous;
 
   do {
     previous = text;
-    text = text.replaceAll(/<[^<>]*>/g, "");
+    text = text.replaceAll(/<[^<>]*>/gu, "");
   } while (text !== previous);
 
   // Remove the emphasis marks, but keep the content of code spans as it is.
@@ -281,15 +286,21 @@ const slugify = (heading) => {
   const codeSpans = [];
 
   text = text
-    .replaceAll(/(`+)([^`]*?)\1/g, (_match, _ticks, content) => {
-      codeSpans.push(content);
-
-      return `\uE000${codeSpans.length - 1}\uE001`;
-    })
-    .replaceAll("*", "")
-    .replaceAll(/(^|[^\p{L}\p{N}_])_+([^_]+?)_+(?=$|[^\p{L}\p{N}_])/gu, "$1$2")
     .replaceAll(
-      /\uE000(\d+)\uE001/g,
+      /(?<ticks>`+)(?<content>[^`]*?)\k<ticks>/gu,
+      (_match, _ticks, content) => {
+        codeSpans.push(content);
+
+        return `\uE000${codeSpans.length - 1}\uE001`;
+      }
+    )
+    .replaceAll("*", "")
+    .replaceAll(
+      /(?<before>^|[^\p{L}\p{N}_])_+(?<content>[^_]+?)_+(?=$|[^\p{L}\p{N}_])/gu,
+      "$<before>$<content>"
+    )
+    .replaceAll(
+      /\uE000(?<index>\d+)\uE001/gu,
       (_match, index) => codeSpans[Number(index)]
     );
 
@@ -301,10 +312,10 @@ const slugify = (heading) => {
 };
 
 /**
- * @param {string} path - Absolute path of a Markdown file
+ * @param {string} filePath - Absolute path of a Markdown file
  */
-const getAnchors = (path) => {
-  const cached = anchorCache.get(path);
+const getAnchors = (filePath) => {
+  const cached = anchorCache.get(filePath);
 
   if (cached) {
     return cached;
@@ -313,8 +324,8 @@ const getAnchors = (path) => {
   const anchors = new Set();
   const occurrences = new Map();
   // Headings in block quotes also get anchors, so drop the quote markers
-  const lines = blankFences(readFileSync(path, "utf-8").split("\n")).map(
-    (line) => line.replace(/^(?: {0,3}>[ \t]?)+/, "")
+  const lines = blankFences(readFileSync(filePath, "utf-8").split("\n")).map(
+    (line) => line.replace(/^(?: {0,3}>[ \t]?)+/u, "")
   );
 
   // The same way as GitHub (github-slugger) avoids duplicate anchors
@@ -336,26 +347,28 @@ const getAnchors = (path) => {
   };
 
   for (const [index, line] of lines.entries()) {
-    const atx = line.match(/^\s{0,3}#{1,6}\s+(.+?)(?:\s+#+)?\s*$/);
+    const atx = line.match(/^\s{0,3}#{1,6}\s+(?<heading>.+?)(?:\s+#+)?\s*$/u);
     const next = lines[index + 1] ?? "";
 
     if (atx) {
-      addHeading(atx[1]);
+      addHeading(atx.groups.heading);
     } else if (
-      /^\s{0,3}(?:=+|-+)\s*$/.test(next) &&
+      /^\s{0,3}(?:=+|-+)\s*$/u.test(next) &&
       line.trim() !== "" &&
-      !/^\s{0,3}(?:[-*+>|]|\d+[.)])/.test(line)
+      !/^\s{0,3}(?:[-*+>|]|\d+[.)])/u.test(line)
     ) {
       // Setext heading (a line underlined with `===` or `---`)
       addHeading(line.trim());
     }
 
-    for (const match of line.matchAll(/<a\s[^>]*(?:id|name)="([^"]+)"/g)) {
-      anchors.add(match[1]);
+    for (const match of line.matchAll(
+      /<a\s[^>]*(?:id|name)="(?<anchor>[^"]+)"/gu
+    )) {
+      anchors.add(match.groups.anchor);
     }
   }
 
-  anchorCache.set(path, anchors);
+  anchorCache.set(filePath, anchors);
 
   return anchors;
 };
@@ -372,12 +385,12 @@ const extractPath = (code) => {
   }
 
   // Not a single path (a command, a sentence, a placeholder such as `<name>`)
-  if (/[\s<>{}$…]/.test(text)) {
+  if (/[\s<>{}$…]/u.test(text)) {
     return null;
   }
 
   // Strip a line number (`apps/web/proxy.ts:12`) and an anchor
-  return text.replace(/:\d+(?:-\d+)?$/, "").replace(/#.*$/, "");
+  return text.replace(/:\d+(?:-\d+)?$/u, "").replace(/#.*$/u, "");
 };
 
 /**
@@ -385,8 +398,8 @@ const extractPath = (code) => {
  */
 const checkFile = (file) => {
   const errors = [];
-  const filePath = join(root, file);
-  const baseDir = dirname(filePath);
+  const filePath = path.join(root, file);
+  const baseDir = path.dirname(filePath);
   const lines = blankFences(readFileSync(filePath, "utf-8").split("\n"));
   const text = lines.join("\n");
   const lineStarts = [0];
@@ -407,14 +420,14 @@ const checkFile = (file) => {
       continue;
     }
 
-    const [pathPart = "", fragment] = target.replace(/\?[^#]*/, "").split("#");
-    const path = decode(pathPart);
+    const [pathPart = "", fragment] = target.replace(/\?[^#]*/u, "").split("#");
+    const linkPath = decode(pathPart);
     let absolutePath = filePath;
 
-    if (path !== "") {
-      absolutePath = path.startsWith("/")
-        ? join(root, path)
-        : resolve(baseDir, path);
+    if (linkPath !== "") {
+      absolutePath = linkPath.startsWith("/")
+        ? path.join(root, linkPath)
+        : path.resolve(baseDir, linkPath);
 
       if (!pathExists(absolutePath)) {
         report(`Link to a missing path: ${target}`);
@@ -432,12 +445,12 @@ const checkFile = (file) => {
   }
 
   for (const match of text.matchAll(INLINE_CODE_PATTERN)) {
-    const path = extractPath(match[2]);
+    const codePath = extractPath(match.groups.code);
 
-    if (path !== null && !pathExists(join(root, path))) {
+    if (codePath !== null && !pathExists(path.join(root, codePath))) {
       errors.push({
         line: lineAt(match.index),
-        message: `Missing path in inline code: ${path}`,
+        message: `Missing path in inline code: ${codePath}`,
       });
     }
   }

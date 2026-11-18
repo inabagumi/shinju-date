@@ -103,6 +103,7 @@ export const useServerAction = <
   };
 
   const run = (...args: TArgs) =>
+    // oxlint-disable-next-line promise/avoid-new -- startTransition() takes a callback and returns nothing, so its end is turned into a promise here (Promise.withResolvers() is not in every browser this app supports)
     new Promise<TResult | undefined>((resolve) => {
       startTransition(async () => {
         let result: TResult;

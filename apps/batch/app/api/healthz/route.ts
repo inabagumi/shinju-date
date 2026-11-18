@@ -1,2 +1,1 @@
-export const GET = async (): Promise<Response> =>
-  Response.json({ status: "ok" });
+export const GET = (): Response => Response.json({ status: "ok" });

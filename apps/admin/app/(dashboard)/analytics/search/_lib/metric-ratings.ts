@@ -121,5 +121,5 @@ export const describeRatings = (
     return `${format(rating.min)}-${format(upper.min - step)}${unit}: ${rating.label}`;
   });
 
-  return order === "ascending" ? descriptions.reverse() : descriptions;
+  return order === "ascending" ? descriptions.toReversed() : descriptions;
 };

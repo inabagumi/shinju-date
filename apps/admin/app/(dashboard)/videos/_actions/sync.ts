@@ -108,6 +108,13 @@ export const syncVideoAction = adminAction(
 
         return { data: { message: "動画情報を同期しました。" }, success: true };
       }
+
+      default: {
+        const unexpected: never = result;
+        throw new Error(
+          `Unknown refresh result: ${JSON.stringify(unexpected)}`
+        );
+      }
     }
   }
 );

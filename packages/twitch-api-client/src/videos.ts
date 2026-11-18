@@ -40,6 +40,8 @@ interface GetVideosByUserPageOptions extends ClientOptions {
 /**
  * Gets Twitch videos (VOD / highlight / upload) by ID.
  * IDs that no longer exist are omitted.
+ *
+ * @yields {TwitchVideo} The videos that still exist
  */
 export const getVideos = async function* getVideos({
   client = getTwitchApiClient(),
@@ -61,6 +63,8 @@ export const getVideos = async function* getVideos({
 /**
  * Gets videos for a broadcaster, newest first (for batch discovery).
  * Returns the first page by default; pass `all: true` to drain all pages.
+ *
+ * @yields {TwitchVideo} The videos of the broadcaster, newest first
  */
 export const getVideosByUser = async function* getVideosByUser({
   all = false,

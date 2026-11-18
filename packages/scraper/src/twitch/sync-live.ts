@@ -8,12 +8,12 @@ import type { QueryData } from "@supabase/supabase-js";
 
 import { countChanges } from "../internal/concurrency.js";
 import { WRITE_CONCURRENCY } from "../internal/constants.js";
+import { DatabaseError } from "../internal/database-error.js";
 import {
   getActiveAccounts,
   TWITCH_USERS,
-  updateVideo,
-} from "../internal/database/index.js";
-import { DatabaseError } from "../internal/errors.js";
+} from "../internal/database/talents.js";
+import { updateVideo } from "../internal/database/videos.js";
 import { saveVideoWithThumbnail } from "../internal/operations/save-video.js";
 import type {
   CrawlContext,
@@ -310,7 +310,7 @@ export const syncTwitchLive = async (
         return false;
       }
 
-      return saveVideoWithThumbnail(
+      return await saveVideoWithThumbnail(
         context,
         TWITCH_NEW_VIDEOS,
         {
@@ -408,6 +408,7 @@ export const refreshTwitchBroadcast = async (
       : undefined;
 
   for (const { values } of plan.refreshed) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- the updates of the same row are written in order
     await updateVideo(supabaseClient, saved.id, values);
   }
 
@@ -432,6 +433,7 @@ export const refreshTwitchBroadcast = async (
     });
 
     for (const action of actions) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the actions are applied in order, and the first failure rejects
       await applyNewVideoAction(context, action, new Map());
     }
   }

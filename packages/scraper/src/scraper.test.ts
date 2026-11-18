@@ -28,38 +28,44 @@ class ExampleScraper extends Scraper {
     super({ supabaseClient, ...options });
   }
 
-  async addNewVideos(now?: Temporal.Instant): Promise<boolean> {
+  addNewVideos(now?: Temporal.Instant): Promise<boolean> {
     this.context = this.createContext("fetcher", now);
 
-    return true;
+    return Promise.resolve(true);
   }
 
+  // oxlint-disable-next-line eslint/class-methods-use-this -- implements an abstract method of Scraper
   addPastVideos(): Promise<AddPastVideosResult> {
     return Promise.resolve({ added: 0, cursor: null, listed: 0 });
   }
 
-  async refreshLiveVideos(): Promise<boolean> {
+  refreshLiveVideos(): Promise<boolean> {
     this.reportError(new Error("one video failed"), { videoId: "v1" });
 
-    return false;
+    return Promise.resolve(false);
   }
 
+  // oxlint-disable-next-line eslint/class-methods-use-this -- implements an abstract method of Scraper
   refreshRecentVideos(): Promise<boolean> {
     return Promise.resolve(false);
   }
 
+  // oxlint-disable-next-line eslint/class-methods-use-this -- implements an abstract method of Scraper
   refreshVideo(): Promise<RefreshVideoResult> {
     return Promise.resolve({ status: "not-found" });
   }
 
+  // oxlint-disable-next-line eslint/class-methods-use-this -- implements an abstract method of Scraper
   removeUnavailableVideos(): Promise<boolean> {
     return Promise.resolve(false);
   }
 
+  // oxlint-disable-next-line eslint/class-methods-use-this -- implements an abstract method of Scraper
   syncAccounts(): Promise<boolean> {
     return Promise.resolve(false);
   }
 
+  // oxlint-disable-next-line eslint/class-methods-use-this -- implements an abstract method of Scraper
   syncTalentAccounts(): Promise<SyncAccountResult[]> {
     return Promise.resolve([]);
   }

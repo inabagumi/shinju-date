@@ -46,12 +46,12 @@ const createAdapter = (
   { notLookedUp = [] }: { notLookedUp?: string[] } = {}
 ) => {
   const byId = new Map(videos.map((video) => [video.id, video]));
-  const lookUp = vi.fn<FakeAdapter["lookUp"]>(async (savedVideos) => {
+  const lookUp = vi.fn<FakeAdapter["lookUp"]>((savedVideos) => {
     const ids = savedVideos
       .map((saved) => saved.platform_id)
       .filter((id) => !notLookedUp.includes(id));
 
-    return {
+    return Promise.resolve({
       fetchedById: new Map(
         ids.flatMap((id) => {
           const video = byId.get(id);
@@ -60,7 +60,7 @@ const createAdapter = (
         })
       ),
       missingIds: ids.filter((id) => !byId.has(id)),
-    };
+    });
   });
   const adapter: FakeAdapter = {
     getPlatformVideoId: (saved) => saved.platform_id,
@@ -93,8 +93,8 @@ describe("refresh saved videos", () => {
         { id: "a", title: "Video a" },
         { id: "b", title: "Video b" },
       ]);
-      const afterRefresh = vi.fn<AfterRefresh>(
-        async (saved) => saved.id === "video-a"
+      const afterRefresh = vi.fn<AfterRefresh>((saved) =>
+        Promise.resolve(saved.id === "video-a")
       );
 
       const changed = await refreshSavedVideos(context, adapter, {
@@ -112,10 +112,10 @@ describe("refresh saved videos", () => {
         method === "GET" ? [createSaved("a")] : []
       );
       const { adapter } = createAdapter([{ id: "a", title: "Renamed" }]);
-      const afterRefresh = vi.fn<AfterRefresh>(async () => {
+      const afterRefresh = vi.fn<AfterRefresh>(() => {
         expect(supabase.written("PATCH", "videos")).toHaveLength(1);
 
-        return false;
+        return Promise.resolve(false);
       });
 
       const changed = await refreshSavedVideos(context, adapter, {
@@ -139,7 +139,7 @@ describe("refresh saved videos", () => {
         return table === "rpc/soft_delete_videos" ? ["video-gone"] : [];
       });
       const { adapter } = createAdapter([]);
-      const afterRefresh = vi.fn<AfterRefresh>(async () => true);
+      const afterRefresh = vi.fn<AfterRefresh>().mockResolvedValue(true);
 
       const changed = await refreshSavedVideos(context, adapter, {
         afterRefresh,
@@ -199,9 +199,9 @@ describe("refresh saved videos", () => {
       const { adapter, lookUp } = createAdapter([
         { id: "a", title: "Video a" },
       ]);
-      const findMissing = vi.fn<NonNullable<FakeAdapter["findMissing"]>>(
-        async () => []
-      );
+      const findMissing = vi
+        .fn<NonNullable<FakeAdapter["findMissing"]>>()
+        .mockResolvedValue([]);
 
       const deleted = await sweepUnavailableVideos(context, {
         ...adapter,

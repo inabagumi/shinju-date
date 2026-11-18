@@ -61,7 +61,7 @@ describe(createCsvExportRoute, () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("text/csv;charset=utf-8");
-    expect(Array.from(body.slice(0, 3))).toStrictEqual([0xef, 0xbb, 0xbf]);
+    expect([...body.subarray(0, 3)]).toStrictEqual([0xef, 0xbb, 0xbf]);
     expect(new TextDecoder().decode(body)).toBe(
       "順位,名前,回数\n1,あ,10\n2,い,5\n"
     );

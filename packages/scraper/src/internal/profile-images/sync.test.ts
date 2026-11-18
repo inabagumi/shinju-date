@@ -28,17 +28,17 @@ const saved: StoredProfileImage = {
 
 let image: Buffer;
 
+/** A database in which the owner exists and every write succeeds. */
+const respondWithOwner = (): void => {
+  supabase.respond(({ method, table }) =>
+    method === "PATCH" && table !== "profile_images" ? [{ id: "owner" }] : []
+  );
+};
+
 describe(syncProfileImage, () => {
   beforeAll(async () => {
     image = await createImage(300, 300);
   });
-
-  /** A database in which the owner exists and every write succeeds. */
-  const respondWithOwner = (): void => {
-    supabase.respond(({ method, table }) =>
-      method === "PATCH" && table !== "profile_images" ? [{ id: "owner" }] : []
-    );
-  };
 
   it("does nothing when there is no icon on either side", async () => {
     respondWithOwner();

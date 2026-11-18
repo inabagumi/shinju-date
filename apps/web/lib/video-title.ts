@@ -18,7 +18,7 @@ export interface ParseVideoTitleOptions {
 
 const SPACE = String.raw`[\s]`;
 const TAG_NAME = String.raw`[\p{L}\p{M}\p{N}_〜～]`;
-const BRACKET = /[【〖]([^【】〖〗]*)[】〗]/g;
+const BRACKET = /[【〖](?<content>[^【】〖〗]*)[】〗]/gu;
 // 直前が文字や数字のもの（`C#` など）はハッシュタグとして扱わない
 const HASHTAG = new RegExp(`(?<![\\p{L}\\p{N}])[#＃](${TAG_NAME}+)`, "gu");
 // 末尾の並びの中のハッシュタグ。`#` だけのものも含む
@@ -31,8 +31,8 @@ const HASHTAG_ONLY = new RegExp(`^[#＃](${TAG_NAME}+)$`, "u");
 // 数字だけのハッシュタグ（`#11` などの回数の表記）しかない本文
 const NUMBER_HASHTAGS_ONLY = new RegExp(`^(?:[#＃]\\p{N}+${SPACE}*)+$`, "u");
 const SPACES = new RegExp(`${SPACE}+`, "gu");
-const SEGMENT_SEPARATOR = /[/／￤┋┊|｜]/;
-const TRAILING_SEPARATORS = /[\s\-–—/／|｜]+$/;
+const SEGMENT_SEPARATOR = /[/／￤┋┊|｜]/u;
+const TRAILING_SEPARATORS = /[\s\-–—/／|｜]+$/u;
 const EXCLUDED_HASHTAGS: ReadonlySet<string> = new Set([
   "short",
   "shorts",
@@ -49,7 +49,7 @@ const toCreditKey = (value: string): string =>
   value
     .normalize("NFKC")
     .toLowerCase()
-    .replaceAll(/[\s・]/g, "");
+    .replaceAll(/[\s・]/gu, "");
 
 /**
  * 動画のタイトルを、本文・ラベル（【】と〖〗の中身）・末尾のハッシュタグに

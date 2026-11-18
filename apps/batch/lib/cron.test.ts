@@ -221,8 +221,10 @@ describe("runCronJob", () => {
 
   it("locks the job for a little longer than its maximum duration", async () => {
     let ttl: number | undefined;
-    const run = vi.fn<Run>(async () => {
+    const run = vi.fn<Run>(() => {
       ttl = redis.ttls.get(LOCK_KEY);
+
+      return Promise.resolve();
     });
 
     const response = await runCronJob(createRequest(), job, run);
@@ -265,10 +267,10 @@ describe("runCronJob", () => {
   });
 
   it("responds as usual when the lock cannot be released", async () => {
-    const run = vi.fn<Run>(async () => {
+    const run = vi.fn<Run>(() => {
       redis.evalFails = true;
 
-      return { added: 1 };
+      return Promise.resolve({ added: 1 });
     });
 
     const response = await runCronJob(createRequest(), job, run);
@@ -291,8 +293,10 @@ describe("runCronJob", () => {
 
     it("runs once in a window without taking the lock", async () => {
       limit.mockResolvedValue({ success: true });
-      const run = vi.fn<Run>(async () => {
+      const run = vi.fn<Run>(() => {
         expect(redis.values.size).toBe(0);
+
+        return Promise.resolve();
       });
 
       const response = await runCronJob(createRequest(), rateLimitedJob, run);

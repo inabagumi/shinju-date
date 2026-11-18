@@ -121,7 +121,8 @@ describe("analyticsSearchParamsSchema.parse", () => {
   it("should reject ranges where start date is after end date", () => {
     const input = {
       from: yesterday.toString(),
-      to: weekAgo.toString(), // start > end
+      // start > end
+      to: weekAgo.toString(),
     };
 
     const result = analyticsSearchParamsSchema.parse(input);

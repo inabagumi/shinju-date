@@ -249,7 +249,7 @@ describe(usePolledResource, () => {
     const fetcher = vi
       .fn<() => Promise<Progress>>()
       .mockResolvedValue(createProgress({ added: 2 }));
-    const initialData = createProgress();
+    const initialProgress = createProgress();
 
     const { rerender, result } = renderHook(
       ({ initialData }) =>
@@ -259,11 +259,11 @@ describe(usePolledResource, () => {
           intervalMs: INTERVAL_MS,
           isActive: (data) => data.active,
         }),
-      { initialProps: { initialData } }
+      { initialProps: { initialData: initialProgress } }
     );
 
     await act(() => result.current.reload());
-    rerender({ initialData });
+    rerender({ initialData: initialProgress });
 
     expect(result.current.data.added).toBe(2);
   });

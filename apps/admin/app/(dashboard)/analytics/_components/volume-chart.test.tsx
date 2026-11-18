@@ -40,6 +40,7 @@ vi.mock(import("recharts"), async (importOriginal) => {
     ...actual,
     ResponsiveContainer: forwardRef<HTMLDivElement, ResponsiveContainerProps>(
       ({ children }, _ref) =>
+        // oxlint-disable-next-line react/no-clone-element -- gives the chart a fixed size, as the real ResponsiveContainer does with cloneElement()
         cloneElement(
           children as ReactElement<{ height?: number; width?: number }>,
           { height: 256, width: 800 }
@@ -67,12 +68,11 @@ const getChart = (): HTMLElement => {
 
 /** Recharts はマウスのイベントを次のフレームで処理する */
 const waitForAnimationFrame = (): Promise<void> =>
-  act(
-    () =>
-      new Promise<void>((resolve) => {
-        requestAnimationFrame(() => resolve());
-      })
-  );
+  act(async () => {
+    const frame = Promise.withResolvers<number>();
+    requestAnimationFrame(frame.resolve);
+    await frame.promise;
+  });
 
 /**
  * グラフの右半分（2日のうちの2日目）にマウスを乗せる
@@ -184,9 +184,10 @@ describe("VolumeChart", () => {
     expect(document.querySelector(".recharts-bar")).toBeNull();
 
     const area = document.querySelector(".recharts-area-area");
-    const gradientId = area?.getAttribute("fill")?.match(/^url\(#(.+)\)$/)?.[1];
+    const gradientId = area?.getAttribute("fill")?.match(/^url\(#(?<id>.+)\)$/u)
+      ?.groups?.["id"];
     expect(gradientId).toBeDefined();
-    const gradient = document.getElementById(gradientId ?? "");
+    const gradient = document.querySelector(`[id="${gradientId ?? ""}"]`);
     expect(gradient?.tagName.toLowerCase()).toBe("lineargradient");
     expect(gradient).toHaveClass("text-accent");
   });
@@ -262,7 +263,7 @@ describe("VolumeChart", () => {
     expect(screen.getByText("総クリック数")).toBeInTheDocument();
     expect(screen.getByText("0")).toBeInTheDocument();
     expect(document.querySelector(".recharts-bar-rectangle")).toBeNull();
-    expect(screen.queryByText(/選択された日付/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/選択された日付/u)).not.toBeInTheDocument();
 
     fireEvent.click(getChart(), { clientX: 700, clientY: 100 });
     await waitForAnimationFrame();

@@ -46,7 +46,8 @@ describe(collectAnalyticsSummary, () => {
 
   it("sums the scores read as strings and skips the others", async () => {
     const redis = new FakeRedis();
-    redis.zrange = async () => ["video1", "10", "video2", undefined, "v3", "5"];
+    redis.zrange = () =>
+      Promise.resolve(["video1", "10", "video2", undefined, "v3", "5"]);
 
     const summary = await collectAnalyticsSummary(redis.asRedis(), dateKey);
 

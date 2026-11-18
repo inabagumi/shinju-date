@@ -34,7 +34,7 @@ export interface CronJob {
    * job that keeps its overlapping runs from doing the same work by itself.
    */
   ratelimit?: {
-    limit(identifier: string): Promise<{ success: boolean }>;
+    limit: (identifier: string) => Promise<{ success: boolean }>;
   };
   /** Crontab expression in UTC. Must match the entry in `vercel.json`. */
   schedule: string;
@@ -86,7 +86,7 @@ export const verifyCronRequest = (
   }
 
   const [type, credentials] = authHeader
-    .split(/\s+/)
+    .split(/\s+/u)
     .map((value) => value.trim());
 
   return type === "Bearer" && credentials === cronSecure;

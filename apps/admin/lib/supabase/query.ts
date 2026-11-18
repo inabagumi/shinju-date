@@ -30,7 +30,10 @@ const NOT_FOUND_ERROR_CODES: ReadonlySet<string> = new Set([
  */
 export const isNotFoundError = (
   error: Pick<PostgrestError, "code"> | null | undefined
-): boolean => error != null && NOT_FOUND_ERROR_CODES.has(error.code);
+): boolean =>
+  error !== null &&
+  error !== undefined &&
+  NOT_FOUND_ERROR_CODES.has(error.code);
 
 /** A failed Supabase query, named by the operation that ran it. */
 export class QueryError extends Error {

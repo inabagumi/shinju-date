@@ -45,7 +45,7 @@ describe(replaceThumbnail, () => {
     supabase.respond(() => []);
 
     const thumbnail = await replaceThumbnail(context, {
-      create: async () => created,
+      create: () => Promise.resolve(created),
       fields: { title: "Archive" },
       previousThumbnailId: "thumb-old",
       videoId: "video-1",
@@ -69,7 +69,7 @@ describe(replaceThumbnail, () => {
     supabase.respond(() => []);
 
     await replaceThumbnail(context, {
-      create: async () => created,
+      create: () => Promise.resolve(created),
       fields: {},
       previousThumbnailId: "thumb-old",
       videoId: "video-1",
@@ -89,7 +89,7 @@ describe(replaceThumbnail, () => {
     supabase.respond(() => []);
 
     await replaceThumbnail(context, {
-      create: async () => created,
+      create: () => Promise.resolve(created),
       fields: {},
       previousThumbnailId: null,
       videoId: "video-1",
@@ -109,7 +109,7 @@ describe(replaceThumbnail, () => {
 
     await expect(
       replaceThumbnail(context, {
-        create: async () => created,
+        create: () => Promise.resolve(created),
         fields: { title: "Archive" },
         previousThumbnailId: "thumb-old",
         videoId: "video-1",
@@ -125,7 +125,7 @@ describe(replaceThumbnail, () => {
     supabase.respond(() => []);
 
     const thumbnail = await replaceThumbnail(context, {
-      create: async () => null,
+      create: () => Promise.resolve(null),
       fields: { title: "Archive" },
       previousThumbnailId: "thumb-old",
       videoId: "video-1",
@@ -142,7 +142,7 @@ describe(replaceThumbnail, () => {
     supabase.respond(() => []);
 
     await replaceThumbnail(context, {
-      create: async () => null,
+      create: () => Promise.resolve(null),
       fields: {},
       previousThumbnailId: "thumb-old",
       videoId: "video-1",
@@ -159,7 +159,7 @@ describe(replaceThumbnail, () => {
 
     await expect(
       replaceThumbnail(context, {
-        create: async () => created,
+        create: () => Promise.resolve(created),
         fields: { title: "Archive" },
         previousThumbnailId: "thumb-old",
         videoId: "video-1",
@@ -177,7 +177,7 @@ describe(replaceThumbnail, () => {
 
     await expect(
       replaceThumbnail(context, {
-        create: async () => created,
+        create: () => Promise.resolve(created),
         fields: {},
         previousThumbnailId: null,
         videoId: "video-1",

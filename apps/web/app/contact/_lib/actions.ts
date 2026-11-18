@@ -38,6 +38,10 @@ const CONTACT_FORM_FIELDS = [
   "wantsReply",
 ] as const satisfies readonly ContactFormField[];
 
+/** The reply-to address, with the name when it is given */
+const formatReplyTo = (email: string, name: string | undefined): string =>
+  name ? `${name} <${email}>` : email;
+
 export const submitContactForm = withBotCheck<ContactFormField>(
   async (formData, values) => {
     // Check if contact form is enabled
@@ -98,11 +102,7 @@ ${message}
 
     // Set up reply-to with name and email if both available and reply requested
     const replyToValue =
-      wantsReply && email && name
-        ? `${name} <${email}>`
-        : wantsReply && email
-          ? email
-          : undefined;
+      wantsReply && email ? formatReplyTo(email, name) : undefined;
 
     const resend = new Resend(config.resendApiKey);
 

@@ -25,20 +25,48 @@ describe(isFilteredYouTubePlaylistItem, () => {
   });
 });
 
-describe(getPlaylistItemsPage, () => {
-  const createClient = (data: youtube.Schema$PlaylistItemListResponse) => {
-    const list = vi.fn<
-      () => Promise<{ data: youtube.Schema$PlaylistItemListResponse }>
-    >(async () => ({ data }));
+/** A client whose `playlistItems.list` returns `data`. */
+const createPageClient = (data: youtube.Schema$PlaylistItemListResponse) => {
+  const list = vi
+    .fn<() => Promise<{ data: youtube.Schema$PlaylistItemListResponse }>>()
+    .mockResolvedValue({ data });
 
-    return {
-      client: { playlistItems: { list } } as unknown as youtube.Youtube,
-      list,
-    };
+  return {
+    client: { playlistItems: { list } } as unknown as youtube.Youtube,
+    list,
   };
+};
 
+/**
+ * A client whose `playlistItems.list` returns the page of `pages` at the
+ * index given as the page token (the first one without a token).
+ */
+const createPagesClient = (
+  pages: youtube.Schema$PlaylistItemListResponse[]
+) => {
+  const list = vi.fn<
+    (params: {
+      pageToken?: string;
+    }) => Promise<{ data: youtube.Schema$PlaylistItemListResponse }>
+  >(({ pageToken }) => {
+    const data = pages[pageToken === undefined ? 0 : Number(pageToken)];
+
+    if (!data) {
+      return Promise.reject(new Error(`Unexpected page token: ${pageToken}`));
+    }
+
+    return Promise.resolve({ data });
+  });
+
+  return {
+    client: { playlistItems: { list } } as unknown as youtube.Youtube,
+    list,
+  };
+};
+
+describe(getPlaylistItemsPage, () => {
   it("returns one page with the token of the next", async () => {
-    const { client, list } = createClient({
+    const { client, list } = createPageClient({
       items: [
         { contentDetails: { videoId: "a" } },
         { contentDetails: {} },
@@ -66,7 +94,7 @@ describe(getPlaylistItemsPage, () => {
   });
 
   it("reports an empty page as the last even with a token", async () => {
-    const { client } = createClient({ items: [], nextPageToken: "stale" });
+    const { client } = createPageClient({ items: [], nextPageToken: "stale" });
 
     await expect(
       getPlaylistItemsPage({ client, playlistID: "UUxxx" })
@@ -74,7 +102,7 @@ describe(getPlaylistItemsPage, () => {
   });
 
   it("reports the last page", async () => {
-    const { client, list } = createClient({ items: [] });
+    const { client, list } = createPageClient({ items: [] });
 
     await expect(
       getPlaylistItemsPage({ client, playlistID: "UUxxx" })
@@ -86,29 +114,8 @@ describe(getPlaylistItemsPage, () => {
 });
 
 describe(getPlaylistItems, () => {
-  const createClient = (pages: youtube.Schema$PlaylistItemListResponse[]) => {
-    const list = vi.fn<
-      (params: {
-        pageToken?: string;
-      }) => Promise<{ data: youtube.Schema$PlaylistItemListResponse }>
-    >(async ({ pageToken }) => {
-      const data = pages[pageToken === undefined ? 0 : Number(pageToken)];
-
-      if (!data) {
-        throw new Error(`Unexpected page token: ${pageToken}`);
-      }
-
-      return { data };
-    });
-
-    return {
-      client: { playlistItems: { list } } as unknown as youtube.Youtube,
-      list,
-    };
-  };
-
   it("gets only the first page by default", async () => {
-    const { client, list } = createClient([
+    const { client, list } = createPagesClient([
       { items: [{ contentDetails: { videoId: "a" } }], nextPageToken: "1" },
     ]);
 
@@ -127,7 +134,7 @@ describe(getPlaylistItems, () => {
   });
 
   it("walks every page with `all`", async () => {
-    const { client, list } = createClient([
+    const { client, list } = createPagesClient([
       { items: [{ contentDetails: { videoId: "a" } }], nextPageToken: "1" },
       {
         items: [{ contentDetails: {} }, { contentDetails: { videoId: "b" } }],
@@ -167,7 +174,7 @@ describe(getPlaylistItems, () => {
   });
 
   it("stops at an empty page even when YouTube returns a token", async () => {
-    const { client, list } = createClient([
+    const { client, list } = createPagesClient([
       { items: [{ contentDetails: { videoId: "a" } }], nextPageToken: "1" },
       { items: [], nextPageToken: "2" },
     ]);

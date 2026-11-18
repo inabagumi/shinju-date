@@ -19,7 +19,7 @@ vi.mock(import("@/lib/redis"), () => ({
 
 const BASE_URL = "https://shinju.date";
 
-const importProxy = async () => {
+const importProxy = () => {
   // The proxy keeps the maintenance mode in a module variable, so each test
   // starts from a fresh module.
   vi.resetModules();
@@ -42,13 +42,13 @@ const run = async (
   return response as NextResponse;
 };
 
+const doesMatch = async (path: string): Promise<boolean> => {
+  const { config } = await importProxy();
+
+  return unstable_doesMiddlewareMatch({ config, url: `${BASE_URL}${path}` });
+};
+
 describe("config.matcher", () => {
-  const doesMatch = async (path: string): Promise<boolean> => {
-    const { config } = await importProxy();
-
-    return unstable_doesMiddlewareMatch({ config, url: `${BASE_URL}${path}` });
-  };
-
   it.each([
     "/",
     "/videos",

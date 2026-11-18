@@ -14,7 +14,7 @@ const createQueries = (count: number): string[] =>
   range(1, count + 1).map((i) => `query${i}`);
 
 const getRank = (query: string): number =>
-  Number.parseInt(query.replace("query", ""), 10);
+  Math.trunc(Number(query.replace("query", "")));
 
 describe(getDisplayRecommendationQueries, () => {
   beforeEach(() => {

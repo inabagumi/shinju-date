@@ -13,6 +13,8 @@ interface GetUsersOptions extends ClientOptions, BatchOptions {
 
 /**
  * Gets Twitch users by ID and/or login.
+ *
+ * @yields {TwitchUser} The users found by ID, then those found by login
  */
 export const getUsers = async function* getUsers({
   client = getTwitchApiClient(),
@@ -61,7 +63,7 @@ export const resolveTwitchUser = async (
   options: ClientOptions = {}
 ): Promise<TwitchUser | null> => {
   if (identifier.kind === "id") {
-    return getUserById(identifier.id, options);
+    return await getUserById(identifier.id, options);
   }
-  return getUserByLogin(identifier.login, options);
+  return await getUserByLogin(identifier.login, options);
 };

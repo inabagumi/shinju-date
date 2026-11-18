@@ -21,10 +21,12 @@ vi.mock(import("@shinju-date/video-backfill"), async (importOriginal) => {
     ...original,
     // The real constructor only keeps the Redis client
     BackfillQueue: class extends original.BackfillQueue {
+      // oxlint-disable-next-line eslint/class-methods-use-this -- overrides an instance method of the real class
       override enqueue(...args: Parameters<BackfillQueue["enqueue"]>) {
         return mocks.enqueue(...args);
       }
 
+      // oxlint-disable-next-line eslint/class-methods-use-this -- overrides an instance method of the real class
       override getJobs(...args: Parameters<BackfillQueue["getJobs"]>) {
         return mocks.getJobs(...args);
       }

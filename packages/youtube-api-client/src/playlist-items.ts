@@ -29,7 +29,7 @@ export const isFilteredYouTubePlaylistItem = (
 /**
  * Gets YouTube playlist items by playlist ID
  * @param options - The options for getting playlist items
- * @yields YouTube playlist item objects
+ * @yields {FilteredYouTubePlaylistItem} YouTube playlist item objects
  */
 export const getPlaylistItems = async function* getPlaylistItems({
   all = false,

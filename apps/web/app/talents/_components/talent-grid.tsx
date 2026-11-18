@@ -11,6 +11,8 @@ const GRID_CLASS_NAME =
 
 const SKELETON_COUNT = 12;
 
+const NO_STREAM_STATUSES: Record<string, TalentStreamStatus> = {};
+
 interface TalentGridProps {
   /**
    * Whether each talent is live and when it streams next, keyed by the ID of
@@ -21,7 +23,7 @@ interface TalentGridProps {
 }
 
 export default function TalentGrid({
-  streamStatuses = {},
+  streamStatuses = NO_STREAM_STATUSES,
   talents,
 }: TalentGridProps) {
   if (talents.length === 0) {

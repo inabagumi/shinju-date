@@ -20,7 +20,7 @@ describe(Card, () => {
     const header = screen.getByTestId("header");
     const content = screen.getByTestId("content");
 
-    expect(Array.from(card.children)).toStrictEqual([header, content]);
+    expect([...card.children]).toStrictEqual([header, content]);
     expect(header).toContainElement(
       screen.getByRole("heading", { name: "今週の配信" })
     );

@@ -1,3 +1,5 @@
+import { setTimeout as delay } from "node:timers/promises";
+
 import type { youtube_v3 as youtube } from "@googleapis/youtube";
 import { range } from "@shinju-date/helpers";
 import { describe, expect, it, vi } from "vitest";
@@ -34,44 +36,46 @@ const createClient = ({
   videoIds = [],
 }: FakeYouTube) => {
   const channelsList = vi.fn<ListMethod<youtube.Schema$ChannelListResponse>>(
-    async ({ id = [] }: ListParams) => ({
-      data: {
-        items: id
-          .filter((value) => channelIds.includes(value))
-          .map((value) => createChannel(value)),
-      },
-    })
+    ({ id = [] }: ListParams) =>
+      Promise.resolve({
+        data: {
+          items: id
+            .filter((value) => channelIds.includes(value))
+            .map((value) => createChannel(value)),
+        },
+      })
   );
 
   const playlistItemsList = vi.fn<
     ListMethod<youtube.Schema$PlaylistItemListResponse>
-  >(async ({ playlistId }: ListParams) => {
+  >(({ playlistId }: ListParams) => {
     const channelId = `UC${playlistId?.slice(2)}`;
     const result = uploads[channelId] ?? [];
 
     if (result instanceof Error) {
-      throw result;
+      return Promise.reject(result);
     }
 
-    return {
+    return Promise.resolve({
       data: {
         items: result.map((videoId) => createPlaylistItem(videoId)),
       },
-    };
+    });
   });
 
   const videosList = vi.fn<ListMethod<youtube.Schema$VideoListResponse>>(
-    async ({ id = [], part = [] }: ListParams) => ({
-      data: {
-        items: id
-          .filter((value) => videoIds.includes(value))
-          .map((value) =>
-            part.includes("snippet")
-              ? createVideo({ id: value })
-              : { id: value }
-          ),
-      },
-    })
+    ({ id = [], part = [] }: ListParams) =>
+      Promise.resolve({
+        data: {
+          items: id
+            .filter((value) => videoIds.includes(value))
+            .map((value) =>
+              part.includes("snippet")
+                ? createVideo({ id: value })
+                : { id: value }
+            ),
+        },
+      })
   );
 
   const client = {
@@ -91,10 +95,10 @@ const createSlowClient = () => {
   let running = 0;
   let peak = 0;
   const list = vi.fn<ListMethod<youtube.Schema$VideoListResponse>>(async () => {
-    running++;
+    running += 1;
     peak = Math.max(peak, running);
-    await new Promise((resolve) => setTimeout(resolve, 5));
-    running--;
+    await delay(5);
+    running -= 1;
 
     return { data: { items: [] } };
   });

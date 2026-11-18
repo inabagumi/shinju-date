@@ -67,7 +67,7 @@ export const formatRelativeDate = (
   today: Temporal.PlainDate,
   { style, yesterday = false }: FormatRelativeDateOptions
 ): string => {
-  const days = today.until(date, { largestUnit: "day" }).days;
+  const { days } = today.until(date, { largestUnit: "day" });
 
   if (days === 0) {
     return "今日";

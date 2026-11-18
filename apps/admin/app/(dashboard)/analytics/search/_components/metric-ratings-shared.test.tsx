@@ -26,19 +26,20 @@ vi.mock(import("@/lib/analytics/get-search-quality-metrics"), () => ({
   getSearchExitRates: mocks.getSearchExitRates,
 }));
 
+// The factory of `vi.mock()` runs before the module body, so the helper is
+// defined in `vi.hoisted()`
+const { withMin } = vi.hoisted(() => ({
+  withMin: (ratings: Ratings, from: number, to: number): readonly Rating[] =>
+    ratings.map((rating) =>
+      rating.min === from ? { ...rating, min: to } : rating
+    ),
+}));
+
 vi.mock(import("../_lib/metric-ratings"), async (importOriginal) => {
   const original = await importOriginal();
 
   // The type of each table has the values themselves, so the changed table
   // is cast back to the type of the original one
-  const withMin = (
-    ratings: Ratings,
-    from: number,
-    to: number
-  ): readonly Rating[] =>
-    ratings.map((rating) =>
-      rating.min === from ? { ...rating, min: to } : rating
-    );
 
   return {
     ...original,

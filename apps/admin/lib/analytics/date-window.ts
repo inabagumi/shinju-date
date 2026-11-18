@@ -16,7 +16,7 @@ import { TIME_ZONE } from "@shinju-date/constants";
 /** 選べる期間の最長の日数（両端を含む）。集計を保存している日数でもある */
 export const MAX_RANGE_DAYS = 90;
 
-const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
+const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/u;
 
 /** 日付が選べない理由。`'future'` は今日より先、`'too-old'` は保存している期間より前 */
 export type DateError = "future" | "too-old";

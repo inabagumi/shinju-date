@@ -9,14 +9,14 @@ import {
 } from "@/test/factories";
 import { seedSupabase, setupSupabase, supabaseRequests } from "@/test/supabase";
 
+import Image, { contentType, size } from "./opengraph-image";
+
 // Vitest does not run `'use cache'`, so `fetchTalent` queries every time
 vi.mock(import("next/cache"), () => ({
   // A name of a profile or an object, which every overload of cacheLife takes
   cacheLife: vi.fn<(profile: string | object) => void>(),
   cacheTag: vi.fn<typeof cacheTag>(),
 }));
-
-import Image, { contentType, size } from "./opengraph-image";
 
 setupSupabase();
 

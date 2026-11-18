@@ -1,4 +1,4 @@
-import react from "@vitejs/plugin-react";
+import reactPlugin from "@vitejs/plugin-react";
 import { mergeConfig } from "vitest/config";
 import type { ViteUserConfig } from "vitest/config";
 
@@ -18,7 +18,7 @@ const defaults = {
  * configuration gets its own instance of the plugin.
  */
 const reactDefaults = (): ViteUserConfig => ({
-  plugins: [react()],
+  plugins: [reactPlugin()],
   test: {
     environment: "jsdom",
   },
@@ -56,7 +56,7 @@ export const defineVitestConfig = (
  * })
  * ```
  */
-defineVitestConfig.react = function defineReactVitestConfig(
+defineVitestConfig.react = function react(
   overrides: ViteUserConfig = {}
 ): ViteUserConfig {
   return defineVitestConfig(mergeConfig(reactDefaults(), overrides));

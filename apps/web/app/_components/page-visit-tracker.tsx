@@ -4,16 +4,22 @@ import { useEffect } from "react";
 
 import { trackPageVisit } from "@/lib/session-analytics";
 
+const trackPageVisitSilently = async (): Promise<void> => {
+  try {
+    await trackPageVisit();
+  } catch (error) {
+    // Silently fail if tracking fails
+    console.debug("Page visit tracking failed:", error);
+  }
+};
+
 /**
  * Client-side component that tracks page visits for analytics.
  * This should be included in the root layout to track all page visits.
  */
 export default function PageVisitTracker() {
   useEffect(() => {
-    trackPageVisit().catch((error) => {
-      // Silently fail if tracking fails
-      console.debug("Page visit tracking failed:", error);
-    });
+    void trackPageVisitSilently();
   }, []);
 
   // This component doesn't render anything

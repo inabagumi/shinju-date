@@ -26,8 +26,8 @@ export const metadata: Metadata = {
 const RedirectPathInput = async ({
   searchParams,
 }: Pick<PageProps<"/login">, "searchParams">) => {
-  const { [REDIRECT_PARAM]: value } = await searchParams;
-  const redirectPath = getSafeRedirectPath(value);
+  const params = await searchParams;
+  const redirectPath = getSafeRedirectPath(params[REDIRECT_PARAM]);
 
   if (redirectPath === "/") {
     return null;

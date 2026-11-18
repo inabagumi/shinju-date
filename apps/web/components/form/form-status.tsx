@@ -13,6 +13,7 @@ export const FormStatus = ({ state }: FormStatusProps) => {
     return (
       <div
         className="rounded-container border border-success/30 bg-success/10 p-4 text-success"
+        // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- This is rendered inside the form, and `<output>` is a form control whose text the form reset after a Server Action (done by React) would replace
         role="status"
       >
         {state.message}

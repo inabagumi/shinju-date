@@ -30,9 +30,9 @@ const without = (...names: RequiredName[]): EnvSource =>
     )
   );
 
-const errorOf = (callback: () => unknown): Error => {
+const errorOf = (run: () => unknown): Error => {
   try {
-    callback();
+    run();
   } catch (error) {
     if (error instanceof Error) {
       return error;

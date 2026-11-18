@@ -6,7 +6,7 @@ import { MOCK_SUPABASE_SESSION, MOCK_SUPABASE_USER } from "../../session.js";
 export const authHandlers = [
   http.get(
     "https://fake.supabase.test/auth/v1/user",
-    async ({ request, cookies }) => {
+    ({ request, cookies }) => {
       // Check for authentication in multiple ways:
       // 1. Environment variable for forced authentication
       // 2. Authorization header with bearer token
@@ -85,23 +85,20 @@ export const authHandlers = [
   }),
 
   // Session endpoint - for refreshing tokens
-  http.get(
-    "https://fake.supabase.test/auth/v1/session",
-    async ({ request }) => {
-      const authHeader = request.headers.get("authorization");
-      const hasValidToken =
-        authHeader?.startsWith("Bearer ") && authHeader.includes("mock");
+  http.get("https://fake.supabase.test/auth/v1/session", ({ request }) => {
+    const authHeader = request.headers.get("authorization");
+    const hasValidToken =
+      authHeader?.startsWith("Bearer ") && authHeader.includes("mock");
 
-      if (
-        !hasValidToken &&
-        process.env["MSW_SUPABASE_AUTHENTICATED"] !== "true"
-      ) {
-        return HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-
-      return HttpResponse.json(MOCK_SUPABASE_SESSION);
+    if (
+      !hasValidToken &&
+      process.env["MSW_SUPABASE_AUTHENTICATED"] !== "true"
+    ) {
+      return HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-  ),
+
+    return HttpResponse.json(MOCK_SUPABASE_SESSION);
+  }),
 
   http.post("https://fake.supabase.test/auth/v1/logout", () => {
     const headers = new Headers();

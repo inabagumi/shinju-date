@@ -19,7 +19,7 @@ export const createBackfills = (
   { twitchUsers, youtubeChannels }: BackfillsDependencies
 ): Tables<"video_backfill_jobs">[] => {
   const [channel] = youtubeChannels;
-  const failedTwitchUser = twitchUsers[1];
+  const [, failedTwitchUser] = twitchUsers;
 
   if (!channel || !failedTwitchUser) {
     return [];

@@ -22,6 +22,7 @@ export interface Page<T> {
  *
  * @param fetchPage - Fetches one page. Called with `undefined` for the first
  *   page, then with the `next` of the previous page.
+ * @yields {T} The items of each page, in order
  */
 export const paginate = async function* paginate<T>(
   fetchPage: (cursor: string | undefined) => Promise<Page<T>>
@@ -29,6 +30,7 @@ export const paginate = async function* paginate<T>(
   let cursor: string | undefined;
 
   do {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- each page needs the position that the previous one returned
     const { items, next } = await fetchPage(cursor);
 
     yield* items;

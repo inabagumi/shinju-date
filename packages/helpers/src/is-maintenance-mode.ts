@@ -5,7 +5,7 @@ import { REDIS_KEYS } from "@shinju-date/constants";
  * `@upstash/redis` satisfies it.
  */
 export interface MaintenanceModeRedisClient {
-  get<TData>(key: string): Promise<TData | null>;
+  get: <TData>(key: string) => Promise<TData | null>;
 }
 
 /**

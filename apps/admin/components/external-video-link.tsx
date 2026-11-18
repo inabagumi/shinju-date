@@ -57,7 +57,7 @@ export const ExternalVideoLink = ({
   const href = getExternalVideoUrl(video);
 
   if (!href) {
-    return <>{children}</>;
+    return children;
   }
 
   return (

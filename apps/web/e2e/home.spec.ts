@@ -11,7 +11,7 @@ const RECENT_VIDEO_TITLE = "奇跡のワンプレイ";
 
 // Video cards link to the video on YouTube or Twitch
 const VIDEO_URL_PATTERN =
-  /^https:\/\/(?:www\.youtube\.com\/watch\?v=|www\.twitch\.tv\/|clips\.twitch\.tv\/)./;
+  /^https:\/\/(?:www\.youtube\.com\/watch\?v=|www\.twitch\.tv\/|clips\.twitch\.tv\/)./u;
 
 const getSection = (page: Page, name: string) =>
   page.getByRole("main").getByRole("region", { exact: true, name });
@@ -32,7 +32,7 @@ test.describe("Home page", () => {
   test("should show the title and the navigation", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page).toHaveTitle(/^SHINJU DATE - /);
+    await expect(page).toHaveTitle(/^SHINJU DATE - /u);
     await expect(
       page.getByRole("heading", { level: 1, name: "SHINJU DATE" })
     ).toBeVisible();
@@ -41,14 +41,11 @@ test.describe("Home page", () => {
       .getByRole("banner")
       .getByRole("navigation", { name: "メイン" });
 
-    for (const name of [
-      "SHINJU DATEとは",
-      "スケジュール",
-      "動画一覧",
-      "タレント一覧",
-    ]) {
-      await expect(navigation.getByRole("link", { name })).toBeVisible();
-    }
+    await Promise.all(
+      ["SHINJU DATEとは", "スケジュール", "動画一覧", "タレント一覧"].map(
+        (name) => expect(navigation.getByRole("link", { name })).toBeVisible()
+      )
+    );
   });
 
   test("should show the live videos", async ({ page }) => {
@@ -60,13 +57,15 @@ test.describe("Home page", () => {
       section.getByRole("heading", { level: 2, name: "配信中" })
     ).toBeVisible();
 
-    for (const title of LIVE_VIDEO_TITLES) {
-      await expect(getVideoCard(section, title)).toBeVisible();
-    }
+    await Promise.all(
+      LIVE_VIDEO_TITLES.map((title) =>
+        expect(getVideoCard(section, title)).toBeVisible()
+      )
+    );
 
     const cards = getVideoCards(section);
 
-    await expect(section.getByText(/^\d+件$/)).toHaveText(
+    await expect(section.getByText(/^\d+件$/u)).toHaveText(
       `${await cards.count()}件`
     );
   });
@@ -99,19 +98,23 @@ test.describe("Home page", () => {
     await page.goto("/");
 
     // Wait for the cards of every section
-    for (const name of ["配信中", "配信予定", "新着動画", "ショート"]) {
-      await expect(getVideoCards(getSection(page, name)).first()).toBeVisible();
-    }
+    await Promise.all(
+      ["配信中", "配信予定", "新着動画", "ショート"].map((name) =>
+        expect(getVideoCards(getSection(page, name)).first()).toBeVisible()
+      )
+    );
 
     const cards = await getVideoCards(page.getByRole("main")).all();
 
     expect(cards.length).toBeGreaterThan(0);
 
-    for (const card of cards) {
-      await expect(card).toHaveAttribute("href", VIDEO_URL_PATTERN);
-      await expect(card).toHaveAttribute("target", "_blank");
-      await expect(card).toHaveAttribute("rel", "noopener noreferrer");
-    }
+    await Promise.all(
+      cards.flatMap((card) => [
+        expect(card).toHaveAttribute("href", VIDEO_URL_PATTERN),
+        expect(card).toHaveAttribute("target", "_blank"),
+        expect(card).toHaveAttribute("rel", "noopener noreferrer"),
+      ])
+    );
   });
 
   test("should open the video list from the header", async ({ page }) => {

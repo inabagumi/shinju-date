@@ -49,7 +49,7 @@ describe(FilterBar, () => {
     );
 
     expect(
-      screen.getByRole("button", { name: /動画の絞り込み\s*2件適用中/ })
+      screen.getByRole("button", { name: /動画の絞り込み\s*2件適用中/u })
     ).toBeInTheDocument();
   });
 

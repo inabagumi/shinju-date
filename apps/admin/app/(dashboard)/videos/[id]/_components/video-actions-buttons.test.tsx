@@ -95,7 +95,7 @@ describe(VideoActionsProvider, () => {
     renderActions();
 
     fireEvent.click(screen.getByRole("button", { name: "動画を削除" }));
-    fireEvent.change(screen.getByLabelText(/「DELETE」と入力してください/), {
+    fireEvent.change(screen.getByLabelText(/「DELETE」と入力してください/u), {
       target: { value: "DELETE" },
     });
     fireEvent.click(screen.getByRole("button", { name: "削除する" }));

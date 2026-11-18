@@ -9,7 +9,7 @@ import type { VideoSummaryTile } from "./video-summary-filters";
 
 /** Read the query of the URL as Next.js passes `searchParams` to the page */
 const parseSearchParams = (href: string) => {
-  const searchParams = new URL(href, "http://localhost").searchParams;
+  const { searchParams } = new URL(href, "http://localhost");
   const result: Record<string, string | string[]> = {};
 
   for (const key of new Set(searchParams.keys())) {

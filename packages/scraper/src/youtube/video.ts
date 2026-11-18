@@ -34,7 +34,7 @@ export const toVideoFields = (
 export const getThumbnailSource = (
   video: YouTubeVideo
 ): ThumbnailSource | null => {
-  const thumbnails = video.snippet.thumbnails;
+  const { thumbnails } = video.snippet;
   const thumbnail =
     thumbnails?.maxres ?? thumbnails?.standard ?? thumbnails?.high;
 

@@ -1,5 +1,5 @@
 import type { WriteContext } from "../../types.js";
-import { softDeleteUnavailableVideos } from "../database/index.js";
+import { softDeleteUnavailableVideos } from "../database/videos.js";
 import type { PlatformAdapter, SavedVideoBase } from "../platform.js";
 
 /**

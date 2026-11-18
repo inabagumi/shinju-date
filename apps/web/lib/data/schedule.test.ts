@@ -58,6 +58,12 @@ const seedVideos = (
     ...videoSeed(rows),
   });
 
+const video = (publishedAt: string, overrides = {}) =>
+  createVideoOnYouTube(channel, {
+    published_at: publishedAt,
+    ...overrides,
+  });
+
 describe("lib/data/schedule", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -68,12 +74,6 @@ describe("lib/data/schedule", () => {
   });
 
   describe(fetchScheduleVideos, () => {
-    const video = (publishedAt: string, overrides = {}) =>
-      createVideoOnYouTube(channel, {
-        published_at: publishedAt,
-        ...overrides,
-      });
-
     it("returns the standard videos of every status from Sunday to Saturday in Japan, by start", async () => {
       // 00:00 on Sunday, 8 November in Japan
       const first = video("2026-11-07T15:00:00Z", { status: "ENDED" });

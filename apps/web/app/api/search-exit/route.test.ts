@@ -2,6 +2,10 @@
 import type { logger } from "@shinju-date/logger";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { trackSearchExitWithoutClick } from "@/lib/session-analytics";
+
+import { POST } from "./route";
+
 const mocks = vi.hoisted(() => ({
   trackSearchExitWithoutClick: vi.fn<typeof trackSearchExitWithoutClick>(),
 }));
@@ -18,10 +22,6 @@ vi.mock(import("@shinju-date/logger"), () => ({
     warn: vi.fn<typeof logger.warn>(),
   },
 }));
-
-import type { trackSearchExitWithoutClick } from "@/lib/session-analytics";
-
-import { POST } from "./route";
 
 const post = (body: string): Promise<Response> =>
   POST(

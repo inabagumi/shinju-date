@@ -1,22 +1,9 @@
 import type { Metadata, ResolvingMetadata } from "next";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { SITE_DESCRIPTION, SITE_TAGLINE } from "@/lib/site";
-
-vi.mock(import("@/lib/data/schedule"), async (importOriginal) => ({
-  ...(await importOriginal()),
-  fetchOldestVideoDate: vi.fn<typeof fetchOldestVideoDate>(),
-  fetchScheduleToday: vi.fn<typeof fetchScheduleToday>(),
-}));
-
-vi.mock(import("@/lib/data/talents"), async (importOriginal) => ({
-  ...(await importOriginal()),
-  fetchActiveTalents: vi.fn<typeof fetchActiveTalents>(),
-  fetchTalent: vi.fn<typeof fetchTalent>(),
-}));
-
 import { fetchOldestVideoDate, fetchScheduleToday } from "@/lib/data/schedule";
 import { fetchActiveTalents, fetchTalent } from "@/lib/data/talents";
+import { SITE_DESCRIPTION, SITE_TAGLINE } from "@/lib/site";
 
 import { metadata as aboutMetadata } from "./about/layout";
 import { alt as aboutImageAlt } from "./about/opengraph-image";
@@ -37,6 +24,18 @@ import { metadata as termsMetadata } from "./terms/layout";
 import { alt as termsImageAlt } from "./terms/opengraph-image";
 import { generateMetadata as generateVideosMetadata } from "./videos/[[...queries]]/page";
 import { alt as videosImageAlt } from "./videos/opengraph-image";
+
+vi.mock(import("@/lib/data/schedule"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  fetchOldestVideoDate: vi.fn<typeof fetchOldestVideoDate>(),
+  fetchScheduleToday: vi.fn<typeof fetchScheduleToday>(),
+}));
+
+vi.mock(import("@/lib/data/talents"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  fetchActiveTalents: vi.fn<typeof fetchActiveTalents>(),
+  fetchTalent: vi.fn<typeof fetchTalent>(),
+}));
 
 const TALENT_ID = "00000000-0000-4000-8000-000000000001";
 

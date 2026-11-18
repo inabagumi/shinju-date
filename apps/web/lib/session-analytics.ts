@@ -29,10 +29,14 @@ const generateSessionId = async (): Promise<string> => {
 
   // Simple hash function to create a short session ID
   let hash = 0;
-  for (let i = 0; i < sessionData.length; i++) {
-    const char = sessionData.charCodeAt(i);
+  for (let i = 0; i < sessionData.length; i += 1) {
+    // Header values are byte strings, so every character is a single code unit
+    const char = sessionData.codePointAt(i) ?? 0;
+    // oxlint-disable-next-line eslint/no-bitwise -- A 32-bit string hash (hash * 31 + char), where the bit operations are the point
     hash = (hash << 5) - hash + char;
-    hash &= hash; // Convert to 32-bit integer
+    // Convert to 32-bit integer
+    // oxlint-disable-next-line eslint/no-bitwise -- `&=` wraps the hash to a signed 32-bit integer, which `Math.trunc` does not
+    hash &= hash;
   }
 
   return Math.abs(hash).toString(36);

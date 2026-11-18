@@ -1,7 +1,7 @@
 import type { Tables } from "@shinju-date/database";
 
-import { TWITCH_USERS } from "../internal/database/index.js";
-import { DatabaseError } from "../internal/errors.js";
+import { DatabaseError } from "../internal/database-error.js";
+import { TWITCH_USERS } from "../internal/database/talents.js";
 import type { AccountAdapter } from "../internal/operations/sync-accounts.js";
 import type { TwitchFetcher } from "./fetcher.js";
 import { syncTwitchUserIcon } from "./profile-image.js";

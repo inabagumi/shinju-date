@@ -42,7 +42,8 @@ const fetchSearchPopularityFromRedis = async (
 
       if (typeof term === "string" && typeof score === "number") {
         popularityData.push({
-          score: Math.floor(score), // Ensure integer
+          // Ensure integer
+          score: Math.floor(score),
           term,
         });
       }
@@ -85,6 +86,7 @@ const updateTermsPopularityInDatabase = async (
       .map(({ score, term }) => ({ score, term }));
 
     updated += throwIfError(
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the batches are sent one at a time to keep the load on the database small
       await supabase.rpc("update_terms_popularity", { p_items: items }),
       "Failed to update the popularity of terms"
     );

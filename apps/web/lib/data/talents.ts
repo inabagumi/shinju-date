@@ -272,7 +272,12 @@ export const fetchTalentStreamStatuses = async (): Promise<
   const statuses: Record<string, TalentStreamStatus> = {};
 
   for (const video of videos) {
-    if (video.youtube_video == null && video.twitch_video == null) {
+    const hasYouTubeVideo =
+      video.youtube_video !== null && video.youtube_video !== undefined;
+    const hasTwitchVideo =
+      video.twitch_video !== null && video.twitch_video !== undefined;
+
+    if (!hasYouTubeVideo && !hasTwitchVideo) {
       continue;
     }
 

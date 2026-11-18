@@ -67,8 +67,7 @@ describe("POST /terms/popularity/update", () => {
 
   beforeEach(async () => {
     // Import after mocks are set up
-    const module = await import("./route");
-    POST = module.POST;
+    ({ POST } = await import("./route"));
 
     // Reset mocks
     vi.clearAllMocks();

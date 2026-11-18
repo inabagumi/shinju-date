@@ -4,7 +4,7 @@ import { toDBString } from "@shinju-date/temporal-fns";
 
 import type { TypedSupabaseClient } from "../../types.js";
 import { IN_FILTER_CHUNK_SIZE, SOFT_DELETE_CHUNK_SIZE } from "../constants.js";
-import { DatabaseError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
 
 export type NewVideo = Omit<TablesInsert<"videos">, "id">;
 
@@ -94,6 +94,7 @@ export const softDeleteUnavailableVideos = async (
   let deletedCount = 0;
 
   for (const ids of chunk(videoIds, SOFT_DELETE_CHUNK_SIZE)) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- the chunks are sent one at a time to keep the load on the database small
     const { data, error } = await supabaseClient.rpc("soft_delete_videos", {
       p_deleted_at: deletedAt,
       p_reason: "unavailable",
@@ -121,6 +122,7 @@ export const findSavedYouTubeVideoIds = async (
   const savedIds = new Set<string>();
 
   for (const ids of chunk(youtubeVideoIds, IN_FILTER_CHUNK_SIZE)) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- the chunks are sent one at a time to keep the load on the database small
     const { data, error } = await supabaseClient
       .from("youtube_videos")
       .select("youtube_video_id")

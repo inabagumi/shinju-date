@@ -4,10 +4,10 @@ import { describe, expect, it, vi } from "vitest";
 import type { TalentStreamStatus } from "@/lib/data/talents";
 import { createTalentListItem } from "@/test/factories";
 
-vi.mock(import("@/lib/data/talents"), () => ({}));
-
 import TalentCard from "./talent-card";
 import TalentGrid from "./talent-grid";
+
+vi.mock(import("@/lib/data/talents"), () => ({}));
 
 const TALENT_ID = "00000000-0000-4000-8000-000000000001";
 
@@ -82,7 +82,7 @@ describe("TalentCard with the stream status", () => {
 
     expect(link).not.toHaveAttribute("aria-describedby");
     expect(screen.queryByText("配信中")).not.toBeInTheDocument();
-    expect(screen.queryByText(/次回/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/次回/u)).not.toBeInTheDocument();
     expect(screen.getByTestId("talent-icon")).not.toHaveClass("ring-live");
   });
 
@@ -122,7 +122,7 @@ describe("TalentCard with the stream status", () => {
     render(<TalentCard streamStatus={upcoming} talent={TALENT} />);
 
     const link = screen.getByRole("link", { name: "朝霧ミオ" });
-    const nextStream = screen.getByText(/^次回/);
+    const nextStream = screen.getByText(/^次回/u);
 
     expect(link).toHaveAccessibleDescription("次回 11/16 20:00");
     expect(nextStream).toHaveTextContent("次回 11/16 20:00");
@@ -153,7 +153,7 @@ describe("TalentCard with the stream status", () => {
     );
 
     expect(screen.getByText("配信中")).toBeInTheDocument();
-    expect(screen.queryByText(/次回/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/次回/u)).not.toBeInTheDocument();
   });
 });
 

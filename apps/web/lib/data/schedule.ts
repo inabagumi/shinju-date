@@ -30,6 +30,7 @@ export type ScheduleTalent = ScheduleVideo["talent"];
  * and marks today with it, and the browser switches to its own clock after
  * the hydration.
  */
+// oxlint-disable-next-line eslint/require-await -- Next.js requires functions with `'use cache'` to be async
 export const fetchScheduleToday = async (): Promise<string> => {
   "use cache";
 

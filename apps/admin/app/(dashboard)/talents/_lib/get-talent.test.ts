@@ -76,7 +76,7 @@ describe(getTalent, () => {
       postgresError("PGRST000", "Database connection error")
     );
 
-    const error = await getTalent(TALENT_ID).catch((error: unknown) => error);
+    const error = await getTalent(TALENT_ID).catch((error_: unknown) => error_);
 
     expect(error).toBeInstanceOf(QueryError);
     expect(error).toMatchObject({

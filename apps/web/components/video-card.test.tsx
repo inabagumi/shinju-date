@@ -193,7 +193,7 @@ describe(VideoCard, () => {
 
     // The icon is decorative (alt=""), so the name is read only once.
     expect(within(link).queryAllByRole("img")).toHaveLength(0);
-    expect(link.textContent?.match(/チャンネル名/g)).toHaveLength(1);
+    expect(link.textContent?.match(/チャンネル名/gu)).toHaveLength(1);
     expect(within(link).queryAllByRole("link")).toHaveLength(0);
   });
 

@@ -1,10 +1,8 @@
 import type { youtube_v3 as youtube } from "@googleapis/youtube";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  AccountNotFoundError,
-  StalledPaginationError,
-} from "../internal/errors.js";
+import { AccountNotFoundError } from "../internal/account-not-found-error.js";
+import { StalledPaginationError } from "../internal/stalled-pagination-error.js";
 import { TEST_NOW } from "../internal/testing/context.js";
 import { newVideoId, setupSupabase } from "../internal/testing/supabase.js";
 import {
@@ -17,10 +15,9 @@ import { YouTubeScraper } from "./scraper.js";
 
 vi.mock(import("../internal/thumbnails/index.js"), async (importOriginal) => ({
   ...(await importOriginal()),
-  createThumbnail: vi.fn<typeof Thumbnails.createThumbnail>(async () => ({
-    id: "thumb-1",
-    path: "x/y.jpg",
-  })),
+  createThumbnail: vi.fn<typeof Thumbnails.createThumbnail>(() =>
+    Promise.resolve({ id: "thumb-1", path: "x/y.jpg" })
+  ),
   removeThumbnail: vi.fn<typeof Thumbnails.removeThumbnail>(),
 }));
 
@@ -61,76 +58,78 @@ const createClient = ({
   videos = {},
 }: FakeYouTube) => {
   const videosList = vi.fn<ListMethod<youtube.Schema$VideoListResponse>>(
-    async ({ id = [], part = [] }: ListParams) => ({
-      data: {
-        items: id
-          .filter((value) => value in videos)
-          .map((value) =>
-            part.includes("snippet")
-              ? {
-                  contentDetails: { duration: "PT10M" },
-                  id: value,
-                  snippet: {
-                    publishedAt: "2024-05-01T10:00:00Z",
-                    title: `Video ${value}`,
-                  },
-                  ...videos[value],
-                }
-              : { id: value }
-          ),
-      },
-    })
+    ({ id = [], part = [] }: ListParams) =>
+      Promise.resolve({
+        data: {
+          items: id
+            .filter((value) => value in videos)
+            .map((value) =>
+              part.includes("snippet")
+                ? {
+                    contentDetails: { duration: "PT10M" },
+                    id: value,
+                    snippet: {
+                      publishedAt: "2024-05-01T10:00:00Z",
+                      title: `Video ${value}`,
+                    },
+                    ...videos[value],
+                  }
+                : { id: value }
+            ),
+        },
+      })
   );
 
   const client = {
     channels: {
       list: vi.fn<ListMethod<youtube.Schema$ChannelListResponse>>(
-        async ({ id = [] }: ListParams) => ({
-          data: {
-            items: id
-              .filter((value) => value in channels)
-              .map((value) => ({
-                contentDetails: {
-                  relatedPlaylists: { uploads: `UU${value.slice(2)}` },
-                },
-                id: value,
-                snippet: {
-                  customUrl: "@handle",
-                  title: channels[value] ?? null,
-                },
-              })),
-          },
-        })
+        ({ id = [] }: ListParams) =>
+          Promise.resolve({
+            data: {
+              items: id
+                .filter((value) => value in channels)
+                .map((value) => ({
+                  contentDetails: {
+                    relatedPlaylists: { uploads: `UU${value.slice(2)}` },
+                  },
+                  id: value,
+                  snippet: {
+                    customUrl: "@handle",
+                    title: channels[value] ?? null,
+                  },
+                })),
+            },
+          })
       ),
     },
     playlistItems: {
       list: vi.fn<ListMethod<youtube.Schema$PlaylistItemListResponse>>(
-        async ({ pageToken = "", playlistId }: ListParams) => {
+        ({ pageToken = "", playlistId }: ListParams) => {
           const channelId = `UC${playlistId?.slice(2)}`;
           const page = uploadPages[`${channelId}:${pageToken}`];
 
           if (page) {
-            return {
+            return Promise.resolve({
               data: {
                 items: page.videoIds.map((videoId) =>
                   createPlaylistItem(videoId)
                 ),
                 nextPageToken: page.nextPageToken ?? null,
               },
-            };
+            });
           }
 
           const result = uploads[channelId] ?? [];
 
           if (result instanceof Error) {
-            throw result;
+            return Promise.reject(result);
           }
 
-          return {
+          return Promise.resolve({
             data: {
               items: result.map((videoId) => createPlaylistItem(videoId)),
             },
-          };
+          });
         }
       ),
     },

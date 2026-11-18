@@ -4,6 +4,24 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { analyticsSearchParamsSchema } from "../../../(dashboard)/analytics/_lib/search-params-schema";
 import { exportSearchParamsSchema } from "./schema";
 
+/** Whether the analytics pages show the given range instead of the default one */
+const isAcceptedByPage = (from: string, to: string): boolean => {
+  const { dateRange } = analyticsSearchParamsSchema.parse({ from, to });
+
+  return dateRange.startDate === from && dateRange.endDate === to;
+};
+
+/** Whether the export covers the given range */
+const isAcceptedByExport = (from: string, to: string): boolean => {
+  const result = exportSearchParamsSchema.safeParse({ from, to });
+
+  return (
+    result.success &&
+    result.data.range.start === from &&
+    result.data.range.end === to
+  );
+};
+
 describe("exportSearchParamsSchema.safeParse", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -121,24 +139,6 @@ describe("exportSearchParamsSchema.safeParse", () => {
   });
 
   describe("compared with the schema of the analytics pages", () => {
-    /** Whether the analytics pages show the given range instead of the default one */
-    const isAcceptedByPage = (from: string, to: string): boolean => {
-      const { dateRange } = analyticsSearchParamsSchema.parse({ from, to });
-
-      return dateRange.startDate === from && dateRange.endDate === to;
-    };
-
-    /** Whether the export covers the given range */
-    const isAcceptedByExport = (from: string, to: string): boolean => {
-      const result = exportSearchParamsSchema.safeParse({ from, to });
-
-      return (
-        result.success &&
-        result.data.range.start === from &&
-        result.data.range.end === to
-      );
-    };
-
     it.each([
       ["a range within the window", "2026-11-01", "2026-11-10", true],
       ["a single day", "2026-11-10", "2026-11-10", true],

@@ -5,7 +5,8 @@ import type { NextRequest } from "next/server";
 
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
-const SIGNED_URL_EXPIRES_IN = 60; // 1 minute
+// 1 minute
+const SIGNED_URL_EXPIRES_IN = 60;
 
 export const GET = async (
   request: NextRequest,

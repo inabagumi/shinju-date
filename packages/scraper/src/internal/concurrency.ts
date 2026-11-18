@@ -23,7 +23,7 @@ export const countChanges = async <T>(
     if (result.status === "rejected") {
       onError(result.reason, items[index] as T);
     } else if (result.value !== false) {
-      count++;
+      count += 1;
     }
   }
 

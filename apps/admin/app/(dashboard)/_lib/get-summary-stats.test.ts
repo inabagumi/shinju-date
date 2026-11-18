@@ -68,7 +68,7 @@ const readVideoFilter = ({ query }: SupabaseRequest): VideoSummaryFilter => {
       ? {
           status: (status.startsWith("in.(")
             ? status.slice("in.(".length, -1).split(",")
-            : [status.replace(/^eq\./, "")]) as NonNullable<
+            : [status.replace(/^eq\./u, "")]) as NonNullable<
             VideoSummaryFilter["status"]
           >,
         }
@@ -96,9 +96,10 @@ const answerVideoCount = (request: SupabaseRequest): Response => {
 
 /** Keep the snapshots of the given days (`YYYYMMDD`) in Redis. */
 const mockSnapshots = (snapshots: Record<string, unknown> = {}) => {
-  const get = vi.fn<(key: string) => Promise<unknown>>(
-    async (key) =>
+  const get = vi.fn<(key: string) => Promise<unknown>>((key) =>
+    Promise.resolve(
       snapshots[key.slice(REDIS_KEYS.SUMMARY_STATS_PREFIX.length)] ?? null
+    )
   );
 
   vi.mocked(getRedisClient).mockReturnValue(createMockRedisClient({ get }));
@@ -140,7 +141,9 @@ describe(getSummaryStats, () => {
 
     await getSummaryStats();
 
-    expect(supabase.requests.map(({ table }) => table).sort()).toStrictEqual([
+    expect(
+      supabase.requests.map(({ table }) => table).toSorted()
+    ).toStrictEqual([
       "talents",
       "terms",
       "videos",
@@ -159,7 +162,7 @@ describe(getSummaryStats, () => {
 
     const result = await getSummaryStats();
 
-    expect(get.mock.calls.map(([key]) => key).sort()).toStrictEqual([
+    expect(get.mock.calls.map(([key]) => key).toSorted()).toStrictEqual([
       `${REDIS_KEYS.SUMMARY_STATS_PREFIX}20251106`,
       `${REDIS_KEYS.SUMMARY_STATS_PREFIX}20251112`,
     ]);

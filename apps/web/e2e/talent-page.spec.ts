@@ -53,7 +53,7 @@ test.describe("Talent page", () => {
 
     await expect(youtubeLink).toHaveAttribute(
       "href",
-      /^https:\/\/www\.youtube\.com\/channel\/UC/
+      /^https:\/\/www\.youtube\.com\/channel\/UC/u
     );
     await expect(youtubeLink).toHaveAttribute("target", "_blank");
     await expect(youtubeLink).toHaveAttribute("rel", "noopener noreferrer");
@@ -62,7 +62,7 @@ test.describe("Talent page", () => {
 
     await expect(twitchLink).toHaveAttribute(
       "href",
-      /^https:\/\/www\.twitch\.tv\/.+/
+      /^https:\/\/www\.twitch\.tv\/.+/u
     );
     await expect(twitchLink).toHaveAttribute("target", "_blank");
     await expect(twitchLink).toHaveAttribute("rel", "noopener noreferrer");
@@ -84,7 +84,7 @@ test.describe("Talent page", () => {
 
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      new RegExp(`^https?://[^/]+/talents/${TALENT.id}$`)
+      new RegExp(`^https?://[^/]+/talents/${TALENT.id}$`, "u")
     );
 
     const alternate = page.locator(
@@ -93,7 +93,7 @@ test.describe("Talent page", () => {
 
     await expect(alternate).toHaveAttribute(
       "href",
-      new RegExp(`^https?://[^/]+/talents/${TALENT.id}\\.ics$`)
+      new RegExp(`^https?://[^/]+/talents/${TALENT.id}\\.ics$`, "u")
     );
 
     const response = await request.get(
@@ -146,9 +146,11 @@ test.describe("Talent page", () => {
 
     const cards = await getVideoCards(page).all();
 
-    for (const card of cards) {
-      await expect(card.getByText("ショート", { exact: true })).toBeVisible();
-    }
+    await Promise.all(
+      cards.map((card) =>
+        expect(card.getByText("ショート", { exact: true })).toBeVisible()
+      )
+    );
 
     await kindNav.getByRole("link", { name: "すべて" }).click();
 
@@ -167,7 +169,7 @@ test.describe("Talent page", () => {
     ).toBeVisible();
     await expect(
       section.getByText(
-        /^直近90日の配信は\d+回。いちばん多いのは土曜日、時間帯は21時台です。$/
+        /^直近90日の配信は\d+回。いちばん多いのは土曜日、時間帯は21時台です。$/u
       )
     ).toBeVisible();
 
@@ -253,7 +255,7 @@ test.describe("Talent page", () => {
       header.getByRole("heading", { level: 1, name: TALENT_WITHOUT_ICON.name })
     ).toBeVisible();
     await expect(header.getByTestId("talent-default-icon")).toBeVisible();
-    await expect(header.getByRole("link", { name: /Twitch/ })).toHaveCount(0);
+    await expect(header.getByRole("link", { name: /Twitch/u })).toHaveCount(0);
   });
 
   test("should show the empty state for a talent without videos", async ({
@@ -295,7 +297,7 @@ test.describe("Talent page", () => {
       // is kept out of search engines instead.
       await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute(
         "content",
-        /noindex/
+        /noindex/u
       );
     });
   }
@@ -323,7 +325,7 @@ test.describe("Open Graph image of the talent page", () => {
 
       await expect(ogImage).toHaveAttribute(
         "content",
-        new RegExp(`/talents/${talent.id}/opengraph-image`)
+        new RegExp(`/talents/${talent.id}/opengraph-image`, "u")
       );
       await expect(
         page.locator('meta[property="og:image:width"]')

@@ -9,9 +9,9 @@ import { twMerge } from "../tw-merge.js";
  */
 export const DropdownMenu = DropdownMenuPrimitive.Root;
 
-export interface DropdownMenuTriggerProps extends ComponentPropsWithRef<
+export type DropdownMenuTriggerProps = ComponentPropsWithRef<
   typeof DropdownMenuPrimitive.Trigger
-> {}
+>;
 
 /**
  * メニューを開くボタン。既定は行末の「︙」などに使うアイコンのボタンの見た目にする。
@@ -37,9 +37,9 @@ export const DropdownMenuTrigger = ({
   />
 );
 
-export interface DropdownMenuContentProps extends ComponentPropsWithRef<
+export type DropdownMenuContentProps = ComponentPropsWithRef<
   typeof DropdownMenuPrimitive.Content
-> {}
+>;
 
 /**
  * メニューの中身。ポータルに描画するため、横にスクロールする表の中に置いても
@@ -98,9 +98,9 @@ export const DropdownMenuItem = ({
   />
 );
 
-export interface DropdownMenuSeparatorProps extends ComponentPropsWithRef<
+export type DropdownMenuSeparatorProps = ComponentPropsWithRef<
   typeof DropdownMenuPrimitive.Separator
-> {}
+>;
 
 /** 項目のまとまりを分ける線 */
 export const DropdownMenuSeparator = ({

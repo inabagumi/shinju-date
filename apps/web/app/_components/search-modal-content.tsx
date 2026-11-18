@@ -60,6 +60,7 @@ export const SearchModalContent = ({ onClose }: SearchModalContentProps) => {
   const [changedTalents, setChangedTalents] = useState<Talent[] | null>(null);
   // タレントで絞り込んだ動画一覧で開いたときは、そのタレントをチップにする。
   // 種別（`kind`）は引き継がない
+  // oxlint-disable-next-line react/hook-use-state -- Only the value on mount is used, so there is no setter
   const [initialTalentIds] = useState(() =>
     isVideosPath(pathname) ? searchParams.getAll(TALENT_SEARCH_PARAM) : []
   );
@@ -108,10 +109,10 @@ export const SearchModalContent = ({ onClose }: SearchModalContentProps) => {
   );
 
   const getOptions = useCallback(
-    () =>
-      Array.from(
-        optionsRef.current?.querySelectorAll<HTMLElement>(OPTION_SELECTOR) ?? []
-      ),
+    () => [
+      ...(optionsRef.current?.querySelectorAll<HTMLElement>(OPTION_SELECTOR) ??
+        []),
+    ],
     []
   );
 
@@ -153,7 +154,9 @@ export const SearchModalContent = ({ onClose }: SearchModalContentProps) => {
 
   const handleOptionKeyDown = useCallback(
     (e: KeyboardEvent<HTMLElement>) => {
-      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") {
+        return;
+      }
 
       e.preventDefault();
 
@@ -177,7 +180,9 @@ export const SearchModalContent = ({ onClose }: SearchModalContentProps) => {
 
       const trimmedQuery = query.trim();
 
-      if (!trimmedQuery && selectedTalentIds.length === 0) return;
+      if (!trimmedQuery && selectedTalentIds.length === 0) {
+        return;
+      }
 
       onClose();
       router.push(getVideosPath(trimmedQuery, "all", selectedTalentIds));
@@ -190,6 +195,47 @@ export const SearchModalContent = ({ onClose }: SearchModalContentProps) => {
   }, [onClose]);
 
   const hasTalents = selectedTalents.length > 0;
+
+  const renderSuggestions = () => {
+    if (isLoadingSuggestions) {
+      return (
+        <div className="p-8 text-center text-meta text-muted">
+          読み込み中...
+        </div>
+      );
+    }
+
+    if (suggestions && suggestions.length > 0) {
+      return (
+        <div className="p-2">
+          {suggestions.map((suggestion) => (
+            <ListOption asChild key={suggestion.term}>
+              <Link
+                data-search-modal-option
+                data-suggestion-link
+                href={getVideosPath(suggestion.term, "all", selectedTalentIds)}
+                onClick={handleSuggestionClick}
+                onKeyDown={handleOptionKeyDown}
+              >
+                <ListOptionIcon>
+                  <Search />
+                </ListOptionIcon>
+                <span>{suggestion.term}</span>
+              </Link>
+            </ListOption>
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="p-8 text-center text-meta text-muted">
+        {hasTalents
+          ? `Enterキーを押して、選んだタレントの動画から「${query}」を検索`
+          : `Enterキーを押して「${query}」を検索`}
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col">
@@ -277,40 +323,7 @@ export const SearchModalContent = ({ onClose }: SearchModalContentProps) => {
                   : undefined
               }
             >
-              {isLoadingSuggestions ? (
-                <div className="p-8 text-center text-meta text-muted">
-                  読み込み中...
-                </div>
-              ) : suggestions && suggestions.length > 0 ? (
-                <div className="p-2">
-                  {suggestions.map((suggestion) => (
-                    <ListOption asChild key={suggestion.term}>
-                      <Link
-                        data-search-modal-option
-                        data-suggestion-link
-                        href={getVideosPath(
-                          suggestion.term,
-                          "all",
-                          selectedTalentIds
-                        )}
-                        onClick={handleSuggestionClick}
-                        onKeyDown={handleOptionKeyDown}
-                      >
-                        <ListOptionIcon>
-                          <Search />
-                        </ListOptionIcon>
-                        <span>{suggestion.term}</span>
-                      </Link>
-                    </ListOption>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-8 text-center text-meta text-muted">
-                  {hasTalents
-                    ? `Enterキーを押して、選んだタレントの動画から「${query}」を検索`
-                    : `Enterキーを押して「${query}」を検索`}
-                </div>
-              )}
+              {renderSuggestions()}
             </div>
           </div>
         ) : (

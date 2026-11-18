@@ -6,13 +6,18 @@ import { shuffle } from "./shuffle";
  * Small seeded PRNG (mulberry32) so the distribution test is deterministic.
  */
 const createRandom = (seed: number): (() => number) => {
+  // oxlint-disable-next-line eslint/no-bitwise -- mulberry32 is defined with 32-bit integer operations
   let state = seed >>> 0;
 
   return () => {
+    // oxlint-disable-next-line eslint/no-bitwise -- mulberry32 is defined with 32-bit integer operations
     state = (state + 0x6d_2b_79_f5) >>> 0;
     let t = state;
+    // oxlint-disable-next-line eslint/no-bitwise -- mulberry32 is defined with 32-bit integer operations
     t = Math.imul(t ^ (t >>> 15), t | 1);
+    // oxlint-disable-next-line eslint/no-bitwise -- mulberry32 is defined with 32-bit integer operations
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    // oxlint-disable-next-line eslint/no-bitwise -- mulberry32 is defined with 32-bit integer operations
     return ((t ^ (t >>> 14)) >>> 0) / 4_294_967_296;
   };
 };
@@ -56,7 +61,7 @@ describe(shuffle, () => {
     const iterations = 60_000;
     const counts = new Map<string, number>();
 
-    for (let i = 0; i < iterations; i++) {
+    for (let i = 0; i < iterations; i += 1) {
       const key = shuffle(["a", "b", "c"], random).join("");
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }

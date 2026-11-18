@@ -147,10 +147,10 @@ describe("QueriesList", () => {
     );
 
     expect(
-      screen.getByRole("heading", { name: /手動追加クエリ/ })
+      screen.getByRole("heading", { name: /手動追加クエリ/u })
     ).toHaveTextContent("3件");
     expect(
-      screen.getByRole("heading", { name: /自動選出クエリ/ })
+      screen.getByRole("heading", { name: /自動選出クエリ/u })
     ).toHaveTextContent("5件");
     expect(screen.getByRole("cell", { name: "歌枠" })).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: "1.23" })).toBeInTheDocument();

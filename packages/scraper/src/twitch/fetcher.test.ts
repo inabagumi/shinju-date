@@ -1,3 +1,5 @@
+import { setTimeout as delay } from "node:timers/promises";
+
 import type {
   TwitchClip,
   TwitchStream,
@@ -26,10 +28,9 @@ const createClient = (overrides: Partial<TwitchApi> = {}): TwitchApi => ({
   getVideosByUser: vi.fn<TwitchApi["getVideosByUser"]>(() =>
     fromArray<TwitchVideo>([])
   ),
-  getVideosByUserPage: vi.fn<TwitchApi["getVideosByUserPage"]>(async () => ({
-    cursor: null,
-    videos: [],
-  })),
+  getVideosByUserPage: vi
+    .fn<TwitchApi["getVideosByUserPage"]>()
+    .mockResolvedValue({ cursor: null, videos: [] }),
   ...overrides,
 });
 
@@ -66,8 +67,8 @@ describe(TwitchFetcher, () => {
     it("passes each ID once and leaves batching to the client", async () => {
       const ids = Array.from({ length: 150 }, (_, i) => `${i}`);
       const getUsers = vi.fn<TwitchApi["getUsers"]>(
-        ({ ids }: { ids: string[] }) =>
-          fromArray(ids.map((id) => createUser(id)))
+        ({ ids: requestedIds }: { ids: string[] }) =>
+          fromArray(requestedIds.map((id) => createUser(id)))
       );
       const fetcher = new TwitchFetcher({ client: createClient({ getUsers }) });
 
@@ -182,11 +183,11 @@ describe(TwitchFetcher, () => {
       let running = 0;
       let peak = 0;
       const getVideosByUser = vi.fn<TwitchApi["getVideosByUser"]>(
-        async function* () {
-          running++;
+        async function* getVideosByUser() {
+          running += 1;
           peak = Math.max(peak, running);
-          await new Promise((resolve) => setTimeout(resolve, 5));
-          running--;
+          await delay(5);
+          running -= 1;
           yield* [] as TwitchVideo[];
         }
       );
@@ -226,25 +227,27 @@ describe(TwitchFetcher, () => {
       let running = 0;
       let peak = 0;
       // Like the Helix client: every batch at once, each through `schedule`.
-      const getVideos = vi.fn<TwitchApi["getVideos"]>(async function* ({
-        ids,
-        schedule = (request) => request(),
-      }: Parameters<TwitchApi["getVideos"]>[0]) {
-        const batches = await Promise.all(
-          ids.map((id) =>
-            schedule(async () => {
-              running++;
-              peak = Math.max(peak, running);
-              await new Promise((resolve) => setTimeout(resolve, 5));
-              running--;
+      const getVideos = vi.fn<TwitchApi["getVideos"]>(
+        async function* getVideos({
+          ids,
+          schedule = (request) => request(),
+        }: Parameters<TwitchApi["getVideos"]>[0]) {
+          const batches = await Promise.all(
+            ids.map((id) =>
+              schedule(async () => {
+                running += 1;
+                peak = Math.max(peak, running);
+                await delay(5);
+                running -= 1;
 
-              return createVideo({ id });
-            })
-          )
-        );
+                return createVideo({ id });
+              })
+            )
+          );
 
-        yield* batches;
-      });
+          yield* batches;
+        }
+      );
       const fetcher = new TwitchFetcher({
         client: createClient({ getVideos }),
         concurrency: 2,

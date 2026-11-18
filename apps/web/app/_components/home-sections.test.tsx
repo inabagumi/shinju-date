@@ -22,11 +22,12 @@ import type { ShortsCarouselSkeleton } from "./shorts-carousel";
 import type { TimelineSkeleton } from "./timeline";
 
 vi.mock(import("@/lib/data/videos"), () => ({
+  // Never resolve, so the sections stay loading
   fetchDashboardVideos: vi.fn<typeof fetchDashboardVideos>(
-    () => new Promise(() => {})
+    () => Promise.withResolvers<never>().promise
   ),
   fetchUpcomingVideos: vi.fn<typeof fetchUpcomingVideos>(
-    () => new Promise(() => {})
+    () => Promise.withResolvers<never>().promise
   ),
 }));
 

@@ -45,7 +45,7 @@ export type FilterOperator = (typeof SUPPORTED_OPERATORS)[number];
  */
 // A key starts with a letter or `_` and an index with a digit or `-`, so the
 // two do not overlap and the pattern does not backtrack exponentially.
-const COLUMN_PATTERN = /^[A-Za-z_]\w*(?:->>?(?:-?\d+|[A-Za-z_]\w*))*$/;
+const COLUMN_PATTERN = /^[A-Za-z_]\w*(?:->>?(?:-?\d+|[A-Za-z_]\w*))*$/u;
 
 /** The values that `is` accepts. */
 const IS_VALUES = new Set(["false", "not_null", "null", "true", "unknown"]);
@@ -172,7 +172,7 @@ const parseCondition = (
     );
   }
 
-  if (operator === "in" && !/^\(.*\)$/s.test(operand)) {
+  if (operator === "in" && !/^\(.*\)$/su.test(operand)) {
     throw parseError(
       `failed to parse filter (${source})`,
       'the value of "in" has to be a list in parentheses, such as in.(1,2)'
@@ -215,15 +215,15 @@ const parseGroup = (
   const children = splitTopLevel(value.slice(1, -1)).map(
     (item): FilterExpression => {
       const text = item.trim();
-      const group = text.match(/^(not\.)?(and|or)(\(.*\))$/s);
+      const group = text.match(
+        /^(?<not>not\.)?(?<kind>and|or)(?<list>\(.*\))$/su
+      )?.groups;
 
       if (group) {
-        const [, not, childKind, childValue = ""] = group;
-
         return parseGroup(
-          childKind as "and" | "or",
-          not !== undefined,
-          childValue,
+          group["kind"] as "and" | "or",
+          group["not"] !== undefined,
+          group["list"] ?? "",
           source
         );
       }
@@ -309,14 +309,14 @@ export const getColumn = (row: object, column: string): unknown =>
  * index that does not exist is `NULL`.
  */
 export const getColumnPath = (row: object, path: string): unknown => {
-  const [column = "", ...steps] = path.split(/(?=->)/);
+  const [column = "", ...steps] = path.split(/(?=->)/u);
   let value = getColumn(row, column);
 
   for (const step of steps) {
     const asText = step.startsWith("->>");
     const key = step.slice(asText ? 3 : 2);
 
-    if (Array.isArray(value) && /^-?\d+$/.test(key)) {
+    if (Array.isArray(value) && /^-?\d+$/u.test(key)) {
       value = value.at(Number(key));
     } else if (
       value !== null &&
@@ -336,6 +336,15 @@ export const getColumnPath = (row: object, path: string): unknown => {
   }
 
   return value;
+};
+
+/** Compare two strings by their UTF-16 code units, like `Array#sort`. */
+const compareCodeUnits = (a: string, b: string): number => {
+  if (a < b) {
+    return -1;
+  }
+
+  return a > b ? 1 : 0;
 };
 
 /**
@@ -358,7 +367,7 @@ const compareFilterValue = (
       Temporal.Instant.from(filterValue)
     );
   } catch {
-    return itemText < filterValue ? -1 : itemText > filterValue ? 1 : 0;
+    return compareCodeUnits(itemText, filterValue);
   }
 };
 
@@ -416,7 +425,7 @@ const unquote = (text: string): string => {
     return trimmed;
   }
 
-  return trimmed.slice(1, -1).replaceAll(/\\(.)/g, "$1");
+  return trimmed.slice(1, -1).replaceAll(/\\(?<char>.)/gu, "$<char>");
 };
 
 /**
@@ -438,8 +447,8 @@ const parseListValues = (list: string): string[] => {
  */
 const likePattern = (pattern: string, flags: string): RegExp => {
   const source = pattern
-    .replaceAll(/[.+?^${}()|[\]\\]/g, "\\$&")
-    .replaceAll(/[*%]/g, ".*")
+    .replaceAll(/[.+?^${}()|[\]\\]/gu, "\\$&")
+    .replaceAll(/[*%]/gu, ".*")
     .replaceAll("_", ".");
 
   return new RegExp(`^${source}$`, `s${flags}`);
@@ -454,6 +463,54 @@ const toRegExp = (pattern: string, flags: string): RegExp => {
       code: "2201B",
       message: `invalid regular expression: ${pattern}`,
     });
+  }
+};
+
+/**
+ * The result of an operator other than `is` and `isdistinct`, for a value
+ * that is not `NULL`.
+ */
+const evaluateComparison = (
+  value: unknown,
+  operator: Exclude<FilterOperator, "is" | "isdistinct">,
+  operand: string,
+  matches: (value: unknown, text: string) => boolean
+): boolean => {
+  switch (operator) {
+    case "eq": {
+      return matches(value, operand);
+    }
+    case "neq": {
+      return !matches(value, operand);
+    }
+    case "gt":
+    case "gte":
+    case "lt":
+    case "lte": {
+      return COMPARISON_OPERATORS[operator](compareFilterValue(value, operand));
+    }
+    case "like":
+    case "ilike": {
+      return likePattern(operand, operator === "ilike" ? "i" : "").test(
+        String(value)
+      );
+    }
+    case "match":
+    case "imatch": {
+      return toRegExp(operand, operator === "imatch" ? "i" : "").test(
+        String(value)
+      );
+    }
+    case "in": {
+      return parseListValues(operand.slice(1, -1)).some((text) =>
+        matches(value, text)
+      );
+    }
+    default: {
+      const unsupported: never = operator;
+
+      throw new Error(`Unsupported operator: ${String(unsupported)}`);
+    }
   }
 };
 
@@ -493,43 +550,9 @@ const evaluateCondition = (
         : !matches(value, operand);
     }
     default: {
-      break;
-    }
-  }
-
-  if (value === null) {
-    return null;
-  }
-
-  switch (operator) {
-    case "eq": {
-      return matches(value, operand);
-    }
-    case "neq": {
-      return !matches(value, operand);
-    }
-    case "gt":
-    case "gte":
-    case "lt":
-    case "lte": {
-      return COMPARISON_OPERATORS[operator](compareFilterValue(value, operand));
-    }
-    case "like":
-    case "ilike": {
-      return likePattern(operand, operator === "ilike" ? "i" : "").test(
-        String(value)
-      );
-    }
-    case "match":
-    case "imatch": {
-      return toRegExp(operand, operator === "imatch" ? "i" : "").test(
-        String(value)
-      );
-    }
-    case "in": {
-      return parseListValues(operand.slice(1, -1)).some((text) =>
-        matches(value, text)
-      );
+      return value === null
+        ? null
+        : evaluateComparison(value, operator, operand, matches);
     }
   }
 };
@@ -537,6 +560,22 @@ const evaluateCondition = (
 /** `NOT` of three-valued logic, which keeps unknown as it is. */
 const not = (result: boolean | null): boolean | null =>
   result === null ? null : !result;
+
+/**
+ * Combine the results of the children of AND or OR in three-valued logic:
+ * the `decisive` result (false for AND, true for OR) decides, and unknown
+ * comes next.
+ */
+const combineResults = (
+  results: ReadonlySet<boolean | null>,
+  decisive: boolean
+): boolean | null => {
+  if (results.has(decisive)) {
+    return decisive;
+  }
+
+  return results.has(null) ? null : !decisive;
+};
 
 /**
  * The result of an expression for a row, in three-valued logic like SQL.
@@ -552,16 +591,12 @@ const evaluate = (
     return expression.negated ? not(result) : result;
   }
 
-  const results = expression.children.map((child) =>
-    evaluate(row, child, uuidColumns)
+  const results = new Set(
+    expression.children.map((child) => evaluate(row, child, uuidColumns))
   );
   // A false condition decides AND, and a true one decides OR.
   const decisive = expression.kind === "or";
-  const result = results.includes(decisive)
-    ? decisive
-    : results.includes(null)
-      ? null
-      : !decisive;
+  const result = combineResults(results, decisive);
 
   return expression.negated ? not(result) : result;
 };
@@ -630,11 +665,9 @@ const parseOrder = (order: string) =>
     }
 
     const descending = modifiers.includes("desc");
-    const nullsFirst = modifiers.includes("nullsfirst")
-      ? true
-      : modifiers.includes("nullslast")
-        ? false
-        : descending;
+    const nullsFirst =
+      modifiers.includes("nullsfirst") ||
+      (!modifiers.includes("nullslast") && descending);
 
     return { column, descending, nullsFirst };
   });
@@ -664,12 +697,15 @@ export const applyOrder = <Item>(
       const valueA = getColumnPath(a, column);
       const valueB = getColumnPath(b, column);
 
-      if (valueA == null || valueB == null) {
-        if (valueA == null && valueB == null) {
+      const isNullA = valueA === null || valueA === undefined;
+      const isNullB = valueB === null || valueB === undefined;
+
+      if (isNullA || isNullB) {
+        if (isNullA && isNullB) {
           continue;
         }
 
-        return (valueA == null) === nullsFirst ? -1 : 1;
+        return isNullA === nullsFirst ? -1 : 1;
       }
 
       const result = compareFilterValue(valueA, String(valueB));
@@ -685,6 +721,7 @@ export const applyOrder = <Item>(
 
 /** The offset of a query, which is 0 without one. */
 export const getOffset = (query: SupabaseQuery): number =>
+  // oxlint-disable-next-line unicorn/prefer-number-coercion -- keeps the lenient parsing of the parameter like before (Number() would read "10abc" as NaN and "0x10" as 16)
   query.offset ? Number.parseInt(query.offset, 10) : 0;
 
 /**
@@ -697,9 +734,14 @@ export const applyPagination = <Row>(
   // Apply offset before limit to match PostgREST pagination semantics
   const start = getOffset(query);
 
-  return query.limit
-    ? rows.slice(start, start + Number.parseInt(query.limit, 10))
-    : rows.slice(start);
+  if (!query.limit) {
+    return rows.slice(start);
+  }
+
+  // oxlint-disable-next-line unicorn/prefer-number-coercion -- keeps the lenient parsing of the parameter like before (Number() would read "10abc" as NaN and "0x10" as 16)
+  const limit = Number.parseInt(query.limit, 10);
+
+  return rows.slice(start, start + limit);
 };
 
 /**

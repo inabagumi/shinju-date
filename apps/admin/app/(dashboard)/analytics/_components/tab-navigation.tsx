@@ -35,20 +35,20 @@ export const TabNavigation = ({
   return (
     <div className="border-b border-border">
       <div className="-mb-px flex gap-6" role="tablist">
-        {tabs.map((tab) => (
+        {tabs.map((item) => (
           <button
-            aria-selected={activeTab === tab.id}
+            aria-selected={activeTab === item.id}
             className={`border-b-2 px-1 py-2 text-meta font-semibold whitespace-nowrap focus-ring transition-colors ${
-              activeTab === tab.id
+              activeTab === item.id
                 ? "border-accent text-accent"
                 : "border-transparent text-muted hover:border-border hover:text-foreground"
             }`}
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            key={item.id}
+            onClick={() => setActiveTab(item.id)}
             role="tab"
             type="button"
           >
-            {tab.label}
+            {item.label}
           </button>
         ))}
       </div>

@@ -1,4 +1,6 @@
-import type { default as Database, Enums } from "@shinju-date/database";
+// oxlint-disable-next-line import/default -- the default export is type-only (`export type { Database as default }`), which the rule does not see
+import type Database from "@shinju-date/database";
+import type { Enums } from "@shinju-date/database";
 import { toDBString } from "@shinju-date/temporal-fns";
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 
@@ -29,15 +31,15 @@ interface CountResult {
 
 /** The filters of a query of a table whose rows are deleted softly. */
 interface ExistingRowsQuery<T> {
-  is(column: "deleted_at", value: null): T;
-  lt(column: "created_at", value: string): T;
-  or(filters: string): T;
+  is: (column: "deleted_at", value: null) => T;
+  lt: (column: "created_at", value: string) => T;
+  or: (filters: string) => T;
 }
 
 /** The filters of a query that counts the rows deleted softly. */
 interface DeletedRowsQuery<T> {
-  lt(column: "deleted_at", value: string): T;
-  not(column: "deleted_at", operator: "is", value: null): T;
+  lt: (column: "deleted_at", value: string) => T;
+  not: (column: "deleted_at", operator: "is", value: null) => T;
 }
 
 /**

@@ -20,14 +20,14 @@ const ACTION_FAILED_ERROR =
 const INVALID_INPUT_ERROR = "入力が正しくありません。";
 
 const redisClient = {
-  sadd: vi.fn<Redis["sadd"]>(async () => 1),
-  srem: vi.fn<Redis["srem"]>(async () => 1),
+  sadd: vi.fn<Redis["sadd"]>(() => Promise.resolve(1)),
+  srem: vi.fn<Redis["srem"]>(() => Promise.resolve(1)),
 };
 
 describe("recommended query actions", () => {
   beforeEach(() => {
-    redisClient.sadd.mockImplementation(async () => 1);
-    redisClient.srem.mockImplementation(async () => 1);
+    redisClient.sadd.mockResolvedValue(1);
+    redisClient.srem.mockResolvedValue(1);
     test.getRedisClient.mockReturnValue(redisClient);
   });
 

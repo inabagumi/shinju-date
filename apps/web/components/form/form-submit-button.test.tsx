@@ -15,7 +15,7 @@ describe(FormSubmitButton, () => {
   });
 
   it("is disabled and shows the pending label while submitting", async () => {
-    const { promise, resolve } = Promise.withResolvers<void>();
+    const { promise, resolve } = Promise.withResolvers<undefined>();
 
     const { container } = render(
       <form action={() => promise}>
@@ -23,14 +23,19 @@ describe(FormSubmitButton, () => {
       </form>
     );
 
-    await act(async () => {
+    // Returning a promise makes `act` wait for the submission as well
+    await act(() => {
       fireEvent.submit(container.querySelector("form") as HTMLFormElement);
+
+      return Promise.resolve();
     });
 
     expect(screen.getByRole("button", { name: "送信中..." })).toBeDisabled();
 
-    await act(async () => {
-      resolve();
+    await act(() => {
+      resolve(undefined);
+
+      return Promise.resolve();
     });
 
     expect(screen.getByRole("button", { name: "送信する" })).toBeEnabled();

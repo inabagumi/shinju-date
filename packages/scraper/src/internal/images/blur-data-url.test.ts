@@ -8,7 +8,7 @@ describe(createBlurDataURL, () => {
   it("encodes a 10 pixel wide JPEG as a data URL", async () => {
     const dataURL = await createBlurDataURL(await createImage(320, 180));
 
-    expect(dataURL).toMatch(/^data:image\/jpeg;base64,/);
+    expect(dataURL).toMatch(/^data:image\/jpeg;base64,/u);
 
     const body = Buffer.from(dataURL.split(",")[1] ?? "", "base64");
 

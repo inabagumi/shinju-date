@@ -40,7 +40,9 @@ export const getVideoExternalUrl = (
     const isLiveOrUpcoming =
       params.status === "LIVE" || params.status === "UPCOMING";
     const isPendingArchive =
-      params.twitchVideoId != null && isLiveTwitchVideoId(params.twitchVideoId);
+      params.twitchVideoId !== null &&
+      params.twitchVideoId !== undefined &&
+      isLiveTwitchVideoId(params.twitchVideoId);
 
     if ((isLiveOrUpcoming || isPendingArchive) && params.twitchLoginName) {
       return `https://www.twitch.tv/${encodeURIComponent(params.twitchLoginName)}`;

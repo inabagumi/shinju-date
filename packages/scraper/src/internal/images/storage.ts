@@ -1,9 +1,7 @@
 import type { TypedSupabaseClient } from "../../types.js";
-import {
-  DatabaseError,
-  isForeignKeyViolation,
-  StorageError,
-} from "../errors.js";
+import { DatabaseError } from "../database-error.js";
+import { isForeignKeyViolation } from "../errors.js";
+import { StorageError } from "../storage-error.js";
 
 /**
  * `Cache-Control` of stored images, in seconds: one year. Stored objects are

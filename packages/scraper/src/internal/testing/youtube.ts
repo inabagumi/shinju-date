@@ -18,11 +18,11 @@ export const YOUTUBE_TALENTS = [
 /** Builds the channel `id` for tests, with `snippet` if given. */
 export const createChannel = (
   id = "UCaaa",
-  snippet: YouTubeChannel["snippet"] = { title: `Channel ${id}` }
+  snippet?: YouTubeChannel["snippet"]
 ): YouTubeChannel => ({
   contentDetails: { relatedPlaylists: { uploads: `UU${id.slice(2)}` } },
   id,
-  snippet,
+  snippet: snippet === undefined ? { title: `Channel ${id}` } : snippet,
 });
 
 /** Builds an item of an uploads playlist for tests. */

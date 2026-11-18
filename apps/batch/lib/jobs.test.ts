@@ -18,7 +18,8 @@ const readMaxDuration = async (path: string): Promise<number | undefined> => {
     new URL(`../app${pathname}/route.ts`, import.meta.url),
     "utf-8"
   );
-  const value = source.match(/^export const maxDuration = (\d+);$/m)?.[1];
+  const value = source.match(/^export const maxDuration = (?<seconds>\d+);$/mu)
+    ?.groups?.["seconds"];
 
   return value === undefined ? undefined : Number(value);
 };

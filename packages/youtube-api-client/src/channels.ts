@@ -29,7 +29,7 @@ export const isFilteredYouTubeChannel = (
 /**
  * Gets YouTube channels by their IDs
  * @param options - The options for getting channels
- * @yields YouTube channel objects
+ * @yields {FilteredYouTubeChannel} YouTube channel objects
  */
 export const getChannels = async function* getChannels({
   client = getYouTubeClient(),
@@ -60,10 +60,9 @@ export const getChannels = async function* getChannels({
 const getChannelById = async (
   id: string
 ): Promise<FilteredYouTubeChannel | null> => {
-  for await (const channel of getChannels({ ids: [id] })) {
-    return channel;
-  }
-  return null;
+  const [channel] = await Array.fromAsync(getChannels({ ids: [id] }));
+
+  return channel ?? null;
 };
 
 /**
@@ -100,7 +99,7 @@ export const resolveYouTubeChannel = async (
   identifier: YouTubeChannelIdentifier
 ): Promise<FilteredYouTubeChannel | null> => {
   if (identifier.kind === "id") {
-    return getChannelById(identifier.id);
+    return await getChannelById(identifier.id);
   }
-  return getChannelByHandle({ handle: identifier.handle });
+  return await getChannelByHandle({ handle: identifier.handle });
 };

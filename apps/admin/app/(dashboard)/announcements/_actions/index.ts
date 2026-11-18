@@ -51,7 +51,7 @@ export const createAnnouncementAction = adminFormAction(
       "ANNOUNCEMENT_CREATE",
       newAnnouncement.id,
       {
-        entityName: newAnnouncement.message.substring(0, 50),
+        entityName: newAnnouncement.message.slice(0, 50),
       }
     );
 
@@ -85,7 +85,7 @@ export const updateAnnouncementAction = adminFormAction(
     }
 
     await createAuditLog(supabaseClient, "ANNOUNCEMENT_UPDATE", id, {
-      entityName: updatedAnnouncement.message.substring(0, 50),
+      entityName: updatedAnnouncement.message.slice(0, 50),
     });
 
     await revalidateAnnouncements();
@@ -113,7 +113,7 @@ export const deleteAnnouncementAction = adminAction(
     }
 
     await createAuditLog(supabaseClient, "ANNOUNCEMENT_DELETE", id, {
-      entityName: deletedAnnouncement.message.substring(0, 50),
+      entityName: deletedAnnouncement.message.slice(0, 50),
     });
 
     await revalidateAnnouncements();

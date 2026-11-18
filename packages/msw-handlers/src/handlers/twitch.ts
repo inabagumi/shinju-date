@@ -69,7 +69,7 @@ const toSavedHelixUser = (user: Tables<"twitch_users">): HelixUser =>
   });
 
 /** The format of the ID of a user: digits only. */
-const USER_ID_PATTERN = /^\d+$/;
+const USER_ID_PATTERN = /^\d+$/u;
 
 /**
  * The users of the Supabase mock (`twitch_users`), so that the apps find the
@@ -175,7 +175,7 @@ const getMockTwitchVideos = async (): Promise<MockTwitchVideo[]> => {
         ? [{ twitchVideo, user, video }]
         : [];
     })
-    .sort((a, b) =>
+    .toSorted((a, b) =>
       Temporal.Instant.compare(b.video.published_at, a.video.published_at)
     );
 };
@@ -368,7 +368,8 @@ export const twitchHandlers = [
       return helixError(400, `The value of "type" is not valid: ${type}`);
     }
 
-    const helixVideos = (await getMockTwitchVideos())
+    const mockVideos = await getMockTwitchVideos();
+    const helixVideos = mockVideos
       .filter(({ twitchVideo }) =>
         (HELIX_VIDEO_TYPES as readonly (string | null)[]).includes(
           twitchVideo.type
@@ -413,7 +414,8 @@ export const twitchHandlers = [
       );
     }
 
-    const streams = (await getMockTwitchVideos())
+    const mockVideos = await getMockTwitchVideos();
+    const streams = mockVideos
       .filter(
         ({ twitchVideo, video }) =>
           video.status === "LIVE" && twitchVideo.stream_id !== null
@@ -453,7 +455,8 @@ export const twitchHandlers = [
       );
     }
 
-    const clips = (await getMockTwitchVideos())
+    const mockVideos = await getMockTwitchVideos();
+    const clips = mockVideos
       .filter(({ twitchVideo }) => twitchVideo.type === "clip")
       .map(toHelixClip);
 

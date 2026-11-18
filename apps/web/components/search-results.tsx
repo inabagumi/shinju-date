@@ -112,11 +112,11 @@ export default function SearchResults({
     useInfiniteQuery({
       getNextPageParam: (lastPage) => {
         if (lastPage.length < SEARCH_RESULT_COUNT) {
-          return undefined;
+          return;
         }
         const lastVideo = lastPage.at(-1);
         if (!lastVideo) {
-          return undefined;
+          return;
         }
         return Temporal.Instant.from(lastVideo.published_at).subtract({
           nanoseconds: 1,
@@ -165,7 +165,8 @@ export default function SearchResults({
   }
 
   if (items.length === 0) {
-    return null; // Let the parent handle empty state
+    // Let the parent handle empty state
+    return null;
   }
 
   return (

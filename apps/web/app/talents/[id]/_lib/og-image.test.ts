@@ -15,6 +15,8 @@ import {
   supabaseServer,
 } from "@/test/supabase";
 
+import { fetchTalentIconDataURL, getTalentThemeColor } from "./og-image";
+
 vi.mock(import("@shinju-date/logger"), () => ({
   logger: {
     debug: vi.fn<typeof logger.debug>(),
@@ -23,8 +25,6 @@ vi.mock(import("@shinju-date/logger"), () => ({
     warn: vi.fn<typeof logger.warn>(),
   },
 }));
-
-import { fetchTalentIconDataURL, getTalentThemeColor } from "./og-image";
 
 setupSupabase();
 
@@ -97,7 +97,7 @@ describe(fetchTalentIconDataURL, () => {
 
     const dataURL = await fetchTalentIconDataURL(profileImage, 320);
 
-    expect(dataURL).toMatch(/^data:image\/png;base64,/);
+    expect(dataURL).toMatch(/^data:image\/png;base64,/u);
     // The lookup is sent with the public key, so RLS applies
     expect(
       supabaseRequests("profile_images").map(({ role }) => role)

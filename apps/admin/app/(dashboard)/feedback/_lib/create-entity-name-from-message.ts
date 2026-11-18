@@ -9,7 +9,7 @@ const MAX_LENGTH = 40;
  * not valid in `jsonb`, and the audit log entry would not be recorded.
  */
 export const createEntityNameFromMessage = (message: string): string => {
-  const characters = Array.from(message.replaceAll(/\s+/g, " ").trim());
+  const characters = [...message.replaceAll(/\s+/gu, " ").trim()];
 
   return characters.slice(0, MAX_LENGTH).join("");
 };

@@ -1,6 +1,8 @@
-import type { default as Database } from "@shinju-date/database";
+// oxlint-disable-next-line import/default -- @shinju-date/database exports the Database type as a type-only default export, which this rule cannot see
+import type Database from "@shinju-date/database";
 import { createClient } from "@supabase/supabase-js";
 import { HttpResponse, http } from "msw";
+import type { JsonBodyType } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll } from "vitest";
 
@@ -83,7 +85,7 @@ const operationOf = (
       return "select";
     }
     case "POST": {
-      return /resolution=(merge|ignore)-duplicates/.test(
+      return /resolution=(?:merge|ignore)-duplicates/u.test(
         request.headers.get("Prefer") ?? ""
       )
         ? "upsert"
@@ -112,6 +114,19 @@ const noRows = (): Response =>
     { status: 406 }
   );
 
+/** The rows of a result: an array as is, nothing as no rows, anything else as one row. */
+const toRows = (result: unknown): JsonBodyType[] => {
+  if (Array.isArray(result)) {
+    return result;
+  }
+
+  if (result === null || result === undefined) {
+    return [];
+  }
+
+  return [result as JsonBodyType];
+};
+
 const toResponse = (request: SupabaseRequest, result: unknown): Response => {
   if (result instanceof Response) {
     return result;
@@ -122,18 +137,12 @@ const toResponse = (request: SupabaseRequest, result: unknown): Response => {
   }
 
   if (request.single) {
-    const rows = Array.isArray(result)
-      ? result
-      : result == null
-        ? []
-        : [result];
+    const rows = toRows(result);
 
     return rows.length === 1 ? HttpResponse.json(rows[0]) : noRows();
   }
 
-  return HttpResponse.json(
-    Array.isArray(result) || result == null ? (result ?? []) : [result]
-  );
+  return HttpResponse.json(toRows(result));
 };
 
 const key = (operation: SupabaseOperation, table: string): string =>
@@ -168,7 +177,7 @@ export const setupSupabase = () => {
   const server = setupServer(
     http.all(`${SUPABASE_URL}/rest/v1/*`, async ({ request }) => {
       const url = new URL(request.url);
-      const path = url.pathname.replace(/^\/rest\/v1\//, "");
+      const path = url.pathname.replace(/^\/rest\/v1\//u, "");
       const isRpc = path.startsWith("rpc/");
       const operation = operationOf(request, isRpc);
 

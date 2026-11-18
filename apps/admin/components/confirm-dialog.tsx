@@ -32,10 +32,9 @@ export interface ActionResult {
  * 確認ボタンが押されたときの処理。値を返さない関数と、`Promise` を返す関数
  * （`async` 関数）のどちらも渡せる
  */
-export type ConfirmHandler = () =>
-  | void
-  | Promise<void>
-  | Promise<ActionResult | undefined>;
+export type ConfirmHandler =
+  | (() => void)
+  | (() => Promise<ActionResult | undefined>);
 
 /** ダイアログの幅 */
 export type ConfirmDialogSize = "md" | "lg";
@@ -118,7 +117,7 @@ export const ConfirmDialog = ({
   children,
   confirmLabel,
   confirmVariant = "primary",
-  pendingLabel = `${confirmLabel}中...`,
+  pendingLabel,
   requireKeyword,
   size = "md",
   onConfirm,
@@ -170,15 +169,14 @@ export const ConfirmDialog = ({
 
       if (actionResult && !actionResult.success) {
         setError(actionResult.error ?? CONFIRM_DIALOG_FALLBACK_ERROR);
-        return;
+      } else {
+        setOpen(false);
       }
-
-      setOpen(false);
     } catch {
       setError(CONFIRM_DIALOG_FALLBACK_ERROR);
-    } finally {
-      setIsPending(false);
     }
+
+    setIsPending(false);
   };
 
   const handleConfirm = () => {
@@ -270,7 +268,9 @@ export const ConfirmDialog = ({
               type="button"
               variant={confirmVariant}
             >
-              {isPending ? pendingLabel : confirmLabel}
+              {isPending
+                ? (pendingLabel ?? `${confirmLabel}中...`)
+                : confirmLabel}
             </Button>
           </div>
         </DialogContent>

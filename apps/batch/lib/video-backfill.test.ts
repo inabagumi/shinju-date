@@ -69,9 +69,18 @@ const claimOf = (fields: Partial<BackfillJob>) => ({
 const createQueue = async (jobs: BackfillJob[]) => {
   const redis = new FakeRedis() as Partial<Redis> as Redis;
 
-  for (const job of jobs) {
-    await redis.set(`${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${job.id}`, job);
-    await redis.lpush(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, job.id);
+  await Promise.all(
+    jobs.map((job) =>
+      redis.set(`${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${job.id}`, job)
+    )
+  );
+
+  if (jobs.length > 0) {
+    // Pushes them to the head one by one, in order, like an LPUSH for each.
+    await redis.lpush(
+      REDIS_KEYS.VIDEO_BACKFILL_QUEUE,
+      ...jobs.map((job) => job.id)
+    );
   }
 
   const queue = new BackfillQueue(redis);
@@ -87,7 +96,11 @@ const createQueue = async (jobs: BackfillJob[]) => {
     expireLock: (id: string) =>
       redis.del(`${REDIS_KEYS.VIDEO_BACKFILL_LOCK_PREFIX}${id}`),
     /** The job as it is saved. */
-    getJob: async (id: string) => (await queue.getJobs([id]))[0]?.job,
+    getJob: async (id: string) => {
+      const [state] = await queue.getJobs([id]);
+
+      return state?.job;
+    },
     getQueued: () => redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1),
     queue,
     spies,
@@ -107,28 +120,28 @@ const createScraper = () => {
 
 const farFuture = Temporal.Now.instant().add({ hours: 1 });
 
+/** Works off a queue of one job whose videos fill two pages. */
+const readTwoPages = async () => {
+  const queued = await createQueue([createJob()]);
+  const scraper = createScraper();
+
+  scraper.addPastVideos
+    .mockResolvedValueOnce({ added: 3, cursor: "page-2", listed: 50 })
+    .mockResolvedValueOnce({ added: 1, cursor: null, listed: 10 });
+
+  const result = await workOffBackfillQueue({
+    deadline: farFuture,
+    getScraper: scraper.getScraper,
+    queue: queued.queue,
+  });
+
+  return { ...queued, ...scraper, result };
+};
+
 describe("workOffBackfillQueue", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
-
-  /** Works off a queue of one job whose videos fill two pages. */
-  const readTwoPages = async () => {
-    const queued = await createQueue([createJob()]);
-    const scraper = createScraper();
-
-    scraper.addPastVideos
-      .mockResolvedValueOnce({ added: 3, cursor: "page-2", listed: 50 })
-      .mockResolvedValueOnce({ added: 1, cursor: null, listed: 10 });
-
-    const result = await workOffBackfillQueue({
-      deadline: farFuture,
-      getScraper: scraper.getScraper,
-      queue: queued.queue,
-    });
-
-    return { ...queued, ...scraper, result };
-  };
 
   it("reads every page of a job", async () => {
     const { addPastVideos, getScraper, result, spies } = await readTwoPages();
@@ -173,11 +186,11 @@ describe("workOffBackfillQueue", () => {
     const deadline = start.add({ seconds: 50 });
     let now = start;
 
-    addPastVideos.mockImplementation(async () => {
+    addPastVideos.mockImplementation(() => {
       // Reading the page takes the rest of the time.
       now = deadline;
 
-      return { added: 2, cursor: "page-4", listed: 50 };
+      return Promise.resolve({ added: 2, cursor: "page-4", listed: 50 });
     });
 
     await expect(

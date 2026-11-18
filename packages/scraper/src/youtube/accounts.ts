@@ -1,7 +1,7 @@
 import type { Tables } from "@shinju-date/database";
 
-import { YOUTUBE_CHANNELS } from "../internal/database/index.js";
-import { DatabaseError } from "../internal/errors.js";
+import { DatabaseError } from "../internal/database-error.js";
+import { YOUTUBE_CHANNELS } from "../internal/database/talents.js";
 import type { AccountAdapter } from "../internal/operations/sync-accounts.js";
 import type { YouTubeFetcher } from "./fetcher.js";
 import { syncYouTubeChannelIcon } from "./profile-image.js";

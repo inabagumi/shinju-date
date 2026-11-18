@@ -5,6 +5,8 @@ import { getVideosPath } from "@/lib/video-kind-filter";
 
 import { ListOption, ListOptionIcon } from "./list-option";
 
+const NO_TALENT_IDS: readonly string[] = [];
+
 interface RecommendedQueriesProps {
   onClickLink?: () => void;
   queries: string[];
@@ -24,7 +26,7 @@ interface RecommendedQueriesProps {
 export default function RecommendedQueries({
   onClickLink,
   queries,
-  talentIds = [],
+  talentIds = NO_TALENT_IDS,
   variant = "default",
 }: RecommendedQueriesProps) {
   if (queries.length === 0) {

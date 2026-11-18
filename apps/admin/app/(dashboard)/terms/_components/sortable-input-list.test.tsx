@@ -46,21 +46,32 @@ const paste = (input: HTMLInputElement, text: string) =>
     clipboardData: { getData: () => text },
   });
 
+/**
+ * jsdom はレイアウトを計算しないため、キーボードでの並べ替えに必要な位置を、
+ * 兄弟要素の中の順番から決める
+ */
+const getBoundingClientRect = function getBoundingClientRect(
+  this: HTMLElement
+): DOMRect {
+  const siblings = this.parentElement ? [...this.parentElement.children] : [];
+  const index = Math.max(siblings.indexOf(this), 0);
+
+  return new DOMRect(0, index * 40, 300, 40);
+};
+
+/** Waits for the next animation frame. */
+const waitForAnimationFrame = async (): Promise<void> => {
+  const frame = Promise.withResolvers<number>();
+  requestAnimationFrame(frame.resolve);
+  await frame.promise;
+};
+
 describe(SortableInputList, () => {
   const originalGetBoundingClientRect =
     HTMLElement.prototype.getBoundingClientRect;
 
   beforeAll(() => {
-    // jsdom はレイアウトを計算しないため、キーボードでの並べ替えに必要な
-    // 位置を、兄弟要素の中の順番から決める
-    HTMLElement.prototype.getBoundingClientRect = function () {
-      const siblings = this.parentElement
-        ? [...this.parentElement.children]
-        : [];
-      const index = Math.max(siblings.indexOf(this), 0);
-
-      return new DOMRect(0, index * 40, 300, 40);
-    };
+    HTMLElement.prototype.getBoundingClientRect = getBoundingClientRect;
   });
 
   afterAll(() => {
@@ -180,9 +191,10 @@ describe(SortableInputList, () => {
 
     // dnd-kit はキーを押すたびに位置を測り直すため、1回ずつ反映を待つ
     for (const code of ["Space", "ArrowDown", "Space"]) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- each key has to be reflected before the next one is pressed
       await act(async () => {
         fireEvent.keyDown(firstHandle, { code });
-        await new Promise((resolve) => requestAnimationFrame(resolve));
+        await waitForAnimationFrame();
       });
     }
 

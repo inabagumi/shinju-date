@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 import type { ReactNode } from "react";
 
 interface SearchModalContextType {
@@ -16,11 +22,15 @@ const SearchModalContext = createContext<SearchModalContextType | undefined>(
 export const SearchModalProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const openModal = () => setIsOpen(true);
-  const closeModal = () => setIsOpen(false);
+  const openModal = useCallback(() => setIsOpen(true), []);
+  const closeModal = useCallback(() => setIsOpen(false), []);
+  const value = useMemo(
+    () => ({ closeModal, isOpen, openModal }),
+    [closeModal, isOpen, openModal]
+  );
 
   return (
-    <SearchModalContext.Provider value={{ closeModal, isOpen, openModal }}>
+    <SearchModalContext.Provider value={value}>
       {children}
     </SearchModalContext.Provider>
   );

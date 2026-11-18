@@ -66,7 +66,7 @@ test.describe("Talents page", () => {
 
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      /\/talents$/
+      /\/talents$/u
     );
   });
 
@@ -181,9 +181,14 @@ test.describe("Navigation to the talents page on mobile", () => {
     await expect(menu).toBeVisible();
 
     // お問い合わせ follows them only when the contact form is enabled
-    expect(
-      (await menu.getByRole("link").allTextContents()).slice(0, 4)
-    ).toEqual(["SHINJU DATEとは", "スケジュール", "動画一覧", "タレント一覧"]);
+    const linkTexts = await menu.getByRole("link").allTextContents();
+
+    expect(linkTexts.slice(0, 4)).toEqual([
+      "SHINJU DATEとは",
+      "スケジュール",
+      "動画一覧",
+      "タレント一覧",
+    ]);
 
     await menu.getByRole("link", { name: "タレント一覧" }).click();
 
@@ -199,7 +204,7 @@ test.describe("Sitemap", () => {
     const body = await response.text();
 
     expect(response.ok()).toBe(true);
-    expect(body).toMatch(/<loc>[^<]*\/talents<\/loc>/);
+    expect(body).toMatch(/<loc>[^<]*\/talents<\/loc>/u);
     expect(body).toContain(`/talents/${TALENT.id}</loc>`);
     expect(body).not.toContain("/talents/00000000-0000-4000-8000-000000000005");
     expect(body).not.toContain("/talents/00000000-0000-4000-8000-000000000006");

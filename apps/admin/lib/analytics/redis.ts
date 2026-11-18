@@ -29,7 +29,7 @@ export const parseScoredMembers = (
     const member = result[i];
     const score = Number(result[i + 1]);
 
-    if (member == null || Number.isNaN(score)) {
+    if (member === null || member === undefined || Number.isNaN(score)) {
       continue;
     }
 

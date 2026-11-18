@@ -33,7 +33,7 @@ export const Default = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const input = canvas.getByPlaceholderText(/enter text/i);
+    const input = canvas.getByPlaceholderText(/enter text/iu);
 
     // Verify input is rendered
     await expect(input).toBeInTheDocument();
@@ -74,7 +74,7 @@ export const Disabled = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const input = canvas.getByPlaceholderText(/disabled input/i);
+    const input = canvas.getByPlaceholderText(/disabled input/iu);
 
     // Verify input is disabled
     await expect(input).toBeDisabled();

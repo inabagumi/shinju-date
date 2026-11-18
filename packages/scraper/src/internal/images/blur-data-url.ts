@@ -4,7 +4,7 @@ import sharp from "sharp";
  * Creates the tiny JPEG shown, blurred, while an image loads
  * (`blur_data_url`).
  *
- * @throws When the image cannot be decoded.
+ * @throws {Error} When the image cannot be decoded.
  */
 export const createBlurDataURL = async (
   image: ArrayBuffer | Uint8Array

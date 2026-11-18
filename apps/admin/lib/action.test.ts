@@ -8,7 +8,18 @@ import type {
   AuthenticatedContext,
   requireAuthenticatedUser,
 } from "@/lib/auth";
+import { unauthenticatedFormState, unauthenticatedResult } from "@/lib/auth";
 import type { TypedSupabaseClient } from "@/lib/supabase";
+
+import {
+  ACTION_FAILED_ERROR_MESSAGE,
+  ActionError,
+  adminAction,
+  adminFormAction,
+  parseActionInput,
+} from "./action";
+import type { ActionResult, FormState } from "./action";
+import { INVALID_INPUT_ERROR_MESSAGE, uuidSchema } from "./schemas";
 
 const { requireAuthenticatedUserMock } = vi.hoisted(() => ({
   requireAuthenticatedUserMock: vi.fn<typeof requireAuthenticatedUser>(),
@@ -24,18 +35,6 @@ vi.mock(import("@/lib/auth"), async (importOriginal) => ({
   ...(await importOriginal()),
   requireAuthenticatedUser: requireAuthenticatedUserMock,
 }));
-
-import { unauthenticatedFormState, unauthenticatedResult } from "@/lib/auth";
-
-import {
-  ACTION_FAILED_ERROR_MESSAGE,
-  ActionError,
-  adminAction,
-  adminFormAction,
-  parseActionInput,
-} from "./action";
-import type { ActionResult, FormState } from "./action";
-import { INVALID_INPUT_ERROR_MESSAGE, uuidSchema } from "./schemas";
 
 const loggerErrorMock = vi.mocked(logger.error);
 
@@ -101,11 +100,13 @@ describe("lib/action", () => {
           id: string,
           n: number
         ) => Promise<ActionResult<{ id: string; n: number }>>
-      >(async (_context, id, n) => ({
-        data: { id, n },
-        success: true as const,
-        warnings: ["一部を飛ばしました。"],
-      }));
+      >((_context, id, n) =>
+        Promise.resolve({
+          data: { id, n },
+          success: true as const,
+          warnings: ["一部を飛ばしました。"],
+        })
+      );
       const action = adminAction("testAction", handler);
 
       await expect(action("id", 1)).resolves.toStrictEqual({
@@ -117,10 +118,12 @@ describe("lib/action", () => {
     });
 
     it("returns a failed result from the handler as it is", async () => {
-      const action = adminAction("testAction", async () => ({
-        error: "見つかりません。",
-        success: false as const,
-      }));
+      const action = adminAction("testAction", () =>
+        Promise.resolve({
+          error: "見つかりません。",
+          success: false as const,
+        })
+      );
 
       await expect(action()).resolves.toStrictEqual({
         error: "見つかりません。",
@@ -129,9 +132,9 @@ describe("lib/action", () => {
     });
 
     it("returns the message of an ActionError", async () => {
-      const action = adminAction("testAction", async () => {
-        throw new ActionError("すでに登録されています。");
-      });
+      const action = adminAction("testAction", () =>
+        Promise.reject(new ActionError("すでに登録されています。"))
+      );
 
       await expect(action()).resolves.toStrictEqual({
         error: "すでに登録されています。",
@@ -142,11 +145,8 @@ describe("lib/action", () => {
 
     it("logs any other error and returns a fixed message instead of its message", async () => {
       const error = new Error("duplicate key value violates unique constraint");
-      const action = adminAction(
-        "testAction",
-        async (_context, _id: string) => {
-          throw error;
-        }
+      const action = adminAction("testAction", (_context, _id: string) =>
+        Promise.reject(error)
       );
 
       const result = await action("id");
@@ -164,9 +164,7 @@ describe("lib/action", () => {
     });
 
     it("rethrows the errors that Next.js handles", async () => {
-      const action = adminAction("testAction", async () => {
-        redirect("/talents");
-      });
+      const action = adminAction("testAction", () => redirect("/talents"));
 
       await expect(action()).rejects.toThrow("NEXT_REDIRECT");
       expect(loggerErrorMock).not.toHaveBeenCalled();
@@ -186,11 +184,11 @@ describe("lib/action", () => {
 
     it("makes adminAction return the fixed message without going on", async () => {
       const update = vi.fn<() => void>();
-      const action = adminAction("testAction", async (_context, id: string) => {
+      const action = adminAction("testAction", (_context, id: string) => {
         parseActionInput(uuidSchema, id);
         update();
 
-        return { success: true };
+        return Promise.resolve({ success: true });
       });
 
       await expect(action("not-a-uuid")).resolves.toStrictEqual({
@@ -246,7 +244,7 @@ describe("lib/action", () => {
     });
 
     it("calls the handler with the context and the parsed data and returns success", async () => {
-      const handler = vi.fn<FormHandler>(async () => undefined);
+      const handler = vi.fn<FormHandler>(async () => {});
       const action = adminFormAction("testFormAction", schema, handler);
 
       await expect(
@@ -258,9 +256,11 @@ describe("lib/action", () => {
     });
 
     it("returns the state that the handler returns", async () => {
-      const action = adminFormAction("testFormAction", schema, async () => ({
-        errors: { name: ["使えない名前です。"] },
-      }));
+      const action = adminFormAction("testFormAction", schema, () =>
+        Promise.resolve({
+          errors: { name: ["使えない名前です。"] },
+        })
+      );
 
       await expect(
         action({}, formData({ name: "name" }))
@@ -270,9 +270,11 @@ describe("lib/action", () => {
     });
 
     it("returns the message of an ActionError as the error of its field", async () => {
-      const action = adminFormAction("testFormAction", schema, async () => {
-        throw new ActionError("すでに登録されています。", { field: "name" });
-      });
+      const action = adminFormAction("testFormAction", schema, () =>
+        Promise.reject(
+          new ActionError("すでに登録されています。", { field: "name" })
+        )
+      );
 
       await expect(
         action({}, formData({ name: "name" }))
@@ -283,9 +285,9 @@ describe("lib/action", () => {
     });
 
     it("returns the message of an ActionError without a field as a generic error", async () => {
-      const action = adminFormAction("testFormAction", schema, async () => {
-        throw new ActionError("失敗しました。");
-      });
+      const action = adminFormAction("testFormAction", schema, () =>
+        Promise.reject(new ActionError("失敗しました。"))
+      );
 
       await expect(
         action({}, formData({ name: "name" }))
@@ -296,9 +298,9 @@ describe("lib/action", () => {
 
     it("logs any other error without the form values and returns a fixed message instead of its message", async () => {
       const error = new Error("duplicate key value violates unique constraint");
-      const action = adminFormAction("testFormAction", schema, async () => {
-        throw error;
-      });
+      const action = adminFormAction("testFormAction", schema, () =>
+        Promise.reject(error)
+      );
 
       const result = await action({}, formData({ name: "secret" }));
 
@@ -311,9 +313,9 @@ describe("lib/action", () => {
     });
 
     it("rethrows the errors that Next.js handles", async () => {
-      const action = adminFormAction("testFormAction", schema, async () => {
-        notFound();
-      });
+      const action = adminFormAction("testFormAction", schema, () =>
+        notFound()
+      );
 
       await expect(action({}, formData({ name: "name" }))).rejects.toThrow(
         "NEXT_HTTP_ERROR_FALLBACK"

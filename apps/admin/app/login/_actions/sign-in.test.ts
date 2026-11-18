@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { createSupabaseServerClient } from "@/lib/supabase";
 
+import { signInAction } from "./sign-in";
+
 type SupabaseClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 type AuthClient = SupabaseClient["auth"];
 
@@ -30,8 +32,6 @@ vi.mock(import("@/lib/supabase"), () => ({
       } as Partial<AuthClient> as AuthClient,
     } as Partial<SupabaseClient> as SupabaseClient),
 }));
-
-import { signInAction } from "./sign-in";
 
 /** The response of `signInWithPassword()` for a user with this metadata. */
 const signedIn = (

@@ -24,7 +24,7 @@ export const GET = async (request: NextRequest): Promise<Response> => {
     if (!error && data.user && isAdminUser(data.user)) {
       // Check if this is an email change event
       // Supabase sends the user with the new email after confirmation
-      const user = data.user;
+      const { user } = data;
 
       // Only log if user has an email
       if (user.email) {

@@ -31,7 +31,7 @@ export type ScriptEmulation = (
  * `video-backfill:enqueue`.
  */
 export const getScriptName = (script: string): string | undefined =>
-  script.match(/^--\s*(\S+)/)?.[1];
+  script.match(/^--\s*(?<name>\S+)/u)?.groups?.["name"];
 
 /**
  * The version of a stored job, as `ENQUEUE_SCRIPT` reads it: 0 for a job

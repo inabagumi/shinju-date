@@ -1,4 +1,5 @@
-import type { default as Database } from "@shinju-date/database";
+// oxlint-disable-next-line import/default -- the default export is type-only (`export type { Database as default }`), which the rule does not see
+import type Database from "@shinju-date/database";
 import retryableFetch from "@shinju-date/retryable-fetch";
 import { createClient } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";

@@ -7,6 +7,13 @@ import type {
   TypedSupabaseClient,
 } from "@/lib/supabase";
 
+import {
+  requireAuthenticatedUser,
+  UNAUTHENTICATED_ERROR_MESSAGE,
+  unauthenticatedFormState,
+  unauthenticatedResult,
+} from "./auth";
+
 type AuthClient = TypedSupabaseClient["auth"];
 
 const { createSupabaseServerClientMock, getUserMock } = vi.hoisted(() => ({
@@ -19,13 +26,6 @@ vi.mock(import("@/lib/supabase"), () => ({
   createSupabaseServerClient:
     createSupabaseServerClientMock as typeof createSupabaseServerClient,
 }));
-
-import {
-  requireAuthenticatedUser,
-  UNAUTHENTICATED_ERROR_MESSAGE,
-  unauthenticatedFormState,
-  unauthenticatedResult,
-} from "./auth";
 
 describe(requireAuthenticatedUser, () => {
   beforeEach(() => {

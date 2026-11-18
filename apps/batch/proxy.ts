@@ -8,7 +8,7 @@ export const proxy = async (
   request: NextRequest
 ): Promise<ReturnType<NextProxy>> => {
   // Allow health check endpoints during maintenance
-  const pathname = request.nextUrl.pathname;
+  const { pathname } = request.nextUrl;
   if (pathname === "/api/healthz" || pathname === "/api/readyz") {
     return NextResponse.next();
   }
@@ -25,7 +25,8 @@ export const proxy = async (
       {
         headers: {
           "Content-Type": "application/json",
-          "Retry-After": "3600", // Suggest retry after 1 hour
+          // Suggest retry after 1 hour
+          "Retry-After": "3600",
         },
         status: 503,
       }

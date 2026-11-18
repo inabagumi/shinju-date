@@ -311,8 +311,11 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
       expect(result).toStrictEqual({ success: true });
       expect(insertedRows()).toStrictEqual([row]);
       expect(
-        supabase.calls("insert", table)[0]?.query["select"]?.split(",").sort()
-      ).toStrictEqual([...accountSelect].sort());
+        supabase
+          .calls("insert", table)[0]
+          ?.query["select"]?.split(",")
+          .toSorted()
+      ).toStrictEqual(accountSelect.toSorted());
       expectTalentTouched();
       test.expectAuditLog(platformCase.linkAuditAction, talentId, auditDetails);
       test.expectRevalidated({
@@ -512,12 +515,12 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
     });
   });
 
-  describe("removing an account", () => {
-    /** Answers the read of the account before it is removed. */
-    const answerAccount = (): void => {
-      supabase.on("select", table, savedAccount);
-    };
+  /** Answers the read of the account before it is removed. */
+  const answerAccount = (): void => {
+    supabase.on("select", table, savedAccount);
+  };
 
+  describe("removing an account", () => {
     it("should remove the account", async () => {
       answerAccount();
 
@@ -548,8 +551,8 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
       const [read] = supabase.calls("select", table);
 
-      expect(read?.query["select"]?.split(",").sort()).toStrictEqual(
-        [...accountSelect].sort()
+      expect(read?.query["select"]?.split(",").toSorted()).toStrictEqual(
+        accountSelect.toSorted()
       );
       expect(read?.query["id"]).toBe(`eq.${accountId}`);
       expect(read?.query["talent_id"]).toBe(`eq.${talentId}`);

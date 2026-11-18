@@ -253,7 +253,7 @@ describe("refreshYouTubeVideos and thumbnails", () => {
       requests: [{ ifNoneMatch: null, url: IMAGE_URL }],
     });
     expect(storage.uploads.map(({ path }) => path)).toStrictEqual([
-      expect.stringMatching(/^a\//),
+      expect.stringMatching(/^a\//u),
     ]);
     const inserted = supabase.written("POST", "thumbnails")[0]?.body;
 
@@ -478,18 +478,19 @@ describe("refreshYouTubeVideos and thumbnails", () => {
   });
 });
 
+/** Saved videos numbered from `from`, as one page of the sweep. */
+const createPage = (from: number, size: number) =>
+  Array.from({ length: size }, (_, i) => {
+    const n = String(from + i).padStart(4, "0");
+
+    return {
+      id: `video-${n}`,
+      thumbnail_id: `thumb-${n}`,
+      youtube_video: { youtube_video_id: `yt-${n}` },
+    };
+  });
+
 describe(removeUnavailableYouTubeVideos, () => {
-  const createPage = (from: number, size: number) =>
-    Array.from({ length: size }, (_, i) => {
-      const n = String(from + i).padStart(4, "0");
-
-      return {
-        id: `video-${n}`,
-        thumbnail_id: `thumb-${n}`,
-        youtube_video: { youtube_video_id: `yt-${n}` },
-      };
-    });
-
   it("walks every video page by page, continuing after the last ID", async () => {
     const cursors: (string | undefined)[] = [];
     supabase.respond(({ method, query }) => {

@@ -17,7 +17,7 @@ export const getZeroResultKeywords = async (): Promise<string[]> => {
     const keywords = await redisClient.smembers<string[]>(
       REDIS_KEYS.SEARCH_ZERO_RESULTS
     );
-    return keywords.sort();
+    return keywords.toSorted();
   } catch (error) {
     logger.error("Redisからゼロ結果キーワードの取得に失敗しました", { error });
     return [];

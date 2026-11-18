@@ -49,7 +49,7 @@ describe("focus styles", () => {
       screen.getByRole("button"),
     ]) {
       expect(field).toHaveClass("field-focus-ring");
-      expect(field.className).not.toMatch(/\bfocus:ring-/);
+      expect(field.className).not.toMatch(/\bfocus:ring-/u);
     }
   });
 

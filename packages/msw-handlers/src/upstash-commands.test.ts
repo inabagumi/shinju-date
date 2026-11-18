@@ -76,20 +76,23 @@ const findUsedCommands = (): Map<string, Set<string>> => {
       (file) =>
         file !== "" &&
         !file.startsWith("packages/msw-handlers/") &&
-        !/(^|\/)(e2e|test)\/|\.(test|spec)\.tsx?$/.test(file)
+        !/(?:^|\/)(?:e2e|test)\/|\.(?:test|spec)\.tsx?$/u.test(file)
     );
   const used = new Map<string, Set<string>>();
 
   for (const file of files) {
     const source = readFileSync(`${REPOSITORY_ROOT}${file}`, "utf-8");
 
-    if (!/redis/i.test(source)) {
+    if (!/redis/iu.test(source)) {
       continue;
     }
 
-    for (const [, receiver = "", method = ""] of source.matchAll(
-      /(\w*)\s*\.\s*([a-z][A-Za-z]*)\s*(?:<[^<>()]*>)?\(/g
+    for (const { groups } of source.matchAll(
+      /(?<receiver>\w*)\s*\.\s*(?<method>[a-z][A-Za-z]*)\s*(?:<[^<>()]*>)?\(/gu
     )) {
+      const receiver = groups?.["receiver"] ?? "";
+      const method = groups?.["method"] ?? "";
+
       if (commands.has(method) && !NON_REDIS_RECEIVERS.has(receiver)) {
         // `evalRo` is `EVAL_RO`, `scriptLoad` is `SCRIPT LOAD` and so on, so
         // the name of the command is the method in lower case.
@@ -167,13 +170,13 @@ describe("Upstash Redis commands", () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toStrictEqual({
-        error: expect.stringMatching(/^ERR unknown command 'foobar'/),
+        error: expect.stringMatching(/^ERR unknown command 'foobar'/u),
       });
     });
 
     it("throws from @upstash/redis", async () => {
       await expect(redis.hrandfield(uniqueKey("hrandfield"))).rejects.toThrow(
-        /ERR unknown command 'hrandfield'/
+        /ERR unknown command 'hrandfield'/u
       );
     });
 
@@ -188,7 +191,7 @@ describe("Upstash Redis commands", () => {
       expect(response).toStrictEqual({
         body: [
           { result: "OK" },
-          { error: expect.stringMatching(/^ERR unknown command 'FOOBAR'/) },
+          { error: expect.stringMatching(/^ERR unknown command 'FOOBAR'/u) },
           { result: "a" },
         ],
         status: 200,
@@ -204,14 +207,14 @@ describe("Upstash Redis commands", () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toStrictEqual({
-        error: expect.stringMatching(/^EXECABORT .*unknown command 'FOOBAR'/),
+        error: expect.stringMatching(/^EXECABORT .*unknown command 'FOOBAR'/u),
       });
       await expect(redis.exists(key)).resolves.toBe(0);
     });
 
     it("returns an error for a script that the mock cannot run", async () => {
       await expect(redis.eval("return 1", [], [])).rejects.toThrow(
-        /the mock cannot run this script/
+        /the mock cannot run this script/u
       );
     });
   });
@@ -222,7 +225,7 @@ describe("Upstash Redis commands", () => {
 
       await redis.set(key, "a");
 
-      await expect(redis.zincrby(key, 1, "m")).rejects.toThrow(/WRONGTYPE/);
+      await expect(redis.zincrby(key, 1, "m")).rejects.toThrow(/WRONGTYPE/u);
     });
 
     it("returns an error for the wrong number of arguments", async () => {
@@ -239,7 +242,7 @@ describe("Upstash Redis commands", () => {
 
       await redis.set(key, "a");
 
-      await expect(redis.incr(key)).rejects.toThrow(/not an integer/);
+      await expect(redis.incr(key)).rejects.toThrow(/not an integer/u);
     });
   });
 
@@ -427,7 +430,8 @@ describe("Upstash Redis commands", () => {
       const talentKey = `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}${dateKey}`;
 
       // Like `increment` of apps/web
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < 2; i += 1) {
+        // oxlint-disable-next-line no-await-in-loop -- two clicks, one after the other
         await redis
           .multi()
           .zincrby(videoKey, 1, videoId)

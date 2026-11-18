@@ -49,7 +49,7 @@ const exportCsv = async (
   const body = new Uint8Array(await response.arrayBuffer());
 
   return {
-    bom: Array.from(body.slice(0, 3)),
+    bom: [...body.subarray(0, 3)],
     contentDisposition: response.headers.get("Content-Disposition"),
     contentType: response.headers.get("Content-Type"),
     status: response.status,

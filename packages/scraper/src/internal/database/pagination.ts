@@ -6,7 +6,10 @@
  * offset, rows that are deleted along the way cannot shift later pages and
  * make the walk skip rows.
  *
- * @throws When a page does not move past the previous one, which would
+ * @param getPage - Gets the rows after the given ID, in ascending order of
+ *   `id`
+ * @yields {T[]} The pages, each of them not empty
+ * @throws {Error} When a page does not move past the previous one, which would
  *   otherwise repeat the same page forever.
  */
 export const paginateById = async function* paginateById<
@@ -17,6 +20,7 @@ export const paginateById = async function* paginateById<
   let cursor: string | undefined;
 
   while (true) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- each page starts after the last ID of the previous one
     const page = await getPage(cursor);
     const lastId = page.at(-1)?.id;
 

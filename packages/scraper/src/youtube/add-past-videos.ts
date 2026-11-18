@@ -1,4 +1,4 @@
-import { YOUTUBE_CHANNELS } from "../internal/database/index.js";
+import { YOUTUBE_CHANNELS } from "../internal/database/talents.js";
 import { addPastVideosWith } from "../internal/operations/add-past-videos.js";
 import type { PastVideoAdapter } from "../internal/operations/add-past-videos.js";
 import type {

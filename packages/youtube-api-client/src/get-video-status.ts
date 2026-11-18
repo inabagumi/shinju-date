@@ -26,7 +26,9 @@ export const getVideoStatus = (
   currentDateTime = Temporal.Now.instant()
 ): YouTubeVideoStatus => {
   // If no liveStreamingDetails, it's a regular published video (not a live stream)
-  if (!details) return "PUBLISHED";
+  if (!details) {
+    return "PUBLISHED";
+  }
 
   // Currently live (has actualStartTime but no actualEndTime)
   if (details.actualStartTime && !details.actualEndTime) {

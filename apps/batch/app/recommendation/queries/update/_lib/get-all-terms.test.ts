@@ -15,7 +15,7 @@ interface Row {
  * PostgREST).
  */
 const createMockSupabase = (rows: Row[], { maxRows = 1000 } = {}) => {
-  const sorted = [...rows].sort((a, b) => (a.id < b.id ? -1 : 1));
+  const sorted = rows.toSorted((a, b) => (a.id < b.id ? -1 : 1));
   const requests: { cursor: string | undefined; limit: number }[] = [];
 
   const createBuilder = () => {

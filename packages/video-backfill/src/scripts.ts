@@ -160,7 +160,12 @@ export const readJobs = async (
   ]);
 
   return jobs.map((job, index) =>
-    job ? { job, locked: locks[index] != null } : null
+    job
+      ? {
+          job,
+          locked: locks[index] !== null && locks[index] !== undefined,
+        }
+      : null
   );
 };
 
@@ -233,7 +238,7 @@ export const claimJob = async (
     [token, leaseSeconds, now.toString(), BACKFILL_JOB_TTL_SECONDS]
   );
 
-  if (reply == null) {
+  if (reply === null || reply === undefined) {
     return null;
   }
 

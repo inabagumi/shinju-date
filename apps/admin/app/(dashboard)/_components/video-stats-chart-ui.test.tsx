@@ -12,6 +12,7 @@ vi.mock(import("recharts"), async (importOriginal) => {
     ...actual,
     ResponsiveContainer: forwardRef<HTMLDivElement, ResponsiveContainerProps>(
       ({ children }, _ref) =>
+        // oxlint-disable-next-line react/no-clone-element -- gives the chart a fixed size, as the real ResponsiveContainer does with cloneElement()
         cloneElement(
           children as ReactElement<{ height?: number; width?: number }>,
           { height: 320, width: 800 }
@@ -69,12 +70,11 @@ describe("VideoStatsChartUI", () => {
       throw new Error("The chart is not rendered");
     }
     fireEvent.mouseMove(chart, { clientX: 700, clientY: 100 });
-    await act(
-      () =>
-        new Promise<void>((resolve) => {
-          requestAnimationFrame(() => resolve());
-        })
-    );
+    await act(async () => {
+      const frame = Promise.withResolvers<number>();
+      requestAnimationFrame(frame.resolve);
+      await frame.promise;
+    });
 
     const tooltip = document.querySelector(".recharts-tooltip-wrapper");
     expect(tooltip).toHaveTextContent("2026-11-09");

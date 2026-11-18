@@ -50,7 +50,7 @@ describe(VideoActionConfirmDialog, () => {
     ).toBeInTheDocument();
 
     // Button should be disabled initially
-    const confirmButton = screen.getByRole("button", { name: /削除する/i });
+    const confirmButton = screen.getByRole("button", { name: /削除する/iu });
     expect(confirmButton).toBeDisabled();
   });
 
@@ -104,7 +104,7 @@ describe(VideoActionConfirmDialog, () => {
     );
 
     expect(screen.getByText("動画を復元")).toBeInTheDocument();
-    expect(screen.getByText(/2件の動画を復元します/)).toBeInTheDocument();
+    expect(screen.getByText(/2件の動画を復元します/u)).toBeInTheDocument();
   });
 
   it("renders toggle visibility dialog", () => {
@@ -123,7 +123,7 @@ describe(VideoActionConfirmDialog, () => {
 
     expect(screen.getByText("表示状態を切り替え")).toBeInTheDocument();
     expect(
-      screen.getByText(/2件の動画の表示状態を切り替えます/)
+      screen.getByText(/2件の動画の表示状態を切り替えます/u)
     ).toBeInTheDocument();
   });
 
@@ -161,7 +161,7 @@ describe(VideoActionConfirmDialog, () => {
     );
 
     expect(
-      screen.getByRole("button", { name: /削除する/i })
+      screen.getByRole("button", { name: /削除する/iu })
     ).toBeInTheDocument();
 
     rerender(
@@ -175,7 +175,7 @@ describe(VideoActionConfirmDialog, () => {
     );
 
     expect(
-      screen.getByRole("button", { name: /復元する/i })
+      screen.getByRole("button", { name: /復元する/iu })
     ).toBeInTheDocument();
 
     rerender(
@@ -189,7 +189,7 @@ describe(VideoActionConfirmDialog, () => {
     );
 
     expect(
-      screen.getByRole("button", { name: /切り替える/i })
+      screen.getByRole("button", { name: /切り替える/iu })
     ).toBeInTheDocument();
   });
 

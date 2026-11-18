@@ -286,27 +286,26 @@ describe("markFeatureRequestAsReadAction()", () => {
   });
 });
 
+/**
+ * サービスロールのクライアントと区別できるように、ログインしたユーザーの
+ * クライアントを、`from()` を記録する別のオブジェクトにする
+ */
+const signInWithRecordedClient = () => {
+  const fromTable = (table: "feature_requests") => supabase.client.from(table);
+  const from = vi.fn<typeof fromTable>(fromTable);
+  const supabaseClient = Object.assign(Object.create(supabase.client), {
+    from,
+  });
+
+  test.requireAuthenticatedUser.mockResolvedValue({
+    supabaseClient,
+    user: TEST_USER,
+  });
+
+  return { from, supabaseClient };
+};
+
 describe("with the client of the signed-in user", () => {
-  /**
-   * サービスロールのクライアントと区別できるように、ログインしたユーザーの
-   * クライアントを、`from()` を記録する別のオブジェクトにする
-   */
-  const signInWithRecordedClient = () => {
-    const fromTable = (table: "feature_requests") =>
-      supabase.client.from(table);
-    const from = vi.fn<typeof fromTable>(fromTable);
-    const supabaseClient = Object.assign(Object.create(supabase.client), {
-      from,
-    });
-
-    test.requireAuthenticatedUser.mockResolvedValue({
-      supabaseClient,
-      user: TEST_USER,
-    });
-
-    return { from, supabaseClient };
-  };
-
   it.each([
     [
       "the status",

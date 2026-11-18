@@ -4,9 +4,9 @@ import { describe, expect, it, vi } from "vitest";
 import type { TalentStreamStatus } from "@/lib/data/talents";
 import { createTalentDetail } from "@/test/factories";
 
-vi.mock(import("@/lib/data/talents"), () => ({}));
-
 import { TalentPageHeader } from "./talent-page-header";
+
+vi.mock(import("@/lib/data/talents"), () => ({}));
 
 const TALENT_ID = "00000000-0000-4000-8000-000000000001";
 
@@ -104,7 +104,7 @@ describe(TalentPageHeader, () => {
     );
 
     expect(screen.getByTestId("talent-default-icon")).toBeInTheDocument();
-    expect(screen.queryAllByRole("link", { name: /チャンネル/ })).toHaveLength(
+    expect(screen.queryAllByRole("link", { name: /チャンネル/u })).toHaveLength(
       0
     );
   });
@@ -141,7 +141,7 @@ describe("TalentPageHeader with the stream status", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: "朝霧ミオ" })
     ).not.toContainElement(badge);
-    expect(screen.queryByText(/次回/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/次回/u)).not.toBeInTheDocument();
   });
 
   it("should not show the next stream while live", () => {
@@ -153,13 +153,13 @@ describe("TalentPageHeader with the stream status", () => {
     );
 
     expect(screen.getByText("配信中")).toBeInTheDocument();
-    expect(screen.queryByText(/次回/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/次回/u)).not.toBeInTheDocument();
   });
 
   it("should show the start of the next stream in Japan time", () => {
     render(<TalentPageHeader streamStatus={upcoming} talent={TALENT} />);
 
-    const nextStream = screen.getByText(/^次回/);
+    const nextStream = screen.getByText(/^次回/u);
 
     expect(nextStream).toHaveTextContent("次回 11/16 20:00");
     expect(nextStream).toHaveClass("text-meta", "text-muted", "tabular-nums");
@@ -183,7 +183,7 @@ describe("TalentPageHeader with the stream status", () => {
   it("should put the stream status above the links", () => {
     render(<TalentPageHeader streamStatus={upcoming} talent={TALENT} />);
 
-    const line = screen.getByText(/^次回/).closest("p");
+    const line = screen.getByText(/^次回/u).closest("p");
     const links = screen.getByRole("navigation", { name: "リンク" });
 
     expect(line).toHaveClass("mb-2");
@@ -194,7 +194,7 @@ describe("TalentPageHeader with the stream status", () => {
     const { container } = render(<TalentPageHeader talent={TALENT} />);
 
     expect(screen.queryByText("配信中")).not.toBeInTheDocument();
-    expect(screen.queryByText(/次回/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/次回/u)).not.toBeInTheDocument();
     expect(screen.getByTestId("talent-icon")).not.toHaveClass("ring-live");
     expect(
       screen.getByRole("navigation", { name: "リンク" }).previousElementSibling
