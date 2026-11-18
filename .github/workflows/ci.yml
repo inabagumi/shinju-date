@@ -5,8 +5,10 @@ on:
     types: [opened, synchronize, reopened]
   push:
     branches: [main]
+  # The merge queue runs CI on main with the pull requests ahead in the queue
+  merge_group:
 
-# A new push to a pull request cancels the older run; pushes to main run to the end
+# A new push to a pull request cancels the older run; pushes to main and merge groups run to the end
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -30,7 +32,9 @@ jobs:
       - name: Detect database and Terraform changes
         id: filter
         env:
-          BEFORE_SHA: ${{ github.event.before }}
+          # A merge group has no before, so it compares with main at the time
+          # the group was made (this includes the pull requests ahead in the queue)
+          BEFORE_SHA: ${{ github.event_name == 'merge_group' && github.event.merge_group.base_sha || github.event.before }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
           if [ "$EVENT_NAME" = "pull_request" ]; then

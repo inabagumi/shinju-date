@@ -5,6 +5,7 @@ on:
     types: [opened, synchronize]
   push:
     branches: [main]
+  merge_group:
   schedule:
     - cron: "0 20 * * 5"
 
