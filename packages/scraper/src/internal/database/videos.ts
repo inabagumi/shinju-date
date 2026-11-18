@@ -2,7 +2,7 @@ import type { TablesInsert, TablesUpdate } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { TypedSupabaseClient } from '../../types.js'
 import { chunk } from '../batch.js'
-import { IN_FILTER_CHUNK_SIZE } from '../constants.js'
+import { IN_FILTER_CHUNK_SIZE, SOFT_DELETE_CHUNK_SIZE } from '../constants.js'
 import { DatabaseError, isUniqueViolation } from '../errors.js'
 
 export type NewVideo = Omit<TablesInsert<'videos'>, 'id'>
@@ -115,13 +115,13 @@ export async function updateVideo(
 
 export interface SoftDeleteVideosOptions {
   now: Temporal.Instant
-  /** Thumbnails of the deleted videos, soft-deleted alongside them. */
-  thumbnailIds?: readonly string[]
   videoIds: readonly string[]
 }
 
 /**
- * Soft-deletes videos that are no longer available on their source platform.
+ * Soft-deletes videos that are no longer available on their source platform,
+ * with their thumbnails (`soft_delete_videos`, which updates both in one
+ * transaction).
  *
  * Rows that were deleted in the meantime are left alone so their
  * `deleted_reason` (e.g. `withdrawn`) is never overwritten.
@@ -130,43 +130,23 @@ export interface SoftDeleteVideosOptions {
  */
 export async function softDeleteUnavailableVideos(
   supabaseClient: TypedSupabaseClient,
-  { now, thumbnailIds = [], videoIds }: SoftDeleteVideosOptions,
+  { now, videoIds }: SoftDeleteVideosOptions,
 ): Promise<number> {
-  const timestamp = toDBString(now)
+  const deletedAt = toDBString(now)
   let deletedCount = 0
 
-  for (const ids of chunk(videoIds, IN_FILTER_CHUNK_SIZE)) {
-    const { data, error } = await supabaseClient
-      .from('videos')
-      .update({
-        deleted_at: timestamp,
-        deleted_reason: 'unavailable',
-        updated_at: timestamp,
-      })
-      .in('id', ids)
-      .is('deleted_at', null)
-      .select('id')
+  for (const ids of chunk(videoIds, SOFT_DELETE_CHUNK_SIZE)) {
+    const { data, error } = await supabaseClient.rpc('soft_delete_videos', {
+      p_deleted_at: deletedAt,
+      p_reason: 'unavailable',
+      p_video_ids: ids,
+    })
 
     if (error) {
       throw new DatabaseError('Failed to soft-delete videos', error)
     }
 
     deletedCount += data.length
-  }
-
-  for (const ids of chunk(thumbnailIds, IN_FILTER_CHUNK_SIZE)) {
-    const { error } = await supabaseClient
-      .from('thumbnails')
-      .update({
-        deleted_at: timestamp,
-        updated_at: timestamp,
-      })
-      .in('id', ids)
-      .is('deleted_at', null)
-
-    if (error) {
-      throw new DatabaseError('Failed to soft-delete thumbnails', error)
-    }
   }
 
   return deletedCount

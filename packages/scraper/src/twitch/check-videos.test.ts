@@ -225,26 +225,24 @@ describe('refreshRecentTwitchVideos', () => {
     expect(createThumbnail).not.toHaveBeenCalled()
   })
 
-  it('deletes videos Twitch no longer returns, with their thumbnails', async () => {
+  it('deletes videos Twitch no longer returns', async () => {
     supabase.respond(({ method, table }) => {
       if (method === 'GET') {
         return [createSavedArchive()]
       }
 
-      return table === 'videos' ? [{ id: 'video-1' }] : []
+      return table === 'rpc/soft_delete_videos' ? ['video-1'] : []
     })
     const { fetcher } = createFakeTwitchFetcher({ missingVideoIds: ['vod-1'] })
 
     const changed = await refreshRecentTwitchVideos(createContext(fetcher))
 
     expect(changed).toBeGreaterThan(0)
-    expect(supabase.written('PATCH', 'videos')[0]).toMatchObject({
-      body: { deleted_reason: 'unavailable' },
-      query: { id: 'in.(video-1)' },
-    })
-    expect(supabase.written('PATCH', 'thumbnails')[0]?.query['id']).toBe(
-      'in.(thumb-1)',
-    )
+    // `soft_delete_videos` deletes the thumbnails with the videos.
+    expect(
+      supabase.written('POST', 'rpc/soft_delete_videos')[0]?.body,
+    ).toMatchObject({ p_reason: 'unavailable', p_video_ids: ['video-1'] })
+    expect(supabase.written('PATCH', 'thumbnails')).toHaveLength(0)
   })
 
   it('never looks up or deletes a broadcast that has no archive', async () => {
@@ -266,7 +264,7 @@ describe('removeUnavailableTwitchVideos', () => {
     const cursors: (string | undefined)[] = []
     supabase.respond(({ method, query, table }) => {
       if (method !== 'GET') {
-        return table === 'videos' ? [{ id: 'video-2' }] : []
+        return table === 'rpc/soft_delete_videos' ? ['video-2'] : []
       }
 
       cursors.push(query['id'])
@@ -301,9 +299,9 @@ describe('removeUnavailableTwitchVideos', () => {
     expect(cursors).toEqual([undefined, 'gt.video-3'])
     expect(getVideos).toHaveBeenCalledWith(['vod-1'])
     expect(getClips).toHaveBeenCalledWith(['clip-1'])
-    expect(supabase.written('PATCH', 'videos')).toEqual([
+    expect(supabase.written('POST', 'rpc/soft_delete_videos')).toEqual([
       expect.objectContaining({
-        query: expect.objectContaining({ id: 'in.(video-2)' }),
+        body: expect.objectContaining({ p_video_ids: ['video-2'] }),
       }),
     ])
     expect(supabase.requests[0]?.query).toMatchObject({

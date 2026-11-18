@@ -142,7 +142,7 @@ describe('VideoList', () => {
 
     it('shows a success toast and clears the selection', async () => {
       vi.mocked(toggleVisibilityAction).mockResolvedValue({
-        data: { updatedCount: 1 },
+        data: { skippedCount: 0, updatedCount: 1 },
         success: true,
       })
 
@@ -387,7 +387,7 @@ describe('VideoList', () => {
 
     it('toggles the visibility of the video', async () => {
       vi.mocked(toggleVisibilityAction).mockResolvedValue({
-        data: { updatedCount: 1 },
+        data: { skippedCount: 0, updatedCount: 1 },
         success: true,
       })
 

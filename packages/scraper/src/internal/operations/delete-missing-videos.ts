@@ -33,9 +33,6 @@ export async function deleteMissingVideos<
 
   const deletedCount = await softDeleteUnavailableVideos(supabaseClient, {
     now,
-    thumbnailIds: missingVideos
-      .map((saved) => saved.thumbnail_id)
-      .filter((id) => id !== null),
     videoIds: missingVideos.map((saved) => saved.id),
   })
 

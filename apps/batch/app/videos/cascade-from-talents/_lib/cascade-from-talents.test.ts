@@ -26,67 +26,27 @@ interface MockCall {
   args: unknown[]
 }
 
-interface SelectedVideo {
-  id: string
-  thumbnail_id: string | null
+interface RpcCall {
+  name: string
+  args: Record<string, unknown>
 }
 
 /**
- * Builds a thenable Supabase query mock that records chain calls
- * and resolves with the provided result when awaited.
+ * Builds a Supabase client mock: `from('videos')` is a thenable query that
+ * records chain calls and resolves with `onSelectVideos()` when awaited, and
+ * `rpc()` records the call and resolves with `onRpc()` (by default, every ID
+ * passed in, as if the function updated them all).
  */
 function createClientMock(options: {
   onSelectVideos: () => QueryResult
-  onUpdateVideos?: (payload: Record<string, unknown>) => QueryResult
-  onUpdateThumbnails?: (payload: Record<string, unknown>) => QueryResult
+  onRpc?: (call: RpcCall) => QueryResult | undefined
 }) {
   const calls: MockCall[] = []
-  let selectCount = 0
-  let lastSelectedVideos: SelectedVideo[] = []
+  const rpcCalls: RpcCall[] = []
 
   const from = vi.fn((table: string) => {
-    let pendingUpdatePayload: Record<string, unknown> | null = null
-    let isUpdate = false
-
-    const resolveResult = (): QueryResult => {
-      if (table === 'videos' && !isUpdate) {
-        selectCount++
-        const result = options.onSelectVideos()
-        lastSelectedVideos = Array.isArray(result.data)
-          ? (result.data as SelectedVideo[])
-          : []
-        return result
-      }
-      if (table === 'videos' && isUpdate) {
-        const custom = options.onUpdateVideos?.(pendingUpdatePayload ?? {})
-        if (custom) {
-          // Default updated rows to the last selected ids when not specified.
-          if (custom.data == null && custom.error == null) {
-            return {
-              data: lastSelectedVideos.map((video) => ({ id: video.id })),
-              error: null,
-            }
-          }
-          return custom
-        }
-        return {
-          data: lastSelectedVideos.map((video) => ({ id: video.id })),
-          error: null,
-        }
-      }
-      if (table === 'thumbnails' && isUpdate) {
-        return (
-          options.onUpdateThumbnails?.(pendingUpdatePayload ?? {}) ?? {
-            data: null,
-            error: null,
-          }
-        )
-      }
-      return { data: null, error: null }
-    }
-
-    // Deferred thenable: resolve only when awaited so chain flags
-    // (isUpdate / payload) are set first.
+    // Deferred thenable: resolve only when awaited so the chain is recorded
+    // first.
     const thenable = {
       // biome-ignore lint/suspicious/noThenProperty: intentional thenable mock for Supabase query chains
       then(
@@ -94,7 +54,7 @@ function createClientMock(options: {
         onrejected?: ((reason: unknown) => unknown) | null,
       ) {
         return Promise.resolve()
-          .then(resolveResult)
+          .then(options.onSelectVideos)
           .then(onfulfilled, onrejected)
       },
     }
@@ -103,32 +63,30 @@ function createClientMock(options: {
       (method: string) =>
       (...args: unknown[]) => {
         calls.push({ args, method, table })
-        if (method === 'update') {
-          isUpdate = true
-          pendingUpdatePayload = args[0] as Record<string, unknown>
-        }
         return thenable
       }
 
     Object.assign(thenable, {
       eq: record('eq'),
-      in: record('in'),
       is: record('is'),
       limit: record('limit'),
       not: record('not'),
       order: record('order'),
       select: record('select'),
-      update: record('update'),
     })
 
     return thenable
   })
 
-  return {
-    calls,
-    client: { from },
-    getSelectCount: () => selectCount,
-  }
+  const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
+    const call = { args, name }
+
+    rpcCalls.push(call)
+
+    return options.onRpc?.(call) ?? { data: args['p_video_ids'], error: null }
+  })
+
+  return { calls, client: { from, rpc }, rpcCalls }
 }
 
 describe('cascadeVideosFromTalents', () => {
@@ -137,48 +95,36 @@ describe('cascadeVideosFromTalents', () => {
   })
 
   it('soft-deletes undeleted videos under deleted talents as talent_deleted', async () => {
-    const videoUpdates: Record<string, unknown>[] = []
-    const thumbnailUpdates: Record<string, unknown>[] = []
     let selectPhase = 0
 
-    const { client, calls } = createClientMock({
+    const { client, calls, rpcCalls } = createClientMock({
       onSelectVideos: () => {
         selectPhase++
         if (selectPhase === 1) {
           return {
-            data: [
-              { id: 'video-1', thumbnail_id: 'thumb-1' },
-              { id: 'video-2', thumbnail_id: null },
-            ],
+            data: [{ id: 'video-1' }, { id: 'video-2' }],
             error: null,
           }
         }
         // restore candidates
         return { data: [], error: null }
       },
-      onUpdateThumbnails: (payload) => {
-        thumbnailUpdates.push(payload)
-        return { data: null, error: null }
-      },
-      onUpdateVideos: (payload) => {
-        videoUpdates.push(payload)
-        return { data: null, error: null }
-      },
     })
 
     const result = await cascadeVideosFromTalents(client as never)
 
     expect(result).toEqual({ restored: 0, softDeleted: 2 })
-    expect(videoUpdates).toHaveLength(1)
-    expect(videoUpdates[0]).toMatchObject({
-      deleted_at: '2026-08-02T12:00:00Z',
-      deleted_reason: 'talent_deleted',
-      updated_at: '2026-08-02T12:00:00Z',
-    })
-    expect(thumbnailUpdates).toHaveLength(1)
-    expect(thumbnailUpdates[0]).toMatchObject({
-      deleted_at: '2026-08-02T12:00:00Z',
-    })
+    // The function deletes the thumbnails with the videos.
+    expect(rpcCalls).toEqual([
+      {
+        args: {
+          p_deleted_at: '2026-08-02T12:00:00Z',
+          p_reason: 'talent_deleted',
+          p_video_ids: ['video-1', 'video-2'],
+        },
+        name: 'soft_delete_videos',
+      },
+    ])
 
     // Soft-delete path filters on parent talent deleted_at
     expect(
@@ -189,60 +135,65 @@ describe('cascadeVideosFromTalents', () => {
           call.args[0] === 'talents.deleted_at',
       ),
     ).toBe(true)
+  })
 
-    // Update re-checks that the row is still not deleted
-    expect(
-      calls.some(
-        (call) =>
-          call.table === 'videos' &&
-          call.method === 'is' &&
-          call.args[0] === 'deleted_at' &&
-          call.args[1] === null,
-      ),
-    ).toBe(true)
+  it('counts only the videos the function soft-deleted', async () => {
+    let selectPhase = 0
+
+    const { client } = createClientMock({
+      onRpc: () => ({ data: ['video-2'], error: null }),
+      onSelectVideos: () => {
+        selectPhase++
+        return selectPhase === 1
+          ? { data: [{ id: 'video-1' }, { id: 'video-2' }], error: null }
+          : { data: [], error: null }
+      },
+    })
+
+    const result = await cascadeVideosFromTalents(client as never)
+
+    // video-1 was deleted meanwhile (for example, withdrawn by an admin).
+    expect(result).toEqual({ restored: 0, softDeleted: 1 })
   })
 
   it('restores only videos marked talent_deleted under active talents', async () => {
-    const videoUpdates: Record<string, unknown>[] = []
     let selectPhase = 0
 
-    const { client, calls } = createClientMock({
+    const { client, calls, rpcCalls } = createClientMock({
       onSelectVideos: () => {
         selectPhase++
         if (selectPhase === 1) {
           return { data: [], error: null }
         }
         return {
-          data: [{ id: 'cascade-video', thumbnail_id: 'thumb-c' }],
+          data: [{ id: 'cascade-video' }],
           error: null,
         }
-      },
-      onUpdateVideos: (payload) => {
-        videoUpdates.push(payload)
-        return { data: null, error: null }
       },
     })
 
     const result = await cascadeVideosFromTalents(client as never)
 
     expect(result).toEqual({ restored: 1, softDeleted: 0 })
-    expect(videoUpdates).toEqual([
+    // The function restores only the videos still deleted as talent_deleted,
+    // with their thumbnails.
+    expect(rpcCalls).toEqual([
       {
-        deleted_at: null,
-        deleted_reason: null,
-        updated_at: '2026-08-02T12:00:00Z',
+        args: { p_reason: 'talent_deleted', p_video_ids: ['cascade-video'] },
+        name: 'restore_videos',
       },
     ])
 
-    // Restore path must filter by deleted_reason = talent_deleted (select + update)
-    const deletedReasonEqCalls = calls.filter(
-      (call) =>
-        call.table === 'videos' &&
-        call.method === 'eq' &&
-        call.args[0] === 'deleted_reason' &&
-        call.args[1] === 'talent_deleted',
-    )
-    expect(deletedReasonEqCalls.length).toBeGreaterThanOrEqual(2)
+    // Restore path selects only deleted_reason = talent_deleted
+    expect(
+      calls.some(
+        (call) =>
+          call.table === 'videos' &&
+          call.method === 'eq' &&
+          call.args[0] === 'deleted_reason' &&
+          call.args[1] === 'talent_deleted',
+      ),
+    ).toBe(true)
 
     // Active talent: talents.deleted_at IS NULL
     expect(
@@ -257,13 +208,14 @@ describe('cascadeVideosFromTalents', () => {
   })
 
   it('returns zeros when there is nothing to process', async () => {
-    const { client } = createClientMock({
+    const { client, rpcCalls } = createClientMock({
       onSelectVideos: () => ({ data: [], error: null }),
     })
 
     const result = await cascadeVideosFromTalents(client as never)
 
     expect(result).toEqual({ restored: 0, softDeleted: 0 })
+    expect(rpcCalls).toEqual([])
   })
 
   it('preserves soft-delete count when restore phase fails', async () => {
@@ -274,7 +226,7 @@ describe('cascadeVideosFromTalents', () => {
         selectPhase++
         if (selectPhase === 1) {
           return {
-            data: [{ id: 'to-delete', thumbnail_id: null }],
+            data: [{ id: 'to-delete' }],
             error: null,
           }
         }
@@ -291,6 +243,28 @@ describe('cascadeVideosFromTalents', () => {
         error.softDeleted === 1 &&
         error.restored === 0 &&
         error.message.includes('softDeleted=1'),
+    )
+  })
+
+  it('throws CascadePhaseError with a DatabaseError when a function fails', async () => {
+    const { client } = createClientMock({
+      onRpc: ({ name }) =>
+        name === 'soft_delete_videos'
+          ? { data: null, error: { message: 'soft delete failed' } }
+          : undefined,
+      onSelectVideos: () => ({ data: [{ id: 'video-1' }], error: null }),
+    })
+
+    const error = await cascadeVideosFromTalents(client as never).catch(
+      (error: unknown) => error,
+    )
+
+    expect(error).toBeInstanceOf(CascadePhaseError)
+    expect((error as CascadePhaseError).softDeleted).toBe(0)
+    expect((error as CascadePhaseError).restored).toBe(1)
+    expect((error as Error).cause).toBeInstanceOf(DatabaseError)
+    expect(((error as Error).cause as DatabaseError).operation).toBe(
+      'Failed to soft-delete videos of deleted talents',
     )
   })
 
@@ -326,37 +300,32 @@ describe('cascadeVideosFromTalents', () => {
   })
 
   it('soft-deletes and restores in the same run when both exist', async () => {
-    const videoUpdates: Record<string, unknown>[] = []
     let selectPhase = 0
 
-    const { client } = createClientMock({
+    const { client, rpcCalls } = createClientMock({
       onSelectVideos: () => {
         selectPhase++
         if (selectPhase === 1) {
           return {
-            data: [{ id: 'to-delete', thumbnail_id: null }],
+            data: [{ id: 'to-delete' }],
             error: null,
           }
         }
         return {
-          data: [{ id: 'to-restore', thumbnail_id: null }],
+          data: [{ id: 'to-restore' }],
           error: null,
         }
-      },
-      onUpdateVideos: (payload) => {
-        videoUpdates.push(payload)
-        return { data: null, error: null }
       },
     })
 
     const result = await cascadeVideosFromTalents(client as never)
 
     expect(result).toEqual({ restored: 1, softDeleted: 1 })
-    expect(videoUpdates).toHaveLength(2)
-    expect(videoUpdates[0]).toMatchObject({ deleted_reason: 'talent_deleted' })
-    expect(videoUpdates[1]).toMatchObject({
-      deleted_at: null,
-      deleted_reason: null,
-    })
+    expect(
+      rpcCalls.map(({ args, name }) => [name, args['p_video_ids']]),
+    ).toEqual([
+      ['soft_delete_videos', ['to-delete']],
+      ['restore_videos', ['to-restore']],
+    ])
   })
 })

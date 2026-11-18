@@ -19,3 +19,9 @@ export const SWEEP_PAGE_SIZE = 1000
 
 /** Keeps `in.(...)` filters comfortably below URL length limits. */
 export const IN_FILTER_CHUNK_SIZE = 100
+
+/**
+ * Videos soft-deleted with one `soft_delete_videos` call. The IDs are sent in
+ * the request body, so the URL length does not limit them.
+ */
+export const SOFT_DELETE_CHUNK_SIZE = 1000

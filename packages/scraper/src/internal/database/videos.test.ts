@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { DatabaseError } from '../errors.js'
 import { postgresError, setupSupabase } from '../testing/supabase.js'
 import {
   findSavedYouTubeVideoIds,
@@ -116,57 +117,63 @@ describe('insertVideo', () => {
 describe('softDeleteUnavailableVideos', () => {
   const now = Temporal.Instant.from('2024-05-01T12:34:56.789Z')
 
-  it('marks videos and their thumbnails as unavailable', async () => {
-    supabase.respond(({ table }) =>
-      table === 'videos' ? [{ id: 'video-1' }, { id: 'video-2' }] : [],
-    )
+  it('soft-deletes the videos as unavailable with one function call', async () => {
+    supabase.respond(() => ['video-1', 'video-2'])
 
     const deletedCount = await softDeleteUnavailableVideos(
       supabase.supabaseClient,
-      { now, thumbnailIds: ['thumb-1'], videoIds: ['video-1', 'video-2'] },
+      { now, videoIds: ['video-1', 'video-2'] },
     )
 
     expect(deletedCount).toBe(2)
-
-    const [videos] = supabase.written('PATCH', 'videos')
-    const [thumbnails] = supabase.written('PATCH', 'thumbnails')
-
-    expect(videos?.body).toEqual({
-      deleted_at: '2024-05-01T12:34:56Z',
-      deleted_reason: 'unavailable',
-      updated_at: '2024-05-01T12:34:56Z',
+    expect(supabase.requests.map((r) => `${r.method} ${r.table}`)).toEqual([
+      'POST rpc/soft_delete_videos',
+    ])
+    expect(supabase.requests[0]?.body).toEqual({
+      p_deleted_at: '2024-05-01T12:34:56Z',
+      p_reason: 'unavailable',
+      p_video_ids: ['video-1', 'video-2'],
     })
-    expect(videos?.query['id']).toBe('in.(video-1,video-2)')
-    expect(thumbnails?.body).toEqual({
-      deleted_at: '2024-05-01T12:34:56Z',
-      updated_at: '2024-05-01T12:34:56Z',
-    })
-    expect(thumbnails?.query['id']).toBe('in.(thumb-1)')
   })
 
-  it('leaves videos that were deleted meanwhile untouched', async () => {
-    supabase.respond(() => [])
+  it('counts only the videos the function deleted', async () => {
+    // The function leaves the videos deleted meanwhile untouched.
+    supabase.respond(() => ['video-2'])
 
     const deletedCount = await softDeleteUnavailableVideos(
       supabase.supabaseClient,
-      { now, videoIds: ['video-1'] },
+      { now, videoIds: ['video-1', 'video-2'] },
     )
 
-    expect(deletedCount).toBe(0)
-    expect(supabase.written('PATCH', 'videos')[0]?.query['deleted_at']).toBe(
-      'is.null',
-    )
+    expect(deletedCount).toBe(1)
   })
 
-  it('splits long ID lists across requests', async () => {
+  it('splits long ID lists into calls of 1,000 videos', async () => {
     supabase.respond(() => [])
 
     await softDeleteUnavailableVideos(supabase.supabaseClient, {
       now,
-      videoIds: Array.from({ length: 250 }, (_, i) => `video-${i}`),
+      videoIds: Array.from({ length: 2500 }, (_, i) => `video-${i}`),
     })
 
-    expect(supabase.written('PATCH', 'videos')).toHaveLength(3)
+    expect(
+      supabase
+        .written('POST', 'rpc/soft_delete_videos')
+        .map(
+          ({ body }) => (body as { p_video_ids: string[] }).p_video_ids.length,
+        ),
+    ).toEqual([1000, 1000, 500])
+  })
+
+  it('throws a DatabaseError when the function fails', async () => {
+    supabase.respond(() => postgresError('XX000', 'Database error'))
+
+    await expect(
+      softDeleteUnavailableVideos(supabase.supabaseClient, {
+        now,
+        videoIds: ['video-1'],
+      }),
+    ).rejects.toThrow(DatabaseError)
   })
 
   it('does nothing without IDs', async () => {

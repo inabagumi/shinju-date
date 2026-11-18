@@ -73,7 +73,7 @@ describe('getVideoActionSuccessText', () => {
     expect(
       getVideoActionSuccessText({
         action: 'toggle',
-        data: { updatedCount: 2 },
+        data: { skippedCount: 0, updatedCount: 2 },
         success: true,
         targets: [targetA, targetB],
       }),
@@ -84,7 +84,7 @@ describe('getVideoActionSuccessText', () => {
     expect(
       getVideoActionSuccessText({
         action: 'toggle',
-        data: { updatedCount: 1 },
+        data: { skippedCount: 0, updatedCount: 1 },
         success: true,
         targets: [{ ...targetA, visible: false }],
       }),
@@ -99,4 +99,21 @@ describe('getVideoActionSuccessText', () => {
       getVideoActionSuccessText({ action, success: true, targets: [targetA] }),
     ).toBe(text)
   })
+
+  it.each([
+    ['delete', '1 件を削除しました（1 件は削除済みでした）。'],
+    ['restore', '1 件を復元しました（1 件は削除されていませんでした）。'],
+  ] as const)(
+    'tells the number of videos of %s that were already in that state',
+    (action, text) => {
+      expect(
+        getVideoActionSuccessText({
+          action,
+          data: { skippedCount: 1, updatedCount: 1 },
+          success: true,
+          targets: [targetA, targetB],
+        }),
+      ).toBe(text)
+    },
+  )
 })
