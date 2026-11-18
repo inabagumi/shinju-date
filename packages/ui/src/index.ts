@@ -17,6 +17,17 @@ export {
   DialogTitle,
   DialogTrigger,
 } from './Dialog/Dialog.js'
+export {
+  DropdownMenu,
+  DropdownMenuContent,
+  type DropdownMenuContentProps,
+  DropdownMenuItem,
+  type DropdownMenuItemProps,
+  DropdownMenuSeparator,
+  type DropdownMenuSeparatorProps,
+  DropdownMenuTrigger,
+  type DropdownMenuTriggerProps,
+} from './DropdownMenu/DropdownMenu.js'
 export { EmptyState, type EmptyStateProps } from './EmptyState/EmptyState.js'
 export { FilterBar, type FilterBarProps } from './FilterBar/FilterBar.js'
 export { Input, type InputProps } from './Input/Input.js'

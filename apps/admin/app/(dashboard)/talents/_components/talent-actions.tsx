@@ -1,15 +1,16 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import { EllipsisVertical } from 'lucide-react'
-import { useState } from 'react'
-import { useActionToast } from '@/components/action-toast'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/dropdown-menu'
+} from '@shinju-date/ui'
+import { EllipsisVertical } from 'lucide-react'
+import { useState } from 'react'
+import { useActionToast } from '@/components/action-toast'
 import { useServerAction } from '@/lib/use-server-action'
 import { syncTalentAccountsAction } from '../_actions/sync'
 import {
@@ -64,29 +65,31 @@ export function TalentActions({ talent }: TalentActionsProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {isDeleted ? (
-            <DropdownMenuItem onClick={() => openLifecycleDialog('restore')}>
+            <DropdownMenuItem onSelect={() => openLifecycleDialog('restore')}>
               復活
             </DropdownMenuItem>
           ) : (
             <>
-              <DropdownMenuItem onClick={() => runSync(talent.id)}>
+              <DropdownMenuItem onSelect={() => runSync(talent.id)}>
                 同期
               </DropdownMenuItem>
               {isActive && (
-                <DropdownMenuItem onClick={() => openLifecycleDialog('retire')}>
+                <DropdownMenuItem
+                  onSelect={() => openLifecycleDialog('retire')}
+                >
                   引退にする
                 </DropdownMenuItem>
               )}
               {isRetired && (
                 <DropdownMenuItem
-                  onClick={() => openLifecycleDialog('activate')}
+                  onSelect={() => openLifecycleDialog('activate')}
                 >
                   アクティブに戻す
                 </DropdownMenuItem>
               )}
-              <hr className="my-1 border-border" />
+              <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => openLifecycleDialog('delete')}
+                onSelect={() => openLifecycleDialog('delete')}
                 variant="danger"
               >
                 削除

@@ -365,9 +365,11 @@ describe('VideoList', () => {
       vi.clearAllMocks()
     })
 
+    // メニューはポインターを押したときかキーで開くため、Enter で開く
     function openMenu() {
-      fireEvent.click(
+      fireEvent.keyDown(
         screen.getByRole('button', { name: 'アクションメニュー' }),
+        { key: 'Enter' },
       )
     }
 

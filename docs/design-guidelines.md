@@ -234,6 +234,51 @@ const button = (
 )
 ```
 
+### メニュー（DropdownMenu）
+
+ボタンから開いて操作やリンクを選ぶメニュー（行末の「︙」、管理画面のナビゲーションバーなど）は、`@shinju-date/ui` の `DropdownMenu` で組みます。`role="menu"` を手で付けたり、Popover やマウスの出入りでメニューを作ったりしないでください。`role="menu"` を付けると、支援技術は矢印キーでの移動を前提にします。`DropdownMenu` は [`@radix-ui/react-dropdown-menu`](https://www.radix-ui.com/primitives/docs/components/dropdown-menu) の上に作っていて、次の操作をライブラリに任せています。
+
+- クリック、Enter、Space、下矢印キーで開く。マウスを乗せただけでは開かない
+- 上下の矢印キーで項目を移動し、文字を打つとその文字で始まる項目へ移る。無効な項目は飛ばす
+- Enter で項目を実行して閉じる。Escape と外側のクリックで閉じる。閉じると、フォーカスが開いたボタンに戻る
+
+| 部品                    | 役割と見た目                                                                                                                                                                  |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DropdownMenu`          | 全体。開閉の状態を持つ                                                                                                                                                        |
+| `DropdownMenuTrigger`   | 開くボタン。既定はアイコンのボタン（`rounded-control p-1 text-muted focus-ring`）。`asChild` で子の要素をボタンにするときは、既定の見た目を付けず、子の見た目を使う           |
+| `DropdownMenuContent`   | 入れ物（`rounded-container border border-border bg-surface p-1 shadow-overlay`）。ポータルに描くので、横にスクロールする表の中でも切れない。既定は右端そろえ（`align="end"`） |
+| `DropdownMenuItem`      | 項目（`rounded-control px-3 py-2 text-meta leading-5`）。選ぶと `onSelect` が呼ばれる。リンクは `asChild` で `<a>` や `Link` を子に渡す。削除などは `variant="danger"`        |
+| `DropdownMenuSeparator` | 項目のまとまりを分ける線（`my-1 h-px bg-border`）                                                                                                                             |
+
+- 項目の選択中の地は、マウスとキーボードのどちらでも `data-highlighted` で付く（`bg-muted`、`danger` は `bg-danger/10`）。項目に `focus-ring` は付けない
+- 項目を選ぶとメニューは閉じ、中身も消える。項目から開くダイアログは、メニューの外に置き、開いているかどうかをメニューの外の状態で持つ
+- 実行が終わるまでメニューを開いたままにしたいとき（ログアウトなど）は、`onSelect` で `event.preventDefault()` を呼び、実行中は項目を `disabled` にする
+- 結果は、[操作の結果の知らせ](#操作の結果の知らせ管理画面)のとおりトーストで知らせる
+
+```tsx
+const menu = (
+  <DropdownMenu>
+    <DropdownMenuTrigger aria-label="アクションメニュー">
+      <EllipsisVertical aria-hidden="true" className="size-5" />
+    </DropdownMenuTrigger>
+    <DropdownMenuContent>
+      <DropdownMenuItem asChild>
+        <a href={externalUrl} rel="noopener noreferrer" target="_blank">
+          YouTubeで見る
+        </a>
+      </DropdownMenuItem>
+      <DropdownMenuItem onSelect={() => openDialog('toggle')}>
+        表示/非表示を切り替え
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem onSelect={() => openDialog('delete')} variant="danger">
+        削除
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+)
+```
+
 ### 読み込み中の表示（スケルトン）
 
 `Suspense` の `fallback` には、読み込み後の部品と同じ形のスケルトンを置き、読み込みの前後で画面が動かないようにします。

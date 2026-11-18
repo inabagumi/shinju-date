@@ -1,13 +1,14 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import { EllipsisVertical, ExternalLink } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/dropdown-menu'
+} from '@shinju-date/ui'
+import { EllipsisVertical, ExternalLink } from 'lucide-react'
 import type { VideoAction } from '../_lib/video-actions'
 import { useVideoSelection } from './video-selection-provider'
 
@@ -50,17 +51,17 @@ export function VideoRowActions({
           </DropdownMenuItem>
         )}
         {isDeleted ? (
-          <DropdownMenuItem onClick={() => handleAction('restore')}>
+          <DropdownMenuItem onSelect={() => handleAction('restore')}>
             復元
           </DropdownMenuItem>
         ) : (
           <>
-            <DropdownMenuItem onClick={() => handleAction('toggle')}>
+            <DropdownMenuItem onSelect={() => handleAction('toggle')}>
               表示/非表示を切り替え
             </DropdownMenuItem>
-            <div className="my-1 border-t border-border" />
+            <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => handleAction('delete')}
+              onSelect={() => handleAction('delete')}
               variant="danger"
             >
               削除
