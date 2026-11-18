@@ -69,7 +69,7 @@ describe('updateFeatureRequestStatus', () => {
       },
       entityName: '検索結果を配信日で絞り込みたいです',
     })
-    test.expectRevalidated({ paths: ['/feedback'] })
+    test.expectRevalidated({ paths: ['/feedback', `/feedback/${ID}`] })
   })
 
   it('names the feedback by the first 40 characters of its message', async () => {
@@ -144,7 +144,7 @@ describe('updateFeatureRequestMemo', () => {
       entityName: 'Message',
     })
     expect(recordedAuditLogs()).not.toContain(MEMO)
-    test.expectRevalidated({ paths: ['/feedback'] })
+    test.expectRevalidated({ paths: ['/feedback', `/feedback/${ID}`] })
   })
 
   it('records a change to an existing memo, without either memo', async () => {
@@ -244,7 +244,7 @@ describe('markFeatureRequestAsRead', () => {
         { body: { is_read: isRead }, query: { id: `eq.${ID}` } },
       ])
       test.expectNoAuditLog()
-      test.expectRevalidated({ paths: ['/feedback'] })
+      test.expectRevalidated({ paths: ['/feedback', `/feedback/${ID}`] })
     },
   )
 
