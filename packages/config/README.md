@@ -97,10 +97,6 @@ export default definePlaywrightConfig({
 
 `projects` などの、Playwright のほかの設定も渡せます。アプリに必要なときだけ渡してください（`apps/admin/playwright.config.ts` の、ログインを済ませるプロジェクトなど）。
 
-## PostCSS
-
-`postcss.config.js` を持つのは `packages/ui`（Storybook のため）だけです。アプリは `@tailwindcss/turbopack` で Tailwind CSS を読み込み、PostCSS の設定を持たないため、共有の設定は置いていません。
-
 ## `package.json` の `exports`
 
 ビルドするパッケージの `exports` は、すべて次の形にします。`main`、`types`、`typesVersions` は書きません。
