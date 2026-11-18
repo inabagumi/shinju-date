@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import type { ResolvingMetadata } from 'next'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import type { Talent } from '@/lib/data/talents'
 import type { Video } from '@/lib/data/videos'
@@ -206,6 +207,14 @@ describe('VideosPage', () => {
 })
 
 describe('generateMetadata', () => {
+  // The images of the parent segment are tested in `app/metadata.test.ts`
+  function generatePageMetadata(props: Parameters<typeof generateMetadata>[0]) {
+    return generateMetadata(
+      props,
+      Promise.resolve({} as Awaited<ResolvingMetadata>),
+    )
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
 
@@ -213,7 +222,7 @@ describe('generateMetadata', () => {
   })
 
   test('should index the videos page', async () => {
-    const metadata = await generateMetadata(
+    const metadata = await generatePageMetadata(
       createProps(undefined, { kind: 'short' }),
     )
 
@@ -225,7 +234,7 @@ describe('generateMetadata', () => {
   })
 
   test('should offer the calendar of every video without filters', async () => {
-    const metadata = await generateMetadata(createProps(undefined))
+    const metadata = await generatePageMetadata(createProps(undefined))
 
     expect(metadata.alternates?.types).toEqual({
       'text/calendar': '/videos.ics',
@@ -233,7 +242,7 @@ describe('generateMetadata', () => {
   })
 
   test('should not index the videos filtered by talents', async () => {
-    const metadata = await generateMetadata(
+    const metadata = await generatePageMetadata(
       createProps(undefined, {
         kind: 'standard',
         talent: [TALENT_B.id, TALENT_A.id],
@@ -248,7 +257,7 @@ describe('generateMetadata', () => {
   })
 
   test('should ignore unknown talents', async () => {
-    const metadata = await generateMetadata(
+    const metadata = await generatePageMetadata(
       createProps(undefined, { talent: RETIRED_TALENT_ID }),
     )
 
@@ -259,7 +268,7 @@ describe('generateMetadata', () => {
   })
 
   test('should keep the canonical URL of the search results', async () => {
-    const metadata = await generateMetadata(
+    const metadata = await generatePageMetadata(
       createProps(['歌'], { talent: TALENT_A.id }),
     )
 

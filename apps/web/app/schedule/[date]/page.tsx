@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { createPageMetadata } from '@/lib/metadata'
-import { formatWeekRange, getSchedulePath } from '@/lib/schedule'
+import { getSchedulePath } from '@/lib/schedule'
 import SchedulePageContent from '../_components/schedule-page-content'
 import { resolveScheduleWeek } from '../_lib/resolve-schedule-week'
+import { getScheduleWeekTitle } from '../_lib/week-title'
 
 export async function generateMetadata({
   params,
@@ -14,7 +15,7 @@ export async function generateMetadata({
     index: false,
     // 日曜以外の日付でも、その週の日曜の URL を正規の URL にする
     path: getSchedulePath(weekStart),
-    title: `${formatWeekRange(weekStart)}の配信スケジュール`,
+    title: getScheduleWeekTitle(weekStart),
     type: 'article',
   })
 }
