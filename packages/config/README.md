@@ -95,7 +95,8 @@ export default defineVitestConfig.react({
 | ------------------ | ---------------------- | ---------------------------- |
 | `plugins`          | なし                   | `@vitejs/plugin-react`       |
 | `test.environment` | `'node'`               | `'jsdom'`                    |
-| `test.globals`     | `true`                 | `true`                       |
+
+`globals` は使いません。テストは、`describe`、`expect`、`vi` などを、`vitest` から import します。Testing Library は、`afterEach` がグローバルにないと、テストのあとに部品をアンマウントしないため、React の部品をテストするプロジェクトは、`vitest.setup.ts` で `cleanup()` を呼びます（`packages/ui/vitest.setup.ts` など）。
 
 上書きは Vitest の `mergeConfig()` で足すため、配列（`plugins`、`setupFiles` など）は共通の設定に追加されます。
 

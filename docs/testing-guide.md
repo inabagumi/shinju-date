@@ -48,7 +48,7 @@ describe('MyComponent', () => {
 - **apps/web**: ユーザー向け Web アプリコンポーネント
 - **packages/ui**: 共有 UI コンポーネント
 
-これらのプロジェクトの `vitest.config.ts` は、`@shinju-date/config` の `defineVitestConfig.react()` を呼びます。共通の設定（`@vitejs/plugin-react` による JSX トランスフォーム、jsdom、`globals: true`）は `packages/config/vitest.ts` にあり、各プロジェクトには、そのプロジェクトだけの設定を書きます（[`@shinju-date/config` の Vitest](../packages/config/README.md#vitest)）。
+これらのプロジェクトの `vitest.config.ts` は、`@shinju-date/config` の `defineVitestConfig.react()` を呼びます。共通の設定（`@vitejs/plugin-react` による JSX トランスフォーム、jsdom）は `packages/config/vitest.ts` にあり、各プロジェクトには、そのプロジェクトだけの設定を書きます（[`@shinju-date/config` の Vitest](../packages/config/README.md#vitest)）。
 
 ```typescript
 import { defineVitestConfig } from '@shinju-date/config/vitest'
