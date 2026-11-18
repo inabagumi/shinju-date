@@ -1,6 +1,6 @@
 export { YOUTUBE_DATA_API_MAX_RESULTS } from './batches.js'
 export { getChannels, resolveYouTubeChannel } from './channels.js'
-export { isYouTubeApiError } from './errors.js'
+export { getErrorStatus } from './errors.js'
 export { getPublishedAt } from './get-published-at.js'
 export { getVideoKind, type YouTubeVideoKind } from './get-video-kind.js'
 export {

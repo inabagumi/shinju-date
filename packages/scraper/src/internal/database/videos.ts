@@ -1,7 +1,7 @@
 import type { TablesInsert, TablesUpdate } from '@shinju-date/database'
+import { chunk } from '@shinju-date/helpers'
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { TypedSupabaseClient } from '../../types.js'
-import { chunk } from '../batch.js'
 import { IN_FILTER_CHUNK_SIZE, SOFT_DELETE_CHUNK_SIZE } from '../constants.js'
 import { DatabaseError } from '../errors.js'
 
