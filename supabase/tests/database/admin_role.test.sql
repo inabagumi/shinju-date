@@ -38,7 +38,7 @@ SELECT is_empty(
       WHERE "schemaname" = 'public'
         AND 'authenticated' = ANY ("roles")
         AND COALESCE("qual", '') || COALESCE("with_check", '') NOT LIKE '%is_admin()%'
-        AND NOT ("tablename" = 'feature_requests' AND "policyname" = 'Allow anyone to insert feature requests')$$,
+        AND NOT ("tablename" = 'feature_requests' AND "policyname" = 'feature_requests: anyone can insert')$$,
     'every policy for authenticated requires the admin role'
 );
 
