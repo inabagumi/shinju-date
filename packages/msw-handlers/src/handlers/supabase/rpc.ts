@@ -5,6 +5,7 @@ import {
   auditLogs,
   talents,
   terms,
+  thumbnails,
   twitchUsers,
   twitchVideos,
   videos,
@@ -300,6 +301,120 @@ async function updateMockTermsPopularity({
     .filter(({ term }) => givenTerms.has(term.toLowerCase())).length
 }
 
+type VideoDeletedReason = NonNullable<Tables<'videos'>['deleted_reason']>
+
+interface SoftDeleteVideosParams {
+  p_deleted_at: string
+  p_reason: VideoDeletedReason
+  p_video_ids: string[]
+}
+
+interface RestoreVideosParams {
+  p_reason?: VideoDeletedReason | null
+  p_video_ids: string[]
+}
+
+/**
+ * Set `deleted_at` of the given thumbnails, and `updated_at` as the trigger
+ * of the table does. Only the thumbnails whose `deleted_at` is not yet in the
+ * wanted state (deleted or not) are updated.
+ */
+async function setMockThumbnailsDeletedAt(
+  thumbnailIds: readonly (string | null)[],
+  deletedAt: string | null,
+) {
+  const ids = new Set(thumbnailIds)
+  const updatedAt = toDBString(Temporal.Now.instant())
+
+  for (const thumbnail of thumbnails.findMany()) {
+    if (
+      ids.has(thumbnail.id) &&
+      (thumbnail.deleted_at === null) !== (deletedAt === null)
+    ) {
+      await thumbnails.update(thumbnail, {
+        data(draft) {
+          draft.deleted_at = deletedAt
+          draft.updated_at = updatedAt
+        },
+      })
+    }
+  }
+}
+
+/**
+ * Mirrors `soft_delete_videos`: soft-deletes the given videos that are not
+ * deleted yet, with their thumbnails, and returns the IDs of the deleted
+ * videos. The reason and the time of the videos deleted earlier are kept.
+ */
+async function softDeleteMockVideos({
+  p_deleted_at: deletedAt,
+  p_reason: reason,
+  p_video_ids: videoIds,
+}: SoftDeleteVideosParams) {
+  const ids = new Set(videoIds)
+  const updatedAt = toDBString(Temporal.Now.instant())
+  const targets = videos
+    .findMany()
+    .filter((video) => ids.has(video.id) && video.deleted_at === null)
+    .sort((a, b) => a.id.localeCompare(b.id))
+
+  for (const video of targets) {
+    await videos.update(video, {
+      data(draft) {
+        draft.deleted_at = deletedAt
+        draft.deleted_reason = reason
+        draft.updated_at = updatedAt
+      },
+    })
+  }
+
+  await setMockThumbnailsDeletedAt(
+    targets.map((video) => video.thumbnail_id),
+    deletedAt,
+  )
+
+  return targets.map((video) => video.id)
+}
+
+/**
+ * Mirrors `restore_videos`: restores the given deleted videos (only those
+ * deleted for `p_reason`, unless it is `null`), with their thumbnails, and
+ * returns the IDs of the restored videos.
+ */
+async function restoreMockVideos({
+  p_reason: reason = null,
+  p_video_ids: videoIds,
+}: RestoreVideosParams) {
+  const ids = new Set(videoIds)
+  const updatedAt = toDBString(Temporal.Now.instant())
+  const targets = videos
+    .findMany()
+    .filter(
+      (video) =>
+        ids.has(video.id) &&
+        video.deleted_at !== null &&
+        (reason === null || video.deleted_reason === reason),
+    )
+    .sort((a, b) => a.id.localeCompare(b.id))
+
+  for (const video of targets) {
+    await videos.update(video, {
+      data(draft) {
+        draft.deleted_at = null
+        draft.deleted_reason = null
+        draft.updated_at = updatedAt
+      },
+    })
+  }
+
+  await setMockThumbnailsDeletedAt(
+    targets.map((video) => video.thumbnail_id),
+    null,
+  )
+
+  return targets.map((video) => video.id)
+}
+
 /** The handlers of the database functions (`/rest/v1/rpc/<name>`). */
 export const rpcHandlers = [
   rest.post(`${REST_URL}/rpc/suggestions_v2`, async ({ request }) => {
@@ -346,6 +461,18 @@ export const rpcHandlers = [
     const body = (await request.json()) as UpdateTermsPopularityParams
 
     return HttpResponse.json(await updateMockTermsPopularity(body))
+  }),
+
+  rest.post(`${REST_URL}/rpc/soft_delete_videos`, async ({ request }) => {
+    const body = (await request.json()) as SoftDeleteVideosParams
+
+    return HttpResponse.json(await softDeleteMockVideos(body))
+  }),
+
+  rest.post(`${REST_URL}/rpc/restore_videos`, async ({ request }) => {
+    const body = (await request.json()) as RestoreVideosParams
+
+    return HttpResponse.json(await restoreMockVideos(body))
   }),
 
   rest.post(`${REST_URL}/rpc/count_videos_v1`, async ({ request }) => {
