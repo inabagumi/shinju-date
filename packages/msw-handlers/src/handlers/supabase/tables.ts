@@ -284,12 +284,14 @@ const announcementsTable: WritableTableDefinition<'announcements'> = {
   kind: 'table',
   name: 'announcements',
   notNullColumns: notNullColumns<'announcements'>({
+    created_at: true,
     enabled: true,
     end_at: true,
     id: true,
     level: true,
     message: true,
     start_at: true,
+    updated_at: true,
   }),
   relations: [],
   unique: [],
@@ -384,7 +386,7 @@ const talentsTable: WritableTableDefinition<'talents'> = {
     },
   ],
   unique: [],
-  updatedAtTrigger: false,
+  updatedAtTrigger: true,
   uuidColumns: ['id'],
 }
 

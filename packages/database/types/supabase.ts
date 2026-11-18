@@ -7,14 +7,14 @@ export type Database = {
           Tables: {
             "announcements": {
                   Row: {
-                    "created_at": string | null,"enabled": boolean,"end_at": string,"id": string,"level": string,"message": string,"start_at": string,"updated_at": string | null
+                    "created_at": string,"enabled": boolean,"end_at": string,"id": string,"level": string,"message": string,"start_at": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string | null,"enabled"?: boolean,"end_at": string,"id"?: string,"level"?: string,"message": string,"start_at": string,"updated_at"?: string | null
+                    "created_at"?: string,"enabled"?: boolean,"end_at": string,"id"?: string,"level"?: string,"message": string,"start_at": string,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string | null,"enabled"?: boolean,"end_at"?: string,"id"?: string,"level"?: string,"message"?: string,"start_at"?: string,"updated_at"?: string | null
+                    "created_at"?: string,"enabled"?: boolean,"end_at"?: string,"id"?: string,"level"?: string,"message"?: string,"start_at"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -276,6 +276,9 @@ isOneToOne: false
             "count_videos_v1":
 { Args: { "channel_ids": (string)[],"query": string,"until": string,"video_kinds"?: (Database["public"]['Enums']["video_kind"])[] }; Returns: number
                            },
+"count_videos_v2":
+{ Args: { "p_query": string,"p_talent_ids": (string)[],"p_until": string,"p_video_kinds"?: (Database["public"]['Enums']["video_kind"])[] }; Returns: number
+                           },
 "get_audit_logs":
 { Args: { "p_limit"?: number,"p_offset"?: number,"p_sort_by"?: string,"p_sort_direction"?: string }; Returns: {
               "action": Database["public"]['Enums']["audit_action"],"created_at": string,"details": Json,"id": string,"target_record_id": string,"target_table": string,"user_email": string,"user_id": string
@@ -319,6 +322,29 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"search_videos_v4":
+{ Args: { "p_perpage"?: number,"p_query": string,"p_talent_ids": (string)[],"p_until": string,"p_video_kinds"?: (Database["public"]['Enums']["video_kind"])[] }; Returns: {
+              "created_at": string,
+"deleted_at": string | null,
+"deleted_reason": Database["public"]['Enums']["video_deleted_reason"] | null,
+"duration": string,
+"id": string,
+"platform": Database["public"]['Enums']["platform_type"],
+"published_at": string,
+"status": Database["public"]['Enums']["video_status"],
+"talent_id": string,
+"thumbnail_id": string | null,
+"title": string,
+"updated_at": string,
+"video_kind": Database["public"]['Enums']["video_kind"],
+"visible": boolean
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "videos"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "soft_delete_videos":
 { Args: { "p_deleted_at": string,"p_reason": Database["public"]['Enums']["video_deleted_reason"],"p_video_ids": (string)[] }; Returns: string[]
                            },
@@ -326,6 +352,12 @@ isOneToOne: false
 { Args: { "p_query": string }; Returns: {
               "priority": number,"term": string
             }[]
+                           },
+"touch_talent":
+{ Args: { "p_talent_id": string }; Returns: undefined
+                           },
+"touch_thumbnail":
+{ Args: { "p_thumbnail_id": string }; Returns: undefined
                            },
 "update_terms_popularity":
 { Args: { "p_items": Json }; Returns: number

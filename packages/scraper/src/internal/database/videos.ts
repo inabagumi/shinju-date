@@ -51,11 +51,14 @@ export async function insertVideo(
 
 /**
  * Updates the given columns of one video.
+ *
+ * `updated_at` is not one of them: the `on_videos_update` trigger sets it to
+ * the current time of the database on every update.
  */
 export async function updateVideo(
   supabaseClient: TypedSupabaseClient,
   videoId: string,
-  values: TablesUpdate<'videos'>,
+  values: Omit<TablesUpdate<'videos'>, 'updated_at'>,
 ): Promise<void> {
   const { error } = await supabaseClient
     .from('videos')

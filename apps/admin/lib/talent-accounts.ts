@@ -1,7 +1,6 @@
 import { CACHE_TAGS } from '@shinju-date/constants'
 import type { Enums, Tables } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
-import { toDBString } from '@shinju-date/temporal-fns'
 import {
   parseTwitchUserIdentifier,
   resolveTwitchUser,
@@ -280,6 +279,9 @@ function accountSelect({ accountColumns }: AccountTableDefinition): string {
 /**
  * タレントの更新日時を進める（一覧の並びに反映するため）。
  *
+ * タレントの行そのものは変えず、`touch_talent` でトリガーを動かす（`updated_at` は
+ * トリガーがデータベースの現在時刻にする）。
+ *
  * 失敗しても例外は投げず、ログに残してエラーを返す。アカウントの追加と削除は、
  * 更新日時を進められなくても成功として扱う。失敗として扱う呼び出し元は、戻り値を確かめる。
  *
@@ -288,12 +290,10 @@ function accountSelect({ accountColumns }: AccountTableDefinition): string {
 export async function touchTalent(
   supabaseClient: TypedSupabaseClient,
   talentId: string,
-  now: Temporal.Instant = Temporal.Now.instant(),
 ): Promise<PostgrestError | null> {
-  const { error } = await supabaseClient
-    .from('talents')
-    .update({ updated_at: toDBString(now) })
-    .eq('id', talentId)
+  const { error } = await supabaseClient.rpc('touch_talent', {
+    p_talent_id: talentId,
+  })
 
   if (error) {
     logger.error('タレントの更新日時の更新に失敗しました', { error, talentId })

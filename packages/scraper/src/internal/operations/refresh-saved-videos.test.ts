@@ -124,7 +124,6 @@ describe('refreshSavedVideos', () => {
     expect(afterRefresh).toHaveBeenCalledOnce()
     expect(supabase.written('PATCH', 'videos')[0]?.body).toEqual({
       title: 'Renamed',
-      updated_at: '2024-05-01T12:00:00Z',
     })
   })
 

@@ -135,6 +135,10 @@ describe('updateTermAction', () => {
         query: { id: `eq.${ID}` },
       },
     ])
+    // `updated_at` is left to the trigger of the table
+    expect(supabase.calls('update', 'terms')[0]?.body).not.toHaveProperty(
+      'updated_at',
+    )
     test.expectAuditLog('TERM_UPDATE', ID, { entityName: '配信' })
     test.expectRevalidated({
       paths: ['/terms'],

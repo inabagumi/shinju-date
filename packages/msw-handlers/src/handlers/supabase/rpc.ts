@@ -61,15 +61,15 @@ async function getMockAuditLogs({
 }
 
 interface SearchVideosParams {
-  channel_ids?: string[]
-  perpage?: number
-  query?: string
-  until?: string
-  video_kinds?: ('short' | 'standard')[] | null
+  p_perpage?: number
+  p_query?: string
+  p_talent_ids?: string[]
+  p_until?: string
+  p_video_kinds?: ('short' | 'standard')[] | null
 }
 
 /**
- * The shape this mock returns from `search_videos_v3` when no select is
+ * The shape this mock returns from `search_videos_v4` when no select is
  * given, with the resources of both platforms embedded.
  */
 const DEFAULT_SEARCH_VIDEOS_SELECT = [
@@ -131,13 +131,13 @@ async function expandMockQuery(query: string): Promise<string[]> {
 
 /**
  * The visible videos of the given talents and kinds whose titles contain the
- * query or one of its synonyms and that were published before `until`.
+ * query or one of its synonyms and that were published before `p_until`.
  */
 async function filterMockVideos({
-  channel_ids: channelIds = [],
-  query = '',
-  until,
-  video_kinds: videoKinds,
+  p_query: query = '',
+  p_talent_ids: talentIds = [],
+  p_until: until,
+  p_video_kinds: videoKinds,
 }: SearchVideosParams) {
   const keywords = query === '' ? [] : await expandMockQuery(query)
 
@@ -151,7 +151,7 @@ async function filterMockVideos({
           keywords.some((keyword) =>
             normalizeSearchText(video.title).includes(keyword),
           )) &&
-        (channelIds.length === 0 || channelIds.includes(video.talent_id)) &&
+        (talentIds.length === 0 || talentIds.includes(video.talent_id)) &&
         (!videoKinds || videoKinds.includes(video.video_kind)) &&
         (!until || Temporal.Instant.compare(video.published_at, until) < 0),
     )
@@ -216,18 +216,18 @@ function pageMockVideos<T extends { published_at: string }>(
 }
 
 /**
- * Mirrors `search_videos_v3`: the videos of `filterShownMockVideos`, newest
+ * Mirrors `search_videos_v4`: the videos of `filterShownMockVideos`, newest
  * first. The videos the site does not show are left out before the page size
  * is applied.
  */
 async function searchShownMockVideos({
-  perpage,
+  p_perpage: perpage,
   ...params
 }: SearchVideosParams) {
   return pageMockVideos(await filterShownMockVideos(params), perpage)
 }
 
-/** Mirrors `count_videos_v1`: the number of the videos the site shows. */
+/** Mirrors `count_videos_v2`: the number of the videos the site shows. */
 async function countMockVideos(params: SearchVideosParams) {
   return (await filterShownMockVideos(params)).length
 }
@@ -479,6 +479,45 @@ async function insertMockVideo({
   return videoId
 }
 
+/**
+ * Mirrors `touch_talent`: moves `updated_at` of the talent to the current
+ * time, as the trigger of the table does, without changing anything else.
+ */
+async function touchMockTalent({ p_talent_id: id }: { p_talent_id: string }) {
+  const updatedAt = toDBString(Temporal.Now.instant())
+
+  for (const talent of talents.findMany().filter((row) => row.id === id)) {
+    await talents.update(talent, {
+      data(draft) {
+        draft.updated_at = updatedAt
+      },
+    })
+  }
+}
+
+/**
+ * Mirrors `touch_thumbnail`: moves `updated_at` of the thumbnail to the
+ * current time, as the trigger of the table does, without changing anything
+ * else.
+ */
+async function touchMockThumbnail({
+  p_thumbnail_id: id,
+}: {
+  p_thumbnail_id: string
+}) {
+  const updatedAt = toDBString(Temporal.Now.instant())
+
+  for (const thumbnail of thumbnails
+    .findMany()
+    .filter((row) => row.id === id)) {
+    await thumbnails.update(thumbnail, {
+      data(draft) {
+        draft.updated_at = updatedAt
+      },
+    })
+  }
+}
+
 /** The handlers of the database functions (`/rest/v1/rpc/<name>`). */
 export const rpcHandlers = [
   rest.post(`${REST_URL}/rpc/suggestions_v2`, async ({ request }) => {
@@ -487,7 +526,7 @@ export const rpcHandlers = [
     return HttpResponse.json(await suggestMockTerms(body))
   }),
 
-  rest.post(`${REST_URL}/rpc/search_videos_v3`, async ({ request }) => {
+  rest.post(`${REST_URL}/rpc/search_videos_v4`, async ({ request }) => {
     const body = (await request.json()) as SearchVideosParams
     const url = new URL(request.url)
     // `.rpc(...).select(...)` embeds resources and takes filters like a
@@ -532,13 +571,27 @@ export const rpcHandlers = [
     return HttpResponse.json(await insertMockVideo(body))
   }),
 
+  rest.post(`${REST_URL}/rpc/touch_talent`, async ({ request }) => {
+    await touchMockTalent((await request.json()) as { p_talent_id: string })
+
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  rest.post(`${REST_URL}/rpc/touch_thumbnail`, async ({ request }) => {
+    await touchMockThumbnail(
+      (await request.json()) as { p_thumbnail_id: string },
+    )
+
+    return new HttpResponse(null, { status: 204 })
+  }),
+
   rest.post(`${REST_URL}/rpc/restore_videos`, async ({ request }) => {
     const body = (await request.json()) as RestoreVideosParams
 
     return HttpResponse.json(await restoreMockVideos(body))
   }),
 
-  rest.post(`${REST_URL}/rpc/count_videos_v1`, async ({ request }) => {
+  rest.post(`${REST_URL}/rpc/count_videos_v2`, async ({ request }) => {
     const body = (await request.json()) as SearchVideosParams
 
     return HttpResponse.json(await countMockVideos(body))

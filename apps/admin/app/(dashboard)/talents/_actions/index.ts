@@ -110,7 +110,6 @@ export const updateTalentAction = adminFormAction(
         name: validatedData.name,
         reading: validatedData.reading,
         theme_color: validatedData.theme_color,
-        updated_at: toDBString(Temporal.Now.instant()),
       })
       .eq('id', validatedData.id)
       .is('deleted_at', null)
@@ -159,7 +158,7 @@ interface TalentLifecycleTransition {
     deleted: boolean
     status?: Tables<'talents'>['status']
   }
-  /** 遷移後の値（`updated_at` は共通で付与する） */
+  /** 遷移後の値（`updated_at` はトリガーが付ける） */
   values: (
     now: string,
   ) => Pick<TablesUpdate<'talents'>, 'deleted_at' | 'status'>
@@ -213,10 +212,7 @@ async function transitionTalentLifecycle(
 
   let query = supabaseClient
     .from('talents')
-    .update({
-      ...transition.values(now),
-      updated_at: now,
-    })
+    .update(transition.values(now))
     .eq('id', id)
 
   if (transition.from.status) {

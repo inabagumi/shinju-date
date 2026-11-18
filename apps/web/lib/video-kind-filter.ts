@@ -37,7 +37,7 @@ export function parseVideoKindFilter(
 }
 
 /**
- * `search_videos_v3` の `video_kinds` に渡す値。`all` では絞り込まない。
+ * `search_videos_v4` の `p_video_kinds` に渡す値。`all` では絞り込まない。
  */
 export function getVideoKinds(
   filter: VideoKindFilter,
