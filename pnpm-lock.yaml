@@ -763,6 +763,9 @@ importers:
 
   packages/config:
     devDependencies:
+      '@playwright/test':
+        specifier: 'catalog:'
+        version: 1.65.1
       '@tsconfig/node20':
         specifier: 'catalog:'
         version: 20.1.11
