@@ -1,12 +1,4 @@
 {
-  "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "outDir": "dist",
-    "types": ["node"]
-  },
-  "extends": [
-    "@tsconfig/node20/tsconfig.json",
-    "@tsconfig/strictest/tsconfig.json"
-  ],
-  "include": ["src"]
+  "extends": "@shinju-date/config/tsconfig/node-library.json",
+  "include": ["./src/**/*.ts", "./tsdown.config.ts"]
 }

@@ -1,15 +1,4 @@
 {
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "lib": ["DOM", "DOM.Iterable", "ES2023"],
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "outDir": "./dist",
-    "rootDir": "."
-  },
-  "extends": [
-    "@tsconfig/node20/tsconfig.json",
-    "@tsconfig/strictest/tsconfig.json"
-  ],
+  "extends": "@shinju-date/config/tsconfig/react-library.json",
   "include": ["./**/*.ts", "./**/*.tsx"]
 }

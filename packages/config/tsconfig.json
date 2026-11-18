@@ -1,8 +1,4 @@
 {
-  "compilerOptions": {
-    "lib": ["ESNext"]
-  },
-  "exclude": ["node_modules"],
-  "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/node20/tsconfig"],
+  "extends": "./tsconfig/node-library.json",
   "include": ["./playwright.ts", "./tsdown.ts", "./vitest.ts"]
 }

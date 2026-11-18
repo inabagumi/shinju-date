@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import { createErrorResponse } from './create-error-response.js'
 
 describe('createErrorResponse', () => {

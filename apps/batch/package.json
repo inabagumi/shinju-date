@@ -28,8 +28,6 @@
     "@shinju-date/msw-handlers": "workspace:*",
     "@playwright/test": "catalog:",
     "@shinju-date/config": "workspace:*",
-    "@tsconfig/next": "catalog:",
-    "@tsconfig/strictest": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

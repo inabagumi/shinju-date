@@ -2,15 +2,12 @@ import react from '@vitejs/plugin-react'
 import { mergeConfig, type ViteUserConfig } from 'vitest/config'
 
 /**
- * The Vitest settings that every package and app shares.
- *
- * - `globals: true`: the tests can use `describe` and `expect` without
- *   importing them
+ * The Vitest settings that every package and app shares. The tests import
+ * `describe`, `expect` and the others from `vitest`, so `globals` is off.
  */
 const defaults = {
   test: {
     environment: 'node',
-    globals: true,
   },
 } as const satisfies ViteUserConfig
 

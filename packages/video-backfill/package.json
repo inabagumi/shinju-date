@@ -7,8 +7,6 @@
   "description": "Queue of video backfill jobs shared by the admin and batch apps",
   "devDependencies": {
     "@shinju-date/config": "workspace:*",
-    "@tsconfig/node20": "catalog:",
-    "@tsconfig/strictest": "catalog:",
     "@types/node": "catalog:",
     "@upstash/redis": "catalog:",
     "tsdown": "catalog:",

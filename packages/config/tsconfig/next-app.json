@@ -1,0 +1,13 @@
+{
+  "$schema": "https://www.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "lib": ["ES2025", "ESNext.Array", "ESNext.Temporal", "DOM", "DOM.Iterable"],
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
+    "target": "ES2025"
+  },
+  "extends": [
+    "@tsconfig/strictest/tsconfig.json",
+    "@tsconfig/next/tsconfig.json"
+  ]
+}

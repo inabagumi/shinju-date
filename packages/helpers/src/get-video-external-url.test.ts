@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import { getVideoExternalUrl } from './get-video-external-url.js'
 
 describe('getVideoExternalUrl', () => {
