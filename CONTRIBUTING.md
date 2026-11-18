@@ -214,7 +214,6 @@ CI は、プルリクエストごとに次のことを確かめます。どれ�
 - CI が通り、レビューで承認されたら、GitHub の UI の「Merge when ready」か `gh pr merge --auto` で queue に並べる。直接 `main` にはマージできない
 - queue の中で CI が失敗したプルリクエストは、取り込まれずに queue から外れる。`main` を取り込んで直し、もう一度並べる
 - queue の中の CI（`merge_group` のイベント）でも、データベースと Terraform のジョブは、それらを変えた場合だけ動く
-- URL の確認は、queue の中では省く（queue に並べる前に、プルリクエストで確かめている）
 
 ## Issue の起票ルール
 
