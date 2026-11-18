@@ -23,7 +23,7 @@ vi.mock('next/server', async (importOriginal) => ({
   after: vi.fn((callback: () => unknown) => callback()),
 }))
 
-const { POST } = await import('../route')
+const { POST } = await import('./route')
 
 function createRequest(): Request {
   return new Request('http://localhost:5000/images/cleanup', {

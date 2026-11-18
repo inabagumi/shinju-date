@@ -11,23 +11,23 @@ vi.mock('@sentry/nextjs', () => ({ captureCheckIn, captureException, flush }))
 
 const logger = { error: vi.fn(), info: vi.fn(), warn: vi.fn() }
 const redis = await vi.hoisted(async () => {
-  const { FakeLockRedis } = await import('./fake-lock-redis')
+  const { FakeLockRedis } = await import('@/test/fake-lock-redis')
 
   return new FakeLockRedis()
 })
 
 vi.mock('@shinju-date/logger', () => ({ logger }))
 
-vi.mock('../redis', () => ({ redisClient: redis }))
+vi.mock('./redis', () => ({ redisClient: redis }))
 
-vi.mock('../env', () => ({ serverEnv }))
+vi.mock('./env', () => ({ serverEnv }))
 
 vi.mock('next/server', () => ({
   after: vi.fn((callback: () => unknown) => callback()),
 }))
 
 const { getCronJobIdentifier, runCronJob, verifyCronRequest } = await import(
-  '../cron'
+  './cron'
 )
 
 const LOCK_KEY = 'cron:lock:videos:update'

@@ -33,7 +33,7 @@ vi.mock('@/lib/env', () => ({
 
 vi.mock('@/lib/lock', () => ({ acquireLock, releaseLock }))
 
-vi.mock('../_lib/update-term-popularity', () => ({
+vi.mock('./_lib/update-term-popularity', () => ({
   updateTermPopularity: mockUpdateTermPopularity,
 }))
 
@@ -59,7 +59,7 @@ describe('POST /terms/popularity/update', () => {
 
   beforeEach(async () => {
     // Import after mocks are set up
-    const module = await import('../route')
+    const module = await import('./route')
     POST = module.POST
 
     // Reset mocks

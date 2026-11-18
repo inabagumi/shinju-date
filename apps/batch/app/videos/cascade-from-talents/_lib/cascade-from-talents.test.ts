@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   CascadePhaseError,
   cascadeVideosFromTalents,
-} from '../cascade-from-talents'
+} from './cascade-from-talents'
 
 vi.mock('@shinju-date/temporal-fns', () => ({
   toDBString: vi.fn((instant: { toString: () => string }) =>

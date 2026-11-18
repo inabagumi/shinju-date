@@ -79,7 +79,7 @@ async function runAt(instant: string): Promise<Response> {
       Temporal.Instant.from(instant).toZonedDateTimeISO(timeZone),
   )
 
-  const { POST } = await import('../route')
+  const { POST } = await import('./route')
 
   return POST(
     new Request('http://localhost:3000/stats/snapshot', {

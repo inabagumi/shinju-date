@@ -33,7 +33,7 @@ vi.mock('next/server', async (importOriginal) => ({
   after: vi.fn((callback: () => unknown) => callback()),
 }))
 
-const { POST } = await import('../route')
+const { POST } = await import('./route')
 
 function createRequest(): NextRequest {
   return new NextRequest('http://localhost:5000/videos/backfill', {

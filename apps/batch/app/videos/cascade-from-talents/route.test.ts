@@ -12,9 +12,9 @@ vi.mock('@/lib/supabase', () => ({
 
 vi.mock('@/lib/lock', () => ({ acquireLock, releaseLock }))
 
-vi.mock('../_lib/cascade-from-talents', async (importOriginal) => {
+vi.mock('./_lib/cascade-from-talents', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('../_lib/cascade-from-talents')>()
+    await importOriginal<typeof import('./_lib/cascade-from-talents')>()
   return {
     ...actual,
     cascadeVideosFromTalents: mockCascadeVideosFromTalents,
@@ -49,7 +49,7 @@ describe('POST /videos/cascade-from-talents', () => {
   let POST: (request: Request) => Promise<Response>
 
   beforeEach(async () => {
-    const module = await import('../route')
+    const module = await import('./route')
     POST = module.POST
     vi.clearAllMocks()
   })
@@ -139,7 +139,7 @@ describe('POST /videos/cascade-from-talents', () => {
   })
 
   it('returns 500 even when the revalidation after a partial failure fails', async () => {
-    const { CascadePhaseError } = await import('../_lib/cascade-from-talents')
+    const { CascadePhaseError } = await import('./_lib/cascade-from-talents')
     const Sentry = await import('@sentry/nextjs')
     const error = new CascadePhaseError('partial failure', {
       restored: 2,
@@ -166,7 +166,7 @@ describe('POST /videos/cascade-from-talents', () => {
   })
 
   it('revalidates and logs partial counts when CascadePhaseError is thrown', async () => {
-    const { CascadePhaseError } = await import('../_lib/cascade-from-talents')
+    const { CascadePhaseError } = await import('./_lib/cascade-from-talents')
     const { logger } = await import('@shinju-date/logger')
 
     acquireLock.mockResolvedValue('lock-value')

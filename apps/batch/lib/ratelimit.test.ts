@@ -28,9 +28,9 @@ function multi() {
   return transaction
 }
 
-vi.mock('../redis', () => ({ redisClient: { multi } }))
+vi.mock('./redis', () => ({ redisClient: { multi } }))
 
-const { limitOncePerWindow, videosBackfill } = await import('../ratelimit')
+const { limitOncePerWindow, videosBackfill } = await import('./ratelimit')
 
 function setNow(isoString: string) {
   vi.spyOn(Temporal.Now, 'instant').mockReturnValue(

@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   UPDATE_BATCH_SIZE,
   updateTermPopularity,
-} from '../update-term-popularity'
+} from './update-term-popularity'
 
 // Mock logger
 vi.mock('@shinju-date/logger', () => ({

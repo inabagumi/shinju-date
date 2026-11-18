@@ -1,19 +1,19 @@
 import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
-import vercelConfig from '../../vercel.json' with { type: 'json' }
-import { getCronJobIdentifier } from '../cron'
+import vercelConfig from '../vercel.json' with { type: 'json' }
+import { getCronJobIdentifier } from './cron'
 import {
   getTalentsUpdateJob,
   getVideosCheckJob,
   getVideosUpdateJob,
   JOBS,
-} from '../jobs'
+} from './jobs'
 
 /** The `maxDuration` the route of `path` exports, read from its source. */
 async function readMaxDuration(path: string): Promise<number | undefined> {
   const { pathname } = new URL(path, 'http://localhost')
   const source = await readFile(
-    new URL(`../../app${pathname}/route.ts`, import.meta.url),
+    new URL(`../app${pathname}/route.ts`, import.meta.url),
     'utf8',
   )
   const value = source.match(/^export const maxDuration = (\d+)$/m)?.[1]
