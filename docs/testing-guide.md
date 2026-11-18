@@ -2,7 +2,7 @@
 
 このドキュメントでは、SHINJU DATE プロジェクトにおけるテストの実装方法とベストプラクティスを説明します。
 
-**最終更新日**: 2026-11-17
+**最終更新日**: 2026-11-18
 
 ## 📋 目次
 
@@ -48,18 +48,13 @@ describe('MyComponent', () => {
 - **apps/web**: ユーザー向け Web アプリコンポーネント
 - **packages/ui**: 共有 UI コンポーネント
 
-これらのプロジェクトでは、`vitest.config.ts` で以下の設定がされています：
+これらのプロジェクトの `vitest.config.ts` は、`@shinju-date/config` の `defineVitestConfig.react()` を呼びます。共通の設定（`@vitejs/plugin-react` による JSX トランスフォーム、jsdom、`globals: true`）は `packages/config/vitest.ts` にあり、各プロジェクトには、そのプロジェクトだけの設定を書きます（[`@shinju-date/config` の Vitest](../packages/config/README.md#vitest)）。
 
 ```typescript
-import path from 'node:path'
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import { defineVitestConfig } from '@shinju-date/config/vitest'
 
-export default defineConfig({
-  plugins: [react()], // JSX トランスフォームを有効化
+export default defineVitestConfig.react({
   test: {
-    environment: 'jsdom', // ブラウザ環境をシミュレート
-    globals: true, // describe, test, expect をグローバルに使用可能
     setupFiles: ['./vitest.setup.ts'], // テスト前の初期化
   },
 })
@@ -78,19 +73,14 @@ export default defineConfig({
 
 ### Vitest での設定
 
-Vitest でこの機能を使用するには、`@vitejs/plugin-react` を設定に追加する必要があります：
+Vitest でこの機能を使用するには、`@vitejs/plugin-react` が設定に必要です。`defineVitestConfig.react()` が追加します：
 
 ```typescript
 // vitest.config.ts
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import { defineVitestConfig } from '@shinju-date/config/vitest'
 
-export default defineConfig({
-  plugins: [react()], // この行を追加
-  test: {
-    environment: 'jsdom',
-    // ... その他の設定
-  },
+export default defineVitestConfig.react({
+  // ... そのプロジェクトだけの設定
 })
 ```
 
@@ -353,19 +343,18 @@ screen.getByClassName('email-input')
 
 **解決方法**:
 
-1. `@vitejs/plugin-react` がインストールされているか確認
+1. `@vitejs/plugin-react` がインストールされているか確認（`@shinju-date/config` の依存です）
 
    ```bash
-   pnpm list @vitejs/plugin-react
+   pnpm --filter @shinju-date/config list @vitejs/plugin-react
    ```
 
-2. `vitest.config.ts` で plugin が設定されているか確認
+2. `vitest.config.ts` が `defineVitestConfig()` ではなく `defineVitestConfig.react()` を呼んでいるか確認
 
    ```typescript
-   import react from '@vitejs/plugin-react'
+   import { defineVitestConfig } from '@shinju-date/config/vitest'
 
-   export default defineConfig({
-     plugins: [react()], // この行が必要
+   export default defineVitestConfig.react({
      // ...
    })
    ```

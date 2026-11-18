@@ -1,6 +1,6 @@
 # @shinju-date/config
 
-`packages/*` が共有する、ビルドの設定です。ビルドのない、設定だけのパッケージです。
+`packages/*` と `apps/*` が共有する、ビルドとテストの設定です。ビルドのない、設定だけのパッケージです。
 
 ## tsdown
 
@@ -26,6 +26,80 @@ export default definePackageConfig({
 | `target`         | `'es2022'`                             |
 
 共通の設定と違う値を渡すときは、理由をコメントで書いてください（`packages/ui/tsdown.config.ts` の `unbundle` など）。
+
+## Vitest
+
+`defineVitestConfig()` は、共通の設定に上書きを足した、Vitest の設定を返します。Node で動くパッケージは、引数なしで呼びます。
+
+```ts
+// packages/<name>/vitest.config.ts
+import { defineVitestConfig } from '@shinju-date/config/vitest'
+
+export default defineVitestConfig()
+```
+
+React の部品をテストするパッケージ（`ui`）とアプリ（`web`、`admin`）は、`defineVitestConfig.react()` を呼びます。`@vitejs/plugin-react`（JSX の変換）と jsdom を足した設定を返します。
+
+```ts
+// apps/<name>/vitest.config.ts
+import { defineVitestConfig } from '@shinju-date/config/vitest'
+
+export default defineVitestConfig.react({
+  test: {
+    setupFiles: ['./vitest.setup.ts'],
+  },
+})
+```
+
+共通の設定は次のとおりです（[`vitest.ts`](vitest.ts)）。
+
+| 設定               | `defineVitestConfig()` | `defineVitestConfig.react()` |
+| ------------------ | ---------------------- | ---------------------------- |
+| `plugins`          | なし                   | `@vitejs/plugin-react`       |
+| `test.environment` | `'node'`               | `'jsdom'`                    |
+| `test.globals`     | `true`                 | `true`                       |
+
+上書きは Vitest の `mergeConfig()` で足すため、配列（`plugins`、`setupFiles` など）は共通の設定に追加されます。
+
+## Playwright
+
+`definePlaywrightConfig()` は、`apps/*` の E2E テストの設定を返します。アプリごとに違う、ポート（`port`）、そのアプリだけの環境変数（`env`）、起動を待つパス（`readyPath`、既定は `/`）を渡します。
+
+```ts
+// apps/<name>/playwright.config.ts
+import { definePlaywrightConfig } from '@shinju-date/config/playwright'
+
+export default definePlaywrightConfig({
+  env: {
+    GOOGLE_API_KEY: 'fake',
+  },
+  port: 5000,
+  readyPath: '/api/healthz',
+})
+```
+
+共通の設定は次のとおりです（[`playwright.ts`](playwright.ts)）。`CI` を設定したときは、括弧の中の値になります。
+
+| 設定                            | 値                                                                                            |
+| ------------------------------- | --------------------------------------------------------------------------------------------- |
+| `testDir` / `testMatch`         | `./e2e` / `**/*.spec.ts`                                                                      |
+| `projects`                      | `chromium`（Desktop Chrome）                                                                  |
+| `retries`                       | `0`（`2`）                                                                                    |
+| `workers`                       | Playwright の既定（`1`）                                                                      |
+| `reporter`                      | `html`（`github` と `html`）                                                                  |
+| `forbidOnly`                    | `false`（`true`）                                                                             |
+| `use.baseURL`                   | `http://localhost:<port>`                                                                     |
+| `use.trace`                     | `'on-first-retry'`                                                                            |
+| `webServer.command`             | `pnpm dev`（`playwright.config.ts` のあるフォルダーで起動する）                               |
+| `webServer.env`                 | `ENABLE_MSW`、`NEXT_PUBLIC_BASE_URL`、`NEXT_TELEMETRY_DISABLED`、Supabase と Upstash の偽の値 |
+| `webServer.reuseExistingServer` | `true`（`false`）                                                                             |
+| `webServer.url`                 | `http://localhost:<port><readyPath>`                                                          |
+
+`projects` などの、Playwright のほかの設定も渡せます。アプリに必要なときだけ渡してください（`apps/admin/playwright.config.ts` の、ログインを済ませるプロジェクトなど）。
+
+## PostCSS
+
+`postcss.config.js` を持つのは `packages/ui`（Storybook のため）だけです。アプリは `@tailwindcss/turbopack` で Tailwind CSS を読み込み、PostCSS の設定を持たないため、共有の設定は置いていません。
 
 ## `package.json` の `exports`
 
