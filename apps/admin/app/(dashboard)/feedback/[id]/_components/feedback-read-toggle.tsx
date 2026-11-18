@@ -1,7 +1,7 @@
 'use client'
 
 import Form, { SubmitButton, SuccessMessage } from '@/components/form'
-import { markFeatureRequestAsRead } from '../../_actions/update-feedback'
+import { markFeatureRequestAsReadAction } from '../../_actions/update-feedback'
 
 interface FeedbackReadToggleProps {
   id: string
@@ -11,7 +11,7 @@ interface FeedbackReadToggleProps {
 /** 機能要望の既読と未読を切り替えるフォーム */
 export function FeedbackReadToggle({ id, isRead }: FeedbackReadToggleProps) {
   return (
-    <Form action={markFeatureRequestAsRead} className="space-y-4">
+    <Form action={markFeatureRequestAsReadAction} className="space-y-4">
       <p className="text-meta">現在: {isRead ? '既読' : '未読'}</p>
       <input name="id" type="hidden" value={id} />
       <input name="is_read" type="hidden" value={String(!isRead)} />

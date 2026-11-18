@@ -1,49 +1,24 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import type { FormState } from '@/components/form'
+import { ActionError, adminFormAction } from '@/lib/action'
 import { createAuditLog } from '@/lib/audit-log'
-import { requireAuthenticatedUser, unauthenticatedFormState } from '@/lib/auth'
-import { parseFormData } from '@/lib/form'
-import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 import { createEntityNameFromMessage } from '../_lib/create-entity-name-from-message'
 import {
+  FEEDBACK_FORM_FIELDS,
   feedbackMemoFormSchema,
   feedbackReadFormSchema,
   feedbackStatusFormSchema,
 } from '../_lib/feedback-form-schema'
 
-const INVALID_INPUT_ERROR = '入力が正しくありません。'
 const NOT_FOUND_ERROR = 'フィードバックが見つかりませんでした。'
 
-/**
- * 項目に結び付かないエラーの `FormState`。入力欄は選択肢とメモだけで、ほかの値は
- * 隠しフィールドなので、検証の失敗も項目ごとに分けず、このエラーにする
- */
-function errorState(message: string): FormState {
-  return { errors: { generic: [message] } }
-}
+const FORM_OPTIONS = { hiddenFields: FEEDBACK_FORM_FIELDS }
 
-export async function updateFeatureRequestStatus(
-  _currentState: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedFormState()
-  }
-
-  const parsed = parseFormData(feedbackStatusFormSchema, formData)
-
-  if (!parsed.success) {
-    return errorState(INVALID_INPUT_ERROR)
-  }
-
-  const { id, status } = parsed.data
-
-  try {
-    const supabaseClient = getSupabaseAdminClient()
+export const updateFeatureRequestStatusAction = adminFormAction(
+  'updateFeatureRequestStatusAction',
+  feedbackStatusFormSchema,
+  async ({ supabaseClient }, { id, status }) => {
     const { data: featureRequest, error: fetchError } = await supabaseClient
       .from('feature_requests')
       .select('message, status')
@@ -55,12 +30,12 @@ export async function updateFeatureRequestStatus(
     }
 
     if (!featureRequest) {
-      return errorState(NOT_FOUND_ERROR)
+      throw new ActionError(NOT_FOUND_ERROR)
     }
 
     // 状態が変わらないときは、更新も監査ログの記録もしない
     if (featureRequest.status === status) {
-      return { success: true }
+      return
     }
 
     const { error } = await supabaseClient
@@ -72,7 +47,7 @@ export async function updateFeatureRequestStatus(
       throw error
     }
 
-    await createAuditLog(auth.supabaseClient, 'FEATURE_REQUEST_UPDATE', id, {
+    await createAuditLog(supabaseClient, 'FEATURE_REQUEST_UPDATE', id, {
       changes: {
         after: { status },
         before: { status: featureRequest.status },
@@ -81,33 +56,14 @@ export async function updateFeatureRequestStatus(
     })
 
     revalidatePath('/feedback')
-    return { success: true }
-  } catch (error) {
-    console.error('Update feature request status error:', error)
-    return errorState('ステータスの更新に失敗しました。')
-  }
-}
+  },
+  FORM_OPTIONS,
+)
 
-export async function updateFeatureRequestMemo(
-  _currentState: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedFormState()
-  }
-
-  const parsed = parseFormData(feedbackMemoFormSchema, formData)
-
-  if (!parsed.success) {
-    return errorState(INVALID_INPUT_ERROR)
-  }
-
-  const { admin_memo: adminMemo, id } = parsed.data
-
-  try {
-    const supabaseClient = getSupabaseAdminClient()
+export const updateFeatureRequestMemoAction = adminFormAction(
+  'updateFeatureRequestMemoAction',
+  feedbackMemoFormSchema,
+  async ({ supabaseClient }, { admin_memo: adminMemo, id }) => {
     const { data: featureRequest, error: fetchError } = await supabaseClient
       .from('feature_requests')
       .select('admin_memo, message')
@@ -119,12 +75,12 @@ export async function updateFeatureRequestMemo(
     }
 
     if (!featureRequest) {
-      return errorState(NOT_FOUND_ERROR)
+      throw new ActionError(NOT_FOUND_ERROR)
     }
 
     // メモが変わらないときは、更新も監査ログの記録もしない
     if ((featureRequest.admin_memo ?? '') === adminMemo) {
-      return { success: true }
+      return
     }
 
     const { error } = await supabaseClient
@@ -137,7 +93,7 @@ export async function updateFeatureRequestMemo(
     }
 
     // メモは長いので、本文は記録せず、メモがあるかどうかだけを記録する
-    await createAuditLog(auth.supabaseClient, 'FEATURE_REQUEST_UPDATE', id, {
+    await createAuditLog(supabaseClient, 'FEATURE_REQUEST_UPDATE', id, {
       changes: {
         after: { hasMemo: adminMemo !== '' },
         before: { hasMemo: Boolean(featureRequest.admin_memo) },
@@ -146,32 +102,16 @@ export async function updateFeatureRequestMemo(
     })
 
     revalidatePath('/feedback')
-    return { success: true }
-  } catch (error) {
-    console.error('Update feature request memo error:', error)
-    return errorState('メモの更新に失敗しました。')
-  }
-}
+  },
+  FORM_OPTIONS,
+)
 
-export async function markFeatureRequestAsRead(
-  _currentState: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  if (!(await requireAuthenticatedUser())) {
-    return unauthenticatedFormState()
-  }
-
-  const parsed = parseFormData(feedbackReadFormSchema, formData)
-
-  if (!parsed.success) {
-    return errorState(INVALID_INPUT_ERROR)
-  }
-
-  const { id, is_read: isRead } = parsed.data
-
-  try {
+export const markFeatureRequestAsReadAction = adminFormAction(
+  'markFeatureRequestAsReadAction',
+  feedbackReadFormSchema,
+  async ({ supabaseClient }, { id, is_read: isRead }) => {
     // 既読は対応の状態ではなく、確認したかどうかの印なので、監査ログには記録しない
-    const { error } = await getSupabaseAdminClient()
+    const { error } = await supabaseClient
       .from('feature_requests')
       .update({ is_read: isRead })
       .eq('id', id)
@@ -181,9 +121,6 @@ export async function markFeatureRequestAsRead(
     }
 
     revalidatePath('/feedback')
-    return { success: true }
-  } catch (error) {
-    console.error('Mark feature request as read error:', error)
-    return errorState('既読状態の更新に失敗しました。')
-  }
-}
+  },
+  FORM_OPTIONS,
+)
