@@ -365,6 +365,28 @@ import { twMerge } from '@shinju-date/ui'
 
 アプリにはまだ Tailwind の既定の角丸と影のクラスが残っています。画面を作り直すときに、上の名前に置き換えてください。
 
+## 動き
+
+方針の「装飾を減らす」に合わせて、動きは控えめにします。値は `packages/tailwind-config/theme.css` で定義しています。
+
+- **開閉の動きは、重なるもの（ダイアログ、トースト、ポップオーバー）だけに付けます。** 開閉の前後で、何が現れて何が消えたかを分かりやすくするためです。ページの中の部品の表示・非表示や、ページの移動には付けません
+- **ホバーの動きは、動画カードのサムネイルとタレントのカードのアイコンの拡大（`motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-105`）だけです。** ほかの部品は、色の変化（`transition-colors` など）にとどめます
+- **動きの種類は、フェードと、小さな拡大・移動だけにします。** 跳ねる動きや、大きく動くものは使いません
+- **開くときは 150ms の `ease-out`、閉じるときは 100ms の `ease-in` にします。** 閉じるほうを短くして、操作の邪魔にならないようにします
+
+| 対象                                    | 開くとき                                                                            | 閉じるとき                                                                                             |
+| --------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| ダイアログの後ろの幕（`DialogOverlay`） | `animate-fade-in`（フェード）                                                       | `animate-fade-out`                                                                                     |
+| ダイアログの本体（`DialogContent`）     | `animate-scale-in`（フェードと 95% からの拡大）                                     | `animate-scale-out`                                                                                    |
+| ポップオーバー（`MultiSelect`）         | `animate-scale-in`（開いたボタンの側から広がるよう、`origin-(--radix-…)` を付ける） | `animate-scale-out`                                                                                    |
+| トースト（`Toast`）                     | `animate-slide-in`（フェードと 0.5rem 下からの移動）                                | `animate-fade-out`。スワイプで閉じたときは `animate-swipe-out`（指を離した位置から、スワイプの向きへ） |
+
+- **`motion-safe:` を必ず付けます。** OS で「視差効果を減らす」などを選んでいる人（`prefers-reduced-motion: reduce`）には、動きなしで切り替えます
+- **開閉は、Radix UI が付ける `data-state="open"` / `data-state="closed"` で切り替えます**（`motion-safe:data-[state=open]:animate-scale-in motion-safe:data-[state=closed]:animate-scale-out`）
+- **閉じる動きは、`transition` ではなく `animation` で付けます。** Radix UI は、`animation` が終わるのを待ってから要素を取り除きますが、`transition` は待ちません
+- 上の部品は `packages/ui` に動きを入れてあるので、使う側で付け直す必要はありません。部品の位置や大きさを `className` で変えても、動きは変わりません（`transform` ではなく `scale` と `translate` を動かしているため）
+- 新しい動きを足したときは、`packages/ui/src/tw-merge.ts` の `ANIMATIONS` にも足します
+
 ## フォーカス
 
 キーボードでフォーカスしたときの見た目は2種類です。`packages/tailwind-config/theme.css` に `@utility` で定義しているので、ほかのクラスと同じように `className` に書きます。`focus-visible:outline-*` や `focus:ring-*` を、その場で組み合わせないでください。
@@ -424,6 +446,7 @@ import { twMerge } from '@shinju-date/ui'
 - [ ] 角丸は `rounded-control` / `rounded-container` / `rounded-full` のいずれか
 - [ ] 影は重なるものだけに `shadow-overlay` を使っている
 - [ ] フォーカスの見た目は、`focus-ring` / `field-focus-ring` を使っている
+- [ ] 動きは重なるものの開閉だけに付け、`motion-safe:` を付けて `theme.css` の `animate-*` を使っている
 - [ ] `packages/ui` にある部品（Button・Badge・Card・Dialog・Input・Select・Table・PageHeader・EmptyState・StatTile・FilterBar・Alert・Skeleton など）を使っている
 - [ ] Badge の色と Alert の `tone` は状態の意味で選んでいる（成功は `success`、注意は `warning`、危険は `danger`、中立は `neutral`）
 - [ ] 管理画面の操作の結果は、[操作の結果の知らせ](#操作の結果の知らせ管理画面)に沿って出している

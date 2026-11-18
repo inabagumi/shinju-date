@@ -28,6 +28,19 @@ export const RADII = ['control', 'container'] as const
 export const SHADOWS = ['overlay'] as const
 
 /**
+ * `theme.css` で追加した開閉の動き（`--animate-*`）。登録しないと、
+ * `animate-none` や、ほかの動きのクラスで置き換えられない。
+ */
+export const ANIMATIONS = [
+  'fade-in',
+  'fade-out',
+  'scale-in',
+  'scale-out',
+  'slide-in',
+  'swipe-out',
+] as const
+
+/**
  * `theme.css` で追加したフォーカスの見た目（`@utility`）。どれも同じ部品に
  * 1つだけ付けるものなので、後から渡したもので置き換える。
  */
@@ -47,6 +60,7 @@ export const twMerge = extendTailwindMerge<'focus-ring'>({
       'focus-ring': [...FOCUS_RINGS],
     },
     theme: {
+      animate: [...ANIMATIONS],
       container: [...CONTAINERS],
       radius: [...RADII],
       shadow: [...SHADOWS],
