@@ -6,12 +6,12 @@
 
 `tsconfig/` に、`tsconfig.json` の基底を置いています。各パッケージとアプリの `tsconfig.json` は、どれか1つを継承します。
 
-| ファイル                                                             | 使う場所                         | 中身                                                                                                          |
-| -------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| [`tsconfig/node-library.json`](tsconfig/node-library.json)           | Node だけで動くパッケージ        | `@tsconfig/strictest`、`target` と `lib` は `ESNext`（`DOM` なし）、`module` は `NodeNext`、`types` は `node` |
-| [`tsconfig/universal-library.json`](tsconfig/universal-library.json) | ブラウザでも動くパッケージ       | `node-library.json` に、`lib` の `DOM` と `DOM.Iterable` を足したもの                                         |
-| [`tsconfig/react-library.json`](tsconfig/react-library.json)         | React の部品のパッケージ（`ui`） | `universal-library.json` に、JSX（`react-jsx`）と、`moduleResolution` の `Bundler` を足したもの               |
-| [`tsconfig/next-app.json`](tsconfig/next-app.json)                   | `apps/*`                         | `@tsconfig/strictest` と `@tsconfig/next`、`target` は `ESNext`                                               |
+| ファイル                                                             | 使う場所                         | 中身                                                                                                                                                                                       |
+| -------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`tsconfig/node-library.json`](tsconfig/node-library.json)           | Node だけで動くパッケージ        | `@tsconfig/strictest`、`target` は `ES2025`、`lib` は `ES2025` と `ESNext.Array`、`ESNext.Temporal`（`DOM` なし）、`module` は `Node20`、`moduleResolution` は `Node16`、`types` は `node` |
+| [`tsconfig/universal-library.json`](tsconfig/universal-library.json) | ブラウザでも動くパッケージ       | `node-library.json` の `lib` に、`DOM` と `DOM.Iterable` を足したもの                                                                                                                      |
+| [`tsconfig/react-library.json`](tsconfig/react-library.json)         | React の部品のパッケージ（`ui`） | `universal-library.json` に、JSX（`react-jsx`）を足し、`module` を `Preserve`、`moduleResolution` を `Bundler` にしたもの                                                                  |
+| [`tsconfig/next-app.json`](tsconfig/next-app.json)                   | `apps/*`                         | `@tsconfig/strictest` と `@tsconfig/next`。`target`、`lib`、`module`、`moduleResolution` は `universal-library.json` と `react-library.json` と同じ                                        |
 
 パッケージの `tsconfig.json` は、基底を継承し、`include` だけを書きます。`include` と `paths` は、書いたファイルからの相対パスになるため、基底には書けません。
 
@@ -34,9 +34,14 @@
 
 Node だけで動くパッケージで、`window` や `document` などのブラウザの API を書くと、型エラーになります。クライアントコンポーネントから、Node だけで動くパッケージを import するようになったら、基底を `universal-library.json` に変えてください。
 
-### `target` と出力
+### `target`、`lib`、`module`
 
-`tsc` は型を確かめるだけで、ファイルを出力しません（`noEmit`）。出力する構文は、パッケージでは tsdown の `target`（[tsdown](#tsdown)）、アプリでは Next.js が決めます。そのため、`tsconfig.json` の `target` は `ESNext` にしています。
+TypeScript を更新したときに意味が変わらないように、`ESNext` や `NodeNext` のような、TypeScript のバージョンで中身が変わる値は使いません。
+
+- `target` と `lib` は、ECMAScript の版（`ES2025`）にします。まだ版に入っていない機能は、`ESNext.Array`（`Array.fromAsync`）や `ESNext.Temporal`（`Temporal`）のように、機能ごとに `lib` に足します。新しい版が出たら、版を上げ、版に入った `ESNext.*` を外します
+- `module` は、Node で動くパッケージは `Node20`、バンドラーを通すもの（`ui` とアプリ）は `Preserve` にします。`moduleResolution` には `Node20` がないため、`Node16` にします（`Node20` の `module` と組み合わせられます）
+
+`tsc` は型を確かめるだけで、ファイルを出力しません（`noEmit`）。出力する構文は、パッケージでは tsdown の `target`（[tsdown](#tsdown)）、アプリでは Next.js が決めます。
 
 TypeScript 6 は、`types` を書かないと `@types/*` を読み込まないため、基底に `types: ["node"]` を書いています。各パッケージは、`@types/node` を `devDependencies` に入れてください。
 
