@@ -1,4 +1,7 @@
-import { fetchTalentList, fetchTalentStreamStatusesSafe } from '@/lib/fetchers'
+import {
+  fetchTalentList,
+  fetchTalentStreamStatusesSafe,
+} from '@/lib/data/talents'
 import TalentGrid from './talent-grid'
 
 /**

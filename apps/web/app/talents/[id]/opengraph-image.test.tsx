@@ -1,13 +1,13 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import type { TalentDetail } from '@/lib/fetchers'
+import type { TalentDetail } from '@/lib/data/talents'
 
 const mocks = vi.hoisted(() => ({
   fetchTalent: vi.fn(),
   fetchTalentIconDataURL: vi.fn(),
 }))
 
-vi.mock('@/lib/fetchers', () => ({
+vi.mock('@/lib/data/talents', () => ({
   fetchTalent: mocks.fetchTalent,
 }))
 

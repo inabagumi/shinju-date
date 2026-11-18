@@ -12,7 +12,7 @@ import {
   fetchTalentStreamStatusesSafe,
   type TalentDetail,
   type TalentStreamStatus,
-} from '@/lib/fetchers'
+} from '@/lib/data/talents'
 import { getTalentLinks, type TalentLink } from '@/lib/talent-links'
 import { getShownTalent, type TalentPageParams } from '../_lib/get-shown-talent'
 

@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, test, vi } from 'vitest'
-import type { TalentListItem, TalentStreamStatus } from '@/lib/fetchers'
+import type { TalentListItem, TalentStreamStatus } from '@/lib/data/talents'
 
-vi.mock('@/lib/fetchers', () => ({}))
+vi.mock('@/lib/data/talents', () => ({}))
 
 import TalentCard from './talent-card'
 import TalentGrid from './talent-grid'

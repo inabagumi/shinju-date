@@ -5,8 +5,8 @@ import {
   NavigationLink,
   NavigationLinkIcon,
 } from '@/components/navigation-link'
+import { fetchScheduleVideos, type ScheduleVideo } from '@/lib/data/schedule'
 import { formatWeekday } from '@/lib/date-heading'
-import { fetchScheduleVideos, type ScheduleVideo } from '@/lib/fetchers'
 import { groupVideosByDate } from '@/lib/group-videos-by-date'
 import {
   formatWeekRange,

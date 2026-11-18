@@ -1,4 +1,4 @@
-import { fetchCurrentTime } from './fetchers'
+import { fetchCurrentTime } from '@/lib/data/videos'
 
 /**
  * The date (`YYYY-MM-DD` in `TIME_ZONE`) of `fetchCurrentTime`, the reference

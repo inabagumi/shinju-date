@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import type { Talent } from './fetchers'
+import type { Talent } from '@/lib/data/talents'
 import { findMatchingTalents } from './talent-match'
 
 const TALENTS: Talent[] = [

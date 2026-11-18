@@ -3,7 +3,7 @@ import type {
   TalentDetail,
   TalentTwitchUser,
   TalentYouTubeChannel,
-} from './fetchers'
+} from '@/lib/data/talents'
 import {
   findFirstNonBlank,
   getTalentCalendarPath,

@@ -1,4 +1,4 @@
-import type { Talent } from './fetchers'
+import type { Talent } from '@/lib/data/talents'
 
 /**
  * 照合に使う形に揃える。NFKC で全角・半角の違いをなくし、小文字にする。

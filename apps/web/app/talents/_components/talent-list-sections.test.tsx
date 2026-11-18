@@ -6,7 +6,7 @@ const fetchers = vi.hoisted(() => ({
   fetchTalentStreamStatusesSafe: vi.fn(),
 }))
 
-vi.mock('@/lib/fetchers', () => fetchers)
+vi.mock('@/lib/data/talents', () => fetchers)
 
 import { TalentListGrid } from './talent-list-sections'
 

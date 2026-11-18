@@ -1,8 +1,8 @@
 import { logger } from '@shinju-date/logger'
 import { twMerge } from '@shinju-date/ui'
 import { ChevronRight } from 'lucide-react'
+import { fetchTalentStreamStarts } from '@/lib/data/talents'
 import { WEEKDAYS } from '@/lib/date-heading'
-import { fetchTalentStreamStarts } from '@/lib/fetchers'
 import {
   countStreamsByWeekdayAndHour,
   getStreamCountLevel,

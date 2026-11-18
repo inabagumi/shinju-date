@@ -6,13 +6,13 @@ vi.mock('next/navigation', () => ({
   }),
 }))
 
-vi.mock('@/lib/fetchers', () => ({
+vi.mock('@/lib/data/schedule', () => ({
   fetchOldestVideoDate: vi.fn(),
   fetchScheduleToday: vi.fn(),
 }))
 
 import { notFound } from 'next/navigation'
-import { fetchOldestVideoDate, fetchScheduleToday } from '@/lib/fetchers'
+import { fetchOldestVideoDate, fetchScheduleToday } from '@/lib/data/schedule'
 import { resolveScheduleWeek } from './resolve-schedule-week'
 
 function params(date: string) {

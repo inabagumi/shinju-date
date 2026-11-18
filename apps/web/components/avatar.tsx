@@ -2,7 +2,7 @@ import { twMerge } from '@shinju-date/ui'
 import { UserRound } from 'lucide-react'
 import Image from 'next/image'
 import type { ComponentPropsWithoutRef } from 'react'
-import type { ProfileImage } from '@/lib/fetchers'
+import type { ProfileImage } from '@/lib/data/talents'
 
 interface AvatarProps extends ComponentPropsWithoutRef<'span'> {
   /**

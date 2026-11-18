@@ -5,7 +5,7 @@ import {
   createEvents,
   type EventAttributes,
 } from 'ics'
-import type { CalendarVideo } from './fetchers'
+import type { CalendarVideo } from '@/lib/data/videos'
 import { SITE_NAME as siteName } from './site'
 
 /**

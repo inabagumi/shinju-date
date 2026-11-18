@@ -1,4 +1,4 @@
-import type { TalentDetail } from '@/lib/fetchers'
+import type { TalentDetail } from '@/lib/data/talents'
 import {
   VIDEO_KIND_SEARCH_PARAM,
   type VideoKindFilter,

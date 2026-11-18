@@ -1,5 +1,5 @@
 import { twMerge } from '@shinju-date/ui'
-import type { Video } from '@/lib/fetchers'
+import type { Video } from '@/lib/data/videos'
 import { getVideoCreator } from '@/lib/video-creator'
 import { Avatar, AvatarFallback, AvatarImage } from './avatar'
 

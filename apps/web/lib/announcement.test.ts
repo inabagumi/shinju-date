@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
+import type { Announcement } from '@/lib/data/announcements'
 import { selectCurrentAnnouncement } from './announcement'
-import type { Announcement } from './fetchers'
 
 function createAnnouncement(
   id: string,

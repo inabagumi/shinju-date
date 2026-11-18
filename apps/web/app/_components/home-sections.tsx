@@ -14,7 +14,7 @@ import {
   fetchUpcomingVideos,
   type UpcomingVideos,
   type Video,
-} from '@/lib/fetchers'
+} from '@/lib/data/videos'
 import { queryKeys } from '@/lib/query-keys'
 import { getSchedulePath } from '@/lib/schedule'
 import HomeSection, {

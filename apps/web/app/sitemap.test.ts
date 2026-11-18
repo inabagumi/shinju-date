@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-vi.mock('@/lib/fetchers', () => ({
+vi.mock('@/lib/data/talents', () => ({
   fetchActiveTalents: vi.fn(),
 }))
 
-import { fetchActiveTalents } from '@/lib/fetchers'
+import { fetchActiveTalents } from '@/lib/data/talents'
 import sitemap from './sitemap'
 
 const TALENT_IDS = [

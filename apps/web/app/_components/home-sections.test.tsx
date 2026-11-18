@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { describe, expect, test, vi } from 'vitest'
-import type { Video } from '@/lib/fetchers'
+import type { Video } from '@/lib/data/videos'
 import { queryKeys } from '@/lib/query-keys'
 import {
   type DashboardVideos,
@@ -12,7 +12,7 @@ import {
   ShortsSection,
 } from './home-sections'
 
-vi.mock('@/lib/fetchers', () => ({
+vi.mock('@/lib/data/videos', () => ({
   fetchDashboardVideos: vi.fn(() => new Promise(() => {})),
   fetchUpcomingVideos: vi.fn(() => new Promise(() => {})),
 }))
