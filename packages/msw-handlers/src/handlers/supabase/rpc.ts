@@ -18,6 +18,7 @@ import {
 } from './query.js'
 import { REST_URL, rest } from './rest.js'
 import { selectRows } from './select.js'
+import { videosTable } from './tables.js'
 
 interface GetAuditLogsParams {
   p_limit?: number
@@ -297,7 +298,11 @@ export const rpcHandlers = [
       const select =
         url.searchParams.get('select') ?? DEFAULT_SEARCH_VIDEOS_SELECT
       const selected = await selectRows(
-        applySupabaseConditions(await search(body), query),
+        applySupabaseConditions(
+          await search(body),
+          query,
+          videosTable.uuidColumns,
+        ),
         select,
         'videos',
         query.filters,

@@ -127,6 +127,17 @@ describe('GET /talents/[id].ics', () => {
     )
   })
 
+  it('narrows the videos by the ID of the fetched talent', async () => {
+    const response = await get(talent.id.toUpperCase())
+    const [request] = supabaseRequests('videos')
+
+    expect(response.status).toBe(200)
+    expect(await eventIds(response)).toEqual(
+      [song.video.id, short.video.id].toSorted(),
+    )
+    expect(request?.url.searchParams.get('talent_id')).toBe(`in.(${talent.id})`)
+  })
+
   it('does not query Supabase again for the same talent', async () => {
     await get(talent.id)
     const response = await get(talent.id)
