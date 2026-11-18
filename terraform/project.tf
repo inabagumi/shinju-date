@@ -1,11 +1,6 @@
 locals {
   # すべてのプロジェクトに設定する環境変数
   common_environment_variables = {
-    enable_experimental_corepack = {
-      key    = "ENABLE_EXPERIMENTAL_COREPACK"
-      target = ["production", "preview"]
-      value  = "1"
-    }
     turbo_platform_env_disabled = {
       key    = "TURBO_PLATFORM_ENV_DISABLED"
       target = ["production", "preview"]
