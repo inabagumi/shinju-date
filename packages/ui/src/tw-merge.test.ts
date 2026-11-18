@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { describe, expect, it } from 'vitest'
 import {
+  ANIMATIONS,
   CONTAINERS,
   FOCUS_RINGS,
   FONT_SIZES,
@@ -42,6 +43,20 @@ describe('twMerge', () => {
 
   it('knows every shadow in theme.css', () => {
     expect([...SHADOWS].sort()).toEqual(extractThemeKeys('shadow'))
+  })
+
+  it('knows every animation in theme.css', () => {
+    expect([...ANIMATIONS].sort()).toEqual(extractThemeKeys('animate'))
+  })
+
+  it('replaces an animation with another one', () => {
+    expect(twMerge('animate-scale-in', 'animate-none')).toBe('animate-none')
+    expect(
+      twMerge(
+        'data-[state=open]:animate-scale-in',
+        'data-[state=open]:animate-fade-in',
+      ),
+    ).toBe('data-[state=open]:animate-fade-in')
   })
 
   it('knows every focus ring in theme.css', () => {

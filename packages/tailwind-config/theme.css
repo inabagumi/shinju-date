@@ -47,6 +47,72 @@
   --shadow-overlay:
     0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 
+  /*
+   * 重なるもの（ダイアログ、トースト、ポップオーバー）の開閉の動き。使い分けは
+   * docs/design-guidelines.md を参照。ここに追加したら packages/ui/src/tw-merge.ts
+   * の一覧にも追加する。
+   *
+   * - 開くときは 150ms の `ease-out`、閉じるときは 100ms の `ease-in` にする
+   * - 開く動きは `from` だけ、閉じる動きは `to` だけを書き、部品の位置や大きさの
+   *   クラスから始まる・そこへ戻るようにする
+   * - `transform` ではなく `scale` と `translate` を動かす（部品の
+   *   `-translate-x-1/2` などは `translate` を使うので、打ち消し合わない）
+   * - 閉じる動きは `forwards` で、終わった姿のまま要素が取り除かれるのを待つ
+   */
+  /* オーバーレイ（ダイアログの後ろの幕） */
+  --animate-fade-in: fade-in 150ms ease-out;
+  --animate-fade-out: fade-out 100ms ease-in forwards;
+  /* ダイアログの本体、ポップオーバー */
+  --animate-scale-in: scale-in 150ms ease-out;
+  --animate-scale-out: scale-out 100ms ease-in forwards;
+  /* トースト。画面の下端から少し上がって現れる */
+  --animate-slide-in: slide-in 150ms ease-out;
+  /* スワイプで閉じたトースト。指を離した位置から、スワイプした向きへ出ていく */
+  --animate-swipe-out: swipe-out 100ms ease-in forwards;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      scale: 0.95;
+    }
+  }
+
+  @keyframes scale-out {
+    to {
+      opacity: 0;
+      scale: 0.95;
+    }
+  }
+
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      translate: 0 0.5rem;
+    }
+  }
+
+  @keyframes swipe-out {
+    from {
+      translate: var(--radix-toast-swipe-end-x) 0;
+    }
+    to {
+      opacity: 0;
+      translate: 100% 0;
+    }
+  }
+
   --color-774-nevy-50: #f2f1ff;
   --color-774-nevy-100: #eae5ff;
   --color-774-nevy-200: #d5ceff;
