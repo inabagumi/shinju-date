@@ -1,13 +1,8 @@
 'use server'
 
-import * as z from 'zod'
 import { adminAction, adminFormAction } from '@/lib/action'
 import { linkAccount, unlinkAccount } from '@/lib/talent-accounts'
-
-const addTwitchUserSchema = z.object({
-  talent_id: z.string().default(''),
-  twitch_user: z.string().default(''),
-})
+import { addTwitchUserSchema } from '../_lib/talent-schema'
 
 export const addTwitchUserAction = adminFormAction(
   'addTwitchUserAction',

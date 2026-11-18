@@ -1,13 +1,8 @@
 'use server'
 
-import * as z from 'zod'
 import { adminAction, adminFormAction } from '@/lib/action'
 import { linkAccount, unlinkAccount } from '@/lib/talent-accounts'
-
-const addYouTubeChannelSchema = z.object({
-  talent_id: z.string().default(''),
-  youtube_channel_id: z.string().default(''),
-})
+import { addYouTubeChannelSchema } from '../_lib/talent-schema'
 
 export const addYouTubeChannelAction = adminFormAction(
   'addYouTubeChannelAction',
