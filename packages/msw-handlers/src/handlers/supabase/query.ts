@@ -397,6 +397,15 @@ function matchesValue(value: unknown, text: string): boolean {
 }
 
 /**
+ * Whether the value of a `uuid` column equals the value of a filter. The
+ * `uuid` type of PostgreSQL does not distinguish upper and lower case, so
+ * `id=eq.0F6B7C84-…` matches `0f6b7c84-…`.
+ */
+function matchesUuid(value: unknown, text: string): boolean {
+  return typeof value === 'string' && value.toLowerCase() === text.toLowerCase()
+}
+
+/**
  * Remove the double quotes around a value of a list or a logic tree, such as
  * `"a,b"`, with `\"` and `\\` unescaped. Values without quotes are trimmed.
  */
@@ -451,13 +460,16 @@ function toRegExp(pattern: string, flags: string): RegExp {
 /**
  * The result of a condition as in SQL: `null` (unknown) when a comparison
  * involves `NULL`, which neither `not` nor the result of the query turns into
- * a match.
+ * a match. `uuidColumns` are the columns of the `uuid` type of the table,
+ * whose values `eq`, `neq`, `in` and `isdistinct` compare regardless of case.
  */
 function evaluateCondition(
   row: object,
   { column, operand, operator }: FilterCondition,
+  uuidColumns: readonly string[],
 ): boolean | null {
   const value = getColumnPath(row, column) ?? null
+  const matches = uuidColumns.includes(column) ? matchesUuid : matchesValue
 
   switch (operator) {
     case 'is': {
@@ -478,7 +490,7 @@ function evaluateCondition(
 
       return value === null || expected === null
         ? value !== expected
-        : !matchesValue(value, operand)
+        : !matches(value, operand)
     }
     default:
       break
@@ -490,9 +502,9 @@ function evaluateCondition(
 
   switch (operator) {
     case 'eq':
-      return matchesValue(value, operand)
+      return matches(value, operand)
     case 'neq':
-      return !matchesValue(value, operand)
+      return !matches(value, operand)
     case 'gt':
     case 'gte':
     case 'lt':
@@ -510,7 +522,7 @@ function evaluateCondition(
       )
     case 'in':
       return parseListValues(operand.slice(1, -1)).some((text) =>
-        matchesValue(value, text),
+        matches(value, text),
       )
   }
 }
@@ -523,14 +535,20 @@ function not(result: boolean | null): boolean | null {
 /**
  * The result of an expression for a row, in three-valued logic like SQL.
  */
-function evaluate(row: object, expression: FilterExpression): boolean | null {
+function evaluate(
+  row: object,
+  expression: FilterExpression,
+  uuidColumns: readonly string[],
+): boolean | null {
   if (expression.kind === 'condition') {
-    const result = evaluateCondition(row, expression)
+    const result = evaluateCondition(row, expression, uuidColumns)
 
     return expression.negated ? not(result) : result
   }
 
-  const results = expression.children.map((child) => evaluate(row, child))
+  const results = expression.children.map((child) =>
+    evaluate(row, child, uuidColumns),
+  )
   // A false condition decides AND, and a true one decides OR.
   const decisive = expression.kind === 'or'
   const result = results.includes(decisive)
@@ -545,12 +563,16 @@ function evaluate(row: object, expression: FilterExpression): boolean | null {
 /**
  * Whether a row matches all the given filters, as PostgREST combines them
  * with AND. A filter whose result is unknown (`NULL`) does not match.
+ * `uuidColumns` are the columns of the `uuid` type of the table of the row.
  */
 export function matchesFilters(
   row: object,
   filters: readonly Filter[],
+  uuidColumns: readonly string[],
 ): boolean {
-  return filters.every(({ expression }) => evaluate(row, expression) === true)
+  return filters.every(
+    ({ expression }) => evaluate(row, expression, uuidColumns) === true,
+  )
 }
 
 /** The filters of a query that apply to an embedded resource at `path`. */
@@ -569,15 +591,16 @@ export function filtersAt(
  * Apply the filters of a query on the rows of the table itself (not on its
  * embedded resources), without pagination. Only the rows that match all the
  * filters are returned. The rows that match are what an update or a delete
- * changes.
+ * changes. `uuidColumns` are the columns of the `uuid` type of the table.
  */
 export function applySupabaseConditions<Row extends object>(
   rows: readonly Row[],
   query: SupabaseQuery,
+  uuidColumns: readonly string[],
 ): Row[] {
   const filters = filtersAt(query.filters, [])
 
-  return rows.filter((row) => matchesFilters(row, filters))
+  return rows.filter((row) => matchesFilters(row, filters, uuidColumns))
 }
 
 /**

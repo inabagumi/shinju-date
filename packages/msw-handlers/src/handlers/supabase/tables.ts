@@ -113,6 +113,12 @@ function notNullColumns<Name extends WritableTableName>(
 interface BaseTableDefinition<Name extends TableName> {
   name: Name
   relations: readonly RelationDefinition<Name>[]
+  /**
+   * The columns of the `uuid` type, whose values `eq`, `neq`, `in` and
+   * `isdistinct` compare regardless of case as PostgreSQL does. The types of
+   * the tables give them as `string`, so they are listed by hand.
+   */
+  uuidColumns: readonly Column<Name>[]
 }
 
 /** A table that is read and written through a mock collection. */
@@ -254,6 +260,18 @@ const VIDEO_RELATION = {
   table: 'videos',
 } as const
 
+/**
+ * The `uuid` columns of `video_backfill_jobs`, which the
+ * `video_backfill_latest_jobs` view has as well.
+ */
+const VIDEO_BACKFILL_JOB_UUID_COLUMNS = [
+  'account_id',
+  'id',
+  'requested_by',
+  'run_id',
+  'talent_id',
+] as const
+
 const announcementsTable: WritableTableDefinition<'announcements'> = {
   collection: asMockCollection(announcements),
   defaults: () => ({
@@ -276,6 +294,7 @@ const announcementsTable: WritableTableDefinition<'announcements'> = {
   relations: [],
   unique: [],
   updatedAtTrigger: true,
+  uuidColumns: ['id'],
 }
 
 const featureRequestsTable: WritableTableDefinition<'feature_requests'> = {
@@ -301,6 +320,7 @@ const featureRequestsTable: WritableTableDefinition<'feature_requests'> = {
   relations: [],
   unique: [],
   updatedAtTrigger: true,
+  uuidColumns: ['id'],
 }
 
 const profileImagesTable: WritableTableDefinition<'profile_images'> = {
@@ -326,6 +346,7 @@ const profileImagesTable: WritableTableDefinition<'profile_images'> = {
   relations: [],
   unique: [{ columns: ['path'], name: 'profile_images_path_key' }],
   updatedAtTrigger: true,
+  uuidColumns: ['id'],
 }
 
 const talentsTable: WritableTableDefinition<'talents'> = {
@@ -364,6 +385,7 @@ const talentsTable: WritableTableDefinition<'talents'> = {
   ],
   unique: [],
   updatedAtTrigger: false,
+  uuidColumns: ['id'],
 }
 
 const termsTable: WritableTableDefinition<'terms'> = {
@@ -388,6 +410,7 @@ const termsTable: WritableTableDefinition<'terms'> = {
   relations: [],
   unique: [{ columns: ['term'], name: 'terms_term_key' }],
   updatedAtTrigger: true,
+  uuidColumns: ['id'],
 }
 
 const thumbnailsTable: WritableTableDefinition<'thumbnails'> = {
@@ -413,6 +436,7 @@ const thumbnailsTable: WritableTableDefinition<'thumbnails'> = {
   relations: [],
   unique: [],
   updatedAtTrigger: true,
+  uuidColumns: ['id'],
 }
 
 const twitchUsersTable: WritableTableDefinition<'twitch_users'> = {
@@ -451,6 +475,7 @@ const twitchUsersTable: WritableTableDefinition<'twitch_users'> = {
     },
   ],
   updatedAtTrigger: false,
+  uuidColumns: ['id', 'profile_image_id', 'talent_id'],
 }
 
 const twitchVideosTable: WritableTableDefinition<'twitch_videos'> = {
@@ -486,6 +511,7 @@ const twitchVideosTable: WritableTableDefinition<'twitch_videos'> = {
     { columns: ['stream_id'], name: 'idx_twitch_videos_stream_id' },
   ],
   updatedAtTrigger: false,
+  uuidColumns: ['id', 'twitch_user_id', 'video_id'],
 }
 
 const videoBackfillJobsTable: WritableTableDefinition<'video_backfill_jobs'> = {
@@ -522,6 +548,7 @@ const videoBackfillJobsTable: WritableTableDefinition<'video_backfill_jobs'> = {
     },
   ],
   updatedAtTrigger: false,
+  uuidColumns: VIDEO_BACKFILL_JOB_UUID_COLUMNS,
 }
 
 const videoBackfillLatestJobsView: ReadOnlyTableDefinition<'video_backfill_latest_jobs'> =
@@ -530,9 +557,10 @@ const videoBackfillLatestJobsView: ReadOnlyTableDefinition<'video_backfill_lates
     name: 'video_backfill_latest_jobs',
     relations: [TALENT_RELATION],
     rows: getLatestVideoBackfillJobs,
+    uuidColumns: VIDEO_BACKFILL_JOB_UUID_COLUMNS,
   }
 
-const videosTable: WritableTableDefinition<'videos'> = {
+export const videosTable: WritableTableDefinition<'videos'> = {
   collection: asMockCollection(videos),
   defaults: () => ({
     created_at: now(),
@@ -583,6 +611,7 @@ const videosTable: WritableTableDefinition<'videos'> = {
   ],
   unique: [],
   updatedAtTrigger: true,
+  uuidColumns: ['id', 'talent_id', 'thumbnail_id'],
 }
 
 const youtubeChannelsTable: WritableTableDefinition<'youtube_channels'> = {
@@ -612,6 +641,7 @@ const youtubeChannelsTable: WritableTableDefinition<'youtube_channels'> = {
     },
   ],
   updatedAtTrigger: false,
+  uuidColumns: ['id', 'profile_image_id', 'talent_id'],
 }
 
 const youtubeVideosTable: WritableTableDefinition<'youtube_videos'> = {
@@ -644,6 +674,7 @@ const youtubeVideosTable: WritableTableDefinition<'youtube_videos'> = {
     },
   ],
   updatedAtTrigger: false,
+  uuidColumns: ['id', 'video_id', 'youtube_channel_id'],
 }
 
 /**

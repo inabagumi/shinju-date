@@ -138,6 +138,8 @@ The database functions (`/rest/v1/rpc/*`) have handlers of their own in `src/han
 
 The filters follow the three-valued logic of SQL: a comparison with `NULL` is neither true nor false, so `id=neq.x` and `deleted_at=not.lt.x` do not match the rows where the column is `NULL`.
 
+Like the `uuid` type of PostgreSQL, `eq`, `neq`, `in` and `isdistinct` compare the values of the `uuid` columns (`uuidColumns` of the table definitions) regardless of case, so `id=eq.0F6B7C84-…` matches `0f6b7c84-…`. The other columns are compared as they are.
+
 | Operator     | Meaning                                                      |
 | ------------ | ------------------------------------------------------------ |
 | `eq`, `neq`  | Equal, not equal                                             |
@@ -364,6 +366,8 @@ const myTable: WritableTableDefinition<'my_table'> = {
   unique: [{ columns: ['name'], name: 'my_table_name_key' }],
   // Whether a trigger sets `updated_at` when a row is updated
   updatedAtTrigger: true,
+  // The columns of the `uuid` type, compared regardless of case
+  uuidColumns: ['id', 'talent_id'],
 }
 ```
 

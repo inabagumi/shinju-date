@@ -256,6 +256,146 @@ describe('Supabase filters', () => {
     })
   })
 
+  describe('uuid columns', () => {
+    /** Whether the upper case of an ID differs, because it has letters. */
+    const hasLetters = (id: string) => id !== id.toUpperCase()
+
+    // The IDs of the seeded talents have no letters, unlike those of videos
+    const video = () => {
+      const found = videos.find(({ id }) => hasLetters(id))
+
+      expect(found).toBeDefined()
+
+      return found as Video
+    }
+
+    it('matches the IDs in upper case with eq, like PostgreSQL', async () => {
+      const { id } = video()
+      const rows = await getJson<Video[]>(
+        `videos?select=id&id=eq.${id.toUpperCase()}`,
+      )
+
+      expect(ids(rows)).toEqual([id])
+    })
+
+    it('leaves out the IDs in upper case with neq', async () => {
+      const { id } = video()
+      const rows = await getJson<Video[]>(
+        `videos?select=id&id=neq.${id.toUpperCase()}`,
+      )
+
+      expect(ids(rows)).toEqual(ids(videos.filter((row) => row.id !== id)))
+    })
+
+    it('matches the IDs in upper case with in', async () => {
+      const { id } = video()
+      const rows = await getJson<Video[]>(
+        `videos?select=id&id=in.(${id.toUpperCase()},00000000-0000-0000-0000-000000000000)`,
+      )
+
+      expect(ids(rows)).toEqual([id])
+    })
+
+    it('treats the IDs in upper case as the same with isdistinct', async () => {
+      const { id } = video()
+      const rows = await getJson<Video[]>(
+        `videos?select=id&id=isdistinct.${id.toUpperCase()}`,
+      )
+
+      expect(ids(rows)).toEqual(ids(videos.filter((row) => row.id !== id)))
+    })
+
+    /** The ID of a video on YouTube, from the `video_id` of its row. */
+    const youtubeVideoId = async () => {
+      const rows = await getJson<{ video_id: string }[]>(
+        'youtube_videos?select=video_id',
+      )
+      const id = rows.map(({ video_id }) => video_id).find(hasLetters)
+
+      expect(id).toBeDefined()
+
+      return id as string
+    }
+
+    it('matches the references to other tables in upper case', async () => {
+      const id = await youtubeVideoId()
+      const rows = await getJson<{ video_id: string }[]>(
+        `youtube_videos?select=video_id&video_id=eq.${id.toUpperCase()}`,
+      )
+
+      expect(rows).toEqual([{ video_id: id }])
+    })
+
+    it('matches the IDs in upper case in a logic tree and an embedded resource', async () => {
+      const id = await youtubeVideoId()
+      const inTree = await getJson<Video[]>(
+        `videos?select=id&or=(id.eq.${id.toUpperCase()})`,
+      )
+      const embedded = await getJson<{ video: { id: string } }[]>(
+        `youtube_videos?select=video:videos!inner(id)&video.id=eq.${id.toUpperCase()}`,
+      )
+
+      expect(ids(inTree)).toEqual([id])
+      expect(embedded).toEqual([{ video: { id } }])
+    })
+
+    it('updates the row of an ID in upper case', async () => {
+      const { id, visible } = video()
+      const response = await get(
+        `videos?select=id,visible&id=eq.${id.toUpperCase()}`,
+        {
+          body: JSON.stringify({ visible }),
+          headers: {
+            'Content-Type': 'application/json',
+            prefer: 'return=representation',
+          },
+          method: 'PATCH',
+        },
+      )
+
+      expect(response.status).toBe(200)
+      expect(await response.json()).toEqual([{ id, visible }])
+    })
+
+    it('matches the IDs in upper case in the rows of a database function', async () => {
+      const search = async (filter: string) => {
+        const response = await fetch(
+          `${REST_URL}/rpc/search_videos_v3?select=id&${filter}`,
+          {
+            body: JSON.stringify({ perpage: 1000, query: '' }),
+            headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
+          },
+        )
+
+        expect(response.ok).toBe(true)
+
+        return ids((await response.json()) as { id: string }[])
+      }
+      const id = (await search('limit=1000')).find(hasLetters)
+
+      expect(id).toBeDefined()
+      expect(await search(`id=eq.${id?.toUpperCase()}`)).toEqual([id])
+    })
+
+    it('still compares the text columns with case', async () => {
+      const youtubeVideos = await getJson<{ youtube_video_id: string }[]>(
+        'youtube_videos?select=youtube_video_id',
+      )
+      const youtubeVideoId = youtubeVideos
+        .map(({ youtube_video_id }) => youtube_video_id)
+        .find(hasLetters)
+
+      expect(youtubeVideoId).toBeDefined()
+
+      const rows = await getJson<unknown[]>(
+        `youtube_videos?select=id&youtube_video_id=eq.${youtubeVideoId?.toUpperCase()}`,
+      )
+
+      expect(rows).toEqual([])
+    })
+  })
+
   describe('JSON paths', () => {
     interface Term {
       readings: string[]
