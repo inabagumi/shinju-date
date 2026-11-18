@@ -34,6 +34,29 @@ export function getScriptName(script: string): string | undefined {
   return script.match(/^--\s*(\S+)/)?.[1]
 }
 
+/**
+ * The version of a stored job, as `ENQUEUE_SCRIPT` reads it: 0 for a job
+ * without one, and `undefined` for a value that is not a job, which never
+ * matches a version.
+ */
+function getVersion(value: string): number | undefined {
+  let job: unknown
+
+  try {
+    job = JSON.parse(value)
+  } catch {
+    return undefined
+  }
+
+  if (typeof job !== 'object' || job === null) {
+    return undefined
+  }
+
+  const { version } = job as { version?: unknown }
+
+  return typeof version === 'number' ? version : 0
+}
+
 function nameOf(script: string): string {
   const name = getScriptName(script)
 
@@ -58,7 +81,12 @@ export const SCRIPT_EMULATIONS: Readonly<Record<string, ScriptEmulation>> = {
     const [expected = '', value = '', ttl = '', id = ''] = argv
     const current = call('GET', job)
 
-    if (expected === '' ? current !== null : current !== expected) {
+    if (
+      expected === ''
+        ? current !== null
+        : typeof current !== 'string' ||
+          getVersion(current) !== Number(expected)
+    ) {
       return 0
     }
 
@@ -102,6 +130,8 @@ export const SCRIPT_EMULATIONS: Readonly<Record<string, ScriptEmulation>> = {
             startedAt: job['startedAt'] ?? timestamp,
             status: 'running',
             updatedAt: timestamp,
+            version:
+              (typeof job['version'] === 'number' ? job['version'] : 0) + 1,
           })
 
           call('SET', key, encoded, 'EX', ttl)

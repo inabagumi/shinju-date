@@ -21,6 +21,7 @@ import {
   getBackfillJobId,
   getJobActivity,
 } from './index.js'
+import { createRequestedJob } from './jobs.js'
 
 const now = Temporal.Instant.from('2026-11-14T00:00:00Z')
 const later = (minutes: number) => now.add({ minutes })
@@ -354,6 +355,7 @@ describeOnEachRedis((createClient) => {
           cursor: 'page-2',
           pages: 1,
           updatedAt: later(2).toString(),
+          version: 3,
         },
         status: 'saved',
       })
@@ -862,6 +864,79 @@ describeOnEachRedis((createClient) => {
       ])
     })
 
+    it('increments the version of a job with every write', async () => {
+      const { queue, redis } = createQueue()
+      const stored = async () =>
+        (
+          await redis.get<BackfillJob>(
+            `${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${jobId}`,
+          )
+        )?.version
+
+      await queue.enqueue(request, now)
+      expect(await stored()).toBe(1)
+
+      const claim = await claimJob(queue, later(1))
+      expect(claim.job.version).toBe(2)
+      expect(await stored()).toBe(2)
+
+      const recorded = await queue.recordPage(claim, page(1, 'page-2'))
+      expect(recorded).toMatchObject({ job: { version: 3 } })
+      expect(await stored()).toBe(3)
+
+      await queue.requeue(next(claim, recorded))
+      expect(await stored()).toBe(4)
+
+      const done = await queue.recordPage(
+        await claimJob(queue, later(2)),
+        lastPage(),
+      )
+      expect(done).toMatchObject({ job: { version: 6 } })
+      expect(await stored()).toBe(6)
+
+      await expect(queue.enqueue(request, later(3))).resolves.toMatchObject({
+        job: { version: 7 },
+      })
+    })
+
+    it('lets a job saved without a version be requested again', async () => {
+      const { queue, redis } = createQueue()
+      const { version: _, ...saved }: BackfillJob = {
+        ...createRequestedJob(request, null, now),
+        cursor: 'page-3',
+        error: 'quota exceeded',
+        status: 'failed',
+      }
+
+      await redis.set(`${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${jobId}`, saved)
+
+      await expect(queue.enqueue(request, later(1))).resolves.toMatchObject({
+        enqueued: true,
+        job: { cursor: 'page-3', status: 'pending', version: 1 },
+      })
+    })
+
+    it('compares the version of a job, not how it is written', async () => {
+      const { queue, redis } = createQueue()
+      const job: BackfillJob = {
+        ...createRequestedJob(request, null, now),
+        status: 'done',
+        version: 4,
+      }
+      // The same job with its fields in another order.
+      const reordered = Object.fromEntries(Object.entries(job).reverse())
+
+      await redis.set(
+        `${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${jobId}`,
+        JSON.stringify(reordered),
+      )
+
+      await expect(queue.enqueue(request, later(1))).resolves.toMatchObject({
+        enqueued: true,
+        job: { version: 5 },
+      })
+    })
+
     it('requeues a job once when two requests read it at the same moment', async () => {
       const { queue, redis, scoped } = createQueue()
 
@@ -879,7 +954,7 @@ describeOnEachRedis((createClient) => {
 
       await expect(second).resolves.toMatchObject({
         enqueued: true,
-        job: { requestedBy: 'user-2' },
+        job: { requestedBy: 'user-2', version: 4 },
       })
       expect(first).toMatchObject({
         enqueued: false,

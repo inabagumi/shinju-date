@@ -43,6 +43,12 @@ export interface BackfillJob {
   status: BackfillJobStatus
   talentId: string
   updatedAt: string
+  /**
+   * Incremented by every write of the job, so that a request saves it only
+   * if it is still what the request read. Absent on jobs saved before
+   * versions existed, which count as version 0.
+   */
+  version?: number
 }
 
 /**

@@ -8,13 +8,17 @@ import type {
 } from './types.js'
 
 /**
- * Saves a job and queues it, but only if the job is still what the caller
- * read (compare-and-set) and no worker holds it, so that two requests made at
- * the same moment, or a request that stalled, never save over each other or
- * over a worker's progress. Runs atomically on the Redis server.
+ * Saves a job and queues it, but only if the job is still the version the
+ * caller read (compare-and-set) and no worker holds it, so that two requests
+ * made at the same moment, or a request that stalled, never save over each
+ * other or over a worker's progress. Runs atomically on the Redis server.
+ *
+ * A job without a version counts as version 0, and so does one that cannot
+ * be decoded, which never matches what a caller read.
  *
  * KEYS: job, queue, worker lock
- * ARGV: job as read (empty when there was none), new job, TTL, job ID
+ * ARGV: version of the job as read (empty when there was none), new job,
+ * TTL, job ID
  *
  * @returns 1 when the job was queued, 0 when it changed in between.
  */
@@ -22,8 +26,11 @@ export const ENQUEUE_SCRIPT = `-- video-backfill:enqueue
 local current = redis.call('GET', KEYS[1])
 if ARGV[1] == '' then
   if current then return 0 end
-elseif current ~= ARGV[1] then
-  return 0
+else
+  if not current then return 0 end
+  local ok, job = pcall(cjson.decode, current)
+  if not ok or type(job) ~= 'table' then return 0 end
+  if (tonumber(job.version) or 0) ~= tonumber(ARGV[1]) then return 0 end
 end
 if redis.call('EXISTS', KEYS[3]) == 1 then return 0 end
 -- LPUSH first: it is the only command here that can fail (WRONGTYPE), and
@@ -34,18 +41,13 @@ redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
 return 1`
 
 /**
- * Takes the next job off the queue, locks it and saves it as `running`, all
- * at once, so that a worker that stops in between never leaves a job off the
- * queue but still `pending`.
+ * Takes the next job off the queue, locks it and saves it as `running` with
+ * its version incremented, all at once, so that a worker that stops in
+ * between never leaves a job off the queue but still `pending`.
  *
  * Queue entries of jobs that are locked by another worker (queued twice) are
  * dropped: that worker queues the job again if needed. Entries of jobs that
  * are finished or gone are dropped too.
- *
- * The job is decoded and encoded again with `cjson`, which escapes `/` as
- * `\/`; that is undone, so that the job is stored as `JSON.stringify` writes
- * it and {@link ENQUEUE_SCRIPT} finds it unchanged. In the output of `cjson`,
- * every `/` is escaped, so a `\/` is always an escaped `/`.
  *
  * KEYS: queue, prefix of job keys, prefix of lock keys (the keys of a job are
  * the prefixes followed by its ID, which is only known once it is taken off
@@ -69,7 +71,8 @@ while true do
         job.startedAt = ARGV[3]
       end
       job.updatedAt = ARGV[3]
-      local encoded = string.gsub(cjson.encode(job), [[\\/]], '/')
+      job.version = (tonumber(job.version) or 0) + 1
+      local encoded = cjson.encode(job)
       redis.call('SET', key, encoded, 'EX', ARGV[4])
       return encoded
     end
@@ -155,6 +158,16 @@ export async function readJobs(
   )
 }
 
+/** The version of a job; 0 for one saved before versions existed. */
+function getVersion(job: BackfillJob): number {
+  return job.version ?? 0
+}
+
+/** The job as it is written next: with its version incremented. */
+function nextVersion(job: BackfillJob): BackfillJob {
+  return { ...job, version: getVersion(job) + 1 }
+}
+
 /**
  * Saves a job and queues it with {@link ENQUEUE_SCRIPT}, unless the job in
  * Redis is no longer `current` (the job as the caller read it, or `null`
@@ -167,20 +180,22 @@ export async function enqueueJob(
   job: BackfillJob,
   current: BackfillJob | null,
 ): Promise<BackfillJob | null> {
+  const saved: BackfillJob = {
+    ...job,
+    version: current ? getVersion(current) + 1 : 1,
+  }
   const queued = await redis.eval<[string, string, number, string], number>(
     ENQUEUE_SCRIPT,
     [jobKey(job.id), REDIS_KEYS.VIDEO_BACKFILL_QUEUE, lockKey(job.id)],
-    // Jobs are stored as their JSON, so the job as read serializes back to
-    // the exact value in Redis.
     [
-      current ? JSON.stringify(current) : '',
-      JSON.stringify(job),
+      current ? String(getVersion(current)) : '',
+      JSON.stringify(saved),
       BACKFILL_JOB_TTL_SECONDS,
       job.id,
     ],
   )
 
-  return queued === 1 ? job : null
+  return queued === 1 ? saved : null
 }
 
 export interface ClaimJobOptions {
@@ -224,7 +239,7 @@ export async function claimJob(
   return { job, token }
 }
 
-/** Runs a write of a claimed job. */
+/** Runs a write of a claimed job, with its version incremented. */
 async function writeClaimed(
   redis: Redis,
   script: string,
@@ -232,13 +247,14 @@ async function writeClaimed(
   args: (job: string) => unknown[],
   job: BackfillJob,
 ): Promise<BackfillWriteResult> {
+  const saved = nextVersion(job)
   const reply = await redis.eval<unknown[], number>(
     script,
     keys,
-    args(JSON.stringify(job)),
+    args(JSON.stringify(saved)),
   )
 
-  return reply === 1 ? { job, status: 'saved' } : { status: 'lost' }
+  return reply === 1 ? { job: saved, status: 'saved' } : { status: 'lost' }
 }
 
 /** Saves a claimed job with {@link SAVE_SCRIPT}, and keeps it claimed. */

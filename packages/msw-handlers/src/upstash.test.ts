@@ -309,6 +309,15 @@ describe('Upstash Redis Handlers', () => {
       await expect(send(['rpop', 'test:backfill-queue'])).resolves.toBe(
         'youtube:x',
       )
+
+      // A request that read the job saves over it only while the job is still
+      // the version it read.
+      await expect(
+        send(['eval', script, 3, ...keys, '1', job, 60, 'youtube:x']),
+      ).resolves.toBe(0)
+      await expect(
+        send(['eval', script, 3, ...keys, '0', job, 60, 'youtube:x']),
+      ).resolves.toBe(1)
     })
 
     it('emulates the requeue script of the backfill queue', async () => {
@@ -367,6 +376,7 @@ describe('Upstash Redis Handlers', () => {
           startedAt: '2026-11-14T00:00:00Z',
           status: 'running',
           updatedAt: '2026-11-14T00:00:00Z',
+          version: 1,
         }),
       )
       await expect(send(['get', 'test:claim-lock:youtube:z'])).resolves.toBe(
