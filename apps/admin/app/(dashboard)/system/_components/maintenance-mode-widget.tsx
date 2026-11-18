@@ -1,67 +1,70 @@
-'use client'
+"use client";
 
-import { twMerge } from '@shinju-date/ui'
-import { useState } from 'react'
-import { type ActionResult, ConfirmDialog } from '@/components/confirm-dialog'
-import { Panel } from '@/components/panel'
-import ToggleSwitch from '@/components/toggle-switch'
+import { twMerge } from "@shinju-date/ui";
+import { useState } from "react";
+
+import { type ActionResult, ConfirmDialog } from "@/components/confirm-dialog";
+import { Panel } from "@/components/panel";
+import ToggleSwitch from "@/components/toggle-switch";
+
 import {
   disableMaintenanceModeAction,
   enableMaintenanceModeAction,
-} from '../_actions/maintenance-mode'
+} from "../_actions/maintenance-mode";
 
 interface MaintenanceModeWidgetProps {
-  initialStatus: boolean
+  initialStatus: boolean;
 }
 
-type MaintenanceModeOperation = 'enable' | 'disable'
+type MaintenanceModeOperation = "enable" | "disable";
 
 const MAINTENANCE_MODE_OPERATIONS = {
   disable: {
     action: disableMaintenanceModeAction,
-    confirmLabel: '無効にする',
-    confirmVariant: 'primary',
-    description: '一般ユーザーのアクセスとバッチ処理が再開されます。',
-    fallbackError: 'メンテナンスモードの無効化に失敗しました。',
-    title: 'メンテナンスモードを無効にしますか？',
+    confirmLabel: "無効にする",
+    confirmVariant: "primary",
+    description: "一般ユーザーのアクセスとバッチ処理が再開されます。",
+    fallbackError: "メンテナンスモードの無効化に失敗しました。",
+    title: "メンテナンスモードを無効にしますか？",
   },
   enable: {
     action: enableMaintenanceModeAction,
-    confirmLabel: '有効にする',
-    confirmVariant: 'danger',
+    confirmLabel: "有効にする",
+    confirmVariant: "danger",
     description:
-      '一般ユーザーのアクセスがメンテナンスページに切り替わり、バッチ処理が停止されます。',
-    fallbackError: 'メンテナンスモードの有効化に失敗しました。',
-    title: 'メンテナンスモードを有効にしますか？',
+      "一般ユーザーのアクセスがメンテナンスページに切り替わり、バッチ処理が停止されます。",
+    fallbackError: "メンテナンスモードの有効化に失敗しました。",
+    title: "メンテナンスモードを有効にしますか？",
   },
-} as const
+} as const;
 
 export function MaintenanceModeWidget({
   initialStatus,
 }: MaintenanceModeWidgetProps) {
-  const [isEnabled, setIsEnabled] = useState(initialStatus)
+  const [isEnabled, setIsEnabled] = useState(initialStatus);
   // 閉じるアニメーションの間も文言を保つため、開閉とは別に操作を持つ
-  const [operation, setOperation] = useState<MaintenanceModeOperation>('enable')
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [operation, setOperation] =
+    useState<MaintenanceModeOperation>("enable");
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  const config = MAINTENANCE_MODE_OPERATIONS[operation]
+  const config = MAINTENANCE_MODE_OPERATIONS[operation];
 
   const handleToggle = (checked: boolean) => {
-    setOperation(checked ? 'enable' : 'disable')
-    setIsConfirmOpen(true)
-  }
+    setOperation(checked ? "enable" : "disable");
+    setIsConfirmOpen(true);
+  };
 
   const handleConfirm = async (): Promise<ActionResult> => {
-    const result = await config.action()
+    const result = await config.action();
 
     if (!result.success) {
-      return { error: result.error ?? config.fallbackError, success: false }
+      return { error: result.error ?? config.fallbackError, success: false };
     }
 
-    setIsEnabled(operation === 'enable')
+    setIsEnabled(operation === "enable");
 
-    return { success: true }
-  }
+    return { success: true };
+  };
 
   return (
     <Panel title="メンテナンスモード">
@@ -69,20 +72,20 @@ export function MaintenanceModeWidget({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1">
             <p className="font-semibold">
-              現在の状態:{' '}
+              現在の状態:{" "}
               <span
                 className={twMerge(
-                  'font-bold',
-                  isEnabled ? 'text-danger' : 'text-success',
+                  "font-bold",
+                  isEnabled ? "text-danger" : "text-success"
                 )}
               >
-                {isEnabled ? 'ON' : 'OFF'}
+                {isEnabled ? "ON" : "OFF"}
               </span>
             </p>
             <p className="mt-1 text-meta text-muted">
               {isEnabled
-                ? '一般ユーザーのアクセスとバッチ処理が停止されています'
-                : '通常運転中です'}
+                ? "一般ユーザーのアクセスとバッチ処理が停止されています"
+                : "通常運転中です"}
             </p>
           </div>
           <div className="shrink-0">
@@ -114,5 +117,5 @@ export function MaintenanceModeWidget({
         title={config.title}
       />
     </Panel>
-  )
+  );
 }

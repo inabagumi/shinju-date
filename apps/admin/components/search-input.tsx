@@ -1,19 +1,22 @@
-'use client'
+"use client";
 
-import { Input, type InputProps } from '@shinju-date/ui'
-import { useSearchParams } from 'next/navigation'
-import { Suspense, useEffect, useRef, useState } from 'react'
-import { useUpdateSearchParams } from '@/lib/use-update-search-params'
+import { Input, type InputProps } from "@shinju-date/ui";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+
+import { useUpdateSearchParams } from "@/lib/use-update-search-params";
 
 /** 入力をやめてから URL に反映するまでの時間（ミリ秒） */
-const DEFAULT_DEBOUNCE_MS = 500
+const DEFAULT_DEBOUNCE_MS = 500;
 
-export interface SearchInputProps
-  extends Omit<InputProps, 'defaultValue' | 'onChange' | 'value'> {
+export interface SearchInputProps extends Omit<
+  InputProps,
+  "defaultValue" | "onChange" | "value"
+> {
   /** 入力をやめてから URL に反映するまでの時間（ミリ秒） */
-  debounceMs?: number | undefined
+  debounceMs?: number | undefined;
   /** 検索語を持つ URL のパラメータの名前。既定は `search` */
-  paramName?: string | undefined
+  paramName?: string | undefined;
 }
 
 /**
@@ -27,8 +30,8 @@ export interface SearchInputProps
  */
 export function SearchInput({
   debounceMs = DEFAULT_DEBOUNCE_MS,
-  paramName = 'search',
-  type = 'search',
+  paramName = "search",
+  type = "search",
   ...props
 }: SearchInputProps) {
   return (
@@ -40,13 +43,15 @@ export function SearchInput({
         {...props}
       />
     </Suspense>
-  )
+  );
 }
 
-interface SyncedSearchInputProps
-  extends Omit<SearchInputProps, 'debounceMs' | 'paramName'> {
-  debounceMs: number
-  paramName: string
+interface SyncedSearchInputProps extends Omit<
+  SearchInputProps,
+  "debounceMs" | "paramName"
+> {
+  debounceMs: number;
+  paramName: string;
 }
 
 function SyncedSearchInput({
@@ -54,49 +59,49 @@ function SyncedSearchInput({
   paramName,
   ...props
 }: SyncedSearchInputProps) {
-  const searchParams = useSearchParams()
-  const updateSearchParams = useUpdateSearchParams()
-  const urlValue = searchParams.get(paramName) ?? ''
-  const [value, setValue] = useState(urlValue)
+  const searchParams = useSearchParams();
+  const updateSearchParams = useUpdateSearchParams();
+  const urlValue = searchParams.get(paramName) ?? "";
+  const [value, setValue] = useState(urlValue);
   // URL のパラメータの値。自分で書いた値は、URL に反映される前から入れておく
-  const knownUrlValueRef = useRef(urlValue)
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const knownUrlValueRef = useRef(urlValue);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   // 待っている間にほかのパラメータが変わっても消さないように、反映するときは
   // 最新の URL のパラメータから作る
-  const updateSearchParamsRef = useRef(updateSearchParams)
+  const updateSearchParamsRef = useRef(updateSearchParams);
 
   useEffect(() => {
-    updateSearchParamsRef.current = updateSearchParams
-  }, [updateSearchParams])
+    updateSearchParamsRef.current = updateSearchParams;
+  }, [updateSearchParams]);
 
   // 自分で書いた値でなければ、外から変わったので、入力欄を合わせる
   useEffect(() => {
     if (urlValue === knownUrlValueRef.current) {
-      return
+      return;
     }
 
-    knownUrlValueRef.current = urlValue
-    clearTimeout(timerRef.current)
-    setValue(urlValue)
-  }, [urlValue])
+    knownUrlValueRef.current = urlValue;
+    clearTimeout(timerRef.current);
+    setValue(urlValue);
+  }, [urlValue]);
 
-  useEffect(() => () => clearTimeout(timerRef.current), [])
+  useEffect(() => () => clearTimeout(timerRef.current), []);
 
   const handleChange = (nextValue: string) => {
-    setValue(nextValue)
-    clearTimeout(timerRef.current)
+    setValue(nextValue);
+    clearTimeout(timerRef.current);
 
     timerRef.current = setTimeout(() => {
-      const nextUrlValue = nextValue.trim() === '' ? '' : nextValue
+      const nextUrlValue = nextValue.trim() === "" ? "" : nextValue;
 
       if (nextUrlValue === knownUrlValueRef.current) {
-        return
+        return;
       }
 
-      knownUrlValueRef.current = nextUrlValue
-      updateSearchParamsRef.current({ [paramName]: nextUrlValue || null })
-    }, debounceMs)
-  }
+      knownUrlValueRef.current = nextUrlValue;
+      updateSearchParamsRef.current({ [paramName]: nextUrlValue || null });
+    }, debounceMs);
+  };
 
   return (
     <Input
@@ -104,5 +109,5 @@ function SyncedSearchInput({
       onChange={(event) => handleChange(event.target.value)}
       value={value}
     />
-  )
+  );
 }

@@ -1,26 +1,27 @@
-import { describe, expect, it, vi } from 'vitest'
-import { Fetcher } from './fetcher.js'
+import { describe, expect, it, vi } from "vitest";
+
 import type {
   FetcherOptions,
   RecentVideosResult,
   VideoLookupResult,
-} from './fetcher-types.js'
+} from "./fetcher-types.js";
+import { Fetcher } from "./fetcher.js";
 
 interface Account {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 interface Video {
-  id: string
-  title: string
+  id: string;
+  title: string;
 }
 
 interface Platform {
   /** Account ID → IDs of its videos, or an error to throw when listing. */
-  accounts: Record<string, string[] | Error>
+  accounts: Record<string, string[] | Error>;
   /** IDs of the videos that still exist. */
-  videoIds: string[]
+  videoIds: string[];
 }
 
 /**
@@ -28,23 +29,23 @@ interface Platform {
  * implemented, on top of the helpers the base class provides.
  */
 class ExampleFetcher extends Fetcher<Account, Video> {
-  readonly provider = 'youtube'
+  readonly provider = "youtube";
 
-  readonly requests: string[][] = []
-  readonly #platform: Platform
+  readonly requests: string[][] = [];
+  readonly #platform: Platform;
 
   constructor(platform: Platform, options?: FetcherOptions) {
-    super(options)
+    super(options);
 
-    this.#platform = platform
+    this.#platform = platform;
   }
 
   async *#lookUp<T>(ids: string[], known: string[], create: (id: string) => T) {
-    this.requests.push(ids)
+    this.requests.push(ids);
 
     for (const id of ids) {
       if (known.includes(id)) {
-        yield create(id)
+        yield create(id);
       }
     }
   }
@@ -54,178 +55,182 @@ class ExampleFetcher extends Fetcher<Account, Video> {
       this.#lookUp(ids, Object.keys(this.#platform.accounts), (id) => ({
         id,
         name: `Account ${id}`,
-      })),
-    )
+      }))
+    );
 
-    return found
+    return found;
   }
 
   async getRecentVideos(
-    accountIds: readonly string[],
+    accountIds: readonly string[]
   ): Promise<RecentVideosResult<Video>> {
     const { failures, results } = await this.fetchPerAccount(
       accountIds,
       async (accountId) => {
-        const videoIds = this.#platform.accounts[accountId] ?? []
+        const videoIds = this.#platform.accounts[accountId] ?? [];
 
         if (videoIds instanceof Error) {
-          throw videoIds
+          throw videoIds;
         }
 
-        return videoIds.map((id) => ({ id, title: `Video ${id}` }))
-      },
-    )
+        return videoIds.map((id) => ({ id, title: `Video ${id}` }));
+      }
+    );
 
-    return { failures, videos: results.flatMap(({ value }) => value) }
+    return { failures, videos: results.flatMap(({ value }) => value) };
   }
 
   async getVideos(
-    videoIds: readonly string[],
+    videoIds: readonly string[]
   ): Promise<VideoLookupResult<Video>> {
     const { found, missingIds } = await this.fetchByIds(videoIds, (ids) =>
       this.#lookUp(ids, this.#platform.videoIds, (id) => ({
         id,
         title: `Video ${id}`,
-      })),
-    )
+      }))
+    );
 
-    return { missingIds, videos: found }
+    return { missingIds, videos: found };
   }
 }
 
-describe('Fetcher', () => {
-  describe('lookups by ID', () => {
-    it('passes each ID once and leaves batching to the API client', async () => {
+describe("Fetcher", () => {
+  describe("lookups by ID", () => {
+    it("passes each ID once and leaves batching to the API client", async () => {
       const fetcher = new ExampleFetcher({
         accounts: {},
-        videoIds: ['v1', 'v2', 'v3'],
-      })
+        videoIds: ["v1", "v2", "v3"],
+      });
 
-      const result = await fetcher.getVideos(['v1', 'v2', 'v1', 'v3', 'v2'])
+      const result = await fetcher.getVideos(["v1", "v2", "v1", "v3", "v2"]);
 
-      expect(result.videos.map((video) => video.id)).toEqual(['v1', 'v2', 'v3'])
-      expect(fetcher.requests).toEqual([['v1', 'v2', 'v3']])
-    })
+      expect(result.videos.map((video) => video.id)).toEqual([
+        "v1",
+        "v2",
+        "v3",
+      ]);
+      expect(fetcher.requests).toEqual([["v1", "v2", "v3"]]);
+    });
 
-    it('reports the IDs the platform did not return', async () => {
-      const fetcher = new ExampleFetcher({ accounts: {}, videoIds: ['v1'] })
+    it("reports the IDs the platform did not return", async () => {
+      const fetcher = new ExampleFetcher({ accounts: {}, videoIds: ["v1"] });
 
-      await expect(fetcher.getVideos(['v1', 'gone'])).resolves.toEqual({
-        missingIds: ['gone'],
-        videos: [{ id: 'v1', title: 'Video v1' }],
-      })
-    })
+      await expect(fetcher.getVideos(["v1", "gone"])).resolves.toEqual({
+        missingIds: ["gone"],
+        videos: [{ id: "v1", title: "Video v1" }],
+      });
+    });
 
-    it('makes no request without IDs', async () => {
-      const fetcher = new ExampleFetcher({ accounts: {}, videoIds: [] })
+    it("makes no request without IDs", async () => {
+      const fetcher = new ExampleFetcher({ accounts: {}, videoIds: [] });
 
-      await expect(fetcher.getAccounts([])).resolves.toEqual([])
-      expect(fetcher.requests).toEqual([])
-    })
-  })
+      await expect(fetcher.getAccounts([])).resolves.toEqual([]);
+      expect(fetcher.requests).toEqual([]);
+    });
+  });
 
-  describe('getRecentVideos', () => {
-    it('keeps the accounts that worked when one fails', async () => {
-      const error = new Error('rate limited')
+  describe("getRecentVideos", () => {
+    it("keeps the accounts that worked when one fails", async () => {
+      const error = new Error("rate limited");
       const fetcher = new ExampleFetcher({
-        accounts: { a: error, b: ['v3'] },
-        videoIds: ['v3'],
-      })
+        accounts: { a: error, b: ["v3"] },
+        videoIds: ["v3"],
+      });
 
-      const result = await fetcher.getRecentVideos(['a', 'b'])
+      const result = await fetcher.getRecentVideos(["a", "b"]);
 
-      expect(result.failures).toEqual([{ accountId: 'a', error }])
-      expect(result.videos).toEqual([{ id: 'v3', title: 'Video v3' }])
-    })
-  })
+      expect(result.failures).toEqual([{ accountId: "a", error }]);
+      expect(result.videos).toEqual([{ id: "v3", title: "Video v3" }]);
+    });
+  });
 
-  describe('failures', () => {
-    it('logs the account and platform of a failed listing', async () => {
-      const error = new Error('rate limited')
+  describe("failures", () => {
+    it("logs the account and platform of a failed listing", async () => {
+      const error = new Error("rate limited");
       const logger = {
         debug: vi.fn(),
         error: vi.fn(),
         info: vi.fn(),
         warn: vi.fn(),
-      }
+      };
 
       const fetcher = new ExampleFetcher(
         { accounts: { a: error }, videoIds: [] },
-        { logger },
-      )
+        { logger }
+      );
 
-      await fetcher.getRecentVideos(['a'])
+      await fetcher.getRecentVideos(["a"]);
 
       expect(logger.error).toHaveBeenCalledWith(
-        'Failed to fetch data for an account',
-        { accountId: 'a', error, provider: 'youtube' },
-      )
-    })
+        "Failed to fetch data for an account",
+        { accountId: "a", error, provider: "youtube" }
+      );
+    });
 
-    it('rejects a lookup when a request fails', async () => {
+    it("rejects a lookup when a request fails", async () => {
       class FailingFetcher extends ExampleFetcher {
         override async getVideos(
-          videoIds: readonly string[],
+          videoIds: readonly string[]
         ): Promise<VideoLookupResult<Video>> {
           const { found, missingIds } = await this.fetchByIds(
             videoIds,
             // biome-ignore lint/correctness/useYield: a request that fails yields nothing
             async function* (): AsyncGenerator<Video> {
-              throw new Error('boom')
-            },
-          )
+              throw new Error("boom");
+            }
+          );
 
-          return { missingIds, videos: found }
+          return { missingIds, videos: found };
         }
       }
 
-      const fetcher = new FailingFetcher({ accounts: {}, videoIds: [] })
+      const fetcher = new FailingFetcher({ accounts: {}, videoIds: [] });
 
-      await expect(fetcher.getVideos(['v1'])).rejects.toThrow('boom')
-    })
-  })
+      await expect(fetcher.getVideos(["v1"])).rejects.toThrow("boom");
+    });
+  });
 
-  describe('concurrency', () => {
-    it('is shared by every method of a fetcher', async () => {
-      let running = 0
-      let peak = 0
+  describe("concurrency", () => {
+    it("is shared by every method of a fetcher", async () => {
+      let running = 0;
+      let peak = 0;
       const task = async () => {
-        running++
-        peak = Math.max(peak, running)
-        await new Promise((resolve) => setTimeout(resolve, 5))
-        running--
-      }
+        running++;
+        peak = Math.max(peak, running);
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        running--;
+      };
 
       class SlowFetcher extends ExampleFetcher {
         override async getRecentVideos(
-          accountIds: readonly string[],
+          accountIds: readonly string[]
         ): Promise<RecentVideosResult<Video>> {
-          const { failures } = await this.fetchPerAccount(accountIds, task)
+          const { failures } = await this.fetchPerAccount(accountIds, task);
 
-          return { failures, videos: [] }
+          return { failures, videos: [] };
         }
 
         override async getVideos(
-          videoIds: readonly string[],
+          videoIds: readonly string[]
         ): Promise<VideoLookupResult<Video>> {
           // Like an API client handed `request` as its `schedule`.
-          await Promise.all(videoIds.map(() => this.request(task)))
+          await Promise.all(videoIds.map(() => this.request(task)));
 
-          return { missingIds: [], videos: [] }
+          return { missingIds: [], videos: [] };
         }
       }
 
       const fetcher = new SlowFetcher(
         { accounts: {}, videoIds: [] },
-        { concurrency: 2 },
-      )
+        { concurrency: 2 }
+      );
 
       await Promise.all([
-        fetcher.getRecentVideos(['a', 'b', 'c']),
-        fetcher.getVideos(['v1', 'v2', 'v3']),
-      ])
+        fetcher.getRecentVideos(["a", "b", "c"]),
+        fetcher.getVideos(["v1", "v2", "v3"]),
+      ]);
 
-      expect(peak).toBe(2)
-    })
-  })
-})
+      expect(peak).toBe(2);
+    });
+  });
+});

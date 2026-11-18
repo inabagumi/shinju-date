@@ -1,20 +1,22 @@
-import { Suspense } from 'react'
-import PageHeader from '@/components/page-header'
-import PageMain from '@/components/page-main'
-import { createPageMetadata } from '@/lib/metadata'
-import { TalentGridSkeleton } from './_components/talent-grid'
+import { Suspense } from "react";
+
+import PageHeader from "@/components/page-header";
+import PageMain from "@/components/page-main";
+import { createPageMetadata } from "@/lib/metadata";
+
+import { TalentGridSkeleton } from "./_components/talent-grid";
 import {
   TalentCount,
   TalentCountSkeleton,
   TalentListGrid,
-} from './_components/talent-list-sections'
+} from "./_components/talent-list-sections";
 
-const TITLE = 'タレント一覧'
+const TITLE = "タレント一覧";
 
 export const metadata = createPageMetadata({
-  path: '/talents',
+  path: "/talents",
   title: TITLE,
-})
+});
 
 /**
  * The list of the active talents. The heading is a part of the static shell,
@@ -37,5 +39,5 @@ export default function TalentsPage() {
         <TalentListGrid />
       </Suspense>
     </PageMain>
-  )
+  );
 }

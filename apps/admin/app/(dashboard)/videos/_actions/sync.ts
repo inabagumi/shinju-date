@@ -1,34 +1,36 @@
-'use server'
+"use server";
 
-import { CACHE_TAGS } from '@shinju-date/constants'
-import { toDBString } from '@shinju-date/temporal-fns'
-import { revalidateTags } from '@shinju-date/web-cache'
-import { revalidatePath } from 'next/cache'
-import { PLATFORM_LABELS } from '@/components/platform-badge'
+import { CACHE_TAGS } from "@shinju-date/constants";
+import { toDBString } from "@shinju-date/temporal-fns";
+import { revalidateTags } from "@shinju-date/web-cache";
+import { revalidatePath } from "next/cache";
+
+import { PLATFORM_LABELS } from "@/components/platform-badge";
 import {
   ActionError,
   type ActionResult,
   adminAction,
   parseActionInput,
-} from '@/lib/action'
-import { createAuditLog } from '@/lib/audit-log'
-import { createScraper } from '@/lib/scraper'
-import { videoIdSchema } from '../_lib/schema'
+} from "@/lib/action";
+import { createAuditLog } from "@/lib/audit-log";
+import { createScraper } from "@/lib/scraper";
+
+import { videoIdSchema } from "../_lib/schema";
 
 /** 動画の同期が成功したときに、画面に知らせること */
 export interface SyncVideoSummary {
   /** 成功のトーストに出す文 */
-  message: string
+  message: string;
   /** 動画がすでにプラットフォームと一致していた */
-  unchanged?: boolean
+  unchanged?: boolean;
 }
 
-const NOT_FOUND_ERROR_MESSAGE = '動画が見つかりませんでした。'
+const NOT_FOUND_ERROR_MESSAGE = "動画が見つかりませんでした。";
 
 async function revalidateVideo(videoId: string): Promise<void> {
-  revalidatePath(`/videos/${videoId}`)
-  revalidatePath('/videos')
-  await revalidateTags([CACHE_TAGS.VIDEOS])
+  revalidatePath(`/videos/${videoId}`);
+  revalidatePath("/videos");
+  await revalidateTags([CACHE_TAGS.VIDEOS]);
 }
 
 /**
@@ -41,71 +43,71 @@ async function revalidateVideo(videoId: string): Promise<void> {
  * 確認も含む。
  */
 export const syncVideoAction = adminAction(
-  'syncVideoAction',
+  "syncVideoAction",
   async (
     { supabaseClient },
-    id: string,
+    id: string
   ): Promise<ActionResult<SyncVideoSummary>> => {
-    const videoId = parseActionInput(videoIdSchema, id)
+    const videoId = parseActionInput(videoIdSchema, id);
     const { data: video, error: fetchError } = await supabaseClient
-      .from('videos')
-      .select('platform, title')
-      .eq('id', videoId)
-      .is('deleted_at', null)
-      .maybeSingle()
+      .from("videos")
+      .select("platform, title")
+      .eq("id", videoId)
+      .is("deleted_at", null)
+      .maybeSingle();
 
     if (fetchError) {
-      throw fetchError
+      throw fetchError;
     }
 
     if (!video) {
-      throw new ActionError(NOT_FOUND_ERROR_MESSAGE)
+      throw new ActionError(NOT_FOUND_ERROR_MESSAGE);
     }
 
-    const now = Temporal.Now.instant()
+    const now = Temporal.Now.instant();
     const result = await createScraper(video.platform).refreshVideo(
       videoId,
-      now,
-    )
+      now
+    );
 
     switch (result.status) {
-      case 'not-found':
-        throw new ActionError(NOT_FOUND_ERROR_MESSAGE)
+      case "not-found":
+        throw new ActionError(NOT_FOUND_ERROR_MESSAGE);
 
-      case 'unchanged':
+      case "unchanged":
         return {
-          data: { message: '動画情報は既に最新です。', unchanged: true },
+          data: { message: "動画情報は既に最新です。", unchanged: true },
           success: true,
-        }
+        };
 
-      case 'unavailable':
-        await createAuditLog(supabaseClient, 'VIDEO_SYNC', videoId, {
+      case "unavailable":
+        await createAuditLog(supabaseClient, "VIDEO_SYNC", videoId, {
           changes: {
             after: {
               deleted_at: toDBString(now),
-              deleted_reason: 'unavailable',
+              deleted_reason: "unavailable",
             },
             before: { deleted_at: null },
           },
           entityName: video.title,
-        })
-        await revalidateVideo(videoId)
+        });
+        await revalidateVideo(videoId);
 
         return {
           data: {
             message: `${PLATFORM_LABELS[video.platform]}で動画が見つからなかったため、動画を削除しました。`,
           },
           success: true,
-        }
+        };
 
-      case 'updated':
-        await createAuditLog(supabaseClient, 'VIDEO_SYNC', videoId, {
+      case "updated":
+        await createAuditLog(supabaseClient, "VIDEO_SYNC", videoId, {
           changes: { after: result.after, before: result.before },
           entityName: result.title,
-        })
-        await revalidateVideo(videoId)
+        });
+        await revalidateVideo(videoId);
 
-        return { data: { message: '動画情報を同期しました。' }, success: true }
+        return { data: { message: "動画情報を同期しました。" }, success: true };
     }
-  },
-)
+  }
+);

@@ -1,209 +1,211 @@
-import { cacheLife, cacheTag } from 'next/cache'
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { cacheLife, cacheTag } from "next/cache";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+
 import {
   createProfileImage,
   createTalent,
   createTwitchUser,
   createYouTubeChannel,
-} from '@/test/factories'
+} from "@/test/factories";
 import {
   failSupabase,
   seedSupabase,
   setupSupabase,
   supabaseRequests,
-} from '@/test/supabase'
-import { fetchActiveTalents, fetchTalent, fetchTalentList } from './talents'
+} from "@/test/supabase";
+
+import { fetchActiveTalents, fetchTalent, fetchTalentList } from "./talents";
 
 // Vitest does not run `'use cache'`, so only what the fetchers pass to the
 // cache is checked
-vi.mock('next/cache', () => ({
+vi.mock("next/cache", () => ({
   cacheLife: vi.fn(),
   cacheTag: vi.fn(),
-}))
+}));
 
-setupSupabase()
+setupSupabase();
 
-const talent = createTalent({ name: '朝霧ミオ' })
-const otherTalent = createTalent({ name: '風花リツ' })
-const otherChannel = createYouTubeChannel({ talent_id: otherTalent.id })
+const talent = createTalent({ name: "朝霧ミオ" });
+const otherTalent = createTalent({ name: "風花リツ" });
+const otherChannel = createYouTubeChannel({ talent_id: otherTalent.id });
 const twitchUser = createTwitchUser({
   talent_id: otherTalent.id,
-  twitch_login_name: 'ritsu',
-})
+  twitch_login_name: "ritsu",
+});
 
 beforeEach(() => {
-  vi.clearAllMocks()
-})
+  vi.clearAllMocks();
+});
 
 afterEach(() => {
-  vi.restoreAllMocks()
-})
+  vi.restoreAllMocks();
+});
 
-describe('fetchActiveTalents', () => {
-  test('returns the active talents that are not deleted, by name', async () => {
-    const yuki = createTalent({ name: 'ゆき' })
-    const aoi = createTalent({ name: 'あおい' })
+describe("fetchActiveTalents", () => {
+  test("returns the active talents that are not deleted, by name", async () => {
+    const yuki = createTalent({ name: "ゆき" });
+    const aoi = createTalent({ name: "あおい" });
 
     await seedSupabase({
       talents: [
         yuki,
-        createTalent({ name: 'いずみ', status: 'retired' }),
-        createTalent({ deleted_at: '2026-11-01T00:00:00Z', name: 'うみ' }),
+        createTalent({ name: "いずみ", status: "retired" }),
+        createTalent({ deleted_at: "2026-11-01T00:00:00Z", name: "うみ" }),
         aoi,
       ],
-    })
+    });
 
     await expect(fetchActiveTalents()).resolves.toEqual([
-      { id: aoi.id, name: 'あおい' },
-      { id: yuki.id, name: 'ゆき' },
-    ])
-    expect(cacheTag).toHaveBeenCalledWith('talents')
-  })
+      { id: aoi.id, name: "あおい" },
+      { id: yuki.id, name: "ゆき" },
+    ]);
+    expect(cacheTag).toHaveBeenCalledWith("talents");
+  });
 
-  test('throws when the talents cannot be fetched', async () => {
-    failSupabase('talents', 'failed')
+  test("throws when the talents cannot be fetched", async () => {
+    failSupabase("talents", "failed");
 
-    await expect(fetchActiveTalents()).rejects.toThrow('failed')
-  })
-})
+    await expect(fetchActiveTalents()).rejects.toThrow("failed");
+  });
+});
 
-describe('fetchTalent', () => {
-  test('returns the talent with its accounts, sorted by their platform IDs', async () => {
-    const icon = createProfileImage()
+describe("fetchTalent", () => {
+  test("returns the talent with its accounts, sorted by their platform IDs", async () => {
+    const icon = createProfileImage();
     const subChannel = createYouTubeChannel({
-      name: 'Sub',
+      name: "Sub",
       talent_id: talent.id,
-      youtube_channel_id: 'UCb',
-    })
+      youtube_channel_id: "UCb",
+    });
     const mainChannel = createYouTubeChannel({
-      name: 'Main',
+      name: "Main",
       profile_image_id: icon.id,
       talent_id: talent.id,
-      youtube_channel_id: 'UCa',
-      youtube_handle: '@main',
-    })
+      youtube_channel_id: "UCa",
+      youtube_handle: "@main",
+    });
     const userB = createTwitchUser({
-      name: 'B',
+      name: "B",
       talent_id: talent.id,
-      twitch_login_name: 'b',
-      twitch_user_id: '200',
-    })
+      twitch_login_name: "b",
+      twitch_user_id: "200",
+    });
     const userA = createTwitchUser({
-      name: 'A',
+      name: "A",
       talent_id: talent.id,
-      twitch_login_name: 'a',
-      twitch_user_id: '100',
-    })
+      twitch_login_name: "a",
+      twitch_user_id: "100",
+    });
 
     await seedSupabase({
       profileImages: [icon],
-      talents: [{ ...talent, theme_color: '#FF6B9D' }, otherTalent],
+      talents: [{ ...talent, theme_color: "#FF6B9D" }, otherTalent],
       twitchUsers: [userB, userA, twitchUser],
       youtubeChannels: [subChannel, mainChannel, otherChannel],
-    })
+    });
 
     await expect(fetchTalent(talent.id)).resolves.toEqual({
       id: talent.id,
-      name: '朝霧ミオ',
-      theme_color: '#FF6B9D',
+      name: "朝霧ミオ",
+      theme_color: "#FF6B9D",
       twitch_users: [
         {
-          name: 'A',
+          name: "A",
           profile_image: null,
-          twitch_login_name: 'a',
-          twitch_user_id: '100',
+          twitch_login_name: "a",
+          twitch_user_id: "100",
         },
         {
-          name: 'B',
+          name: "B",
           profile_image: null,
-          twitch_login_name: 'b',
-          twitch_user_id: '200',
+          twitch_login_name: "b",
+          twitch_user_id: "200",
         },
       ],
       youtube_channels: [
         {
-          name: 'Main',
+          name: "Main",
           profile_image: { blur_data_url: icon.blur_data_url, id: icon.id },
-          youtube_channel_id: 'UCa',
-          youtube_handle: '@main',
+          youtube_channel_id: "UCa",
+          youtube_handle: "@main",
         },
         {
-          name: 'Sub',
+          name: "Sub",
           profile_image: null,
-          youtube_channel_id: 'UCb',
+          youtube_channel_id: "UCb",
           youtube_handle: null,
         },
       ],
-    })
-  })
+    });
+  });
 
-  test('is cached for days with the talents tag', async () => {
-    await fetchTalent(talent.id)
+  test("is cached for days with the talents tag", async () => {
+    await fetchTalent(talent.id);
 
-    expect(cacheLife).toHaveBeenCalledWith('days')
-    expect(cacheTag).toHaveBeenCalledWith('talents')
-  })
+    expect(cacheLife).toHaveBeenCalledWith("days");
+    expect(cacheTag).toHaveBeenCalledWith("talents");
+  });
 
   test.each([
-    ['retired', { status: 'retired' }],
-    ['deleted', { deleted_at: '2026-11-01T00:00:00Z' }],
-  ] as const)('returns null for a talent that is %s', async (_, overrides) => {
-    await seedSupabase({ talents: [{ ...talent, ...overrides }] })
+    ["retired", { status: "retired" }],
+    ["deleted", { deleted_at: "2026-11-01T00:00:00Z" }],
+  ] as const)("returns null for a talent that is %s", async (_, overrides) => {
+    await seedSupabase({ talents: [{ ...talent, ...overrides }] });
 
-    await expect(fetchTalent(talent.id)).resolves.toBeNull()
-  })
+    await expect(fetchTalent(talent.id)).resolves.toBeNull();
+  });
 
-  test('returns null for a talent that does not exist', async () => {
-    await seedSupabase({ talents: [otherTalent] })
+  test("returns null for a talent that does not exist", async () => {
+    await seedSupabase({ talents: [otherTalent] });
 
-    await expect(fetchTalent(talent.id)).resolves.toBeNull()
-  })
+    await expect(fetchTalent(talent.id)).resolves.toBeNull();
+  });
 
-  test('returns null for an ID that is not a UUID without querying', async () => {
-    await expect(fetchTalent('not-a-uuid')).resolves.toBeNull()
-    expect(supabaseRequests()).toEqual([])
-  })
+  test("returns null for an ID that is not a UUID without querying", async () => {
+    await expect(fetchTalent("not-a-uuid")).resolves.toBeNull();
+    expect(supabaseRequests()).toEqual([]);
+  });
 
-  test('throws when the talent cannot be fetched', async () => {
-    failSupabase('talents', 'connection refused')
+  test("throws when the talent cannot be fetched", async () => {
+    failSupabase("talents", "connection refused");
 
-    await expect(fetchTalent(talent.id)).rejects.toThrow('connection refused')
-  })
-})
+    await expect(fetchTalent(talent.id)).rejects.toThrow("connection refused");
+  });
+});
 
-describe('fetchTalentList', () => {
-  test('returns the active talents by reading, and the ones without one by name last', async () => {
-    const ka = createTalent({ name: 'B', reading: 'か' })
-    const a = createTalent({ name: 'A', reading: 'あ' })
-    const z = createTalent({ name: 'Z', reading: null })
-    const y = createTalent({ name: 'Y', reading: null })
+describe("fetchTalentList", () => {
+  test("returns the active talents by reading, and the ones without one by name last", async () => {
+    const ka = createTalent({ name: "B", reading: "か" });
+    const a = createTalent({ name: "A", reading: "あ" });
+    const z = createTalent({ name: "Z", reading: null });
+    const y = createTalent({ name: "Y", reading: null });
 
     await seedSupabase({
       talents: [
         z,
         ka,
-        createTalent({ name: 'R', reading: 'い', status: 'retired' }),
-        createTalent({ deleted_at: '2026-11-01T00:00:00Z', name: 'D' }),
+        createTalent({ name: "R", reading: "い", status: "retired" }),
+        createTalent({ deleted_at: "2026-11-01T00:00:00Z", name: "D" }),
         y,
         a,
       ],
-    })
+    });
 
-    const talents = await fetchTalentList()
+    const talents = await fetchTalentList();
 
-    expect(talents.map((item) => item.name)).toEqual(['A', 'B', 'Y', 'Z'])
+    expect(talents.map((item) => item.name)).toEqual(["A", "B", "Y", "Z"]);
     expect(talents[0]).toEqual({
       id: a.id,
-      name: 'A',
+      name: "A",
       twitch_users: [],
       youtube_channels: [],
-    })
-  })
+    });
+  });
 
-  test('returns only the icons, in the same order as fetchTalent', async () => {
-    const youtubeIcon = createProfileImage()
-    const twitchIconA = createProfileImage()
-    const twitchIconB = createProfileImage()
+  test("returns only the icons, in the same order as fetchTalent", async () => {
+    const youtubeIcon = createProfileImage();
+    const twitchIconA = createProfileImage();
+    const twitchIconB = createProfileImage();
 
     await seedSupabase({
       profileImages: [youtubeIcon, twitchIconA, twitchIconB],
@@ -212,55 +214,55 @@ describe('fetchTalentList', () => {
         createTwitchUser({
           profile_image_id: twitchIconB.id,
           talent_id: talent.id,
-          twitch_user_id: '200',
+          twitch_user_id: "200",
         }),
         createTwitchUser({
           profile_image_id: twitchIconA.id,
           talent_id: talent.id,
-          twitch_user_id: '100',
+          twitch_user_id: "100",
         }),
       ],
       youtubeChannels: [
         createYouTubeChannel({
           profile_image_id: youtubeIcon.id,
           talent_id: talent.id,
-          youtube_channel_id: 'UCb',
+          youtube_channel_id: "UCb",
         }),
         createYouTubeChannel({
           talent_id: talent.id,
-          youtube_channel_id: 'UCa',
+          youtube_channel_id: "UCa",
         }),
       ],
-    })
+    });
 
     const icon = ({
       blur_data_url,
       id,
     }: {
-      blur_data_url: string
-      id: string
-    }) => ({ profile_image: { blur_data_url, id } })
+      blur_data_url: string;
+      id: string;
+    }) => ({ profile_image: { blur_data_url, id } });
 
     await expect(fetchTalentList()).resolves.toEqual([
       {
         id: talent.id,
-        name: '朝霧ミオ',
+        name: "朝霧ミオ",
         twitch_users: [icon(twitchIconA), icon(twitchIconB)],
         youtube_channels: [{ profile_image: null }, icon(youtubeIcon)],
       },
-    ])
-  })
+    ]);
+  });
 
-  test('is cached for days with the talents tag', async () => {
-    await fetchTalentList()
+  test("is cached for days with the talents tag", async () => {
+    await fetchTalentList();
 
-    expect(cacheLife).toHaveBeenCalledWith('days')
-    expect(cacheTag).toHaveBeenCalledWith('talents')
-  })
+    expect(cacheLife).toHaveBeenCalledWith("days");
+    expect(cacheTag).toHaveBeenCalledWith("talents");
+  });
 
-  test('throws when the talents cannot be fetched', async () => {
-    failSupabase('talents', 'failed')
+  test("throws when the talents cannot be fetched", async () => {
+    failSupabase("talents", "failed");
 
-    await expect(fetchTalentList()).rejects.toThrow('failed')
-  })
-})
+    await expect(fetchTalentList()).rejects.toThrow("failed");
+  });
+});

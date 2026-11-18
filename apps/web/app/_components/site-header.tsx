@@ -1,11 +1,13 @@
-import Link from 'next/link'
-import { SITE_NAME as siteName } from '@/lib/site'
-import { MainNavigationItems } from './main-navigation-items'
-import { MobileMenu } from './mobile-menu'
-import { SearchButton } from './search-button'
+import Link from "next/link";
+
+import { SITE_NAME as siteName } from "@/lib/site";
+
+import { MainNavigationItems } from "./main-navigation-items";
+import { MobileMenu } from "./mobile-menu";
+import { SearchButton } from "./search-button";
 
 const navigationLinkClassName =
-  'rounded-control underline-offset-4 hover:underline focus-ring aria-[current=page]:font-bold aria-[current=page]:text-accent'
+  "rounded-control underline-offset-4 hover:underline focus-ring aria-[current=page]:font-bold aria-[current=page]:text-accent";
 
 /**
  * サイト全体のヘッダー。高さは 56px に固定し、スクロールしても地を不透明に保つ。
@@ -49,5 +51,5 @@ export function SiteHeader() {
         </MobileMenu>
       </div>
     </header>
-  )
+  );
 }

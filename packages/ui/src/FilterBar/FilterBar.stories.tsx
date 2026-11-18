@@ -1,18 +1,20 @@
-import { expect, userEvent, within } from 'storybook/test'
-import preview from '#.storybook/preview'
-import { Button } from '../Button/Button'
-import { Input } from '../Input/Input'
-import { Select } from '../Select/Select'
-import { FilterBar } from './FilterBar'
+import { expect, userEvent, within } from "storybook/test";
+
+import preview from "#.storybook/preview";
+
+import { Button } from "../Button/Button";
+import { Input } from "../Input/Input";
+import { Select } from "../Select/Select";
+import { FilterBar } from "./FilterBar";
 
 const meta = preview.meta({
   component: FilterBar,
   parameters: {
-    layout: 'padded',
+    layout: "padded",
   },
-  tags: ['autodocs'],
-  title: 'Components/FilterBar',
-})
+  tags: ["autodocs"],
+  title: "Components/FilterBar",
+});
 
 const filters = (
   <>
@@ -33,14 +35,14 @@ const filters = (
     </Select>
     <Button variant="ghost">解除</Button>
   </>
-)
+);
 
 export const Default = meta.story({
   args: {
     activeCount: 1,
     children: filters,
   },
-})
+});
 
 /** 狭い画面ではボタンの中に折りたたみ、適用中の件数を表示する */
 export const Narrow = meta.story({
@@ -49,26 +51,26 @@ export const Narrow = meta.story({
     children: filters,
   },
   globals: {
-    viewport: { value: 'mobile1' },
+    viewport: { value: "mobile1" },
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const trigger = canvas.getByRole('button', { name: /絞り込み/ })
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole("button", { name: /絞り込み/ });
 
-    const keyword = canvas.getByRole('textbox', {
+    const keyword = canvas.getByRole("textbox", {
       hidden: true,
-      name: 'キーワード',
-    })
+      name: "キーワード",
+    });
 
-    await expect(trigger).toHaveAttribute('aria-expanded', 'false')
-    await expect(keyword).not.toBeVisible()
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await expect(keyword).not.toBeVisible();
 
-    await userEvent.click(trigger)
-    await expect(trigger).toHaveAttribute('aria-expanded', 'true')
-    await expect(keyword).toBeVisible()
+    await userEvent.click(trigger);
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await expect(keyword).toBeVisible();
 
-    await userEvent.click(trigger)
-    await expect(trigger).toHaveAttribute('aria-expanded', 'false')
-    await expect(keyword).not.toBeVisible()
+    await userEvent.click(trigger);
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await expect(keyword).not.toBeVisible();
   },
-})
+});

@@ -1,5 +1,6 @@
-import { setupServer } from 'msw/node'
-import { allHandlers } from './index.js'
+import { setupServer } from "msw/node";
+
+import { allHandlers } from "./index.js";
 
 /**
  * Mock server for Node.js environments (testing, batch processing, etc.)
@@ -14,28 +15,28 @@ import { allHandlers } from './index.js'
  * afterAll(() => server.close())
  * ```
  */
-export const server = setupServer(...allHandlers)
+export const server = setupServer(...allHandlers);
 
 /**
  * Helper function to start the server with logging
  */
 export function startServer() {
   server.listen({
-    onUnhandledFrame: 'warn',
-  })
-  console.error('🚀 MSW server started')
-  console.error('[MSW] Handlers registered:', server.listHandlers().length)
+    onUnhandledFrame: "warn",
+  });
+  console.error("🚀 MSW server started");
+  console.error("[MSW] Handlers registered:", server.listHandlers().length);
 }
 
 /**
  * Helper function to stop the server
  */
 export function stopServer() {
-  server.close()
-  console.error('🛑 MSW server stopped')
+  server.close();
+  console.error("🛑 MSW server stopped");
 }
 
 /**
  * Default export for convenience
  */
-export default server
+export default server;

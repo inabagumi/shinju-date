@@ -1,10 +1,10 @@
-import { type BatchOptions, requestInBatches } from './batches.js'
-import { type ClientOptions, getTwitchApiClient } from './client.js'
-import { mapStream } from './mappers.js'
-import type { TwitchStream } from './types.js'
+import { type BatchOptions, requestInBatches } from "./batches.js";
+import { type ClientOptions, getTwitchApiClient } from "./client.js";
+import { mapStream } from "./mappers.js";
+import type { TwitchStream } from "./types.js";
 
 interface GetStreamsByUserIdsOptions extends ClientOptions, BatchOptions {
-  userIds: string[]
+  userIds: string[];
 }
 
 /**
@@ -17,15 +17,15 @@ export async function* getStreamsByUserIds({
   userIds,
 }: GetStreamsByUserIdsOptions): AsyncGenerator<TwitchStream, void, undefined> {
   if (userIds.length === 0) {
-    return
+    return;
   }
 
   for await (const stream of requestInBatches(userIds, schedule, (batch, run) =>
-    run(() => client.streams.getStreamsByUserIds(batch)),
+    run(() => client.streams.getStreamsByUserIds(batch))
   )) {
-    const mapped = mapStream(stream)
+    const mapped = mapStream(stream);
     if (mapped) {
-      yield mapped
+      yield mapped;
     }
   }
 }

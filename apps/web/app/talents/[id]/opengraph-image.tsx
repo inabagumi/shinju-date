@@ -1,19 +1,21 @@
-import { notFound } from 'next/navigation'
-import { ImageResponse } from 'next/og'
-import { fetchTalent } from '@/lib/data/talents'
-import { SITE_THEME_COLOR } from '@/lib/site'
-import { LOGO_PATH, LOGO_VIEW_BOX } from '@/lib/svg-symbols'
-import { getTalentProfileImage } from '@/lib/talent-profile-image'
-import { fetchTalentIconDataURL, getTalentThemeColor } from './_lib/og-image'
+import { notFound } from "next/navigation";
+import { ImageResponse } from "next/og";
 
-export const alt = 'SHINJU DATE'
-export const size = { height: 630, width: 1200 }
-export const contentType = 'image/png'
+import { fetchTalent } from "@/lib/data/talents";
+import { SITE_THEME_COLOR } from "@/lib/site";
+import { LOGO_PATH, LOGO_VIEW_BOX } from "@/lib/svg-symbols";
+import { getTalentProfileImage } from "@/lib/talent-profile-image";
 
-const TEXT_COLOR = SITE_THEME_COLOR
-const ICON_SIZE = 320
-const LOGO_HEIGHT = 56
-const LOGO_WIDTH = (LOGO_HEIGHT * 256) / 80
+import { fetchTalentIconDataURL, getTalentThemeColor } from "./_lib/og-image";
+
+export const alt = "SHINJU DATE";
+export const size = { height: 630, width: 1200 };
+export const contentType = "image/png";
+
+const TEXT_COLOR = SITE_THEME_COLOR;
+const ICON_SIZE = 320;
+const LOGO_HEIGHT = 56;
+const LOGO_WIDTH = (LOGO_HEIGHT * 256) / 80;
 
 /**
  * The Open Graph image of a talent's page: the icon and the name of the
@@ -28,42 +30,42 @@ const LOGO_WIDTH = (LOGO_HEIGHT * 256) / 80
  */
 export default async function Image({
   params,
-}: Pick<PageProps<'/talents/[id]'>, 'params'>) {
-  const { id } = await params
-  const talent = await fetchTalent(id)
+}: Pick<PageProps<"/talents/[id]">, "params">) {
+  const { id } = await params;
+  const talent = await fetchTalent(id);
 
   if (!talent) {
-    notFound()
+    notFound();
   }
 
   const icon = await fetchTalentIconDataURL(
     getTalentProfileImage(talent),
-    ICON_SIZE,
-  )
+    ICON_SIZE
+  );
 
   return new ImageResponse(
     <div
       style={{
-        backgroundColor: '#ffffff',
-        display: 'flex',
-        height: '100%',
-        width: '100%',
+        backgroundColor: "#ffffff",
+        display: "flex",
+        height: "100%",
+        width: "100%",
       }}
     >
       <div
         style={{
           backgroundColor: getTalentThemeColor(talent.theme_color),
-          height: '100%',
+          height: "100%",
           width: 48,
         }}
       />
       <div
         style={{
-          alignItems: 'center',
-          display: 'flex',
+          alignItems: "center",
+          display: "flex",
           flex: 1,
-          padding: '0 80px',
-          position: 'relative',
+          padding: "0 80px",
+          position: "relative",
         }}
       >
         {icon ? (
@@ -72,14 +74,14 @@ export default async function Image({
             alt=""
             height={ICON_SIZE}
             src={icon}
-            style={{ borderRadius: '50%' }}
+            style={{ borderRadius: "50%" }}
             width={ICON_SIZE}
           />
         ) : (
           <div
             style={{
-              backgroundColor: '#e5e5e5',
-              borderRadius: '50%',
+              backgroundColor: "#e5e5e5",
+              borderRadius: "50%",
               flexShrink: 0,
               height: ICON_SIZE,
               width: ICON_SIZE,
@@ -89,14 +91,14 @@ export default async function Image({
         <div
           style={{
             color: TEXT_COLOR,
-            display: 'block',
+            display: "block",
             flex: 1,
             fontSize: 72,
             fontWeight: 700,
             lineClamp: 2,
             lineHeight: 1.3,
             marginLeft: 64,
-            wordBreak: 'break-word',
+            wordBreak: "break-word",
           }}
         >
           {talent.name}
@@ -104,7 +106,7 @@ export default async function Image({
         <svg
           aria-hidden="true"
           height={LOGO_HEIGHT}
-          style={{ bottom: 48, position: 'absolute', right: 64 }}
+          style={{ bottom: 48, position: "absolute", right: 64 }}
           viewBox={LOGO_VIEW_BOX}
           width={LOGO_WIDTH}
         >
@@ -115,8 +117,8 @@ export default async function Image({
     {
       ...size,
       headers: {
-        'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+        "Cache-Control": "public, max-age=3600, s-maxage=86400",
       },
-    },
-  )
+    }
+  );
 }

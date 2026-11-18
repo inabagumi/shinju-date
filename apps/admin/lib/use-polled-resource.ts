@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /** 取り直しに失敗したが、理由がわからないとき（通信の失敗など）に出す文 */
 export const POLLED_RESOURCE_FALLBACK_ERROR =
-  '最新の状態を取得できませんでした。'
+  "最新の状態を取得できませんでした。";
 
 /** `fetcher` が取り直せなかったときの戻り値 */
 export interface PolledResourceFailure {
-  success: false
-  error?: string | undefined
+  success: false;
+  error?: string | undefined;
 }
 
 export interface UsePolledResourceOptions<T extends { success: true }> {
@@ -18,25 +18,25 @@ export interface UsePolledResourceOptions<T extends { success: true }> {
    * 最初の表示に使い、サーバーが取得し直して別の値（別の参照）を渡してきたら、
    * `data` をその値に置き換える。描画のたびに作り直さないこと
    */
-  initialData: T
+  initialData: T;
   /**
    * データを取り直す Server Action。成功したときの戻り値（`success: true`）が、
    * そのまま `data` になる
    */
-  fetcher: () => Promise<NoInfer<T> | PolledResourceFailure>
+  fetcher: () => Promise<NoInfer<T> | PolledResourceFailure>;
   /** 真を返す間だけ、`intervalMs` ごとに取り直す */
-  isActive: (data: NoInfer<T>) => boolean
+  isActive: (data: NoInfer<T>) => boolean;
   /** 取り直す間隔（ミリ秒） */
-  intervalMs: number
+  intervalMs: number;
 }
 
 export interface UsePolledResourceReturn<T> {
   /** 最後に取得できたデータ。取り直しに失敗しても残る */
-  data: T
+  data: T;
   /** 最後の取り直しが失敗した理由。取り直せたら `null` に戻る */
-  error: string | null
+  error: string | null;
   /** いますぐ取り直す。失敗したときは `error` に理由を入れ、例外は投げない */
-  reload: () => Promise<void>
+  reload: () => Promise<void>;
 }
 
 /**
@@ -54,56 +54,56 @@ export function usePolledResource<T extends { success: true }>({
   intervalMs,
   isActive,
 }: UsePolledResourceOptions<T>): UsePolledResourceReturn<T> {
-  const [data, setData] = useState(initialData)
-  const [error, setError] = useState<string | null>(null)
+  const [data, setData] = useState(initialData);
+  const [error, setError] = useState<string | null>(null);
 
   // サーバーが取得し直したデータが届いたら、取り直したデータより新しいので置き換える。
   // 進行中でなければ取り直さないので、こうしないと古いデータが残り続ける
-  const [serverData, setServerData] = useState(initialData)
+  const [serverData, setServerData] = useState(initialData);
 
   if (initialData !== serverData) {
-    setServerData(initialData)
-    setData(initialData)
-    setError(null)
+    setServerData(initialData);
+    setData(initialData);
+    setError(null);
   }
 
   // `fetcher` が描画のたびに作り直されても、`reload` と間隔を作り直さない
-  const fetcherRef = useRef(fetcher)
+  const fetcherRef = useRef(fetcher);
 
   useEffect(() => {
-    fetcherRef.current = fetcher
-  }, [fetcher])
+    fetcherRef.current = fetcher;
+  }, [fetcher]);
 
   const reload = useCallback(async () => {
-    let result: T | PolledResourceFailure
+    let result: T | PolledResourceFailure;
 
     try {
-      result = await fetcherRef.current()
+      result = await fetcherRef.current();
     } catch {
-      result = { success: false }
+      result = { success: false };
     }
 
     if (result.success) {
-      setData(result)
-      setError(null)
+      setData(result);
+      setError(null);
     } else {
-      setError(result.error || POLLED_RESOURCE_FALLBACK_ERROR)
+      setError(result.error || POLLED_RESOURCE_FALLBACK_ERROR);
     }
-  }, [])
+  }, []);
 
-  const active = isActive(data)
+  const active = isActive(data);
 
   useEffect(() => {
     if (!active) {
-      return
+      return;
     }
 
     const timer = setInterval(() => {
-      void reload()
-    }, intervalMs)
+      void reload();
+    }, intervalMs);
 
-    return () => clearInterval(timer)
-  }, [active, intervalMs, reload])
+    return () => clearInterval(timer);
+  }, [active, intervalMs, reload]);
 
-  return { data, error, reload }
+  return { data, error, reload };
 }

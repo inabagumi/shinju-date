@@ -1,26 +1,26 @@
-import { DUMMY_THUMBNAIL_PNG } from '@shinju-date/constants'
-import type { default as Database } from '@shinju-date/database'
-import { createErrorResponse } from '@shinju-date/helpers'
-import type { SupabaseClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
+import { DUMMY_THUMBNAIL_PNG } from "@shinju-date/constants";
+import type { default as Database } from "@shinju-date/database";
+import { createErrorResponse } from "@shinju-date/helpers";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
 
-const SIGNED_URL_EXPIRES_IN = 60 * 10 // 10 minutes
+const SIGNED_URL_EXPIRES_IN = 60 * 10; // 10 minutes
 
 function createFallbackResponse(): NextResponse {
   return new NextResponse(DUMMY_THUMBNAIL_PNG, {
     headers: {
-      'Accept-Ranges': 'none',
-      'Cache-Control': `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
-      'Content-Type': 'image/png',
+      "Accept-Ranges": "none",
+      "Cache-Control": `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
+      "Content-Type": "image/png",
     },
-  })
+  });
 }
 
 export interface ServeStorageImageOptions {
-  bucket: string
-  path: string
+  bucket: string;
+  path: string;
   /** A client that may sign URLs for objects in `bucket` (service role). */
-  supabaseClient: SupabaseClient<Database>
+  supabaseClient: SupabaseClient<Database>;
 }
 
 /**
@@ -32,48 +32,48 @@ export interface ServeStorageImageOptions {
  */
 export async function serveStorageImage(
   request: Request,
-  { bucket, path, supabaseClient }: ServeStorageImageOptions,
+  { bucket, path, supabaseClient }: ServeStorageImageOptions
 ): Promise<Response> {
   const { data, error: signedUrlError } = await supabaseClient.storage
     .from(bucket)
-    .createSignedUrl(path, SIGNED_URL_EXPIRES_IN)
+    .createSignedUrl(path, SIGNED_URL_EXPIRES_IN);
 
   if (signedUrlError) {
-    return createErrorResponse('Failed to create signed URL', { status: 500 })
+    return createErrorResponse("Failed to create signed URL", { status: 500 });
   }
 
-  const fetchHeaders = new Headers(request.headers)
+  const fetchHeaders = new Headers(request.headers);
 
-  fetchHeaders.delete('Host')
-  fetchHeaders.delete('Cookie')
+  fetchHeaders.delete("Host");
+  fetchHeaders.delete("Cookie");
 
   try {
     const res = await fetch(data.signedUrl, {
       headers: fetchHeaders,
-    })
+    });
 
     // If fetch fails or returns an error status, return a dummy image
     if (!res.ok) {
-      return createFallbackResponse()
+      return createFallbackResponse();
     }
 
     const headers = new Headers({
-      'Accept-Ranges': res.headers.get('Accept-Ranges') || 'none',
-      'Cache-Control': `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
-      'Content-Type': res.headers.get('Content-Type') || 'image/jpeg',
-    })
-    const contentLength = res.headers.get('Content-Length')
+      "Accept-Ranges": res.headers.get("Accept-Ranges") || "none",
+      "Cache-Control": `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
+      "Content-Type": res.headers.get("Content-Type") || "image/jpeg",
+    });
+    const contentLength = res.headers.get("Content-Length");
 
     if (contentLength) {
-      headers.set('Content-Length', contentLength)
+      headers.set("Content-Length", contentLength);
     }
 
     return new NextResponse(res.body, {
       headers,
       status: res.status,
-    })
+    });
   } catch (_error) {
     // If fetch throws an error (e.g., network error), return a dummy image
-    return createFallbackResponse()
+    return createFallbackResponse();
   }
 }

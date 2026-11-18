@@ -1,18 +1,19 @@
-import { getPopularKeywords } from '@/lib/analytics/get-popular-keywords'
-import { RankingWidget } from '../../_components/ranking-widget'
-import { formatDateLabel } from '../../_lib/format-date'
-import { resolvePeriod } from '../../_lib/resolve-period'
-import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
+import { getPopularKeywords } from "@/lib/analytics/get-popular-keywords";
+
+import { RankingWidget } from "../../_components/ranking-widget";
+import { formatDateLabel } from "../../_lib/format-date";
+import { resolvePeriod } from "../../_lib/resolve-period";
+import type { AnalyticsSearchParams } from "../../_lib/search-params-schema";
 
 interface Props {
-  searchParams: Promise<AnalyticsSearchParams>
+  searchParams: Promise<AnalyticsSearchParams>;
 }
 
 /** 最も検索されたキーワードのランキング */
 export async function PopularKeywordsWidget({ searchParams }: Props) {
-  const { dateRange, selectedDate } = await searchParams
-  const range = resolvePeriod({ dateRange, selectedDate })
-  const keywords = await getPopularKeywords({ limit: 20, range })
+  const { dateRange, selectedDate } = await searchParams;
+  const range = resolvePeriod({ dateRange, selectedDate });
+  const keywords = await getPopularKeywords({ limit: 20, range });
 
   return (
     <RankingWidget
@@ -32,5 +33,5 @@ export async function PopularKeywordsWidget({ searchParams }: Props) {
       title="人気キーワードランキング"
       valueHeading="検索回数"
     />
-  )
+  );
 }

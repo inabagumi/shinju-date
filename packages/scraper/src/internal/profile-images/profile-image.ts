@@ -1,47 +1,48 @@
-import type { Enums } from '@shinju-date/database'
-import { toDBString } from '@shinju-date/temporal-fns'
-import { nanoid } from 'nanoid'
-import sharp from 'sharp'
-import type { TypedSupabaseClient } from '../../types.js'
-import { DatabaseError, StorageError } from '../errors.js'
+import type { Enums } from "@shinju-date/database";
+import { toDBString } from "@shinju-date/temporal-fns";
+import { nanoid } from "nanoid";
+import sharp from "sharp";
+
+import type { TypedSupabaseClient } from "../../types.js";
+import { DatabaseError, StorageError } from "../errors.js";
 import {
   createBlurDataURL,
   downloadImage,
   removeImage,
   removeStoredImages,
   storeImage,
-} from '../images/index.js'
+} from "../images/index.js";
 
-export const PROFILE_IMAGES_BUCKET = 'profile-images'
+export const PROFILE_IMAGES_BUCKET = "profile-images";
 
 /** Stored icons are square and at most this many pixels wide. */
-export const MAX_PROFILE_IMAGE_SIZE = 256
+export const MAX_PROFILE_IMAGE_SIZE = 256;
 
 /** The YouTube channel or Twitch user an icon belongs to. */
 export interface ProfileImageOwner {
   /** `youtube_channels.id` or `twitch_users.id`. */
-  id: string
-  platform: Enums<'platform_type'>
+  id: string;
+  platform: Enums<"platform_type">;
   /**
    * The channel or user ID on the platform. Stored objects are grouped under
    * it so they can be traced back to their owner.
    */
-  platformId: string
+  platformId: string;
 }
 
 /** A stored icon, as far as keeping it up to date is concerned. */
 export interface StoredProfileImage {
-  etag: string | null
-  id: string
-  path: string
-  sourceUrl: string
+  etag: string | null;
+  id: string;
+  path: string;
+  sourceUrl: string;
 }
 
 /** An icon downloaded from its platform, not stored yet. */
 export interface DownloadedProfileImage {
-  body: ArrayBuffer
-  etag: string | null
-  sourceUrl: string
+  body: ArrayBuffer;
+  etag: string | null;
+  sourceUrl: string;
 }
 
 /**
@@ -59,22 +60,22 @@ export interface DownloadedProfileImage {
  */
 export async function downloadProfileImage(
   sourceUrl: string,
-  saved: StoredProfileImage | null,
+  saved: StoredProfileImage | null
 ): Promise<DownloadedProfileImage | null> {
-  const savedEtag = saved?.sourceUrl === sourceUrl ? saved.etag : null
+  const savedEtag = saved?.sourceUrl === sourceUrl ? saved.etag : null;
 
   if (saved?.sourceUrl === sourceUrl && !savedEtag) {
     // Nothing to compare the response with; the URL is the best evidence.
-    return null
+    return null;
   }
 
-  const downloaded = await downloadImage(sourceUrl, { etag: savedEtag })
+  const downloaded = await downloadImage(sourceUrl, { etag: savedEtag });
 
   if (!downloaded) {
-    return null
+    return null;
   }
 
-  return { body: downloaded.body, etag: downloaded.etag, sourceUrl }
+  return { body: downloaded.body, etag: downloaded.etag, sourceUrl };
 }
 
 /**
@@ -82,24 +83,24 @@ export async function downloadProfileImage(
  * {@link MAX_PROFILE_IMAGE_SIZE} and encodes it as WebP.
  */
 async function toSquareWebP(
-  image: ArrayBuffer,
+  image: ArrayBuffer
 ): Promise<{ body: Buffer; size: number }> {
-  const { height, width } = await sharp(image).metadata()
-  const size = Math.min(width, height, MAX_PROFILE_IMAGE_SIZE)
+  const { height, width } = await sharp(image).metadata();
+  const size = Math.min(width, height, MAX_PROFILE_IMAGE_SIZE);
   const body = await sharp(image)
     .rotate()
-    .resize(size, size, { fit: 'cover', position: 'centre' })
+    .resize(size, size, { fit: "cover", position: "centre" })
     .webp()
-    .toBuffer()
+    .toBuffer();
 
-  return { body, size }
+  return { body, size };
 }
 
 export interface CreateProfileImageOptions {
-  image: DownloadedProfileImage
-  now: Temporal.Instant
-  owner: ProfileImageOwner
-  supabaseClient: TypedSupabaseClient
+  image: DownloadedProfileImage;
+  now: Temporal.Instant;
+  owner: ProfileImageOwner;
+  supabaseClient: TypedSupabaseClient;
 }
 
 /**
@@ -116,25 +117,25 @@ export async function createProfileImage({
   supabaseClient,
 }: CreateProfileImageOptions): Promise<StoredProfileImage> {
   // Decoding first means a broken image is rejected before anything is stored.
-  const { body, size } = await toSquareWebP(image.body)
-  const blurDataURL = await createBlurDataURL(body)
+  const { body, size } = await toSquareWebP(image.body);
+  const blurDataURL = await createBlurDataURL(body);
   const stored: StoredProfileImage = {
     etag: image.etag,
     id: crypto.randomUUID(),
     path: `${owner.platform}/${owner.platformId}/${nanoid()}.webp`,
     sourceUrl: image.sourceUrl,
-  }
+  };
 
   await storeImage(supabaseClient, {
     bucket: PROFILE_IMAGES_BUCKET,
-    contentType: 'image/webp',
+    contentType: "image/webp",
     image: body,
     path: stored.path,
-  })
+  });
 
-  const timestamp = toDBString(now)
+  const timestamp = toDBString(now);
   const { error: insertError } = await supabaseClient
-    .from('profile_images')
+    .from("profile_images")
     .insert({
       blur_data_url: blurDataURL,
       created_at: timestamp,
@@ -145,7 +146,7 @@ export async function createProfileImage({
       source_url: stored.sourceUrl,
       updated_at: timestamp,
       width: size,
-    })
+    });
 
   if (insertError) {
     await removeStoredImages(supabaseClient, {
@@ -154,12 +155,12 @@ export async function createProfileImage({
     }).catch(() => {
       // Ignored: the insert error is the one to throw, and an object without
       // its row is never served.
-    })
+    });
 
-    throw new DatabaseError('Failed to insert a profile image', insertError)
+    throw new DatabaseError("Failed to insert a profile image", insertError);
   }
 
-  return stored
+  return stored;
 }
 
 /**
@@ -175,20 +176,20 @@ export async function createProfileImage({
  */
 export async function removeProfileImage(
   supabaseClient: TypedSupabaseClient,
-  image: Pick<StoredProfileImage, 'id' | 'path'>,
+  image: Pick<StoredProfileImage, "id" | "path">
 ): Promise<boolean> {
   try {
     return await removeImage(supabaseClient, {
       bucket: PROFILE_IMAGES_BUCKET,
       image,
-      table: 'profile_images',
-    })
+      table: "profile_images",
+    });
   } catch (error) {
     if (error instanceof StorageError) {
       // Ignored on purpose, see above.
-      return true
+      return true;
     }
 
-    throw error
+    throw error;
   }
 }

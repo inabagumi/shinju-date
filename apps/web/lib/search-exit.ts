@@ -8,27 +8,27 @@
  */
 
 /** 離脱を受け取る Route Handler のパス */
-export const SEARCH_EXIT_ENDPOINT = '/api/search-exit'
+export const SEARCH_EXIT_ENDPOINT = "/api/search-exit";
 
 interface SearchExit {
   /** 検索の結果のページのパス。絞り込みの検索パラメーターは含まない */
-  pathname: string
-  query: string
+  pathname: string;
+  query: string;
   /** 動画を開いたか、すでに離脱を送った */
-  settled: boolean
+  settled: boolean;
 }
 
-let current: SearchExit | null = null
+let current: SearchExit | null = null;
 
 function send(query: string): void {
-  const body = JSON.stringify({ query })
+  const body = JSON.stringify({ query });
 
   try {
     if (
-      typeof navigator.sendBeacon === 'function' &&
+      typeof navigator.sendBeacon === "function" &&
       navigator.sendBeacon(SEARCH_EXIT_ENDPOINT, body)
     ) {
-      return
+      return;
     }
   } catch {
     // `fetch` で送り直す
@@ -37,20 +37,20 @@ function send(query: string): void {
   fetch(SEARCH_EXIT_ENDPOINT, {
     body,
     keepalive: true,
-    method: 'POST',
+    method: "POST",
   }).catch(() => {
     // 記録に失敗しても、閲覧には影響させない
-  })
+  });
 }
 
 /** まだ動画を開いていなければ、離脱を1回だけ送る */
 function settle(searchExit: SearchExit): void {
   if (searchExit.settled) {
-    return
+    return;
   }
 
-  searchExit.settled = true
-  send(searchExit.query)
+  searchExit.settled = true;
+  send(searchExit.query);
 }
 
 /**
@@ -59,20 +59,20 @@ function settle(searchExit: SearchExit): void {
  */
 export function startSearchExit(query: string, pathname: string): void {
   if (current?.pathname === pathname) {
-    return
+    return;
   }
 
   if (current) {
-    settle(current)
+    settle(current);
   }
 
-  current = { pathname, query, settled: false }
+  current = { pathname, query, settled: false };
 }
 
 /** 検索の結果から動画を開いた */
 export function markSearchExitClicked(): void {
   if (current) {
-    current.settled = true
+    current.settled = true;
   }
 }
 
@@ -82,16 +82,16 @@ export function markSearchExitClicked(): void {
  */
 export function handleSearchExitNavigation(pathname: string): void {
   if (!current || current.pathname === pathname) {
-    return
+    return;
   }
 
-  settle(current)
-  current = null
+  settle(current);
+  current = null;
 }
 
 /** ページを閉じる、または隠した */
 export function handleSearchExitLeave(): void {
   if (current) {
-    settle(current)
+    settle(current);
   }
 }

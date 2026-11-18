@@ -1,22 +1,9 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "assist": {
-    "actions": {
-      "source": {
-        "useSortedAttributes": "on",
-        "useSortedKeys": "on",
-        "useSortedProperties": "on"
-      }
-    }
+    "enabled": false
   },
   "css": {
-    "assist": {
-      "enabled": true
-    },
-    "formatter": {
-      "enabled": true,
-      "quoteStyle": "single"
-    },
     "linter": {
       "enabled": true
     },
@@ -34,23 +21,12 @@
     ]
   },
   "formatter": {
-    "useEditorconfig": true
-  },
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "single",
-      "semicolons": "asNeeded"
-    }
+    "enabled": false
   },
   "linter": {
     "rules": {
       "complexity": {
         "useLiteralKeys": "off"
-      },
-      "nursery": {
-        "useTailwindSortedClasses": {
-          "level": "warn"
-        }
       },
       "style": {
         "noRestrictedGlobals": {
@@ -86,16 +62,6 @@
     }
   },
   "overrides": [
-    {
-      "assist": {
-        "actions": {
-          "source": {
-            "useSortedKeys": "off"
-          }
-        }
-      },
-      "includes": ["**/package.json"]
-    },
     {
       "includes": ["packages/ui/src/tw-merge.ts"],
       "linter": {
@@ -152,7 +118,6 @@
   "tailwind": {
     "attributes": ["class", "className"],
     "mergeFunctions": ["twMerge"],
-    "stylesheet": "./packages/tailwind-config/theme.css",
     "variantFunctions": ["cva"]
   },
   "vcs": {

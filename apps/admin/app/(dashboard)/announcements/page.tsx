@@ -1,21 +1,22 @@
-import { PageHeader, Skeleton } from '@shinju-date/ui'
-import type { Metadata } from 'next'
-import { Suspense } from 'react'
-import { AnnouncementModal } from './_components/announcement-modal'
+import { PageHeader, Skeleton } from "@shinju-date/ui";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+
+import { AnnouncementModal } from "./_components/announcement-modal";
 import {
   AnnouncementsList,
   AnnouncementsListSkeleton,
-} from './_components/announcements-list'
-import getAnnouncements from './_lib/get-announcements'
+} from "./_components/announcements-list";
+import getAnnouncements from "./_lib/get-announcements";
 
 export const metadata: Metadata = {
-  title: 'お知らせ管理',
-}
+  title: "お知らせ管理",
+};
 
 async function AnnouncementsListData() {
-  const announcements = await getAnnouncements()
+  const announcements = await getAnnouncements();
 
-  return <AnnouncementsList announcements={announcements} />
+  return <AnnouncementsList announcements={announcements} />;
 }
 
 export default function AnnouncementsPage() {
@@ -36,5 +37,5 @@ export default function AnnouncementsPage() {
         <AnnouncementsListData />
       </Suspense>
     </div>
-  )
+  );
 }

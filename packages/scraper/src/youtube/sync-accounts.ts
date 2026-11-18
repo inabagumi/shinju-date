@@ -1,10 +1,13 @@
 import {
   countUpdatedAccounts,
   syncAccountsWith,
-} from '../internal/operations/sync-accounts.js'
-import type { CrawlContext, SyncAccountResult } from '../types.js'
-import { createYouTubeAccounts, type YouTubeChannelFields } from './accounts.js'
-import type { YouTubeFetcher } from './fetcher.js'
+} from "../internal/operations/sync-accounts.js";
+import type { CrawlContext, SyncAccountResult } from "../types.js";
+import {
+  createYouTubeAccounts,
+  type YouTubeChannelFields,
+} from "./accounts.js";
+import type { YouTubeFetcher } from "./fetcher.js";
 
 /**
  * Brings the name, handle and icon of saved YouTube channels in line with
@@ -18,11 +21,11 @@ import type { YouTubeFetcher } from './fetcher.js'
  * @returns The number of channels updated.
  */
 export async function syncYouTubeChannels(
-  context: CrawlContext<YouTubeFetcher>,
+  context: CrawlContext<YouTubeFetcher>
 ): Promise<number> {
   return countUpdatedAccounts(
-    await syncAccountsWith(context, createYouTubeAccounts(context.fetcher)),
-  )
+    await syncAccountsWith(context, createYouTubeAccounts(context.fetcher))
+  );
 }
 
 /**
@@ -38,9 +41,9 @@ export async function syncYouTubeChannels(
  */
 export function syncYouTubeChannelsOfTalent(
   context: CrawlContext<YouTubeFetcher>,
-  talentId: string,
+  talentId: string
 ): Promise<SyncAccountResult<YouTubeChannelFields>[]> {
   return syncAccountsWith(context, createYouTubeAccounts(context.fetcher), {
     talentId,
-  })
+  });
 }

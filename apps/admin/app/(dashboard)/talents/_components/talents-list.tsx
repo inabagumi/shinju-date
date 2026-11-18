@@ -8,44 +8,46 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@shinju-date/ui'
-import { ArrowDown, ArrowUp, Users } from 'lucide-react'
-import Link from 'next/link'
-import { SearchInput } from '@/components/search-input'
-import { SearchParamSelect } from '@/components/search-param-select'
-import { FilterBarSkeleton, TableSkeleton } from '@/components/table-skeleton'
-import { formatDateTimeFromISO } from '@/lib/format'
-import { buildSearchParamsHref } from '@/lib/search-params-href'
-import type { TalentListItem } from '../_lib/get-talents'
+} from "@shinju-date/ui";
+import { ArrowDown, ArrowUp, Users } from "lucide-react";
+import Link from "next/link";
+
+import { SearchInput } from "@/components/search-input";
+import { SearchParamSelect } from "@/components/search-param-select";
+import { FilterBarSkeleton, TableSkeleton } from "@/components/table-skeleton";
+import { formatDateTimeFromISO } from "@/lib/format";
+import { buildSearchParamsHref } from "@/lib/search-params-href";
+
+import type { TalentListItem } from "../_lib/get-talents";
 import {
   DEFAULT_TALENT_LIST_FILTERS,
   type TalentSortOrder,
   type TalentStatusFilter,
-} from '../_lib/talent-list-filters'
-import { TalentActions } from './talent-actions'
-import { TalentModal } from './talent-modal'
-import { TalentStatusBadge } from './talent-status-badge'
+} from "../_lib/talent-list-filters";
+import { TalentActions } from "./talent-actions";
+import { TalentModal } from "./talent-modal";
+import { TalentStatusBadge } from "./talent-status-badge";
 
 interface TalentsListProps {
   /** URL の `search`。前後の空白を取り除いたもの */
-  search: string | undefined
+  search: string | undefined;
   /** 今のページの URL のパラメータ。並べ替えのリンクで絞り込みを引き継ぐ */
-  searchParams: URLSearchParams | string
+  searchParams: URLSearchParams | string;
   /** URL の `sort` */
-  sortOrder: TalentSortOrder
+  sortOrder: TalentSortOrder;
   /** URL の `status` */
-  statusFilter: TalentStatusFilter
+  statusFilter: TalentStatusFilter;
   /** 絞り込みと並べ替えを済ませたタレント */
-  talents: TalentListItem[]
+  talents: TalentListItem[];
 }
 
 const FILTER_OPTIONS: { value: TalentStatusFilter; label: string }[] = [
-  { label: '削除済み以外', value: 'not_deleted' },
-  { label: 'アクティブ', value: 'active' },
-  { label: '引退', value: 'retired' },
-  { label: '削除済み', value: 'deleted' },
-  { label: 'すべて', value: 'all' },
-]
+  { label: "削除済み以外", value: "not_deleted" },
+  { label: "アクティブ", value: "active" },
+  { label: "引退", value: "retired" },
+  { label: "削除済み", value: "deleted" },
+  { label: "すべて", value: "all" },
+];
 
 /**
  * 最終更新日時の並べ替えのリンク先。向きを反対にし、ほかのパラメータ（絞り込み）は
@@ -53,13 +55,13 @@ const FILTER_OPTIONS: { value: TalentStatusFilter; label: string }[] = [
  */
 function getSortHref(
   searchParams: URLSearchParams | string,
-  sortOrder: TalentSortOrder,
+  sortOrder: TalentSortOrder
 ): string {
-  const nextOrder = sortOrder === 'desc' ? 'asc' : 'desc'
+  const nextOrder = sortOrder === "desc" ? "asc" : "desc";
 
-  return buildSearchParamsHref('/talents', searchParams, {
+  return buildSearchParamsHref("/talents", searchParams, {
     sort: nextOrder === DEFAULT_TALENT_LIST_FILTERS.sort ? null : nextOrder,
-  })
+  });
 }
 
 /**
@@ -73,10 +75,10 @@ export function TalentsList({
   statusFilter,
   talents,
 }: TalentsListProps) {
-  const isStatusFiltered = statusFilter !== DEFAULT_TALENT_LIST_FILTERS.status
-  const isFiltered = search !== undefined || isStatusFiltered
+  const isStatusFiltered = statusFilter !== DEFAULT_TALENT_LIST_FILTERS.status;
+  const isFiltered = search !== undefined || isStatusFiltered;
   const activeFilterCount =
-    (search !== undefined ? 1 : 0) + (isStatusFiltered ? 1 : 0)
+    (search !== undefined ? 1 : 0) + (isStatusFiltered ? 1 : 0);
 
   return (
     <div className="space-y-6">
@@ -107,7 +109,7 @@ export function TalentsList({
       {talents.length === 0 ? (
         <EmptyState
           icon={<Users />}
-          title={isFiltered ? '検索結果がありません。' : 'タレントがいません。'}
+          title={isFiltered ? "検索結果がありません。" : "タレントがいません。"}
         />
       ) : (
         <Table>
@@ -117,7 +119,7 @@ export function TalentsList({
               <TableHead>状態</TableHead>
               <TableHead>作成日時</TableHead>
               <TableHead
-                aria-sort={sortOrder === 'desc' ? 'descending' : 'ascending'}
+                aria-sort={sortOrder === "desc" ? "descending" : "ascending"}
               >
                 <Link
                   className="inline-flex items-center gap-1 rounded-control focus-ring hover:text-foreground"
@@ -125,7 +127,7 @@ export function TalentsList({
                   replace
                 >
                   最終更新日時
-                  {sortOrder === 'desc' ? (
+                  {sortOrder === "desc" ? (
                     <ArrowDown aria-hidden="true" className="size-3" />
                   ) : (
                     <ArrowUp aria-hidden="true" className="size-3" />
@@ -198,7 +200,7 @@ export function TalentsList({
         </Table>
       )}
     </div>
-  )
+  );
 }
 
 /** 読み込み中の `TalentsList`。絞り込みと追加のボタン、5列の表を並べる */
@@ -213,17 +215,17 @@ export function TalentsListSkeleton() {
               <Skeleton className="h-4 w-48" />
             </div>
           ),
-          id: 'name',
+          id: "name",
         },
-        { cell: <Skeleton className="h-5 w-16" />, id: 'status' },
-        { cell: <Skeleton className="h-4 w-36" />, id: 'created_at' },
-        { cell: <Skeleton className="h-4 w-36" />, id: 'updated_at' },
+        { cell: <Skeleton className="h-5 w-16" />, id: "status" },
+        { cell: <Skeleton className="h-4 w-36" />, id: "created_at" },
+        { cell: <Skeleton className="h-4 w-36" />, id: "updated_at" },
         {
-          align: 'end',
+          align: "end",
           cell: <Skeleton className="size-7" />,
-          className: 'w-12',
+          className: "w-12",
           header: false,
-          id: 'actions',
+          id: "actions",
         },
       ]}
       filterBar={
@@ -236,5 +238,5 @@ export function TalentsListSkeleton() {
         </div>
       }
     />
-  )
+  );
 }

@@ -3,15 +3,15 @@ import {
   type SavedProfileImageRow,
   syncProfileImage,
   toStoredProfileImage,
-} from '../internal/profile-images/index.js'
-import type { TypedSupabaseClient } from '../types.js'
-import type { TwitchUser } from './types.js'
+} from "../internal/profile-images/index.js";
+import type { TypedSupabaseClient } from "../types.js";
+import type { TwitchUser } from "./types.js";
 
 /**
  * Twitch serves the icons it gives users without one of their own from
  * directories such as `/user-default-pictures-uv/`.
  */
-const DEFAULT_PICTURE_DIRECTORY_PREFIX = 'user-default-pictures'
+const DEFAULT_PICTURE_DIRECTORY_PREFIX = "user-default-pictures";
 
 /**
  * Picks the URL of a user icon to store from `profile_image_url`.
@@ -24,25 +24,25 @@ const DEFAULT_PICTURE_DIRECTORY_PREFIX = 'user-default-pictures'
  *   default icon then.
  */
 export function selectTwitchUserIconUrl(
-  profileImageUrl: string | null | undefined,
+  profileImageUrl: string | null | undefined
 ): string | null {
-  const value = profileImageUrl?.trim()
+  const value = profileImageUrl?.trim();
 
   if (!value || !URL.canParse(value)) {
-    return null
+    return null;
   }
 
-  const url = new URL(value)
-  const directory = url.pathname.split('/')[1] ?? ''
+  const url = new URL(value);
+  const directory = url.pathname.split("/")[1] ?? "";
 
   if (
-    url.protocol !== 'https:' ||
+    url.protocol !== "https:" ||
     directory.startsWith(DEFAULT_PICTURE_DIRECTORY_PREFIX)
   ) {
-    return null
+    return null;
   }
 
-  return value
+  return value;
 }
 
 /**
@@ -51,21 +51,21 @@ export function selectTwitchUserIconUrl(
  */
 export interface SavedTwitchUserIcon {
   /** `twitch_users.id`. */
-  id: string
-  profile_images: SavedProfileImageRow | null
-  twitch_user_id: string
+  id: string;
+  profile_images: SavedProfileImageRow | null;
+  twitch_user_id: string;
 }
 
 export interface SyncTwitchUserIconOptions {
-  now?: Temporal.Instant
+  now?: Temporal.Instant;
   /** The saved user the icon belongs to. */
-  saved: SavedTwitchUserIcon
+  saved: SavedTwitchUserIcon;
   /**
    * A client with the service role: icons can only be written with it.
    */
-  supabaseClient: TypedSupabaseClient
+  supabaseClient: TypedSupabaseClient;
   /** The user as returned by the Helix API. */
-  user: Pick<TwitchUser, 'profile_image_url'>
+  user: Pick<TwitchUser, "profile_image_url">;
 }
 
 /**
@@ -88,11 +88,11 @@ export function syncTwitchUserIcon({
     now,
     owner: {
       id: saved.id,
-      platform: 'twitch',
+      platform: "twitch",
       platformId: saved.twitch_user_id,
     },
     saved: toStoredProfileImage(saved.profile_images),
     sourceUrl: selectTwitchUserIconUrl(user.profile_image_url),
     supabaseClient,
-  })
+  });
 }

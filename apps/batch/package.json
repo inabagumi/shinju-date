@@ -1,5 +1,27 @@
 {
+  "name": "@shinju-date/batch",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Scheduled batch processing jobs for SHINJU DATE",
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
   "author": "Haneru Developers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git",
+    "directory": "apps/batch"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "build:msw": "NODE_OPTIONS=\"--import @shinju-date/msw-handlers/register\" ENABLE_MSW=true next build",
+    "dev": "next --port 5000",
+    "start": "next start --port 5000",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "typegen": "next typegen"
+  },
   "dependencies": {
     "@sentry/nextjs": "catalog:",
     "@sentry/profiling-node": "catalog:",
@@ -23,37 +45,15 @@
     "react-dom": "catalog:",
     "zod": "catalog:"
   },
-  "description": "Scheduled batch processing jobs for SHINJU DATE",
   "devDependencies": {
-    "@shinju-date/msw-handlers": "workspace:*",
     "@playwright/test": "catalog:",
     "@shinju-date/config": "workspace:*",
+    "@shinju-date/msw-handlers": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "msw": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
-  },
-  "homepage": "https://shinju.date/",
-  "license": "MIT",
-  "name": "@shinju-date/batch",
-  "private": true,
-  "repository": {
-    "directory": "apps/batch",
-    "type": "git",
-    "url": "https://github.com/inabagumi/shinju-date.git"
-  },
-  "scripts": {
-    "build": "next build",
-    "build:msw": "NODE_OPTIONS=\"--import @shinju-date/msw-handlers/register\" ENABLE_MSW=true next build",
-    "dev": "next --port 5000",
-    "start": "next start --port 5000",
-    "test": "vitest run",
-    "test:e2e": "playwright test",
-    "typecheck": "tsc --noEmit",
-    "typegen": "next typegen"
-  },
-  "type": "module",
-  "version": "1.0.0"
+  }
 }

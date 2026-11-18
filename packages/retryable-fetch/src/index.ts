@@ -1,13 +1,13 @@
-import pRetry from 'p-retry'
+import pRetry from "p-retry";
 
 /** The number of retries after the first attempt. */
-const RETRIES = 5
+const RETRIES = 5;
 
 /**
  * Methods that are safe to send again. Other methods may change data on the
  * server, so they are sent only once.
  */
-const RETRYABLE_METHODS = new Set(['GET', 'HEAD'])
+const RETRYABLE_METHODS = new Set(["GET", "HEAD"]);
 
 /**
  * Whether a response is worth retrying: a timeout, rate limiting or a server
@@ -15,36 +15,36 @@ const RETRYABLE_METHODS = new Set(['GET', 'HEAD'])
  * again.
  */
 function isRetryableStatus(status: number): boolean {
-  return status === 408 || status === 429 || status >= 500
+  return status === 408 || status === 429 || status >= 500;
 }
 
 /** The first argument of `fetch`: a URL or a `Request`. */
-type FetchInput = Parameters<typeof fetch>[0]
+type FetchInput = Parameters<typeof fetch>[0];
 
 function getMethod(input: FetchInput, init?: RequestInit): string {
   const method =
-    init?.method ?? (input instanceof Request ? input.method : 'GET')
+    init?.method ?? (input instanceof Request ? input.method : "GET");
 
-  return method.toUpperCase()
+  return method.toUpperCase();
 }
 
 function getSignal(
   input: FetchInput,
-  init?: RequestInit,
+  init?: RequestInit
 ): AbortSignal | undefined {
   // `signal: null` detaches the request's signal, as in `fetch`.
   if (init?.signal !== undefined) {
-    return init.signal ?? undefined
+    return init.signal ?? undefined;
   }
 
-  return input instanceof Request ? input.signal : undefined
+  return input instanceof Request ? input.signal : undefined;
 }
 
 /** Thrown inside the retry loop to retry a response that may change. */
 class RetryableResponseError extends Error {
   constructor(response: Response) {
-    super(`${response.status} ${response.statusText}`.trim())
-    this.name = 'RetryableResponseError'
+    super(`${response.status} ${response.statusText}`.trim());
+    this.name = "RetryableResponseError";
   }
 }
 
@@ -52,7 +52,7 @@ async function discardBody(response: Response): Promise<void> {
   try {
     // The body is read to reuse the socket.
     // see https://github.com/nodejs/undici/issues/1203#issuecomment-1398191693
-    await response.arrayBuffer()
+    await response.arrayBuffer();
   } catch {
     // The response is thrown away anyway.
   }
@@ -72,29 +72,29 @@ async function discardBody(response: Response): Promise<void> {
 export default function retryableFetch(
   ...args: Parameters<typeof fetch>
 ): Promise<Response> {
-  const [input, init] = args
+  const [input, init] = args;
 
   if (!RETRYABLE_METHODS.has(getMethod(input, init))) {
-    return fetch(...args)
+    return fetch(...args);
   }
 
-  const signal = getSignal(input, init)
+  const signal = getSignal(input, init);
 
   return pRetry<Response>(
     async (attemptNumber) => {
-      const response = await fetch(...args)
+      const response = await fetch(...args);
 
       if (isRetryableStatus(response.status) && attemptNumber <= RETRIES) {
-        await discardBody(response)
+        await discardBody(response);
 
-        throw new RetryableResponseError(response)
+        throw new RetryableResponseError(response);
       }
 
-      return response
+      return response;
     },
     {
       retries: RETRIES,
       ...(signal ? { signal } : {}),
-    },
-  )
+    }
+  );
 }

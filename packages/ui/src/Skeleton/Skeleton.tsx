@@ -1,7 +1,8 @@
-import type { ComponentPropsWithRef } from 'react'
-import { twMerge } from '../tw-merge.js'
+import type { ComponentPropsWithRef } from "react";
 
-export type SkeletonProps = Omit<ComponentPropsWithRef<'span'>, 'children'>
+import { twMerge } from "../tw-merge.js";
+
+export type SkeletonProps = Omit<ComponentPropsWithRef<"span">, "children">;
 
 /**
  * 読み込み中の部品の代わりに置く、1つの四角。大きさは `className` で指定する
@@ -16,10 +17,10 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
     <span
       aria-hidden="true"
       className={twMerge(
-        'block animate-pulse rounded-control bg-muted',
-        className,
+        "block animate-pulse rounded-control bg-muted",
+        className
       )}
       {...props}
     />
-  )
+  );
 }

@@ -1,20 +1,21 @@
-'use client'
+"use client";
 
-import { TIME_ZONE } from '@shinju-date/constants'
-import { twMerge } from '@shinju-date/ui'
-import { type ReactNode, useId, useMemo } from 'react'
-import FormattedTime from '@/components/formatted-time'
-import VideoCard, { VideoCardSkeleton } from '@/components/video-card'
-import { VIDEO_CARD_LIST_CLASS_NAMES } from '@/components/video-card-list'
-import type { Video } from '@/lib/data/videos'
-import { formatRelativeDate } from '@/lib/date-heading'
-import { groupVideosByDate } from '@/lib/group-videos-by-date'
-import { useToday } from '@/lib/use-today'
+import { TIME_ZONE } from "@shinju-date/constants";
+import { twMerge } from "@shinju-date/ui";
+import { type ReactNode, useId, useMemo } from "react";
+
+import FormattedTime from "@/components/formatted-time";
+import VideoCard, { VideoCardSkeleton } from "@/components/video-card";
+import { VIDEO_CARD_LIST_CLASS_NAMES } from "@/components/video-card-list";
+import type { Video } from "@/lib/data/videos";
+import { formatRelativeDate } from "@/lib/date-heading";
+import { groupVideosByDate } from "@/lib/group-videos-by-date";
+import { useToday } from "@/lib/use-today";
 
 interface TimelineGroupProps {
-  children: ReactNode
-  heading: ReactNode
-  labelledBy?: string | undefined
+  children: ReactNode;
+  heading: ReactNode;
+  labelledBy?: string | undefined;
 }
 
 /**
@@ -41,12 +42,12 @@ function TimelineGroup({ children, heading, labelledBy }: TimelineGroupProps) {
 
       {children}
     </section>
-  )
+  );
 }
 
-const ITEM_CLASS_NAME = 'flex gap-3 sm:block'
+const ITEM_CLASS_NAME = "flex gap-3 sm:block";
 const TIME_CLASS_NAME =
-  'w-12 shrink-0 text-body leading-normal font-bold tabular-nums sm:hidden'
+  "w-12 shrink-0 text-body leading-normal font-bold tabular-nums sm:hidden";
 
 /**
  * 640px 未満では横型のカードの左に開始時刻を大きく置き、
@@ -56,8 +57,8 @@ function TimelineItem({ value }: { value: Video }) {
   const publishedAt = useMemo(
     () =>
       Temporal.Instant.from(value.published_at).toZonedDateTimeISO(TIME_ZONE),
-    [value.published_at],
-  )
+    [value.published_at]
+  );
 
   return (
     <div className={ITEM_CLASS_NAME}>
@@ -71,13 +72,13 @@ function TimelineItem({ value }: { value: Video }) {
         variant="row"
       />
     </div>
-  )
+  );
 }
 
 interface TimelineSectionProps {
-  dateTime: string
-  items: Video[]
-  today: Temporal.PlainDate
+  dateTime: string;
+  items: Video[];
+  today: Temporal.PlainDate;
 }
 
 function TimelineSection({
@@ -85,11 +86,11 @@ function TimelineSection({
   items,
   today,
 }: TimelineSectionProps) {
-  const headingId = useId()
+  const headingId = useId();
   const dateTime = useMemo(
     () => Temporal.PlainDate.from(rawDateTime),
-    [rawDateTime],
-  )
+    [rawDateTime]
+  );
 
   return (
     <TimelineGroup
@@ -97,7 +98,7 @@ function TimelineSection({
         <>
           <h3 className="text-body leading-normal font-semibold" id={headingId}>
             <time dateTime={dateTime.toJSON()}>
-              {formatRelativeDate(dateTime, today, { style: 'short' })}
+              {formatRelativeDate(dateTime, today, { style: "short" })}
             </time>
           </h3>
           <p className="text-meta text-muted tabular-nums">{items.length}件</p>
@@ -111,7 +112,7 @@ function TimelineSection({
         ))}
       </div>
     </TimelineGroup>
-  )
+  );
 }
 
 export function TimelineSkeleton() {
@@ -129,7 +130,7 @@ export function TimelineSkeleton() {
               <span
                 className={twMerge(
                   TIME_CLASS_NAME,
-                  'h-6 animate-pulse rounded-control bg-muted',
+                  "h-6 animate-pulse rounded-control bg-muted"
                 )}
               />
               <VideoCardSkeleton className="min-w-0 flex-1" variant="row" />
@@ -138,7 +139,7 @@ export function TimelineSkeleton() {
         </div>
       </TimelineGroup>
     </div>
-  )
+  );
 }
 
 /**
@@ -146,13 +147,13 @@ export function TimelineSkeleton() {
  */
 interface TimelineProps {
   /** サーバーで描画したときの日付（`YYYY-MM-DD`）。ハイドレーションまでの「今日」の基準 */
-  referenceDate: string
-  videos: Video[]
+  referenceDate: string;
+  videos: Video[];
 }
 
 export default function Timeline({ referenceDate, videos }: TimelineProps) {
-  const today = useToday(referenceDate)
-  const schedule = useMemo(() => groupVideosByDate(videos), [videos])
+  const today = useToday(referenceDate);
+  const schedule = useMemo(() => groupVideosByDate(videos), [videos]);
 
   return (
     <div className="space-y-10">
@@ -165,5 +166,5 @@ export default function Timeline({ referenceDate, videos }: TimelineProps) {
         />
       ))}
     </div>
-  )
+  );
 }

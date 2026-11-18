@@ -1,3 +1,3 @@
-import { defineVitestConfig } from '@shinju-date/config/vitest'
+import { defineVitestConfig } from "@shinju-date/config/vitest";
 
-export default defineVitestConfig()
+export default defineVitestConfig();

@@ -1,14 +1,16 @@
-import { Button } from '@shinju-date/ui'
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import SimpleDocument from '@/components/simple-document'
-import { OpenSearchModalButton } from './_components/open-search-modal-button'
+import { Button } from "@shinju-date/ui";
+import type { Metadata } from "next";
+import Link from "next/link";
 
-const title = 'ページが見つかりません'
+import SimpleDocument from "@/components/simple-document";
+
+import { OpenSearchModalButton } from "./_components/open-search-modal-button";
+
+const title = "ページが見つかりません";
 
 export const metadata: Metadata = {
   title,
-}
+};
 
 export default function NotFound() {
   return (
@@ -33,5 +35,5 @@ export default function NotFound() {
         </ul>
       </div>
     </SimpleDocument>
-  )
+  );
 }

@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react'
-import ReactMarkdown from 'react-markdown'
-import rehypeExternalLinks from 'rehype-external-links'
-import remarkGfm from 'remark-gfm'
-import type { Announcement } from '@/lib/data/announcements'
+import type { ReactNode } from "react";
+import ReactMarkdown from "react-markdown";
+import rehypeExternalLinks from "rehype-external-links";
+import remarkGfm from "remark-gfm";
+
+import type { Announcement } from "@/lib/data/announcements";
 
 /**
  * お知らせを、バナー（クライアントコンポーネント）に渡す形にしたもの。
@@ -10,9 +11,9 @@ import type { Announcement } from '@/lib/data/announcements'
  * 文字列は含めない。これにより、Markdown のパーサーをブラウザに配信せずに済む。
  */
 export interface RenderedAnnouncement {
-  id: Announcement['id']
-  level: Announcement['level']
-  message: ReactNode
+  id: Announcement["id"];
+  level: Announcement["level"];
+  message: ReactNode;
 }
 
 /**
@@ -26,8 +27,8 @@ export function AnnouncementMessage({ children }: { children: string }) {
         [
           rehypeExternalLinks,
           {
-            rel: ['nofollow', 'noopener', 'noreferrer'],
-            target: '_blank',
+            rel: ["nofollow", "noopener", "noreferrer"],
+            target: "_blank",
           },
         ],
       ]}
@@ -35,15 +36,15 @@ export function AnnouncementMessage({ children }: { children: string }) {
     >
       {children}
     </ReactMarkdown>
-  )
+  );
 }
 
 export function renderAnnouncement(
-  announcement: Announcement,
+  announcement: Announcement
 ): RenderedAnnouncement {
   return {
     id: announcement.id,
     level: announcement.level,
     message: <AnnouncementMessage>{announcement.message}</AnnouncementMessage>,
-  }
+  };
 }

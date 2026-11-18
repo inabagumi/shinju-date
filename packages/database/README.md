@@ -7,15 +7,15 @@ SHINJU DATE のデータベース（Supabase）の型定義と、enum の値を�
 ## 使い方
 
 ```typescript
-import type Database from '@shinju-date/database'
-import type { Enums, Tables } from '@shinju-date/database'
-import { Constants } from '@shinju-date/database'
+import type Database from "@shinju-date/database";
+import type { Enums, Tables } from "@shinju-date/database";
+import { Constants } from "@shinju-date/database";
 
-type Video = Tables<'videos'>
-type Platform = Enums<'platform_type'>
+type Video = Tables<"videos">;
+type Platform = Enums<"platform_type">;
 
 // enum の値は、実行時には Constants から読む
-Constants.public.Enums.platform_type // ['youtube', 'twitch']
+Constants.public.Enums.platform_type; // ['youtube', 'twitch']
 ```
 
 ## 型の生成

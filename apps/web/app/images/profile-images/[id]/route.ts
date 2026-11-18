@@ -1,7 +1,8 @@
-import { createErrorResponse } from '@shinju-date/helpers'
-import type { NextRequest } from 'next/server'
-import { serveStorageImage } from '@/lib/storage-image'
-import { getSupabaseAdminClient, supabaseClient } from '@/lib/supabase'
+import { createErrorResponse } from "@shinju-date/helpers";
+import type { NextRequest } from "next/server";
+
+import { serveStorageImage } from "@/lib/storage-image";
+import { getSupabaseAdminClient, supabaseClient } from "@/lib/supabase";
 
 /**
  * Serves the icon of a YouTube channel or Twitch user.
@@ -12,26 +13,26 @@ import { getSupabaseAdminClient, supabaseClient } from '@/lib/supabase'
  */
 export async function GET(
   request: NextRequest,
-  ctx: RouteContext<'/images/profile-images/[id]'>,
+  ctx: RouteContext<"/images/profile-images/[id]">
 ) {
-  const { id } = await ctx.params
+  const { id } = await ctx.params;
   // Looked up with the public key, so RLS decides which icons may be served.
   // Only signing the URL needs the service role.
   const { data: profileImage, error } = await supabaseClient
-    .from('profile_images')
-    .select('path')
-    .eq('id', id)
-    .maybeSingle()
+    .from("profile_images")
+    .select("path")
+    .eq("id", id)
+    .maybeSingle();
 
   if (error || !profileImage) {
-    return createErrorResponse('Failed to fetch profile image', {
+    return createErrorResponse("Failed to fetch profile image", {
       status: 404,
-    })
+    });
   }
 
   return serveStorageImage(request, {
-    bucket: 'profile-images',
+    bucket: "profile-images",
     path: profileImage.path,
     supabaseClient: getSupabaseAdminClient(),
-  })
+  });
 }

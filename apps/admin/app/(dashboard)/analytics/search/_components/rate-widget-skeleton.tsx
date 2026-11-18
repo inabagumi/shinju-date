@@ -1,10 +1,12 @@
-import { Skeleton } from '@shinju-date/ui'
-import { StatTileSkeleton } from '@/components/stat-tile-skeleton'
-import { WidgetHeaderSkeleton } from '../../_components/widget-header'
+import { Skeleton } from "@shinju-date/ui";
+
+import { StatTileSkeleton } from "@/components/stat-tile-skeleton";
+
+import { WidgetHeaderSkeleton } from "../../_components/widget-header";
 
 interface RateWidgetSkeletonProps {
   /** 見出し。読み込み後と同じ文言を渡す */
-  title: string
+  title: string;
 }
 
 /**
@@ -24,5 +26,5 @@ export function RateWidgetSkeleton({ title }: RateWidgetSkeletonProps) {
         <Skeleton className="h-4 w-28" />
       </div>
     </div>
-  )
+  );
 }

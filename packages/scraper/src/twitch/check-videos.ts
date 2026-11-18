@@ -1,15 +1,15 @@
-import { refreshSavedVideos } from '../internal/operations/refresh-saved-videos.js'
-import { sweepUnavailableVideos } from '../internal/operations/sweep-unavailable-videos.js'
-import { replaceThumbnail } from '../internal/thumbnails/index.js'
-import type { CrawlContext, WriteContext } from '../types.js'
-import type { TwitchFetcher } from './fetcher.js'
+import { refreshSavedVideos } from "../internal/operations/refresh-saved-videos.js";
+import { sweepUnavailableVideos } from "../internal/operations/sweep-unavailable-videos.js";
+import { replaceThumbnail } from "../internal/thumbnails/index.js";
+import type { CrawlContext, WriteContext } from "../types.js";
+import type { TwitchFetcher } from "./fetcher.js";
 import {
   createTwitchPlatform,
   getTwitchVideoType,
   type TwitchLookedUpVideo,
-} from './platform.js'
-import { type SavedTwitchVideo, updateTwitchVideo } from './saved-video.js'
-import { createTwitchThumbnail } from './thumbnail.js'
+} from "./platform.js";
+import { type SavedTwitchVideo, updateTwitchVideo } from "./saved-video.js";
+import { createTwitchThumbnail } from "./thumbnail.js";
 
 /**
  * What a refresh does on Twitch only, after the shared columns were written:
@@ -22,19 +22,19 @@ import { createTwitchThumbnail } from './thumbnail.js'
 export async function refreshTypeAndThumbnail(
   context: WriteContext,
   saved: SavedTwitchVideo,
-  fetched: TwitchLookedUpVideo,
+  fetched: TwitchLookedUpVideo
 ): Promise<boolean> {
-  const type = getTwitchVideoType(fetched)
-  const typeChanged = saved.twitch_video.type !== type
+  const type = getTwitchVideoType(fetched);
+  const typeChanged = saved.twitch_video.type !== type;
 
   if (typeChanged) {
     await updateTwitchVideo(context.supabaseClient, saved.twitch_video.id, {
       type,
-    })
+    });
   }
 
   if (saved.thumbnail_id) {
-    return typeChanged
+    return typeChanged;
   }
 
   const thumbnail = await replaceThumbnail(context, {
@@ -46,9 +46,9 @@ export async function refreshTypeAndThumbnail(
     fields: {},
     previousThumbnailId: null,
     videoId: saved.id,
-  })
+  });
 
-  return thumbnail !== null || typeChanged
+  return thumbnail !== null || typeChanged;
 }
 
 /**
@@ -59,13 +59,13 @@ export async function refreshTypeAndThumbnail(
  * @returns The number of videos updated or deleted.
  */
 export function refreshRecentTwitchVideos(
-  context: CrawlContext<TwitchFetcher>,
+  context: CrawlContext<TwitchFetcher>
 ): Promise<number> {
   return refreshSavedVideos(context, createTwitchPlatform(context.fetcher), {
     afterRefresh: (saved, fetched) =>
       refreshTypeAndThumbnail(context, saved, fetched),
-    scope: 'recent',
-  })
+    scope: "recent",
+  });
 }
 
 /**
@@ -75,7 +75,7 @@ export function refreshRecentTwitchVideos(
  * @returns The number of videos deleted.
  */
 export function removeUnavailableTwitchVideos(
-  context: CrawlContext<TwitchFetcher>,
+  context: CrawlContext<TwitchFetcher>
 ): Promise<number> {
-  return sweepUnavailableVideos(context, createTwitchPlatform(context.fetcher))
+  return sweepUnavailableVideos(context, createTwitchPlatform(context.fetcher));
 }

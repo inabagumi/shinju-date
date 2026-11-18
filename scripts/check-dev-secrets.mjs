@@ -14,18 +14,18 @@
  *   node scripts/check-dev-secrets.mjs
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-const SECRETS_FILE = 'config/dev-secrets.env'
+const SECRETS_FILE = "config/dev-secrets.env";
 const SAMPLE_FILES = [
-  'apps/web/.env.local.sample',
-  'apps/admin/.env.local.sample',
-  'apps/batch/.env.local.sample',
-]
+  "apps/web/.env.local.sample",
+  "apps/admin/.env.local.sample",
+  "apps/batch/.env.local.sample",
+];
 
 /**
  * Read the value of the first uncommented assignment of a variable.
@@ -34,45 +34,45 @@ const SAMPLE_FILES = [
  * @returns {string | undefined} The value without surrounding quotes
  */
 function readVariable(file, name) {
-  const content = readFileSync(join(root, file), 'utf8')
+  const content = readFileSync(join(root, file), "utf8");
 
-  for (const line of content.split('\n')) {
-    const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/)
+  for (const line of content.split("\n")) {
+    const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/);
 
     if (match?.[1] === name) {
-      return match[2].replace(/^(["'])(.*)\1$/, '$2')
+      return match[2].replace(/^(["'])(.*)\1$/, "$2");
     }
   }
 
-  return undefined
+  return undefined;
 }
 
-const expected = readVariable(SECRETS_FILE, 'SRH_TOKEN')
+const expected = readVariable(SECRETS_FILE, "SRH_TOKEN");
 
 if (!expected) {
-  console.error(`SRH_TOKEN is not set in ${SECRETS_FILE}`)
-  process.exit(1)
+  console.error(`SRH_TOKEN is not set in ${SECRETS_FILE}`);
+  process.exit(1);
 }
 
-const errors = []
+const errors = [];
 
 for (const file of [SECRETS_FILE, ...SAMPLE_FILES]) {
-  const actual = readVariable(file, 'UPSTASH_REDIS_REST_TOKEN')
+  const actual = readVariable(file, "UPSTASH_REDIS_REST_TOKEN");
 
   if (actual !== expected) {
     errors.push(
-      `${file}: UPSTASH_REDIS_REST_TOKEN does not match SRH_TOKEN in ${SECRETS_FILE}`,
-    )
+      `${file}: UPSTASH_REDIS_REST_TOKEN does not match SRH_TOKEN in ${SECRETS_FILE}`
+    );
   }
 }
 
 if (errors.length > 0) {
   for (const error of errors) {
-    console.error(error)
+    console.error(error);
   }
-  process.exit(1)
+  process.exit(1);
 }
 
 console.log(
-  `UPSTASH_REDIS_REST_TOKEN matches SRH_TOKEN in ${SECRETS_FILE} (${SAMPLE_FILES.length + 1} files)`,
-)
+  `UPSTASH_REDIS_REST_TOKEN matches SRH_TOKEN in ${SECRETS_FILE} (${SAMPLE_FILES.length + 1} files)`
+);

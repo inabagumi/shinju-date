@@ -1,15 +1,15 @@
-import type { captureRequestError } from '@sentry/nextjs'
+import type { captureRequestError } from "@sentry/nextjs";
 
 export interface RegisterServerOptions {
   /**
    * Starts the MSW mock server on the Node.js runtime. Pass the app's
    * `ENABLE_MSW`, read by its `lib/env.ts`.
    */
-  enableMsw: boolean
+  enableMsw: boolean;
   /** The share of the traces whose profile is recorded (`0` to `1`). */
-  profileSessionSampleRate: number
+  profileSessionSampleRate: number;
   /** The share of the requests that are traced (`0` to `1`). */
-  tracesSampleRate: number
+  tracesSampleRate: number;
 }
 
 /**
@@ -26,38 +26,38 @@ export async function registerServer({
   tracesSampleRate,
 }: RegisterServerOptions): Promise<void> {
   if (enableMsw) {
-    if (process.env['NEXT_RUNTIME'] === 'nodejs') {
-      const { startServer } = await import('@shinju-date/msw-handlers/server')
-      startServer()
+    if (process.env["NEXT_RUNTIME"] === "nodejs") {
+      const { startServer } = await import("@shinju-date/msw-handlers/server");
+      startServer();
     }
   }
 
-  const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
+  const dsn = process.env["NEXT_PUBLIC_SENTRY_DSN"];
 
   if (!dsn) {
-    return
+    return;
   }
 
-  const Sentry = await import('@sentry/nextjs')
+  const Sentry = await import("@sentry/nextjs");
 
-  const environment = process.env['VERCEL_ENV'] ?? 'development'
+  const environment = process.env["VERCEL_ENV"] ?? "development";
   const commonSentryOptions = {
     dsn,
-    enabled: environment === 'production',
+    enabled: environment === "production",
     environment,
     tracesSampleRate,
-  } satisfies Parameters<typeof Sentry.init>[0]
+  } satisfies Parameters<typeof Sentry.init>[0];
 
-  if (process.env['NEXT_RUNTIME'] === 'nodejs') {
+  if (process.env["NEXT_RUNTIME"] === "nodejs") {
     const [
       { nodeProfilingIntegration },
       { supabaseIntegration },
       { SupabaseClient },
     ] = await Promise.all([
-      import('@sentry/profiling-node'),
-      import('@supabase/sentry-js-integration'),
-      import('@supabase/supabase-js'),
-    ])
+      import("@sentry/profiling-node"),
+      import("@supabase/sentry-js-integration"),
+      import("@supabase/supabase-js"),
+    ]);
 
     Sentry.init({
       ...commonSentryOptions,
@@ -69,16 +69,16 @@ export async function registerServer({
           tracing: true,
         }),
       ],
-      profileLifecycle: 'trace',
+      profileLifecycle: "trace",
       profileSessionSampleRate,
-    })
+    });
   }
 
-  if (process.env['NEXT_RUNTIME'] === 'edge') {
+  if (process.env["NEXT_RUNTIME"] === "edge") {
     const [{ supabaseIntegration }, { SupabaseClient }] = await Promise.all([
-      import('@supabase/sentry-js-integration'),
-      import('@supabase/supabase-js'),
-    ])
+      import("@supabase/sentry-js-integration"),
+      import("@supabase/supabase-js"),
+    ]);
 
     Sentry.init({
       ...commonSentryOptions,
@@ -89,7 +89,7 @@ export async function registerServer({
           tracing: true,
         }),
       ],
-    })
+    });
   }
 }
 
@@ -100,11 +100,11 @@ export async function registerServer({
 export async function onRequestError(
   ...args: Parameters<typeof captureRequestError>
 ): Promise<void> {
-  const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
+  const dsn = process.env["NEXT_PUBLIC_SENTRY_DSN"];
 
   if (dsn) {
-    const Sentry = await import('@sentry/nextjs')
+    const Sentry = await import("@sentry/nextjs");
 
-    Sentry.captureRequestError(...args)
+    Sentry.captureRequestError(...args);
   }
 }

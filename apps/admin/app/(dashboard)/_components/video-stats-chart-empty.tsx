@@ -1,5 +1,5 @@
-import { EmptyState } from '@shinju-date/ui'
-import { ChartColumn } from 'lucide-react'
+import { EmptyState } from "@shinju-date/ui";
+import { ChartColumn } from "lucide-react";
 
 /**
  * Compact placeholder for the 7-day video stats chart when no snapshot has
@@ -14,5 +14,5 @@ export function VideoStatsChartEmpty() {
       icon={<ChartColumn />}
       title="まだ集計されたデータがありません"
     />
-  )
+  );
 }

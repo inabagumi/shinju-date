@@ -5,12 +5,12 @@
 ## 使い方
 
 ```typescript
-import retryableFetch from '@shinju-date/retryable-fetch'
+import retryableFetch from "@shinju-date/retryable-fetch";
 
-const response = await retryableFetch('https://api.example.com/data')
+const response = await retryableFetch("https://api.example.com/data");
 
 if (!response.ok) {
-  throw new Error(`Request failed with ${response.status}`)
+  throw new Error(`Request failed with ${response.status}`);
 }
 ```
 

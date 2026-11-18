@@ -1,7 +1,7 @@
-import type { ComponentPropsWithoutRef } from 'react'
+import type { ComponentPropsWithoutRef } from "react";
 
 /** SHINJU DATE のアイコン（虫眼鏡）。色は `currentColor` で、読み上げからは除く */
-export function LogoIcon(props: ComponentPropsWithoutRef<'svg'>) {
+export function LogoIcon(props: ComponentPropsWithoutRef<"svg">) {
   return (
     <svg aria-hidden="true" viewBox="0 0 256 256" {...props}>
       <circle
@@ -17,5 +17,5 @@ export function LogoIcon(props: ComponentPropsWithoutRef<'svg'>) {
         fill="currentColor"
       />
     </svg>
-  )
+  );
 }

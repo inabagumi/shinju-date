@@ -1,8 +1,9 @@
-import type { Enums } from '@shinju-date/database'
-import type { CronJob } from './cron'
-import { videosBackfill } from './ratelimit'
+import type { Enums } from "@shinju-date/database";
 
-export type VideosCheckMode = 'default' | 'recent' | 'all'
+import type { CronJob } from "./cron";
+import { videosBackfill } from "./ratelimit";
+
+export type VideosCheckMode = "default" | "recent" | "all";
 
 /*
  * Every cron job of the batch app.
@@ -20,79 +21,79 @@ export type VideosCheckMode = 'default' | 'recent' | 'all'
  * `maxDuration`: 120 seconds. Fetches every channel from the API of the
  * provider, page by page.
  */
-const TALENTS_UPDATE_JOBS: Record<Enums<'platform_type'>, CronJob> = {
+const TALENTS_UPDATE_JOBS: Record<Enums<"platform_type">, CronJob> = {
   twitch: {
     maxDurationSeconds: 120,
-    path: '/talents/update?provider=twitch',
-    schedule: '51 1/3 * * *',
+    path: "/talents/update?provider=twitch",
+    schedule: "51 1/3 * * *",
   },
   youtube: {
     maxDurationSeconds: 120,
-    path: '/talents/update',
-    schedule: '21 1/3 * * *',
+    path: "/talents/update",
+    schedule: "21 1/3 * * *",
   },
-}
+};
 
 /**
  * `maxDuration`: 120 seconds. Reads the latest videos of every channel from
  * the API of the provider.
  */
-const VIDEOS_UPDATE_JOBS: Record<Enums<'platform_type'>, CronJob> = {
+const VIDEOS_UPDATE_JOBS: Record<Enums<"platform_type">, CronJob> = {
   twitch: {
     maxDurationSeconds: 120,
-    path: '/videos/update?provider=twitch',
-    schedule: '3/5 * * * *',
+    path: "/videos/update?provider=twitch",
+    schedule: "3/5 * * * *",
   },
   youtube: {
     maxDurationSeconds: 120,
-    path: '/videos/update',
-    schedule: '1/5 * * * *',
+    path: "/videos/update",
+    schedule: "1/5 * * * *",
   },
-}
+};
 
 /**
  * Needs 120 seconds: `mode=all` asks the API of the provider about
  * every video in the database.
  */
 const VIDEOS_CHECK_JOBS: Record<
-  Enums<'platform_type'>,
+  Enums<"platform_type">,
   Record<VideosCheckMode, CronJob>
 > = {
   twitch: {
     all: {
       maxDurationSeconds: 120,
-      path: '/videos/check?provider=twitch&mode=all',
-      schedule: '34 23 * * 2,4',
+      path: "/videos/check?provider=twitch&mode=all",
+      schedule: "34 23 * * 2,4",
     },
     default: {
       maxDurationSeconds: 120,
-      path: '/videos/check?provider=twitch',
-      schedule: '*/1 * * * *',
+      path: "/videos/check?provider=twitch",
+      schedule: "*/1 * * * *",
     },
     recent: {
       maxDurationSeconds: 120,
-      path: '/videos/check?provider=twitch&mode=recent',
-      schedule: '15,45 * * * *',
+      path: "/videos/check?provider=twitch&mode=recent",
+      schedule: "15,45 * * * *",
     },
   },
   youtube: {
     all: {
       maxDurationSeconds: 120,
-      path: '/videos/check?mode=all',
-      schedule: '4 23 * * 2,4',
+      path: "/videos/check?mode=all",
+      schedule: "4 23 * * 2,4",
     },
     default: {
       maxDurationSeconds: 120,
-      path: '/videos/check',
-      schedule: '*/1 * * * *',
+      path: "/videos/check",
+      schedule: "*/1 * * * *",
     },
     recent: {
       maxDurationSeconds: 120,
-      path: '/videos/check?mode=recent',
-      schedule: '*/30 * * * *',
+      path: "/videos/check?mode=recent",
+      schedule: "*/30 * * * *",
     },
   },
-}
+};
 
 /**
  * Works off the backfill queue that the admin app fills. Runs every minute
@@ -109,10 +110,10 @@ const VIDEOS_CHECK_JOBS: Record<
  */
 export const VIDEOS_BACKFILL_JOB: CronJob = {
   maxDurationSeconds: 120,
-  path: '/videos/backfill',
+  path: "/videos/backfill",
   ratelimit: videosBackfill,
-  schedule: '*/1 * * * *',
-}
+  schedule: "*/1 * * * *",
+};
 
 /**
  * Soft-deletes the videos of deleted talents and restores those of talents
@@ -123,9 +124,9 @@ export const VIDEOS_BACKFILL_JOB: CronJob = {
  */
 export const VIDEOS_CASCADE_FROM_TALENTS_JOB: CronJob = {
   maxDurationSeconds: 60,
-  path: '/videos/cascade-from-talents',
-  schedule: '*/5 * * * *',
-}
+  path: "/videos/cascade-from-talents",
+  schedule: "*/5 * * * *",
+};
 
 /**
  * Saves the statistics of the previous day (in `TIME_ZONE`) for the
@@ -135,9 +136,9 @@ export const VIDEOS_CASCADE_FROM_TALENTS_JOB: CronJob = {
  */
 export const STATS_SNAPSHOT_JOB: CronJob = {
   maxDurationSeconds: 60,
-  path: '/stats/snapshot',
-  schedule: '10 15 * * *',
-}
+  path: "/stats/snapshot",
+  schedule: "10 15 * * *",
+};
 
 /**
  * Copies the search counts of the terms to the database. Runs at midnight
@@ -148,9 +149,9 @@ export const STATS_SNAPSHOT_JOB: CronJob = {
  */
 export const TERMS_POPULARITY_UPDATE_JOB: CronJob = {
   maxDurationSeconds: 60,
-  path: '/terms/popularity/update',
-  schedule: '0 0 * * *',
-}
+  path: "/terms/popularity/update",
+  schedule: "0 0 * * *",
+};
 
 /**
  * Picks the recommended search queries from the popular searches.
@@ -160,9 +161,9 @@ export const TERMS_POPULARITY_UPDATE_JOB: CronJob = {
  */
 export const RECOMMENDATION_QUERIES_UPDATE_JOB: CronJob = {
   maxDurationSeconds: 120,
-  path: '/recommendation/queries/update',
-  schedule: '17 1 * * *',
-}
+  path: "/recommendation/queries/update",
+  schedule: "17 1 * * *",
+};
 
 /**
  * Deletes the thumbnails and icons that no video or account uses any more
@@ -175,23 +176,23 @@ export const RECOMMENDATION_QUERIES_UPDATE_JOB: CronJob = {
  */
 export const IMAGES_CLEANUP_JOB: CronJob = {
   maxDurationSeconds: 60,
-  path: '/images/cleanup',
-  schedule: '44 19 * * *',
+  path: "/images/cleanup",
+  schedule: "44 19 * * *",
+};
+
+export function getTalentsUpdateJob(provider: Enums<"platform_type">): CronJob {
+  return TALENTS_UPDATE_JOBS[provider];
 }
 
-export function getTalentsUpdateJob(provider: Enums<'platform_type'>): CronJob {
-  return TALENTS_UPDATE_JOBS[provider]
-}
-
-export function getVideosUpdateJob(provider: Enums<'platform_type'>): CronJob {
-  return VIDEOS_UPDATE_JOBS[provider]
+export function getVideosUpdateJob(provider: Enums<"platform_type">): CronJob {
+  return VIDEOS_UPDATE_JOBS[provider];
 }
 
 export function getVideosCheckJob(
-  provider: Enums<'platform_type'>,
-  mode: VideosCheckMode,
+  provider: Enums<"platform_type">,
+  mode: VideosCheckMode
 ): CronJob {
-  return VIDEOS_CHECK_JOBS[provider][mode]
+  return VIDEOS_CHECK_JOBS[provider][mode];
 }
 
 /** Every job, for consistency checks against `vercel.json`. */
@@ -205,4 +206,4 @@ export const JOBS: readonly CronJob[] = [
   TERMS_POPULARITY_UPDATE_JOB,
   RECOMMENDATION_QUERIES_UPDATE_JOB,
   IMAGES_CLEANUP_JOB,
-]
+];

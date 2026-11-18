@@ -1,27 +1,28 @@
-import preview from '#.storybook/preview'
-import { Skeleton } from './Skeleton'
+import preview from "#.storybook/preview";
+
+import { Skeleton } from "./Skeleton";
 
 const meta = preview.meta({
   component: Skeleton,
   parameters: {
-    layout: 'padded',
+    layout: "padded",
   },
-  tags: ['autodocs'],
-  title: 'Components/Skeleton',
-})
+  tags: ["autodocs"],
+  title: "Components/Skeleton",
+});
 
 export const Default = meta.story({
   args: {
-    className: 'h-4 w-48',
+    className: "h-4 w-48",
   },
-})
+});
 
 /** サムネイルなど、入れ物の形の四角 */
 export const Container = meta.story({
   args: {
-    className: 'aspect-video w-48 rounded-container',
+    className: "aspect-video w-48 rounded-container",
   },
-})
+});
 
 /** 文字の行に並べる */
 export const Inline = meta.story({
@@ -30,7 +31,7 @@ export const Inline = meta.story({
       全 <Skeleton className="inline-block h-4 w-16 align-middle" /> 件の動画
     </p>
   ),
-})
+});
 
 /** 読み込み後の部品と同じ大きさで組み合わせる */
 export const Composition = meta.story({
@@ -44,4 +45,4 @@ export const Composition = meta.story({
       <Skeleton className="h-5 w-16" />
     </div>
   ),
-})
+});

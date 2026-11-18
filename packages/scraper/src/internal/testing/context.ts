@@ -2,16 +2,16 @@ import type {
   CrawlContext,
   ErrorReporter,
   TypedSupabaseClient,
-} from '../../types.js'
+} from "../../types.js";
 
 /** The time crawl tests run at; rows get `2024-05-01T12:00:00Z`. */
-export const TEST_NOW = Temporal.Instant.from('2024-05-01T12:00:00.500Z')
+export const TEST_NOW = Temporal.Instant.from("2024-05-01T12:00:00.500Z");
 
 export interface TestContextOptions<TFetcher> {
-  fetcher: TFetcher
-  now?: Temporal.Instant
-  reportError: ErrorReporter
-  supabaseClient: TypedSupabaseClient
+  fetcher: TFetcher;
+  now?: Temporal.Instant;
+  reportError: ErrorReporter;
+  supabaseClient: TypedSupabaseClient;
 }
 
 /**
@@ -29,5 +29,5 @@ export function createTestContext<TFetcher>({
     now,
     reportError,
     supabaseClient,
-  }
+  };
 }

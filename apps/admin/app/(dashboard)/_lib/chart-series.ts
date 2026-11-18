@@ -8,9 +8,9 @@
  */
 export interface ChartSeries {
   /** 系列の色のクラス（例: `text-accent`） */
-  className: string
+  className: string;
   /** データの中の、この系列の値のキー */
-  key: string
+  key: string;
   /** ツールチップと凡例に出す系列の名前 */
-  label: string
+  label: string;
 }

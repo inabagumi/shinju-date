@@ -1,86 +1,87 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { WidgetErrorBoundary } from './widget-error-boundary'
+import { fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { WidgetErrorBoundary } from "./widget-error-boundary";
 
 const mocks = vi.hoisted(() => ({
   captureException: vi.fn(),
-}))
+}));
 
-vi.mock('@sentry/nextjs', () => ({
+vi.mock("@sentry/nextjs", () => ({
   captureException: mocks.captureException,
-}))
+}));
 
-let shouldThrow = true
+let shouldThrow = true;
 
 function FlakyWidget() {
   if (shouldThrow) {
-    throw new Error('failed to load')
+    throw new Error("failed to load");
   }
 
-  return <p>loaded</p>
+  return <p>loaded</p>;
 }
 
-describe('WidgetErrorBoundary', () => {
+describe("WidgetErrorBoundary", () => {
   beforeEach(() => {
-    shouldThrow = true
+    shouldThrow = true;
     // React logs errors caught by boundaries; keep the test output quiet.
-    vi.spyOn(console, 'error').mockImplementation(() => {})
-  })
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
 
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
-  it('keeps the error inside the widget and shows the other widgets', () => {
+  it("keeps the error inside the widget and shows the other widgets", () => {
     render(
       <>
         <WidgetErrorBoundary title="最近のアクティビティ">
           <FlakyWidget />
         </WidgetErrorBoundary>
         <p>other widget</p>
-      </>,
-    )
+      </>
+    );
 
-    expect(screen.getByRole('alert')).toHaveTextContent('最近のアクティビティ')
+    expect(screen.getByRole("alert")).toHaveTextContent("最近のアクティビティ");
     expect(
-      screen.getByRole('heading', { level: 2, name: '最近のアクティビティ' }),
-    ).toBeInTheDocument()
-    expect(screen.getByText('other widget')).toBeInTheDocument()
-  })
+      screen.getByRole("heading", { level: 2, name: "最近のアクティビティ" })
+    ).toBeInTheDocument();
+    expect(screen.getByText("other widget")).toBeInTheDocument();
+  });
 
-  it('renders the widget again when the retry button is clicked', () => {
+  it("renders the widget again when the retry button is clicked", () => {
     render(
       <WidgetErrorBoundary title="最近のアクティビティ">
         <FlakyWidget />
-      </WidgetErrorBoundary>,
-    )
+      </WidgetErrorBoundary>
+    );
 
-    shouldThrow = false
-    fireEvent.click(screen.getByRole('button', { name: '再試行' }))
+    shouldThrow = false;
+    fireEvent.click(screen.getByRole("button", { name: "再試行" }));
 
-    expect(screen.getByText('loaded')).toBeInTheDocument()
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-  })
+    expect(screen.getByText("loaded")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
 
-  it('renders the children while nothing fails', () => {
-    shouldThrow = false
+  it("renders the children while nothing fails", () => {
+    shouldThrow = false;
 
     render(
       <WidgetErrorBoundary title="最近のアクティビティ">
         <FlakyWidget />
-      </WidgetErrorBoundary>,
-    )
+      </WidgetErrorBoundary>
+    );
 
-    expect(screen.getByText('loaded')).toBeInTheDocument()
-  })
+    expect(screen.getByText("loaded")).toBeInTheDocument();
+  });
 
-  it('reports the error to Sentry', () => {
+  it("reports the error to Sentry", () => {
     render(
       <WidgetErrorBoundary title="最近のアクティビティ">
         <FlakyWidget />
-      </WidgetErrorBoundary>,
-    )
+      </WidgetErrorBoundary>
+    );
 
-    expect(mocks.captureException).toHaveBeenCalledWith(expect.any(Error))
-  })
-})
+    expect(mocks.captureException).toHaveBeenCalledWith(expect.any(Error));
+  });
+});

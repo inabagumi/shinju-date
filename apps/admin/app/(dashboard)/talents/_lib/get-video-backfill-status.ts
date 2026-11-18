@@ -3,46 +3,47 @@ import {
   BackfillQueue,
   type BackfillRunJobStatus,
   getBackfillJobId,
-} from '@shinju-date/video-backfill'
-import { cacheLife } from 'next/cache'
-import { getRedisClient } from '@/lib/redis'
+} from "@shinju-date/video-backfill";
+import { cacheLife } from "next/cache";
+
+import { getRedisClient } from "@/lib/redis";
 import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
-} from '@/lib/supabase'
+} from "@/lib/supabase";
 
 /** Progress of the backfill of one account of a talent. */
 export interface VideoBackfillAccount {
   /** Primary key of the account row (`youtube_channels` / `twitch_users`). */
-  accountId: string
+  accountId: string;
   /** Whether a job is queued or being read, so it cannot be requested again. */
-  active: boolean
+  active: boolean;
   /** Videos saved so far. */
-  added: number
-  error: string | null
-  finishedAt: string | null
-  name: string
+  added: number;
+  error: string | null;
+  finishedAt: string | null;
+  name: string;
   /** Pages read so far. */
-  pages: number
-  provider: BackfillProvider
-  requestedAt: string | null
+  pages: number;
+  provider: BackfillProvider;
+  requestedAt: string | null;
   /**
    * `interrupted` when the job stopped without finishing; `null` when the
    * account was never backfilled (or it was long ago).
    */
-  status: BackfillRunJobStatus | null
-  updatedAt: string | null
+  status: BackfillRunJobStatus | null;
+  updatedAt: string | null;
 }
 
 /** The accounts of a talent, with the progress of their backfills. */
 export interface VideoBackfillStatus {
-  accounts: VideoBackfillAccount[]
-  success: true
+  accounts: VideoBackfillAccount[];
+  success: true;
 }
 
 interface TalentAccounts {
-  accounts: Pick<VideoBackfillAccount, 'accountId' | 'name' | 'provider'>[]
-  name: string
+  accounts: Pick<VideoBackfillAccount, "accountId" | "name" | "provider">[];
+  name: string;
 }
 
 /**
@@ -51,23 +52,23 @@ interface TalentAccounts {
  */
 export async function getTalentAccounts(
   supabaseClient: TypedSupabaseClient,
-  talentId: string,
+  talentId: string
 ): Promise<TalentAccounts | null> {
   const { data, error } = await supabaseClient
-    .from('talents')
+    .from("talents")
     .select(
-      'name, youtube_channels(id, name, youtube_channel_id), twitch_users(id, name, twitch_login_name, twitch_user_id)',
+      "name, youtube_channels(id, name, youtube_channel_id), twitch_users(id, name, twitch_login_name, twitch_user_id)"
     )
-    .eq('id', talentId)
-    .is('deleted_at', null)
-    .maybeSingle()
+    .eq("id", talentId)
+    .is("deleted_at", null)
+    .maybeSingle();
 
   if (error) {
-    throw error
+    throw error;
   }
 
   if (!data) {
-    return null
+    return null;
   }
 
   return {
@@ -75,16 +76,16 @@ export async function getTalentAccounts(
       ...data.youtube_channels.map((channel) => ({
         accountId: channel.id,
         name: channel.name ?? channel.youtube_channel_id,
-        provider: 'youtube' as const,
+        provider: "youtube" as const,
       })),
       ...data.twitch_users.map((user) => ({
         accountId: user.id,
         name: user.name ?? user.twitch_login_name ?? user.twitch_user_id,
-        provider: 'twitch' as const,
+        provider: "twitch" as const,
       })),
     ],
     name: data.name,
-  }
+  };
 }
 
 /**
@@ -97,24 +98,24 @@ export async function getTalentAccounts(
  */
 export async function readVideoBackfillStatus(
   supabaseClient: TypedSupabaseClient,
-  talentId: string,
+  talentId: string
 ): Promise<VideoBackfillStatus | null> {
-  const talent = await getTalentAccounts(supabaseClient, talentId)
+  const talent = await getTalentAccounts(supabaseClient, talentId);
 
   if (!talent) {
-    return null
+    return null;
   }
 
-  const queue = new BackfillQueue(getRedisClient())
+  const queue = new BackfillQueue(getRedisClient());
   const states = await queue.getJobs(
     talent.accounts.map((account) =>
-      getBackfillJobId(account.provider, account.accountId),
-    ),
-  )
+      getBackfillJobId(account.provider, account.accountId)
+    )
+  );
 
   return {
     accounts: talent.accounts.map((account, index) => {
-      const state = states[index]
+      const state = states[index];
 
       return {
         ...account,
@@ -126,10 +127,10 @@ export async function readVideoBackfillStatus(
         requestedAt: state?.job.requestedAt ?? null,
         status: state?.status ?? null,
         updatedAt: state?.job.updatedAt ?? null,
-      }
+      };
     }),
     success: true,
-  }
+  };
 }
 
 /**
@@ -139,13 +140,13 @@ export async function readVideoBackfillStatus(
  * @returns タレントが見つからない（削除された）ときは `null`
  */
 export async function getVideoBackfillStatus(
-  talentId: string,
+  talentId: string
 ): Promise<VideoBackfillStatus | null> {
-  'use cache: private'
+  "use cache: private";
 
-  cacheLife('seconds')
+  cacheLife("seconds");
 
-  const supabaseClient = await createSupabaseServerClient()
+  const supabaseClient = await createSupabaseServerClient();
 
-  return readVideoBackfillStatus(supabaseClient, talentId)
+  return readVideoBackfillStatus(supabaseClient, talentId);
 }

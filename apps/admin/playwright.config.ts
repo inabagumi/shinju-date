@@ -1,6 +1,7 @@
-import { devices } from '@playwright/test'
-import { definePlaywrightConfig } from '@shinju-date/config/playwright'
-import { STORAGE_STATE } from './e2e/storage-state'
+import { devices } from "@playwright/test";
+import { definePlaywrightConfig } from "@shinju-date/config/playwright";
+
+import { STORAGE_STATE } from "./e2e/storage-state";
 
 /**
  * Playwright configuration for admin app E2E tests
@@ -10,21 +11,21 @@ export default definePlaywrightConfig({
   projects: [
     // Signs in once and saves the cookies to `STORAGE_STATE`
     {
-      name: 'setup',
-      testMatch: '**/auth.setup.ts',
+      name: "setup",
+      testMatch: "**/auth.setup.ts",
     },
     // Tests of the login page itself, which start without the saved session
     {
-      name: 'login',
-      testMatch: '**/login.spec.ts',
-      use: { ...devices['Desktop Chrome'] },
+      name: "login",
+      testMatch: "**/login.spec.ts",
+      use: { ...devices["Desktop Chrome"] },
     },
     {
-      dependencies: ['setup'],
-      name: 'chromium',
-      testIgnore: '**/login.spec.ts',
-      use: { ...devices['Desktop Chrome'], storageState: STORAGE_STATE },
+      dependencies: ["setup"],
+      name: "chromium",
+      testIgnore: "**/login.spec.ts",
+      use: { ...devices["Desktop Chrome"], storageState: STORAGE_STATE },
     },
   ],
-  readyPath: '/login',
-})
+  readyPath: "/login",
+});

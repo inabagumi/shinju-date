@@ -1,10 +1,10 @@
-import { ChevronLeft } from 'lucide-react'
-import Link from 'next/link'
-import type { ReactNode } from 'react'
+import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
+import type { ReactNode } from "react";
 
 interface BackLinkProps {
-  children: ReactNode
-  href: string
+  children: ReactNode;
+  href: string;
 }
 
 /**
@@ -19,5 +19,5 @@ export function BackLink({ children, href }: BackLinkProps) {
       <ChevronLeft aria-hidden="true" className="size-4" />
       {children}
     </Link>
-  )
+  );
 }

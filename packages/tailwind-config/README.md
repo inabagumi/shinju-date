@@ -16,33 +16,31 @@
 各アプリケーションの `globals.css` でインポートします：
 
 ```css
-@import 'tailwindcss';
-@import '@shinju-date/tailwind-config/theme.css';
+@import "tailwindcss";
+@import "@shinju-date/tailwind-config/theme.css";
 ```
 
 これにより、すべてのアプリケーションとパッケージで一貫したカラーパレットを使用できます。
 
 ## セマンティックカラー
 
-部品の色には、用途で名付けたセマンティックカラーを使います。色の一覧・用途・ライトとダークの値は
-[`theme.css`](./theme.css) を参照してください（Storybook の「Design System/Colors」で見本も確認できます）。
+部品の色には、用途で名付けたセマンティックカラーを使います。色の一覧・用途・ライトとダークの値は [`theme.css`](./theme.css) を参照してください（Storybook の「Design System/Colors」で見本も確認できます）。
 
 `background` などは `prefers-color-scheme` でライトとダークの値が切り替わるため、1つのクラスを
 書くだけで両モードに対応できます（`dark:` は書きません）。
 
 ```tsx
 const example = (
-  <div className="border border-border bg-surface text-foreground">
+  <div className="border-border bg-surface text-foreground border">
     <p className="text-muted">補助情報</p>
     <button className="bg-accent text-accent-foreground" type="button">
       保存
     </button>
   </div>
-)
+);
 ```
 
-ダークモードに対応していないアプリは `<html data-color-scheme="light">` を指定すると、
-OS の設定にかかわらずライトの値に固定できます。
+ダークモードに対応していないアプリは `<html data-color-scheme="light">` を指定すると、 OS の設定にかかわらずライトの値に固定できます。
 
 文字と地のコントラスト比は `packages/ui/src/colors.test.ts` で確認しています。
 
@@ -58,11 +56,10 @@ const example = (
     <p className="text-body">本文</p>
     <p className="text-meta text-muted tabular-nums">2026/11/14 21:00</p>
   </div>
-)
+);
 ```
 
-クラスを結合するときは、`@shinju-date/ui` の `twMerge` を使います。`tailwind-merge` の `twMerge` は
-`text-body` などを文字色として扱い、`text-foreground` などと一緒に書くと消してしまうためです。
+クラスを結合するときは、`@shinju-date/ui` の `twMerge` を使います。`tailwind-merge` の `twMerge` は `text-body` などを文字色として扱い、`text-foreground` などと一緒に書くと消してしまうためです。
 文字サイズを追加したときは、`packages/ui/src/tw-merge.ts` の一覧にも追加してください
 （`packages/ui/src/tw-merge.test.ts` で `theme.css` と一致しているかを確認しています）。
 

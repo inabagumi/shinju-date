@@ -1,7 +1,7 @@
-import type { FormState } from '@/lib/form-state'
+import type { FormState } from "@/lib/form-state";
 
 interface FormStatusProps {
-  state: FormState | null | undefined
+  state: FormState | null | undefined;
 }
 
 /**
@@ -17,7 +17,7 @@ export function FormStatus({ state }: FormStatusProps) {
       >
         {state.message}
       </div>
-    )
+    );
   }
 
   if (state && !state.success && state.error) {
@@ -28,8 +28,8 @@ export function FormStatus({ state }: FormStatusProps) {
       >
         {state.error}
       </div>
-    )
+    );
   }
 
-  return null
+  return null;
 }

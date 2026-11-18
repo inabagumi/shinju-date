@@ -1,6 +1,6 @@
-import type { WriteContext } from '../../types.js'
-import { softDeleteUnavailableVideos } from '../database/index.js'
-import type { PlatformAdapter, SavedVideoBase } from '../platform.js'
+import type { WriteContext } from "../../types.js";
+import { softDeleteUnavailableVideos } from "../database/index.js";
+import type { PlatformAdapter, SavedVideoBase } from "../platform.js";
 
 /**
  * Soft-deletes the saved videos the platform no longer returns, with their
@@ -18,29 +18,29 @@ export async function deleteMissingVideos<
   { logger, now, supabaseClient }: WriteContext,
   adapter: PlatformAdapter<TVideo, TSaved>,
   ids: readonly string[],
-  savedVideos: readonly TSaved[],
+  savedVideos: readonly TSaved[]
 ): Promise<number> {
   const savedById = new Map(
-    savedVideos.map((saved) => [adapter.getPlatformVideoId(saved), saved]),
-  )
+    savedVideos.map((saved) => [adapter.getPlatformVideoId(saved), saved])
+  );
   const missingVideos = ids
     .map((id) => savedById.get(id))
-    .filter((saved) => saved !== undefined)
+    .filter((saved) => saved !== undefined);
 
   if (missingVideos.length === 0) {
-    return 0
+    return 0;
   }
 
   const deletedCount = await softDeleteUnavailableVideos(supabaseClient, {
     now,
     videoIds: missingVideos.map((saved) => saved.id),
-  })
+  });
 
-  logger.info('公開されなくなった動画を削除しました', {
+  logger.info("公開されなくなった動画を削除しました", {
     count: deletedCount,
     platform: adapter.platform,
-    [`${adapter.platform}VideoIds`]: ids.join(','),
-  })
+    [`${adapter.platform}VideoIds`]: ids.join(","),
+  });
 
-  return deletedCount
+  return deletedCount;
 }

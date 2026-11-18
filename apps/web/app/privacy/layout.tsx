@@ -1,14 +1,14 @@
-import SimpleDocument from '@/components/simple-document'
-import { createPageMetadata } from '@/lib/metadata'
+import SimpleDocument from "@/components/simple-document";
+import { createPageMetadata } from "@/lib/metadata";
 
-const TITLE = 'プライバシーポリシー'
+const TITLE = "プライバシーポリシー";
 
 export const metadata = createPageMetadata({
-  path: '/privacy',
+  path: "/privacy",
   title: TITLE,
-  type: 'article',
-})
+  type: "article",
+});
 
-export default function PrivacyLayout({ children }: LayoutProps<'/privacy'>) {
-  return <SimpleDocument title={TITLE}>{children}</SimpleDocument>
+export default function PrivacyLayout({ children }: LayoutProps<"/privacy">) {
+  return <SimpleDocument title={TITLE}>{children}</SimpleDocument>;
 }

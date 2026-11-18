@@ -1,54 +1,54 @@
-import type { Tables } from '@shinju-date/database'
-import { Badge } from '@shinju-date/ui'
+import type { Tables } from "@shinju-date/database";
+import { Badge } from "@shinju-date/ui";
 
 // Get level badge variant
-function getLevelBadgeVariant(level: string): 'info' | 'warning' | 'danger' {
+function getLevelBadgeVariant(level: string): "info" | "warning" | "danger" {
   switch (level) {
-    case 'warning':
-      return 'warning'
-    case 'alert':
-      return 'danger'
+    case "warning":
+      return "warning";
+    case "alert":
+      return "danger";
     default:
-      return 'info'
+      return "info";
   }
 }
 
 // Get level label
 function getLevelLabel(level: string): string {
   switch (level) {
-    case 'warning':
-      return '警告'
-    case 'alert':
-      return '重要'
+    case "warning":
+      return "警告";
+    case "alert":
+      return "重要";
     default:
-      return '情報'
+      return "情報";
   }
 }
 
 // Check if announcement is currently active
-function isActive(announcement: Tables<'announcements'>): boolean {
-  if (!announcement.enabled) return false
+function isActive(announcement: Tables<"announcements">): boolean {
+  if (!announcement.enabled) return false;
 
-  const now = Temporal.Now.instant()
-  const start = Temporal.Instant.from(announcement.start_at)
-  const end = Temporal.Instant.from(announcement.end_at)
+  const now = Temporal.Now.instant();
+  const start = Temporal.Instant.from(announcement.start_at);
+  const end = Temporal.Instant.from(announcement.end_at);
 
   return (
     Temporal.Instant.compare(now, start) >= 0 &&
     Temporal.Instant.compare(now, end) <= 0
-  )
+  );
 }
 
 export function LevelBadge({ level }: { level: string }) {
   return (
     <Badge variant={getLevelBadgeVariant(level)}>{getLevelLabel(level)}</Badge>
-  )
+  );
 }
 
 export function StatusBadge({
   announcement,
 }: {
-  announcement: Tables<'announcements'>
+  announcement: Tables<"announcements">;
 }) {
   return isActive(announcement) ? (
     <Badge variant="success">公開中</Badge>
@@ -56,5 +56,5 @@ export function StatusBadge({
     <Badge variant="neutral">公開予定</Badge>
   ) : (
     <Badge variant="neutral">無効</Badge>
-  )
+  );
 }

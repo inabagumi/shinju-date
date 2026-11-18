@@ -1,10 +1,10 @@
-import type { ProfileImage } from '@/lib/data/talents'
-import type { Video } from '@/lib/data/videos'
-import { findFirstNonBlank } from '@/lib/talent-links'
+import type { ProfileImage } from "@/lib/data/talents";
+import type { Video } from "@/lib/data/videos";
+import { findFirstNonBlank } from "@/lib/talent-links";
 
 export interface VideoCreatorInfo {
-  name: string
-  profileImage: ProfileImage | null
+  name: string;
+  profileImage: ProfileImage | null;
 }
 
 /**
@@ -18,27 +18,27 @@ export interface VideoCreatorInfo {
  * used instead, so related data being absent never hides the card.
  */
 export function getVideoCreator(video: Video): VideoCreatorInfo | null {
-  if (video.platform === 'twitch') {
-    const twitchUser = video.twitch_video?.twitch_user
+  if (video.platform === "twitch") {
+    const twitchUser = video.twitch_video?.twitch_user;
     const name = findFirstNonBlank(
       twitchUser?.name,
       twitchUser?.twitch_login_name,
-      video.talent.name,
-    )
+      video.talent.name
+    );
 
     return name
       ? { name, profileImage: twitchUser?.profile_image ?? null }
-      : null
+      : null;
   }
 
-  const youtubeChannel = video.youtube_video?.youtube_channel
+  const youtubeChannel = video.youtube_video?.youtube_channel;
   const name = findFirstNonBlank(
     youtubeChannel?.name,
     youtubeChannel?.youtube_handle,
-    video.talent.name,
-  )
+    video.talent.name
+  );
 
   return name
     ? { name, profileImage: youtubeChannel?.profile_image ?? null }
-    : null
+    : null;
 }

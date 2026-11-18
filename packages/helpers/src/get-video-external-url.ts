@@ -1,23 +1,23 @@
-import { isLiveTwitchVideoId } from '@shinju-date/constants'
-import type { Enums } from '@shinju-date/database'
+import { isLiveTwitchVideoId } from "@shinju-date/constants";
+import type { Enums } from "@shinju-date/database";
 
-export type VideoPlatform = Enums<'platform_type'>
+export type VideoPlatform = Enums<"platform_type">;
 
-export type VideoStatus = Enums<'video_status'>
+export type VideoStatus = Enums<"video_status">;
 
-export type TwitchVideoType = Enums<'twitch_video_type'>
+export type TwitchVideoType = Enums<"twitch_video_type">;
 
 export interface GetVideoExternalUrlParams {
-  platform: VideoPlatform
+  platform: VideoPlatform;
   /**
    * When LIVE (or UPCOMING) on Twitch, prefer the channel top page so users
    * join the live player instead of a VOD that restarts from the beginning.
    */
-  status?: VideoStatus | null | undefined
-  youtubeVideoId?: string | null | undefined
-  twitchVideoId?: string | null | undefined
-  twitchVideoType?: TwitchVideoType | null | undefined
-  twitchLoginName?: string | null | undefined
+  status?: VideoStatus | null | undefined;
+  youtubeVideoId?: string | null | undefined;
+  twitchVideoId?: string | null | undefined;
+  twitchVideoType?: TwitchVideoType | null | undefined;
+  twitchLoginName?: string | null | undefined;
 }
 
 /**
@@ -32,43 +32,43 @@ export interface GetVideoExternalUrlParams {
  * YouTube: `https://www.youtube.com/watch?v=<id>`
  */
 export function getVideoExternalUrl(
-  params: GetVideoExternalUrlParams,
+  params: GetVideoExternalUrlParams
 ): string | null {
   // Only `twitch` uses the Twitch branch; anything else (including missing /
   // unexpected values) falls back to YouTube when a YouTube id is present.
-  if (params.platform === 'twitch') {
+  if (params.platform === "twitch") {
     const isLiveOrUpcoming =
-      params.status === 'LIVE' || params.status === 'UPCOMING'
+      params.status === "LIVE" || params.status === "UPCOMING";
     const isPendingArchive =
-      params.twitchVideoId != null && isLiveTwitchVideoId(params.twitchVideoId)
+      params.twitchVideoId != null && isLiveTwitchVideoId(params.twitchVideoId);
 
     if ((isLiveOrUpcoming || isPendingArchive) && params.twitchLoginName) {
-      return `https://www.twitch.tv/${encodeURIComponent(params.twitchLoginName)}`
+      return `https://www.twitch.tv/${encodeURIComponent(params.twitchLoginName)}`;
     }
 
-    if (params.twitchVideoType === 'clip' && params.twitchVideoId) {
-      return `https://clips.twitch.tv/${encodeURIComponent(params.twitchVideoId)}`
+    if (params.twitchVideoType === "clip" && params.twitchVideoId) {
+      return `https://clips.twitch.tv/${encodeURIComponent(params.twitchVideoId)}`;
     }
 
     if (params.twitchVideoId && !isPendingArchive) {
       return `https://www.twitch.tv/videos/${encodeURIComponent(
-        params.twitchVideoId,
-      )}`
+        params.twitchVideoId
+      )}`;
     }
 
     // Last resort: channel page when we only have a login name
     if (params.twitchLoginName) {
-      return `https://www.twitch.tv/${encodeURIComponent(params.twitchLoginName)}`
+      return `https://www.twitch.tv/${encodeURIComponent(params.twitchLoginName)}`;
     }
 
-    return null
+    return null;
   }
 
   if (!params.youtubeVideoId) {
-    return null
+    return null;
   }
 
   return `https://www.youtube.com/watch?v=${encodeURIComponent(
-    params.youtubeVideoId,
-  )}`
+    params.youtubeVideoId
+  )}`;
 }

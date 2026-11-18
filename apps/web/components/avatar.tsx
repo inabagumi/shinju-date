@@ -1,15 +1,16 @@
-import { twMerge } from '@shinju-date/ui'
-import { UserRound } from 'lucide-react'
-import Image from 'next/image'
-import type { ComponentPropsWithoutRef } from 'react'
-import type { ProfileImage } from '@/lib/data/talents'
+import { twMerge } from "@shinju-date/ui";
+import { UserRound } from "lucide-react";
+import Image from "next/image";
+import type { ComponentPropsWithoutRef } from "react";
 
-interface AvatarProps extends ComponentPropsWithoutRef<'span'> {
+import type { ProfileImage } from "@/lib/data/talents";
+
+interface AvatarProps extends ComponentPropsWithoutRef<"span"> {
   /**
    * The width and height in pixels. Omit it to set them with `className`
    * instead (to change them with the screen width).
    */
-  size?: number | undefined
+  size?: number | undefined;
 }
 
 /**
@@ -20,13 +21,13 @@ export function Avatar({ className, size, style, ...props }: AvatarProps) {
   return (
     <span
       className={twMerge(
-        'relative shrink-0 overflow-hidden rounded-full bg-muted',
-        className,
+        "relative shrink-0 overflow-hidden rounded-full bg-muted",
+        className
       )}
       style={size ? { height: size, width: size, ...style } : style}
       {...props}
     />
-  )
+  );
 }
 
 interface AvatarImageProps {
@@ -34,25 +35,25 @@ interface AvatarImageProps {
    * The alternative text. Leave it empty when the name is shown next to the
    * avatar, as screen readers would announce it twice.
    */
-  alt?: string | undefined
-  image: ProfileImage
+  alt?: string | undefined;
+  image: ProfileImage;
   /** `sizes` of the image, such as `20px` for an avatar of 20px */
-  sizes?: string | undefined
+  sizes?: string | undefined;
 }
 
 /** The profile image, filling `Avatar` */
-export function AvatarImage({ alt = '', image, sizes }: AvatarImageProps) {
+export function AvatarImage({ alt = "", image, sizes }: AvatarImageProps) {
   return (
     <Image
       alt={alt}
       blurDataURL={image.blur_data_url}
       className="object-cover"
       fill
-      placeholder={image.blur_data_url ? 'blur' : 'empty'}
+      placeholder={image.blur_data_url ? "blur" : "empty"}
       sizes={sizes}
       src={`/images/profile-images/${image.id}`}
     />
-  )
+  );
 }
 
 /**
@@ -63,17 +64,17 @@ export function AvatarFallback({
   children,
   className,
   ...props
-}: ComponentPropsWithoutRef<'span'>) {
+}: ComponentPropsWithoutRef<"span">) {
   return (
     <span
       aria-hidden="true"
       className={twMerge(
-        'flex size-full items-center justify-center text-muted',
-        className,
+        "flex size-full items-center justify-center text-muted",
+        className
       )}
       {...props}
     >
       {children ?? <UserRound className="size-[70%]" strokeWidth={1.5} />}
     </span>
-  )
+  );
 }

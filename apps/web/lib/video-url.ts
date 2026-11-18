@@ -3,20 +3,20 @@ import {
   type TwitchVideoType,
   type VideoPlatform,
   type VideoStatus,
-} from '@shinju-date/helpers'
+} from "@shinju-date/helpers";
 
 /** What a YouTube video needs to be linked to */
 interface VideoUrlYouTubeVideo {
-  youtube_video_id: string
+  youtube_video_id: string;
 }
 
 /** What a Twitch video needs to be linked to */
 interface VideoUrlTwitchVideo {
   twitch_user: {
-    twitch_login_name: string | null
-  }
-  twitch_video_id: string
-  type: TwitchVideoType | null
+    twitch_login_name: string | null;
+  };
+  twitch_video_id: string;
+  type: TwitchVideoType | null;
 }
 
 /**
@@ -24,10 +24,10 @@ interface VideoUrlTwitchVideo {
  * the schedule, the calendars and the tracked clicks all have them.
  */
 export interface VideoUrlSource {
-  platform: VideoPlatform
-  status: VideoStatus
-  twitch_video: VideoUrlTwitchVideo | null
-  youtube_video: VideoUrlYouTubeVideo | null
+  platform: VideoPlatform;
+  status: VideoStatus;
+  twitch_video: VideoUrlTwitchVideo | null;
+  youtube_video: VideoUrlYouTubeVideo | null;
 }
 
 /**
@@ -42,7 +42,7 @@ export function getVideoUrl(video: VideoUrlSource): string | null {
     twitchVideoId: video.twitch_video?.twitch_video_id,
     twitchVideoType: video.twitch_video?.type,
     youtubeVideoId: video.youtube_video?.youtube_video_id,
-  })
+  });
 }
 
 /**
@@ -50,5 +50,5 @@ export function getVideoUrl(video: VideoUrlSource): string | null {
  * videos that cannot, before counting them.
  */
 export function hasPlatformSource(video: VideoUrlSource): boolean {
-  return getVideoUrl(video) !== null
+  return getVideoUrl(video) !== null;
 }

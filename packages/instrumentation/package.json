@@ -1,20 +1,17 @@
 {
-  "author": "Haneru Developers",
+  "name": "@shinju-date/instrumentation",
+  "version": "1.0.0",
+  "private": true,
   "description": "Shared Sentry and MSW setup of the Next.js apps of SHINJU DATE",
-  "dependencies": {
-    "@shinju-date/msw-handlers": "workspace:*"
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "author": "Haneru Developers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git",
+    "directory": "packages/instrumentation"
   },
-  "devDependencies": {
-    "@sentry/nextjs": "catalog:",
-    "@sentry/profiling-node": "catalog:",
-    "@shinju-date/config": "workspace:*",
-    "@supabase/sentry-js-integration": "catalog:",
-    "@supabase/supabase-js": "catalog:",
-    "@types/node": "catalog:",
-    "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
-  },
+  "type": "module",
   "exports": {
     "./client": {
       "types": "./dist/client.d.ts",
@@ -29,26 +26,29 @@
       "default": "./dist/server.js"
     }
   },
-  "homepage": "https://shinju.date/",
-  "license": "MIT",
-  "name": "@shinju-date/instrumentation",
-  "peerDependencies": {
-    "@sentry/nextjs": "^11.0.0",
-    "@sentry/profiling-node": "^11.0.0",
-    "@supabase/sentry-js-integration": "^0.3.0",
-    "@supabase/supabase-js": "^2.0.0"
-  },
-  "private": true,
-  "repository": {
-    "directory": "packages/instrumentation",
-    "type": "git",
-    "url": "https://github.com/inabagumi/shinju-date.git"
-  },
   "scripts": {
     "build": "tsdown",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "type": "module",
-  "version": "1.0.0"
+  "dependencies": {
+    "@shinju-date/msw-handlers": "workspace:*"
+  },
+  "devDependencies": {
+    "@sentry/nextjs": "catalog:",
+    "@sentry/profiling-node": "catalog:",
+    "@shinju-date/config": "workspace:*",
+    "@supabase/sentry-js-integration": "catalog:",
+    "@supabase/supabase-js": "catalog:",
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@sentry/nextjs": "^11.0.0",
+    "@sentry/profiling-node": "^11.0.0",
+    "@supabase/sentry-js-integration": "^0.3.0",
+    "@supabase/supabase-js": "^2.0.0"
+  }
 }

@@ -1,18 +1,18 @@
 {
-  "author": "Haneru Developers",
+  "name": "@shinju-date/tailwind-config",
+  "version": "1.0.0",
+  "private": true,
   "description": "Shared Tailwind CSS theme configuration for SHINJU DATE",
-  "exports": {
-    "./theme.css": "./theme.css"
-  },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "name": "@shinju-date/tailwind-config",
-  "private": true,
+  "author": "Haneru Developers",
   "repository": {
-    "directory": "packages/tailwind-config",
     "type": "git",
-    "url": "https://github.com/inabagumi/shinju-date.git"
+    "url": "https://github.com/inabagumi/shinju-date.git",
+    "directory": "packages/tailwind-config"
   },
   "type": "module",
-  "version": "1.0.0"
+  "exports": {
+    "./theme.css": "./theme.css"
+  }
 }

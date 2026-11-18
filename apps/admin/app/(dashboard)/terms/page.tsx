@@ -1,34 +1,35 @@
-import { PageHeader } from '@shinju-date/ui'
-import type { Metadata } from 'next'
-import { Suspense } from 'react'
+import { PageHeader } from "@shinju-date/ui";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+
 import {
   TermsList,
   TermsListSkeleton,
   TermsToolbar,
-} from './_components/terms-list'
-import getTerms from './_lib/get-terms'
-import { filterTerms, groupTermsByInitial } from './_lib/group-terms'
-import { termsSearchParamsSchema } from './_lib/search-params-schema'
+} from "./_components/terms-list";
+import getTerms from "./_lib/get-terms";
+import { filterTerms, groupTermsByInitial } from "./_lib/group-terms";
+import { termsSearchParamsSchema } from "./_lib/search-params-schema";
 
 export const metadata: Metadata = {
-  title: '用語管理',
-}
+  title: "用語管理",
+};
 
 async function TermsListData({
   searchParams,
-}: Pick<PageProps<'/terms'>, 'searchParams'>) {
-  const [terms, rawParams] = await Promise.all([getTerms(), searchParams])
-  const { search } = termsSearchParamsSchema.parse(rawParams)
+}: Pick<PageProps<"/terms">, "searchParams">) {
+  const [terms, rawParams] = await Promise.all([getTerms(), searchParams]);
+  const { search } = termsSearchParamsSchema.parse(rawParams);
 
   return (
     <TermsList
       groups={groupTermsByInitial(filterTerms(terms, search))}
       search={search}
     />
-  )
+  );
 }
 
-export default function TermsPage({ searchParams }: PageProps<'/terms'>) {
+export default function TermsPage({ searchParams }: PageProps<"/terms">) {
   return (
     <div>
       <PageHeader
@@ -42,5 +43,5 @@ export default function TermsPage({ searchParams }: PageProps<'/terms'>) {
         </Suspense>
       </div>
     </div>
-  )
+  );
 }

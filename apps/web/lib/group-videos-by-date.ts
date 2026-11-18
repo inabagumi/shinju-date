@@ -1,7 +1,7 @@
-import { TIME_ZONE } from '@shinju-date/constants'
+import { TIME_ZONE } from "@shinju-date/constants";
 
 interface DatedVideo {
-  published_at: string
+  published_at: string;
 }
 
 interface GroupVideosByDateOptions {
@@ -10,7 +10,7 @@ interface GroupVideosByDateOptions {
    * order (such as the search results, which are from the newest), and the
    * dates and the videos of each date keep that order.
    */
-  sort?: boolean | undefined
+  sort?: boolean | undefined;
 }
 
 /**
@@ -20,21 +20,21 @@ interface GroupVideosByDateOptions {
  */
 export function groupVideosByDate<T extends DatedVideo>(
   videos: readonly T[],
-  { sort = true }: GroupVideosByDateOptions = {},
+  { sort = true }: GroupVideosByDateOptions = {}
 ): Map<string, T[]> {
   const sortedVideos = sort
     ? videos.toSorted((videoA, videoB) =>
         Temporal.Instant.compare(
           Temporal.Instant.from(videoA.published_at),
-          Temporal.Instant.from(videoB.published_at),
-        ),
+          Temporal.Instant.from(videoB.published_at)
+        )
       )
-    : videos
+    : videos;
 
   return Map.groupBy(sortedVideos, (video) =>
     Temporal.Instant.from(video.published_at)
       .toZonedDateTimeISO(TIME_ZONE)
       .toPlainDate()
-      .toString(),
-  )
+      .toString()
+  );
 }

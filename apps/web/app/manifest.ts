@@ -1,26 +1,27 @@
-import type { MetadataRoute } from 'next'
-import { SITE_NAME, SITE_THEME_COLOR } from '@/lib/site'
+import type { MetadataRoute } from "next";
+
+import { SITE_NAME, SITE_THEME_COLOR } from "@/lib/site";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    background_color: '#ffffff', // var(--color-background) のライトの値
-    display: 'standalone',
+    background_color: "#ffffff", // var(--color-background) のライトの値
+    display: "standalone",
     icons: [
       {
-        sizes: '192x192',
-        src: '/icon/medium?v=20240329',
-        type: 'image/png',
+        sizes: "192x192",
+        src: "/icon/medium?v=20240329",
+        type: "image/png",
       },
       {
-        sizes: '512x512',
-        src: '/icon/large?v=20240329',
-        type: 'image/png',
+        sizes: "512x512",
+        src: "/icon/large?v=20240329",
+        type: "image/png",
       },
     ],
     name: SITE_NAME,
-    scope: '/',
+    scope: "/",
     short_name: SITE_NAME,
-    start_url: '/',
+    start_url: "/",
     theme_color: SITE_THEME_COLOR,
-  }
+  };
 }

@@ -1,15 +1,18 @@
-import * as Collapsible from '@radix-ui/react-collapsible'
-import { ChevronDown, SlidersHorizontal } from 'lucide-react'
-import { type ComponentPropsWithoutRef, useId } from 'react'
-import { Button } from '../Button/Button.js'
-import { twMerge } from '../tw-merge.js'
+import * as Collapsible from "@radix-ui/react-collapsible";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { type ComponentPropsWithoutRef, useId } from "react";
 
-export interface FilterBarProps
-  extends Omit<ComponentPropsWithoutRef<typeof Collapsible.Root>, 'asChild'> {
+import { Button } from "../Button/Button.js";
+import { twMerge } from "../tw-merge.js";
+
+export interface FilterBarProps extends Omit<
+  ComponentPropsWithoutRef<typeof Collapsible.Root>,
+  "asChild"
+> {
   /** 適用中の絞り込みの件数。狭い画面で折りたたんだときに表示する */
-  activeCount?: number
+  activeCount?: number;
   /** 絞り込みのまとまりの名前。狭い画面で開閉するボタンの文字にもなる */
-  label?: string
+  label?: string;
 }
 
 /**
@@ -23,15 +26,15 @@ export function FilterBar({
   activeCount = 0,
   children,
   className,
-  label = '絞り込み',
+  label = "絞り込み",
   ...props
 }: FilterBarProps) {
-  const contentId = useId()
+  const contentId = useId();
 
   return (
     <Collapsible.Root
       aria-label={label}
-      className={twMerge('group/filter-bar flex flex-col gap-3', className)}
+      className={twMerge("group/filter-bar flex flex-col gap-3", className)}
       role="group"
       {...props}
     >
@@ -63,5 +66,5 @@ export function FilterBar({
         {children}
       </div>
     </Collapsible.Root>
-  )
+  );
 }

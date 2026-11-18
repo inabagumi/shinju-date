@@ -19,11 +19,11 @@
  * `HEAD`, for use before pushing.
  */
 
-import { execFileSync } from 'node:child_process'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { execFileSync } from "node:child_process";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 /**
  * URLs that most people cannot open. Add a pattern here to check more URLs.
@@ -36,11 +36,11 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 export const PRIVATE_URL_PATTERNS = [
   {
     // Sessions, artifacts, chats and projects of Claude need the owner's login
-    name: 'Claude のセッション・アーティファクト・会話・プロジェクト',
+    name: "Claude のセッション・アーティファクト・会話・プロジェクト",
     pattern:
       /https?:\/\/(?:www\.)?claude\.ai\/(?:code\/(?:session_|artifact\/)|artifact\/|chat\/|project\/)[^\s<>()[\]{}"'`]*/gi,
   },
-]
+];
 
 /**
  * @typedef {object} PrivateUrl
@@ -57,17 +57,17 @@ export const PRIVATE_URL_PATTERNS = [
  */
 export function findPrivateUrls(text) {
   /** @type {PrivateUrl[]} */
-  const found = []
+  const found = [];
 
   for (const [index, lineText] of text.split(/\r?\n/).entries()) {
     for (const { name, pattern } of PRIVATE_URL_PATTERNS) {
       for (const match of lineText.matchAll(pattern)) {
-        found.push({ line: index + 1, name, url: match[0] })
+        found.push({ line: index + 1, name, url: match[0] });
       }
     }
   }
 
-  return found
+  return found;
 }
 
 /**
@@ -88,8 +88,8 @@ export function findPrivateUrls(text) {
  */
 export function findProblems(sources) {
   return sources.flatMap(({ label, text }) =>
-    findPrivateUrls(text ?? '').map((found) => ({ label, ...found })),
-  )
+    findPrivateUrls(text ?? "").map((found) => ({ label, ...found }))
+  );
 }
 
 /**
@@ -98,11 +98,11 @@ export function findProblems(sources) {
  * @param {Problem} problem
  */
 export function formatProblem({ label, line, name, url }) {
-  return `${label} (${line} 行目): ${url} (${name})`
+  return `${label} (${line} 行目): ${url} (${name})`;
 }
 
 export const GUIDANCE =
-  'ほとんどの人が開けない URL は、コミットメッセージとプルリクエストに書かないでください。CONTRIBUTING.md の「コミットメッセージ」を参照。'
+  "ほとんどの人が開けない URL は、コミットメッセージとプルリクエストに書かないでください。CONTRIBUTING.md の「コミットメッセージ」を参照。";
 
 /**
  * List the commits from `base` to `HEAD` with their messages.
@@ -112,35 +112,35 @@ export const GUIDANCE =
  */
 function listCommits(base) {
   const output = execFileSync(
-    'git',
-    ['log', '-z', '--format=%h%n%B', `${base}..HEAD`],
-    { cwd: root, encoding: 'utf8' },
-  )
+    "git",
+    ["log", "-z", "--format=%h%n%B", `${base}..HEAD`],
+    { cwd: root, encoding: "utf8" }
+  );
 
   return output
-    .split('\0')
+    .split("\0")
     .filter(Boolean)
     .map((entry) => {
-      const newline = entry.indexOf('\n')
+      const newline = entry.indexOf("\n");
 
       return {
         label: `commit ${entry.slice(0, newline)}`,
         text: entry.slice(newline + 1),
-      }
-    })
+      };
+    });
 }
 
 function main() {
-  const base = process.argv[2] ?? 'origin/main'
-  const problems = findProblems(listCommits(base))
+  const base = process.argv[2] ?? "origin/main";
+  const problems = findProblems(listCommits(base));
 
   for (const problem of problems) {
-    console.error(formatProblem(problem))
+    console.error(formatProblem(problem));
   }
 
   if (problems.length > 0) {
-    console.error(`\n${problems.length} 件の問題があります。${GUIDANCE}`)
-    process.exitCode = 1
+    console.error(`\n${problems.length} 件の問題があります。${GUIDANCE}`);
+    process.exitCode = 1;
   }
 }
 
@@ -148,5 +148,5 @@ if (
   process.argv[1] &&
   resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
-  main()
+  main();
 }

@@ -1,7 +1,8 @@
-import type { Tables } from '@shinju-date/database'
-import { toDBString } from '@shinju-date/temporal-fns'
-import { HttpResponse } from 'msw'
-import { parseError } from './errors.js'
+import type { Tables } from "@shinju-date/database";
+import { toDBString } from "@shinju-date/temporal-fns";
+import { HttpResponse } from "msw";
+
+import { parseError } from "./errors.js";
 import {
   applyOrder,
   applyPagination,
@@ -11,25 +12,27 @@ import {
   getOffset,
   parseSupabaseQuery,
   type SupabaseQuery,
-} from './query.js'
+} from "./query.js";
 import {
   acceptsSingleObject,
   REST_URL,
   rest,
   singleObjectError,
-} from './rest.js'
-import { applySelect, selectRows, validateSelect } from './select.js'
+} from "./rest.js";
+import { applySelect, selectRows, validateSelect } from "./select.js";
 import {
   getRows,
   type TableDefinition,
   type TableName,
   type UniqueConstraint,
   type WritableTableDefinition,
-} from './tables.js'
+} from "./tables.js";
 
 /** Whether the request asks for the rows that it changed. */
 function returnsRepresentation(request: Request): boolean {
-  return (request.headers.get('prefer') ?? '').includes('return=representation')
+  return (request.headers.get("prefer") ?? "").includes(
+    "return=representation"
+  );
 }
 
 /**
@@ -40,38 +43,38 @@ function returnsRepresentation(request: Request): boolean {
  */
 async function readRows<Name extends TableName>(
   table: TableDefinition<Name>,
-  request: Request,
+  request: Request
 ): Promise<{
-  headers: Record<string, string>
-  page: object[]
+  headers: Record<string, string>;
+  page: object[];
 }> {
-  const query = parseSupabaseQuery(new URL(request.url))
+  const query = parseSupabaseQuery(new URL(request.url));
   const matched = applyOrder(
     await selectRows(
       applySupabaseConditions(await getRows(table), query, table.uuidColumns),
       query.select,
       table.name,
-      query.filters,
+      query.filters
     ),
     query.order,
-    ({ row }) => row,
-  )
-  const page = applyPagination(matched, query)
+    ({ row }) => row
+  );
+  const page = applyPagination(matched, query);
   const counts =
-    (request.headers.get('prefer') ?? '').includes('count=exact') ||
-    query.returnCount
+    (request.headers.get("prefer") ?? "").includes("count=exact") ||
+    query.returnCount;
 
   return {
     headers: {
-      'Content-Range': formatContentRange(
+      "Content-Range": formatContentRange(
         getOffset(query),
         page.length,
-        counts ? matched.length : '*',
+        counts ? matched.length : "*"
       ),
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     page: page.map(({ output }) => output),
-  }
+  };
 }
 
 /**
@@ -83,25 +86,25 @@ async function readRows<Name extends TableName>(
  */
 function parseWriteQuery(
   request: Request,
-  tableName: TableName,
+  tableName: TableName
 ): SupabaseQuery {
-  const query = parseSupabaseQuery(new URL(request.url))
-  const embedded = query.filters.find(({ path }) => path.length > 0)
+  const query = parseSupabaseQuery(new URL(request.url));
+  const embedded = query.filters.find(({ path }) => path.length > 0);
 
   if (embedded) {
     throw parseError(
-      `unsupported filter on the embedded resource '${embedded.path.join('.')}' in a write`,
-      'The mock supports filters on embedded resources only in reads (GET and HEAD)',
-    )
+      `unsupported filter on the embedded resource '${embedded.path.join(".")}' in a write`,
+      "The mock supports filters on embedded resources only in reads (GET and HEAD)"
+    );
   }
 
-  validateSelect(query.select, tableName)
+  validateSelect(query.select, tableName);
 
-  return query
+  return query;
 }
 
 /** The primary key, which every table of the mock has. */
-const PRIMARY_KEY_COLUMNS = ['id'] as const
+const PRIMARY_KEY_COLUMNS = ["id"] as const;
 
 /**
  * An error response of PostgreSQL when the rows that a write would leave
@@ -112,20 +115,20 @@ const PRIMARY_KEY_COLUMNS = ['id'] as const
 function findViolation<Name extends TableName>(
   table: WritableTableDefinition<Name>,
   writtenRows: readonly Tables<Name>[],
-  allRows: readonly Tables<Name>[],
+  allRows: readonly Tables<Name>[]
 ): Response | null {
   for (const row of writtenRows) {
     for (const column of table.notNullColumns) {
       if (getColumn(row, column) == null) {
         return HttpResponse.json(
           {
-            code: '23502',
+            code: "23502",
             details: null,
             hint: null,
             message: `null value in column "${column}" of relation "${table.name}" violates not-null constraint`,
           },
-          { status: 400 },
-        )
+          { status: 400 }
+        );
       }
     }
   }
@@ -133,53 +136,53 @@ function findViolation<Name extends TableName>(
   const constraints: readonly UniqueConstraint<TableName>[] = [
     { columns: PRIMARY_KEY_COLUMNS, name: `${table.name}_pkey` },
     ...table.unique,
-  ]
+  ];
 
   for (const { columns, name } of constraints) {
-    const seen = new Set<string>()
+    const seen = new Set<string>();
 
     for (const row of allRows) {
-      const values = columns.map((column) => getColumn(row, column))
+      const values = columns.map((column) => getColumn(row, column));
 
       // As in SQL, `NULL` does not equal anything, even `NULL`.
       if (values.some((value) => value == null)) {
-        continue
+        continue;
       }
 
-      const key = JSON.stringify(values)
+      const key = JSON.stringify(values);
 
       if (seen.has(key)) {
         return HttpResponse.json(
           {
-            code: '23505',
-            details: `Key (${columns.join(', ')})=(${values.join(', ')}) already exists.`,
+            code: "23505",
+            details: `Key (${columns.join(", ")})=(${values.join(", ")}) already exists.`,
             hint: null,
             message: `duplicate key value violates unique constraint "${name}"`,
           },
-          { status: 409 },
-        )
+          { status: 409 }
+        );
       }
 
-      seen.add(key)
+      seen.add(key);
     }
   }
 
-  return null
+  return null;
 }
 
 /** The row with the same values of the given columns, if any. */
 function findConflict<Row extends object>(
   rows: readonly Row[],
   values: object,
-  columns: readonly string[],
+  columns: readonly string[]
 ): Row | undefined {
   return rows.find((row) =>
     columns.every(
       (column) =>
         getColumn(values, column) != null &&
-        getColumn(row, column) === getColumn(values, column),
-    ),
-  )
+        getColumn(row, column) === getColumn(values, column)
+    )
+  );
 }
 
 /**
@@ -188,11 +191,11 @@ function findConflict<Row extends object>(
  */
 function withTriggers<Name extends TableName>(
   table: WritableTableDefinition<Name>,
-  changes: Partial<Tables<Name>>,
+  changes: Partial<Tables<Name>>
 ): Partial<Tables<Name>> {
   return table.updatedAtTrigger
     ? { ...changes, updated_at: toDBString(Temporal.Now.instant()) }
-    : changes
+    : changes;
 }
 
 /**
@@ -202,19 +205,19 @@ function withTriggers<Name extends TableName>(
 function cardinalityViolation(): Response {
   return HttpResponse.json(
     {
-      code: '21000',
+      code: "21000",
       details: null,
-      hint: 'Ensure that no rows proposed for insertion within the same command have duplicate constrained values.',
-      message: 'ON CONFLICT DO UPDATE command cannot affect row a second time',
+      hint: "Ensure that no rows proposed for insertion within the same command have duplicate constrained values.",
+      message: "ON CONFLICT DO UPDATE command cannot affect row a second time",
     },
-    { status: 400 },
-  )
+    { status: 400 }
+  );
 }
 
 /** The changes that a write makes to a collection. */
 interface WritePlan<Row> {
-  inserts: Row[]
-  updates: [record: Row, changes: Partial<Row>][]
+  inserts: Row[];
+  updates: [record: Row, changes: Partial<Row>][];
 }
 
 /**
@@ -225,56 +228,56 @@ interface WritePlan<Row> {
  */
 async function applyWrite<Name extends TableName>(
   table: WritableTableDefinition<Name>,
-  { inserts, updates }: WritePlan<Tables<Name>>,
+  { inserts, updates }: WritePlan<Tables<Name>>
 ): Promise<Tables<Name>[] | Response> {
-  const { collection } = table
-  const undo: (() => Promise<unknown>)[] = []
-  const writtenRows: Tables<Name>[] = []
+  const { collection } = table;
+  const undo: (() => Promise<unknown>)[] = [];
+  const writtenRows: Tables<Name>[] = [];
 
   try {
     for (const [record, changes] of updates) {
-      const previous = { ...record }
+      const previous = { ...record };
       const updated = await collection.update(record, {
         data(draft) {
-          Object.assign(draft, changes)
+          Object.assign(draft, changes);
         },
-      })
+      });
 
       if (updated) {
         undo.push(() =>
           collection.update(updated, {
             data(draft) {
-              Object.assign(draft, previous)
+              Object.assign(draft, previous);
             },
-          }),
-        )
-        writtenRows.push(updated)
+          })
+        );
+        writtenRows.push(updated);
       }
     }
 
     for (const row of inserts) {
-      const created = await collection.create(row)
+      const created = await collection.create(row);
 
-      undo.push(async () => collection.delete(created))
-      writtenRows.push(created)
+      undo.push(async () => collection.delete(created));
+      writtenRows.push(created);
     }
   } catch {
     for (const step of undo.toReversed()) {
-      await step()
+      await step();
     }
 
     return HttpResponse.json(
       {
-        code: '22P02',
+        code: "22P02",
         details: null,
         hint: null,
         message: `invalid input value for relation "${table.name}"`,
       },
-      { status: 400 },
-    )
+      { status: 400 }
+    );
   }
 
-  return writtenRows
+  return writtenRows;
 }
 
 /**
@@ -284,172 +287,173 @@ async function applyWrite<Name extends TableName>(
  * return exactly one row.
  */
 function createWriteHandlers<Name extends TableName>(
-  table: WritableTableDefinition<Name>,
+  table: WritableTableDefinition<Name>
 ) {
-  const url = `${REST_URL}/${table.name}`
-  const { collection } = table
+  const url = `${REST_URL}/${table.name}`;
+  const { collection } = table;
 
   return [
     // Inserts, and upserts with `Prefer: resolution=merge-duplicates` or
     // `resolution=ignore-duplicates` on the columns of `on_conflict` (the
     // primary key without it)
     rest.post(url, async ({ request }) => {
-      const query = parseWriteQuery(request, table.name)
-      const prefer = request.headers.get('prefer') ?? ''
+      const query = parseWriteQuery(request, table.name);
+      const prefer = request.headers.get("prefer") ?? "";
       const resolution = prefer.match(
-        /resolution=(ignore|merge)-duplicates/,
-      )?.[1]
+        /resolution=(ignore|merge)-duplicates/
+      )?.[1];
       const conflictColumns =
-        query.onConflict?.split(',').map((column) => column.trim()) ??
-        PRIMARY_KEY_COLUMNS
+        query.onConflict?.split(",").map((column) => column.trim()) ??
+        PRIMARY_KEY_COLUMNS;
       const body = (await request.json()) as
         | Partial<Tables<Name>>
-        | Partial<Tables<Name>>[]
-      const currentRows = collection.findMany()
+        | Partial<Tables<Name>>[];
+      const currentRows = collection.findMany();
       // The rows of the table after the write, and the rows that the write
       // inserts or updates, which an upsert cannot update again
-      const nextRows: Tables<Name>[] = [...currentRows]
-      const writtenRows = new Set<Tables<Name>>()
+      const nextRows: Tables<Name>[] = [...currentRows];
+      const writtenRows = new Set<Tables<Name>>();
       // Every proposed row, with the defaults, is checked against the
       // `NOT NULL` columns before conflicts are resolved, as PostgreSQL does
-      const proposedRows: Tables<Name>[] = []
-      const plan: WritePlan<Tables<Name>> = { inserts: [], updates: [] }
+      const proposedRows: Tables<Name>[] = [];
+      const plan: WritePlan<Tables<Name>> = { inserts: [], updates: [] };
 
       for (const values of Array.isArray(body) ? body : [body]) {
         // The `NOT NULL` columns are checked by `findViolation`.
-        const proposed = { ...table.defaults(), ...values } as Tables<Name>
+        const proposed = { ...table.defaults(), ...values } as Tables<Name>;
 
-        proposedRows.push(proposed)
+        proposedRows.push(proposed);
 
         const existing =
-          resolution && findConflict(nextRows, values, conflictColumns)
+          resolution && findConflict(nextRows, values, conflictColumns);
 
-        if (existing && resolution === 'ignore') {
-          continue
+        if (existing && resolution === "ignore") {
+          continue;
         }
 
         if (existing) {
           if (writtenRows.has(existing)) {
-            return cardinalityViolation()
+            return cardinalityViolation();
           }
 
-          const changes = withTriggers(table, values)
-          const merged = { ...existing, ...changes }
+          const changes = withTriggers(table, values);
+          const merged = { ...existing, ...changes };
 
-          plan.updates.push([existing, changes])
-          nextRows.splice(nextRows.indexOf(existing), 1, merged)
-          writtenRows.add(merged)
+          plan.updates.push([existing, changes]);
+          nextRows.splice(nextRows.indexOf(existing), 1, merged);
+          writtenRows.add(merged);
         } else {
-          plan.inserts.push(proposed)
-          nextRows.push(proposed)
-          writtenRows.add(proposed)
+          plan.inserts.push(proposed);
+          nextRows.push(proposed);
+          writtenRows.add(proposed);
         }
       }
 
       const violation = findViolation(
         table,
         [...proposedRows, ...writtenRows],
-        nextRows,
-      )
+        nextRows
+      );
 
       if (violation) {
-        return violation
+        return violation;
       }
 
       if (acceptsSingleObject(request) && writtenRows.size !== 1) {
-        return singleObjectError(writtenRows.size)
+        return singleObjectError(writtenRows.size);
       }
 
-      const savedRows = await applyWrite(table, plan)
+      const savedRows = await applyWrite(table, plan);
 
       if (savedRows instanceof Response) {
-        return savedRows
+        return savedRows;
       }
 
       if (returnsRepresentation(request)) {
         return HttpResponse.json(
           await applySelect(savedRows, query.select, table.name),
-          { status: 201 },
-        )
+          { status: 201 }
+        );
       }
 
-      return new HttpResponse(null, { status: 201 })
+      return new HttpResponse(null, { status: 201 });
     }),
 
     // Updates only the rows that match all the filters, such as
     // `id=in.(...)&visible=eq.false`
     rest.patch(url, async ({ request }) => {
-      const query = parseWriteQuery(request, table.name)
+      const query = parseWriteQuery(request, table.name);
       const changes = withTriggers(
         table,
-        (await request.json()) as Partial<Tables<Name>>,
-      )
-      const currentRows = collection.findMany()
+        (await request.json()) as Partial<Tables<Name>>
+      );
+      const currentRows = collection.findMany();
       const matches = applySupabaseConditions(
         currentRows,
         query,
-        table.uuidColumns,
-      )
-      const changedRows = matches.map(
-        (row): Tables<Name> => ({ ...row, ...changes }),
-      )
+        table.uuidColumns
+      );
+      const changedRows = matches.map((row): Tables<Name> => ({
+        ...row,
+        ...changes,
+      }));
       const violation = findViolation(table, changedRows, [
         ...currentRows.filter((row) => !matches.includes(row)),
         ...changedRows,
-      ])
+      ]);
 
       if (violation) {
-        return violation
+        return violation;
       }
 
       if (acceptsSingleObject(request) && matches.length !== 1) {
-        return singleObjectError(matches.length)
+        return singleObjectError(matches.length);
       }
 
       const updatedRows = await applyWrite(table, {
         inserts: [],
         updates: matches.map((record) => [record, changes]),
-      })
+      });
 
       if (updatedRows instanceof Response) {
-        return updatedRows
+        return updatedRows;
       }
 
       if (returnsRepresentation(request)) {
         return HttpResponse.json(
-          await applySelect(updatedRows, query.select, table.name),
-        )
+          await applySelect(updatedRows, query.select, table.name)
+        );
       }
 
-      return new HttpResponse(null, { status: 204 })
+      return new HttpResponse(null, { status: 204 });
     }),
 
     // Deletes only the rows that match all the filters
     rest.delete(url, async ({ request }) => {
-      const query = parseWriteQuery(request, table.name)
+      const query = parseWriteQuery(request, table.name);
       const matches = applySupabaseConditions(
         collection.findMany(),
         query,
-        table.uuidColumns,
-      )
+        table.uuidColumns
+      );
 
       if (acceptsSingleObject(request) && matches.length !== 1) {
-        return singleObjectError(matches.length)
+        return singleObjectError(matches.length);
       }
 
       for (const record of matches) {
-        collection.delete(record)
+        collection.delete(record);
       }
 
       if (returnsRepresentation(request)) {
         return HttpResponse.json(
-          await applySelect(matches, query.select, table.name),
-        )
+          await applySelect(matches, query.select, table.name)
+        );
       }
 
-      return new HttpResponse(null, { status: 204 })
+      return new HttpResponse(null, { status: 204 });
     }),
-  ]
+  ];
 }
 
 /**
@@ -458,21 +462,21 @@ function createWriteHandlers<Name extends TableName>(
  * PATCH and DELETE unless it is a view.
  */
 export function createTableHandlers<Name extends TableName>(
-  table: TableDefinition<Name>,
+  table: TableDefinition<Name>
 ) {
-  const url = `${REST_URL}/${table.name}`
+  const url = `${REST_URL}/${table.name}`;
 
   return [
     rest.get(url, async ({ request }) => {
-      const { headers, page } = await readRows(table, request)
+      const { headers, page } = await readRows(table, request);
 
-      return HttpResponse.json(page, { headers })
+      return HttpResponse.json(page, { headers });
     }),
     rest.head(url, async ({ request }) => {
-      const { headers } = await readRows(table, request)
+      const { headers } = await readRows(table, request);
 
-      return new HttpResponse(null, { headers })
+      return new HttpResponse(null, { headers });
     }),
-    ...(table.kind === 'table' ? createWriteHandlers(table) : []),
-  ]
+    ...(table.kind === "table" ? createWriteHandlers(table) : []),
+  ];
 }

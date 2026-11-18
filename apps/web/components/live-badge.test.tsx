@@ -1,34 +1,35 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, test } from 'vitest'
-import LiveBadge from './live-badge'
+import { render, screen } from "@testing-library/react";
+import { describe, expect, test } from "vitest";
 
-describe('LiveBadge', () => {
-  test('should render the badge', () => {
-    render(<LiveBadge />)
+import LiveBadge from "./live-badge";
 
-    expect(screen.getByText('配信中')).toHaveClass(
-      'rounded-control',
-      'bg-live',
-      'px-1.5',
-      'py-0.5',
-      'text-caption',
-      'font-semibold',
-      'text-live-foreground',
-    )
-  })
+describe("LiveBadge", () => {
+  test("should render the badge", () => {
+    render(<LiveBadge />);
 
-  test('should fit in a compact row', () => {
-    render(<LiveBadge size="compact" />)
+    expect(screen.getByText("配信中")).toHaveClass(
+      "rounded-control",
+      "bg-live",
+      "px-1.5",
+      "py-0.5",
+      "text-caption",
+      "font-semibold",
+      "text-live-foreground"
+    );
+  });
 
-    expect(screen.getByText('配信中')).toHaveClass('leading-4')
-  })
+  test("should fit in a compact row", () => {
+    render(<LiveBadge size="compact" />);
 
-  test('should take the position and the id', () => {
-    render(<LiveBadge className="absolute top-0" id="status" />)
+    expect(screen.getByText("配信中")).toHaveClass("leading-4");
+  });
 
-    const badge = screen.getByText('配信中')
+  test("should take the position and the id", () => {
+    render(<LiveBadge className="absolute top-0" id="status" />);
 
-    expect(badge).toHaveClass('absolute', 'top-0', 'bg-live')
-    expect(badge).toHaveAttribute('id', 'status')
-  })
-})
+    const badge = screen.getByText("配信中");
+
+    expect(badge).toHaveClass("absolute", "top-0", "bg-live");
+    expect(badge).toHaveAttribute("id", "status");
+  });
+});

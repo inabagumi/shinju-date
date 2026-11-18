@@ -52,6 +52,8 @@ catalog:
 permissions:
   tsdown:
     skills: false
+  ultracite:
+    skills: false
 
 publicHoistPattern:
   - "*import-in-the-middle*"

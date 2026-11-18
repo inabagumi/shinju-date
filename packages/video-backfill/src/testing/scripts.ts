@@ -1,20 +1,20 @@
-import { RUN_UNLOCK_SCRIPT } from '../runs.js'
+import { RUN_UNLOCK_SCRIPT } from "../runs.js";
 import {
   CLAIM_SCRIPT,
   ENQUEUE_SCRIPT,
   FINISH_SCRIPT,
   REQUEUE_SCRIPT,
   SAVE_SCRIPT,
-} from '../scripts.js'
+} from "../scripts.js";
 
 /** A reply of Redis, as the REST API of Upstash returns it in JSON. */
-export type RedisReply = number | string | null | RedisReply[]
+export type RedisReply = number | string | null | RedisReply[];
 
 /**
  * Runs one Redis command, such as `call('GET', key)`, and returns its reply,
  * or throws the error of Redis. Like `redis.call` in a Lua script.
  */
-export type RedisCall = (...command: string[]) => RedisReply
+export type RedisCall = (...command: string[]) => RedisReply;
 
 /**
  * Does what a Lua script does, with the commands it runs. A command that
@@ -23,15 +23,15 @@ export type RedisCall = (...command: string[]) => RedisReply
 export type ScriptEmulation = (
   call: RedisCall,
   keys: readonly string[],
-  argv: readonly string[],
-) => RedisReply
+  argv: readonly string[]
+) => RedisReply;
 
 /**
  * The name of a script, taken from the comment on its first line, such as
  * `video-backfill:enqueue`.
  */
 export function getScriptName(script: string): string | undefined {
-  return script.match(/^--\s*(\S+)/)?.[1]
+  return script.match(/^--\s*(\S+)/)?.[1];
 }
 
 /**
@@ -40,31 +40,31 @@ export function getScriptName(script: string): string | undefined {
  * matches a version.
  */
 function getVersion(value: string): number | undefined {
-  let job: unknown
+  let job: unknown;
 
   try {
-    job = JSON.parse(value)
+    job = JSON.parse(value);
   } catch {
-    return undefined
+    return undefined;
   }
 
-  if (typeof job !== 'object' || job === null) {
-    return undefined
+  if (typeof job !== "object" || job === null) {
+    return undefined;
   }
 
-  const { version } = job as { version?: unknown }
+  const { version } = job as { version?: unknown };
 
-  return typeof version === 'number' ? version : 0
+  return typeof version === "number" ? version : 0;
 }
 
 function nameOf(script: string): string {
-  const name = getScriptName(script)
+  const name = getScriptName(script);
 
   if (!name) {
-    throw new Error('A script must start with a comment that names it')
+    throw new Error("A script must start with a comment that names it");
   }
 
-  return name
+  return name;
 }
 
 /**
@@ -77,114 +77,114 @@ function nameOf(script: string): string {
  * not do what its script does fails them.
  */
 export const SCRIPT_EMULATIONS: Readonly<Record<string, ScriptEmulation>> = {
-  [nameOf(ENQUEUE_SCRIPT)]: (call, [job = '', queue = '', lock = ''], argv) => {
-    const [expected = '', value = '', ttl = '', id = ''] = argv
-    const current = call('GET', job)
+  [nameOf(ENQUEUE_SCRIPT)]: (call, [job = "", queue = "", lock = ""], argv) => {
+    const [expected = "", value = "", ttl = "", id = ""] = argv;
+    const current = call("GET", job);
 
     if (
-      expected === ''
+      expected === ""
         ? current !== null
-        : typeof current !== 'string' ||
+        : typeof current !== "string" ||
           getVersion(current) !== Number(expected)
     ) {
-      return 0
+      return 0;
     }
 
-    if (call('EXISTS', lock) === 1) {
-      return 0
+    if (call("EXISTS", lock) === 1) {
+      return 0;
     }
 
-    call('LPUSH', queue, id)
-    call('EXPIRE', queue, ttl)
-    call('SET', job, value, 'EX', ttl)
+    call("LPUSH", queue, id);
+    call("EXPIRE", queue, ttl);
+    call("SET", job, value, "EX", ttl);
 
-    return 1
+    return 1;
   },
   [nameOf(CLAIM_SCRIPT)]: (
     call,
-    [queue = '', jobPrefix = '', lockPrefix = ''],
-    argv,
+    [queue = "", jobPrefix = "", lockPrefix = ""],
+    argv
   ) => {
-    const [token = '', lease = '', timestamp = '', ttl = ''] = argv
+    const [token = "", lease = "", timestamp = "", ttl = ""] = argv;
 
     while (true) {
-      const id = call('RPOP', queue)
+      const id = call("RPOP", queue);
 
-      if (typeof id !== 'string') {
-        return null
+      if (typeof id !== "string") {
+        return null;
       }
 
-      const lock = `${lockPrefix}${id}`
+      const lock = `${lockPrefix}${id}`;
 
-      if (call('SET', lock, token, 'EX', lease, 'NX') !== null) {
-        const key = `${jobPrefix}${id}`
-        const value = call('GET', key)
+      if (call("SET", lock, token, "EX", lease, "NX") !== null) {
+        const key = `${jobPrefix}${id}`;
+        const value = call("GET", key);
         const job =
-          typeof value === 'string'
+          typeof value === "string"
             ? (JSON.parse(value) as Record<string, unknown>)
-            : null
+            : null;
 
-        if (job && job['status'] !== 'done' && job['status'] !== 'failed') {
+        if (job && job["status"] !== "done" && job["status"] !== "failed") {
           const encoded = JSON.stringify({
             ...job,
-            startedAt: job['startedAt'] ?? timestamp,
-            status: 'running',
+            startedAt: job["startedAt"] ?? timestamp,
+            status: "running",
             updatedAt: timestamp,
             version:
-              (typeof job['version'] === 'number' ? job['version'] : 0) + 1,
-          })
+              (typeof job["version"] === "number" ? job["version"] : 0) + 1,
+          });
 
-          call('SET', key, encoded, 'EX', ttl)
+          call("SET", key, encoded, "EX", ttl);
 
-          return encoded
+          return encoded;
         }
 
-        call('DEL', lock)
+        call("DEL", lock);
       }
     }
   },
-  [nameOf(FINISH_SCRIPT)]: (call, [job = '', lock = '', ...copies], argv) => {
-    const [token = '', value = '', ttl = ''] = argv
+  [nameOf(FINISH_SCRIPT)]: (call, [job = "", lock = "", ...copies], argv) => {
+    const [token = "", value = "", ttl = ""] = argv;
 
-    if (call('GET', lock) !== token) {
-      return 0
+    if (call("GET", lock) !== token) {
+      return 0;
     }
 
-    call('SET', job, value, 'EX', ttl)
+    call("SET", job, value, "EX", ttl);
 
     for (const copy of copies) {
-      call('SET', copy, value, 'EX', ttl)
+      call("SET", copy, value, "EX", ttl);
     }
 
-    call('DEL', lock)
+    call("DEL", lock);
 
-    return 1
+    return 1;
   },
-  [nameOf(REQUEUE_SCRIPT)]: (call, [queue = '', job = '', lock = ''], argv) => {
-    const [id = '', value = '', ttl = '', token = ''] = argv
+  [nameOf(REQUEUE_SCRIPT)]: (call, [queue = "", job = "", lock = ""], argv) => {
+    const [id = "", value = "", ttl = "", token = ""] = argv;
 
-    if (call('GET', lock) !== token) {
-      return 0
+    if (call("GET", lock) !== token) {
+      return 0;
     }
 
-    call('LPUSH', queue, id)
-    call('EXPIRE', queue, ttl)
-    call('SET', job, value, 'EX', ttl)
-    call('DEL', lock)
+    call("LPUSH", queue, id);
+    call("EXPIRE", queue, ttl);
+    call("SET", job, value, "EX", ttl);
+    call("DEL", lock);
 
-    return 1
+    return 1;
   },
-  [nameOf(RUN_UNLOCK_SCRIPT)]: (call, [lock = ''], [token]) =>
-    call('GET', lock) === token ? call('DEL', lock) : 0,
-  [nameOf(SAVE_SCRIPT)]: (call, [job = '', lock = ''], argv) => {
-    const [token = '', value = '', ttl = ''] = argv
+  [nameOf(RUN_UNLOCK_SCRIPT)]: (call, [lock = ""], [token]) =>
+    call("GET", lock) === token ? call("DEL", lock) : 0,
+  [nameOf(SAVE_SCRIPT)]: (call, [job = "", lock = ""], argv) => {
+    const [token = "", value = "", ttl = ""] = argv;
 
-    if (call('GET', lock) !== token) {
-      return 0
+    if (call("GET", lock) !== token) {
+      return 0;
     }
 
-    call('SET', job, value, 'EX', ttl)
+    call("SET", job, value, "EX", ttl);
 
-    return 1
+    return 1;
   },
-}
+};

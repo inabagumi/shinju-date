@@ -1,22 +1,23 @@
-import { twMerge } from '@shinju-date/ui'
-import Link from 'next/link'
-import LiveBadge from '@/components/live-badge'
-import TalentIcon from '@/components/talent-icon'
+import { twMerge } from "@shinju-date/ui";
+import Link from "next/link";
+
+import LiveBadge from "@/components/live-badge";
+import TalentIcon from "@/components/talent-icon";
 import {
   LIVE_RING_CLASS_NAME,
   NextStream,
-} from '@/components/talent-stream-status'
-import type { TalentListItem, TalentStreamStatus } from '@/lib/data/talents'
-import { getTalentPath } from '@/lib/talent-links'
+} from "@/components/talent-stream-status";
+import type { TalentListItem, TalentStreamStatus } from "@/lib/data/talents";
+import { getTalentPath } from "@/lib/talent-links";
 
 /** The size of the icon: 80px, 96px from 640px, and 112px from 1024px */
-const ICON_CLASS_NAME = 'size-20 sm:size-24 lg:size-28'
-const ICON_SIZES = '(min-width: 1024px) 112px, (min-width: 640px) 96px, 80px'
+const ICON_CLASS_NAME = "size-20 sm:size-24 lg:size-28";
+const ICON_SIZES = "(min-width: 1024px) 112px, (min-width: 640px) 96px, 80px";
 
 interface TalentCardProps {
   /** Whether the talent is live and when it streams next, if known */
-  streamStatus?: TalentStreamStatus | undefined
-  talent: TalentListItem
+  streamStatus?: TalentStreamStatus | undefined;
+  talent: TalentListItem;
 }
 
 /**
@@ -28,10 +29,10 @@ interface TalentCardProps {
  * the name of the talent alone, and these are its description.
  */
 export default function TalentCard({ streamStatus, talent }: TalentCardProps) {
-  const isLive = streamStatus?.isLive ?? false
-  const nextStreamAt = isLive ? null : (streamStatus?.nextStreamAt ?? null)
-  const nameId = `talent-${talent.id}-name`
-  const statusId = `talent-${talent.id}-status`
+  const isLive = streamStatus?.isLive ?? false;
+  const nextStreamAt = isLive ? null : (streamStatus?.nextStreamAt ?? null);
+  const nameId = `talent-${talent.id}-name`;
+  const statusId = `talent-${talent.id}-status`;
 
   return (
     <Link
@@ -63,7 +64,7 @@ export default function TalentCard({ streamStatus, talent }: TalentCardProps) {
         {nextStreamAt && <NextStream id={statusId} startsAt={nextStreamAt} />}
       </span>
     </Link>
-  )
+  );
 }
 
 export function TalentCardSkeleton() {
@@ -74,5 +75,5 @@ export function TalentCardSkeleton() {
       />
       <div className="h-[1lh] w-3/4 animate-pulse rounded-control bg-muted text-body leading-normal" />
     </div>
-  )
+  );
 }

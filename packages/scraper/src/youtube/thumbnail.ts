@@ -1,21 +1,22 @@
-import type { Enums } from '@shinju-date/database'
+import type { Enums } from "@shinju-date/database";
+
 import {
   createThumbnail,
   replaceThumbnail,
   type Thumbnail,
-} from '../internal/thumbnails/index.js'
-import type { WriteContext } from '../types.js'
-import type { SavedYouTubeVideo } from './saved-video.js'
-import type { YouTubeVideo } from './types.js'
-import { getThumbnailSource, toVideoFields } from './video.js'
+} from "../internal/thumbnails/index.js";
+import type { WriteContext } from "../types.js";
+import type { SavedYouTubeVideo } from "./saved-video.js";
+import type { YouTubeVideo } from "./types.js";
+import { getThumbnailSource, toVideoFields } from "./video.js";
 
 /**
  * Statuses of videos whose thumbnail is checked for a replacement: streamers
  * may replace the thumbnail of a stream until it starts, or while it is live.
  * The thumbnails of finished streams and uploads hardly ever change.
  */
-const REPLACEABLE_THUMBNAIL_STATUSES: ReadonlySet<Enums<'video_status'>> =
-  new Set(['LIVE', 'UPCOMING'])
+const REPLACEABLE_THUMBNAIL_STATUSES: ReadonlySet<Enums<"video_status">> =
+  new Set(["LIVE", "UPCOMING"]);
 
 /**
  * Stores the thumbnail of a video. With `etag` (the ETag of the thumbnail the
@@ -29,12 +30,12 @@ const REPLACEABLE_THUMBNAIL_STATUSES: ReadonlySet<Enums<'video_status'>> =
 export async function createYouTubeThumbnail(
   { now, reportError, supabaseClient }: WriteContext,
   video: YouTubeVideo,
-  etag: string | null = null,
+  etag: string | null = null
 ): Promise<Thumbnail | null> {
-  const source = getThumbnailSource(video)
+  const source = getThumbnailSource(video);
 
   if (!source) {
-    return null
+    return null;
   }
 
   try {
@@ -44,11 +45,11 @@ export async function createYouTubeThumbnail(
       now,
       source,
       supabaseClient,
-    })
+    });
   } catch (error) {
-    reportError(error, { youtubeVideoId: video.id })
+    reportError(error, { youtubeVideoId: video.id });
 
-    return null
+    return null;
   }
 }
 
@@ -68,16 +69,16 @@ export async function createYouTubeThumbnail(
 export async function refreshYouTubeThumbnail(
   context: WriteContext,
   saved: SavedYouTubeVideo,
-  fetched: YouTubeVideo,
+  fetched: YouTubeVideo
 ): Promise<boolean> {
-  const current = saved.thumbnail
+  const current = saved.thumbnail;
 
   if (current) {
-    const { status } = toVideoFields(fetched, context.now)
+    const { status } = toVideoFields(fetched, context.now);
 
     // Without an ETag, a new image cannot be told from the stored one.
     if (!REPLACEABLE_THUMBNAIL_STATUSES.has(status) || !current.etag) {
-      return false
+      return false;
     }
   }
 
@@ -87,7 +88,7 @@ export async function refreshYouTubeThumbnail(
     fields: {},
     previousThumbnailId: saved.thumbnail_id,
     videoId: saved.id,
-  })
+  });
 
-  return thumbnail !== null
+  return thumbnail !== null;
 }

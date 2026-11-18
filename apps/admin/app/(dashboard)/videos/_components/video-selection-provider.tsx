@@ -1,47 +1,48 @@
-'use client'
+"use client";
 
-import { createContext, type ReactNode, use, useState } from 'react'
-import { useVideoAction } from '../_lib/use-video-action'
-import type { VideoAction, VideoActionTarget } from '../_lib/video-actions'
-import { VideoActionConfirmDialog } from './video-action-confirm-dialog'
+import { createContext, type ReactNode, use, useState } from "react";
+
+import { useVideoAction } from "../_lib/use-video-action";
+import type { VideoAction, VideoActionTarget } from "../_lib/video-actions";
+import { VideoActionConfirmDialog } from "./video-action-confirm-dialog";
 
 interface VideoSelectionContextValue {
   /** 表示中の動画の ID */
-  videoIds: readonly string[]
+  videoIds: readonly string[];
   /** 選択中の動画の ID */
-  selectedIds: readonly string[]
+  selectedIds: readonly string[];
   /** 1件の動画の選択を切り替える */
-  setSelected: (id: string, selected: boolean) => void
+  setSelected: (id: string, selected: boolean) => void;
   /** 表示中の動画を、すべて選択するか、すべて外す */
-  setAllSelected: (selected: boolean) => void
+  setAllSelected: (selected: boolean) => void;
   /** 操作と対象の動画を指定して、確認のダイアログを開く */
   openActionDialog: (
     action: VideoAction,
-    targets: readonly VideoActionTarget[],
-  ) => void
+    targets: readonly VideoActionTarget[]
+  ) => void;
 }
 
 const VideoSelectionContext = createContext<VideoSelectionContextValue | null>(
-  null,
-)
+  null
+);
 
 /** `VideoSelectionProvider` の中で、選択と操作のダイアログを使う */
 export function useVideoSelection(): VideoSelectionContextValue {
-  const value = use(VideoSelectionContext)
+  const value = use(VideoSelectionContext);
 
   if (!value) {
     throw new Error(
-      '動画の選択と操作の部品は VideoSelectionProvider の中に置いてください。',
-    )
+      "動画の選択と操作の部品は VideoSelectionProvider の中に置いてください。"
+    );
   }
 
-  return value
+  return value;
 }
 
 interface VideoSelectionProviderProps {
-  children: ReactNode
+  children: ReactNode;
   /** 表示中の動画の ID。並び順は問わない */
-  videoIds: readonly string[]
+  videoIds: readonly string[];
 }
 
 /**
@@ -53,31 +54,31 @@ export function VideoSelectionProvider({
   children,
   videoIds,
 }: VideoSelectionProviderProps) {
-  const [selectedIds, setSelectedIds] = useState<readonly string[]>([])
-  const [prevVideoIds, setPrevVideoIds] = useState(videoIds)
+  const [selectedIds, setSelectedIds] = useState<readonly string[]>([]);
+  const [prevVideoIds, setPrevVideoIds] = useState(videoIds);
   const { dialogProps, openDialog } = useVideoAction({
     onSuccess: () => setSelectedIds([]),
-  })
+  });
 
   // ページ送り・絞り込み・並べ替えで一覧が変わったら、選択を現在の一覧に
   // 含まれる動画だけに絞る（ページをまたぐ選択は持たない）
   if (videoIds !== prevVideoIds) {
-    setPrevVideoIds(videoIds)
-    const currentIds = new Set(videoIds)
-    setSelectedIds((prev) => prev.filter((id) => currentIds.has(id)))
+    setPrevVideoIds(videoIds);
+    const currentIds = new Set(videoIds);
+    setSelectedIds((prev) => prev.filter((id) => currentIds.has(id)));
   }
 
   const setSelected = (id: string, selected: boolean) => {
     setSelectedIds((prev) => {
-      const others = prev.filter((selectedId) => selectedId !== id)
+      const others = prev.filter((selectedId) => selectedId !== id);
 
-      return selected ? [...others, id] : others
-    })
-  }
+      return selected ? [...others, id] : others;
+    });
+  };
 
   const setAllSelected = (selected: boolean) => {
-    setSelectedIds(selected ? videoIds : [])
-  }
+    setSelectedIds(selected ? videoIds : []);
+  };
 
   return (
     <VideoSelectionContext
@@ -92,5 +93,5 @@ export function VideoSelectionProvider({
       {children}
       <VideoActionConfirmDialog {...dialogProps} />
     </VideoSelectionContext>
-  )
+  );
 }

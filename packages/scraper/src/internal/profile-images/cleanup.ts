@@ -1,7 +1,8 @@
-import { toDBString } from '@shinju-date/temporal-fns'
-import type { TypedSupabaseClient } from '../../types.js'
-import { DatabaseError } from '../errors.js'
-import { removeProfileImage } from './profile-image.js'
+import { toDBString } from "@shinju-date/temporal-fns";
+
+import type { TypedSupabaseClient } from "../../types.js";
+import { DatabaseError } from "../errors.js";
+import { removeProfileImage } from "./profile-image.js";
 
 /**
  * Icons younger than this are left alone: `syncProfileImage` stores an icon
@@ -9,10 +10,10 @@ import { removeProfileImage } from './profile-image.js'
  */
 export const UNUSED_PROFILE_IMAGE_GRACE_PERIOD = Temporal.Duration.from({
   hours: 1,
-})
+});
 
 export interface RemoveUnusedProfileImagesOptions {
-  now: Temporal.Instant
+  now: Temporal.Instant;
 }
 
 /**
@@ -27,28 +28,28 @@ export interface RemoveUnusedProfileImagesOptions {
  */
 export async function removeUnusedProfileImages(
   supabaseClient: TypedSupabaseClient,
-  { now }: RemoveUnusedProfileImagesOptions,
+  { now }: RemoveUnusedProfileImagesOptions
 ): Promise<number> {
-  const before = now.subtract(UNUSED_PROFILE_IMAGE_GRACE_PERIOD)
+  const before = now.subtract(UNUSED_PROFILE_IMAGE_GRACE_PERIOD);
   const { data, error } = await supabaseClient
-    .from('profile_images')
-    .select('id, path, youtube_channels(id), twitch_users(id)')
+    .from("profile_images")
+    .select("id, path, youtube_channels(id), twitch_users(id)")
     // Filtering an embedded resource on null keeps the rows without one.
-    .is('youtube_channels', null)
-    .is('twitch_users', null)
-    .lt('created_at', toDBString(before))
+    .is("youtube_channels", null)
+    .is("twitch_users", null)
+    .lt("created_at", toDBString(before));
 
   if (error) {
-    throw new DatabaseError('Failed to list unused profile images', error)
+    throw new DatabaseError("Failed to list unused profile images", error);
   }
 
-  let removedCount = 0
+  let removedCount = 0;
 
   for (const image of data) {
     if (await removeProfileImage(supabaseClient, image)) {
-      removedCount += 1
+      removedCount += 1;
     }
   }
 
-  return removedCount
+  return removedCount;
 }

@@ -16,12 +16,12 @@
  */
 export function createTitleFromMessage(message: string): string {
   // Remove empty lines and normalize whitespace
-  const cleaned = message.replaceAll(/\s+/g, ' ').trim()
+  const cleaned = message.replaceAll(/\s+/g, " ").trim();
 
   // Take first 50 characters
-  const maxLength = 50
+  const maxLength = 50;
   if (cleaned.length <= maxLength) {
-    return cleaned
+    return cleaned;
   }
-  return `${cleaned.substring(0, maxLength)}...`
+  return `${cleaned.substring(0, maxLength)}...`;
 }

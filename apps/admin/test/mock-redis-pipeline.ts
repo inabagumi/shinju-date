@@ -1,8 +1,8 @@
-const PIPELINE_COMMANDS = ['get', 'hgetall', 'scard', 'zrange'] as const
+const PIPELINE_COMMANDS = ["get", "hgetall", "scard", "zrange"] as const;
 
-type PipelineCommand = (typeof PIPELINE_COMMANDS)[number]
+type PipelineCommand = (typeof PIPELINE_COMMANDS)[number];
 
-type CommandMock = (...args: unknown[]) => unknown
+type CommandMock = (...args: unknown[]) => unknown;
 
 /**
  * Create a stand-in for `redis.pipeline()` of `@upstash/redis`.
@@ -13,26 +13,26 @@ type CommandMock = (...args: unknown[]) => unknown
  * pipeline, `exec()` rejects when any command fails.
  */
 export function createMockPipeline(
-  client: Partial<Record<PipelineCommand, CommandMock>>,
+  client: Partial<Record<PipelineCommand, CommandMock>>
 ) {
-  const queued: Array<() => unknown> = []
+  const queued: Array<() => unknown> = [];
   const pipeline: Record<string, unknown> = {
     exec: () => Promise.all(queued.map((run) => run())),
-  }
+  };
 
   for (const command of PIPELINE_COMMANDS) {
     pipeline[command] = (...args: unknown[]) => {
-      const run = client[command]
+      const run = client[command];
 
       if (!run) {
-        throw new Error(`${command} is not mocked`)
+        throw new Error(`${command} is not mocked`);
       }
 
-      queued.push(() => run(...args))
+      queued.push(() => run(...args));
 
-      return pipeline
-    }
+      return pipeline;
+    };
   }
 
-  return pipeline
+  return pipeline;
 }

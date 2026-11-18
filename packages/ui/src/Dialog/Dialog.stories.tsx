@@ -1,7 +1,9 @@
-import { useState } from 'react'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
-import preview from '#.storybook/preview'
-import { Button } from '../Button/Button'
+import { useState } from "react";
+import { expect, userEvent, waitFor, within } from "storybook/test";
+
+import preview from "#.storybook/preview";
+
+import { Button } from "../Button/Button";
 import {
   Dialog,
   DialogClose,
@@ -11,52 +13,52 @@ import {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
-} from './Dialog'
+} from "./Dialog";
 
 const meta = preview.meta({
   component: Dialog,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs'],
-  title: 'Components/Dialog',
-})
+  tags: ["autodocs"],
+  title: "Components/Dialog",
+});
 
 export const Basic = meta.story({
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
+    const canvas = within(canvasElement);
 
     // Find and click the trigger button
-    const triggerButton = canvas.getByRole('button', { name: /open dialog/i })
-    await expect(triggerButton).toBeInTheDocument()
-    await userEvent.click(triggerButton)
+    const triggerButton = canvas.getByRole("button", { name: /open dialog/i });
+    await expect(triggerButton).toBeInTheDocument();
+    await userEvent.click(triggerButton);
 
     // Wait for dialog to appear
     await waitFor(async () => {
-      const dialog = await within(document.body).findByRole('dialog')
-      await expect(dialog).toBeInTheDocument()
-    })
+      const dialog = await within(document.body).findByRole("dialog");
+      await expect(dialog).toBeInTheDocument();
+    });
 
     // Verify dialog content
-    const dialogTitle = within(document.body).getByText(/dialog title/i)
-    await expect(dialogTitle).toBeInTheDocument()
+    const dialogTitle = within(document.body).getByText(/dialog title/i);
+    await expect(dialogTitle).toBeInTheDocument();
 
     const dialogDescription = within(document.body).getByText(
-      /this is a basic dialog/i,
-    )
-    await expect(dialogDescription).toBeInTheDocument()
+      /this is a basic dialog/i
+    );
+    await expect(dialogDescription).toBeInTheDocument();
 
     // Find and click close button
-    const closeButton = within(document.body).getByRole('button', {
+    const closeButton = within(document.body).getByRole("button", {
       name: /close/i,
-    })
-    await userEvent.click(closeButton)
+    });
+    await userEvent.click(closeButton);
 
     // Wait for dialog to close
     await waitFor(() => {
-      const dialog = within(document.body).queryByRole('dialog')
-      expect(dialog).not.toBeInTheDocument()
-    })
+      const dialog = within(document.body).queryByRole("dialog");
+      expect(dialog).not.toBeInTheDocument();
+    });
   },
   render: () => (
     <Dialog>
@@ -77,7 +79,7 @@ export const Basic = meta.story({
       </DialogPortal>
     </Dialog>
   ),
-})
+});
 
 export const WithActions = meta.story({
   render: () => (
@@ -105,35 +107,35 @@ export const WithActions = meta.story({
       </DialogPortal>
     </Dialog>
   ),
-})
+});
 
 export const WithForm = meta.story({
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
+    const canvas = within(canvasElement);
 
     // Open the dialog
-    const triggerButton = canvas.getByRole('button', { name: /edit profile/i })
-    await userEvent.click(triggerButton)
+    const triggerButton = canvas.getByRole("button", { name: /edit profile/i });
+    await userEvent.click(triggerButton);
 
     // Wait for dialog to appear
     await waitFor(async () => {
-      const dialog = await within(document.body).findByRole('dialog')
-      await expect(dialog).toBeInTheDocument()
-    })
+      const dialog = await within(document.body).findByRole("dialog");
+      await expect(dialog).toBeInTheDocument();
+    });
 
     // Find and fill the form input
-    const nameInput = within(document.body).getByLabelText(/name/i)
-    await userEvent.type(nameInput, 'John Doe')
-    await expect(nameInput).toHaveValue('John Doe')
+    const nameInput = within(document.body).getByLabelText(/name/i);
+    await userEvent.type(nameInput, "John Doe");
+    await expect(nameInput).toHaveValue("John Doe");
 
     // Submit the form (this will trigger an alert in the story)
-    const saveButton = within(document.body).getByRole('button', {
+    const saveButton = within(document.body).getByRole("button", {
       name: /save changes/i,
-    })
-    await expect(saveButton).toBeInTheDocument()
+    });
+    await expect(saveButton).toBeInTheDocument();
   },
   render: () => {
-    const [name, setName] = useState('')
+    const [name, setName] = useState("");
     return (
       <Dialog>
         <DialogTrigger asChild>
@@ -148,8 +150,8 @@ export const WithForm = meta.story({
             </DialogDescription>
             <form
               onSubmit={(e) => {
-                e.preventDefault()
-                alert(`Saved: ${name}`)
+                e.preventDefault();
+                alert(`Saved: ${name}`);
               }}
             >
               <div className="mt-4 flex flex-col gap-2">
@@ -175,9 +177,9 @@ export const WithForm = meta.story({
           </DialogContent>
         </DialogPortal>
       </Dialog>
-    )
+    );
   },
-})
+});
 
 export const LongContent = meta.story({
   render: () => (
@@ -215,4 +217,4 @@ export const LongContent = meta.story({
       </DialogPortal>
     </Dialog>
   ),
-})
+});

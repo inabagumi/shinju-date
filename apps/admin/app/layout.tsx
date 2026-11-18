@@ -1,16 +1,18 @@
-import './globals.css'
-import type { Metadata, Viewport } from 'next'
-import type { ReactNode } from 'react'
-import { ActionToastProvider } from '@/components/action-toast'
-import { lato } from './fonts'
+import "./globals.css";
+import type { Metadata, Viewport } from "next";
+import type { ReactNode } from "react";
+
+import { ActionToastProvider } from "@/components/action-toast";
+
+import { lato } from "./fonts";
 
 export const viewport: Viewport = {
-  themeColor: '#1e0064', // var(--color-primary)
-}
+  themeColor: "#1e0064", // var(--color-primary)
+};
 
 export const metadata: Metadata = {
   description:
-    'SHINJU DATEの管理画面です。動画、用語集の管理とアナリティクスの閲覧ができます。',
+    "SHINJU DATEの管理画面です。動画、用語集の管理とアナリティクスの閲覧ができます。",
   robots: {
     follow: false,
     index: false,
@@ -19,13 +21,13 @@ export const metadata: Metadata = {
     nosnippet: true,
   },
   title: {
-    default: 'Admin UI - SHINJU DATE',
-    template: '%s - Admin UI - SHINJU DATE',
+    default: "Admin UI - SHINJU DATE",
+    template: "%s - Admin UI - SHINJU DATE",
   },
-}
+};
 
 interface Props {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export default function RootLayout({ children }: Props) {
@@ -36,5 +38,5 @@ export default function RootLayout({ children }: Props) {
         <ActionToastProvider>{children}</ActionToastProvider>
       </body>
     </html>
-  )
+  );
 }

@@ -5,13 +5,13 @@
 export function filterQueries<T>(
   queries: readonly T[],
   search: string | undefined,
-  getQuery: (item: T) => string,
+  getQuery: (item: T) => string
 ): T[] {
   if (!search) {
-    return [...queries]
+    return [...queries];
   }
 
-  const query = search.toLowerCase()
+  const query = search.toLowerCase();
 
-  return queries.filter((item) => getQuery(item).toLowerCase().includes(query))
+  return queries.filter((item) => getQuery(item).toLowerCase().includes(query));
 }

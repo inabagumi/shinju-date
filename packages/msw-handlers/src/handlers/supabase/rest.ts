@@ -1,24 +1,25 @@
-import { HttpResponse, type HttpResponseResolver, http } from 'msw'
-import { PostgrestError } from './errors.js'
+import { HttpResponse, type HttpResponseResolver, http } from "msw";
+
+import { PostgrestError } from "./errors.js";
 
 /** The base URL of the PostgREST API of the mock Supabase project. */
-export const REST_URL = 'https://fake.supabase.test/rest/v1'
+export const REST_URL = "https://fake.supabase.test/rest/v1";
 
 /**
  * The media type that supabase-js requests with `.single()`. PostgREST then
  * returns the only row as an object instead of an array.
  */
-const SINGLE_OBJECT_MEDIA_TYPE = 'application/vnd.pgrst.object+json'
+const SINGLE_OBJECT_MEDIA_TYPE = "application/vnd.pgrst.object+json";
 
-type RestResolverInfo = Parameters<HttpResponseResolver>[0]
+type RestResolverInfo = Parameters<HttpResponseResolver>[0];
 
-type RestResolver = (info: RestResolverInfo) => Response | Promise<Response>
+type RestResolver = (info: RestResolverInfo) => Response | Promise<Response>;
 
 /** Whether the request asks for a single object (`.single()`). */
 export function acceptsSingleObject(request: Request): boolean {
-  return (request.headers.get('accept') ?? '').startsWith(
-    SINGLE_OBJECT_MEDIA_TYPE,
-  )
+  return (request.headers.get("accept") ?? "").startsWith(
+    SINGLE_OBJECT_MEDIA_TYPE
+  );
 }
 
 /**
@@ -28,13 +29,13 @@ export function acceptsSingleObject(request: Request): boolean {
 export function singleObjectError(rowCount: number): Response {
   return HttpResponse.json(
     {
-      code: 'PGRST116',
+      code: "PGRST116",
       details: `The result contains ${rowCount} rows`,
       hint: null,
-      message: 'JSON object requested, multiple (or no) rows returned',
+      message: "JSON object requested, multiple (or no) rows returned",
     },
-    { status: 406 },
-  )
+    { status: 406 }
+  );
 }
 
 /**
@@ -44,51 +45,51 @@ export function singleObjectError(rowCount: number): Response {
  */
 async function toSingleObjectResponse(
   request: Request,
-  response: Response,
+  response: Response
 ): Promise<Response> {
   if (!acceptsSingleObject(request) || !response.ok || response.body === null) {
-    return response
+    return response;
   }
 
-  const body = await response.clone().text()
+  const body = await response.clone().text();
 
-  if (body === '') {
-    return response
+  if (body === "") {
+    return response;
   }
 
-  const rows: unknown = JSON.parse(body)
+  const rows: unknown = JSON.parse(body);
 
   if (!Array.isArray(rows)) {
-    return response
+    return response;
   }
 
   if (rows.length !== 1) {
-    return singleObjectError(rows.length)
+    return singleObjectError(rows.length);
   }
 
-  const headers = new Headers(response.headers)
+  const headers = new Headers(response.headers);
   // The length of the array does not apply to the object.
-  headers.delete('Content-Length')
-  headers.set('Content-Type', `${SINGLE_OBJECT_MEDIA_TYPE}; charset=utf-8`)
+  headers.delete("Content-Length");
+  headers.set("Content-Type", `${SINGLE_OBJECT_MEDIA_TYPE}; charset=utf-8`);
 
-  return HttpResponse.json(rows[0], { headers, status: response.status })
+  return HttpResponse.json(rows[0], { headers, status: response.status });
 }
 
 function createRestHandler(
-  method: 'delete' | 'get' | 'head' | 'patch' | 'post',
+  method: "delete" | "get" | "head" | "patch" | "post"
 ) {
   return (url: string, resolver: RestResolver) =>
     http[method](url, async (info) => {
       try {
-        return await toSingleObjectResponse(info.request, await resolver(info))
+        return await toSingleObjectResponse(info.request, await resolver(info));
       } catch (error) {
         if (error instanceof PostgrestError) {
-          return error.toResponse()
+          return error.toResponse();
         }
 
-        throw error
+        throw error;
       }
-    })
+    });
 }
 
 /**
@@ -100,9 +101,9 @@ function createRestHandler(
  * when it returns `PGRST116`.
  */
 export const rest = {
-  delete: createRestHandler('delete'),
-  get: createRestHandler('get'),
-  head: createRestHandler('head'),
-  patch: createRestHandler('patch'),
-  post: createRestHandler('post'),
-}
+  delete: createRestHandler("delete"),
+  get: createRestHandler("get"),
+  head: createRestHandler("head"),
+  patch: createRestHandler("patch"),
+  post: createRestHandler("post"),
+};

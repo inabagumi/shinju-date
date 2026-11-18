@@ -1,8 +1,8 @@
-import { defineConfig, type UserConfig } from 'tsdown'
+import { defineConfig, type UserConfig } from "tsdown";
 
 export interface PackageConfigOptions extends UserConfig {
   /** The source files to build. Each one becomes a file in `dist/`. */
-  entry: NonNullable<UserConfig['entry']>
+  entry: NonNullable<UserConfig["entry"]>;
 }
 
 /**
@@ -16,10 +16,10 @@ export interface PackageConfigOptions extends UserConfig {
 const defaults = {
   dts: true,
   fixedExtension: false,
-  format: 'esm',
+  format: "esm",
   sourcemap: true,
-  target: 'es2022',
-} as const satisfies UserConfig
+  target: "es2022",
+} as const satisfies UserConfig;
 
 /**
  * Returns the tsdown configuration for a package in `packages/*`.
@@ -38,5 +38,5 @@ const defaults = {
  * ```
  */
 export function definePackageConfig(options: PackageConfigOptions): UserConfig {
-  return defineConfig({ ...defaults, ...options })
+  return defineConfig({ ...defaults, ...options });
 }

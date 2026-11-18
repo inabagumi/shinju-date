@@ -4,8 +4,8 @@ export {
   StalledPaginationError,
   StorageError,
   throwIfError,
-} from './internal/errors.js'
-export { Scraper } from './scraper.js'
+} from "./internal/errors.js";
+export { Scraper } from "./scraper.js";
 export type {
   AccountChanges,
   AccountFields,
@@ -18,4 +18,4 @@ export type {
   SyncAccountResult,
   TypedSupabaseClient,
   VideoFields,
-} from './types.js'
+} from "./types.js";

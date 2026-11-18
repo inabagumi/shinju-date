@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   Area,
@@ -9,49 +9,50 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from 'recharts'
-import type { ChartSeries } from '../_lib/chart-series'
-import { ChartLegendContent } from './chart-legend-content'
-import { ChartTooltipContent } from './chart-tooltip-content'
+} from "recharts";
+
+import type { ChartSeries } from "../_lib/chart-series";
+import { ChartLegendContent } from "./chart-legend-content";
+import { ChartTooltipContent } from "./chart-tooltip-content";
 
 interface VideoStatsChartProps {
   data: Array<{
-    date: string
-    visibleVideos: number
-    scheduledVideos: number
-    hiddenVideos: number
-    deletedVideos: number
-  }>
+    date: string;
+    visibleVideos: number;
+    scheduledVideos: number;
+    hiddenVideos: number;
+    deletedVideos: number;
+  }>;
 }
 
 interface VideoStatsSeries extends ChartSeries {
   /** 同じ値の系列は積み上げる */
-  stackId: string
+  stackId: string;
 }
 
 const SERIES: VideoStatsSeries[] = [
   {
-    className: 'text-success',
-    key: 'visibleVideos',
-    label: '公開中',
-    stackId: 'visible',
+    className: "text-success",
+    key: "visibleVideos",
+    label: "公開中",
+    stackId: "visible",
   },
   {
-    className: 'text-accent',
-    key: 'scheduledVideos',
-    label: '配信予定',
-    stackId: 'visible',
+    className: "text-accent",
+    key: "scheduledVideos",
+    label: "配信予定",
+    stackId: "visible",
   },
   {
-    className: 'text-warning',
-    key: 'hiddenVideos',
-    label: '非表示',
-    stackId: 'hidden',
+    className: "text-warning",
+    key: "hiddenVideos",
+    label: "非表示",
+    stackId: "hidden",
   },
-]
+];
 
 function formatValue(value: number): string {
-  return `${value} 本`
+  return `${value} 本`;
 }
 
 export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
@@ -65,20 +66,20 @@ export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
           <XAxis
             dataKey="date"
             tick={{
-              className: 'text-muted',
-              fill: 'currentColor',
+              className: "text-muted",
+              fill: "currentColor",
               fontSize: 12,
             }}
-            tickLine={{ stroke: 'currentColor' }}
+            tickLine={{ stroke: "currentColor" }}
           />
           <YAxis
-            domain={['auto', 'auto']}
+            domain={["auto", "auto"]}
             tick={{
-              className: 'text-muted',
-              fill: 'currentColor',
+              className: "text-muted",
+              fill: "currentColor",
               fontSize: 12,
             }}
-            tickLine={{ stroke: 'currentColor' }}
+            tickLine={{ stroke: "currentColor" }}
           />
           <Tooltip
             content={
@@ -107,5 +108,5 @@ export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
         </AreaChart>
       </ResponsiveContainer>
     </div>
-  )
+  );
 }

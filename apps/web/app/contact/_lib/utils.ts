@@ -1,15 +1,15 @@
-import { serverEnv } from '@/lib/env'
+import { serverEnv } from "@/lib/env";
 
 /**
  * The placeholder recipient in `.env.local.sample`. Email sent to it would
  * never reach anyone, so it counts as not configured.
  */
-const PLACEHOLDER_ADMIN_EMAIL = 'admin@example.com'
+const PLACEHOLDER_ADMIN_EMAIL = "admin@example.com";
 
 export interface ContactFormConfig {
-  adminEmail: string
-  fromEmail: string
-  resendApiKey: string
+  adminEmail: string;
+  fromEmail: string;
+  resendApiKey: string;
 }
 
 /**
@@ -17,7 +17,7 @@ export interface ContactFormConfig {
  * could not be delivered.
  */
 export function getContactFormConfig(): ContactFormConfig | null {
-  const { ADMIN_EMAIL, FROM_EMAIL, RESEND_API_KEY } = serverEnv
+  const { ADMIN_EMAIL, FROM_EMAIL, RESEND_API_KEY } = serverEnv;
 
   if (
     !RESEND_API_KEY ||
@@ -25,14 +25,14 @@ export function getContactFormConfig(): ContactFormConfig | null {
     !ADMIN_EMAIL ||
     ADMIN_EMAIL === PLACEHOLDER_ADMIN_EMAIL
   ) {
-    return null
+    return null;
   }
 
   return {
     adminEmail: ADMIN_EMAIL,
     fromEmail: FROM_EMAIL,
     resendApiKey: RESEND_API_KEY,
-  }
+  };
 }
 
 /**
@@ -41,5 +41,5 @@ export function getContactFormConfig(): ContactFormConfig | null {
  * `getContactFormConfig()`, so the form is shown only when it can be sent.
  */
 export function isContactFormEnabled(): boolean {
-  return getContactFormConfig() !== null
+  return getContactFormConfig() !== null;
 }

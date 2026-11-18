@@ -1,11 +1,13 @@
-import { Skeleton } from '@shinju-date/ui'
-import { PanelSkeleton } from '@/components/panel'
-import { getMaintenanceModeStatus } from '../_lib/get-maintenance-mode-status'
-import { MaintenanceModeWidget } from './maintenance-mode-widget'
+import { Skeleton } from "@shinju-date/ui";
+
+import { PanelSkeleton } from "@/components/panel";
+
+import { getMaintenanceModeStatus } from "../_lib/get-maintenance-mode-status";
+import { MaintenanceModeWidget } from "./maintenance-mode-widget";
 
 export async function MaintenanceModePanel() {
-  const maintenanceModeStatus = await getMaintenanceModeStatus()
-  return <MaintenanceModeWidget initialStatus={maintenanceModeStatus} />
+  const maintenanceModeStatus = await getMaintenanceModeStatus();
+  return <MaintenanceModeWidget initialStatus={maintenanceModeStatus} />;
 }
 
 /** 読み込み中の `MaintenanceModePanel`。状態とスイッチの行と、注意事項の枠を並べる */
@@ -23,5 +25,5 @@ export function MaintenanceModePanelSkeleton() {
         <Skeleton className="h-36 w-full rounded-container" />
       </div>
     </PanelSkeleton>
-  )
+  );
 }

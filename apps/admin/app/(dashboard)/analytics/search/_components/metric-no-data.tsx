@@ -1,9 +1,9 @@
-import { StatTile } from '@shinju-date/ui'
+import { StatTile } from "@shinju-date/ui";
 
 interface Props {
-  description: string
+  description: string;
   /** 指標の名前。値があるときの `StatTile` と同じ位置に表示する */
-  label: string
+  label: string;
 }
 
 /**
@@ -23,5 +23,5 @@ export function MetricNoData({ description, label }: Props) {
       label={label}
       value={<span aria-hidden="true">—</span>}
     />
-  )
+  );
 }

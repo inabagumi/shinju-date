@@ -1,11 +1,12 @@
-'use client'
+"use client";
 
-import { useEffect, useEffectEvent } from 'react'
-import { logSearchQuery } from '@/lib/search-analytics'
+import { useEffect, useEffectEvent } from "react";
+
+import { logSearchQuery } from "@/lib/search-analytics";
 
 interface SearchQueryTrackerProps {
-  query: string
-  resultsCount: number
+  query: string;
+  resultsCount: number;
 }
 
 /**
@@ -21,16 +22,16 @@ export default function SearchQueryTracker({
   // while keeping the function reference stable
   const trackQuery = useEffectEvent(async (searchQuery: string) => {
     if (searchQuery) {
-      await logSearchQuery(searchQuery, resultsCount)
+      await logSearchQuery(searchQuery, resultsCount);
     }
-  })
+  });
 
   // Effect runs only when query changes, avoiding duplicate tracking
   // when resultsCount updates during infinite scroll
   useEffect(() => {
-    trackQuery(query)
-  }, [query])
+    trackQuery(query);
+  }, [query]);
 
   // This component doesn't render anything
-  return null
+  return null;
 }

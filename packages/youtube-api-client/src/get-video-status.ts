@@ -1,8 +1,8 @@
-import type { youtube_v3 as youtube } from '@googleapis/youtube'
-import type { Enums } from '@shinju-date/database'
+import type { youtube_v3 as youtube } from "@googleapis/youtube";
+import type { Enums } from "@shinju-date/database";
 
 /** The `video_status` enum of the database. */
-export type YouTubeVideoStatus = Enums<'video_status'>
+export type YouTubeVideoStatus = Enums<"video_status">;
 
 /**
  * Determines the status of a YouTube video based on its live streaming details.
@@ -23,14 +23,14 @@ export type YouTubeVideoStatus = Enums<'video_status'>
  */
 export function getVideoStatus(
   { liveStreamingDetails: details }: youtube.Schema$Video,
-  currentDateTime = Temporal.Now.instant(),
+  currentDateTime = Temporal.Now.instant()
 ): YouTubeVideoStatus {
   // If no liveStreamingDetails, it's a regular published video (not a live stream)
-  if (!details) return 'PUBLISHED'
+  if (!details) return "PUBLISHED";
 
   // Currently live (has actualStartTime but no actualEndTime)
   if (details.actualStartTime && !details.actualEndTime) {
-    return 'LIVE'
+    return "LIVE";
   }
 
   // Scheduled for future (has scheduledStartTime in the future)
@@ -38,12 +38,12 @@ export function getVideoStatus(
     details.scheduledStartTime &&
     Temporal.Instant.compare(
       Temporal.Instant.from(details.scheduledStartTime),
-      currentDateTime,
+      currentDateTime
     ) > 0
   ) {
-    return 'UPCOMING'
+    return "UPCOMING";
   }
 
   // Live stream that has ended
-  return 'ENDED'
+  return "ENDED";
 }

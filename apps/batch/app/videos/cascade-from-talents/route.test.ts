@@ -1,199 +1,199 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockSupabaseClient = {}
-const acquireLock = vi.fn()
-const releaseLock = vi.fn()
-const mockCascadeVideosFromTalents = vi.fn()
-const mockRevalidateTags = vi.fn()
+const mockSupabaseClient = {};
+const acquireLock = vi.fn();
+const releaseLock = vi.fn();
+const mockCascadeVideosFromTalents = vi.fn();
+const mockRevalidateTags = vi.fn();
 
-vi.mock('@/lib/supabase', () => ({
+vi.mock("@/lib/supabase", () => ({
   supabaseClient: mockSupabaseClient,
-}))
+}));
 
-vi.mock('@/lib/lock', () => ({ acquireLock, releaseLock }))
+vi.mock("@/lib/lock", () => ({ acquireLock, releaseLock }));
 
-vi.mock('./_lib/cascade-from-talents', async (importOriginal) => {
+vi.mock("./_lib/cascade-from-talents", async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('./_lib/cascade-from-talents')>()
+    await importOriginal<typeof import("./_lib/cascade-from-talents")>();
   return {
     ...actual,
     cascadeVideosFromTalents: mockCascadeVideosFromTalents,
-  }
-})
+  };
+});
 
-vi.mock('@shinju-date/web-cache', () => ({
+vi.mock("@shinju-date/web-cache", () => ({
   revalidateTags: mockRevalidateTags,
-}))
+}));
 
-vi.mock('@shinju-date/logger', () => ({
+vi.mock("@shinju-date/logger", () => ({
   logger: {
     error: vi.fn(),
     info: vi.fn(),
     warn: vi.fn(),
   },
-}))
+}));
 
-vi.mock('@sentry/nextjs', () => ({
-  captureCheckIn: vi.fn(() => 'mock-check-in-id'),
+vi.mock("@sentry/nextjs", () => ({
+  captureCheckIn: vi.fn(() => "mock-check-in-id"),
   captureException: vi.fn(),
   flush: vi.fn(),
-}))
+}));
 
-vi.mock('next/server', () => ({
+vi.mock("next/server", () => ({
   after: vi.fn((fn: () => void) => {
-    fn()
+    fn();
   }),
-}))
+}));
 
-describe('POST /videos/cascade-from-talents', () => {
-  let POST: (request: Request) => Promise<Response>
+describe("POST /videos/cascade-from-talents", () => {
+  let POST: (request: Request) => Promise<Response>;
 
   beforeEach(async () => {
-    const module = await import('./route')
-    POST = module.POST
-    vi.clearAllMocks()
-  })
+    const module = await import("./route");
+    POST = module.POST;
+    vi.clearAllMocks();
+  });
 
   afterEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
-  it('returns cascade result and revalidates when work was done', async () => {
-    acquireLock.mockResolvedValue('lock-value')
+  it("returns cascade result and revalidates when work was done", async () => {
+    acquireLock.mockResolvedValue("lock-value");
     mockCascadeVideosFromTalents.mockResolvedValue({
       restored: 3,
       softDeleted: 5,
-    })
-    mockRevalidateTags.mockResolvedValue(undefined)
+    });
+    mockRevalidateTags.mockResolvedValue(undefined);
 
     const request = new Request(
-      'http://localhost:5000/videos/cascade-from-talents',
-      { method: 'POST' },
-    )
-    const response = await POST(request)
+      "http://localhost:5000/videos/cascade-from-talents",
+      { method: "POST" }
+    );
+    const response = await POST(request);
 
-    expect(response.status).toBe(200)
+    expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       restored: 3,
       softDeleted: 5,
-    })
+    });
     expect(mockCascadeVideosFromTalents).toHaveBeenCalledWith(
-      mockSupabaseClient,
-    )
-    expect(mockRevalidateTags).toHaveBeenCalledWith(['videos', 'talents'], {
+      mockSupabaseClient
+    );
+    expect(mockRevalidateTags).toHaveBeenCalledWith(["videos", "talents"], {
       signal: request.signal,
-    })
-  })
+    });
+  });
 
-  it('skips revalidation when nothing changed', async () => {
-    acquireLock.mockResolvedValue('lock-value')
+  it("skips revalidation when nothing changed", async () => {
+    acquireLock.mockResolvedValue("lock-value");
     mockCascadeVideosFromTalents.mockResolvedValue({
       restored: 0,
       softDeleted: 0,
-    })
+    });
 
     const request = new Request(
-      'http://localhost:5000/videos/cascade-from-talents',
-      { method: 'POST' },
-    )
-    const response = await POST(request)
+      "http://localhost:5000/videos/cascade-from-talents",
+      { method: "POST" }
+    );
+    const response = await POST(request);
 
-    expect(response.status).toBe(200)
-    expect(mockRevalidateTags).not.toHaveBeenCalled()
-  })
+    expect(response.status).toBe(200);
+    expect(mockRevalidateTags).not.toHaveBeenCalled();
+  });
 
-  it('returns 429 while the previous run is still running', async () => {
-    acquireLock.mockResolvedValue(null)
-
-    const response = await POST(
-      new Request('http://localhost:5000/videos/cascade-from-talents', {
-        method: 'POST',
-      }),
-    )
-
-    expect(response.status).toBe(429)
-    expect(mockCascadeVideosFromTalents).not.toHaveBeenCalled()
-  })
-
-  it('returns 500 when cascade fails', async () => {
-    const Sentry = await import('@sentry/nextjs')
-    const error = new Error('boom')
-
-    acquireLock.mockResolvedValue('lock-value')
-    mockCascadeVideosFromTalents.mockRejectedValue(error)
+  it("returns 429 while the previous run is still running", async () => {
+    acquireLock.mockResolvedValue(null);
 
     const response = await POST(
-      new Request('http://localhost:5000/videos/cascade-from-talents', {
-        method: 'POST',
-      }),
-    )
+      new Request("http://localhost:5000/videos/cascade-from-talents", {
+        method: "POST",
+      })
+    );
 
-    expect(response.status).toBe(500)
-    expect(mockRevalidateTags).not.toHaveBeenCalled()
-    expect(Sentry.captureException).toHaveBeenCalledWith(error)
+    expect(response.status).toBe(429);
+    expect(mockCascadeVideosFromTalents).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 when cascade fails", async () => {
+    const Sentry = await import("@sentry/nextjs");
+    const error = new Error("boom");
+
+    acquireLock.mockResolvedValue("lock-value");
+    mockCascadeVideosFromTalents.mockRejectedValue(error);
+
+    const response = await POST(
+      new Request("http://localhost:5000/videos/cascade-from-talents", {
+        method: "POST",
+      })
+    );
+
+    expect(response.status).toBe(500);
+    expect(mockRevalidateTags).not.toHaveBeenCalled();
+    expect(Sentry.captureException).toHaveBeenCalledWith(error);
     expect(Sentry.captureCheckIn).toHaveBeenLastCalledWith({
-      checkInId: 'mock-check-in-id',
-      monitorSlug: '/videos/cascade-from-talents',
-      status: 'error',
-    })
-  })
+      checkInId: "mock-check-in-id",
+      monitorSlug: "/videos/cascade-from-talents",
+      status: "error",
+    });
+  });
 
-  it('returns 500 even when the revalidation after a partial failure fails', async () => {
-    const { CascadePhaseError } = await import('./_lib/cascade-from-talents')
-    const Sentry = await import('@sentry/nextjs')
-    const error = new CascadePhaseError('partial failure', {
+  it("returns 500 even when the revalidation after a partial failure fails", async () => {
+    const { CascadePhaseError } = await import("./_lib/cascade-from-talents");
+    const Sentry = await import("@sentry/nextjs");
+    const error = new CascadePhaseError("partial failure", {
       restored: 2,
       softDeleted: 0,
-    })
+    });
 
-    acquireLock.mockResolvedValue('lock-value')
-    mockCascadeVideosFromTalents.mockRejectedValue(error)
-    mockRevalidateTags.mockRejectedValue(new Error('web is down'))
+    acquireLock.mockResolvedValue("lock-value");
+    mockCascadeVideosFromTalents.mockRejectedValue(error);
+    mockRevalidateTags.mockRejectedValue(new Error("web is down"));
 
     const response = await POST(
-      new Request('http://localhost:5000/videos/cascade-from-talents', {
-        method: 'POST',
-      }),
-    )
+      new Request("http://localhost:5000/videos/cascade-from-talents", {
+        method: "POST",
+      })
+    );
 
-    expect(response.status).toBe(500)
-    expect(Sentry.captureException).toHaveBeenCalledWith(error)
+    expect(response.status).toBe(500);
+    expect(Sentry.captureException).toHaveBeenCalledWith(error);
     expect(Sentry.captureCheckIn).toHaveBeenLastCalledWith({
-      checkInId: 'mock-check-in-id',
-      monitorSlug: '/videos/cascade-from-talents',
-      status: 'error',
-    })
-  })
+      checkInId: "mock-check-in-id",
+      monitorSlug: "/videos/cascade-from-talents",
+      status: "error",
+    });
+  });
 
-  it('revalidates and logs partial counts when CascadePhaseError is thrown', async () => {
-    const { CascadePhaseError } = await import('./_lib/cascade-from-talents')
-    const { logger } = await import('@shinju-date/logger')
+  it("revalidates and logs partial counts when CascadePhaseError is thrown", async () => {
+    const { CascadePhaseError } = await import("./_lib/cascade-from-talents");
+    const { logger } = await import("@shinju-date/logger");
 
-    acquireLock.mockResolvedValue('lock-value')
+    acquireLock.mockResolvedValue("lock-value");
     mockCascadeVideosFromTalents.mockRejectedValue(
-      new CascadePhaseError('partial failure', {
+      new CascadePhaseError("partial failure", {
         restored: 0,
         softDeleted: 3,
-      }),
-    )
-    mockRevalidateTags.mockResolvedValue(undefined)
+      })
+    );
+    mockRevalidateTags.mockResolvedValue(undefined);
 
     const response = await POST(
-      new Request('http://localhost:5000/videos/cascade-from-talents', {
-        method: 'POST',
-      }),
-    )
+      new Request("http://localhost:5000/videos/cascade-from-talents", {
+        method: "POST",
+      })
+    );
 
-    expect(response.status).toBe(500)
-    expect(mockRevalidateTags).toHaveBeenCalledWith(['videos', 'talents'], {
+    expect(response.status).toBe(500);
+    expect(mockRevalidateTags).toHaveBeenCalledWith(["videos", "talents"], {
       signal: expect.any(AbortSignal),
-    })
+    });
     expect(logger.error).toHaveBeenCalledWith(
-      'タレント連鎖の動画処理でフェーズ失敗がありました',
+      "タレント連鎖の動画処理でフェーズ失敗がありました",
       expect.objectContaining({
         restored: 0,
         softDeleted: 3,
-      }),
-    )
-  })
-})
+      })
+    );
+  });
+});

@@ -1,7 +1,7 @@
-import { Slot } from '@radix-ui/react-slot'
-import { twMerge } from '@shinju-date/ui'
-import Link from 'next/link'
-import type { ComponentPropsWithRef } from 'react'
+import { Slot } from "@radix-ui/react-slot";
+import { twMerge } from "@shinju-date/ui";
+import Link from "next/link";
+import type { ComponentPropsWithRef } from "react";
 
 /**
  * A link to another page or the next part of the same list, such as the
@@ -14,12 +14,12 @@ export function NavigationLink({
   return (
     <Link
       className={twMerge(
-        'inline-flex items-center gap-0.5 rounded-control font-semibold text-accent focus-ring hover:underline',
-        className,
+        "inline-flex items-center gap-0.5 rounded-control font-semibold text-accent focus-ring hover:underline",
+        className
       )}
       {...props}
     />
-  )
+  );
 }
 
 /** The chevron of `NavigationLink`. Pass the icon as the child */
@@ -30,8 +30,8 @@ export function NavigationLinkIcon({
   return (
     <Slot
       aria-hidden="true"
-      className={twMerge('size-4', className)}
+      className={twMerge("size-4", className)}
       {...props}
     />
-  )
+  );
 }

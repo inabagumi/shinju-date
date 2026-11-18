@@ -1,4 +1,4 @@
-import PQueue from 'p-queue'
+import PQueue from "p-queue";
 
 /**
  * Runs `task` for every item with at most `concurrency` tasks in flight and
@@ -11,21 +11,21 @@ export async function countChanges<T>(
   items: readonly T[],
   concurrency: number,
   task: (item: T) => Promise<boolean | undefined>,
-  onError: (error: unknown, item: T) => void,
+  onError: (error: unknown, item: T) => void
 ): Promise<number> {
-  const queue = new PQueue({ concurrency })
+  const queue = new PQueue({ concurrency });
   const results = await Promise.allSettled(
-    items.map((item) => queue.add(() => task(item))),
-  )
-  let count = 0
+    items.map((item) => queue.add(() => task(item)))
+  );
+  let count = 0;
 
   for (const [index, result] of results.entries()) {
-    if (result.status === 'rejected') {
-      onError(result.reason, items[index] as T)
+    if (result.status === "rejected") {
+      onError(result.reason, items[index] as T);
     } else if (result.value !== false) {
-      count++
+      count++;
     }
   }
 
-  return count
+  return count;
 }

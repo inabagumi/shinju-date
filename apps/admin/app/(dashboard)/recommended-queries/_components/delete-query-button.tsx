@@ -1,12 +1,14 @@
-'use client'
+"use client";
 
-import { Button } from '@shinju-date/ui'
-import { useActionToast } from '@/components/action-toast'
-import { ConfirmDialog } from '@/components/confirm-dialog'
-import { deleteQueryAction } from '../_actions'
+import { Button } from "@shinju-date/ui";
+
+import { useActionToast } from "@/components/action-toast";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+
+import { deleteQueryAction } from "../_actions";
 
 interface DeleteQueryButtonProps {
-  query: string
+  query: string;
 }
 
 /**
@@ -14,17 +16,17 @@ interface DeleteQueryButtonProps {
  * 成功したらダイアログを閉じてトーストで知らせる
  */
 export function DeleteQueryButton({ query }: DeleteQueryButtonProps) {
-  const { showToast } = useActionToast()
+  const { showToast } = useActionToast();
 
   const handleDeleteQuery = async () => {
-    const result = await deleteQueryAction(query)
+    const result = await deleteQueryAction(query);
 
     if (result.success) {
-      showToast('success', 'クエリを削除しました。')
+      showToast("success", "クエリを削除しました。");
     }
 
-    return result
-  }
+    return result;
+  };
 
   return (
     <ConfirmDialog
@@ -44,5 +46,5 @@ export function DeleteQueryButton({ query }: DeleteQueryButtonProps) {
         </Button>
       }
     />
-  )
+  );
 }

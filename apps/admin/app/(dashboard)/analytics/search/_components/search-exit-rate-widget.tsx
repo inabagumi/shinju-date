@@ -1,4 +1,4 @@
-import { formatNumber } from '@shinju-date/helpers'
+import { formatNumber } from "@shinju-date/helpers";
 import {
   Badge,
   EmptyState,
@@ -9,27 +9,29 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@shinju-date/ui'
-import { TableSkeleton } from '@/components/table-skeleton'
-import { getSearchExitRates } from '@/lib/analytics/get-search-quality-metrics'
-import { ExportLink } from '../../_components/export-link'
+} from "@shinju-date/ui";
+
+import { TableSkeleton } from "@/components/table-skeleton";
+import { getSearchExitRates } from "@/lib/analytics/get-search-quality-metrics";
+
+import { ExportLink } from "../../_components/export-link";
 import {
   WidgetHeader,
   WidgetHeaderSkeleton,
-} from '../../_components/widget-header'
-import { resolvePeriod } from '../../_lib/resolve-period'
-import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
-import { EXIT_RATE_RATINGS, rate } from '../_lib/metric-ratings'
-import { MetricLegend } from './metric-legend'
+} from "../../_components/widget-header";
+import { resolvePeriod } from "../../_lib/resolve-period";
+import type { AnalyticsSearchParams } from "../../_lib/search-params-schema";
+import { EXIT_RATE_RATINGS, rate } from "../_lib/metric-ratings";
+import { MetricLegend } from "./metric-legend";
 
 interface Props {
-  searchParams: Promise<AnalyticsSearchParams>
+  searchParams: Promise<AnalyticsSearchParams>;
 }
 
 interface SearchExitRate {
-  keyword: string
-  exitRate: number
-  searchCount: number
+  keyword: string;
+  exitRate: number;
+  searchCount: number;
 }
 
 /**
@@ -40,9 +42,9 @@ function SearchExitRateWidgetComponent({
   dateRange,
   selectedDate,
 }: {
-  exitRates: SearchExitRate[]
-  dateRange: { startDate: string; endDate: string }
-  selectedDate: string | null
+  exitRates: SearchExitRate[];
+  dateRange: { startDate: string; endDate: string };
+  selectedDate: string | null;
 }) {
   return (
     <div>
@@ -73,7 +75,7 @@ function SearchExitRateWidgetComponent({
           </TableHeader>
           <TableBody>
             {exitRates.map((item, index) => {
-              const rating = rate(item.exitRate, EXIT_RATE_RATINGS)
+              const rating = rate(item.exitRate, EXIT_RATE_RATINGS);
 
               return (
                 <TableRow key={item.keyword}>
@@ -93,7 +95,7 @@ function SearchExitRateWidgetComponent({
                     <Badge variant={rating.variant}>{rating.label}</Badge>
                   </TableCell>
                 </TableRow>
-              )
+              );
             })}
           </TableBody>
         </Table>
@@ -109,17 +111,17 @@ function SearchExitRateWidgetComponent({
         unit="%"
       />
     </div>
-  )
+  );
 }
 
 /**
  * Async server component that fetches and displays search exit rate widget
  */
 export async function SearchExitRateWidget({ searchParams }: Props) {
-  const { dateRange, selectedDate } = await searchParams
+  const { dateRange, selectedDate } = await searchParams;
 
-  const range = resolvePeriod({ dateRange, selectedDate })
-  const exitRates = await getSearchExitRates({ limit: 20, range })
+  const range = resolvePeriod({ dateRange, selectedDate });
+  const exitRates = await getSearchExitRates({ limit: 20, range });
 
   return (
     <SearchExitRateWidgetComponent
@@ -127,7 +129,7 @@ export async function SearchExitRateWidget({ searchParams }: Props) {
       exitRates={exitRates}
       selectedDate={selectedDate}
     />
-  )
+  );
 }
 
 /** 読み込み中の `SearchExitRateWidget`。見出し、5列の表、4つの評価基準を並べる */
@@ -138,19 +140,19 @@ export function SearchExitRateWidgetSkeleton() {
       <TableSkeleton
         columns={[
           {
-            align: 'end',
+            align: "end",
             cell: <Skeleton className="h-4 w-5" />,
-            className: 'w-16',
-            id: 'rank',
+            className: "w-16",
+            id: "rank",
           },
-          { cell: <Skeleton className="h-4 w-48" />, id: 'keyword' },
+          { cell: <Skeleton className="h-4 w-48" />, id: "keyword" },
           {
-            align: 'end',
+            align: "end",
             cell: <Skeleton className="h-4 w-10" />,
-            id: 'count',
+            id: "count",
           },
-          { align: 'end', cell: <Skeleton className="h-4 w-12" />, id: 'rate' },
-          { cell: <Skeleton className="h-5 w-12" />, id: 'rating' },
+          { align: "end", cell: <Skeleton className="h-4 w-12" />, id: "rate" },
+          { cell: <Skeleton className="h-5 w-12" />, id: "rating" },
         ]}
         rows={10}
       />
@@ -162,5 +164,5 @@ export function SearchExitRateWidgetSkeleton() {
         <Skeleton className="h-4 w-24" />
       </div>
     </div>
-  )
+  );
 }

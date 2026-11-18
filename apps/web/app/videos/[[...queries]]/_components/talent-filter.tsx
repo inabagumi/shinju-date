@@ -1,18 +1,19 @@
-'use client'
+"use client";
 
-import { MultiSelect } from '@shinju-date/ui'
-import { useRouter } from 'next/navigation'
-import { useOptimistic, useTransition } from 'react'
-import type { Talent } from '@/lib/data/talents'
-import { getVideosPath, type VideoKindFilter } from '@/lib/video-kind-filter'
+import { MultiSelect } from "@shinju-date/ui";
+import { useRouter } from "next/navigation";
+import { useOptimistic, useTransition } from "react";
+
+import type { Talent } from "@/lib/data/talents";
+import { getVideosPath, type VideoKindFilter } from "@/lib/video-kind-filter";
 
 interface TalentFilterProps {
-  kind: VideoKindFilter
-  query: string
+  kind: VideoKindFilter;
+  query: string;
   /** 選択肢にする活動中のタレント。名前の昇順に並べておく */
-  talents: Talent[]
+  talents: Talent[];
   /** 選んでいるタレントの ID */
-  value: string[]
+  value: string[];
 }
 
 /**
@@ -25,17 +26,17 @@ export default function TalentFilter({
   talents,
   value,
 }: TalentFilterProps) {
-  const router = useRouter()
-  const [, startTransition] = useTransition()
+  const router = useRouter();
+  const [, startTransition] = useTransition();
   // 移動が終わるまでの間も、選んだ状態をすぐに表示する
-  const [optimisticValue, setOptimisticValue] = useOptimistic(value)
+  const [optimisticValue, setOptimisticValue] = useOptimistic(value);
 
   const handleChange = (nextValue: string[]) => {
     startTransition(() => {
-      setOptimisticValue(nextValue)
-      router.push(getVideosPath(query, kind, nextValue), { scroll: false })
-    })
-  }
+      setOptimisticValue(nextValue);
+      router.push(getVideosPath(query, kind, nextValue), { scroll: false });
+    });
+  };
 
   return (
     <MultiSelect
@@ -48,5 +49,5 @@ export default function TalentFilter({
       placeholder="タレント"
       value={optimisticValue}
     />
-  )
+  );
 }

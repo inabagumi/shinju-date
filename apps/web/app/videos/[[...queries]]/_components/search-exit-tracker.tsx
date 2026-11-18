@@ -1,12 +1,13 @@
-'use client'
+"use client";
 
-import { usePathname } from 'next/navigation'
-import { useEffect } from 'react'
-import { startSearchExit } from '@/lib/search-exit'
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+
+import { startSearchExit } from "@/lib/search-exit";
 
 interface SearchExitTrackerProps {
-  hasResults: boolean
-  query: string
+  hasResults: boolean;
+  query: string;
 }
 
 /**
@@ -17,13 +18,13 @@ export default function SearchExitTracker({
   hasResults,
   query,
 }: SearchExitTrackerProps) {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   useEffect(() => {
     if (query && hasResults) {
-      startSearchExit(query, pathname)
+      startSearchExit(query, pathname);
     }
-  }, [hasResults, pathname, query])
+  }, [hasResults, pathname, query]);
 
-  return null
+  return null;
 }

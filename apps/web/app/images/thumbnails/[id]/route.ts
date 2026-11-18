@@ -1,28 +1,29 @@
-import { createErrorResponse } from '@shinju-date/helpers'
-import type { NextRequest } from 'next/server'
-import { serveStorageImage } from '@/lib/storage-image'
-import { getSupabaseAdminClient } from '@/lib/supabase'
+import { createErrorResponse } from "@shinju-date/helpers";
+import type { NextRequest } from "next/server";
+
+import { serveStorageImage } from "@/lib/storage-image";
+import { getSupabaseAdminClient } from "@/lib/supabase";
 
 export async function GET(
   request: NextRequest,
-  ctx: RouteContext<'/images/thumbnails/[id]'>,
+  ctx: RouteContext<"/images/thumbnails/[id]">
 ) {
-  const { id } = await ctx.params
-  const supabaseAdminClient = getSupabaseAdminClient()
+  const { id } = await ctx.params;
+  const supabaseAdminClient = getSupabaseAdminClient();
   const { data: thumbnail, error } = await supabaseAdminClient
-    .from('thumbnails')
-    .select('path')
-    .eq('id', id)
-    .is('deleted_at', null)
-    .maybeSingle()
+    .from("thumbnails")
+    .select("path")
+    .eq("id", id)
+    .is("deleted_at", null)
+    .maybeSingle();
 
   if (error || !thumbnail) {
-    return createErrorResponse('Failed to fetch thumbnail', { status: 404 })
+    return createErrorResponse("Failed to fetch thumbnail", { status: 404 });
   }
 
   return serveStorageImage(request, {
-    bucket: 'thumbnails',
+    bucket: "thumbnails",
     path: thumbnail.path,
     supabaseClient: supabaseAdminClient,
-  })
+  });
 }

@@ -1,8 +1,9 @@
-import { formatNumber } from '@shinju-date/helpers'
-import { logger } from '@shinju-date/logger'
-import { Alert } from '@shinju-date/ui'
-import Link from 'next/link'
-import { countVideoBackfillFailures } from '../_lib/count-video-backfill-failures'
+import { formatNumber } from "@shinju-date/helpers";
+import { logger } from "@shinju-date/logger";
+import { Alert } from "@shinju-date/ui";
+import Link from "next/link";
+
+import { countVideoBackfillFailures } from "../_lib/count-video-backfill-failures";
 
 /**
  * Tells admins that the latest backfill of some accounts failed, so that they
@@ -10,18 +11,18 @@ import { countVideoBackfillFailures } from '../_lib/count-video-backfill-failure
  * the failures cannot be counted.
  */
 export async function VideoBackfillFailureAlert() {
-  let failures: number
+  let failures: number;
 
   try {
-    failures = await countVideoBackfillFailures()
+    failures = await countVideoBackfillFailures();
   } catch (error) {
-    logger.warn('失敗した過去動画の取り込みを数えられませんでした', { error })
+    logger.warn("失敗した過去動画の取り込みを数えられませんでした", { error });
 
-    return null
+    return null;
   }
 
   if (failures === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -39,5 +40,5 @@ export async function VideoBackfillFailureAlert() {
       過去動画の取り込みが失敗したアカウントが{formatNumber(failures)}
       件あります。
     </Alert>
-  )
+  );
 }

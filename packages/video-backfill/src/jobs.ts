@@ -1,4 +1,4 @@
-import { BACKFILL_PENDING_TIMEOUT_SECONDS, getBackfillJobId } from './keys.js'
+import { BACKFILL_PENDING_TIMEOUT_SECONDS, getBackfillJobId } from "./keys.js";
 import type {
   BackfillJob,
   BackfillJobActivity,
@@ -6,10 +6,10 @@ import type {
   BackfillPage,
   BackfillRequest,
   GetJobActivityOptions,
-} from './types.js'
+} from "./types.js";
 
 /** Runs in a row that may fail before a job is given up, by default. */
-export const BACKFILL_MAX_ATTEMPTS = 3
+export const BACKFILL_MAX_ATTEMPTS = 3;
 
 /**
  * How a job moves between statuses: for each operation, the statuses it
@@ -25,60 +25,60 @@ export const BACKFILL_JOB_TRANSITIONS = {
    * and the lease of the first claim ran out. `CLAIM_SCRIPT` skips the
    * queue entries of other jobs.
    */
-  claim: { from: ['pending', 'running'], to: 'running' },
+  claim: { from: ["pending", "running"], to: "running" },
   /** A worker read the last page of a claimed job. */
-  complete: { from: ['running'], to: 'done' },
+  complete: { from: ["running"], to: "done" },
   /**
    * An admin requests a job that is not queued or being read ({@link
    * getJobActivity}): one that finished, or that was interrupted.
    */
-  enqueue: { from: ['done', 'failed', 'pending', 'running'], to: 'pending' },
+  enqueue: { from: ["done", "failed", "pending", "running"], to: "pending" },
   /** A worker gives up a claimed job. */
-  fail: { from: ['running'], to: 'failed' },
+  fail: { from: ["running"], to: "failed" },
   /** A worker read a page of a claimed job, and keeps it. */
-  recordPage: { from: ['running'], to: 'running' },
+  recordPage: { from: ["running"], to: "running" },
   /** A worker puts a claimed job back, to continue or to retry later. */
-  requeue: { from: ['running'], to: 'pending' },
+  requeue: { from: ["running"], to: "pending" },
 } as const satisfies Record<
   string,
   { from: readonly BackfillJobStatus[]; to: BackfillJobStatus }
->
+>;
 
-export type BackfillJobOperation = keyof typeof BACKFILL_JOB_TRANSITIONS
+export type BackfillJobOperation = keyof typeof BACKFILL_JOB_TRANSITIONS;
 
 /**
  * Thrown for an operation on a job whose status it does not move from, as
  * {@link BACKFILL_JOB_TRANSITIONS} says.
  */
 export class BackfillTransitionError extends Error {
-  override name = 'BackfillTransitionError'
-  readonly jobId: string
-  readonly operation: BackfillJobOperation
-  readonly status: BackfillJobStatus
+  override name = "BackfillTransitionError";
+  readonly jobId: string;
+  readonly operation: BackfillJobOperation;
+  readonly status: BackfillJobStatus;
 
   constructor(
     jobId: string,
     operation: BackfillJobOperation,
-    status: BackfillJobStatus,
+    status: BackfillJobStatus
   ) {
     super(
-      `A backfill job that is ${status} cannot move to ${BACKFILL_JOB_TRANSITIONS[operation].to} (${operation}): ${jobId}`,
-    )
-    this.jobId = jobId
-    this.operation = operation
-    this.status = status
+      `A backfill job that is ${status} cannot move to ${BACKFILL_JOB_TRANSITIONS[operation].to} (${operation}): ${jobId}`
+    );
+    this.jobId = jobId;
+    this.operation = operation;
+    this.status = status;
   }
 }
 
 /** Tells whether an operation may move a job that has the given status. */
 export function canTransition(
   operation: BackfillJobOperation,
-  status: BackfillJobStatus,
+  status: BackfillJobStatus
 ): boolean {
   const { from }: { from: readonly BackfillJobStatus[] } =
-    BACKFILL_JOB_TRANSITIONS[operation]
+    BACKFILL_JOB_TRANSITIONS[operation];
 
-  return from.includes(status)
+  return from.includes(status);
 }
 
 /**
@@ -89,13 +89,13 @@ export function canTransition(
  */
 export function transition<T extends BackfillJob>(
   job: T,
-  operation: BackfillJobOperation,
+  operation: BackfillJobOperation
 ): T {
   if (!canTransition(operation, job.status)) {
-    throw new BackfillTransitionError(job.id, operation, job.status)
+    throw new BackfillTransitionError(job.id, operation, job.status);
   }
 
-  return { ...job, status: BACKFILL_JOB_TRANSITIONS[operation].to }
+  return { ...job, status: BACKFILL_JOB_TRANSITIONS[operation].to };
 }
 
 /**
@@ -105,29 +105,29 @@ export function transition<T extends BackfillJob>(
  * read while its worker holds the lock; otherwise it is `interrupted`.
  */
 export function getJobActivity(
-  job: Pick<BackfillJob, 'status' | 'updatedAt'>,
-  { locked, now = Temporal.Now.instant() }: GetJobActivityOptions,
+  job: Pick<BackfillJob, "status" | "updatedAt">,
+  { locked, now = Temporal.Now.instant() }: GetJobActivityOptions
 ): BackfillJobActivity {
-  let active: boolean
+  let active: boolean;
 
   switch (job.status) {
-    case 'pending':
+    case "pending":
       active =
         Temporal.Instant.compare(
           Temporal.Instant.from(job.updatedAt).add({
             seconds: BACKFILL_PENDING_TIMEOUT_SECONDS,
           }),
-          now,
-        ) > 0
-      break
-    case 'running':
-      active = locked
-      break
+          now
+        ) > 0;
+      break;
+    case "running":
+      active = locked;
+      break;
     default:
-      return { active: false, status: job.status }
+      return { active: false, status: job.status };
   }
 
-  return { active, status: active ? job.status : 'interrupted' }
+  return { active, status: active ? job.status : "interrupted" };
 }
 
 /**
@@ -140,14 +140,14 @@ export function getJobActivity(
 export function createRequestedJob(
   { accountId, provider, requestedBy, runId, talentId }: BackfillRequest,
   current: BackfillJob | null,
-  now: Temporal.Instant,
+  now: Temporal.Instant
 ): BackfillJob {
   if (current) {
-    transition(current, 'enqueue')
+    transition(current, "enqueue");
   }
 
-  const resumed = current && current.status !== 'done' ? current : null
-  const timestamp = now.toString()
+  const resumed = current && current.status !== "done" ? current : null;
+  const timestamp = now.toString();
 
   return {
     accountId,
@@ -163,10 +163,10 @@ export function createRequestedJob(
     requestedBy,
     runId: runId === undefined ? (resumed?.runId ?? null) : runId,
     startedAt: null,
-    status: 'pending',
+    status: "pending",
     talentId,
     updatedAt: timestamp,
-  }
+  };
 }
 
 /**
@@ -179,15 +179,15 @@ export function createRequestedJob(
  */
 export function moveJob(
   job: BackfillJob,
-  operation: Exclude<BackfillJobOperation, 'claim' | 'enqueue'>,
-  now: Temporal.Instant,
+  operation: Exclude<BackfillJobOperation, "claim" | "enqueue">,
+  now: Temporal.Instant
 ): BackfillJob {
-  const timestamp = now.toString()
-  const moved = { ...transition(job, operation), updatedAt: timestamp }
+  const timestamp = now.toString();
+  const moved = { ...transition(job, operation), updatedAt: timestamp };
 
-  return operation === 'complete' || operation === 'fail'
+  return operation === "complete" || operation === "fail"
     ? { ...moved, finishedAt: timestamp }
-    : moved
+    : moved;
 }
 
 /**
@@ -196,7 +196,7 @@ export function moveJob(
  */
 export function withPage(
   job: BackfillJob,
-  { added, nextCursor }: BackfillPage,
+  { added, nextCursor }: BackfillPage
 ): BackfillJob {
   return {
     ...job,
@@ -205,7 +205,7 @@ export function withPage(
     cursor: nextCursor,
     error: null,
     pages: job.pages + 1,
-  }
+  };
 }
 
 /** A job with a page that could not be read: the attempt and its error. */
@@ -214,5 +214,5 @@ export function withFailure(job: BackfillJob, error: unknown): BackfillJob {
     ...job,
     attempts: job.attempts + 1,
     error: error instanceof Error ? error.message : String(error),
-  }
+  };
 }

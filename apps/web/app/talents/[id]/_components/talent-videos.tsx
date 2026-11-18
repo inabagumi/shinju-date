@@ -1,30 +1,34 @@
-import NoResults from '@/components/no-results'
-import SearchResults from '@/components/search-results'
+import NoResults from "@/components/no-results";
+import SearchResults from "@/components/search-results";
 import VideoKindFilterNav, {
   VideoKindFilterNavSkeleton,
-} from '@/components/video-kind-filter-nav'
-import { fetchVideos } from '@/lib/data/videos'
-import { getReferenceDate } from '@/lib/reference-date'
-import { getTalentPath } from '@/lib/talent-links'
+} from "@/components/video-kind-filter-nav";
+import { fetchVideos } from "@/lib/data/videos";
+import { getReferenceDate } from "@/lib/reference-date";
+import { getTalentPath } from "@/lib/talent-links";
 import {
   getVideoKindName,
   parseVideoKindFilter,
   VIDEO_KIND_SEARCH_PARAM,
   type VideoKindFilter,
-} from '@/lib/video-kind-filter'
-import { getShownTalent, type TalentPageParams } from '../_lib/get-shown-talent'
+} from "@/lib/video-kind-filter";
+
+import {
+  getShownTalent,
+  type TalentPageParams,
+} from "../_lib/get-shown-talent";
 
 export interface TalentVideosProps {
-  params: TalentPageParams
-  searchParams: PageProps<'/talents/[id]'>['searchParams']
+  params: TalentPageParams;
+  searchParams: PageProps<"/talents/[id]">["searchParams"];
 }
 
 async function getKind(
-  searchParams: TalentVideosProps['searchParams'],
+  searchParams: TalentVideosProps["searchParams"]
 ): Promise<VideoKindFilter> {
-  const searchParamValues = await searchParams
+  const searchParamValues = await searchParams;
 
-  return parseVideoKindFilter(searchParamValues[VIDEO_KIND_SEARCH_PARAM])
+  return parseVideoKindFilter(searchParamValues[VIDEO_KIND_SEARCH_PARAM]);
 }
 
 /**
@@ -37,7 +41,7 @@ export async function TalentVideoKindFilterNav({
   const [talent, kind] = await Promise.all([
     getShownTalent(params),
     getKind(searchParams),
-  ])
+  ]);
 
   return (
     <VideoKindFilterNav
@@ -45,7 +49,7 @@ export async function TalentVideoKindFilterNav({
       current={kind}
       getPath={(value) => getTalentPath(talent.id, value)}
     />
-  )
+  );
 }
 
 export function TalentVideoKindFilterNavSkeleton() {
@@ -53,7 +57,7 @@ export function TalentVideoKindFilterNavSkeleton() {
     <div className="mb-6">
       <VideoKindFilterNavSkeleton />
     </div>
-  )
+  );
 }
 
 /**
@@ -66,19 +70,19 @@ export async function TalentVideos({
   const [talent, kind] = await Promise.all([
     getShownTalent(params),
     getKind(searchParams),
-  ])
-  const talentIds = [talent.id]
+  ]);
+  const talentIds = [talent.id];
   const [videos, referenceDate] = await Promise.all([
     fetchVideos({ kind, talentIds }),
     getReferenceDate(),
-  ])
+  ]);
 
   if (videos.length < 1) {
     return (
       <NoResults
         message={`${getVideoKindName(kind)}は見つかりませんでした。`}
       />
-    )
+    );
   }
 
   return (
@@ -88,5 +92,5 @@ export async function TalentVideos({
       referenceDate={referenceDate}
       talentIds={talentIds}
     />
-  )
+  );
 }

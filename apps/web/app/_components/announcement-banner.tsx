@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery } from "@tanstack/react-query";
 import {
   CircleAlert,
   type LucideIcon,
@@ -8,19 +8,21 @@ import {
   Minus,
   TriangleAlert,
   X,
-} from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
-import { queryKeys } from '@/lib/query-keys'
-import { dismissAnnouncement, getRenderedAnnouncement } from '../_lib/actions'
-import type { RenderedAnnouncement } from './announcement-message'
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
+import { queryKeys } from "@/lib/query-keys";
+
+import { dismissAnnouncement, getRenderedAnnouncement } from "../_lib/actions";
+import type { RenderedAnnouncement } from "./announcement-message";
 
 interface BannerTone {
   /** 左端の線の色 */
-  borderClassName: string
-  icon: LucideIcon
-  label: string
+  borderClassName: string;
+  icon: LucideIcon;
+  label: string;
   /** 見出しの文字とアイコンの色 */
-  textClassName: string
+  textClassName: string;
 }
 
 /**
@@ -29,32 +31,32 @@ interface BannerTone {
  */
 function getBannerTone(level: string): BannerTone {
   switch (level) {
-    case 'warning':
+    case "warning":
       return {
-        borderClassName: 'border-l-warning',
+        borderClassName: "border-l-warning",
         icon: TriangleAlert,
-        label: '注意',
-        textClassName: 'text-warning',
-      }
-    case 'alert':
+        label: "注意",
+        textClassName: "text-warning",
+      };
+    case "alert":
       return {
-        borderClassName: 'border-l-danger',
+        borderClassName: "border-l-danger",
         icon: CircleAlert,
-        label: '警告',
-        textClassName: 'text-danger',
-      }
+        label: "警告",
+        textClassName: "text-danger",
+      };
     default:
       return {
-        borderClassName: 'border-l-accent',
+        borderClassName: "border-l-accent",
         icon: Megaphone,
-        label: 'お知らせ',
-        textClassName: 'text-accent',
-      }
+        label: "お知らせ",
+        textClassName: "text-accent",
+      };
   }
 }
 
 const ICON_BUTTON_CLASS_NAME =
-  'cursor-pointer rounded-control p-1 text-muted hover:bg-muted hover:text-foreground focus-ring'
+  "cursor-pointer rounded-control p-1 text-muted hover:bg-muted hover:text-foreground focus-ring";
 
 /**
  * Site-wide announcement banner that sticks to the bottom of the viewport.
@@ -70,27 +72,27 @@ const ICON_BUTTON_CLASS_NAME =
 export function AnnouncementBanner({
   announcement: initialAnnouncement,
 }: {
-  announcement: RenderedAnnouncement
+  announcement: RenderedAnnouncement;
 }) {
-  const [isVisible, setIsVisible] = useState(true)
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [isMinimized, setIsMinimized] = useState(false)
-  const minimizeButtonRef = useRef<HTMLButtonElement>(null)
-  const restoreButtonRef = useRef<HTMLButtonElement>(null)
-  const hasToggledMinimizedRef = useRef(false)
+  const [isVisible, setIsVisible] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const minimizeButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreButtonRef = useRef<HTMLButtonElement>(null);
+  const hasToggledMinimizedRef = useRef(false);
 
   // Periodically refetch announcement data
   const { data } = useQuery({
     enabled: isVisible,
     initialData: initialAnnouncement,
     queryFn: async () => {
-      const announcement = await getRenderedAnnouncement()
+      const announcement = await getRenderedAnnouncement();
       if (!announcement) {
         // If no announcement is available, hide the banner
-        setIsVisible(false)
-        return null
+        setIsVisible(false);
+        return null;
       }
-      return announcement
+      return announcement;
     },
     queryKey: queryKeys.announcement(),
     refetchInterval: 1_000 * 60, // Refetch every 60 seconds
@@ -100,36 +102,36 @@ export function AnnouncementBanner({
     // owner info React attaches in development) and copy the changed parts
     // into new objects for no benefit, so keep the fetched data as it is.
     structuralSharing: false,
-  })
+  });
 
   // Keep keyboard focus on the control that replaced the one just used
   useEffect(() => {
     if (!hasToggledMinimizedRef.current) {
-      return
+      return;
     }
 
     if (isMinimized) {
-      restoreButtonRef.current?.focus()
+      restoreButtonRef.current?.focus();
     } else {
-      minimizeButtonRef.current?.focus()
+      minimizeButtonRef.current?.focus();
     }
-  }, [isMinimized])
+  }, [isMinimized]);
 
   if (!isVisible || !data) {
-    return null
+    return null;
   }
 
-  const tone = getBannerTone(data.level)
-  const ToneIcon = tone.icon
+  const tone = getBannerTone(data.level);
+  const ToneIcon = tone.icon;
 
   // The sticky wrapper spans the full width of the page, so pointer events are
   // disabled on it and re-enabled only on the visible banner / pill. Otherwise
   // the transparent area next to them would block clicks on the content.
 
   const toggleMinimized = () => {
-    hasToggledMinimizedRef.current = true
-    setIsMinimized((value) => !value)
-  }
+    hasToggledMinimizedRef.current = true;
+    setIsMinimized((value) => !value);
+  };
 
   if (isMinimized) {
     return (
@@ -152,7 +154,7 @@ export function AnnouncementBanner({
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -182,7 +184,7 @@ export function AnnouncementBanner({
             >
               <div
                 className={`prose prose-sm max-w-none prose-tokens ${
-                  !isExpanded ? 'line-clamp-1' : ''
+                  !isExpanded ? "line-clamp-1" : ""
                 }`}
               >
                 {data.message}
@@ -203,8 +205,8 @@ export function AnnouncementBanner({
               aria-label="お知らせを閉じる"
               className={ICON_BUTTON_CLASS_NAME}
               onClick={async () => {
-                await dismissAnnouncement(data.id)
-                setIsVisible(false)
+                await dismissAnnouncement(data.id);
+                setIsVisible(false);
               }}
               type="button"
             >
@@ -214,5 +216,5 @@ export function AnnouncementBanner({
         </div>
       </div>
     </div>
-  )
+  );
 }

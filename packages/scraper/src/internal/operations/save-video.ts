@@ -1,11 +1,12 @@
-import { toDBString } from '@shinju-date/temporal-fns'
-import type { VideoFields, WriteContext } from '../../types.js'
+import { toDBString } from "@shinju-date/temporal-fns";
+
+import type { VideoFields, WriteContext } from "../../types.js";
 import {
   insertVideo,
   type NewPlatformVideo,
   type TalentAccount,
-} from '../database/index.js'
-import { removeThumbnail, type Thumbnail } from '../thumbnails/index.js'
+} from "../database/index.js";
+import { removeThumbnail, type Thumbnail } from "../thumbnails/index.js";
 
 /**
  * What differs between the platforms when a new video is saved: how it maps
@@ -24,11 +25,14 @@ export interface NewVideoAdapter<TNew> {
    * @returns The stored thumbnail, or `null` when the platform has none yet
    *   or it cannot be stored.
    */
-  createThumbnail(context: WriteContext, video: TNew): Promise<Thumbnail | null>
+  createThumbnail(
+    context: WriteContext,
+    video: TNew
+  ): Promise<Thumbnail | null>;
   /** The columns of the `videos` row kept in line with the platform. */
-  toFields(video: TNew, now: Temporal.Instant): VideoFields
+  toFields(video: TNew, now: Temporal.Instant): VideoFields;
   /** The platform row that identifies the video on its platform. */
-  toPlatformVideo(video: TNew, account: TalentAccount): NewPlatformVideo
+  toPlatformVideo(video: TNew, account: TalentAccount): NewPlatformVideo;
 }
 
 /**
@@ -46,16 +50,16 @@ export async function saveVideoWithThumbnail<TNew>(
   context: WriteContext,
   adapter: NewVideoAdapter<TNew>,
   video: TNew,
-  account: TalentAccount,
+  account: TalentAccount
 ): Promise<boolean> {
-  const { now, supabaseClient } = context
+  const { now, supabaseClient } = context;
   // Mapped before the thumbnail is stored, so a video that cannot be mapped
   // leaves nothing behind.
-  const fields = adapter.toFields(video, now)
-  const platformVideo = adapter.toPlatformVideo(video, account)
-  const timestamp = toDBString(now)
-  const thumbnail = await adapter.createThumbnail(context, video)
-  let videoId: string | null
+  const fields = adapter.toFields(video, now);
+  const platformVideo = adapter.toPlatformVideo(video, account);
+  const timestamp = toDBString(now);
+  const thumbnail = await adapter.createThumbnail(context, video);
+  let videoId: string | null;
 
   try {
     videoId = await insertVideo(
@@ -69,23 +73,23 @@ export async function saveVideoWithThumbnail<TNew>(
         updated_at: timestamp,
         visible: true,
       },
-      platformVideo,
-    )
+      platformVideo
+    );
   } catch (error) {
     if (thumbnail) {
-      await removeThumbnail(context, thumbnail)
+      await removeThumbnail(context, thumbnail);
     }
 
-    throw error
+    throw error;
   }
 
   if (videoId) {
-    return true
+    return true;
   }
 
   if (thumbnail) {
-    await removeThumbnail(context, thumbnail)
+    await removeThumbnail(context, thumbnail);
   }
 
-  return false
+  return false;
 }

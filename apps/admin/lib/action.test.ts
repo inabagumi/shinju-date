@@ -1,280 +1,281 @@
-import { notFound, redirect } from 'next/navigation'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import * as z from 'zod'
+import { notFound, redirect } from "next/navigation";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import * as z from "zod";
 
 const { loggerErrorMock, requireAuthenticatedUserMock } = vi.hoisted(() => ({
   loggerErrorMock: vi.fn(),
   requireAuthenticatedUserMock: vi.fn(),
-}))
+}));
 
-vi.mock('@shinju-date/logger', () => ({
+vi.mock("@shinju-date/logger", () => ({
   logger: { error: loggerErrorMock },
-}))
+}));
 
-vi.mock('@/lib/auth', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/auth')>()),
+vi.mock("@/lib/auth", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/auth")>()),
   requireAuthenticatedUser: requireAuthenticatedUserMock,
-}))
+}));
 
-import { unauthenticatedFormState, unauthenticatedResult } from '@/lib/auth'
+import { unauthenticatedFormState, unauthenticatedResult } from "@/lib/auth";
+
 import {
   ACTION_FAILED_ERROR_MESSAGE,
   ActionError,
   adminAction,
   adminFormAction,
   parseActionInput,
-} from './action'
-import { INVALID_INPUT_ERROR_MESSAGE, uuidSchema } from './schemas'
+} from "./action";
+import { INVALID_INPUT_ERROR_MESSAGE, uuidSchema } from "./schemas";
 
 const auth = {
   supabaseClient: { from: vi.fn() },
-  user: { id: 'user-id' },
-}
+  user: { id: "user-id" },
+};
 
 function formData(entries: Record<string, string>): FormData {
-  const data = new FormData()
+  const data = new FormData();
 
   for (const [key, value] of Object.entries(entries)) {
-    data.append(key, value)
+    data.append(key, value);
   }
 
-  return data
+  return data;
 }
 
 beforeEach(() => {
-  vi.clearAllMocks()
-  requireAuthenticatedUserMock.mockResolvedValue(auth)
-})
+  vi.clearAllMocks();
+  requireAuthenticatedUserMock.mockResolvedValue(auth);
+});
 
-describe('ActionError', () => {
-  it('keeps the message that may be shown and the field it belongs to', () => {
-    const error = new ActionError('すでに登録されています。', {
-      field: 'youtube_channel_id',
-    })
+describe("ActionError", () => {
+  it("keeps the message that may be shown and the field it belongs to", () => {
+    const error = new ActionError("すでに登録されています。", {
+      field: "youtube_channel_id",
+    });
 
-    expect(error).toBeInstanceOf(Error)
-    expect(error.name).toBe('ActionError')
-    expect(error.message).toBe('すでに登録されています。')
-    expect(error.field).toBe('youtube_channel_id')
-  })
+    expect(error).toBeInstanceOf(Error);
+    expect(error.name).toBe("ActionError");
+    expect(error.message).toBe("すでに登録されています。");
+    expect(error.field).toBe("youtube_channel_id");
+  });
 
-  it('belongs to no field when none is given', () => {
-    expect(new ActionError('失敗しました。').field).toBeUndefined()
-  })
-})
+  it("belongs to no field when none is given", () => {
+    expect(new ActionError("失敗しました。").field).toBeUndefined();
+  });
+});
 
-describe('adminAction', () => {
-  it('returns the unauthenticated result without calling the handler', async () => {
-    requireAuthenticatedUserMock.mockResolvedValue(null)
-    const handler = vi.fn()
-    const action = adminAction('testAction', handler)
+describe("adminAction", () => {
+  it("returns the unauthenticated result without calling the handler", async () => {
+    requireAuthenticatedUserMock.mockResolvedValue(null);
+    const handler = vi.fn();
+    const action = adminAction("testAction", handler);
 
-    await expect(action('id')).resolves.toEqual(unauthenticatedResult())
-    expect(handler).not.toHaveBeenCalled()
-  })
+    await expect(action("id")).resolves.toEqual(unauthenticatedResult());
+    expect(handler).not.toHaveBeenCalled();
+  });
 
-  it('calls the handler with the context and the arguments and returns its result', async () => {
+  it("calls the handler with the context and the arguments and returns its result", async () => {
     const handler = vi.fn(async (_context: unknown, id: string, n: number) => ({
       data: { id, n },
       success: true as const,
-      warnings: ['一部を飛ばしました。'],
-    }))
-    const action = adminAction('testAction', handler)
+      warnings: ["一部を飛ばしました。"],
+    }));
+    const action = adminAction("testAction", handler);
 
-    await expect(action('id', 1)).resolves.toEqual({
-      data: { id: 'id', n: 1 },
+    await expect(action("id", 1)).resolves.toEqual({
+      data: { id: "id", n: 1 },
       success: true,
-      warnings: ['一部を飛ばしました。'],
-    })
-    expect(handler).toHaveBeenCalledWith(auth, 'id', 1)
-  })
+      warnings: ["一部を飛ばしました。"],
+    });
+    expect(handler).toHaveBeenCalledWith(auth, "id", 1);
+  });
 
-  it('returns a failed result from the handler as it is', async () => {
-    const action = adminAction('testAction', async () => ({
-      error: '見つかりません。',
+  it("returns a failed result from the handler as it is", async () => {
+    const action = adminAction("testAction", async () => ({
+      error: "見つかりません。",
       success: false as const,
-    }))
+    }));
 
     await expect(action()).resolves.toEqual({
-      error: '見つかりません。',
+      error: "見つかりません。",
       success: false,
-    })
-  })
+    });
+  });
 
-  it('returns the message of an ActionError', async () => {
-    const action = adminAction('testAction', async () => {
-      throw new ActionError('すでに登録されています。')
-    })
+  it("returns the message of an ActionError", async () => {
+    const action = adminAction("testAction", async () => {
+      throw new ActionError("すでに登録されています。");
+    });
 
     await expect(action()).resolves.toEqual({
-      error: 'すでに登録されています。',
+      error: "すでに登録されています。",
       success: false,
-    })
-    expect(loggerErrorMock).not.toHaveBeenCalled()
-  })
+    });
+    expect(loggerErrorMock).not.toHaveBeenCalled();
+  });
 
-  it('logs any other error and returns a fixed message instead of its message', async () => {
-    const error = new Error('duplicate key value violates unique constraint')
-    const action = adminAction('testAction', async (_context, _id: string) => {
-      throw error
-    })
+  it("logs any other error and returns a fixed message instead of its message", async () => {
+    const error = new Error("duplicate key value violates unique constraint");
+    const action = adminAction("testAction", async (_context, _id: string) => {
+      throw error;
+    });
 
-    const result = await action('id')
+    const result = await action("id");
 
     expect(result).toEqual({
       error: ACTION_FAILED_ERROR_MESSAGE,
       success: false,
-    })
-    expect(JSON.stringify(result)).not.toContain('duplicate key')
+    });
+    expect(JSON.stringify(result)).not.toContain("duplicate key");
     expect(loggerErrorMock).toHaveBeenCalledWith(expect.any(String), {
-      action: 'testAction',
-      args: ['id'],
+      action: "testAction",
+      args: ["id"],
       error,
-    })
-  })
+    });
+  });
 
-  it('rethrows the errors that Next.js handles', async () => {
-    const action = adminAction('testAction', async () => {
-      redirect('/talents')
-    })
+  it("rethrows the errors that Next.js handles", async () => {
+    const action = adminAction("testAction", async () => {
+      redirect("/talents");
+    });
 
-    await expect(action()).rejects.toThrow('NEXT_REDIRECT')
-    expect(loggerErrorMock).not.toHaveBeenCalled()
-  })
-})
+    await expect(action()).rejects.toThrow("NEXT_REDIRECT");
+    expect(loggerErrorMock).not.toHaveBeenCalled();
+  });
+});
 
-describe('parseActionInput', () => {
-  it('returns the parsed value', () => {
-    expect(parseActionInput(z.string().trim(), '  query  ')).toBe('query')
-  })
+describe("parseActionInput", () => {
+  it("returns the parsed value", () => {
+    expect(parseActionInput(z.string().trim(), "  query  ")).toBe("query");
+  });
 
-  it('throws an ActionError with the fixed message when the value is invalid', () => {
-    expect(() => parseActionInput(uuidSchema, 'not-a-uuid')).toThrow(
-      new ActionError(INVALID_INPUT_ERROR_MESSAGE),
-    )
-  })
+  it("throws an ActionError with the fixed message when the value is invalid", () => {
+    expect(() => parseActionInput(uuidSchema, "not-a-uuid")).toThrow(
+      new ActionError(INVALID_INPUT_ERROR_MESSAGE)
+    );
+  });
 
-  it('makes adminAction return the fixed message without going on', async () => {
-    const update = vi.fn()
-    const action = adminAction('testAction', async (_context, id: string) => {
-      parseActionInput(uuidSchema, id)
-      update()
+  it("makes adminAction return the fixed message without going on", async () => {
+    const update = vi.fn();
+    const action = adminAction("testAction", async (_context, id: string) => {
+      parseActionInput(uuidSchema, id);
+      update();
 
-      return { success: true }
-    })
+      return { success: true };
+    });
 
-    await expect(action('not-a-uuid')).resolves.toEqual({
+    await expect(action("not-a-uuid")).resolves.toEqual({
       error: INVALID_INPUT_ERROR_MESSAGE,
       success: false,
-    })
-    expect(update).not.toHaveBeenCalled()
-    expect(loggerErrorMock).not.toHaveBeenCalled()
-  })
-})
+    });
+    expect(update).not.toHaveBeenCalled();
+    expect(loggerErrorMock).not.toHaveBeenCalled();
+  });
+});
 
-describe('adminFormAction', () => {
+describe("adminFormAction", () => {
   const schema = z.object({
-    name: z.string().min(1, '名前を入力してください。'),
-  })
+    name: z.string().min(1, "名前を入力してください。"),
+  });
 
-  it('returns the unauthenticated state without calling the handler', async () => {
-    requireAuthenticatedUserMock.mockResolvedValue(null)
-    const handler = vi.fn()
-    const action = adminFormAction('testFormAction', schema, handler)
+  it("returns the unauthenticated state without calling the handler", async () => {
+    requireAuthenticatedUserMock.mockResolvedValue(null);
+    const handler = vi.fn();
+    const action = adminFormAction("testFormAction", schema, handler);
 
-    await expect(action({}, formData({ name: 'name' }))).resolves.toEqual(
-      unauthenticatedFormState(),
-    )
-    expect(handler).not.toHaveBeenCalled()
-  })
+    await expect(action({}, formData({ name: "name" }))).resolves.toEqual(
+      unauthenticatedFormState()
+    );
+    expect(handler).not.toHaveBeenCalled();
+  });
 
-  it('returns the errors of each field without calling the handler when the validation fails', async () => {
-    const handler = vi.fn()
-    const action = adminFormAction('testFormAction', schema, handler)
+  it("returns the errors of each field without calling the handler when the validation fails", async () => {
+    const handler = vi.fn();
+    const action = adminFormAction("testFormAction", schema, handler);
 
-    await expect(action({}, formData({ name: '' }))).resolves.toEqual({
-      errors: { name: ['名前を入力してください。'] },
-    })
-    expect(handler).not.toHaveBeenCalled()
-  })
+    await expect(action({}, formData({ name: "" }))).resolves.toEqual({
+      errors: { name: ["名前を入力してください。"] },
+    });
+    expect(handler).not.toHaveBeenCalled();
+  });
 
-  it('returns the errors of the hidden fields as generic errors', async () => {
-    const handler = vi.fn()
-    const action = adminFormAction('testFormAction', schema, handler, {
-      hiddenFields: ['name'],
-    })
+  it("returns the errors of the hidden fields as generic errors", async () => {
+    const handler = vi.fn();
+    const action = adminFormAction("testFormAction", schema, handler, {
+      hiddenFields: ["name"],
+    });
 
-    await expect(action({}, formData({ name: '' }))).resolves.toEqual({
-      errors: { generic: ['名前を入力してください。'] },
-    })
-    expect(handler).not.toHaveBeenCalled()
-  })
+    await expect(action({}, formData({ name: "" }))).resolves.toEqual({
+      errors: { generic: ["名前を入力してください。"] },
+    });
+    expect(handler).not.toHaveBeenCalled();
+  });
 
-  it('calls the handler with the context and the parsed data and returns success', async () => {
-    const handler = vi.fn(async () => undefined)
-    const action = adminFormAction('testFormAction', schema, handler)
+  it("calls the handler with the context and the parsed data and returns success", async () => {
+    const handler = vi.fn(async () => undefined);
+    const action = adminFormAction("testFormAction", schema, handler);
 
-    await expect(action({}, formData({ name: 'name' }))).resolves.toEqual({
+    await expect(action({}, formData({ name: "name" }))).resolves.toEqual({
       success: true,
-    })
-    expect(handler).toHaveBeenCalledWith(auth, { name: 'name' })
-  })
+    });
+    expect(handler).toHaveBeenCalledWith(auth, { name: "name" });
+  });
 
-  it('returns the state that the handler returns', async () => {
-    const action = adminFormAction('testFormAction', schema, async () => ({
-      errors: { name: ['使えない名前です。'] },
-    }))
+  it("returns the state that the handler returns", async () => {
+    const action = adminFormAction("testFormAction", schema, async () => ({
+      errors: { name: ["使えない名前です。"] },
+    }));
 
-    await expect(action({}, formData({ name: 'name' }))).resolves.toEqual({
-      errors: { name: ['使えない名前です。'] },
-    })
-  })
+    await expect(action({}, formData({ name: "name" }))).resolves.toEqual({
+      errors: { name: ["使えない名前です。"] },
+    });
+  });
 
-  it('returns the message of an ActionError as the error of its field', async () => {
-    const action = adminFormAction('testFormAction', schema, async () => {
-      throw new ActionError('すでに登録されています。', { field: 'name' })
-    })
+  it("returns the message of an ActionError as the error of its field", async () => {
+    const action = adminFormAction("testFormAction", schema, async () => {
+      throw new ActionError("すでに登録されています。", { field: "name" });
+    });
 
-    await expect(action({}, formData({ name: 'name' }))).resolves.toEqual({
-      errors: { name: ['すでに登録されています。'] },
-    })
-    expect(loggerErrorMock).not.toHaveBeenCalled()
-  })
+    await expect(action({}, formData({ name: "name" }))).resolves.toEqual({
+      errors: { name: ["すでに登録されています。"] },
+    });
+    expect(loggerErrorMock).not.toHaveBeenCalled();
+  });
 
-  it('returns the message of an ActionError without a field as a generic error', async () => {
-    const action = adminFormAction('testFormAction', schema, async () => {
-      throw new ActionError('失敗しました。')
-    })
+  it("returns the message of an ActionError without a field as a generic error", async () => {
+    const action = adminFormAction("testFormAction", schema, async () => {
+      throw new ActionError("失敗しました。");
+    });
 
-    await expect(action({}, formData({ name: 'name' }))).resolves.toEqual({
-      errors: { generic: ['失敗しました。'] },
-    })
-  })
+    await expect(action({}, formData({ name: "name" }))).resolves.toEqual({
+      errors: { generic: ["失敗しました。"] },
+    });
+  });
 
-  it('logs any other error without the form values and returns a fixed message instead of its message', async () => {
-    const error = new Error('duplicate key value violates unique constraint')
-    const action = adminFormAction('testFormAction', schema, async () => {
-      throw error
-    })
+  it("logs any other error without the form values and returns a fixed message instead of its message", async () => {
+    const error = new Error("duplicate key value violates unique constraint");
+    const action = adminFormAction("testFormAction", schema, async () => {
+      throw error;
+    });
 
-    const result = await action({}, formData({ name: 'secret' }))
+    const result = await action({}, formData({ name: "secret" }));
 
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR_MESSAGE })
-    expect(JSON.stringify(result)).not.toContain('duplicate key')
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR_MESSAGE });
+    expect(JSON.stringify(result)).not.toContain("duplicate key");
     expect(loggerErrorMock).toHaveBeenCalledWith(expect.any(String), {
-      action: 'testFormAction',
+      action: "testFormAction",
       error,
-    })
-  })
+    });
+  });
 
-  it('rethrows the errors that Next.js handles', async () => {
-    const action = adminFormAction('testFormAction', schema, async () => {
-      notFound()
-    })
+  it("rethrows the errors that Next.js handles", async () => {
+    const action = adminFormAction("testFormAction", schema, async () => {
+      notFound();
+    });
 
-    await expect(action({}, formData({ name: 'name' }))).rejects.toThrow(
-      'NEXT_HTTP_ERROR_FALLBACK',
-    )
-    expect(loggerErrorMock).not.toHaveBeenCalled()
-  })
-})
+    await expect(action({}, formData({ name: "name" }))).rejects.toThrow(
+      "NEXT_HTTP_ERROR_FALLBACK"
+    );
+    expect(loggerErrorMock).not.toHaveBeenCalled();
+  });
+});

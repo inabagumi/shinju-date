@@ -1,15 +1,16 @@
-import type { CookieOptions } from '@supabase/ssr'
-import { publicEnv } from '@/lib/env'
+import type { CookieOptions } from "@supabase/ssr";
+
+import { publicEnv } from "@/lib/env";
 
 interface SupabaseConfig {
   /**
    * Applied on top of the options Supabase gives each session cookie. The
    * cookies are sent only to this site and cannot be read by scripts.
    */
-  cookieOptions: CookieOptions
+  cookieOptions: CookieOptions;
   /** The anonymous key, which RLS restricts. */
-  key: string
-  url: string
+  key: string;
+  url: string;
 }
 
 /**
@@ -20,10 +21,10 @@ export function getSupabaseConfig(): SupabaseConfig {
   return {
     cookieOptions: {
       httpOnly: true,
-      sameSite: 'strict',
-      secure: process.env['NODE_ENV'] === 'production',
+      sameSite: "strict",
+      secure: process.env["NODE_ENV"] === "production",
     },
     key: publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     url: publicEnv.NEXT_PUBLIC_SUPABASE_URL,
-  }
+  };
 }

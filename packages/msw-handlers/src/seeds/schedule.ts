@@ -1,8 +1,9 @@
-import { TIME_ZONE } from '@shinju-date/constants'
-import type { Tables } from '@shinju-date/database'
-import { toDBString } from '@shinju-date/temporal-fns'
-import type { SeedContext } from './context.js'
-import { createVideo } from './videos.js'
+import { TIME_ZONE } from "@shinju-date/constants";
+import type { Tables } from "@shinju-date/database";
+import { toDBString } from "@shinju-date/temporal-fns";
+
+import type { SeedContext } from "./context.js";
+import { createVideo } from "./videos.js";
 
 /**
  * When the seeded stream on the schedule that is on air now starts: 30
@@ -12,35 +13,35 @@ import { createVideo } from './videos.js'
  * the week starts on Sunday.
  */
 export function getLiveScheduleStart(
-  now: Temporal.ZonedDateTime,
+  now: Temporal.ZonedDateTime
 ): Temporal.ZonedDateTime {
-  const dayStart = now.startOfDay()
+  const dayStart = now.startOfDay();
   // The latest start whose hour ends by the end of the day
-  const latestStart = dayStart.add({ days: 1 }).subtract({ hours: 1 })
-  const start = now.subtract({ minutes: 30 })
+  const latestStart = dayStart.add({ days: 1 }).subtract({ hours: 1 });
+  const start = now.subtract({ minutes: 30 });
 
   if (Temporal.ZonedDateTime.compare(start, dayStart) < 0) {
-    return dayStart
+    return dayStart;
   }
 
   if (Temporal.ZonedDateTime.compare(start, latestStart) > 0) {
-    return latestStart
+    return latestStart;
   }
 
-  return start
+  return start;
 }
 
 const SCHEDULE_TITLES = [
-  '【定期】朝の雑談',
-  '【歌枠】リクエスト歌枠',
-  '【ゲーム】RPG 実況',
-  '【雑談】週末のふりかえり',
-] as const
+  "【定期】朝の雑談",
+  "【歌枠】リクエスト歌枠",
+  "【ゲーム】RPG 実況",
+  "【雑談】週末のふりかえり",
+] as const;
 
 interface ScheduleDependencies {
   /** The talents that the streams belong to in turn */
-  talents: readonly Tables<'talents'>[]
-  thumbnails: readonly Tables<'thumbnails'>[]
+  talents: readonly Tables<"talents">[];
+  thumbnails: readonly Tables<"thumbnails">[];
 }
 
 /**
@@ -52,13 +53,13 @@ interface ScheduleDependencies {
  */
 export function createScheduleVideos(
   context: SeedContext,
-  { talents, thumbnails }: ScheduleDependencies,
-): Tables<'videos'>[] {
-  const now = context.now.toZonedDateTimeISO(TIME_ZONE)
+  { talents, thumbnails }: ScheduleDependencies
+): Tables<"videos">[] {
+  const now = context.now.toZonedDateTimeISO(TIME_ZONE);
   const weekStart = now
     .toPlainDate()
     .subtract({ days: now.dayOfWeek % 7 })
-    .toZonedDateTime(TIME_ZONE)
+    .toZonedDateTime(TIME_ZONE);
   // Some streams of different days start in the same hour, so the rows of the
   // hours on the schedule can be checked
   const starts = [
@@ -70,35 +71,35 @@ export function createScheduleVideos(
     weekStart.add({ days: 9, hours: 20 }),
     // 3 more at 21:00 on Wednesday, so 4 streams start at the same time
     ...Array.from({ length: 3 }, () => weekStart.add({ days: 3, hours: 21 })),
-  ]
+  ];
   const seeds = [
     ...starts.map((start, index) => ({
       start,
       status:
         Temporal.ZonedDateTime.compare(start, now) < 0
-          ? ('ENDED' as const)
-          : ('UPCOMING' as const),
+          ? ("ENDED" as const)
+          : ("UPCOMING" as const),
       title:
         index === starts.length - 1
           ? // Long enough to check that it does not run out of the item
-            '〖FORKROAD〗右か左かすきなほうをえらんでね【#ななしいんく公式チャンネル同時視聴コラボ】'
+            "〖FORKROAD〗右か左かすきなほうをえらんでね【#ななしいんく公式チャンネル同時視聴コラボ】"
           : `${SCHEDULE_TITLES[index % SCHEDULE_TITLES.length]} #${index + 1}`,
     })),
     {
       start: getLiveScheduleStart(now),
-      status: 'LIVE' as const,
-      title: '【スケジュール】ただいま配信中',
+      status: "LIVE" as const,
+      title: "【スケジュール】ただいま配信中",
     },
-  ]
+  ];
 
   return seeds.flatMap(({ start, status, title }, index) => {
-    const talent = talents[index % talents.length]
-    const thumbnail = thumbnails[index % thumbnails.length]
+    const talent = talents[index % talents.length];
+    const thumbnail = thumbnails[index % thumbnails.length];
 
     return talent
       ? [
           createVideo(context, {
-            duration: status === 'ENDED' ? 'PT1H30M0S' : 'P0D',
+            duration: status === "ENDED" ? "PT1H30M0S" : "P0D",
             published_at: toDBString(start),
             status,
             talent_id: talent.id,
@@ -106,6 +107,6 @@ export function createScheduleVideos(
             title,
           }),
         ]
-      : []
-  })
+      : [];
+  });
 }

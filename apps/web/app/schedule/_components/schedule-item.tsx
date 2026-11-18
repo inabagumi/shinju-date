@@ -1,31 +1,33 @@
-import { TIME_ZONE } from '@shinju-date/constants'
+import { TIME_ZONE } from "@shinju-date/constants";
 import {
   formatDateTimeWithSeconds,
   formatTime,
-} from '@shinju-date/temporal-fns'
-import { twMerge } from '@shinju-date/ui'
-import type { CSSProperties } from 'react'
-import LiveBadge from '@/components/live-badge'
-import PlatformBadge from '@/components/platform-badge'
-import TalentIcon from '@/components/talent-icon'
-import type { ScheduleVideo } from '@/lib/data/schedule'
-import { parseThemeColor } from '@/lib/theme-color'
-import { getVideoTitleParts } from '@/lib/video-title'
-import { getVideoUrl } from '@/lib/video-url'
+} from "@shinju-date/temporal-fns";
+import { twMerge } from "@shinju-date/ui";
+import type { CSSProperties } from "react";
+
+import LiveBadge from "@/components/live-badge";
+import PlatformBadge from "@/components/platform-badge";
+import TalentIcon from "@/components/talent-icon";
+import type { ScheduleVideo } from "@/lib/data/schedule";
+import { parseThemeColor } from "@/lib/theme-color";
+import { getVideoTitleParts } from "@/lib/video-title";
+import { getVideoUrl } from "@/lib/video-url";
+
 import {
   HOUR_HEIGHT_REM,
   ITEM_CHROME_HEIGHT,
   ROOT_FONT_SIZE,
   TITLE_LINE_HEIGHT,
-} from '../_lib/layout'
+} from "../_lib/layout";
 
 /**
  * `TalentIcon` に渡すアカウント。動画の YouTube チャンネルか Twitch ユーザーの
  * アイコンを使う。
  */
 function getVideoAccounts(video: ScheduleVideo) {
-  const youtubeChannel = video.youtube_video?.youtube_channel
-  const twitchUser = video.twitch_video?.twitch_user
+  const youtubeChannel = video.youtube_video?.youtube_channel;
+  const twitchUser = video.twitch_video?.twitch_user;
 
   return {
     twitch_users: twitchUser
@@ -34,7 +36,7 @@ function getVideoAccounts(video: ScheduleVideo) {
     youtube_channels: youtubeChannel
       ? [{ profile_image: youtubeChannel.profile_image }]
       : [],
-  }
+  };
 }
 
 /**
@@ -43,20 +45,20 @@ function getVideoAccounts(video: ScheduleVideo) {
  * （ライトでは地と同じ白なので、見た目は枠だけになる）
  */
 const ITEM_CLASS_NAME =
-  'block rounded-control border border-l-4 border-border bg-surface py-1 pr-1 pl-2'
+  "block rounded-control border border-l-4 border-border bg-surface py-1 pr-1 pl-2";
 
 /**
  * 1024px 以上で、長さ（分）ぶんの高さの項目に入るタイトルの行数。行の途中で
  * 切れないよう、入りきる行数だけ出す。0 のときはタイトルを出さない
  */
 export function getTitleLines(lengthMinutes: number): number {
-  const hourHeight = HOUR_HEIGHT_REM * ROOT_FONT_SIZE
-  const height = (hourHeight * lengthMinutes) / 60
+  const hourHeight = HOUR_HEIGHT_REM * ROOT_FONT_SIZE;
+  const height = (hourHeight * lengthMinutes) / 60;
 
   return Math.max(
     0,
-    Math.floor((height - ITEM_CHROME_HEIGHT) / TITLE_LINE_HEIGHT),
-  )
+    Math.floor((height - ITEM_CHROME_HEIGHT) / TITLE_LINE_HEIGHT)
+  );
 }
 
 interface ScheduleItemProps {
@@ -64,8 +66,8 @@ interface ScheduleItemProps {
    * 1024px 以上でタイトルを出す行数（`getTitleLines`）。省略すると2行まで。
    * 広げたときは行数にかかわらず全文を出す
    */
-  titleLines?: number | undefined
-  value: ScheduleVideo
+  titleLines?: number | undefined;
+  value: ScheduleVideo;
 }
 
 /**
@@ -84,35 +86,35 @@ interface ScheduleItemProps {
  * 値のときは `border-border` の色にする。
  */
 export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
-  const href = getVideoUrl(value)
+  const href = getVideoUrl(value);
 
   if (!href) {
-    return null
+    return null;
   }
 
   const startAt = Temporal.Instant.from(value.published_at).toZonedDateTimeISO(
-    TIME_ZONE,
-  )
-  const themeColor = parseThemeColor(value.talent.theme_color)
+    TIME_ZONE
+  );
+  const themeColor = parseThemeColor(value.talent.theme_color);
   const style = themeColor
-    ? ({ '--talent-color': themeColor } as CSSProperties)
-    : undefined
+    ? ({ "--talent-color": themeColor } as CSSProperties)
+    : undefined;
   // 動画カードと同じく、【】と末尾のハッシュタグを除いた本文をタイトルに出し、
   // 先頭のラベルとハッシュタグは1行目とタイトルの間の行に出す
   const { tags, text: titleText } = getVideoTitleParts(
     value.title,
-    value.talent.name,
-  )
+    value.talent.name
+  );
 
   return (
     <a
       className={twMerge(
         ITEM_CLASS_NAME,
-        'group min-w-0 focus-ring lg:min-h-0 lg:flex-1 lg:overflow-hidden',
+        "group min-w-0 focus-ring lg:min-h-0 lg:flex-1 lg:overflow-hidden",
         // 広げたときは、浮いて見えるよう影を付ける（地の色は変えない）。影は
         // 項目そのものに付け、項目と影の大きさをそろえる
-        'lg:group-focus-within/item:shadow-overlay lg:group-hover/item:shadow-overlay',
-        themeColor ? 'border-l-(--talent-color)' : 'border-l-border',
+        "lg:group-focus-within/item:shadow-overlay lg:group-hover/item:shadow-overlay",
+        themeColor ? "border-l-(--talent-color)" : "border-l-border"
       )}
       data-start={formatTime(startAt)}
       data-testid="schedule-item"
@@ -132,13 +134,13 @@ export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
          */}
         <time
           className="shrink-0 text-meta leading-5 font-bold tabular-nums"
-          dateTime={startAt.toString({ timeZoneName: 'never' })}
+          dateTime={startAt.toString({ timeZoneName: "never" })}
           title={formatDateTimeWithSeconds(startAt)}
         >
           {formatTime(startAt)}
         </time>
 
-        {value.status === 'LIVE' && (
+        {value.status === "LIVE" && (
           <LiveBadge className="shrink-0" size="compact" />
         )}
 
@@ -168,16 +170,16 @@ export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
 
       <span
         className={twMerge(
-          'mt-0.5 line-clamp-2 text-meta wrap-anywhere group-hover:underline',
+          "mt-0.5 line-clamp-2 text-meta wrap-anywhere group-hover:underline",
           titleLines !== undefined &&
-            (titleLines > 0 ? 'lg:line-clamp-(--title-lines)' : 'lg:hidden'),
+            (titleLines > 0 ? "lg:line-clamp-(--title-lines)" : "lg:hidden"),
           // 広げたときは全文を出す
           // (`line-clamp-none` は `display: block` も指定する)
-          'lg:group-focus-within/item:line-clamp-none lg:group-hover/item:line-clamp-none',
+          "lg:group-focus-within/item:line-clamp-none lg:group-hover/item:line-clamp-none"
         )}
         style={
           titleLines
-            ? ({ '--title-lines': titleLines } as CSSProperties)
+            ? ({ "--title-lines": titleLines } as CSSProperties)
             : undefined
         }
         title={value.title}
@@ -185,19 +187,19 @@ export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
         {titleText}
       </span>
     </a>
-  )
+  );
 }
 
 export function ScheduleItemSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className={twMerge(ITEM_CLASS_NAME, 'space-y-1.5 border-l-border')}
+      className={twMerge(ITEM_CLASS_NAME, "space-y-1.5 border-l-border")}
       data-testid="schedule-item-skeleton"
     >
       <span className="block h-4 w-10 animate-pulse rounded-control bg-muted" />
       <span className="block h-3 w-20 animate-pulse rounded-control bg-muted" />
       <span className="block h-4 w-full animate-pulse rounded-control bg-muted" />
     </div>
-  )
+  );
 }

@@ -1,11 +1,11 @@
-import type { ReactNode } from 'react'
-import { useId } from 'react'
+import type { ReactNode } from "react";
+import { useId } from "react";
 
 interface HomeSectionProps {
   /** 見出しの右端に置く件数や「もっと見る」のリンク */
-  aside?: ReactNode
-  children: ReactNode
-  title: ReactNode
+  aside?: ReactNode;
+  children: ReactNode;
+  title: ReactNode;
 }
 
 /**
@@ -18,7 +18,7 @@ export default function HomeSection({
   children,
   title,
 }: HomeSectionProps) {
-  const headingId = useId()
+  const headingId = useId();
 
   return (
     <section aria-labelledby={headingId}>
@@ -35,15 +35,15 @@ export default function HomeSection({
 
       {children}
     </section>
-  )
+  );
 }
 
 interface HomeSectionCountProps {
-  count: number
+  count: number;
 }
 
 export function HomeSectionCount({ count }: HomeSectionCountProps) {
-  return <p className="text-muted tabular-nums">{count}件</p>
+  return <p className="text-muted tabular-nums">{count}件</p>;
 }
 
 export function HomeSectionCountSkeleton() {
@@ -52,5 +52,5 @@ export function HomeSectionCountSkeleton() {
       aria-hidden="true"
       className="inline-block h-4 w-8 animate-pulse rounded-control bg-muted align-middle"
     />
-  )
+  );
 }

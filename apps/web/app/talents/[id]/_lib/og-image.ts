@@ -1,9 +1,10 @@
-import { logger } from '@shinju-date/logger'
-import sharp from 'sharp'
-import type { ProfileImage } from '@/lib/data/talents'
-import { SITE_THEME_COLOR } from '@/lib/site'
-import { getSupabaseAdminClient, supabaseClient } from '@/lib/supabase'
-import { parseThemeColor } from '@/lib/theme-color'
+import { logger } from "@shinju-date/logger";
+import sharp from "sharp";
+
+import type { ProfileImage } from "@/lib/data/talents";
+import { SITE_THEME_COLOR } from "@/lib/site";
+import { getSupabaseAdminClient, supabaseClient } from "@/lib/supabase";
+import { parseThemeColor } from "@/lib/theme-color";
 
 /**
  * The color of the band of a talent's Open Graph image: the theme color of
@@ -11,9 +12,9 @@ import { parseThemeColor } from '@/lib/theme-color'
  * Theme colors are entered by hand, so they are checked before they are drawn.
  */
 export function getTalentThemeColor(
-  themeColor: string | null | undefined,
+  themeColor: string | null | undefined
 ): string {
-  return parseThemeColor(themeColor) ?? SITE_THEME_COLOR
+  return parseThemeColor(themeColor) ?? SITE_THEME_COLOR;
 }
 
 /**
@@ -26,10 +27,10 @@ export function getTalentThemeColor(
  */
 export async function fetchTalentIconDataURL(
   profileImage: ProfileImage | null,
-  size: number,
+  size: number
 ): Promise<string | null> {
   if (!profileImage) {
-    return null
+    return null;
   }
 
   try {
@@ -37,42 +38,42 @@ export async function fetchTalentIconDataURL(
     // as in `/images/profile-images/[id]`. Only the download needs the
     // service role.
     const { data: row, error } = await supabaseClient
-      .from('profile_images')
-      .select('path')
-      .eq('id', profileImage.id)
-      .maybeSingle()
+      .from("profile_images")
+      .select("path")
+      .eq("id", profileImage.id)
+      .maybeSingle();
 
     if (error) {
-      throw new TypeError(error.message, { cause: error })
+      throw new TypeError(error.message, { cause: error });
     }
 
     if (!row) {
-      return null
+      return null;
     }
 
     const { data: blob, error: downloadError } = await getSupabaseAdminClient()
-      .storage.from('profile-images')
-      .download(row.path)
+      .storage.from("profile-images")
+      .download(row.path);
 
     if (downloadError) {
-      throw downloadError
+      throw downloadError;
     }
 
     const png = await sharp(Buffer.from(await blob.arrayBuffer()))
-      .resize(size, size, { fit: 'cover' })
+      .resize(size, size, { fit: "cover" })
       .png()
-      .toBuffer()
+      .toBuffer();
 
-    return `data:image/png;base64,${png.toString('base64')}`
+    return `data:image/png;base64,${png.toString("base64")}`;
   } catch (error) {
     logger.warn(
-      'Failed to load the icon of a talent for its Open Graph image',
+      "Failed to load the icon of a talent for its Open Graph image",
       {
         error,
         profileImageId: profileImage.id,
-      },
-    )
+      }
+    );
 
-    return null
+    return null;
   }
 }

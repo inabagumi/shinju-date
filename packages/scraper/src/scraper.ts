@@ -1,10 +1,11 @@
-import type { Enums } from '@shinju-date/database'
-import type { Logger } from './internal/logger.js'
-import { removeUnusedProfileImages } from './internal/profile-images/index.js'
+import type { Enums } from "@shinju-date/database";
+
+import type { Logger } from "./internal/logger.js";
+import { removeUnusedProfileImages } from "./internal/profile-images/index.js";
 import {
   removeUnusedThumbnails,
   UNUSED_THUMBNAIL_GRACE_PERIOD,
-} from './internal/thumbnails/index.js'
+} from "./internal/thumbnails/index.js";
 import type {
   AddPastVideosOptions,
   AddPastVideosResult,
@@ -14,14 +15,14 @@ import type {
   ScraperOptions,
   SyncAccountResult,
   TypedSupabaseClient,
-} from './types.js'
+} from "./types.js";
 
 const silentLogger: Logger = {
   debug() {},
   error() {},
   info() {},
   warn() {},
-}
+};
 
 /**
  * Keeps the videos and accounts of one platform in the database in sync with
@@ -57,23 +58,23 @@ const silentLogger: Logger = {
  */
 export abstract class Scraper {
   /** Name of the platform, as stored in `videos.platform`. */
-  abstract readonly provider: Enums<'platform_type'>
+  abstract readonly provider: Enums<"platform_type">;
 
-  protected readonly logger: Logger
-  protected readonly supabaseClient: TypedSupabaseClient
-  readonly #onError: ErrorReporter | undefined
+  protected readonly logger: Logger;
+  protected readonly supabaseClient: TypedSupabaseClient;
+  readonly #onError: ErrorReporter | undefined;
 
   constructor({ logger, onError, supabaseClient }: ScraperOptions) {
-    this.logger = logger ?? silentLogger
-    this.#onError = onError
-    this.supabaseClient = supabaseClient
+    this.logger = logger ?? silentLogger;
+    this.#onError = onError;
+    this.supabaseClient = supabaseClient;
   }
 
   /**
    * Saves videos that appeared on the accounts of active talents.
    * Videos that are already saved are left alone.
    */
-  abstract addNewVideos(now?: Temporal.Instant): Promise<boolean>
+  abstract addNewVideos(now?: Temporal.Instant): Promise<boolean>;
 
   /**
    * Reads one page of an account's whole history, newest first, and saves
@@ -92,20 +93,20 @@ export abstract class Scraper {
    *   cursor as the next one.
    */
   abstract addPastVideos(
-    options: AddPastVideosOptions,
-  ): Promise<AddPastVideosResult>
+    options: AddPastVideosOptions
+  ): Promise<AddPastVideosResult>;
 
   /**
    * Follows the videos that change from minute to minute: scheduled ones and
    * those on air. Starts, title changes and endings are picked up here.
    */
-  abstract refreshLiveVideos(now?: Temporal.Instant): Promise<boolean>
+  abstract refreshLiveVideos(now?: Temporal.Instant): Promise<boolean>;
 
   /**
    * Re-reads the newest finished videos of active talents: updates what
    * changed and soft-deletes the ones the platform no longer returns.
    */
-  abstract refreshRecentVideos(now?: Temporal.Instant): Promise<boolean>
+  abstract refreshRecentVideos(now?: Temporal.Instant): Promise<boolean>;
 
   /**
    * Re-reads one saved video and brings it in line with the platform, with
@@ -121,20 +122,20 @@ export abstract class Scraper {
    */
   abstract refreshVideo(
     videoId: string,
-    now?: Temporal.Instant,
-  ): Promise<RefreshVideoResult>
+    now?: Temporal.Instant
+  ): Promise<RefreshVideoResult>;
 
   /**
    * Checks every saved video of non-deleted talents and soft-deletes the ones
    * the platform no longer returns. Details are not refreshed.
    */
-  abstract removeUnavailableVideos(now?: Temporal.Instant): Promise<boolean>
+  abstract removeUnavailableVideos(now?: Temporal.Instant): Promise<boolean>;
 
   /**
    * Brings names and handles (and, where supported, icons) of the saved
    * accounts in line with the platform.
    */
-  abstract syncAccounts(now?: Temporal.Instant): Promise<boolean>
+  abstract syncAccounts(now?: Temporal.Instant): Promise<boolean>;
 
   /**
    * Brings names and handles (and, where supported, icons) of the accounts of
@@ -151,8 +152,8 @@ export abstract class Scraper {
    */
   abstract syncTalentAccounts(
     talentId: string,
-    now?: Temporal.Instant,
-  ): Promise<SyncAccountResult[]>
+    now?: Temporal.Instant
+  ): Promise<SyncAccountResult[]>;
 
   /**
    * Deletes thumbnails no video uses and icons no account uses, once they
@@ -167,34 +168,34 @@ export abstract class Scraper {
    * up. This never rejects.
    */
   async cleanUpImages(
-    now: Temporal.Instant = Temporal.Now.instant(),
+    now: Temporal.Instant = Temporal.Now.instant()
   ): Promise<void> {
-    await this.#cleanUp('removeUnusedThumbnails', () =>
+    await this.#cleanUp("removeUnusedThumbnails", () =>
       removeUnusedThumbnails(this.supabaseClient, {
         now,
         olderThan: UNUSED_THUMBNAIL_GRACE_PERIOD,
-      }),
-    )
-    await this.#cleanUp('removeUnusedProfileImages', () =>
-      removeUnusedProfileImages(this.supabaseClient, { now }),
-    )
+      })
+    );
+    await this.#cleanUp("removeUnusedProfileImages", () =>
+      removeUnusedProfileImages(this.supabaseClient, { now })
+    );
   }
 
   async #cleanUp(
-    operation: 'removeUnusedProfileImages' | 'removeUnusedThumbnails',
-    remove: () => Promise<number>,
+    operation: "removeUnusedProfileImages" | "removeUnusedThumbnails",
+    remove: () => Promise<number>
   ): Promise<void> {
     try {
-      const removedCount = await remove()
+      const removedCount = await remove();
 
       if (removedCount > 0) {
-        this.logger.info('使われていない画像を削除しました', {
+        this.logger.info("使われていない画像を削除しました", {
           operation,
           removedCount,
-        })
+        });
       }
     } catch (error) {
-      this.reportError(error, { operation })
+      this.reportError(error, { operation });
     }
   }
 
@@ -203,23 +204,23 @@ export abstract class Scraper {
    */
   protected reportError: ErrorReporter = (error, context) => {
     if (this.#onError) {
-      this.#onError(error, context)
-      return
+      this.#onError(error, context);
+      return;
     }
 
-    this.logger.error('Failed to process an item', {
+    this.logger.error("Failed to process an item", {
       ...context,
       error,
       provider: this.provider,
-    })
-  }
+    });
+  };
 
   /**
    * Bundles what a crawl operation needs for one run.
    */
   protected createContext<TFetcher>(
     fetcher: TFetcher,
-    now: Temporal.Instant = Temporal.Now.instant(),
+    now: Temporal.Instant = Temporal.Now.instant()
   ): CrawlContext<TFetcher> {
     return {
       fetcher,
@@ -227,6 +228,6 @@ export abstract class Scraper {
       now,
       reportError: this.reportError,
       supabaseClient: this.supabaseClient,
-    }
+    };
   }
 }

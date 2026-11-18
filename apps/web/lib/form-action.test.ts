@@ -1,112 +1,121 @@
-import { checkBotId } from 'botid/server'
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { checkBotId } from "botid/server";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+
 import {
   BOT_DETECTED_ERROR,
   UNEXPECTED_ERROR,
   withBotCheck,
-} from './form-action'
+} from "./form-action";
 
-vi.mock('botid/server', () => ({
+vi.mock("botid/server", () => ({
   checkBotId: vi.fn(),
-}))
+}));
 
-const FIELDS = ['message'] as const
+const FIELDS = ["message"] as const;
 
 function createFormData(values: Record<string, string>): FormData {
-  const formData = new FormData()
+  const formData = new FormData();
 
   for (const [key, value] of Object.entries(values)) {
-    formData.set(key, value)
+    formData.set(key, value);
   }
 
-  return formData
+  return formData;
 }
 
-describe('withBotCheck', () => {
+describe("withBotCheck", () => {
   beforeEach(() => {
     vi.mocked(checkBotId).mockResolvedValue({
       bypassed: false,
       isBot: false,
       isHuman: true,
       isVerifiedBot: false,
-    })
-  })
+    });
+  });
 
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
-  test('passes the form data and the submitted values to the action', async () => {
-    const handler = vi.fn().mockResolvedValue({ success: true })
+  test("passes the form data and the submitted values to the action", async () => {
+    const handler = vi.fn().mockResolvedValue({ success: true });
     const action = withBotCheck(handler, {
-      errorLogMessage: 'Test error:',
+      errorLogMessage: "Test error:",
       fields: FIELDS,
-    })
-    const formData = createFormData({ message: 'こんにちは', other: 'x' })
+    });
+    const formData = createFormData({ message: "こんにちは", other: "x" });
 
-    const result = await action(null, formData)
+    const result = await action(null, formData);
 
-    expect(result).toEqual({ success: true })
-    expect(handler).toHaveBeenCalledWith(formData, { message: 'こんにちは' })
-  })
+    expect(result).toEqual({ success: true });
+    expect(handler).toHaveBeenCalledWith(formData, { message: "こんにちは" });
+  });
 
-  test('rejects a bot without running the action', async () => {
+  test("rejects a bot without running the action", async () => {
     vi.mocked(checkBotId).mockResolvedValue({
       bypassed: false,
       isBot: true,
       isHuman: false,
       isVerifiedBot: false,
-    })
-    const handler = vi.fn()
+    });
+    const handler = vi.fn();
     const action = withBotCheck(handler, {
-      errorLogMessage: 'Test error:',
+      errorLogMessage: "Test error:",
       fields: FIELDS,
-    })
+    });
 
-    const result = await action(null, createFormData({ message: 'spam' }))
+    const result = await action(null, createFormData({ message: "spam" }));
 
     expect(result).toEqual({
       error: BOT_DETECTED_ERROR,
       success: false,
-      values: { message: 'spam' },
-    })
-    expect(handler).not.toHaveBeenCalled()
-  })
+      values: { message: "spam" },
+    });
+    expect(handler).not.toHaveBeenCalled();
+  });
 
-  test('logs an error thrown by the action and keeps the submitted values', async () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const error = new Error('network error')
+  test("logs an error thrown by the action and keeps the submitted values", async () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    const error = new Error("network error");
     const action = withBotCheck(vi.fn().mockRejectedValue(error), {
-      errorLogMessage: 'Test error:',
+      errorLogMessage: "Test error:",
       fields: FIELDS,
-    })
+    });
 
-    const result = await action(null, createFormData({ message: 'こんにちは' }))
+    const result = await action(
+      null,
+      createFormData({ message: "こんにちは" })
+    );
 
     expect(result).toEqual({
       error: UNEXPECTED_ERROR,
       success: false,
-      values: { message: 'こんにちは' },
-    })
-    expect(consoleError).toHaveBeenCalledWith('Test error:', error)
-  })
+      values: { message: "こんにちは" },
+    });
+    expect(consoleError).toHaveBeenCalledWith("Test error:", error);
+  });
 
-  test('treats a failed bot check as an unexpected error', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
-    vi.mocked(checkBotId).mockRejectedValue(new Error('botid failed'))
-    const handler = vi.fn()
+  test("treats a failed bot check as an unexpected error", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(checkBotId).mockRejectedValue(new Error("botid failed"));
+    const handler = vi.fn();
     const action = withBotCheck(handler, {
-      errorLogMessage: 'Test error:',
+      errorLogMessage: "Test error:",
       fields: FIELDS,
-    })
+    });
 
-    const result = await action(null, createFormData({ message: 'こんにちは' }))
+    const result = await action(
+      null,
+      createFormData({ message: "こんにちは" })
+    );
 
     expect(result).toEqual({
       error: UNEXPECTED_ERROR,
       success: false,
-      values: { message: 'こんにちは' },
-    })
-    expect(handler).not.toHaveBeenCalled()
-  })
-})
+      values: { message: "こんにちは" },
+    });
+    expect(handler).not.toHaveBeenCalled();
+  });
+});

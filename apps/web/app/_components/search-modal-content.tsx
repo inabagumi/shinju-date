@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { Search, UserRound, X } from 'lucide-react'
-import Link from 'next/link'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { Search, UserRound, X } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   type KeyboardEvent,
   useCallback,
@@ -11,191 +11,192 @@ import {
   useMemo,
   useRef,
   useState,
-} from 'react'
+} from "react";
+
 import {
   fetchRecommendedQueries,
   fetchSearchModalTalents,
   fetchSuggestions,
-} from '@/app/_lib/actions'
-import { ListOption, ListOptionIcon } from '@/components/list-option'
+} from "@/app/_lib/actions";
+import { ListOption, ListOptionIcon } from "@/components/list-option";
 import TalentChip, {
   TALENT_CHIP_REMOVE_CLASS_NAME,
-} from '@/components/talent-chip'
-import type { Talent } from '@/lib/data/talents'
-import { queryKeys } from '@/lib/query-keys'
-import { parseTalentIds, TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
-import { findMatchingTalents } from '@/lib/talent-match'
-import { useDebouncedValue } from '@/lib/use-debounced-value'
-import { getVideosPath } from '@/lib/video-kind-filter'
-import { SearchModalRecommendedQueries } from './search-modal-recommended-queries'
-import { SearchModalSectionHeading } from './search-modal-section-heading'
+} from "@/components/talent-chip";
+import type { Talent } from "@/lib/data/talents";
+import { queryKeys } from "@/lib/query-keys";
+import { parseTalentIds, TALENT_SEARCH_PARAM } from "@/lib/talent-filter";
+import { findMatchingTalents } from "@/lib/talent-match";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { getVideosPath } from "@/lib/video-kind-filter";
+
+import { SearchModalRecommendedQueries } from "./search-modal-recommended-queries";
+import { SearchModalSectionHeading } from "./search-modal-section-heading";
 
 /** 矢印キーで移動できる候補（タレントとキーワード）に付ける属性 */
-const OPTION_SELECTOR = '[data-search-modal-option]'
+const OPTION_SELECTOR = "[data-search-modal-option]";
 
 /** サジェストを取得するまでに、入力を待つ時間（ミリ秒） */
-const SUGGESTION_DEBOUNCE_MS = 300
+const SUGGESTION_DEBOUNCE_MS = 300;
 
 /**
  * おすすめの検索キーワードとタレントの一覧は、モーダルを開き直すたびには
  * 取り直さない
  */
-const SEARCH_MODAL_STALE_TIME = 5 * 60 * 1000
+const SEARCH_MODAL_STALE_TIME = 5 * 60 * 1000;
 
-const NO_TALENTS: Talent[] = []
+const NO_TALENTS: Talent[] = [];
 
 function isVideosPath(pathname: string): boolean {
-  return pathname === '/videos' || pathname.startsWith('/videos/')
+  return pathname === "/videos" || pathname.startsWith("/videos/");
 }
 
 interface SearchModalContentProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 export function SearchModalContent({ onClose }: SearchModalContentProps) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const talentHeadingId = useId()
-  const inputRef = useRef<HTMLInputElement>(null)
-  const optionsRef = useRef<HTMLDivElement>(null)
-  const [query, setQuery] = useState('')
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const talentHeadingId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const optionsRef = useRef<HTMLDivElement>(null);
+  const [query, setQuery] = useState("");
   // `null` until the chips are changed. Until then, the chips of the talent
   // filter of the video list are shown
-  const [changedTalents, setChangedTalents] = useState<Talent[] | null>(null)
+  const [changedTalents, setChangedTalents] = useState<Talent[] | null>(null);
   // タレントで絞り込んだ動画一覧で開いたときは、そのタレントをチップにする。
   // 種別（`kind`）は引き継がない
   const [initialTalentIds] = useState(() =>
-    isVideosPath(pathname) ? searchParams.getAll(TALENT_SEARCH_PARAM) : [],
-  )
+    isVideosPath(pathname) ? searchParams.getAll(TALENT_SEARCH_PARAM) : []
+  );
 
   const { data: recommendedQueries, isError: isRecommendedQueriesError } =
     useQuery({
       queryFn: () => fetchRecommendedQueries(),
       queryKey: queryKeys.searchModalRecommendedQueries(),
       staleTime: SEARCH_MODAL_STALE_TIME,
-    })
+    });
 
   // The talents are matched against the input here
   const { data: talents = NO_TALENTS } = useQuery({
     queryFn: () => fetchSearchModalTalents(),
     queryKey: queryKeys.searchModalTalents(),
     staleTime: SEARCH_MODAL_STALE_TIME,
-  })
+  });
 
-  const debouncedQuery = useDebouncedValue(query, SUGGESTION_DEBOUNCE_MS)
+  const debouncedQuery = useDebouncedValue(query, SUGGESTION_DEBOUNCE_MS);
   const { data: suggestions, isError: isSuggestionsError } = useQuery({
-    enabled: debouncedQuery !== '',
+    enabled: debouncedQuery !== "",
     // Keep showing the previous suggestions while fetching the new ones
     placeholderData: keepPreviousData,
     queryFn: () => fetchSuggestions(debouncedQuery),
     queryKey: queryKeys.searchModalSuggestions(debouncedQuery),
-  })
-  const isLoadingSuggestions = !suggestions && !isSuggestionsError
+  });
+  const isLoadingSuggestions = !suggestions && !isSuggestionsError;
 
   const initialTalents = useMemo(() => {
     const ids = parseTalentIds(
       initialTalentIds,
-      talents.map((talent) => talent.id),
-    )
+      talents.map((talent) => talent.id)
+    );
 
-    return talents.filter((talent) => ids.includes(talent.id))
-  }, [initialTalentIds, talents])
-  const selectedTalents = changedTalents ?? initialTalents
+    return talents.filter((talent) => ids.includes(talent.id));
+  }, [initialTalentIds, talents]);
+  const selectedTalents = changedTalents ?? initialTalents;
 
   const selectedTalentIds = useMemo(
     () => selectedTalents.map((talent) => talent.id),
-    [selectedTalents],
-  )
+    [selectedTalents]
+  );
   const talentCandidates = useMemo(
     () => findMatchingTalents(talents, query, selectedTalentIds),
-    [talents, query, selectedTalentIds],
-  )
+    [talents, query, selectedTalentIds]
+  );
 
   const getOptions = useCallback(
     () =>
       Array.from(
-        optionsRef.current?.querySelectorAll<HTMLElement>(OPTION_SELECTOR) ??
-          [],
+        optionsRef.current?.querySelectorAll<HTMLElement>(OPTION_SELECTOR) ?? []
       ),
-    [],
-  )
+    []
+  );
 
   const selectTalent = useCallback(
     (talent: Talent) => {
-      setChangedTalents([...selectedTalents, talent])
-      setQuery('')
-      inputRef.current?.focus()
+      setChangedTalents([...selectedTalents, talent]);
+      setQuery("");
+      inputRef.current?.focus();
     },
-    [selectedTalents],
-  )
+    [selectedTalents]
+  );
 
   const removeTalent = useCallback(
     (talentId: string) => {
       setChangedTalents(
-        selectedTalents.filter((talent) => talent.id !== talentId),
-      )
-      inputRef.current?.focus()
+        selectedTalents.filter((talent) => talent.id !== talentId)
+      );
+      inputRef.current?.focus();
     },
-    [selectedTalents],
-  )
+    [selectedTalents]
+  );
 
   const handleInputKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Backspace' && !query && selectedTalents.length > 0) {
-        e.preventDefault()
-        setChangedTalents(selectedTalents.slice(0, -1))
-      } else if (e.key === 'ArrowDown') {
-        const [firstOption] = getOptions()
+      if (e.key === "Backspace" && !query && selectedTalents.length > 0) {
+        e.preventDefault();
+        setChangedTalents(selectedTalents.slice(0, -1));
+      } else if (e.key === "ArrowDown") {
+        const [firstOption] = getOptions();
 
         if (firstOption) {
-          e.preventDefault()
-          firstOption.focus()
+          e.preventDefault();
+          firstOption.focus();
         }
       }
     },
-    [getOptions, query, selectedTalents],
-  )
+    [getOptions, query, selectedTalents]
+  );
 
   const handleOptionKeyDown = useCallback(
     (e: KeyboardEvent<HTMLElement>) => {
-      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
 
-      e.preventDefault()
+      e.preventDefault();
 
-      const options = getOptions()
-      const index = options.indexOf(e.currentTarget)
+      const options = getOptions();
+      const index = options.indexOf(e.currentTarget);
 
-      if (e.key === 'ArrowDown') {
-        options[index + 1]?.focus()
+      if (e.key === "ArrowDown") {
+        options[index + 1]?.focus();
       } else if (index <= 0) {
-        inputRef.current?.focus()
+        inputRef.current?.focus();
       } else {
-        options[index - 1]?.focus()
+        options[index - 1]?.focus();
       }
     },
-    [getOptions],
-  )
+    [getOptions]
+  );
 
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault()
+      e.preventDefault();
 
-      const trimmedQuery = query.trim()
+      const trimmedQuery = query.trim();
 
-      if (!trimmedQuery && selectedTalentIds.length === 0) return
+      if (!trimmedQuery && selectedTalentIds.length === 0) return;
 
-      onClose()
-      router.push(getVideosPath(trimmedQuery, 'all', selectedTalentIds))
+      onClose();
+      router.push(getVideosPath(trimmedQuery, "all", selectedTalentIds));
     },
-    [query, onClose, router, selectedTalentIds],
-  )
+    [query, onClose, router, selectedTalentIds]
+  );
 
   const handleSuggestionClick = useCallback(() => {
-    onClose()
-  }, [onClose])
+    onClose();
+  }, [onClose]);
 
-  const hasTalents = selectedTalents.length > 0
+  const hasTalents = selectedTalents.length > 0;
 
   return (
     <div className="flex flex-col">
@@ -279,7 +280,7 @@ export function SearchModalContent({ onClose }: SearchModalContentProps) {
             <div
               className={
                 talentCandidates.length > 0
-                  ? 'border-t border-border'
+                  ? "border-t border-border"
                   : undefined
               }
             >
@@ -296,8 +297,8 @@ export function SearchModalContent({ onClose }: SearchModalContentProps) {
                         data-suggestion-link
                         href={getVideosPath(
                           suggestion.term,
-                          'all',
-                          selectedTalentIds,
+                          "all",
+                          selectedTalentIds
                         )}
                         onClick={handleSuggestionClick}
                         onKeyDown={handleOptionKeyDown}
@@ -337,5 +338,5 @@ export function SearchModalContent({ onClose }: SearchModalContentProps) {
         )}
       </div>
     </div>
-  )
+  );
 }

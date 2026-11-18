@@ -1,20 +1,20 @@
-import { range } from '@shinju-date/helpers'
-import { Card, type CardProps, Skeleton, twMerge } from '@shinju-date/ui'
-import type { ReactNode } from 'react'
+import { range } from "@shinju-date/helpers";
+import { Card, type CardProps, Skeleton, twMerge } from "@shinju-date/ui";
+import type { ReactNode } from "react";
 
 /** `null`・`undefined`・`false`（`{cond && ...}` の結果）・空文字でない中身か */
 function hasContent(node: ReactNode): boolean {
-  return node != null && node !== false && node !== ''
+  return node != null && node !== false && node !== "";
 }
 
-export interface PanelProps extends Omit<CardProps, 'title' | 'variant'> {
+export interface PanelProps extends Omit<CardProps, "title" | "variant"> {
   /** 見出しの右に置く操作ボタンなど */
-  actions?: ReactNode
-  children?: ReactNode
+  actions?: ReactNode;
+  children?: ReactNode;
   /** 見出しの下に置く補足 */
-  description?: ReactNode
+  description?: ReactNode;
   /** パネルの見出し（`h2`） */
-  title?: ReactNode
+  title?: ReactNode;
 }
 
 /**
@@ -31,28 +31,28 @@ export function Panel({
   ...props
 }: PanelProps) {
   const hasHeading =
-    hasContent(title) || hasContent(description) || hasContent(actions)
+    hasContent(title) || hasContent(description) || hasContent(actions);
 
   return (
-    <Card className={twMerge('block bg-surface p-6', className)} {...props}>
+    <Card className={twMerge("block bg-surface p-6", className)} {...props}>
       {hasHeading && (
         <PanelHeading
           actions={actions}
-          className={hasContent(children) ? 'mb-4' : ''}
+          className={hasContent(children) ? "mb-4" : ""}
           description={description}
           title={title}
         />
       )}
       {children}
     </Card>
-  )
+  );
 }
 
 interface PanelHeadingProps {
-  actions?: ReactNode
-  className?: string
-  description?: ReactNode
-  title?: ReactNode
+  actions?: ReactNode;
+  className?: string;
+  description?: ReactNode;
+  title?: ReactNode;
 }
 
 /** パネルの見出し。説明と操作ボタン（任意）を並べる */
@@ -65,8 +65,8 @@ export function PanelHeading({
   return (
     <div
       className={twMerge(
-        'flex flex-wrap items-start justify-between gap-4',
-        className,
+        "flex flex-wrap items-start justify-between gap-4",
+        className
       )}
     >
       {(hasContent(title) || hasContent(description)) && (
@@ -83,11 +83,11 @@ export function PanelHeading({
         <div className="flex flex-wrap gap-2">{actions}</div>
       )}
     </div>
-  )
+  );
 }
 
 interface DetailListProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 /**
@@ -99,12 +99,12 @@ export function DetailList({ children }: DetailListProps) {
     <dl className="-mx-6 -mb-6 divide-y divide-border border-t border-border">
       {children}
     </dl>
-  )
+  );
 }
 
 interface DetailRowProps {
-  children: ReactNode
-  label: ReactNode
+  children: ReactNode;
+  label: ReactNode;
 }
 
 export function DetailRow({ children, label }: DetailRowProps) {
@@ -115,18 +115,18 @@ export function DetailRow({ children, label }: DetailRowProps) {
         {children}
       </dd>
     </div>
-  )
+  );
 }
 
 interface PanelSkeletonProps {
   /** 見出しの右に置く操作ボタンの代わり（`Skeleton` など） */
-  actions?: ReactNode
-  children?: ReactNode
-  className?: string
+  actions?: ReactNode;
+  children?: ReactNode;
+  className?: string;
   /** 見出しの下の補足。読み込み後と同じ文言を渡す */
-  description?: ReactNode
+  description?: ReactNode;
   /** パネルの見出し。読み込み後と同じ文言を渡す */
-  title?: ReactNode
+  title?: ReactNode;
 }
 
 /**
@@ -151,12 +151,12 @@ export function PanelSkeleton({
     >
       {children}
     </Panel>
-  )
+  );
 }
 
 interface DetailListSkeletonProps {
   /** 項目の数。読み込み後の `DetailRow` の数に合わせる */
-  rows: number
+  rows: number;
 }
 
 /** 読み込み中の `DetailList`。`PanelSkeleton` の最後の中身として置く */
@@ -173,5 +173,5 @@ export function DetailListSkeleton({ rows }: DetailListSkeletonProps) {
         </div>
       ))}
     </div>
-  )
+  );
 }

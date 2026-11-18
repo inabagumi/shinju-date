@@ -1,5 +1,28 @@
 {
+  "name": "@shinju-date/twitch-api-client",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Twitch Helix API client for SHINJU DATE, powered by twurple",
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
   "author": "Haneru Developers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git",
+    "directory": "packages/twitch-api-client"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
     "@shinju-date/constants": "workspace:*",
     "@shinju-date/database": "workspace:*",
@@ -7,34 +30,11 @@
     "@twurple/api": "8.2.0",
     "@twurple/auth": "8.2.0"
   },
-  "description": "Twitch Helix API client for SHINJU DATE, powered by twurple",
   "devDependencies": {
     "@shinju-date/config": "workspace:*",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
-  },
-  "homepage": "https://shinju.date/",
-  "license": "MIT",
-  "name": "@shinju-date/twitch-api-client",
-  "private": true,
-  "repository": {
-    "directory": "packages/twitch-api-client",
-    "type": "git",
-    "url": "https://github.com/inabagumi/shinju-date.git"
-  },
-  "scripts": {
-    "build": "tsdown",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
-  },
-  "type": "module",
-  "version": "1.0.0"
+  }
 }

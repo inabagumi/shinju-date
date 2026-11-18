@@ -1,13 +1,14 @@
-import RecommendedQueries from '@/components/recommended-queries'
-import { TOTAL_DISPLAY_COUNT } from '@/lib/recommendations/constants'
-import { SearchModalSectionHeading } from './search-modal-section-heading'
+import RecommendedQueries from "@/components/recommended-queries";
+import { TOTAL_DISPLAY_COUNT } from "@/lib/recommendations/constants";
+
+import { SearchModalSectionHeading } from "./search-modal-section-heading";
 
 interface SearchModalRecommendedQueriesProps {
-  onClickLink?: () => void
+  onClickLink?: () => void;
   /** `null` while loading, otherwise the fetched queries */
-  queries: string[] | null
+  queries: string[] | null;
   /** リンク先に引き継ぐタレントの ID */
-  talentIds?: readonly string[]
+  talentIds?: readonly string[];
 }
 
 function RecommendedQueriesHeading() {
@@ -15,7 +16,7 @@ function RecommendedQueriesHeading() {
     <SearchModalSectionHeading>
       おすすめの検索キーワード
     </SearchModalSectionHeading>
-  )
+  );
 }
 
 function RecommendedQueriesSkeleton() {
@@ -31,7 +32,7 @@ function RecommendedQueriesSkeleton() {
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 /**
@@ -51,11 +52,11 @@ export function SearchModalRecommendedQueries({
         <RecommendedQueriesHeading />
         <RecommendedQueriesSkeleton />
       </div>
-    )
+    );
   }
 
   if (queries.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -68,5 +69,5 @@ export function SearchModalRecommendedQueries({
         {...(onClickLink ? { onClickLink } : {})}
       />
     </div>
-  )
+  );
 }

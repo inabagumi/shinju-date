@@ -1,63 +1,64 @@
-import { describe, expect, it } from 'vitest'
-import { parseYouTubeChannelIdentifier } from './identifiers.js'
+import { describe, expect, it } from "vitest";
 
-describe('parseYouTubeChannelIdentifier', () => {
-  const channelId = 'UCabcdefghijklmnopqrstuv'
+import { parseYouTubeChannelIdentifier } from "./identifiers.js";
 
-  it('parses a bare channel ID', () => {
+describe("parseYouTubeChannelIdentifier", () => {
+  const channelId = "UCabcdefghijklmnopqrstuv";
+
+  it("parses a bare channel ID", () => {
     expect(parseYouTubeChannelIdentifier(channelId)).toEqual({
       id: channelId,
-      kind: 'id',
-    })
-  })
+      kind: "id",
+    });
+  });
 
-  it('parses a channel URL', () => {
+  it("parses a channel URL", () => {
     expect(
       parseYouTubeChannelIdentifier(
-        `https://www.youtube.com/channel/${channelId}`,
-      ),
-    ).toEqual({ id: channelId, kind: 'id' })
+        `https://www.youtube.com/channel/${channelId}`
+      )
+    ).toEqual({ id: channelId, kind: "id" });
     expect(
-      parseYouTubeChannelIdentifier(`youtube.com/channel/${channelId}/videos`),
-    ).toEqual({ id: channelId, kind: 'id' })
-  })
+      parseYouTubeChannelIdentifier(`youtube.com/channel/${channelId}/videos`)
+    ).toEqual({ id: channelId, kind: "id" });
+  });
 
-  it('parses a handle with and without @', () => {
-    expect(parseYouTubeChannelIdentifier('@example_handle')).toEqual({
-      handle: 'example_handle',
-      kind: 'handle',
-    })
-    expect(parseYouTubeChannelIdentifier('example_handle')).toEqual({
-      handle: 'example_handle',
-      kind: 'handle',
-    })
-  })
+  it("parses a handle with and without @", () => {
+    expect(parseYouTubeChannelIdentifier("@example_handle")).toEqual({
+      handle: "example_handle",
+      kind: "handle",
+    });
+    expect(parseYouTubeChannelIdentifier("example_handle")).toEqual({
+      handle: "example_handle",
+      kind: "handle",
+    });
+  });
 
-  it('parses a handle URL', () => {
+  it("parses a handle URL", () => {
     expect(
-      parseYouTubeChannelIdentifier('https://www.youtube.com/@example_handle'),
-    ).toEqual({ handle: 'example_handle', kind: 'handle' })
+      parseYouTubeChannelIdentifier("https://www.youtube.com/@example_handle")
+    ).toEqual({ handle: "example_handle", kind: "handle" });
     expect(
       parseYouTubeChannelIdentifier(
-        'https://youtube.com/@example_handle/videos',
-      ),
-    ).toEqual({ handle: 'example_handle', kind: 'handle' })
-  })
+        "https://youtube.com/@example_handle/videos"
+      )
+    ).toEqual({ handle: "example_handle", kind: "handle" });
+  });
 
-  it('parses legacy /c/ and /user/ URLs as handles', () => {
+  it("parses legacy /c/ and /user/ URLs as handles", () => {
     expect(
-      parseYouTubeChannelIdentifier('https://www.youtube.com/c/ExampleName'),
-    ).toEqual({ handle: 'ExampleName', kind: 'handle' })
+      parseYouTubeChannelIdentifier("https://www.youtube.com/c/ExampleName")
+    ).toEqual({ handle: "ExampleName", kind: "handle" });
     expect(
-      parseYouTubeChannelIdentifier('https://www.youtube.com/user/ExampleUser'),
-    ).toEqual({ handle: 'ExampleUser', kind: 'handle' })
-  })
+      parseYouTubeChannelIdentifier("https://www.youtube.com/user/ExampleUser")
+    ).toEqual({ handle: "ExampleUser", kind: "handle" });
+  });
 
-  it('returns null for empty or invalid input', () => {
-    expect(parseYouTubeChannelIdentifier('')).toBeNull()
-    expect(parseYouTubeChannelIdentifier('   ')).toBeNull()
-    expect(parseYouTubeChannelIdentifier('ab')).toBeNull()
-    expect(parseYouTubeChannelIdentifier('not a channel!!!')).toBeNull()
-    expect(parseYouTubeChannelIdentifier('https://example.com/foo')).toBeNull()
-  })
-})
+  it("returns null for empty or invalid input", () => {
+    expect(parseYouTubeChannelIdentifier("")).toBeNull();
+    expect(parseYouTubeChannelIdentifier("   ")).toBeNull();
+    expect(parseYouTubeChannelIdentifier("ab")).toBeNull();
+    expect(parseYouTubeChannelIdentifier("not a channel!!!")).toBeNull();
+    expect(parseYouTubeChannelIdentifier("https://example.com/foo")).toBeNull();
+  });
+});

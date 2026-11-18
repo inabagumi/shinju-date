@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest'
-import { YOUTUBE_DATA_API_MAX_RESULTS } from './index.js'
+import { describe, expect, it } from "vitest";
 
-describe('YOUTUBE_DATA_API_MAX_RESULTS', () => {
-  it('is the most IDs one request accepts', () => {
-    expect(YOUTUBE_DATA_API_MAX_RESULTS).toBe(50)
-  })
-})
+import { YOUTUBE_DATA_API_MAX_RESULTS } from "./index.js";
+
+describe("YOUTUBE_DATA_API_MAX_RESULTS", () => {
+  it("is the most IDs one request accepts", () => {
+    expect(YOUTUBE_DATA_API_MAX_RESULTS).toBe(50);
+  });
+});

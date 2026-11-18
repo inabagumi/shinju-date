@@ -1,27 +1,27 @@
-import { isUUID } from './uuid'
+import { isUUID } from "./uuid";
 
 /** タレントを URL で受け渡すときの検索パラメーターの名前 */
-export const TALENT_SEARCH_PARAM = 'talent'
+export const TALENT_SEARCH_PARAM = "talent";
 
 /**
  * タレントの ID を重複を除いて並べ替える。同じ条件の URL と取得関数の
  * キャッシュを揃えるために使う。
  */
 export function normalizeTalentIds(ids: readonly string[]): string[] {
-  return [...new Set(ids)].sort()
+  return [...new Set(ids)].sort();
 }
 
 function toValues(value: string | string[] | undefined): string[] {
-  return Array.isArray(value) ? value : value ? [value] : []
+  return Array.isArray(value) ? value : value ? [value] : [];
 }
 
 /**
  * 検索パラメーターのタレントの値に、UUID の形式でないものが含まれるか。
  */
 export function hasInvalidTalentId(
-  value: string | string[] | undefined,
+  value: string | string[] | undefined
 ): boolean {
-  return toValues(value).some((id) => !isUUID(id))
+  return toValues(value).some((id) => !isUUID(id));
 }
 
 /**
@@ -31,14 +31,14 @@ export function hasInvalidTalentId(
  */
 export function parseTalentIds(
   value: string | string[] | undefined,
-  activeTalentIds?: readonly string[],
+  activeTalentIds?: readonly string[]
 ): string[] {
-  const activeIds = activeTalentIds ? new Set(activeTalentIds) : null
+  const activeIds = activeTalentIds ? new Set(activeTalentIds) : null;
 
   return normalizeTalentIds(
     toValues(value)
       .filter(isUUID)
       .map((id) => id.toLowerCase())
-      .filter((id) => !activeIds || activeIds.has(id)),
-  )
+      .filter((id) => !activeIds || activeIds.has(id))
+  );
 }

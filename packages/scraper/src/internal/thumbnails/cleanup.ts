@@ -1,10 +1,11 @@
-import { chunk } from '@shinju-date/helpers'
-import { toDBString } from '@shinju-date/temporal-fns'
-import type { TypedSupabaseClient } from '../../types.js'
-import { IN_FILTER_CHUNK_SIZE } from '../constants.js'
-import { DatabaseError, isForeignKeyViolation } from '../errors.js'
-import { removeStoredImages } from '../images/index.js'
-import { THUMBNAILS_BUCKET, type Thumbnail } from './thumbnail.js'
+import { chunk } from "@shinju-date/helpers";
+import { toDBString } from "@shinju-date/temporal-fns";
+
+import type { TypedSupabaseClient } from "../../types.js";
+import { IN_FILTER_CHUNK_SIZE } from "../constants.js";
+import { DatabaseError, isForeignKeyViolation } from "../errors.js";
+import { removeStoredImages } from "../images/index.js";
+import { THUMBNAILS_BUCKET, type Thumbnail } from "./thumbnail.js";
 
 /**
  * Thumbnails unused for less than this are left alone:
@@ -19,18 +20,18 @@ import { THUMBNAILS_BUCKET, type Thumbnail } from './thumbnail.js'
  */
 export const UNUSED_THUMBNAIL_GRACE_PERIOD = Temporal.Duration.from({
   hours: 7 * 24,
-})
+});
 
 /** At most this many thumbnails are deleted per run. */
-export const UNUSED_THUMBNAIL_REMOVAL_LIMIT = 500
+export const UNUSED_THUMBNAIL_REMOVAL_LIMIT = 500;
 
 export interface RemoveUnusedThumbnailsOptions {
-  now: Temporal.Instant
+  now: Temporal.Instant;
   /**
    * How long a thumbnail must have been unused, counted from its
    * `updated_at` (set when it is created and when a video stops using it).
    */
-  olderThan: Temporal.Duration
+  olderThan: Temporal.Duration;
 }
 
 /**
@@ -44,50 +45,50 @@ export interface RemoveUnusedThumbnailsOptions {
  */
 async function deleteThumbnailRows(
   supabaseClient: TypedSupabaseClient,
-  thumbnails: readonly Thumbnail[],
+  thumbnails: readonly Thumbnail[]
 ): Promise<Thumbnail[]> {
   const { data, error } = await supabaseClient
-    .from('thumbnails')
+    .from("thumbnails")
     .delete()
     .in(
-      'id',
-      thumbnails.map((thumbnail) => thumbnail.id),
+      "id",
+      thumbnails.map((thumbnail) => thumbnail.id)
     )
-    .select('id')
+    .select("id");
 
   if (!error) {
-    const deletedIds = new Set(data.map((row) => row.id))
+    const deletedIds = new Set(data.map((row) => row.id));
 
-    return thumbnails.filter((thumbnail) => deletedIds.has(thumbnail.id))
+    return thumbnails.filter((thumbnail) => deletedIds.has(thumbnail.id));
   }
 
   if (!isForeignKeyViolation(error)) {
-    throw new DatabaseError('Failed to delete unused thumbnails', error)
+    throw new DatabaseError("Failed to delete unused thumbnails", error);
   }
 
-  const deleted: Thumbnail[] = []
+  const deleted: Thumbnail[] = [];
 
   for (const thumbnail of thumbnails) {
     const { data, error } = await supabaseClient
-      .from('thumbnails')
+      .from("thumbnails")
       .delete()
-      .eq('id', thumbnail.id)
-      .select('id')
+      .eq("id", thumbnail.id)
+      .select("id");
 
     if (error) {
       if (isForeignKeyViolation(error)) {
-        continue
+        continue;
       }
 
-      throw new DatabaseError('Failed to delete an unused thumbnail', error)
+      throw new DatabaseError("Failed to delete an unused thumbnail", error);
     }
 
     if (data.length > 0) {
-      deleted.push(thumbnail)
+      deleted.push(thumbnail);
     }
   }
 
-  return deleted
+  return deleted;
 }
 
 /**
@@ -107,45 +108,45 @@ async function deleteThumbnailRows(
  */
 export async function removeUnusedThumbnails(
   supabaseClient: TypedSupabaseClient,
-  { now, olderThan }: RemoveUnusedThumbnailsOptions,
+  { now, olderThan }: RemoveUnusedThumbnailsOptions
 ): Promise<number> {
-  const before = now.subtract(olderThan)
+  const before = now.subtract(olderThan);
   const { data, error } = await supabaseClient
-    .from('thumbnails')
-    .select('id, path, videos(id)')
+    .from("thumbnails")
+    .select("id, path, videos(id)")
     // Filtering an embedded resource on null keeps the rows without one.
-    .is('videos', null)
-    .lt('updated_at', toDBString(before))
-    .order('updated_at', { ascending: true })
-    .limit(UNUSED_THUMBNAIL_REMOVAL_LIMIT)
+    .is("videos", null)
+    .lt("updated_at", toDBString(before))
+    .order("updated_at", { ascending: true })
+    .limit(UNUSED_THUMBNAIL_REMOVAL_LIMIT);
 
   if (error) {
-    throw new DatabaseError('Failed to list unused thumbnails', error)
+    throw new DatabaseError("Failed to list unused thumbnails", error);
   }
 
-  let removedCount = 0
+  let removedCount = 0;
 
   for (const thumbnails of chunk(
     data.map(({ id, path }): Thumbnail => ({ id, path })),
-    IN_FILTER_CHUNK_SIZE,
+    IN_FILTER_CHUNK_SIZE
   )) {
-    const deleted = await deleteThumbnailRows(supabaseClient, thumbnails)
+    const deleted = await deleteThumbnailRows(supabaseClient, thumbnails);
 
-    removedCount += deleted.length
+    removedCount += deleted.length;
 
     if (deleted.length === 0) {
-      continue
+      continue;
     }
 
     try {
       await removeStoredImages(supabaseClient, {
         bucket: THUMBNAILS_BUCKET,
         paths: deleted.map((thumbnail) => thumbnail.path),
-      })
+      });
     } catch {
       // Ignored on purpose, see above.
     }
   }
 
-  return removedCount
+  return removedCount;
 }

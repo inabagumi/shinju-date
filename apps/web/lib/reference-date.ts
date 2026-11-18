@@ -1,4 +1,4 @@
-import { fetchCurrentTime } from '@/lib/data/videos'
+import { fetchCurrentTime } from "@/lib/data/videos";
 
 /**
  * The date (`YYYY-MM-DD` in `TIME_ZONE`) of `fetchCurrentTime`, the reference
@@ -6,7 +6,7 @@ import { fetchCurrentTime } from '@/lib/data/videos'
  * (`useToday`).
  */
 export async function getReferenceDate(): Promise<string> {
-  const now = Temporal.ZonedDateTime.from(await fetchCurrentTime())
+  const now = Temporal.ZonedDateTime.from(await fetchCurrentTime());
 
-  return now.toPlainDate().toString()
+  return now.toPlainDate().toString();
 }

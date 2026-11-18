@@ -1,55 +1,56 @@
-import { REDIS_KEYS } from '@shinju-date/constants'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { REDIS_KEYS } from "@shinju-date/constants";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
 import {
   isMaintenanceMode,
   type MaintenanceModeRedisClient,
-} from './is-maintenance-mode.js'
+} from "./is-maintenance-mode.js";
 
 function createRedisClient(get: () => Promise<unknown>) {
-  const mockGet = vi.fn(get)
+  const mockGet = vi.fn(get);
 
   return { get: mockGet } as MaintenanceModeRedisClient & {
-    get: typeof mockGet
-  }
+    get: typeof mockGet;
+  };
 }
 
-describe('isMaintenanceMode', () => {
+describe("isMaintenanceMode", () => {
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
-  it('reads the maintenance mode key', async () => {
-    const redisClient = createRedisClient(() => Promise.resolve(true))
+  it("reads the maintenance mode key", async () => {
+    const redisClient = createRedisClient(() => Promise.resolve(true));
 
-    await isMaintenanceMode(redisClient)
+    await isMaintenanceMode(redisClient);
 
-    expect(redisClient.get).toHaveBeenCalledWith(REDIS_KEYS.MAINTENANCE_MODE)
-  })
+    expect(redisClient.get).toHaveBeenCalledWith(REDIS_KEYS.MAINTENANCE_MODE);
+  });
 
-  it('returns true when the value is true', async () => {
-    const redisClient = createRedisClient(() => Promise.resolve(true))
+  it("returns true when the value is true", async () => {
+    const redisClient = createRedisClient(() => Promise.resolve(true));
 
-    await expect(isMaintenanceMode(redisClient)).resolves.toBe(true)
-  })
+    await expect(isMaintenanceMode(redisClient)).resolves.toBe(true);
+  });
 
-  it.each([null, false, 'true', 1])(
-    'returns false when the value is %j',
+  it.each([null, false, "true", 1])(
+    "returns false when the value is %j",
     async (value) => {
-      const redisClient = createRedisClient(() => Promise.resolve(value))
+      const redisClient = createRedisClient(() => Promise.resolve(value));
 
-      await expect(isMaintenanceMode(redisClient)).resolves.toBe(false)
-    },
-  )
+      await expect(isMaintenanceMode(redisClient)).resolves.toBe(false);
+    }
+  );
 
-  it('returns false when Redis cannot be read', async () => {
+  it("returns false when Redis cannot be read", async () => {
     const consoleError = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => undefined)
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
     const redisClient = createRedisClient(() =>
-      Promise.reject(new Error('unavailable')),
-    )
+      Promise.reject(new Error("unavailable"))
+    );
 
-    await expect(isMaintenanceMode(redisClient)).resolves.toBe(false)
-    expect(consoleError).toHaveBeenCalled()
-  })
-})
+    await expect(isMaintenanceMode(redisClient)).resolves.toBe(false);
+    expect(consoleError).toHaveBeenCalled();
+  });
+});

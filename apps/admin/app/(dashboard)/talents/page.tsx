@@ -1,21 +1,23 @@
-import { PageHeader } from '@shinju-date/ui'
-import type { Metadata } from 'next'
-import { Suspense } from 'react'
-import { toURLSearchParams } from '@/lib/search-params-href'
-import { TalentsList, TalentsListSkeleton } from './_components/talents-list'
-import { filterTalents } from './_lib/filter-talents'
-import { getTalents } from './_lib/get-talents'
-import { talentSearchParamsSchema } from './_lib/search-params-schema'
+import { PageHeader } from "@shinju-date/ui";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+
+import { toURLSearchParams } from "@/lib/search-params-href";
+
+import { TalentsList, TalentsListSkeleton } from "./_components/talents-list";
+import { filterTalents } from "./_lib/filter-talents";
+import { getTalents } from "./_lib/get-talents";
+import { talentSearchParamsSchema } from "./_lib/search-params-schema";
 
 export const metadata: Metadata = {
-  title: 'タレント管理',
-}
+  title: "タレント管理",
+};
 
 async function TalentsListData({
   searchParams,
-}: Pick<PageProps<'/talents'>, 'searchParams'>) {
-  const [talents, rawParams] = await Promise.all([getTalents(), searchParams])
-  const filters = talentSearchParamsSchema.parse(rawParams)
+}: Pick<PageProps<"/talents">, "searchParams">) {
+  const [talents, rawParams] = await Promise.all([getTalents(), searchParams]);
+  const filters = talentSearchParamsSchema.parse(rawParams);
 
   return (
     <TalentsList
@@ -25,10 +27,10 @@ async function TalentsListData({
       statusFilter={filters.status}
       talents={filterTalents(talents, filters)}
     />
-  )
+  );
 }
 
-export default function TalentsPage({ searchParams }: PageProps<'/talents'>) {
+export default function TalentsPage({ searchParams }: PageProps<"/talents">) {
   return (
     <div>
       <PageHeader
@@ -40,5 +42,5 @@ export default function TalentsPage({ searchParams }: PageProps<'/talents'>) {
         <TalentsListData searchParams={searchParams} />
       </Suspense>
     </div>
-  )
+  );
 }

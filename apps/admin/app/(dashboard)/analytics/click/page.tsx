@@ -1,35 +1,37 @@
-import { PageHeader } from '@shinju-date/ui'
-import type { Metadata } from 'next'
-import { Suspense } from 'react'
-import { Panel } from '@/components/panel'
+import { PageHeader } from "@shinju-date/ui";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+
+import { Panel } from "@/components/panel";
+
 import {
   DateRangePickerClient,
   DateRangePickerSkeleton,
-} from '../_components/date-range-picker-client'
-import { RankingWidgetSkeleton } from '../_components/ranking-widget'
+} from "../_components/date-range-picker-client";
+import { RankingWidgetSkeleton } from "../_components/ranking-widget";
 import {
   TabNavigation,
   TabNavigationSkeleton,
-} from '../_components/tab-navigation'
-import { VolumeChart, VolumeChartSkeleton } from '../_components/volume-chart'
-import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
-import { PopularRankingsTabs } from './_components/popular-rankings-tabs'
+} from "../_components/tab-navigation";
+import { VolumeChart, VolumeChartSkeleton } from "../_components/volume-chart";
+import { analyticsSearchParamsSchema } from "../_lib/search-params-schema";
+import { PopularRankingsTabs } from "./_components/popular-rankings-tabs";
 
 export const metadata: Metadata = {
-  title: 'クリックアナリティクス',
-}
+  title: "クリックアナリティクス",
+};
 
 const RANKING_TABS = [
-  { id: 'videos', label: '人気動画' },
-  { id: 'talents', label: '人気タレント' },
-]
+  { id: "videos", label: "人気動画" },
+  { id: "talents", label: "人気タレント" },
+];
 
 export default function ClickAnalyticsPage({
   searchParams,
-}: PageProps<'/analytics/click'>) {
+}: PageProps<"/analytics/click">) {
   const parsedSearchParams = searchParams.then((params) =>
-    analyticsSearchParamsSchema.parse(params),
-  )
+    analyticsSearchParamsSchema.parse(params)
+  );
 
   return (
     <div>
@@ -70,5 +72,5 @@ export default function ClickAnalyticsPage({
         </Panel>
       </section>
     </div>
-  )
+  );
 }

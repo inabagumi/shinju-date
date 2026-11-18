@@ -1,11 +1,12 @@
-import { logger } from '@shinju-date/logger'
+import { logger } from "@shinju-date/logger";
 import {
   type ProfileImageSyncResult,
   type SavedTwitchUserIcon,
   type SyncTwitchUserIconOptions,
   syncTwitchUserIcon,
-} from '@shinju-date/scraper/twitch'
-import { getSupabaseAdminClient } from '@/lib/supabase/admin'
+} from "@shinju-date/scraper/twitch";
+
+import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 /**
  * Twitch ユーザーのアイコンを Twitch に合わせて保存・差し替える。
@@ -18,23 +19,23 @@ import { getSupabaseAdminClient } from '@/lib/supabase/admin'
  * @returns 同期結果。失敗した場合は `null`
  */
 export async function syncTwitchUserIconSafely(
-  user: SyncTwitchUserIconOptions['user'],
-  saved: SavedTwitchUserIcon,
+  user: SyncTwitchUserIconOptions["user"],
+  saved: SavedTwitchUserIcon
 ): Promise<ProfileImageSyncResult | null> {
   try {
     return await syncTwitchUserIcon({
       saved,
       supabaseClient: getSupabaseAdminClient(),
       user,
-    })
+    });
   } catch (error) {
     // エラーオブジェクトをそのまま渡さず、名前とメッセージだけを記録する
-    logger.warn('Twitchユーザーのアイコンを同期できませんでした', {
+    logger.warn("Twitchユーザーのアイコンを同期できませんでした", {
       errorMessage: error instanceof Error ? error.message : String(error),
       errorName: error instanceof Error ? error.name : typeof error,
       twitchUserId: saved.twitch_user_id,
-    })
+    });
 
-    return null
+    return null;
   }
 }

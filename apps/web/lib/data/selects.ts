@@ -8,25 +8,26 @@
  * with `QueryData`.
  */
 
-const PROFILE_IMAGE_COLUMNS = 'profile_image:profile_images (blur_data_url, id)'
+const PROFILE_IMAGE_COLUMNS =
+  "profile_image:profile_images (blur_data_url, id)";
 
 /** The columns of a video itself */
 export const VIDEO_BASE_COLUMNS =
-  'duration, id, platform, published_at, status, title, video_kind'
+  "duration, id, platform, published_at, status, title, video_kind";
 
 /**
  * The talent of a video. It is joined inner, so a video of a talent that is
  * hidden (deleted) is left out.
  */
-export const VIDEO_TALENT_COLUMNS = 'talent:talents!inner (id, name)'
+export const VIDEO_TALENT_COLUMNS = "talent:talents!inner (id, name)";
 
 /** `VIDEO_TALENT_COLUMNS` with the theme color of the talent */
 export const VIDEO_TALENT_WITH_THEME_COLOR_COLUMNS =
-  'talent:talents!inner (id, name, theme_color)'
+  "talent:talents!inner (id, name, theme_color)";
 
 /** The thumbnail of a video, `null` when it has none */
 export const VIDEO_THUMBNAIL_COLUMNS =
-  'thumbnail:thumbnails (blur_data_url, height, id, path, width)'
+  "thumbnail:thumbnails (blur_data_url, height, id, path, width)";
 
 const YOUTUBE_VIDEO_COLUMNS = `
   youtube_video_id,
@@ -35,7 +36,7 @@ const YOUTUBE_VIDEO_COLUMNS = `
     youtube_handle,
     ${PROFILE_IMAGE_COLUMNS}
   )
-` as const
+` as const;
 
 const TWITCH_VIDEO_COLUMNS = `
   twitch_video_id,
@@ -45,7 +46,7 @@ const TWITCH_VIDEO_COLUMNS = `
     twitch_login_name,
     ${PROFILE_IMAGE_COLUMNS}
   )
-` as const
+` as const;
 
 /**
  * The YouTube and Twitch videos of a video, with the channel or user that
@@ -55,15 +56,15 @@ const TWITCH_VIDEO_COLUMNS = `
 export const VIDEO_PLATFORM_COLUMNS = `
   youtube_video:youtube_videos (${YOUTUBE_VIDEO_COLUMNS}),
   twitch_video:twitch_videos (${TWITCH_VIDEO_COLUMNS})
-` as const
+` as const;
 
-const YOUTUBE_VIDEO_ID_COLUMNS = 'youtube_video_id'
+const YOUTUBE_VIDEO_ID_COLUMNS = "youtube_video_id";
 
 const TWITCH_VIDEO_ID_COLUMNS = `
   twitch_video_id,
   type,
   twitch_user:twitch_users (twitch_login_name)
-` as const
+` as const;
 
 /**
  * The YouTube and Twitch videos of a video with only what links to the video
@@ -72,7 +73,7 @@ const TWITCH_VIDEO_ID_COLUMNS = `
 export const VIDEO_PLATFORM_ID_COLUMNS = `
   youtube_video:youtube_videos (${YOUTUBE_VIDEO_ID_COLUMNS}),
   twitch_video:twitch_videos (${TWITCH_VIDEO_ID_COLUMNS})
-` as const
+` as const;
 
 /** The videos of the video cards (the home page and the search results) */
 export const VIDEO_LIST_SELECT = `
@@ -80,7 +81,7 @@ export const VIDEO_LIST_SELECT = `
   ${VIDEO_TALENT_COLUMNS},
   ${VIDEO_THUMBNAIL_COLUMNS},
   ${VIDEO_PLATFORM_COLUMNS}
-` as const
+` as const;
 
 /**
  * The videos of the schedule: the videos of the video cards without the
@@ -90,21 +91,21 @@ export const VIDEO_SCHEDULE_SELECT = `
   ${VIDEO_BASE_COLUMNS},
   ${VIDEO_TALENT_WITH_THEME_COLOR_COLUMNS},
   ${VIDEO_PLATFORM_COLUMNS}
-` as const
+` as const;
 
 /** The videos of the calendars (`/videos.ics` and `/talents/[id].ics`) */
 export const VIDEO_CALENDAR_SELECT = `
   ${VIDEO_BASE_COLUMNS},
   ${VIDEO_TALENT_COLUMNS},
   ${VIDEO_PLATFORM_ID_COLUMNS}
-` as const
+` as const;
 
 /** The video a click is tracked for (`/api/ping`) */
 export const VIDEO_CLICK_SELECT = `
   ${VIDEO_BASE_COLUMNS},
   ${VIDEO_TALENT_COLUMNS},
   ${VIDEO_PLATFORM_ID_COLUMNS}
-` as const
+` as const;
 
 /**
  * `VIDEO_CLICK_SELECT` with the YouTube video joined inner, so filtering by
@@ -115,7 +116,7 @@ export const VIDEO_CLICK_SELECT_BY_YOUTUBE_VIDEO = `
   ${VIDEO_TALENT_COLUMNS},
   youtube_video:youtube_videos!inner (${YOUTUBE_VIDEO_ID_COLUMNS}),
   twitch_video:twitch_videos (${TWITCH_VIDEO_ID_COLUMNS})
-` as const
+` as const;
 
 /**
  * `VIDEO_CLICK_SELECT` with the Twitch video joined inner, so filtering by the
@@ -126,4 +127,4 @@ export const VIDEO_CLICK_SELECT_BY_TWITCH_VIDEO = `
   ${VIDEO_TALENT_COLUMNS},
   youtube_video:youtube_videos (${YOUTUBE_VIDEO_ID_COLUMNS}),
   twitch_video:twitch_videos!inner (${TWITCH_VIDEO_ID_COLUMNS})
-` as const
+` as const;

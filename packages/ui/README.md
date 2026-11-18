@@ -91,14 +91,14 @@ import { Button } from '@shinju-date/ui'
 ```tsx
 import { Input } from '@shinju-date/ui'
 
-<Input 
-  placeholder="テキストを入力..." 
+<Input
+  placeholder="テキストを入力..."
   variant="default"
   inputSize="md"
 />
 
-<Input 
-  placeholder="エラー状態" 
+<Input
+  placeholder="エラー状態"
   variant="danger"
 />
 ```
@@ -129,9 +129,9 @@ import {
   DialogDescription,
   DialogClose,
   Button,
-} from '@shinju-date/ui'
+} from "@shinju-date/ui";
 
-;<Dialog>
+<Dialog>
   <DialogTrigger asChild>
     <Button>ダイアログを開く</Button>
   </DialogTrigger>
@@ -145,7 +145,7 @@ import {
       </DialogClose>
     </DialogContent>
   </DialogPortal>
-</Dialog>
+</Dialog>;
 ```
 
 ### Card
@@ -162,16 +162,16 @@ import {
 - `CardContent`: カードのメインコンテンツ
 
 ```tsx
-import { Card, CardHeader, CardContent } from '@shinju-date/ui'
+import { Card, CardHeader, CardContent } from "@shinju-date/ui";
 
-;<Card>
+<Card>
   <CardHeader>
     <h2>カードタイトル</h2>
   </CardHeader>
   <CardContent>
     <p>カードの内容がここに入ります。</p>
   </CardContent>
-</Card>
+</Card>;
 ```
 
 ### Badge
@@ -185,9 +185,9 @@ import { Card, CardHeader, CardContent } from '@shinju-date/ui'
 - `neutral`: 中立（終了・非表示など）
 
 ```tsx
-import { Badge } from '@shinju-date/ui'
+import { Badge } from "@shinju-date/ui";
 
-;<Badge variant="success">公開中</Badge>
+<Badge variant="success">公開中</Badge>;
 ```
 
 ### PageHeader
@@ -195,13 +195,13 @@ import { Badge } from '@shinju-date/ui'
 ページの見出し。見出し（24px・太字）、説明（任意）、右端の操作ボタン（任意）を並べ、下に 24px の余白を取ります。
 
 ```tsx
-import { Button, PageHeader } from '@shinju-date/ui'
+import { Button, PageHeader } from "@shinju-date/ui";
 
-;<PageHeader
+<PageHeader
   actions={<Button>タレントを追加</Button>}
   description="登録されているタレントの一覧です。"
   title="タレント管理"
-/>
+/>;
 ```
 
 ### Table
@@ -216,9 +216,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@shinju-date/ui'
+} from "@shinju-date/ui";
 
-;<Table>
+<Table>
   <TableHeader>
     <TableRow>
       <TableHead>タイトル</TableHead>
@@ -229,7 +229,7 @@ import {
       <TableCell>動画のタイトル</TableCell>
     </TableRow>
   </TableBody>
-</Table>
+</Table>;
 ```
 
 ### Select
@@ -237,12 +237,12 @@ import {
 セレクトボックス。`Input` と同じ高さ・枠・角丸・フォーカス表示で、`variant` と `inputSize` も同じものを使えます。右端の矢印は `text-muted` で描くため、`<select>` を入れ物で囲んでいます。`className` は入れ物に付くので、幅や余白などの配置を指定してください。
 
 ```tsx
-import { Select } from '@shinju-date/ui'
+import { Select } from "@shinju-date/ui";
 
-;<Select aria-label="並び順" defaultValue="new">
+<Select aria-label="並び順" defaultValue="new">
   <option value="new">新しい順</option>
   <option value="old">古い順</option>
-</Select>
+</Select>;
 ```
 
 ### Textarea
@@ -250,9 +250,9 @@ import { Select } from '@shinju-date/ui'
 複数行の入力欄。`Input` と同じ余白・枠・角丸・フォーカス表示で、`variant` と `inputSize` も同じものを使えます。
 
 ```tsx
-import { Textarea } from '@shinju-date/ui'
+import { Textarea } from "@shinju-date/ui";
 
-;<Textarea placeholder="内容を入力..." rows={4} variant="danger" />
+<Textarea placeholder="内容を入力..." rows={4} variant="danger" />;
 ```
 
 ### EmptyState
@@ -260,10 +260,10 @@ import { Textarea } from '@shinju-date/ui'
 データがないことを伝える表示。アイコン（任意）、1行の見出し、補足（任意）、操作ボタン（任意）を中央に並べます。高さは内容なりです。
 
 ```tsx
-import { EmptyState } from '@shinju-date/ui'
-import { Inbox } from 'lucide-react'
+import { EmptyState } from "@shinju-date/ui";
+import { Inbox } from "lucide-react";
 
-;<EmptyState icon={<Inbox />} title="お知らせはまだありません" />
+<EmptyState icon={<Inbox />} title="お知らせはまだありません" />;
 ```
 
 ### StatTile
@@ -271,14 +271,14 @@ import { Inbox } from 'lucide-react'
 統計のタイル。ラベル、値、前日比（任意）を並べます。色は前日比に意味があるときだけ `changeTone` で付けます（良い変化は `positive`、悪い変化は `negative`）。
 
 ```tsx
-import { StatTile } from '@shinju-date/ui'
+import { StatTile } from "@shinju-date/ui";
 
-;<StatTile
+<StatTile
   change="+3（前日比）"
   changeTone="negative"
   label="取り込みの失敗"
   value="5"
-/>
+/>;
 ```
 
 ### FilterBar
@@ -286,15 +286,15 @@ import { StatTile } from '@shinju-date/ui'
 絞り込みを横に並べる入れ物。狭い画面ではボタンの中に折りたたみ、`activeCount` に渡した適用中の件数を表示します。サーバーコンポーネントからも使えます。
 
 ```tsx
-import { FilterBar, Input, Select } from '@shinju-date/ui'
+import { FilterBar, Input, Select } from "@shinju-date/ui";
 
-;<FilterBar activeCount={1}>
+<FilterBar activeCount={1}>
   <Input aria-label="キーワード" placeholder="キーワード" />
   <Select aria-label="公開状態">
     <option value="">すべて</option>
     <option value="visible">公開中</option>
   </Select>
-</FilterBar>
+</FilterBar>;
 ```
 
 ## 技術スタック
@@ -330,21 +330,21 @@ pnpm run build
 ```typescript
 // 例: Buttonコンポーネントのバリアント定義
 const buttonVariants = cva(
-  'inline-flex items-center justify-center rounded-control font-medium transition-colors',
+  "inline-flex items-center justify-center rounded-control font-medium transition-colors",
   {
     variants: {
       variant: {
-        primary: 'bg-accent text-accent-foreground hover:bg-accent/90',
+        primary: "bg-accent text-accent-foreground hover:bg-accent/90",
         secondary:
-          'border border-border bg-surface text-foreground hover:bg-muted',
+          "border border-border bg-surface text-foreground hover:bg-muted",
         // ...
       },
       size: {
-        sm: 'px-3 py-1 text-meta leading-5',
-        md: 'px-4 py-2 text-meta leading-5',
-        lg: 'px-6 py-3 text-body leading-normal',
+        sm: "px-3 py-1 text-meta leading-5",
+        md: "px-4 py-2 text-meta leading-5",
+        lg: "px-6 py-3 text-body leading-normal",
       },
     },
-  },
-)
+  }
+);
 ```

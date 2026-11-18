@@ -1,83 +1,85 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   notFound: vi.fn(() => {
-    throw new Error('NEXT_NOT_FOUND')
+    throw new Error("NEXT_NOT_FOUND");
   }),
-}))
+}));
 
-vi.mock('@/lib/data/schedule', () => ({
+vi.mock("@/lib/data/schedule", () => ({
   fetchOldestVideoDate: vi.fn(),
   fetchScheduleToday: vi.fn(),
-}))
+}));
 
-import { notFound } from 'next/navigation'
-import { fetchOldestVideoDate, fetchScheduleToday } from '@/lib/data/schedule'
-import { resolveScheduleWeek } from './resolve-schedule-week'
+import { notFound } from "next/navigation";
+
+import { fetchOldestVideoDate, fetchScheduleToday } from "@/lib/data/schedule";
+
+import { resolveScheduleWeek } from "./resolve-schedule-week";
 
 function params(date: string) {
-  return Promise.resolve({ date })
+  return Promise.resolve({ date });
 }
 
-describe('resolveScheduleWeek', () => {
+describe("resolveScheduleWeek", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.clearAllMocks();
 
     // Thursday, 12 November 2026
-    vi.mocked(fetchScheduleToday).mockResolvedValue('2026-11-12')
-    vi.mocked(fetchOldestVideoDate).mockResolvedValue('2026-10-28')
-  })
+    vi.mocked(fetchScheduleToday).mockResolvedValue("2026-11-12");
+    vi.mocked(fetchOldestVideoDate).mockResolvedValue("2026-10-28");
+  });
 
-  test('should return the week of today without the date', async () => {
-    const { range, today, weekStart } = await resolveScheduleWeek()
+  test("should return the week of today without the date", async () => {
+    const { range, today, weekStart } = await resolveScheduleWeek();
 
-    expect(weekStart.toString()).toBe('2026-11-08')
-    expect(today.toString()).toBe('2026-11-12')
-    expect(range.first.toString()).toBe('2026-10-25')
-    expect(range.last.toString()).toBe('2026-12-06')
-  })
+    expect(weekStart.toString()).toBe("2026-11-08");
+    expect(today.toString()).toBe("2026-11-12");
+    expect(range.first.toString()).toBe("2026-10-25");
+    expect(range.last.toString()).toBe("2026-12-06");
+  });
 
-  test('should return the Sunday of the week of the date', async () => {
+  test("should return the Sunday of the week of the date", async () => {
     expect(
-      (await resolveScheduleWeek(params('2026-11-12'))).weekStart.toString(),
-    ).toBe('2026-11-08')
+      (await resolveScheduleWeek(params("2026-11-12"))).weekStart.toString()
+    ).toBe("2026-11-08");
     expect(
-      (await resolveScheduleWeek(params('2026-11-01'))).weekStart.toString(),
-    ).toBe('2026-11-01')
-  })
+      (await resolveScheduleWeek(params("2026-11-01"))).weekStart.toString()
+    ).toBe("2026-11-01");
+  });
 
-  test('should go across the years', async () => {
-    vi.mocked(fetchScheduleToday).mockResolvedValue('2026-12-30')
+  test("should go across the years", async () => {
+    vi.mocked(fetchScheduleToday).mockResolvedValue("2026-12-30");
 
     expect(
-      (await resolveScheduleWeek(params('2027-01-01'))).weekStart.toString(),
-    ).toBe('2026-12-27')
-  })
+      (await resolveScheduleWeek(params("2027-01-01"))).weekStart.toString()
+    ).toBe("2026-12-27");
+  });
 
-  test.each(['2026-W46', '2026-02-30', 'today'])(
-    'should render the not-found page for %s without fetching',
+  test.each(["2026-W46", "2026-02-30", "today"])(
+    "should render the not-found page for %s without fetching",
     async (value) => {
       await expect(resolveScheduleWeek(params(value))).rejects.toThrow(
-        'NEXT_NOT_FOUND',
-      )
-      expect(notFound).toHaveBeenCalled()
-      expect(fetchScheduleToday).not.toHaveBeenCalled()
-    },
-  )
+        "NEXT_NOT_FOUND"
+      );
+      expect(notFound).toHaveBeenCalled();
+      expect(fetchScheduleToday).not.toHaveBeenCalled();
+    }
+  );
 
-  test('should render the not-found page before the week of the oldest video', async () => {
+  test("should render the not-found page before the week of the oldest video", async () => {
     // Saturday of the week before the oldest video
-    await expect(resolveScheduleWeek(params('2026-10-24'))).rejects.toThrow(
-      'NEXT_NOT_FOUND',
-    )
-  })
+    await expect(resolveScheduleWeek(params("2026-10-24"))).rejects.toThrow(
+      "NEXT_NOT_FOUND"
+    );
+  });
 
-  test('should render the not-found page more than 4 weeks ahead', async () => {
+  test("should render the not-found page more than 4 weeks ahead", async () => {
     await expect(
-      resolveScheduleWeek(params('2026-12-12')),
-    ).resolves.toMatchObject({})
-    await expect(resolveScheduleWeek(params('2026-12-13'))).rejects.toThrow(
-      'NEXT_NOT_FOUND',
-    )
-  })
-})
+      resolveScheduleWeek(params("2026-12-12"))
+    ).resolves.toMatchObject({});
+    await expect(resolveScheduleWeek(params("2026-12-13"))).rejects.toThrow(
+      "NEXT_NOT_FOUND"
+    );
+  });
+});

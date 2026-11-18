@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   closestCenter,
@@ -8,32 +8,32 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-} from '@dnd-kit/core'
+} from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-import { Button, Input } from '@shinju-date/ui'
-import { GripVertical, X } from 'lucide-react'
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Button, Input } from "@shinju-date/ui";
+import { GripVertical, X } from "lucide-react";
 import {
   type ChangeEvent,
   type ClipboardEvent,
   useCallback,
   useState,
-} from 'react'
+} from "react";
 
 interface SortableItemProps {
-  id: string
-  value: string
-  onChange: (id: string, value: string) => void
-  onRemove: (id: string) => void
-  onPaste: (id: string, text: string) => void
-  placeholder?: string
-  showRemove: boolean
+  id: string;
+  value: string;
+  onChange: (id: string, value: string) => void;
+  onRemove: (id: string) => void;
+  onPaste: (id: string, text: string) => void;
+  placeholder?: string;
+  showRemove: boolean;
 }
 
 function SortableItem({
@@ -46,34 +46,34 @@ function SortableItem({
   value,
 }: SortableItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id })
+    useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-  }
+  };
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      onChange(id, e.target.value)
+      onChange(id, e.target.value);
     },
-    [id, onChange],
-  )
+    [id, onChange]
+  );
 
   const handlePaste = useCallback(
     (e: ClipboardEvent<HTMLInputElement>) => {
-      const text = e.clipboardData.getData('text')
-      if (text.includes('\n')) {
-        e.preventDefault()
-        onPaste(id, text)
+      const text = e.clipboardData.getData("text");
+      if (text.includes("\n")) {
+        e.preventDefault();
+        onPaste(id, text);
       }
     },
-    [id, onPaste],
-  )
+    [id, onPaste]
+  );
 
   const handleRemove = useCallback(() => {
-    onRemove(id)
-  }, [id, onRemove])
+    onRemove(id);
+  }, [id, onRemove]);
 
   return (
     <div className="flex items-center gap-2" ref={setNodeRef} style={style}>
@@ -108,23 +108,23 @@ function SortableItem({
         </Button>
       )}
     </div>
-  )
+  );
 }
 
 interface Item {
-  id: string
-  value: string
+  id: string;
+  value: string;
 }
 
 interface SortableInputListProps {
-  name: string
-  defaultValues?: string[]
-  placeholder?: string
-  addButtonLabel?: string
+  name: string;
+  defaultValues?: string[];
+  placeholder?: string;
+  addButtonLabel?: string;
 }
 
 export function SortableInputList({
-  addButtonLabel = '追加',
+  addButtonLabel = "追加",
   defaultValues = [],
   name,
   placeholder,
@@ -138,96 +138,96 @@ export function SortableInputList({
       : [
           {
             id: `${name}-0-${Temporal.Now.instant().epochMilliseconds}`,
-            value: '',
+            value: "",
           },
-        ],
-  )
+        ]
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  )
+    })
+  );
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event
+    const { active, over } = event;
 
     if (over && active.id !== over.id) {
       setItems((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id)
-        const newIndex = items.findIndex((item) => item.id === over.id)
-        return arrayMove(items, oldIndex, newIndex)
-      })
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
     }
-  }, [])
+  }, []);
 
   const handleChange = useCallback((id: string, value: string) => {
     setItems((items) =>
-      items.map((item) => (item.id === id ? { ...item, value } : item)),
-    )
-  }, [])
+      items.map((item) => (item.id === id ? { ...item, value } : item))
+    );
+  }, []);
 
   const handlePaste = useCallback((id: string, text: string) => {
-    const lines = text.split('\n').filter((line) => line.trim() !== '')
-    if (lines.length === 0) return
+    const lines = text.split("\n").filter((line) => line.trim() !== "");
+    if (lines.length === 0) return;
 
     setItems((items) => {
-      const currentIndex = items.findIndex((item) => item.id === id)
-      if (currentIndex === -1) return items // Item not found, return unchanged
+      const currentIndex = items.findIndex((item) => item.id === id);
+      if (currentIndex === -1) return items; // Item not found, return unchanged
 
-      const newItems = [...items]
-      const currentItem = newItems[currentIndex]
-      if (!currentItem) return items // Safety check, should never happen
+      const newItems = [...items];
+      const currentItem = newItems[currentIndex];
+      if (!currentItem) return items; // Safety check, should never happen
 
       // Set first line to current field
       // We know lines[0] exists because we checked lines.length > 0
-      const firstLine = lines[0] as string
+      const firstLine = lines[0] as string;
       newItems[currentIndex] = {
         id: currentItem.id,
         value: firstLine,
-      }
+      };
 
       // Create new items for remaining lines
       const additionalItems = lines.slice(1).map((line, index) => ({
         id: `${id}-paste-${index}-${Temporal.Now.instant().epochMilliseconds}`,
         value: line,
-      }))
+      }));
 
       // Insert additional items after current item
-      newItems.splice(currentIndex + 1, 0, ...additionalItems)
+      newItems.splice(currentIndex + 1, 0, ...additionalItems);
 
-      return newItems
-    })
-  }, [])
+      return newItems;
+    });
+  }, []);
 
   const handleRemove = useCallback(
     (id: string) => {
       setItems((items) => {
-        const filtered = items.filter((item) => item.id !== id)
+        const filtered = items.filter((item) => item.id !== id);
         // Keep at least one empty field
         return filtered.length > 0
           ? filtered
           : [
               {
                 id: `${name}-0-${Temporal.Now.instant().epochMilliseconds}`,
-                value: '',
+                value: "",
               },
-            ]
-      })
+            ];
+      });
     },
-    [name],
-  )
+    [name]
+  );
 
   const handleAdd = useCallback(() => {
     setItems((items) => [
       ...items,
       {
         id: `${name}-${items.length}-${Temporal.Now.instant().epochMilliseconds}`,
-        value: '',
+        value: "",
       },
-    ])
-  }, [name])
+    ]);
+  }, [name]);
 
   return (
     <div className="space-y-2">
@@ -269,5 +269,5 @@ export function SortableInputList({
         />
       ))}
     </div>
-  )
+  );
 }

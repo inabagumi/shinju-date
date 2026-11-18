@@ -5,9 +5,13 @@
         "EditorConfig.EditorConfig",
         "biomejs.biome",
         "bradlc.vscode-tailwindcss",
+        "oxc.oxc-vscode",
         "unifiedjs.vscode-mdx"
       ],
-      "settings": {}
+      "settings": {
+        "editor.defaultFormatter": "oxc.oxc-vscode",
+        "editor.formatOnSave": true
+      }
     }
   },
   "dockerComposeFile": ["../compose.yml", "compose.override.yml"],

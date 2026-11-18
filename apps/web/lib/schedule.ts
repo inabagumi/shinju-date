@@ -1,14 +1,15 @@
-import { TIME_ZONE } from '@shinju-date/constants'
-import { formatLongDate } from './date-heading'
+import { TIME_ZONE } from "@shinju-date/constants";
+
+import { formatLongDate } from "./date-heading";
 
 /** The path of the schedule of the week that includes today */
-export const SCHEDULE_PATH = '/schedule'
+export const SCHEDULE_PATH = "/schedule";
 
 /** How many weeks after the current week the schedule can show */
-export const SCHEDULE_WEEKS_AHEAD = 4
+export const SCHEDULE_WEEKS_AHEAD = 4;
 
 /** `YYYY-MM-DD`, the only form `/schedule/[date]` accepts */
-const SCHEDULE_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+const SCHEDULE_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
  * Parse the date of `/schedule/[date]`. Returns `null` for values that are not
@@ -16,13 +17,13 @@ const SCHEDULE_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
  */
 export function parseScheduleDate(value: string): Temporal.PlainDate | null {
   if (!SCHEDULE_DATE_PATTERN.test(value)) {
-    return null
+    return null;
   }
 
   try {
-    return Temporal.PlainDate.from(value, { overflow: 'reject' })
+    return Temporal.PlainDate.from(value, { overflow: "reject" });
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -32,14 +33,16 @@ export function parseScheduleDate(value: string): Temporal.PlainDate | null {
  */
 export function getWeekStart(date: Temporal.PlainDate): Temporal.PlainDate {
   // `dayOfWeek` is 1 for Monday and 7 for Sunday
-  return date.subtract({ days: date.dayOfWeek % 7 })
+  return date.subtract({ days: date.dayOfWeek % 7 });
 }
 
 /** The 7 days of the week that starts on `weekStart`, from Sunday to Saturday */
 export function getWeekDays(
-  weekStart: Temporal.PlainDate,
+  weekStart: Temporal.PlainDate
 ): Temporal.PlainDate[] {
-  return Array.from({ length: 7 }, (_, index) => weekStart.add({ days: index }))
+  return Array.from({ length: 7 }, (_, index) =>
+    weekStart.add({ days: index })
+  );
 }
 
 /**
@@ -49,23 +52,23 @@ export function getWeekDays(
  */
 export function getSchedulePath(weekStart?: Temporal.PlainDate): string {
   if (!weekStart) {
-    return SCHEDULE_PATH
+    return SCHEDULE_PATH;
   }
 
-  return `${SCHEDULE_PATH}/${getWeekStart(weekStart).toString()}`
+  return `${SCHEDULE_PATH}/${getWeekStart(weekStart).toString()}`;
 }
 
 export interface ScheduleWeekRange {
   /** The Sunday of the first week that can be shown */
-  first: Temporal.PlainDate
+  first: Temporal.PlainDate;
   /** The Sunday of the last week that can be shown */
-  last: Temporal.PlainDate
+  last: Temporal.PlainDate;
 }
 
 interface GetScheduleWeekRangeOptions {
   /** The date the oldest video starts on, or `null` when there is no video */
-  oldestDate: Temporal.PlainDate | null
-  today: Temporal.PlainDate
+  oldestDate: Temporal.PlainDate | null;
+  today: Temporal.PlainDate;
 }
 
 /**
@@ -77,8 +80,8 @@ export function getScheduleWeekRange({
   oldestDate,
   today,
 }: GetScheduleWeekRangeOptions): ScheduleWeekRange {
-  const currentWeekStart = getWeekStart(today)
-  const first = oldestDate ? getWeekStart(oldestDate) : currentWeekStart
+  const currentWeekStart = getWeekStart(today);
+  const first = oldestDate ? getWeekStart(oldestDate) : currentWeekStart;
 
   return {
     first:
@@ -86,23 +89,23 @@ export function getScheduleWeekRange({
         ? currentWeekStart
         : first,
     last: currentWeekStart.add({ weeks: SCHEDULE_WEEKS_AHEAD }),
-  }
+  };
 }
 
 /** Whether the week that starts on `weekStart` is in the range */
 export function isWeekInRange(
   weekStart: Temporal.PlainDate,
-  { first, last }: ScheduleWeekRange,
+  { first, last }: ScheduleWeekRange
 ): boolean {
   return (
     Temporal.PlainDate.compare(weekStart, first) >= 0 &&
     Temporal.PlainDate.compare(weekStart, last) <= 0
-  )
+  );
 }
 
 interface FormatWeekRangeOptions {
   /** Add the weekdays, as in `2026年11月8日（日）〜11月14日（土）` */
-  withWeekdays?: boolean
+  withWeekdays?: boolean;
 }
 
 /**
@@ -112,34 +115,37 @@ interface FormatWeekRangeOptions {
  */
 export function formatWeekRange(
   weekStart: Temporal.PlainDate,
-  { withWeekdays = false }: FormatWeekRangeOptions = {},
+  { withWeekdays = false }: FormatWeekRangeOptions = {}
 ): string {
-  const weekEnd = weekStart.add({ days: 6 })
-  const start = formatLongDate(weekStart, { weekday: withWeekdays, year: true })
+  const weekEnd = weekStart.add({ days: 6 });
+  const start = formatLongDate(weekStart, {
+    weekday: withWeekdays,
+    year: true,
+  });
   const end = formatLongDate(weekEnd, {
     weekday: withWeekdays,
     year: weekEnd.year !== weekStart.year,
-  })
+  });
 
-  return `${start}〜${end}`
+  return `${start}〜${end}`;
 }
 
 /** Minutes in a day, the height of the column of a day */
-export const MINUTES_IN_DAY = 24 * 60
+export const MINUTES_IN_DAY = 24 * 60;
 
 /** How long an upcoming or live stream is shown, as its end is not known */
-export const DEFAULT_LENGTH_MINUTES = 60
+export const DEFAULT_LENGTH_MINUTES = 60;
 
 /**
  * The shortest an item is drawn, so that a short video still has room for the
  * start time and the icon
  */
-export const MIN_LENGTH_MINUTES = 30
+export const MIN_LENGTH_MINUTES = 30;
 
 interface PlacedVideo {
-  duration: string
-  published_at: string
-  status: string
+  duration: string;
+  published_at: string;
+  status: string;
 }
 
 /**
@@ -148,29 +154,29 @@ interface PlacedVideo {
  * upcoming or live one or one without a duration.
  */
 export function getLengthMinutes(video: PlacedVideo): number {
-  if (video.status === 'ENDED' || video.status === 'PUBLISHED') {
+  if (video.status === "ENDED" || video.status === "PUBLISHED") {
     const minutes = Temporal.Duration.from(video.duration).total({
-      unit: 'minute',
-    })
+      unit: "minute",
+    });
 
     if (minutes > 0) {
-      return minutes
+      return minutes;
     }
   }
 
-  return DEFAULT_LENGTH_MINUTES
+  return DEFAULT_LENGTH_MINUTES;
 }
 
 export interface ScheduleLayout<T> {
   /** The column of the item among the overlapping items, from 0 */
-  column: number
+  column: number;
   /** How many columns the overlapping items share */
-  columns: number
-  item: T
+  columns: number;
+  item: T;
   /** How long the item is drawn, in minutes (cut at the end of the day) */
-  length: number
+  length: number;
   /** When the item starts, in minutes from 00:00 in `TIME_ZONE` */
-  start: number
+  start: number;
 }
 
 /**
@@ -180,55 +186,55 @@ export interface ScheduleLayout<T> {
  * overlap share the width of the day side by side.
  */
 export function layoutDay<T extends PlacedVideo>(
-  videos: readonly T[],
+  videos: readonly T[]
 ): ScheduleLayout<T>[] {
   const placed = videos
     .map((item) => {
       const startAt = Temporal.Instant.from(
-        item.published_at,
-      ).toZonedDateTimeISO(TIME_ZONE)
-      const start = startAt.hour * 60 + startAt.minute
+        item.published_at
+      ).toZonedDateTimeISO(TIME_ZONE);
+      const start = startAt.hour * 60 + startAt.minute;
       const length = Math.min(
         Math.max(getLengthMinutes(item), MIN_LENGTH_MINUTES),
-        MINUTES_IN_DAY - start,
-      )
+        MINUTES_IN_DAY - start
+      );
 
-      return { column: 0, columns: 1, item, length, start }
+      return { column: 0, columns: 1, item, length, start };
     })
-    .sort((a, b) => a.start - b.start || b.length - a.length)
+    .sort((a, b) => a.start - b.start || b.length - a.length);
 
   // Split the videos into clusters of the ones that overlap each other, and
   // give each video the first column that is free at its start
-  let cluster: typeof placed = []
-  let clusterEnd = 0
-  let columnEnds: number[] = []
+  let cluster: typeof placed = [];
+  let clusterEnd = 0;
+  let columnEnds: number[] = [];
 
   const closeCluster = () => {
     for (const layout of cluster) {
-      layout.columns = columnEnds.length
+      layout.columns = columnEnds.length;
     }
 
-    cluster = []
-    columnEnds = []
-  }
+    cluster = [];
+    columnEnds = [];
+  };
 
   for (const layout of placed) {
     if (cluster.length > 0 && layout.start >= clusterEnd) {
-      closeCluster()
+      closeCluster();
     }
 
-    const end = layout.start + layout.length
+    const end = layout.start + layout.length;
     const column = columnEnds.findIndex(
-      (columnEnd) => columnEnd <= layout.start,
-    )
+      (columnEnd) => columnEnd <= layout.start
+    );
 
-    layout.column = column === -1 ? columnEnds.length : column
-    columnEnds[layout.column] = end
-    cluster.push(layout)
-    clusterEnd = cluster.length === 1 ? end : Math.max(clusterEnd, end)
+    layout.column = column === -1 ? columnEnds.length : column;
+    columnEnds[layout.column] = end;
+    cluster.push(layout);
+    clusterEnd = cluster.length === 1 ? end : Math.max(clusterEnd, end);
   }
 
-  closeCluster()
+  closeCluster();
 
-  return placed
+  return placed;
 }

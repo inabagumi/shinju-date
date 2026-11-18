@@ -1,37 +1,38 @@
-'use client'
+"use client";
 
-import { Search } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useSearchModal } from './search-modal-context'
+import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { useSearchModal } from "./search-modal-context";
 
 export function SearchButton() {
-  const [isMac, setIsMac] = useState<boolean | undefined>(undefined)
-  const { openModal } = useSearchModal()
+  const [isMac, setIsMac] = useState<boolean | undefined>(undefined);
+  const { openModal } = useSearchModal();
 
   useEffect(() => {
     setIsMac(
-      typeof window !== 'undefined' &&
-        navigator.userAgent.toUpperCase().includes('MAC'),
-    )
-  }, [])
+      typeof window !== "undefined" &&
+        navigator.userAgent.toUpperCase().includes("MAC")
+    );
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-        event.preventDefault()
-        openModal()
+      if ((event.ctrlKey || event.metaKey) && event.key === "k") {
+        event.preventDefault();
+        openModal();
       }
-    }
+    };
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [openModal])
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [openModal]);
 
   return (
     <button
       aria-keyshortcuts="Control+K Meta+K"
       aria-label="動画を検索"
-      className="flex h-10 w-full min-w-0 items-center gap-2 rounded-control border border-border bg-background px-3 text-left text-meta text-muted transition-colors focus-ring hover:border-accent hover:text-foreground focus-visible:border-accent md:max-w-md"
+      className="flex h-10 w-full min-w-0 items-center gap-2 rounded-control border border-border bg-background px-3 text-left text-meta text-muted focus-ring transition-colors hover:border-accent hover:text-foreground focus-visible:border-accent md:max-w-md"
       onClick={openModal}
       type="button"
     >
@@ -39,9 +40,9 @@ export function SearchButton() {
       <span className="min-w-0 flex-1 truncate">動画を検索</span>
       {isMac !== undefined && (
         <kbd className="hidden rounded-control border border-border bg-surface px-1.5 font-sans text-caption text-muted sm:inline-block">
-          {isMac ? '⌘' : 'Ctrl'} K
+          {isMac ? "⌘" : "Ctrl"} K
         </kbd>
       )}
     </button>
-  )
+  );
 }

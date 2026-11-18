@@ -1,24 +1,26 @@
-import { CalendarPlus, X } from 'lucide-react'
-import Link from 'next/link'
+import { CalendarPlus, X } from "lucide-react";
+import Link from "next/link";
+
 import TalentChip, {
   TALENT_CHIP_REMOVE_CLASS_NAME,
-} from '@/components/talent-chip'
-import { TextLink, TextLinkIcon } from '@/components/text-link'
+} from "@/components/talent-chip";
+import { TextLink, TextLinkIcon } from "@/components/text-link";
 import VideoKindFilterNav, {
   VideoKindFilterNavSkeleton,
-} from '@/components/video-kind-filter-nav'
-import type { Talent } from '@/lib/data/talents'
+} from "@/components/video-kind-filter-nav";
+import type { Talent } from "@/lib/data/talents";
 import {
   getVideosCalendarPath,
   getVideosPath,
   type VideoKindFilter,
-} from '@/lib/video-kind-filter'
-import TalentFilter from './talent-filter'
+} from "@/lib/video-kind-filter";
+
+import TalentFilter from "./talent-filter";
 
 interface SelectedTalentListProps {
-  kind: VideoKindFilter
-  query: string
-  selectedTalents: Talent[]
+  kind: VideoKindFilter;
+  query: string;
+  selectedTalents: Talent[];
 }
 
 /**
@@ -30,7 +32,7 @@ function SelectedTalentList({
   query,
   selectedTalents,
 }: SelectedTalentListProps) {
-  const selectedIds = selectedTalents.map((talent) => talent.id)
+  const selectedIds = selectedTalents.map((talent) => talent.id);
 
   return (
     <ul aria-label="選んでいるタレント" className="flex flex-wrap gap-2">
@@ -42,7 +44,7 @@ function SelectedTalentList({
             href={getVideosPath(
               query,
               kind,
-              selectedIds.filter((id) => id !== talent.id),
+              selectedIds.filter((id) => id !== talent.id)
             )}
             scroll={false}
           >
@@ -62,16 +64,16 @@ function SelectedTalentList({
         </li>
       )}
     </ul>
-  )
+  );
 }
 
 interface VideoFiltersProps {
-  kind: VideoKindFilter
-  query: string
+  kind: VideoKindFilter;
+  query: string;
   /** 選んでいるタレント。`talents` の並びに合わせておく */
-  selectedTalents: Talent[]
+  selectedTalents: Talent[];
   /** 選択肢にする活動中のタレント */
-  talents: Talent[]
+  talents: Talent[];
 }
 
 /**
@@ -85,7 +87,7 @@ export default function VideoFilters({
   selectedTalents,
   talents,
 }: VideoFiltersProps) {
-  const selectedIds = selectedTalents.map((talent) => talent.id)
+  const selectedIds = selectedTalents.map((talent) => talent.id);
 
   return (
     <div className="mb-6 space-y-3">
@@ -121,7 +123,7 @@ export default function VideoFilters({
         />
       )}
     </div>
-  )
+  );
 }
 
 export function VideoFiltersSkeleton() {
@@ -130,5 +132,5 @@ export function VideoFiltersSkeleton() {
       <VideoKindFilterNavSkeleton />
       <div className="h-9 w-40 animate-pulse rounded-full bg-muted" />
     </div>
-  )
+  );
 }

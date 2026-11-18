@@ -1,53 +1,54 @@
-import { PageHeader } from '@shinju-date/ui'
+import { PageHeader } from "@shinju-date/ui";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
-import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
-import { BackLink } from '@/components/back-link'
-import { createTitleFromMessage } from '../_lib/create-title-from-message'
-import { getFeatureRequestById } from '../_lib/get-feedback'
+import { BackLink } from "@/components/back-link";
+
+import { createTitleFromMessage } from "../_lib/create-title-from-message";
+import { getFeatureRequestById } from "../_lib/get-feedback";
 import {
   FeatureRequestDetail,
   FeatureRequestDetailSkeleton,
-} from './_components/feedback-detail'
+} from "./_components/feedback-detail";
 
 export async function generateMetadata({
   params,
-}: Pick<PageProps<'/feedback/[id]'>, 'params'>): Promise<Metadata> {
-  const { id } = await params
+}: Pick<PageProps<"/feedback/[id]">, "params">): Promise<Metadata> {
+  const { id } = await params;
 
-  const featureRequest = await getFeatureRequestById(id)
+  const featureRequest = await getFeatureRequestById(id);
 
   if (!featureRequest) {
     return {
-      title: '機能要望が見つかりません',
-    }
+      title: "機能要望が見つかりません",
+    };
   }
 
-  const title = createTitleFromMessage(featureRequest.message)
+  const title = createTitleFromMessage(featureRequest.message);
 
   return {
     title: `${title} - 機能要望詳細`,
-  }
+  };
 }
 
 async function FeatureRequestDetailData({
   params,
-}: Pick<PageProps<'/feedback/[id]'>, 'params'>) {
-  const { id } = await params
+}: Pick<PageProps<"/feedback/[id]">, "params">) {
+  const { id } = await params;
 
-  const featureRequest = await getFeatureRequestById(id)
+  const featureRequest = await getFeatureRequestById(id);
 
   if (!featureRequest) {
-    notFound()
+    notFound();
   }
 
-  return <FeatureRequestDetail featureRequest={featureRequest} />
+  return <FeatureRequestDetail featureRequest={featureRequest} />;
 }
 
 export default function FeedbackDetailPage({
   params,
-}: PageProps<'/feedback/[id]'>) {
+}: PageProps<"/feedback/[id]">) {
   return (
     <div>
       <div className="mb-4">
@@ -60,5 +61,5 @@ export default function FeedbackDetailPage({
         <FeatureRequestDetailData params={params} />
       </Suspense>
     </div>
-  )
+  );
 }

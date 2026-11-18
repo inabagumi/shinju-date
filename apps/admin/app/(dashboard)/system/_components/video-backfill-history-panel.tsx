@@ -1,62 +1,64 @@
-'use client'
+"use client";
 
-import { formatNumber, range } from '@shinju-date/helpers'
-import { Alert, Badge, Button, EmptyState, Skeleton } from '@shinju-date/ui'
-import { AsyncPanelBody } from '@/components/async-panel-body'
+import { formatNumber, range } from "@shinju-date/helpers";
+import { Alert, Badge, Button, EmptyState, Skeleton } from "@shinju-date/ui";
+
+import { AsyncPanelBody } from "@/components/async-panel-body";
 import {
   BackfillAccountRow,
   BackfillAccountRowSkeleton,
-} from '@/components/backfill-account-row'
-import { BackfillStatusBadge } from '@/components/backfill-status-badge'
-import { ConfirmDialog } from '@/components/confirm-dialog'
-import { Panel, PanelSkeleton } from '@/components/panel'
-import { formatDateTimeFromISO } from '@/lib/format'
-import { useBackfillRequest } from '@/lib/use-backfill-request'
+} from "@/components/backfill-account-row";
+import { BackfillStatusBadge } from "@/components/backfill-status-badge";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { Panel, PanelSkeleton } from "@/components/panel";
+import { formatDateTimeFromISO } from "@/lib/format";
+import { useBackfillRequest } from "@/lib/use-backfill-request";
 import {
   type PolledResourceFailure,
   usePolledResource,
-} from '@/lib/use-polled-resource'
+} from "@/lib/use-polled-resource";
+
 import {
   getVideoBackfillHistoryAction,
   retryFailedVideoBackfillJobsAction,
-} from '../_actions/video-backfill-history'
+} from "../_actions/video-backfill-history";
 import type {
   VideoBackfillHistory,
   VideoBackfillHistoryEntry,
-} from '../_lib/get-video-backfill-history'
+} from "../_lib/get-video-backfill-history";
 
 /**
  * How often the history is refreshed while failed accounts are retried, so
  * that their outcome shows up without reloading the page. The batch app
  * works the queue off once a minute.
  */
-const POLL_INTERVAL_MS = 15_000
+const POLL_INTERVAL_MS = 15_000;
 
-const TITLE = '過去動画の取り込みの履歴'
+const TITLE = "過去動画の取り込みの履歴";
 const DESCRIPTION =
-  '終了した過去動画の取り込みの結果です。最後の取り込みが失敗したアカウントは、まとめて再試行できます。'
+  "終了した過去動画の取り込みの結果です。最後の取り込みが失敗したアカウントは、まとめて再試行できます。";
 
 /** 履歴を取り直す。アクションの `data` を、`usePolledResource` が受け取る形にする */
 async function fetchVideoBackfillHistory(): Promise<
   VideoBackfillHistory | PolledResourceFailure
 > {
-  const result = await getVideoBackfillHistoryAction()
+  const result = await getVideoBackfillHistoryAction();
 
   if (!result.success) {
-    return result
+    return result;
   }
 
-  return result.data ?? { success: false }
+  return result.data ?? { success: false };
 }
 
-const SCOPE_LABELS: Record<VideoBackfillHistoryEntry['scope'], string> = {
-  all: '全タレントのチェックで依頼',
-  single: '個別に依頼',
-}
+const SCOPE_LABELS: Record<VideoBackfillHistoryEntry["scope"], string> = {
+  all: "全タレントのチェックで依頼",
+  single: "個別に依頼",
+};
 
 interface VideoBackfillHistoryPanelProps {
   /** サーバーコンポーネントで取得した、履歴と失敗したアカウント */
-  initialData: VideoBackfillHistory
+  initialData: VideoBackfillHistory;
 }
 
 /**
@@ -71,11 +73,11 @@ export function VideoBackfillHistoryPanel({
     initialData,
     intervalMs: POLL_INTERVAL_MS,
     isActive: ({ failures }) => failures.some((failure) => failure.active),
-  })
-  const retry = useBackfillRequest(retryFailedVideoBackfillJobsAction, reload)
+  });
+  const retry = useBackfillRequest(retryFailedVideoBackfillJobsAction, reload);
 
-  const { entries, failures } = data
-  const retryable = failures.filter((failure) => !failure.active).length
+  const { entries, failures } = data;
+  const retryable = failures.filter((failure) => !failure.active).length;
 
   return (
     <Panel
@@ -109,7 +111,7 @@ export function VideoBackfillHistoryPanel({
             role="region"
             title={
               <>
-                最後の取り込みが失敗したアカウント:{' '}
+                最後の取り込みが失敗したアカウント:{" "}
                 {formatNumber(failures.length)}件
                 {failures.length > retryable &&
                   `（再試行中: ${formatNumber(failures.length - retryable)}件）`}
@@ -156,16 +158,16 @@ export function VideoBackfillHistoryPanel({
                   talent={{ id: entry.talentId, name: entry.talentName }}
                 >
                   <p className="text-meta text-muted tabular-nums">
-                    {formatNumber(entry.added)}件追加 ·{' '}
+                    {formatNumber(entry.added)}件追加 ·{" "}
                     {formatNumber(entry.pages)}
-                    ページ · {entry.requester ?? '不明なユーザー'}が
+                    ページ · {entry.requester ?? "不明なユーザー"}が
                     {SCOPE_LABELS[entry.scope]}
                   </p>
                   <p className="text-caption text-muted tabular-nums">
                     <time dateTime={entry.requestedAt}>
                       {formatDateTimeFromISO(entry.requestedAt)}
                     </time>
-                    {' → '}
+                    {" → "}
                     <time dateTime={entry.finishedAt}>
                       {formatDateTimeFromISO(entry.finishedAt)}
                     </time>
@@ -182,11 +184,11 @@ export function VideoBackfillHistoryPanel({
         </div>
       </AsyncPanelBody>
     </Panel>
-  )
+  );
 }
 
 /** スケルトンに並べる、履歴の行の数。一覧の高さ（`max-h-[32rem]`）に収まる数にする */
-const SKELETON_ROWS = 6
+const SKELETON_ROWS = 6;
 
 /** 読み込み中の `VideoBackfillHistoryPanel`。履歴の行を並べる */
 export function VideoBackfillHistoryPanelSkeleton() {
@@ -202,5 +204,5 @@ export function VideoBackfillHistoryPanelSkeleton() {
         ))}
       </ul>
     </PanelSkeleton>
-  )
+  );
 }

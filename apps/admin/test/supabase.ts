@@ -1,54 +1,55 @@
-import type { default as Database } from '@shinju-date/database'
-import { createClient } from '@supabase/supabase-js'
-import { HttpResponse, http } from 'msw'
-import { setupServer } from 'msw/node'
-import { afterAll, afterEach, beforeAll } from 'vitest'
-import type { TypedSupabaseClient } from '@/lib/supabase'
-import { NO_ROWS_ERROR_CODE } from '@/lib/supabase/query'
+import type { default as Database } from "@shinju-date/database";
+import { createClient } from "@supabase/supabase-js";
+import { HttpResponse, http } from "msw";
+import { setupServer } from "msw/node";
+import { afterAll, afterEach, beforeAll } from "vitest";
 
-const SUPABASE_URL = 'https://fake.supabase.test'
+import type { TypedSupabaseClient } from "@/lib/supabase";
+import { NO_ROWS_ERROR_CODE } from "@/lib/supabase/query";
+
+const SUPABASE_URL = "https://fake.supabase.test";
 
 /**
  * What a PostgREST request does: the query builder method that sent it
  * (`rpc` for a database function).
  */
 export type SupabaseOperation =
-  | 'delete'
-  | 'insert'
-  | 'rpc'
-  | 'select'
-  | 'update'
-  | 'upsert'
+  | "delete"
+  | "insert"
+  | "rpc"
+  | "select"
+  | "update"
+  | "upsert";
 
 /** A PostgREST request made by the code under test. */
 export interface SupabaseRequest {
-  body: unknown
-  operation: SupabaseOperation
+  body: unknown;
+  operation: SupabaseOperation;
   /**
    * Query string parameters, e.g. `id` → `eq.talent-1`. A column filtered
    * twice keeps only its last filter; read `searchParams` for every one.
    */
-  query: Record<string, string>
-  searchParams: URLSearchParams
+  query: Record<string, string>;
+  searchParams: URLSearchParams;
   /**
    * Whether the database must answer with exactly one row: `single()`, or
    * `maybeSingle()` after a write. `maybeSingle()` on a select reads a list.
    */
-  single: boolean
+  single: boolean;
   /** The table, or the function for `rpc`. */
-  table: string
+  table: string;
 }
 
 /**
  * The rows the database sends back (a single row for `single()` may be given
  * as an array of one), or a prepared `Response`, e.g. from `postgresError()`.
  */
-export type SupabaseResult = unknown
+export type SupabaseResult = unknown;
 
 /** Answers a request, or gives the result to answer with. */
 export type SupabaseResponder =
   | SupabaseResult
-  | ((request: SupabaseRequest) => SupabaseResult | Promise<SupabaseResult>)
+  | ((request: SupabaseRequest) => SupabaseResult | Promise<SupabaseResult>);
 
 /**
  * Builds the response PostgREST sends when a statement fails. Supabase
@@ -57,43 +58,43 @@ export type SupabaseResponder =
 export function postgresError(code: string, message: string): Response {
   return HttpResponse.json(
     { code, details: null, hint: null, message },
-    { status: code === '23505' ? 409 : 400 },
-  )
+    { status: code === "23505" ? 409 : 400 }
+  );
 }
 
 /** Builds the response for a query that asked for a `count`. */
 export function withCount(rows: unknown[], count: number): Response {
   return HttpResponse.json(rows, {
     headers: {
-      'Content-Range': `${rows.length > 0 ? `0-${rows.length - 1}` : '*'}/${count}`,
+      "Content-Range": `${rows.length > 0 ? `0-${rows.length - 1}` : "*"}/${count}`,
     },
-  })
+  });
 }
 
 function operationOf(
   request: Request,
-  isRpc: boolean,
+  isRpc: boolean
 ): SupabaseOperation | null {
   if (isRpc) {
-    return 'rpc'
+    return "rpc";
   }
 
   switch (request.method) {
-    case 'GET':
-    case 'HEAD':
-      return 'select'
-    case 'POST':
+    case "GET":
+    case "HEAD":
+      return "select";
+    case "POST":
       return /resolution=(merge|ignore)-duplicates/.test(
-        request.headers.get('Prefer') ?? '',
+        request.headers.get("Prefer") ?? ""
       )
-        ? 'upsert'
-        : 'insert'
-    case 'PATCH':
-      return 'update'
-    case 'DELETE':
-      return 'delete'
+        ? "upsert"
+        : "insert";
+    case "PATCH":
+      return "update";
+    case "DELETE":
+      return "delete";
     default:
-      return null
+      return null;
   }
 }
 
@@ -101,36 +102,40 @@ function noRows(): Response {
   return HttpResponse.json(
     {
       code: NO_ROWS_ERROR_CODE,
-      details: 'The result contains 0 rows',
+      details: "The result contains 0 rows",
       hint: null,
-      message: 'JSON object requested, multiple (or no) rows returned',
+      message: "JSON object requested, multiple (or no) rows returned",
     },
-    { status: 406 },
-  )
+    { status: 406 }
+  );
 }
 
 function toResponse(request: SupabaseRequest, result: unknown): Response {
   if (result instanceof Response) {
-    return result
+    return result;
   }
 
-  if (request.operation === 'rpc') {
-    return HttpResponse.json(result ?? null)
+  if (request.operation === "rpc") {
+    return HttpResponse.json(result ?? null);
   }
 
   if (request.single) {
-    const rows = Array.isArray(result) ? result : result == null ? [] : [result]
+    const rows = Array.isArray(result)
+      ? result
+      : result == null
+        ? []
+        : [result];
 
-    return rows.length === 1 ? HttpResponse.json(rows[0]) : noRows()
+    return rows.length === 1 ? HttpResponse.json(rows[0]) : noRows();
   }
 
   return HttpResponse.json(
-    Array.isArray(result) || result == null ? (result ?? []) : [result],
-  )
+    Array.isArray(result) || result == null ? (result ?? []) : [result]
+  );
 }
 
 function key(operation: SupabaseOperation, table: string): string {
-  return `${operation} ${table}`
+  return `${operation} ${table}`;
 }
 
 /**
@@ -146,79 +151,79 @@ function key(operation: SupabaseOperation, table: string): string {
  * Answers and recorded requests are cleared after each test.
  */
 export function setupSupabase() {
-  const requests: SupabaseRequest[] = []
-  const persistent = new Map<string, SupabaseResponder>()
-  const queued = new Map<string, SupabaseResponder[]>()
+  const requests: SupabaseRequest[] = [];
+  const persistent = new Map<string, SupabaseResponder>();
+  const queued = new Map<string, SupabaseResponder[]>();
 
   async function answer(request: SupabaseRequest): Promise<Response> {
-    const name = key(request.operation, request.table)
-    const responder = queued.get(name)?.shift() ?? persistent.get(name)
+    const name = key(request.operation, request.table);
+    const responder = queued.get(name)?.shift() ?? persistent.get(name);
     const result =
-      typeof responder === 'function' ? await responder(request) : responder
+      typeof responder === "function" ? await responder(request) : responder;
 
-    return toResponse(request, result)
+    return toResponse(request, result);
   }
 
   const server = setupServer(
     http.all(`${SUPABASE_URL}/rest/v1/*`, async ({ request }) => {
-      const url = new URL(request.url)
-      const path = url.pathname.replace(/^\/rest\/v1\//, '')
-      const isRpc = path.startsWith('rpc/')
-      const operation = operationOf(request, isRpc)
+      const url = new URL(request.url);
+      const path = url.pathname.replace(/^\/rest\/v1\//, "");
+      const isRpc = path.startsWith("rpc/");
+      const operation = operationOf(request, isRpc);
 
       if (!operation) {
-        return new HttpResponse(null, { status: 405 })
+        return new HttpResponse(null, { status: 405 });
       }
 
-      const text = await request.text()
+      const text = await request.text();
       const recorded: SupabaseRequest = {
         body: text ? JSON.parse(text) : undefined,
         operation,
         query: Object.fromEntries(url.searchParams),
         searchParams: url.searchParams,
-        single: (request.headers.get('Accept') ?? '').includes(
-          'vnd.pgrst.object',
+        single: (request.headers.get("Accept") ?? "").includes(
+          "vnd.pgrst.object"
         ),
-        table: isRpc ? path.slice('rpc/'.length) : path,
-      }
+        table: isRpc ? path.slice("rpc/".length) : path,
+      };
 
-      requests.push(recorded)
+      requests.push(recorded);
 
-      const response = await answer(recorded)
+      const response = await answer(recorded);
 
       // A `head: true` query (for a count) reads only the headers.
-      return request.method === 'HEAD'
+      return request.method === "HEAD"
         ? new HttpResponse(null, {
             headers: response.headers,
             status: response.status,
           })
-        : response
-    }),
-  )
+        : response;
+    })
+  );
 
   beforeAll(() => {
-    server.listen({ onUnhandledFrame: 'error' })
-  })
+    server.listen({ onUnhandledFrame: "error" });
+  });
 
   afterEach(() => {
-    server.resetHandlers()
-    persistent.clear()
-    queued.clear()
-    requests.length = 0
-  })
+    server.resetHandlers();
+    persistent.clear();
+    queued.clear();
+    requests.length = 0;
+  });
 
   afterAll(() => {
-    server.close()
-  })
+    server.close();
+  });
 
   return {
     /** Requests of one kind, e.g. `calls('update', 'videos')`. */
     calls(operation: SupabaseOperation, table: string): SupabaseRequest[] {
       return requests.filter(
-        (request) => request.operation === operation && request.table === table,
-      )
+        (request) => request.operation === operation && request.table === table
+      );
     },
-    client: createClient<Database>(SUPABASE_URL, 'fake-key', {
+    client: createClient<Database>(SUPABASE_URL, "fake-key", {
       auth: {
         autoRefreshToken: false,
         detectSessionInUrl: false,
@@ -229,9 +234,9 @@ export function setupSupabase() {
     on(
       operation: SupabaseOperation,
       table: string,
-      responder: SupabaseResponder,
+      responder: SupabaseResponder
     ): void {
-      persistent.set(key(operation, table), responder)
+      persistent.set(key(operation, table), responder);
     },
     /**
      * Answers the next `operation` on `table`, ahead of `on()`. Calls queue
@@ -240,16 +245,16 @@ export function setupSupabase() {
     once(
       operation: SupabaseOperation,
       table: string,
-      responder: SupabaseResponder,
+      responder: SupabaseResponder
     ): void {
-      const name = key(operation, table)
-      queued.set(name, [...(queued.get(name) ?? []), responder])
+      const name = key(operation, table);
+      queued.set(name, [...(queued.get(name) ?? []), responder]);
     },
     /** Every PostgREST request made so far in the current test. */
     requests,
     /** The underlying MSW server, for endpoints other than PostgREST. */
     server,
-  }
+  };
 }
 
-export type FakeSupabase = ReturnType<typeof setupSupabase>
+export type FakeSupabase = ReturnType<typeof setupSupabase>;

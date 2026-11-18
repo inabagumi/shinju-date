@@ -1,4 +1,4 @@
-import type { Announcement } from '@/lib/data/announcements'
+import type { Announcement } from "@/lib/data/announcements";
 
 /**
  * `fetchActiveAnnouncements` の結果から、現在の時刻が開始と終了の間にある
@@ -7,19 +7,19 @@ import type { Announcement } from '@/lib/data/announcements'
  */
 export function selectCurrentAnnouncement(
   announcements: readonly Announcement[],
-  now: Temporal.Instant,
+  now: Temporal.Instant
 ): Announcement | null {
   return (
     announcements.find(
       (announcement) =>
         Temporal.Instant.compare(
           Temporal.Instant.from(announcement.start_at),
-          now,
+          now
         ) <= 0 &&
         Temporal.Instant.compare(
           now,
-          Temporal.Instant.from(announcement.end_at),
-        ) <= 0,
+          Temporal.Instant.from(announcement.end_at)
+        ) <= 0
     ) ?? null
-  )
+  );
 }

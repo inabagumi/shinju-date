@@ -1,61 +1,62 @@
-import { toLiveTwitchVideoId } from '@shinju-date/constants'
-import type { TablesUpdate } from '@shinju-date/database'
+import { toLiveTwitchVideoId } from "@shinju-date/constants";
+import type { TablesUpdate } from "@shinju-date/database";
 import {
   getArchivedStreamId,
   TWITCH_API_MAX_RESULTS,
-} from '@shinju-date/twitch-api-client'
-import type { QueryData } from '@supabase/supabase-js'
-import { countChanges } from '../internal/concurrency.js'
-import { WRITE_CONCURRENCY } from '../internal/constants.js'
+} from "@shinju-date/twitch-api-client";
+import type { QueryData } from "@supabase/supabase-js";
+
+import { countChanges } from "../internal/concurrency.js";
+import { WRITE_CONCURRENCY } from "../internal/constants.js";
 import {
   getActiveAccounts,
   TWITCH_USERS,
   updateVideo,
-} from '../internal/database/index.js'
-import { DatabaseError } from '../internal/errors.js'
-import { saveVideoWithThumbnail } from '../internal/operations/save-video.js'
+} from "../internal/database/index.js";
+import { DatabaseError } from "../internal/errors.js";
+import { saveVideoWithThumbnail } from "../internal/operations/save-video.js";
 import type {
   CrawlContext,
   TypedSupabaseClient,
   WriteContext,
-} from '../types.js'
-import { applyNewVideoAction, planNewVideos } from './add-new-videos.js'
-import { attachArchive } from './attach-archive.js'
-import type { TwitchFetcher } from './fetcher.js'
-import { TWITCH_NEW_VIDEOS } from './platform.js'
+} from "../types.js";
+import { applyNewVideoAction, planNewVideos } from "./add-new-videos.js";
+import { attachArchive } from "./attach-archive.js";
+import type { TwitchFetcher } from "./fetcher.js";
+import { TWITCH_NEW_VIDEOS } from "./platform.js";
 import {
   findSavedTwitchVideos,
   isLivePlaceholder,
   SAVED_LIVE_VIDEO_COLUMNS,
   type SavedTwitchVideo,
-} from './saved-video.js'
-import type { TwitchStream, TwitchVideo } from './types.js'
-import { toLiveFields } from './video.js'
+} from "./saved-video.js";
+import type { TwitchStream, TwitchVideo } from "./types.js";
+import { toLiveFields } from "./video.js";
 
 /** A saved LIVE row together with the Helix ID of its broadcaster. */
 export interface SavedLiveVideo extends SavedTwitchVideo {
   /** `null` when the Twitch account is no longer registered. */
-  twitchUserId: string | null
+  twitchUserId: string | null;
 }
 
 export interface LiveSyncPlan {
   /** Rows whose stream went offline. */
-  ended: SavedLiveVideo[]
+  ended: SavedLiveVideo[];
   /** Rows of streams that are on air but are not shown as such. */
-  refreshed: { saved: SavedTwitchVideo; values: TablesUpdate<'videos'> }[]
+  refreshed: { saved: SavedTwitchVideo; values: TablesUpdate<"videos"> }[];
   /** Streams that just went on air and have no row yet. */
-  started: TwitchStream[]
+  started: TwitchStream[];
 }
 
 export interface PlanLiveSyncOptions {
   /** Helix IDs of the accounts new broadcasts are tracked for. */
-  activeTwitchUserIds: ReadonlySet<string>
+  activeTwitchUserIds: ReadonlySet<string>;
   /** Streams that are on air right now. */
-  liveStreams: readonly TwitchStream[]
+  liveStreams: readonly TwitchStream[];
   /** Saved rows whose stream ID matches one of `liveStreams`. */
-  savedByStreamId: readonly SavedTwitchVideo[]
+  savedByStreamId: readonly SavedTwitchVideo[];
   /** Saved rows that are currently shown as LIVE. */
-  savedLiveVideos: readonly SavedLiveVideo[]
+  savedLiveVideos: readonly SavedLiveVideo[];
 }
 
 /**
@@ -68,72 +69,72 @@ export function planLiveSync({
   savedByStreamId,
   savedLiveVideos,
 }: PlanLiveSyncOptions): LiveSyncPlan {
-  const savedByStream = new Map<string, SavedTwitchVideo>()
+  const savedByStream = new Map<string, SavedTwitchVideo>();
 
   for (const saved of [...savedLiveVideos, ...savedByStreamId]) {
     if (saved.twitch_video.stream_id) {
-      savedByStream.set(saved.twitch_video.stream_id, saved)
+      savedByStream.set(saved.twitch_video.stream_id, saved);
     }
   }
 
-  const plan: LiveSyncPlan = { ended: [], refreshed: [], started: [] }
-  const liveStreamIds = new Set<string>()
+  const plan: LiveSyncPlan = { ended: [], refreshed: [], started: [] };
+  const liveStreamIds = new Set<string>();
 
   for (const stream of liveStreams) {
     if (liveStreamIds.has(stream.id)) {
-      continue
+      continue;
     }
 
-    liveStreamIds.add(stream.id)
+    liveStreamIds.add(stream.id);
 
-    const saved = savedByStream.get(stream.id)
+    const saved = savedByStream.get(stream.id);
 
     if (!saved) {
       if (activeTwitchUserIds.has(stream.user_id)) {
-        plan.started.push(stream)
+        plan.started.push(stream);
       }
-      continue
+      continue;
     }
 
     // A deleted row stays deleted; the broadcast is not brought back.
     if (saved.deleted_at) {
-      continue
+      continue;
     }
 
-    const values: TablesUpdate<'videos'> = {}
+    const values: TablesUpdate<"videos"> = {};
 
-    if (saved.status !== 'LIVE') {
-      values.status = 'LIVE'
+    if (saved.status !== "LIVE") {
+      values.status = "LIVE";
     }
 
     if (saved.title !== stream.title) {
-      values.title = stream.title
+      values.title = stream.title;
     }
 
     if (Object.keys(values).length > 0) {
-      plan.refreshed.push({ saved, values })
+      plan.refreshed.push({ saved, values });
     }
   }
 
   for (const saved of savedLiveVideos) {
-    const streamId = saved.twitch_video.stream_id
+    const streamId = saved.twitch_video.stream_id;
 
     if (!streamId || !liveStreamIds.has(streamId)) {
-      plan.ended.push(saved)
+      plan.ended.push(saved);
     }
   }
 
-  return plan
+  return plan;
 }
 
 /** Selects saved rows together with the Helix ID of their broadcaster. */
 export function selectSavedLiveVideos(supabaseClient: TypedSupabaseClient) {
-  return supabaseClient.from('videos').select(SAVED_LIVE_VIDEO_COLUMNS)
+  return supabaseClient.from("videos").select(SAVED_LIVE_VIDEO_COLUMNS);
 }
 
 type SavedLiveVideoRow = QueryData<
   ReturnType<typeof selectSavedLiveVideos>
->[number]
+>[number];
 
 /**
  * Flattens a row read with {@link selectSavedLiveVideos}.
@@ -146,7 +147,7 @@ export function toSavedLiveVideo({
     ...video,
     twitch_video: twitchVideo,
     twitchUserId: twitch_user?.twitch_user_id ?? null,
-  }
+  };
 }
 
 /**
@@ -156,18 +157,18 @@ export function toSavedLiveVideo({
  * talent retired still has to be ended, or it would stay LIVE forever.
  */
 async function getSavedLiveVideos(
-  supabaseClient: TypedSupabaseClient,
+  supabaseClient: TypedSupabaseClient
 ): Promise<SavedLiveVideo[]> {
   const { data, error } = await selectSavedLiveVideos(supabaseClient)
-    .eq('platform', 'twitch')
-    .eq('status', 'LIVE')
-    .is('deleted_at', null)
+    .eq("platform", "twitch")
+    .eq("status", "LIVE")
+    .is("deleted_at", null);
 
   if (error) {
-    throw new DatabaseError('Failed to load live Twitch videos', error)
+    throw new DatabaseError("Failed to load live Twitch videos", error);
   }
 
-  return data.map(toSavedLiveVideo)
+  return data.map(toSavedLiveVideo);
 }
 
 /**
@@ -179,14 +180,14 @@ async function endBroadcast(
   context: WriteContext,
   saved: SavedLiveVideo,
   /** The archive of the broadcast, when Twitch already lists it. */
-  archive: TwitchVideo | undefined,
+  archive: TwitchVideo | undefined
 ): Promise<void> {
   if (!archive) {
-    await updateVideo(context.supabaseClient, saved.id, { status: 'ENDED' })
-    return
+    await updateVideo(context.supabaseClient, saved.id, { status: "ENDED" });
+    return;
   }
 
-  await attachArchive(context, saved, archive, { stillLive: false })
+  await attachArchive(context, saved, archive, { stillLive: false });
 }
 
 /**
@@ -196,41 +197,41 @@ async function endBroadcast(
  */
 async function getArchivesOfEndedBroadcasts(
   { fetcher, reportError }: CrawlContext<TwitchFetcher>,
-  ended: readonly SavedLiveVideo[],
+  ended: readonly SavedLiveVideo[]
 ): Promise<Map<string, TwitchVideo>> {
   const twitchUserIds = ended
     .map((saved) => saved.twitchUserId)
-    .filter((id) => id !== null)
+    .filter((id) => id !== null);
 
   if (twitchUserIds.length === 0) {
-    return new Map()
+    return new Map();
   }
 
   const { failures, videos } = await fetcher.getRecentVideos(twitchUserIds, {
-    type: 'archive',
-  })
+    type: "archive",
+  });
 
   for (const { accountId, error } of failures) {
-    reportError(error, { twitchUserId: accountId })
+    reportError(error, { twitchUserId: accountId });
   }
 
-  return toArchiveByStreamId(videos)
+  return toArchiveByStreamId(videos);
 }
 
 function toArchiveByStreamId(
-  videos: readonly TwitchVideo[],
+  videos: readonly TwitchVideo[]
 ): Map<string, TwitchVideo> {
-  const archiveByStreamId = new Map<string, TwitchVideo>()
+  const archiveByStreamId = new Map<string, TwitchVideo>();
 
   for (const video of videos) {
-    const streamId = getArchivedStreamId(video)
+    const streamId = getArchivedStreamId(video);
 
     if (streamId) {
-      archiveByStreamId.set(streamId, video)
+      archiveByStreamId.set(streamId, video);
     }
   }
 
-  return archiveByStreamId
+  return archiveByStreamId;
 }
 
 /**
@@ -241,25 +242,25 @@ function toArchiveByStreamId(
  */
 async function findArchiveOfBroadcast(
   fetcher: TwitchFetcher,
-  saved: SavedLiveVideo,
+  saved: SavedLiveVideo
 ): Promise<TwitchVideo | undefined> {
-  const streamId = saved.twitch_video.stream_id
+  const streamId = saved.twitch_video.stream_id;
 
   if (!streamId || !saved.twitchUserId) {
-    return undefined
+    return undefined;
   }
 
   const { failures, videos } = await fetcher.getRecentVideos(
     [saved.twitchUserId],
-    { limit: TWITCH_API_MAX_RESULTS, type: 'archive' },
-  )
-  const [failure] = failures
+    { limit: TWITCH_API_MAX_RESULTS, type: "archive" }
+  );
+  const [failure] = failures;
 
   if (failure) {
-    throw failure.error
+    throw failure.error;
   }
 
-  return toArchiveByStreamId(videos).get(streamId)
+  return toArchiveByStreamId(videos).get(streamId);
 }
 
 /**
@@ -274,14 +275,14 @@ async function findArchiveOfBroadcast(
  * @returns The number of broadcasts started, refreshed or ended.
  */
 export async function syncTwitchLive(
-  context: CrawlContext<TwitchFetcher>,
+  context: CrawlContext<TwitchFetcher>
 ): Promise<number> {
-  const { fetcher, logger, reportError, supabaseClient } = context
+  const { fetcher, logger, reportError, supabaseClient } = context;
   const [users, savedLiveVideos] = await Promise.all([
     getActiveAccounts(supabaseClient, TWITCH_USERS),
     getSavedLiveVideos(supabaseClient),
-  ])
-  const userByTwitchId = new Map(users.map((user) => [user.platformId, user]))
+  ]);
+  const userByTwitchId = new Map(users.map((user) => [user.platformId, user]));
 
   // Rows of accounts that are no longer crawled still need their stream state.
   const liveStreams = await fetcher.getLiveStreams([
@@ -289,27 +290,27 @@ export async function syncTwitchLive(
     ...savedLiveVideos
       .map((saved) => saved.twitchUserId)
       .filter((id) => id !== null),
-  ])
+  ]);
 
   const plan = planLiveSync({
     activeTwitchUserIds: new Set(userByTwitchId.keys()),
     liveStreams,
     savedByStreamId: await findSavedTwitchVideos(
       supabaseClient,
-      'stream_id',
-      liveStreams.map((stream) => stream.id),
+      "stream_id",
+      liveStreams.map((stream) => stream.id)
     ),
     savedLiveVideos,
-  })
+  });
 
   const startedCount = await countChanges(
     plan.started,
     WRITE_CONCURRENCY,
     async (stream) => {
-      const user = userByTwitchId.get(stream.user_id)
+      const user = userByTwitchId.get(stream.user_id);
 
       if (!user) {
-        return false
+        return false;
       }
 
       return saveVideoWithThumbnail(
@@ -324,27 +325,27 @@ export async function syncTwitchLive(
             type: null,
           },
         },
-        user,
-      )
+        user
+      );
     },
-    (error, stream) => reportError(error, { twitchStreamId: stream.id }),
-  )
+    (error, stream) => reportError(error, { twitchStreamId: stream.id })
+  );
 
   const refreshedCount = await countChanges(
     plan.refreshed,
     WRITE_CONCURRENCY,
     async ({ saved, values }) => {
-      await updateVideo(supabaseClient, saved.id, values)
+      await updateVideo(supabaseClient, saved.id, values);
 
-      return true
+      return true;
     },
-    (error, { saved }) => reportError(error, { videoId: saved.id }),
-  )
+    (error, { saved }) => reportError(error, { videoId: saved.id })
+  );
 
   const archiveByStreamId = await getArchivesOfEndedBroadcasts(
     context,
-    plan.ended,
-  )
+    plan.ended
+  );
 
   const endedCount = await countChanges(
     plan.ended,
@@ -355,25 +356,25 @@ export async function syncTwitchLive(
         saved,
         saved.twitch_video.stream_id
           ? archiveByStreamId.get(saved.twitch_video.stream_id)
-          : undefined,
-      )
+          : undefined
+      );
 
-      return true
+      return true;
     },
-    (error, saved) => reportError(error, { videoId: saved.id }),
-  )
+    (error, saved) => reportError(error, { videoId: saved.id })
+  );
 
-  const changedCount = startedCount + refreshedCount + endedCount
+  const changedCount = startedCount + refreshedCount + endedCount;
 
   if (changedCount > 0) {
-    logger.info('TwitchのLIVE状態を同期しました', {
+    logger.info("TwitchのLIVE状態を同期しました", {
       ended: endedCount,
       refreshed: refreshedCount,
       started: startedCount,
-    })
+    });
   }
 
-  return changedCount
+  return changedCount;
 }
 
 /**
@@ -391,31 +392,31 @@ export async function syncTwitchLive(
  */
 export async function refreshTwitchBroadcast(
   context: CrawlContext<TwitchFetcher>,
-  saved: SavedLiveVideo,
+  saved: SavedLiveVideo
 ): Promise<void> {
-  const { fetcher, supabaseClient } = context
+  const { fetcher, supabaseClient } = context;
   const liveStreams = saved.twitchUserId
     ? await fetcher.getLiveStreams([saved.twitchUserId])
-    : []
+    : [];
   const plan = planLiveSync({
     activeTwitchUserIds: new Set(),
     liveStreams,
     savedByStreamId: [saved],
-    savedLiveVideos: saved.status === 'LIVE' ? [saved] : [],
-  })
-  const hasEnded = plan.ended.length > 0
+    savedLiveVideos: saved.status === "LIVE" ? [saved] : [],
+  });
+  const hasEnded = plan.ended.length > 0;
   const archive =
     hasEnded || isLivePlaceholder(saved)
       ? await findArchiveOfBroadcast(fetcher, saved)
-      : undefined
+      : undefined;
 
   for (const { values } of plan.refreshed) {
-    await updateVideo(supabaseClient, saved.id, values)
+    await updateVideo(supabaseClient, saved.id, values);
   }
 
   if (hasEnded) {
-    await endBroadcast(context, saved, archive)
-    return
+    await endBroadcast(context, saved, archive);
+    return;
   }
 
   if (archive && isLivePlaceholder(saved)) {
@@ -427,14 +428,14 @@ export async function refreshTwitchBroadcast(
       savedByStreamId: [saved],
       savedByVideoId: await findSavedTwitchVideos(
         supabaseClient,
-        'twitch_video_id',
-        [archive.id],
+        "twitch_video_id",
+        [archive.id]
       ),
       videos: [archive],
-    })
+    });
 
     for (const action of actions) {
-      await applyNewVideoAction(context, action, new Map())
+      await applyNewVideoAction(context, action, new Map());
     }
   }
 }

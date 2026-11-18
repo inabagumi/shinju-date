@@ -1,16 +1,17 @@
-'use client'
+"use client";
 
-import { Button } from '@shinju-date/ui'
-import { Eye, RotateCcw, Trash2 } from 'lucide-react'
-import type { VideoAction, VideoActionTarget } from '../_lib/video-actions'
-import { useVideoSelection } from './video-selection-provider'
+import { Button } from "@shinju-date/ui";
+import { Eye, RotateCcw, Trash2 } from "lucide-react";
+
+import type { VideoAction, VideoActionTarget } from "../_lib/video-actions";
+import { useVideoSelection } from "./video-selection-provider";
 
 /** 一括操作の対象を決めるのに使う、表示中の動画 */
 export interface VideoBulkActionItem {
-  id: string
-  title: string
+  id: string;
+  title: string;
   /** 削除済みか */
-  isDeleted: boolean
+  isDeleted: boolean;
 }
 
 /**
@@ -19,24 +20,24 @@ export interface VideoBulkActionItem {
  */
 function getTargetVideos(
   videos: readonly VideoBulkActionItem[],
-  action: VideoAction,
+  action: VideoAction
 ): VideoActionTarget[] {
   return videos
     .filter((video) => {
-      if (action === 'delete') {
-        return !video.isDeleted
+      if (action === "delete") {
+        return !video.isDeleted;
       }
-      if (action === 'restore') {
-        return video.isDeleted
+      if (action === "restore") {
+        return video.isDeleted;
       }
-      return true
+      return true;
     })
-    .map((video) => ({ id: video.id, title: video.title }))
+    .map((video) => ({ id: video.id, title: video.title }));
 }
 
 interface VideoBulkActionsProps {
   /** 表示中の動画 */
-  videos: readonly VideoBulkActionItem[]
+  videos: readonly VideoBulkActionItem[];
 }
 
 /**
@@ -45,16 +46,16 @@ interface VideoBulkActionsProps {
  * 狭い画面ではボタンの文字を隠してアイコンだけにする
  */
 export function VideoBulkActions({ videos }: VideoBulkActionsProps) {
-  const { openActionDialog, selectedIds } = useVideoSelection()
+  const { openActionDialog, selectedIds } = useVideoSelection();
   const selectedVideos = videos.filter((video) =>
-    selectedIds.includes(video.id),
-  )
-  const hasDeletedVideos = selectedVideos.some((video) => video.isDeleted)
-  const hasNonDeletedVideos = selectedVideos.some((video) => !video.isDeleted)
+    selectedIds.includes(video.id)
+  );
+  const hasDeletedVideos = selectedVideos.some((video) => video.isDeleted);
+  const hasNonDeletedVideos = selectedVideos.some((video) => !video.isDeleted);
 
   const handleBulkAction = (action: VideoAction) => {
-    openActionDialog(action, getTargetVideos(selectedVideos, action))
-  }
+    openActionDialog(action, getTargetVideos(selectedVideos, action));
+  };
 
   return (
     <div
@@ -74,7 +75,7 @@ export function VideoBulkActions({ videos }: VideoBulkActionsProps) {
             {hasNonDeletedVideos && (
               <Button
                 className="gap-1.5 whitespace-nowrap"
-                onClick={() => handleBulkAction('toggle')}
+                onClick={() => handleBulkAction("toggle")}
                 size="sm"
                 variant="secondary"
               >
@@ -87,7 +88,7 @@ export function VideoBulkActions({ videos }: VideoBulkActionsProps) {
             {hasDeletedVideos && (
               <Button
                 className="gap-1.5 whitespace-nowrap"
-                onClick={() => handleBulkAction('restore')}
+                onClick={() => handleBulkAction("restore")}
                 size="sm"
                 variant="secondary"
               >
@@ -98,7 +99,7 @@ export function VideoBulkActions({ videos }: VideoBulkActionsProps) {
             {hasNonDeletedVideos && (
               <Button
                 className="ml-2 gap-1.5 whitespace-nowrap sm:ml-4"
-                onClick={() => handleBulkAction('delete')}
+                onClick={() => handleBulkAction("delete")}
                 size="sm"
                 variant="danger"
               >
@@ -114,5 +115,5 @@ export function VideoBulkActions({ videos }: VideoBulkActionsProps) {
         </span>
       )}
     </div>
-  )
+  );
 }

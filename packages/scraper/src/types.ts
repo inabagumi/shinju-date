@@ -1,11 +1,12 @@
-import type Database from '@shinju-date/database'
-import type { Tables } from '@shinju-date/database'
-import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Logger } from './internal/logger.js'
+import type Database from "@shinju-date/database";
+import type { Tables } from "@shinju-date/database";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-export type { Logger }
+import type { Logger } from "./internal/logger.js";
 
-export type TypedSupabaseClient = SupabaseClient<Database>
+export type { Logger };
+
+export type TypedSupabaseClient = SupabaseClient<Database>;
 
 /**
  * Receives failures that do not stop a run, e.g. one channel that could not
@@ -13,40 +14,40 @@ export type TypedSupabaseClient = SupabaseClient<Database>
  */
 export type ErrorReporter = (
   error: unknown,
-  context: Record<string, unknown>,
-) => void
+  context: Record<string, unknown>
+) => void;
 
 export interface ScraperOptions {
   /** Maximum number of platform API requests in flight (default: 5). */
-  concurrency?: number
-  logger?: Logger
+  concurrency?: number;
+  logger?: Logger;
   /**
    * Called for every failure that does not stop a run. Defaults to logging
    * the failure with `logger`.
    */
-  onError?: ErrorReporter
+  onError?: ErrorReporter;
   /** Client the scraper reads and writes the database with. */
-  supabaseClient: TypedSupabaseClient
+  supabaseClient: TypedSupabaseClient;
 }
 
 /** What code that writes to the database needs during one run. */
 export interface WriteContext {
-  logger: Logger
+  logger: Logger;
   /**
    * The time of the run. The timestamps written to the rows it inserts
    * (`updated_at` and so on) and `deleted_at` of the rows it soft-deletes are
    * all this time. The `updated_at` of the rows it updates is the current
    * time of the database instead: the triggers of the tables set it.
    */
-  now: Temporal.Instant
-  reportError: ErrorReporter
-  supabaseClient: TypedSupabaseClient
+  now: Temporal.Instant;
+  reportError: ErrorReporter;
+  supabaseClient: TypedSupabaseClient;
 }
 
 /** What a crawl operation needs during one run. */
 export interface CrawlContext<TFetcher> extends WriteContext {
   /** Reads from the platform. */
-  fetcher: TFetcher
+  fetcher: TFetcher;
 }
 
 export interface AddPastVideosOptions {
@@ -54,25 +55,25 @@ export interface AddPastVideosOptions {
    * Primary key of the account row: `youtube_channels.id` for YouTube,
    * `twitch_users.id` for Twitch.
    */
-  accountId: string
+  accountId: string;
   /**
    * Where the previous call stopped, as returned in
    * {@link AddPastVideosResult.cursor}. Omit to start from the newest videos.
    */
-  cursor?: string | null | undefined
-  now?: Temporal.Instant | undefined
+  cursor?: string | null | undefined;
+  now?: Temporal.Instant | undefined;
 }
 
 export interface AddPastVideosResult {
   /** Number of videos that were saved. */
-  added: number
+  added: number;
   /**
    * Where to continue with the next call, or `null` when the whole history of
    * the account has been read.
    */
-  cursor: string | null
+  cursor: string | null;
   /** Number of videos the platform listed on the page that was read. */
-  listed: number
+  listed: number;
 }
 
 /**
@@ -81,9 +82,9 @@ export interface AddPastVideosResult {
  * `video_kind` is never changed.
  */
 export type VideoFields = Pick<
-  Tables<'videos'>,
-  'duration' | 'published_at' | 'status' | 'title' | 'video_kind'
->
+  Tables<"videos">,
+  "duration" | "published_at" | "status" | "title" | "video_kind"
+>;
 
 /** What `Scraper#refreshVideo` did with the video. */
 export type RefreshVideoResult =
@@ -93,37 +94,37 @@ export type RefreshVideoResult =
    * that became available, or the archive a Twitch broadcast is linked to).
    */
   | {
-      after: Partial<VideoFields>
-      before: Partial<VideoFields>
-      status: 'updated'
+      after: Partial<VideoFields>;
+      before: Partial<VideoFields>;
+      status: "updated";
       /** The title of the video after the update. */
-      title: string
+      title: string;
     }
   /** The video already matches the platform. */
-  | { status: 'unchanged'; title: string }
+  | { status: "unchanged"; title: string }
   /**
    * The platform no longer returns the video, so it was soft-deleted with the
    * reason `unavailable`, exactly like the scheduled refreshes do.
    */
-  | { status: 'unavailable' }
+  | { status: "unavailable" }
   /**
    * No video with that ID is saved (or it was deleted already), or it belongs
    * to another platform.
    */
-  | { status: 'not-found' }
+  | { status: "not-found" };
 
 /**
  * The account columns a sync keeps in line with the platform: the name and
  * the handle (YouTube) or login (Twitch). The icon is reported separately.
  */
 export type AccountFields =
-  | Pick<Tables<'twitch_users'>, 'name' | 'twitch_login_name'>
-  | Pick<Tables<'youtube_channels'>, 'name' | 'youtube_handle'>
+  | Pick<Tables<"twitch_users">, "name" | "twitch_login_name">
+  | Pick<Tables<"youtube_channels">, "name" | "youtube_handle">;
 
 /** The account columns that changed, before and after. */
 export interface AccountChanges<TFields extends AccountFields = AccountFields> {
-  after: Partial<TFields>
-  before: Partial<TFields>
+  after: Partial<TFields>;
+  before: Partial<TFields>;
 }
 
 /** What `Scraper#syncTalentAccounts` did with one account of the talent. */
@@ -134,19 +135,19 @@ export interface SyncAccountResult<
    * Primary key of the account row: `youtube_channels.id` for YouTube,
    * `twitch_users.id` for Twitch.
    */
-  accountId: string
+  accountId: string;
   /**
    * The columns that were written, before and after. Present only when the
    * name or the handle changed.
    */
-  changes?: AccountChanges<TFields>
+  changes?: AccountChanges<TFields>;
   /** Whether the stored icon was created, replaced or removed. */
-  iconUpdated: boolean
+  iconUpdated: boolean;
   /**
    * The name of the account on the platform, or the saved one when the
    * platform did not return the account or it could not be updated.
    */
-  name: string | null
+  name: string | null;
   /**
    * - `updated`: the name, the handle or the icon was written
    * - `unchanged`: the account already matches the platform
@@ -155,5 +156,5 @@ export interface SyncAccountResult<
    *   passed to `onError`). The icon is still synced, so `iconUpdated` can
    *   be `true`
    */
-  status: 'failed' | 'not-found' | 'unchanged' | 'updated'
+  status: "failed" | "not-found" | "unchanged" | "updated";
 }

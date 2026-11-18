@@ -2,21 +2,21 @@ import type {
   AddPastVideosOptions,
   AddPastVideosResult,
   CrawlContext,
-} from '../../types.js'
-import { BACKFILL_SAVE_CONCURRENCY } from '../constants.js'
+} from "../../types.js";
+import { BACKFILL_SAVE_CONCURRENCY } from "../constants.js";
 import {
   type AccountTable,
   findAccount,
   type TalentAccount,
-} from '../database/index.js'
-import { AccountNotFoundError, StalledPaginationError } from '../errors.js'
+} from "../database/index.js";
+import { AccountNotFoundError, StalledPaginationError } from "../errors.js";
 
 /** One page of the videos of an account, newest first. */
 export interface PastVideoPage<TListed> {
   /** Where the next page starts, or `null` after the last page. */
-  cursor: string | null
+  cursor: string | null;
   /** What the platform listed on the page. */
-  listed: readonly TListed[]
+  listed: readonly TListed[];
 }
 
 /**
@@ -29,7 +29,7 @@ export interface PastVideoPage<TListed> {
  *   itself when the platform lists videos with their details.
  */
 export interface PastVideoAdapter<TFetcher, TListed> {
-  accountTable: AccountTable
+  accountTable: AccountTable;
   /**
    * Reads one page of the videos of the account, newest first.
    *
@@ -38,8 +38,8 @@ export interface PastVideoAdapter<TFetcher, TListed> {
   getPage(
     context: CrawlContext<TFetcher>,
     account: TalentAccount,
-    cursor: string | null | undefined,
-  ): Promise<PastVideoPage<TListed> | null>
+    cursor: string | null | undefined
+  ): Promise<PastVideoPage<TListed> | null>;
   /**
    * Saves the listed videos that are not saved yet, the same way the
    * discovery of new videos saves them. Saved videos are left alone.
@@ -51,8 +51,8 @@ export interface PastVideoAdapter<TFetcher, TListed> {
     context: CrawlContext<TFetcher>,
     account: TalentAccount,
     listed: readonly TListed[],
-    concurrency: number,
-  ): Promise<number>
+    concurrency: number
+  ): Promise<number>;
 }
 
 /**
@@ -72,34 +72,34 @@ export interface PastVideoAdapter<TFetcher, TListed> {
 export async function addPastVideosWith<TFetcher, TListed>(
   context: CrawlContext<TFetcher>,
   adapter: PastVideoAdapter<TFetcher, TListed>,
-  { accountId, cursor }: Pick<AddPastVideosOptions, 'accountId' | 'cursor'>,
+  { accountId, cursor }: Pick<AddPastVideosOptions, "accountId" | "cursor">
 ): Promise<AddPastVideosResult> {
   const account = await findAccount(
     context.supabaseClient,
     adapter.accountTable,
-    accountId,
-  )
+    accountId
+  );
 
   if (!account) {
-    throw new AccountNotFoundError(accountId)
+    throw new AccountNotFoundError(accountId);
   }
 
-  const page = await adapter.getPage(context, account, cursor)
+  const page = await adapter.getPage(context, account, cursor);
 
   if (!page) {
-    throw new AccountNotFoundError(accountId)
+    throw new AccountNotFoundError(accountId);
   }
 
   if (cursor && page.cursor === cursor) {
-    throw new StalledPaginationError(accountId, cursor)
+    throw new StalledPaginationError(accountId, cursor);
   }
 
   const added = await adapter.saveNew(
     context,
     account,
     page.listed,
-    BACKFILL_SAVE_CONCURRENCY,
-  )
+    BACKFILL_SAVE_CONCURRENCY
+  );
 
-  return { added, cursor: page.cursor, listed: page.listed.length }
+  return { added, cursor: page.cursor, listed: page.listed.length };
 }

@@ -1,5 +1,5 @@
 /** Host the YouTube Data API serves channel icons from. */
-export const YOUTUBE_ICON_HOST = 'https://yt3.ggpht.com'
+export const YOUTUBE_ICON_HOST = "https://yt3.ggpht.com";
 
 /**
  * The file name of the icon of a channel in a size, on
@@ -7,17 +7,17 @@ export const YOUTUBE_ICON_HOST = 'https://yt3.ggpht.com'
  */
 export function getYouTubeChannelIconName(
   channelId: string,
-  size: number,
+  size: number
 ): string {
-  return `mock-${channelId}=s${size}-c-k-c0x00ffffff-no-rj`
+  return `mock-${channelId}=s${size}-c-k-c0x00ffffff-no-rj`;
 }
 
 /** The URL of the icon of a channel in a size. */
 export function getYouTubeChannelIconUrl(
   channelId: string,
-  size: number,
+  size: number
 ): string {
-  return `${YOUTUBE_ICON_HOST}/${getYouTubeChannelIconName(channelId, size)}`
+  return `${YOUTUBE_ICON_HOST}/${getYouTubeChannelIconName(channelId, size)}`;
 }
 
 /**
@@ -25,5 +25,5 @@ export function getYouTubeChannelIconUrl(
  * the ID of the channel with `UU` in place of `UC`.
  */
 export function getYouTubeUploadsPlaylistId(channelId: string): string {
-  return `UU${channelId.slice(2)}`
+  return `UU${channelId.slice(2)}`;
 }

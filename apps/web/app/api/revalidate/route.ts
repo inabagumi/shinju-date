@@ -1,56 +1,58 @@
-import { createErrorResponse } from '@shinju-date/helpers'
-import { logger } from '@shinju-date/logger'
-import { revalidateTag } from 'next/cache'
-import { serverEnv } from '@/lib/env'
-import { type Payload, payloadSchema } from './_lib/schemas'
+import { createErrorResponse } from "@shinju-date/helpers";
+import { logger } from "@shinju-date/logger";
+import { revalidateTag } from "next/cache";
+
+import { serverEnv } from "@/lib/env";
+
+import { type Payload, payloadSchema } from "./_lib/schemas";
 
 async function parseRequest(request: Request): Promise<Payload> {
-  const rawPayload = (await request.json()) as unknown
+  const rawPayload = (await request.json()) as unknown;
 
-  return payloadSchema.parse(rawPayload)
+  return payloadSchema.parse(rawPayload);
 }
 
 export async function POST(request: Request): Promise<Response> {
   // 認証チェック
-  const secretToken = serverEnv.REVALIDATE_SECRET_TOKEN
+  const secretToken = serverEnv.REVALIDATE_SECRET_TOKEN;
   if (secretToken) {
-    const authHeader = request.headers.get('Authorization')
-    const expectedAuth = `Bearer ${secretToken}`
+    const authHeader = request.headers.get("Authorization");
+    const expectedAuth = `Bearer ${secretToken}`;
 
     if (authHeader !== expectedAuth) {
-      logger.warn('Unauthorized revalidation attempt.', {
+      logger.warn("Unauthorized revalidation attempt.", {
         hasAuthHeader: Boolean(authHeader),
-      })
+      });
 
-      return createErrorResponse('Unauthorized', {
+      return createErrorResponse("Unauthorized", {
         status: 401,
-      })
+      });
     }
   }
 
-  let payload: Payload
+  let payload: Payload;
 
   try {
-    payload = await parseRequest(request)
+    payload = await parseRequest(request);
   } catch (error) {
-    logger.warn('Incorrect request received.', {
+    logger.warn("Incorrect request received.", {
       cause: error,
-    })
+    });
 
-    return createErrorResponse('Unprocessable Entity', {
+    return createErrorResponse("Unprocessable Entity", {
       status: 422,
-    })
+    });
   }
 
   for (const tag of payload.tags) {
-    revalidateTag(tag, 'hours')
+    revalidateTag(tag, "hours");
   }
 
-  logger.info('Revalidation was successful.', {
+  logger.info("Revalidation was successful.", {
     tags: payload.tags,
-  })
+  });
 
   return new Response(null, {
     status: 204,
-  })
+  });
 }

@@ -1,38 +1,39 @@
-import { render } from '@testing-library/react'
-import { describe, expect, test } from 'vitest'
-import { Skeleton } from './Skeleton'
+import { render } from "@testing-library/react";
+import { describe, expect, test } from "vitest";
 
-describe('Skeleton', () => {
-  test('should render a pulsing block hidden from assistive technology', () => {
-    const { container } = render(<Skeleton className="h-4 w-32" />)
-    const skeleton = container.firstElementChild
+import { Skeleton } from "./Skeleton";
 
-    expect(skeleton).toHaveAttribute('aria-hidden', 'true')
+describe("Skeleton", () => {
+  test("should render a pulsing block hidden from assistive technology", () => {
+    const { container } = render(<Skeleton className="h-4 w-32" />);
+    const skeleton = container.firstElementChild;
+
+    expect(skeleton).toHaveAttribute("aria-hidden", "true");
     expect(skeleton).toHaveClass(
-      'block',
-      'animate-pulse',
-      'rounded-control',
-      'bg-muted',
-      'h-4',
-      'w-32',
-    )
-  })
+      "block",
+      "animate-pulse",
+      "rounded-control",
+      "bg-muted",
+      "h-4",
+      "w-32"
+    );
+  });
 
-  test('should let className override the radius and the color', () => {
+  test("should let className override the radius and the color", () => {
     const { container } = render(
-      <Skeleton className="rounded-container bg-border" />,
-    )
-    const skeleton = container.firstElementChild
+      <Skeleton className="rounded-container bg-border" />
+    );
+    const skeleton = container.firstElementChild;
 
-    expect(skeleton).toHaveClass('rounded-container', 'bg-border')
-    expect(skeleton).not.toHaveClass('rounded-control')
-    expect(skeleton).not.toHaveClass('bg-muted')
-  })
+    expect(skeleton).toHaveClass("rounded-container", "bg-border");
+    expect(skeleton).not.toHaveClass("rounded-control");
+    expect(skeleton).not.toHaveClass("bg-muted");
+  });
 
-  test('should let className make it inline', () => {
-    const { container } = render(<Skeleton className="inline-block" />)
+  test("should let className make it inline", () => {
+    const { container } = render(<Skeleton className="inline-block" />);
 
-    expect(container.firstElementChild).toHaveClass('inline-block')
-    expect(container.firstElementChild).not.toHaveClass('block')
-  })
-})
+    expect(container.firstElementChild).toHaveClass("inline-block");
+    expect(container.firstElementChild).not.toHaveClass("block");
+  });
+});

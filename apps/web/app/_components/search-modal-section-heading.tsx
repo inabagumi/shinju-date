@@ -1,6 +1,6 @@
 interface SearchModalSectionHeadingProps {
-  children: string
-  id?: string
+  children: string;
+  id?: string;
 }
 
 /** 検索モーダルの候補のまとまりに付ける見出し */
@@ -14,5 +14,5 @@ export function SearchModalSectionHeading({
         {children}
       </h2>
     </div>
-  )
+  );
 }

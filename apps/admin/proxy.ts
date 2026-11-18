@@ -1,10 +1,11 @@
-import type { NextProxy, NextRequest } from 'next/server'
-import { updateSession } from '@/lib/supabase/proxy'
+import type { NextProxy, NextRequest } from "next/server";
+
+import { updateSession } from "@/lib/supabase/proxy";
 
 export async function proxy(
-  request: NextRequest,
+  request: NextRequest
 ): Promise<ReturnType<NextProxy>> {
-  return updateSession(request)
+  return updateSession(request);
 }
 
 export const config = {
@@ -18,6 +19,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|images|api|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/((?!_next/static|_next/image|images|api|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
-}
+};

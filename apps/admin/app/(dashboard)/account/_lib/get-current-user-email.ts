@@ -1,5 +1,6 @@
-import { cacheLife } from 'next/cache'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import { cacheLife } from "next/cache";
+
+import { createSupabaseServerClient } from "@/lib/supabase";
 
 /**
  * ログインしているユーザーのメールアドレスを返す。ログインしていなければ
@@ -9,19 +10,19 @@ import { createSupabaseServerClient } from '@/lib/supabase'
  * 短い `seconds` にする
  */
 export async function getCurrentUserEmail(): Promise<string | null> {
-  'use cache: private'
+  "use cache: private";
 
-  cacheLife('seconds')
+  cacheLife("seconds");
 
-  const supabaseClient = await createSupabaseServerClient()
+  const supabaseClient = await createSupabaseServerClient();
   const {
     data: { user },
     error,
-  } = await supabaseClient.auth.getUser()
+  } = await supabaseClient.auth.getUser();
 
   if (error || !user) {
-    return null
+    return null;
   }
 
-  return user.email ?? ''
+  return user.email ?? "";
 }

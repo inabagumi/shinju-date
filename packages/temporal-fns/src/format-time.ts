@@ -1,7 +1,7 @@
-import { padNumber } from './pad-number.js'
+import { padNumber } from "./pad-number.js";
 
 interface FormatTimeOptions {
-  includeSeconds?: boolean
+  includeSeconds?: boolean;
 }
 
 /**
@@ -12,12 +12,12 @@ interface FormatTimeOptions {
  */
 export function formatTime(
   timestamp: Temporal.ZonedDateTime | Temporal.PlainTime,
-  options: FormatTimeOptions = {},
+  options: FormatTimeOptions = {}
 ): string {
-  const { includeSeconds = false } = options
-  const hourAndMinute = `${padNumber(timestamp.hour)}:${padNumber(timestamp.minute)}`
+  const { includeSeconds = false } = options;
+  const hourAndMinute = `${padNumber(timestamp.hour)}:${padNumber(timestamp.minute)}`;
 
   return includeSeconds
     ? `${hourAndMinute}:${padNumber(timestamp.second)}`
-    : hourAndMinute
+    : hourAndMinute;
 }

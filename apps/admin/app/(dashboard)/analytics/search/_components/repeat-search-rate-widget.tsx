@@ -1,14 +1,16 @@
-import { StatTile } from '@shinju-date/ui'
-import { getRepeatSearchRate } from '@/lib/analytics/get-search-quality-metrics'
-import { WidgetHeader } from '../../_components/widget-header'
-import { resolvePeriod } from '../../_lib/resolve-period'
-import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
-import { REPEAT_SEARCH_RATE_RATINGS, rate } from '../_lib/metric-ratings'
-import { MetricLegend } from './metric-legend'
-import { MetricNoData } from './metric-no-data'
+import { StatTile } from "@shinju-date/ui";
+
+import { getRepeatSearchRate } from "@/lib/analytics/get-search-quality-metrics";
+
+import { WidgetHeader } from "../../_components/widget-header";
+import { resolvePeriod } from "../../_lib/resolve-period";
+import type { AnalyticsSearchParams } from "../../_lib/search-params-schema";
+import { REPEAT_SEARCH_RATE_RATINGS, rate } from "../_lib/metric-ratings";
+import { MetricLegend } from "./metric-legend";
+import { MetricNoData } from "./metric-no-data";
 
 interface Props {
-  searchParams: Promise<AnalyticsSearchParams>
+  searchParams: Promise<AnalyticsSearchParams>;
 }
 
 /**
@@ -19,12 +21,12 @@ function RepeatSearchRateWidgetComponent({
   dateRange,
   selectedDate,
 }: {
-  repeatRate: number | null
-  dateRange: { startDate: string; endDate: string }
-  selectedDate: string | null
+  repeatRate: number | null;
+  dateRange: { startDate: string; endDate: string };
+  selectedDate: string | null;
 }) {
   const rating =
-    repeatRate === null ? null : rate(repeatRate, REPEAT_SEARCH_RATE_RATINGS)
+    repeatRate === null ? null : rate(repeatRate, REPEAT_SEARCH_RATE_RATINGS);
 
   return (
     <div>
@@ -60,17 +62,17 @@ function RepeatSearchRateWidgetComponent({
         unit="回"
       />
     </div>
-  )
+  );
 }
 
 /**
  * Async server component that fetches and displays repeat search rate widget
  */
 export async function RepeatSearchRateWidget({ searchParams }: Props) {
-  const { dateRange, selectedDate } = await searchParams
+  const { dateRange, selectedDate } = await searchParams;
 
-  const range = resolvePeriod({ dateRange, selectedDate })
-  const repeatRate = await getRepeatSearchRate({ range })
+  const range = resolvePeriod({ dateRange, selectedDate });
+  const repeatRate = await getRepeatSearchRate({ range });
 
   return (
     <RepeatSearchRateWidgetComponent
@@ -78,5 +80,5 @@ export async function RepeatSearchRateWidget({ searchParams }: Props) {
       repeatRate={repeatRate}
       selectedDate={selectedDate}
     />
-  )
+  );
 }

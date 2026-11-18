@@ -1,5 +1,5 @@
-import { TIME_ZONE } from '@shinju-date/constants'
-import { cacheLife } from 'next/cache'
+import { TIME_ZONE } from "@shinju-date/constants";
+import { cacheLife } from "next/cache";
 
 /**
  * 今日の日付（`TIME_ZONE` の `YYYY-MM-DD`）を返す。
@@ -8,9 +8,9 @@ import { cacheLife } from 'next/cache'
  * 読む
  */
 export async function getToday(): Promise<string> {
-  'use cache: private'
+  "use cache: private";
 
-  cacheLife('minutes')
+  cacheLife("minutes");
 
-  return Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate().toString()
+  return Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate().toString();
 }

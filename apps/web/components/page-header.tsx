@@ -1,12 +1,13 @@
-import type { ReactNode } from 'react'
-import Breadcrumbs, { type BreadcrumbItem } from './breadcrumbs'
+import type { ReactNode } from "react";
+
+import Breadcrumbs, { type BreadcrumbItem } from "./breadcrumbs";
 
 interface PageHeaderProps {
   /** トップページより下の階層。最後の項目が現在のページになる */
-  breadcrumbs: BreadcrumbItem[]
+  breadcrumbs: BreadcrumbItem[];
   /** 見出しの下に表示する説明文 */
-  description?: ReactNode
-  title: ReactNode
+  description?: ReactNode;
+  title: ReactNode;
 }
 
 /**
@@ -32,14 +33,14 @@ export default function PageHeader({
         </div>
       )}
     </header>
-  )
+  );
 }
 
 interface PageHeaderSkeletonProps {
   /** 説明文の1行ぶんを出す。説明文が `text-meta` のときに使う */
-  description?: boolean
+  description?: boolean;
   /** 見出しの前に、64px の丸いアイコンを出す */
-  icon?: boolean
+  icon?: boolean;
 }
 
 export function PageHeaderSkeleton({
@@ -48,7 +49,7 @@ export function PageHeaderSkeleton({
 }: PageHeaderSkeletonProps) {
   const title = (
     <div className="h-[2.1rem] w-64 animate-pulse rounded-control bg-muted md:h-[2.8rem]" />
-  )
+  );
 
   return (
     <div aria-hidden="true" className="mb-8 space-y-2">
@@ -65,5 +66,5 @@ export function PageHeaderSkeleton({
         <div className="h-[1lh] w-80 max-w-full animate-pulse rounded-control bg-muted text-meta" />
       )}
     </div>
-  )
+  );
 }

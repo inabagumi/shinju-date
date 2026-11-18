@@ -7,32 +7,32 @@ YouTube / Twitch の動画とアカウントを、SHINJU DATE のデータベー
 ## 使い方
 
 ```typescript
-import { YouTubeScraper } from '@shinju-date/scraper/youtube'
-import { TwitchScraper } from '@shinju-date/scraper/twitch'
+import { TwitchScraper } from "@shinju-date/scraper/twitch";
+import { YouTubeScraper } from "@shinju-date/scraper/youtube";
 
 const scraper = new YouTubeScraper({
   supabaseClient, // 書き込み権限のある Supabase クライアント
   logger,
   onError: (error, context) =>
     Sentry.captureException(error, { extra: context }),
-})
+});
 
-const changed = await scraper.addNewVideos()
+const changed = await scraper.addNewVideos();
 ```
 
 すべてのスクレイパーは基底クラス `Scraper`（`@shinju-date/scraper`）を継承し、同じ操作を持ちます。呼び出し側はプロバイダーを意識せずに使えます。
 
-| 操作                        | 内容                                                                                 |
-| --------------------------- | ------------------------------------------------------------------------------------ |
-| `addNewVideos()`            | 追跡中のアカウントに現れた動画を保存する。保存済みの動画には触れない                 |
-| `refreshLiveVideos()`       | 配信予定・配信中の動画を追う（開始、タイトル変更、終了）                             |
-| `refreshRecentVideos()`     | 終了済みの最新動画を再取得し、変更を反映する。取得できなくなった動画は削除扱いにする |
-| `removeUnavailableVideos()` | 保存済みの全動画を確認し、取得できなくなった動画を削除扱いにする                     |
-| `refreshVideo(videoId)`     | 保存済みの動画 1 件を再取得し、変更を反映する（取得できなければ削除扱いにする）      |
-| `syncAccounts()`            | 保存済みアカウントの名前・ハンドル・アイコンをプラットフォームに合わせる             |
-| `syncTalentAccounts(id)`    | タレント 1 人のアカウントについて、`syncAccounts()` と同じ同期をする                 |
-| `addPastVideos(options)`    | 1 アカウントの全履歴を 1 ページ読み、未保存の動画を保存する（バックフィル）          |
-| `cleanUpImages()`           | どこからも使われなくなったサムネイルとアイコンを削除する（全プラットフォーム）       |
+| 操作 | 内容 |
+| --- | --- |
+| `addNewVideos()` | 追跡中のアカウントに現れた動画を保存する。保存済みの動画には触れない |
+| `refreshLiveVideos()` | 配信予定・配信中の動画を追う（開始、タイトル変更、終了） |
+| `refreshRecentVideos()` | 終了済みの最新動画を再取得し、変更を反映する。取得できなくなった動画は削除扱いにする |
+| `removeUnavailableVideos()` | 保存済みの全動画を確認し、取得できなくなった動画を削除扱いにする |
+| `refreshVideo(videoId)` | 保存済みの動画 1 件を再取得し、変更を反映する（取得できなければ削除扱いにする） |
+| `syncAccounts()` | 保存済みアカウントの名前・ハンドル・アイコンをプラットフォームに合わせる |
+| `syncTalentAccounts(id)` | タレント 1 人のアカウントについて、`syncAccounts()` と同じ同期をする |
+| `addPastVideos(options)` | 1 アカウントの全履歴を 1 ページ読み、未保存の動画を保存する（バックフィル） |
+| `cleanUpImages()` | どこからも使われなくなったサムネイルとアイコンを削除する（全プラットフォーム） |
 
 - `refreshLiveVideos()` と `refreshRecentVideos()` は、サムネイルも見直します（[動画のサムネイルの見直し](#動画のサムネイルの見直し)）。
 - `addPastVideos`、`refreshVideo`、`syncTalentAccounts`、`cleanUpImages` 以外の操作は「公開サイトに見える変更があったか」を `boolean` で返します（キャッシュ再検証の判断に使えます）。
@@ -54,16 +54,16 @@ const changed = await scraper.addNewVideos()
 `addNewVideos` は各アカウントの最新の動画しか見ないため、追跡を始める前の動画や、最新ページから外れた古い動画は保存されません。`addPastVideos` はそれを補う操作で、1 アカウントの履歴を新しい順に 1 ページずつ読み、未保存の動画だけを `addNewVideos` と同じ経路で保存します。
 
 ```ts
-let cursor: string | null = null
+let cursor: string | null = null;
 
 do {
   const result = await scraper.addPastVideos({
     accountId, // youtube_channels.id / twitch_users.id
     cursor,
-  })
+  });
 
-  cursor = result.cursor // null なら履歴の最後まで読んだ
-} while (cursor)
+  cursor = result.cursor; // null なら履歴の最後まで読んだ
+} while (cursor);
 ```
 
 - 1 回の呼び出しは 1 ページ（YouTube は 50 件、Twitch は 100 件）だけなので、長い履歴も複数回の実行に分けて読めます。
@@ -76,16 +76,16 @@ do {
 管理画面の「動画を同期」のように、動画 1 件を指定して見直すための操作です。定期の見直しと同じ関数（差分の判定、項目への変換、論理削除）を使うので、同じ動画は同じ項目が同じ値に更新されます。
 
 ```ts
-const result = await scraper.refreshVideo(videoId) // videos.id
+const result = await scraper.refreshVideo(videoId); // videos.id
 
 switch (result.status) {
-  case 'updated': // result.before / result.after は変わった項目だけを持つ
-  case 'unchanged':
-    console.log(result.title)
-    break
-  case 'unavailable': // プラットフォームから消えていたので、論理削除した
-  case 'not-found': // 保存済みの動画がない（削除済みを含む）、または、そのプラットフォームの動画ではない
-    break
+  case "updated": // result.before / result.after は変わった項目だけを持つ
+  case "unchanged":
+    console.log(result.title);
+    break;
+  case "unavailable": // プラットフォームから消えていたので、論理削除した
+  case "not-found": // 保存済みの動画がない（削除済みを含む）、または、そのプラットフォームの動画ではない
+    break;
 }
 ```
 
@@ -102,14 +102,14 @@ switch (result.status) {
 管理画面の「同期」のように、タレント 1 人を指定して、そのアカウントの名前・ハンドル（Twitch は login）・アイコンを同期するための操作です。`syncAccounts` と同じ関数を使うので、変更があったアカウントだけが更新されます。
 
 ```ts
-const results = await scraper.syncTalentAccounts(talentId) // talents.id
+const results = await scraper.syncTalentAccounts(talentId); // talents.id
 
 for (const result of results) {
-  result.accountId // youtube_channels.id / twitch_users.id
-  result.name // プラットフォームの名前（同期できなかったときは保存済みの名前）
-  result.status // 'updated' | 'unchanged' | 'not-found' | 'failed'
-  result.changes // 名前・ハンドルが変わったときだけ。変わった項目の before / after
-  result.iconUpdated // アイコンを保存・差し替え・削除したか
+  result.accountId; // youtube_channels.id / twitch_users.id
+  result.name; // プラットフォームの名前（同期できなかったときは保存済みの名前）
+  result.status; // 'updated' | 'unchanged' | 'not-found' | 'failed'
+  result.changes; // 名前・ハンドルが変わったときだけ。変わった項目の before / after
+  result.iconUpdated; // アイコンを保存・差し替え・削除したか
 }
 ```
 
@@ -125,7 +125,7 @@ for (const result of results) {
 サムネイルとアイコンは、差し替えたときにすぐには削除しません。どの動画・アカウントからも使われなくなった画像は、この操作でまとめて削除します。画像はプラットフォームを問わず同じテーブルにあるので、どのスクレイパーから呼んでも、すべてのプラットフォームの画像が対象です。
 
 ```ts
-await scraper.cleanUpImages()
+await scraper.cleanUpImages();
 ```
 
 - **サムネイル**: どの動画（削除扱いの動画を含む）からも使われず、`updated_at` から 1 週間以上たったものを削除します。1 回の実行で最大 500 件、古いものからです。

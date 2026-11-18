@@ -1,173 +1,173 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies
 const mockSupabaseClient = {
   from: vi.fn(),
-}
+};
 
 const mockRedisClient = {
   zrange: vi.fn(),
-}
+};
 
-const acquireLock = vi.fn()
-const releaseLock = vi.fn()
+const acquireLock = vi.fn();
+const releaseLock = vi.fn();
 
-const mockUpdateTermPopularity = vi.fn()
+const mockUpdateTermPopularity = vi.fn();
 
 const mockServerEnv: { CRON_SECRET: string | undefined } = {
   CRON_SECRET: undefined,
-}
+};
 
 // Mock modules
-vi.mock('@/lib/supabase', () => ({
+vi.mock("@/lib/supabase", () => ({
   supabaseClient: mockSupabaseClient,
-}))
+}));
 
-vi.mock('@/lib/redis', () => ({
+vi.mock("@/lib/redis", () => ({
   redisClient: mockRedisClient,
-}))
+}));
 
-vi.mock('@/lib/env', () => ({
+vi.mock("@/lib/env", () => ({
   serverEnv: mockServerEnv,
-}))
+}));
 
-vi.mock('@/lib/lock', () => ({ acquireLock, releaseLock }))
+vi.mock("@/lib/lock", () => ({ acquireLock, releaseLock }));
 
-vi.mock('./_lib/update-term-popularity', () => ({
+vi.mock("./_lib/update-term-popularity", () => ({
   updateTermPopularity: mockUpdateTermPopularity,
-}))
+}));
 
-vi.mock('@sentry/nextjs', () => ({
-  captureCheckIn: vi.fn(() => 'mock-check-in-id'),
+vi.mock("@sentry/nextjs", () => ({
+  captureCheckIn: vi.fn(() => "mock-check-in-id"),
   captureException: vi.fn(),
   flush: vi.fn(),
-}))
+}));
 
-vi.mock('@shinju-date/logger', () => ({
+vi.mock("@shinju-date/logger", () => ({
   logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
-}))
+}));
 
-vi.mock('next/server', () => ({
+vi.mock("next/server", () => ({
   after: vi.fn((fn: () => void) => {
     // Execute the function immediately in tests
-    fn()
+    fn();
   }),
-}))
+}));
 
-describe('POST /terms/popularity/update', () => {
-  let POST: (request: Request) => Promise<Response>
+describe("POST /terms/popularity/update", () => {
+  let POST: (request: Request) => Promise<Response>;
 
   beforeEach(async () => {
     // Import after mocks are set up
-    const module = await import('./route')
-    POST = module.POST
+    const module = await import("./route");
+    POST = module.POST;
 
     // Reset mocks
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
   afterEach(() => {
-    vi.clearAllMocks()
-    mockServerEnv.CRON_SECRET = undefined
-  })
+    vi.clearAllMocks();
+    mockServerEnv.CRON_SECRET = undefined;
+  });
 
-  it('should successfully update term popularity', async () => {
+  it("should successfully update term popularity", async () => {
     // Setup
-    acquireLock.mockResolvedValue('lock-value')
+    acquireLock.mockResolvedValue("lock-value");
     mockUpdateTermPopularity.mockResolvedValue({
       notFound: 5,
       total: 100,
       updated: 95,
-    })
+    });
 
     // Execute
     const request = new Request(
-      'http://localhost:5000/terms/popularity/update',
+      "http://localhost:5000/terms/popularity/update",
       {
-        method: 'POST',
-      },
-    )
-    const response = await POST(request)
+        method: "POST",
+      }
+    );
+    const response = await POST(request);
 
     // Verify
-    expect(response.status).toBe(200)
-    const data = await response.json()
+    expect(response.status).toBe(200);
+    const data = await response.json();
     expect(data).toEqual({
       notFound: 5,
       total: 100,
       updated: 95,
-    })
+    });
     expect(mockUpdateTermPopularity).toHaveBeenCalledWith(
       mockRedisClient,
-      mockSupabaseClient,
-    )
-  })
+      mockSupabaseClient
+    );
+  });
 
-  it('should return 429 while the previous run is still running', async () => {
+  it("should return 429 while the previous run is still running", async () => {
     // Setup
-    acquireLock.mockResolvedValue(null)
+    acquireLock.mockResolvedValue(null);
 
     // Execute
     const request = new Request(
-      'http://localhost:5000/terms/popularity/update',
+      "http://localhost:5000/terms/popularity/update",
       {
-        method: 'POST',
-      },
-    )
-    const response = await POST(request)
+        method: "POST",
+      }
+    );
+    const response = await POST(request);
 
     // Verify
-    expect(response.status).toBe(429)
-    expect(mockUpdateTermPopularity).not.toHaveBeenCalled()
-  })
+    expect(response.status).toBe(429);
+    expect(mockUpdateTermPopularity).not.toHaveBeenCalled();
+  });
 
-  it('should return 500 when update fails', async () => {
-    const Sentry = await import('@sentry/nextjs')
-    const error = new Error('Database error')
+  it("should return 500 when update fails", async () => {
+    const Sentry = await import("@sentry/nextjs");
+    const error = new Error("Database error");
 
     // Setup
-    acquireLock.mockResolvedValue('lock-value')
-    mockUpdateTermPopularity.mockRejectedValue(error)
+    acquireLock.mockResolvedValue("lock-value");
+    mockUpdateTermPopularity.mockRejectedValue(error);
 
     // Execute
     const request = new Request(
-      'http://localhost:5000/terms/popularity/update',
+      "http://localhost:5000/terms/popularity/update",
       {
-        method: 'POST',
-      },
-    )
-    const response = await POST(request)
+        method: "POST",
+      }
+    );
+    const response = await POST(request);
 
     // Verify
-    expect(response.status).toBe(500)
-    expect(Sentry.captureException).toHaveBeenCalledWith(error)
+    expect(response.status).toBe(500);
+    expect(Sentry.captureException).toHaveBeenCalledWith(error);
     expect(Sentry.captureCheckIn).toHaveBeenLastCalledWith({
-      checkInId: 'mock-check-in-id',
-      monitorSlug: '/terms/popularity/update',
-      status: 'error',
-    })
-  })
+      checkInId: "mock-check-in-id",
+      monitorSlug: "/terms/popularity/update",
+      status: "error",
+    });
+  });
 
-  it('should verify CRON_SECRET when provided', async () => {
+  it("should verify CRON_SECRET when provided", async () => {
     // Setup
-    mockServerEnv.CRON_SECRET = 'test-secret'
+    mockServerEnv.CRON_SECRET = "test-secret";
 
-    acquireLock.mockResolvedValue('lock-value')
+    acquireLock.mockResolvedValue("lock-value");
 
     // Execute with wrong secret
     const request = new Request(
-      'http://localhost:5000/terms/popularity/update',
+      "http://localhost:5000/terms/popularity/update",
       {
         headers: {
-          Authorization: 'Bearer wrong-secret',
+          Authorization: "Bearer wrong-secret",
         },
-        method: 'POST',
-      },
-    )
-    const response = await POST(request)
+        method: "POST",
+      }
+    );
+    const response = await POST(request);
 
     // Verify
-    expect(response.status).toBe(401)
-    expect(mockUpdateTermPopularity).not.toHaveBeenCalled()
-  })
-})
+    expect(response.status).toBe(401);
+    expect(mockUpdateTermPopularity).not.toHaveBeenCalled();
+  });
+});

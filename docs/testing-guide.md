@@ -28,16 +28,17 @@ SHINJU DATE プロジェクトでは、以下のテストフレームワーク�
 ### 基本的なテストの書き方
 
 ```tsx
-import { render, screen } from '@testing-library/react'
-import { describe, expect, test } from 'vitest'
-import MyComponent from './my-component'
+import { render, screen } from "@testing-library/react";
+import { describe, expect, test } from "vitest";
 
-describe('MyComponent', () => {
-  test('should render correctly', () => {
-    render(<MyComponent title="Test" />)
-    expect(screen.getByText('Test')).toBeInTheDocument()
-  })
-})
+import MyComponent from "./my-component";
+
+describe("MyComponent", () => {
+  test("should render correctly", () => {
+    render(<MyComponent title="Test" />);
+    expect(screen.getByText("Test")).toBeInTheDocument();
+  });
+});
 ```
 
 ### テスト対象のアプリケーション
@@ -51,13 +52,13 @@ describe('MyComponent', () => {
 これらのプロジェクトの `vitest.config.ts` は、`@shinju-date/config` の `defineVitestConfig.react()` を呼びます。共通の設定（`@vitejs/plugin-react` による JSX トランスフォーム、jsdom）は `packages/config/vitest.ts` にあり、各プロジェクトには、そのプロジェクトだけの設定を書きます（[`@shinju-date/config` の Vitest](../packages/config/README.md#vitest)）。
 
 ```typescript
-import { defineVitestConfig } from '@shinju-date/config/vitest'
+import { defineVitestConfig } from "@shinju-date/config/vitest";
 
 export default defineVitestConfig.react({
   test: {
-    setupFiles: ['./vitest.setup.ts'], // テスト前の初期化
+    setupFiles: ["./vitest.setup.ts"], // テスト前の初期化
   },
-})
+});
 ```
 
 ## JSX Transform と React インポート
@@ -77,44 +78,46 @@ Vitest でこの機能を使用するには、`@vitejs/plugin-react` が設定�
 
 ```typescript
 // vitest.config.ts
-import { defineVitestConfig } from '@shinju-date/config/vitest'
+import { defineVitestConfig } from "@shinju-date/config/vitest";
 
 export default defineVitestConfig.react({
   // ... そのプロジェクトだけの設定
-})
+});
 ```
 
 ### ❌ 避けるべき書き方
 
 ```tsx
+import { render, screen } from "@testing-library/react";
 // 不要な React インポート
-import React from 'react'
-import { render, screen } from '@testing-library/react'
-import { describe, expect, test } from 'vitest'
-import MyComponent from './my-component'
+import React from "react";
+import { describe, expect, test } from "vitest";
 
-describe('MyComponent', () => {
-  test('should render', () => {
-    render(<MyComponent />)
+import MyComponent from "./my-component";
+
+describe("MyComponent", () => {
+  test("should render", () => {
+    render(<MyComponent />);
     // ...
-  })
-})
+  });
+});
 ```
 
 ### ✅ 推奨される書き方
 
 ```tsx
 // React インポートなし
-import { render, screen } from '@testing-library/react'
-import { describe, expect, test } from 'vitest'
-import MyComponent from './my-component'
+import { render, screen } from "@testing-library/react";
+import { describe, expect, test } from "vitest";
 
-describe('MyComponent', () => {
-  test('should render', () => {
-    render(<MyComponent />)
+import MyComponent from "./my-component";
+
+describe("MyComponent", () => {
+  test("should render", () => {
+    render(<MyComponent />);
     // ...
-  })
-})
+  });
+});
 ```
 
 ### 例外：型のインポート
@@ -122,9 +125,9 @@ describe('MyComponent', () => {
 型定義のインポートは引き続き必要です：
 
 ```tsx
-import type { ReactNode, ComponentPropsWithoutRef } from 'react'
+import type { ReactNode, ComponentPropsWithoutRef } from "react";
 // または
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useState } from "react";
 ```
 
 ## テストの実行
@@ -206,24 +209,24 @@ test/
 
 ```tsx
 // ✅ 良い例: ユーザーの視点でテスト
-test('should submit form when button is clicked', async () => {
-  const handleSubmit = vi.fn()
-  render(<MyForm onSubmit={handleSubmit} />)
+test("should submit form when button is clicked", async () => {
+  const handleSubmit = vi.fn();
+  render(<MyForm onSubmit={handleSubmit} />);
 
-  await userEvent.type(screen.getByLabelText('Email'), 'test@example.com')
-  await userEvent.click(screen.getByRole('button', { name: 'Submit' }))
+  await userEvent.type(screen.getByLabelText("Email"), "test@example.com");
+  await userEvent.click(screen.getByRole("button", { name: "Submit" }));
 
-  expect(handleSubmit).toHaveBeenCalledWith({ email: 'test@example.com' })
-})
+  expect(handleSubmit).toHaveBeenCalledWith({ email: "test@example.com" });
+});
 
 // ❌ 悪い例: 実装の詳細に依存
-test('should update state', () => {
-  const { result } = renderHook(() => useMyHook())
+test("should update state", () => {
+  const { result } = renderHook(() => useMyHook());
   act(() => {
-    result.current.setState('new value')
-  })
-  expect(result.current.state).toBe('new value')
-})
+    result.current.setState("new value");
+  });
+  expect(result.current.state).toBe("new value");
+});
 ```
 
 ### 4. モックの使用
@@ -231,21 +234,21 @@ test('should update state', () => {
 外部依存をモックする際は、Vitest の `vi.mock()` を使用します：
 
 ```tsx
-import { vi, describe, test, expect } from 'vitest'
+import { vi, describe, test, expect } from "vitest";
 
-vi.mock('next/navigation', () => ({
-  usePathname: () => '/test-path',
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/test-path",
   useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),
   }),
-}))
+}));
 
-describe('MyComponent', () => {
-  test('should use mocked navigation', () => {
+describe("MyComponent", () => {
+  test("should use mocked navigation", () => {
     // テストコード
-  })
-})
+  });
+});
 ```
 
 #### 管理画面の Server Action のテスト
@@ -256,50 +259,52 @@ describe('MyComponent', () => {
 - `supabase.ts`: 本物の Supabase のクライアントを使い、PostgREST へのリクエストを MSW で受ける偽のデータベース。テーブルと操作（`select`、`insert`、`upsert`、`update`、`delete`、`rpc`）ごとに応答を決め、送られたリクエストを確かめる
 - `factories.ts`: タレント、動画、チャンネルなどの行のフィクスチャ
 
-`setupActionTest()` のモックは、このモジュールを読み込んだときに登録されます。テストの対象の Action は、`@/test/action-harness` より後に、相対パスで読み込んでください（Biome の並べ替えで、この順になります）。モックしたモジュールは、テストのファイルで読み込まず、`setupActionTest()` の戻り値から使います。
+`setupActionTest()` のモックは、このモジュールを読み込んだときに登録されます。テストの対象の Action は、`@/test/action-harness` より後に、相対パスで読み込んでください（oxfmt の import の並べ替えで、この順になります）。モックしたモジュールは、テストのファイルで読み込まず、`setupActionTest()` の戻り値から使います。
 
 ```ts
-import { describe, expect, it } from 'vitest'
-import { setupActionTest } from '@/test/action-harness'
-import { postgresError } from '@/test/supabase'
-import { restoreAction } from '../index'
+import { describe, expect, it } from "vitest";
 
-const test = setupActionTest()
-const { supabase } = test
+import { setupActionTest } from "@/test/action-harness";
+import { postgresError } from "@/test/supabase";
 
-describe('restoreAction', () => {
-  it('restores the videos', async () => {
-    supabase.on('select', 'videos', [
-      { id: 'video-1', thumbnail_id: null, title: 'Video' },
-    ])
+import { restoreAction } from "../index";
 
-    await expect(restoreAction(['video-1'])).resolves.toEqual({
+const test = setupActionTest();
+const { supabase } = test;
+
+describe("restoreAction", () => {
+  it("restores the videos", async () => {
+    supabase.on("select", "videos", [
+      { id: "video-1", thumbnail_id: null, title: "Video" },
+    ]);
+
+    await expect(restoreAction(["video-1"])).resolves.toEqual({
       success: true,
-    })
-    expect(supabase.calls('update', 'videos')).toHaveLength(1)
-    test.expectAuditLog('VIDEO_RESTORE', 'videos', 'video-1', {
-      entityName: 'Video',
-    })
-    test.expectRevalidated({ paths: ['/videos'], tags: [['videos']] })
-  })
+    });
+    expect(supabase.calls("update", "videos")).toHaveLength(1);
+    test.expectAuditLog("VIDEO_RESTORE", "videos", "video-1", {
+      entityName: "Video",
+    });
+    test.expectRevalidated({ paths: ["/videos"], tags: [["videos"]] });
+  });
 
-  it('reports a database error', async () => {
-    supabase.on('select', 'videos', postgresError('XX000', 'Fetch error'))
+  it("reports a database error", async () => {
+    supabase.on("select", "videos", postgresError("XX000", "Fetch error"));
 
-    await expect(restoreAction(['video-1'])).resolves.toMatchObject({
+    await expect(restoreAction(["video-1"])).resolves.toMatchObject({
       success: false,
-    })
-  })
+    });
+  });
 
-  it('requires an administrator', async () => {
-    test.signOut()
+  it("requires an administrator", async () => {
+    test.signOut();
 
-    await expect(restoreAction(['video-1'])).resolves.toMatchObject({
+    await expect(restoreAction(["video-1"])).resolves.toMatchObject({
       success: false,
-    })
-    expect(supabase.requests).toHaveLength(0)
-  })
-})
+    });
+    expect(supabase.requests).toHaveLength(0);
+  });
+});
 ```
 
 `toDBString` はモックせず、本物を使います。秒に丸めるので、期待する日時は `2024-11-24T17:00:00Z` のように書きます。
@@ -318,25 +323,26 @@ describe('restoreAction', () => {
 データを入れ、取得関数を呼び、返った行を確かめます。「どのメソッドが、どの引数で呼ばれたか」は確かめません。`'use cache'` はテストでは働かないので、`next/cache` は今までどおりモックします。
 
 ```ts
-import { createTalent } from '@/test/factories'
-import { seedSupabase, setupSupabase } from '@/test/supabase'
-import { fetchActiveTalents } from './talents'
+import { createTalent } from "@/test/factories";
+import { seedSupabase, setupSupabase } from "@/test/supabase";
 
-vi.mock('next/cache', () => ({ cacheLife: vi.fn(), cacheTag: vi.fn() }))
+import { fetchActiveTalents } from "./talents";
 
-setupSupabase()
+vi.mock("next/cache", () => ({ cacheLife: vi.fn(), cacheTag: vi.fn() }));
 
-test('returns the active talents', async () => {
-  const talent = createTalent({ name: 'あおい' })
+setupSupabase();
+
+test("returns the active talents", async () => {
+  const talent = createTalent({ name: "あおい" });
 
   await seedSupabase({
-    talents: [talent, createTalent({ status: 'retired' })],
-  })
+    talents: [talent, createTalent({ status: "retired" })],
+  });
 
   await expect(fetchActiveTalents()).resolves.toEqual([
-    { id: talent.id, name: 'あおい' },
-  ])
-})
+    { id: talent.id, name: "あおい" },
+  ]);
+});
 ```
 
 モックは PostgREST の条件を実際と同じように扱いますが、RLS は再現しません。RLS で見えない行は、入れないことで表します。
@@ -344,17 +350,17 @@ test('returns the active talents', async () => {
 ### 5. 非同期処理のテスト
 
 ```tsx
-import { waitFor } from '@testing-library/react'
+import { waitFor } from "@testing-library/react";
 
-test('should load data asynchronously', async () => {
-  render(<AsyncComponent />)
+test("should load data asynchronously", async () => {
+  render(<AsyncComponent />);
 
-  expect(screen.getByText('Loading...')).toBeInTheDocument()
+  expect(screen.getByText("Loading...")).toBeInTheDocument();
 
   await waitFor(() => {
-    expect(screen.getByText('Data loaded')).toBeInTheDocument()
-  })
-})
+    expect(screen.getByText("Data loaded")).toBeInTheDocument();
+  });
+});
 ```
 
 ### 6. アクセシビリティを考慮したテスト
@@ -363,13 +369,13 @@ Testing Library は、アクセシビリティを考慮したクエリメソッ�
 
 ```tsx
 // ✅ 推奨: アクセシビリティに基づくクエリ
-screen.getByRole('button', { name: 'Submit' })
-screen.getByLabelText('Email address')
-screen.getByText('Welcome')
+screen.getByRole("button", { name: "Submit" });
+screen.getByLabelText("Email address");
+screen.getByText("Welcome");
 
 // ⚠️ 非推奨: 実装の詳細に依存
-screen.getByTestId('submit-button')
-screen.getByClassName('email-input')
+screen.getByTestId("submit-button");
+screen.getByClassName("email-input");
 ```
 
 ## トラブルシューティング
@@ -389,11 +395,11 @@ screen.getByClassName('email-input')
 2. `vitest.config.ts` が `defineVitestConfig()` ではなく `defineVitestConfig.react()` を呼んでいるか確認
 
    ```typescript
-   import { defineVitestConfig } from '@shinju-date/config/vitest'
+   import { defineVitestConfig } from "@shinju-date/config/vitest";
 
    export default defineVitestConfig.react({
      // ...
-   })
+   });
    ```
 
 3. 依存関係を再インストール
@@ -429,11 +435,11 @@ CI環境では以下のように実行されます：
 pnpm test --filter <package-name> -- --reporter=github-actions
 ```
 
-#### Biome（リント・フォーマット）
+#### Biome（リント）
 
 Biomeは**GitHubレポーター**を使用し、以下の機能を提供します：
 
-- **GitHub Annotations**: リントエラーやフォーマットの問題がPull Requestの該当行に直接表示されます
+- **GitHub Annotations**: リントエラーがPull Requestの該当行に直接表示されます
 - **チェックラン**: Biomeの結果がGitHub Checksに統合され、PRのUIから確認できます
 - **問題の分類**: エラー、警告、情報がカテゴリごとに整理されます
 
@@ -443,6 +449,10 @@ CI環境では以下のように実行されます：
 # GitHub Actionsワークフローで自動的に実行
 pnpm biome ci --reporter=github .
 ```
+
+#### oxfmt（整形）
+
+整形されていないファイルがあると、CI の `pnpm oxfmt --check` が失敗し、ファイルの一覧を出力します。ローカルで `pnpm run fix` を実行して直してください。
 
 #### Playwright（E2Eテスト）
 

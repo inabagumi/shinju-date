@@ -1,10 +1,11 @@
-'use client'
+"use client";
 
-import { useMemo, useSyncExternalStore } from 'react'
-import { useNow } from '@/components/timer'
+import { useMemo, useSyncExternalStore } from "react";
+
+import { useNow } from "@/components/timer";
 
 function subscribeNothing() {
-  return () => {}
+  return () => {};
 }
 
 /**
@@ -14,16 +15,16 @@ function subscribeNothing() {
  * キャッシュを作った後に日付が変わっていても正しい文言になる。
  */
 export function useToday(referenceDate: string): Temporal.PlainDate {
-  const now = useNow()
+  const now = useNow();
   const isHydrated = useSyncExternalStore(
     subscribeNothing,
     () => true,
-    () => false,
-  )
+    () => false
+  );
 
   return useMemo(
     () =>
       isHydrated ? now.toPlainDate() : Temporal.PlainDate.from(referenceDate),
-    [isHydrated, now, referenceDate],
-  )
+    [isHydrated, now, referenceDate]
+  );
 }

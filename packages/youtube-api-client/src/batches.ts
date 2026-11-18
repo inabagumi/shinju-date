@@ -1,7 +1,8 @@
-import { chunk } from '@shinju-date/helpers'
-import type { RequestScheduler } from './types.js'
+import { chunk } from "@shinju-date/helpers";
 
-export const YOUTUBE_DATA_API_MAX_RESULTS = 50
+import type { RequestScheduler } from "./types.js";
+
+export const YOUTUBE_DATA_API_MAX_RESULTS = 50;
 
 export interface BatchOptions {
   /**
@@ -9,7 +10,7 @@ export interface BatchOptions {
    * to it at once and it decides how many run at a time; otherwise the
    * batches are requested one after another.
    */
-  schedule?: RequestScheduler | undefined
+  schedule?: RequestScheduler | undefined;
 }
 
 /**
@@ -20,23 +21,23 @@ export interface BatchOptions {
 export async function* requestInBatches<T>(
   ids: readonly string[],
   schedule: RequestScheduler | undefined,
-  request: (ids: string[]) => Promise<readonly T[]>,
+  request: (ids: string[]) => Promise<readonly T[]>
 ): AsyncGenerator<T, void, undefined> {
-  const batches = chunk(ids, YOUTUBE_DATA_API_MAX_RESULTS)
+  const batches = chunk(ids, YOUTUBE_DATA_API_MAX_RESULTS);
 
   if (!schedule) {
     for (const batch of batches) {
-      yield* await request(batch)
+      yield* await request(batch);
     }
 
-    return
+    return;
   }
 
   const results = await Promise.all(
-    batches.map((batch) => schedule(() => request(batch))),
-  )
+    batches.map((batch) => schedule(() => request(batch)))
+  );
 
   for (const items of results) {
-    yield* items
+    yield* items;
   }
 }

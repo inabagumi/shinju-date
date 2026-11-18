@@ -1,11 +1,11 @@
-import { REDIS_KEYS } from '@shinju-date/constants'
+import { REDIS_KEYS } from "@shinju-date/constants";
 
 /**
  * The part of a Redis client that `isMaintenanceMode` uses. The client of
  * `@upstash/redis` satisfies it.
  */
 export interface MaintenanceModeRedisClient {
-  get<TData>(key: string): Promise<TData | null>
+  get<TData>(key: string): Promise<TData | null>;
 }
 
 /**
@@ -13,15 +13,15 @@ export interface MaintenanceModeRedisClient {
  * returns `false`, so that an outage of Redis does not stop the service.
  */
 export async function isMaintenanceMode(
-  redisClient: MaintenanceModeRedisClient,
+  redisClient: MaintenanceModeRedisClient
 ): Promise<boolean> {
   try {
-    const value = await redisClient.get<boolean>(REDIS_KEYS.MAINTENANCE_MODE)
+    const value = await redisClient.get<boolean>(REDIS_KEYS.MAINTENANCE_MODE);
 
-    return value === true
+    return value === true;
   } catch (error) {
-    console.error('Failed to check maintenance mode:', error)
+    console.error("Failed to check maintenance mode:", error);
 
-    return false
+    return false;
   }
 }

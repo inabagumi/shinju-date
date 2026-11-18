@@ -1,9 +1,9 @@
-import * as Sentry from '@sentry/nextjs'
+import * as Sentry from "@sentry/nextjs";
 
 /**
  * 属性オブジェクト: Sentry上での検索性を確保するため、キーと値は英単語または数値のまま
  */
-export type LogAttributes = Record<string, unknown>
+export type LogAttributes = Record<string, unknown>;
 
 /**
  * 共有ロガー - Sentryと統合し、構造化されたログを提供
@@ -17,7 +17,7 @@ export const logger = {
    * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
    */
   debug: (message: string, attributes?: LogAttributes): void => {
-    Sentry.logger.debug(message, attributes)
+    Sentry.logger.debug(message, attributes);
   },
 
   /**
@@ -26,7 +26,7 @@ export const logger = {
    * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
    */
   error: (message: string, attributes?: LogAttributes): void => {
-    Sentry.logger.error(message, attributes)
+    Sentry.logger.error(message, attributes);
   },
 
   /**
@@ -35,7 +35,7 @@ export const logger = {
    * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
    */
   info: (message: string, attributes?: LogAttributes): void => {
-    Sentry.logger.info(message, attributes)
+    Sentry.logger.info(message, attributes);
   },
 
   /**
@@ -44,6 +44,6 @@ export const logger = {
    * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
    */
   warn: (message: string, attributes?: LogAttributes): void => {
-    Sentry.logger.warn(message, attributes)
+    Sentry.logger.warn(message, attributes);
   },
-}
+};

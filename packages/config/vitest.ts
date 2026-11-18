@@ -1,5 +1,5 @@
-import react from '@vitejs/plugin-react'
-import { mergeConfig, type ViteUserConfig } from 'vitest/config'
+import react from "@vitejs/plugin-react";
+import { mergeConfig, type ViteUserConfig } from "vitest/config";
 
 /**
  * The Vitest settings that every package and app shares. The tests import
@@ -7,9 +7,9 @@ import { mergeConfig, type ViteUserConfig } from 'vitest/config'
  */
 const defaults = {
   test: {
-    environment: 'node',
+    environment: "node",
   },
-} as const satisfies ViteUserConfig
+} as const satisfies ViteUserConfig;
 
 /**
  * The settings for the tests of React components: the JSX transform of
@@ -20,9 +20,9 @@ function reactDefaults(): ViteUserConfig {
   return {
     plugins: [react()],
     test: {
-      environment: 'jsdom',
+      environment: "jsdom",
     },
-  }
+  };
 }
 
 /**
@@ -40,9 +40,9 @@ function reactDefaults(): ViteUserConfig {
  * ```
  */
 export function defineVitestConfig(
-  overrides: ViteUserConfig = {},
+  overrides: ViteUserConfig = {}
 ): ViteUserConfig {
-  return mergeConfig(defaults, overrides)
+  return mergeConfig(defaults, overrides);
 }
 
 /**
@@ -60,7 +60,7 @@ export function defineVitestConfig(
  * ```
  */
 defineVitestConfig.react = function defineReactVitestConfig(
-  overrides: ViteUserConfig = {},
+  overrides: ViteUserConfig = {}
 ): ViteUserConfig {
-  return defineVitestConfig(mergeConfig(reactDefaults(), overrides))
-}
+  return defineVitestConfig(mergeConfig(reactDefaults(), overrides));
+};

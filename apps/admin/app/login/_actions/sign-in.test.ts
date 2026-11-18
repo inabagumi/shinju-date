@@ -1,144 +1,144 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { redirectMock, signInWithPasswordMock, signOutMock } = vi.hoisted(
   () => ({
     redirectMock: vi.fn(),
     signInWithPasswordMock: vi.fn(),
     signOutMock: vi.fn(),
-  }),
-)
+  })
+);
 
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   redirect: redirectMock,
-}))
+}));
 
-vi.mock('@/lib/supabase', () => ({
+vi.mock("@/lib/supabase", () => ({
   createSupabaseServerClient: vi.fn().mockResolvedValue({
     auth: {
       signInWithPassword: signInWithPasswordMock,
       signOut: signOutMock,
     },
   }),
-}))
+}));
 
-import { signInAction } from './sign-in'
+import { signInAction } from "./sign-in";
 
 function createFormData(next?: string): FormData {
-  const formData = new FormData()
-  formData.set('email', 'user@example.com')
-  formData.set('password', 'password123')
+  const formData = new FormData();
+  formData.set("email", "user@example.com");
+  formData.set("password", "password123");
 
   if (next !== undefined) {
-    formData.set('next', next)
+    formData.set("next", next);
   }
 
-  return formData
+  return formData;
 }
 
-describe('signInAction', () => {
+describe("signInAction", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    signOutMock.mockResolvedValue({ error: null })
-  })
+    vi.clearAllMocks();
+    signOutMock.mockResolvedValue({ error: null });
+  });
 
-  it('redirects to the dashboard when an admin signs in', async () => {
+  it("redirects to the dashboard when an admin signs in", async () => {
     signInWithPasswordMock.mockResolvedValue({
-      data: { user: { app_metadata: { role: 'admin' }, id: 'admin-id' } },
+      data: { user: { app_metadata: { role: "admin" }, id: "admin-id" } },
       error: null,
-    })
+    });
 
-    await signInAction({}, createFormData())
+    await signInAction({}, createFormData());
 
-    expect(redirectMock).toHaveBeenCalledWith('/')
-    expect(signOutMock).not.toHaveBeenCalled()
-  })
+    expect(redirectMock).toHaveBeenCalledWith("/");
+    expect(signOutMock).not.toHaveBeenCalled();
+  });
 
-  it('redirects to the requested page after signing in', async () => {
+  it("redirects to the requested page after signing in", async () => {
     signInWithPasswordMock.mockResolvedValue({
-      data: { user: { app_metadata: { role: 'admin' }, id: 'admin-id' } },
+      data: { user: { app_metadata: { role: "admin" }, id: "admin-id" } },
       error: null,
-    })
+    });
 
-    await signInAction({}, createFormData('/analytics/click?from=2025-11-01'))
+    await signInAction({}, createFormData("/analytics/click?from=2025-11-01"));
 
     expect(redirectMock).toHaveBeenCalledWith(
-      '/analytics/click?from=2025-11-01',
-    )
-  })
+      "/analytics/click?from=2025-11-01"
+    );
+  });
 
-  it.each(['https://example.com/', '//example.com', '/.//example.com', '/.//'])(
-    'redirects to the dashboard instead of the external URL %s',
+  it.each(["https://example.com/", "//example.com", "/.//example.com", "/.//"])(
+    "redirects to the dashboard instead of the external URL %s",
     async (next) => {
       signInWithPasswordMock.mockResolvedValue({
-        data: { user: { app_metadata: { role: 'admin' }, id: 'admin-id' } },
+        data: { user: { app_metadata: { role: "admin" }, id: "admin-id" } },
         error: null,
-      })
+      });
 
-      await signInAction({}, createFormData(next))
+      await signInAction({}, createFormData(next));
 
-      expect(redirectMock).toHaveBeenCalledWith('/')
-    },
-  )
+      expect(redirectMock).toHaveBeenCalledWith("/");
+    }
+  );
 
-  it('signs out and returns an error when the user is not an admin', async () => {
+  it("signs out and returns an error when the user is not an admin", async () => {
     signInWithPasswordMock.mockResolvedValue({
-      data: { user: { app_metadata: { provider: 'email' }, id: 'user-id' } },
+      data: { user: { app_metadata: { provider: "email" }, id: "user-id" } },
       error: null,
-    })
+    });
 
-    const result = await signInAction({}, createFormData())
+    const result = await signInAction({}, createFormData());
 
     expect(result).toEqual({
       errors: {
-        generic: ['このアカウントには管理画面を利用する権限がありません。'],
+        generic: ["このアカウントには管理画面を利用する権限がありません。"],
       },
-    })
-    expect(signOutMock).toHaveBeenCalled()
-    expect(redirectMock).not.toHaveBeenCalled()
-  })
+    });
+    expect(signOutMock).toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
 
-  it('returns an error when the credentials are wrong', async () => {
+  it("returns an error when the credentials are wrong", async () => {
     signInWithPasswordMock.mockResolvedValue({
       data: { user: null },
-      error: new Error('Invalid login credentials'),
-    })
+      error: new Error("Invalid login credentials"),
+    });
 
-    const result = await signInAction({}, createFormData())
-
-    expect(result).toEqual({
-      errors: {
-        generic: ['メールアドレスかパスワードが正しくありません。'],
-      },
-    })
-    expect(signOutMock).not.toHaveBeenCalled()
-    expect(redirectMock).not.toHaveBeenCalled()
-  })
-
-  it('returns the errors for each field when the values are invalid', async () => {
-    const formData = new FormData()
-    formData.set('email', 'invalid')
-    formData.set('password', 'short')
-
-    const result = await signInAction({}, formData)
+    const result = await signInAction({}, createFormData());
 
     expect(result).toEqual({
       errors: {
-        email: ['メールアドレスの形式が正しくありません。'],
-        password: ['パスワードは8文字以上入力する必要があります。'],
+        generic: ["メールアドレスかパスワードが正しくありません。"],
       },
-    })
-    expect(signInWithPasswordMock).not.toHaveBeenCalled()
-  })
+    });
+    expect(signOutMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
 
-  it('returns the errors for each field when the values are missing', async () => {
-    const result = await signInAction({}, new FormData())
+  it("returns the errors for each field when the values are invalid", async () => {
+    const formData = new FormData();
+    formData.set("email", "invalid");
+    formData.set("password", "short");
+
+    const result = await signInAction({}, formData);
 
     expect(result).toEqual({
       errors: {
-        email: ['メールアドレスは必須です。'],
-        password: ['パスワードは必須です。'],
+        email: ["メールアドレスの形式が正しくありません。"],
+        password: ["パスワードは8文字以上入力する必要があります。"],
       },
-    })
-    expect(signInWithPasswordMock).not.toHaveBeenCalled()
-  })
-})
+    });
+    expect(signInWithPasswordMock).not.toHaveBeenCalled();
+  });
+
+  it("returns the errors for each field when the values are missing", async () => {
+    const result = await signInAction({}, new FormData());
+
+    expect(result).toEqual({
+      errors: {
+        email: ["メールアドレスは必須です。"],
+        password: ["パスワードは必須です。"],
+      },
+    });
+    expect(signInWithPasswordMock).not.toHaveBeenCalled();
+  });
+});

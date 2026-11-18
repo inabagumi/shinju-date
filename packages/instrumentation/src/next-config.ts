@@ -1,4 +1,4 @@
-import { withSentryConfig } from '@sentry/nextjs/config'
+import { withSentryConfig } from "@sentry/nextjs/config";
 
 export interface WithSentryOptions {
   /**
@@ -9,7 +9,7 @@ export interface WithSentryOptions {
    *
    * Defaults to `true`.
    */
-  browser?: boolean
+  browser?: boolean;
 }
 
 /**
@@ -20,10 +20,10 @@ export interface WithSentryOptions {
  */
 export function withSentry<C>(
   nextConfig: C,
-  { browser = true }: WithSentryOptions = {},
+  { browser = true }: WithSentryOptions = {}
 ): C {
-  if (!process.env['NEXT_PUBLIC_SENTRY_DSN']) {
-    return nextConfig
+  if (!process.env["NEXT_PUBLIC_SENTRY_DSN"]) {
+    return nextConfig;
   }
 
   return withSentryConfig(nextConfig, {
@@ -36,9 +36,9 @@ export function withSentry<C>(
           reactComponentAnnotation: {
             enabled: true,
           },
-          tunnelRoute: '/monitoring',
+          tunnelRoute: "/monitoring",
           widenClientFileUpload: true,
         }
       : {}),
-  })
+  });
 }

@@ -1,14 +1,15 @@
-import { Panel, PanelSkeleton } from '@/components/panel'
-import { StatTileSkeleton } from '@/components/stat-tile-skeleton'
-import { getAnalyticsSummary } from '../_lib/get-analytics-summary'
-import { StatTileLink } from './trend-indicator'
+import { Panel, PanelSkeleton } from "@/components/panel";
+import { StatTileSkeleton } from "@/components/stat-tile-skeleton";
+
+import { getAnalyticsSummary } from "../_lib/get-analytics-summary";
+import { StatTileLink } from "./trend-indicator";
 
 /**
  * AnalyticsWidget - Displays analytics summary with links to detailed pages and trend indicators
  * This is an async Server Component that fetches its own data
  */
 export async function AnalyticsWidget() {
-  const analytics = await getAnalyticsSummary()
+  const analytics = await getAnalyticsSummary();
 
   return (
     <Panel title="アナリティクス">
@@ -34,7 +35,7 @@ export async function AnalyticsWidget() {
         />
       </div>
     </Panel>
-  )
+  );
 }
 
 /** 読み込み中の `AnalyticsWidget` */
@@ -47,5 +48,5 @@ export function AnalyticsWidgetSkeleton() {
         <StatTileSkeleton change className="col-span-2" />
       </div>
     </PanelSkeleton>
-  )
+  );
 }

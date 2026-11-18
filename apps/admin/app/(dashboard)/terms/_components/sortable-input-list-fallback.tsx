@@ -1,11 +1,11 @@
-import { Button, Input } from '@shinju-date/ui'
-import { GripVertical, X } from 'lucide-react'
+import { Button, Input } from "@shinju-date/ui";
+import { GripVertical, X } from "lucide-react";
 
 interface SortableInputListFallbackProps {
-  name: string
-  defaultValues?: string[]
-  placeholder?: string
-  addButtonLabel?: string
+  name: string;
+  defaultValues?: string[];
+  placeholder?: string;
+  addButtonLabel?: string;
 }
 
 /**
@@ -15,12 +15,12 @@ interface SortableInputListFallbackProps {
  * 読み込み中に送信されても値が消えないよう、送信用の値は読み込み後と同じ形で置く。
  */
 export function SortableInputListFallback({
-  addButtonLabel = '追加',
+  addButtonLabel = "追加",
   defaultValues = [],
   name,
   placeholder,
 }: SortableInputListFallbackProps) {
-  const values = defaultValues.length > 0 ? defaultValues : ['']
+  const values = defaultValues.length > 0 ? defaultValues : [""];
 
   return (
     <div aria-busy="true" className="space-y-2">
@@ -71,5 +71,5 @@ export function SortableInputListFallback({
         />
       ))}
     </div>
-  )
+  );
 }

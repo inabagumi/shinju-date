@@ -1,6 +1,7 @@
-import type Database from '@shinju-date/database'
-import type { Tables, TablesInsert } from '@shinju-date/database'
-import { toDBString } from '@shinju-date/temporal-fns'
+import type Database from "@shinju-date/database";
+import type { Tables, TablesInsert } from "@shinju-date/database";
+import { toDBString } from "@shinju-date/temporal-fns";
+
 import {
   announcements,
   featureRequests,
@@ -14,22 +15,22 @@ import {
   videos,
   youtubeChannels,
   youtubeVideos,
-} from '../../collections.js'
+} from "../../collections.js";
 
-type PublicSchema = Database['public']
+type PublicSchema = Database["public"];
 
 /** The name of a table (or view) of the public schema. */
 export type TableName =
-  | keyof PublicSchema['Tables']
-  | keyof PublicSchema['Views']
+  | keyof PublicSchema["Tables"]
+  | keyof PublicSchema["Views"];
 
 /** The name of a table, which can be written to unlike a view. */
-export type WritableTableName = keyof PublicSchema['Tables']
+export type WritableTableName = keyof PublicSchema["Tables"];
 
 /** A column of a table (of any of the tables, when `Name` is a union). */
 type Column<Name extends TableName> = Name extends TableName
   ? keyof Tables<Name> & string
-  : never
+  : never;
 
 /**
  * The part of an `@msw/data` collection that the handlers use. `Rec` is the
@@ -38,13 +39,13 @@ type Column<Name extends TableName> = Name extends TableName
  * copies of them.
  */
 export interface MockCollection<Row, Rec extends Row = Row> {
-  create(values: Row): Promise<NoInfer<Rec>>
-  delete(record: NoInfer<Rec>): unknown
-  findMany(): Rec[]
+  create(values: Row): Promise<NoInfer<Rec>>;
+  delete(record: NoInfer<Rec>): unknown;
+  findMany(): Rec[];
   update(
     record: NoInfer<Rec>,
-    options: { data(draft: Row): void },
-  ): Promise<NoInfer<Rec> | undefined>
+    options: { data(draft: Row): void }
+  ): Promise<NoInfer<Rec> | undefined>;
 }
 
 /**
@@ -52,9 +53,9 @@ export interface MockCollection<Row, Rec extends Row = Row> {
  * as a `MockCollection` of them.
  */
 function asMockCollection<Row, Rec extends Row>(
-  collection: MockCollection<NoInfer<Row>, Rec>,
+  collection: MockCollection<NoInfer<Row>, Rec>
 ): MockCollection<Row> {
-  return collection
+  return collection;
 }
 
 /**
@@ -65,17 +66,17 @@ function asMockCollection<Row, Rec extends Row>(
  */
 export type RelationDefinition<Name extends TableName> = {
   [Target in TableName]: {
-    column: Column<Name>
-    many: boolean
-    referencedColumn: Column<Target>
-    table: Target
-  }
-}[TableName]
+    column: Column<Name>;
+    many: boolean;
+    referencedColumn: Column<Target>;
+    table: Target;
+  };
+}[TableName];
 
 /** A unique constraint, which inserts, upserts and updates are checked against. */
 export interface UniqueConstraint<Name extends TableName> {
-  columns: readonly Column<Name>[]
-  name: string
+  columns: readonly Column<Name>[];
+  name: string;
 }
 
 /**
@@ -84,83 +85,85 @@ export interface UniqueConstraint<Name extends TableName> {
  */
 type RequiredColumn<Name extends TableName> = Name extends WritableTableName
   ? {
-      [Key in keyof TablesInsert<Name>]-?: undefined extends TablesInsert<Name>[Key]
-        ? never
-        : Key
+      [
+        Key in keyof TablesInsert<Name>
+      ]-?: undefined extends TablesInsert<Name>[Key] ? never : Key;
     }[keyof TablesInsert<Name>] &
       Column<Name>
-  : never
+  : never;
 
 /** The columns that are `NOT NULL`, with or without defaults. */
 type NotNullColumn<Name extends TableName> = Name extends TableName
   ? {
       [Key in keyof Tables<Name> & string]: null extends Tables<Name>[Key]
         ? never
-        : Key
+        : Key;
     }[keyof Tables<Name> & string]
-  : never
+  : never;
 
 /**
  * List the `NOT NULL` columns of a table. The type of the argument checks
  * that every such column is listed.
  */
 function notNullColumns<Name extends WritableTableName>(
-  columns: Record<NotNullColumn<Name>, true>,
+  columns: Record<NotNullColumn<Name>, true>
 ): readonly NotNullColumn<Name>[] {
-  return Object.keys(columns) as NotNullColumn<Name>[]
+  return Object.keys(columns) as NotNullColumn<Name>[];
 }
 
 interface BaseTableDefinition<Name extends TableName> {
-  name: Name
-  relations: readonly RelationDefinition<Name>[]
+  name: Name;
+  relations: readonly RelationDefinition<Name>[];
   /**
    * The columns of the `uuid` type, whose values `eq`, `neq`, `in` and
    * `isdistinct` compare regardless of case as PostgreSQL does. The types of
    * the tables give them as `string`, so they are listed by hand.
    */
-  uuidColumns: readonly Column<Name>[]
+  uuidColumns: readonly Column<Name>[];
 }
 
 /** A table that is read and written through a mock collection. */
-export interface WritableTableDefinition<Name extends TableName>
-  extends BaseTableDefinition<Name> {
-  collection: MockCollection<Tables<Name>>
+export interface WritableTableDefinition<
+  Name extends TableName,
+> extends BaseTableDefinition<Name> {
+  collection: MockCollection<Tables<Name>>;
   /** The values of the columns that have defaults (or are nullable). */
-  defaults: () => Omit<Tables<Name>, RequiredColumn<Name>>
-  kind: 'table'
+  defaults: () => Omit<Tables<Name>, RequiredColumn<Name>>;
+  kind: "table";
   /**
    * The columns that are `NOT NULL`, which inserts, upserts and updates are
    * checked against (made with `notNullColumns`).
    */
-  notNullColumns: readonly NotNullColumn<Name>[]
+  notNullColumns: readonly NotNullColumn<Name>[];
   /** Unique constraints other than the primary key (`id`). */
-  unique: readonly UniqueConstraint<Name>[]
+  unique: readonly UniqueConstraint<Name>[];
   /**
    * Whether a trigger (`handle_updated_at`) sets `updated_at` to the current
    * time when a row is updated.
    */
-  updatedAtTrigger: boolean
+  updatedAtTrigger: boolean;
 }
 
 /** A view, which the mock only reads. */
-export interface ReadOnlyTableDefinition<Name extends TableName>
-  extends BaseTableDefinition<Name> {
-  kind: 'view'
-  rows: () => Promise<Tables<Name>[]>
+export interface ReadOnlyTableDefinition<
+  Name extends TableName,
+> extends BaseTableDefinition<Name> {
+  kind: "view";
+  rows: () => Promise<Tables<Name>[]>;
 }
 
 export type TableDefinition<Name extends TableName> =
   | WritableTableDefinition<Name>
-  | ReadOnlyTableDefinition<Name>
+  | ReadOnlyTableDefinition<Name>;
 
 /** A table definition of any table. */
 export type AnyTableDefinition = {
-  [Name in TableName]: TableDefinition<Name>
-}[TableName]
+  [Name in TableName]: TableDefinition<Name>;
+}[TableName];
 
 /** The current time as it is saved in a `TIMESTAMPTZ` column. */
 function now(): string {
-  return toDBString(Temporal.Now.instant())
+  return toDBString(Temporal.Now.instant());
 }
 
 /**
@@ -169,14 +172,14 @@ function now(): string {
  */
 function parseTimestamp(text: string): Temporal.Instant | null {
   try {
-    return Temporal.Instant.from(text)
+    return Temporal.Instant.from(text);
   } catch {
     try {
       return Temporal.PlainDateTime.from(text)
-        .toZonedDateTime('UTC')
-        .toInstant()
+        .toZonedDateTime("UTC")
+        .toInstant();
     } catch {
-      return null
+      return null;
     }
   }
 }
@@ -187,14 +190,14 @@ function parseTimestamp(text: string): Temporal.Instant | null {
  * come last and are never picked as the latest.
  */
 function compareTimestamps(a: string, b: string): number {
-  const instantA = parseTimestamp(a)
-  const instantB = parseTimestamp(b)
+  const instantA = parseTimestamp(a);
+  const instantB = parseTimestamp(b);
 
   if (instantA === null || instantB === null) {
-    return Number(instantA !== null) - Number(instantB !== null)
+    return Number(instantA !== null) - Number(instantB !== null);
   }
 
-  return Temporal.Instant.compare(instantA, instantB)
+  return Temporal.Instant.compare(instantA, instantB);
 }
 
 /**
@@ -202,88 +205,88 @@ function compareTimestamps(a: string, b: string): number {
  * each account that still exists, of talents that are not deleted.
  */
 async function getLatestVideoBackfillJobs(): Promise<
-  Tables<'video_backfill_latest_jobs'>[]
+  Tables<"video_backfill_latest_jobs">[]
 > {
   const talentIds = new Set(
     talents
       .findMany()
       .filter((talent) => talent.deleted_at === null)
-      .map((talent) => talent.id),
-  )
+      .map((talent) => talent.id)
+  );
   const accountIds = {
     twitch: new Set(twitchUsers.findMany().map((user) => user.id)),
     youtube: new Set(youtubeChannels.findMany().map((channel) => channel.id)),
-  }
-  const seen = new Set<string>()
+  };
+  const seen = new Set<string>();
 
   return videoBackfillJobs
     .findMany()
     .toSorted((a, b) => compareTimestamps(b.finished_at, a.finished_at))
     .filter((job) => {
-      const key = `${job.platform}:${job.account_id}`
+      const key = `${job.platform}:${job.account_id}`;
 
       if (
         seen.has(key) ||
         !talentIds.has(job.talent_id) ||
         !accountIds[job.platform].has(job.account_id)
       ) {
-        return false
+        return false;
       }
 
-      seen.add(key)
+      seen.add(key);
 
-      return true
-    })
+      return true;
+    });
 }
 
 /** A relation to `talents` from its `talent_id`. */
 const TALENT_RELATION = {
-  column: 'talent_id',
+  column: "talent_id",
   many: false,
-  referencedColumn: 'id',
-  table: 'talents',
-} as const
+  referencedColumn: "id",
+  table: "talents",
+} as const;
 
 /** A relation to `profile_images` from its `profile_image_id`. */
 const PROFILE_IMAGE_RELATION = {
-  column: 'profile_image_id',
+  column: "profile_image_id",
   many: false,
-  referencedColumn: 'id',
-  table: 'profile_images',
-} as const
+  referencedColumn: "id",
+  table: "profile_images",
+} as const;
 
 /** A relation to `videos` from its `video_id`. */
 const VIDEO_RELATION = {
-  column: 'video_id',
+  column: "video_id",
   many: false,
-  referencedColumn: 'id',
-  table: 'videos',
-} as const
+  referencedColumn: "id",
+  table: "videos",
+} as const;
 
 /**
  * The `uuid` columns of `video_backfill_jobs`, which the
  * `video_backfill_latest_jobs` view has as well.
  */
 const VIDEO_BACKFILL_JOB_UUID_COLUMNS = [
-  'account_id',
-  'id',
-  'requested_by',
-  'run_id',
-  'talent_id',
-] as const
+  "account_id",
+  "id",
+  "requested_by",
+  "run_id",
+  "talent_id",
+] as const;
 
-const announcementsTable: WritableTableDefinition<'announcements'> = {
+const announcementsTable: WritableTableDefinition<"announcements"> = {
   collection: asMockCollection(announcements),
   defaults: () => ({
     created_at: now(),
     enabled: false,
     id: crypto.randomUUID(),
-    level: 'info',
+    level: "info",
     updated_at: now(),
   }),
-  kind: 'table',
-  name: 'announcements',
-  notNullColumns: notNullColumns<'announcements'>({
+  kind: "table",
+  name: "announcements",
+  notNullColumns: notNullColumns<"announcements">({
     created_at: true,
     enabled: true,
     end_at: true,
@@ -296,22 +299,22 @@ const announcementsTable: WritableTableDefinition<'announcements'> = {
   relations: [],
   unique: [],
   updatedAtTrigger: true,
-  uuidColumns: ['id'],
-}
+  uuidColumns: ["id"],
+};
 
-const featureRequestsTable: WritableTableDefinition<'feature_requests'> = {
+const featureRequestsTable: WritableTableDefinition<"feature_requests"> = {
   collection: asMockCollection(featureRequests),
   defaults: () => ({
     admin_memo: null,
     created_at: now(),
     id: crypto.randomUUID(),
     is_read: false,
-    status: 'pending',
+    status: "pending",
     updated_at: now(),
   }),
-  kind: 'table',
-  name: 'feature_requests',
-  notNullColumns: notNullColumns<'feature_requests'>({
+  kind: "table",
+  name: "feature_requests",
+  notNullColumns: notNullColumns<"feature_requests">({
     created_at: true,
     id: true,
     is_read: true,
@@ -322,10 +325,10 @@ const featureRequestsTable: WritableTableDefinition<'feature_requests'> = {
   relations: [],
   unique: [],
   updatedAtTrigger: true,
-  uuidColumns: ['id'],
-}
+  uuidColumns: ["id"],
+};
 
-const profileImagesTable: WritableTableDefinition<'profile_images'> = {
+const profileImagesTable: WritableTableDefinition<"profile_images"> = {
   collection: asMockCollection(profileImages),
   defaults: () => ({
     created_at: now(),
@@ -333,9 +336,9 @@ const profileImagesTable: WritableTableDefinition<'profile_images'> = {
     id: crypto.randomUUID(),
     updated_at: now(),
   }),
-  kind: 'table',
-  name: 'profile_images',
-  notNullColumns: notNullColumns<'profile_images'>({
+  kind: "table",
+  name: "profile_images",
+  notNullColumns: notNullColumns<"profile_images">({
     blur_data_url: true,
     created_at: true,
     height: true,
@@ -346,25 +349,25 @@ const profileImagesTable: WritableTableDefinition<'profile_images'> = {
     width: true,
   }),
   relations: [],
-  unique: [{ columns: ['path'], name: 'profile_images_path_key' }],
+  unique: [{ columns: ["path"], name: "profile_images_path_key" }],
   updatedAtTrigger: true,
-  uuidColumns: ['id'],
-}
+  uuidColumns: ["id"],
+};
 
-const talentsTable: WritableTableDefinition<'talents'> = {
+const talentsTable: WritableTableDefinition<"talents"> = {
   collection: asMockCollection(talents),
   defaults: () => ({
     created_at: now(),
     deleted_at: null,
     id: crypto.randomUUID(),
     reading: null,
-    status: 'active',
+    status: "active",
     theme_color: null,
     updated_at: now(),
   }),
-  kind: 'table',
-  name: 'talents',
-  notNullColumns: notNullColumns<'talents'>({
+  kind: "table",
+  name: "talents",
+  notNullColumns: notNullColumns<"talents">({
     created_at: true,
     id: true,
     name: true,
@@ -373,24 +376,24 @@ const talentsTable: WritableTableDefinition<'talents'> = {
   }),
   relations: [
     {
-      column: 'id',
+      column: "id",
       many: true,
-      referencedColumn: 'talent_id',
-      table: 'youtube_channels',
+      referencedColumn: "talent_id",
+      table: "youtube_channels",
     },
     {
-      column: 'id',
+      column: "id",
       many: true,
-      referencedColumn: 'talent_id',
-      table: 'twitch_users',
+      referencedColumn: "talent_id",
+      table: "twitch_users",
     },
   ],
   unique: [],
   updatedAtTrigger: true,
-  uuidColumns: ['id'],
-}
+  uuidColumns: ["id"],
+};
 
-const termsTable: WritableTableDefinition<'terms'> = {
+const termsTable: WritableTableDefinition<"terms"> = {
   collection: asMockCollection(terms),
   defaults: () => ({
     created_at: now(),
@@ -398,9 +401,9 @@ const termsTable: WritableTableDefinition<'terms'> = {
     popularity: 0,
     updated_at: now(),
   }),
-  kind: 'table',
-  name: 'terms',
-  notNullColumns: notNullColumns<'terms'>({
+  kind: "table",
+  name: "terms",
+  notNullColumns: notNullColumns<"terms">({
     created_at: true,
     id: true,
     popularity: true,
@@ -410,12 +413,12 @@ const termsTable: WritableTableDefinition<'terms'> = {
     updated_at: true,
   }),
   relations: [],
-  unique: [{ columns: ['term'], name: 'terms_term_key' }],
+  unique: [{ columns: ["term"], name: "terms_term_key" }],
   updatedAtTrigger: true,
-  uuidColumns: ['id'],
-}
+  uuidColumns: ["id"],
+};
 
-const thumbnailsTable: WritableTableDefinition<'thumbnails'> = {
+const thumbnailsTable: WritableTableDefinition<"thumbnails"> = {
   collection: asMockCollection(thumbnails),
   defaults: () => ({
     created_at: now(),
@@ -424,9 +427,9 @@ const thumbnailsTable: WritableTableDefinition<'thumbnails'> = {
     id: crypto.randomUUID(),
     updated_at: now(),
   }),
-  kind: 'table',
-  name: 'thumbnails',
-  notNullColumns: notNullColumns<'thumbnails'>({
+  kind: "table",
+  name: "thumbnails",
+  notNullColumns: notNullColumns<"thumbnails">({
     blur_data_url: true,
     created_at: true,
     height: true,
@@ -438,10 +441,10 @@ const thumbnailsTable: WritableTableDefinition<'thumbnails'> = {
   relations: [],
   unique: [],
   updatedAtTrigger: true,
-  uuidColumns: ['id'],
-}
+  uuidColumns: ["id"],
+};
 
-const twitchUsersTable: WritableTableDefinition<'twitch_users'> = {
+const twitchUsersTable: WritableTableDefinition<"twitch_users"> = {
   collection: asMockCollection(twitchUsers),
   defaults: () => ({
     id: crypto.randomUUID(),
@@ -449,9 +452,9 @@ const twitchUsersTable: WritableTableDefinition<'twitch_users'> = {
     profile_image_id: null,
     twitch_login_name: null,
   }),
-  kind: 'table',
-  name: 'twitch_users',
-  notNullColumns: notNullColumns<'twitch_users'>({
+  kind: "table",
+  name: "twitch_users",
+  notNullColumns: notNullColumns<"twitch_users">({
     id: true,
     talent_id: true,
     twitch_user_id: true,
@@ -460,36 +463,36 @@ const twitchUsersTable: WritableTableDefinition<'twitch_users'> = {
     TALENT_RELATION,
     PROFILE_IMAGE_RELATION,
     {
-      column: 'id',
+      column: "id",
       many: true,
-      referencedColumn: 'twitch_user_id',
-      table: 'twitch_videos',
+      referencedColumn: "twitch_user_id",
+      table: "twitch_videos",
     },
   ],
   unique: [
     {
-      columns: ['twitch_user_id'],
-      name: 'twitch_users_twitch_user_id_key',
+      columns: ["twitch_user_id"],
+      name: "twitch_users_twitch_user_id_key",
     },
     {
-      columns: ['profile_image_id'],
-      name: 'twitch_users_profile_image_id_key',
+      columns: ["profile_image_id"],
+      name: "twitch_users_profile_image_id_key",
     },
   ],
   updatedAtTrigger: false,
-  uuidColumns: ['id', 'profile_image_id', 'talent_id'],
-}
+  uuidColumns: ["id", "profile_image_id", "talent_id"],
+};
 
-const twitchVideosTable: WritableTableDefinition<'twitch_videos'> = {
+const twitchVideosTable: WritableTableDefinition<"twitch_videos"> = {
   collection: asMockCollection(twitchVideos),
   defaults: () => ({
     id: crypto.randomUUID(),
     stream_id: null,
     type: null,
   }),
-  kind: 'table',
-  name: 'twitch_videos',
-  notNullColumns: notNullColumns<'twitch_videos'>({
+  kind: "table",
+  name: "twitch_videos",
+  notNullColumns: notNullColumns<"twitch_videos">({
     id: true,
     twitch_user_id: true,
     twitch_video_id: true,
@@ -498,25 +501,25 @@ const twitchVideosTable: WritableTableDefinition<'twitch_videos'> = {
   relations: [
     VIDEO_RELATION,
     {
-      column: 'twitch_user_id',
+      column: "twitch_user_id",
       many: false,
-      referencedColumn: 'id',
-      table: 'twitch_users',
+      referencedColumn: "id",
+      table: "twitch_users",
     },
   ],
   unique: [
     {
-      columns: ['twitch_video_id'],
-      name: 'twitch_videos_twitch_video_id_key',
+      columns: ["twitch_video_id"],
+      name: "twitch_videos_twitch_video_id_key",
     },
-    { columns: ['video_id'], name: 'twitch_videos_video_id_unique' },
-    { columns: ['stream_id'], name: 'idx_twitch_videos_stream_id' },
+    { columns: ["video_id"], name: "twitch_videos_video_id_unique" },
+    { columns: ["stream_id"], name: "idx_twitch_videos_stream_id" },
   ],
   updatedAtTrigger: false,
-  uuidColumns: ['id', 'twitch_user_id', 'video_id'],
-}
+  uuidColumns: ["id", "twitch_user_id", "video_id"],
+};
 
-const videoBackfillJobsTable: WritableTableDefinition<'video_backfill_jobs'> = {
+const videoBackfillJobsTable: WritableTableDefinition<"video_backfill_jobs"> = {
   collection: asMockCollection(videoBackfillJobs),
   defaults: () => ({
     added: 0,
@@ -528,9 +531,9 @@ const videoBackfillJobsTable: WritableTableDefinition<'video_backfill_jobs'> = {
     run_id: null,
     started_at: null,
   }),
-  kind: 'table',
-  name: 'video_backfill_jobs',
-  notNullColumns: notNullColumns<'video_backfill_jobs'>({
+  kind: "table",
+  name: "video_backfill_jobs",
+  notNullColumns: notNullColumns<"video_backfill_jobs">({
     account_id: true,
     added: true,
     created_at: true,
@@ -545,39 +548,39 @@ const videoBackfillJobsTable: WritableTableDefinition<'video_backfill_jobs'> = {
   relations: [TALENT_RELATION],
   unique: [
     {
-      columns: ['platform', 'account_id', 'requested_at'],
-      name: 'video_backfill_jobs_request_key',
+      columns: ["platform", "account_id", "requested_at"],
+      name: "video_backfill_jobs_request_key",
     },
   ],
   updatedAtTrigger: false,
   uuidColumns: VIDEO_BACKFILL_JOB_UUID_COLUMNS,
-}
+};
 
-const videoBackfillLatestJobsView: ReadOnlyTableDefinition<'video_backfill_latest_jobs'> =
+const videoBackfillLatestJobsView: ReadOnlyTableDefinition<"video_backfill_latest_jobs"> =
   {
-    kind: 'view',
-    name: 'video_backfill_latest_jobs',
+    kind: "view",
+    name: "video_backfill_latest_jobs",
     relations: [TALENT_RELATION],
     rows: getLatestVideoBackfillJobs,
     uuidColumns: VIDEO_BACKFILL_JOB_UUID_COLUMNS,
-  }
+  };
 
-export const videosTable: WritableTableDefinition<'videos'> = {
+export const videosTable: WritableTableDefinition<"videos"> = {
   collection: asMockCollection(videos),
   defaults: () => ({
     created_at: now(),
     deleted_at: null,
     deleted_reason: null,
     id: crypto.randomUUID(),
-    status: 'ENDED',
+    status: "ENDED",
     thumbnail_id: null,
     updated_at: now(),
-    video_kind: 'standard',
+    video_kind: "standard",
     visible: true,
   }),
-  kind: 'table',
-  name: 'videos',
-  notNullColumns: notNullColumns<'videos'>({
+  kind: "table",
+  name: "videos",
+  notNullColumns: notNullColumns<"videos">({
     created_at: true,
     duration: true,
     id: true,
@@ -593,30 +596,30 @@ export const videosTable: WritableTableDefinition<'videos'> = {
   relations: [
     TALENT_RELATION,
     {
-      column: 'thumbnail_id',
+      column: "thumbnail_id",
       many: false,
-      referencedColumn: 'id',
-      table: 'thumbnails',
+      referencedColumn: "id",
+      table: "thumbnails",
     },
     {
-      column: 'id',
+      column: "id",
       many: false,
-      referencedColumn: 'video_id',
-      table: 'youtube_videos',
+      referencedColumn: "video_id",
+      table: "youtube_videos",
     },
     {
-      column: 'id',
+      column: "id",
       many: false,
-      referencedColumn: 'video_id',
-      table: 'twitch_videos',
+      referencedColumn: "video_id",
+      table: "twitch_videos",
     },
   ],
   unique: [],
   updatedAtTrigger: true,
-  uuidColumns: ['id', 'talent_id', 'thumbnail_id'],
-}
+  uuidColumns: ["id", "talent_id", "thumbnail_id"],
+};
 
-const youtubeChannelsTable: WritableTableDefinition<'youtube_channels'> = {
+const youtubeChannelsTable: WritableTableDefinition<"youtube_channels"> = {
   collection: asMockCollection(youtubeChannels),
   defaults: () => ({
     id: crypto.randomUUID(),
@@ -624,9 +627,9 @@ const youtubeChannelsTable: WritableTableDefinition<'youtube_channels'> = {
     profile_image_id: null,
     youtube_handle: null,
   }),
-  kind: 'table',
-  name: 'youtube_channels',
-  notNullColumns: notNullColumns<'youtube_channels'>({
+  kind: "table",
+  name: "youtube_channels",
+  notNullColumns: notNullColumns<"youtube_channels">({
     id: true,
     talent_id: true,
     youtube_channel_id: true,
@@ -634,26 +637,26 @@ const youtubeChannelsTable: WritableTableDefinition<'youtube_channels'> = {
   relations: [TALENT_RELATION, PROFILE_IMAGE_RELATION],
   unique: [
     {
-      columns: ['youtube_channel_id'],
-      name: 'youtube_channels_youtube_channel_id_key',
+      columns: ["youtube_channel_id"],
+      name: "youtube_channels_youtube_channel_id_key",
     },
     {
-      columns: ['profile_image_id'],
-      name: 'youtube_channels_profile_image_id_key',
+      columns: ["profile_image_id"],
+      name: "youtube_channels_profile_image_id_key",
     },
   ],
   updatedAtTrigger: false,
-  uuidColumns: ['id', 'profile_image_id', 'talent_id'],
-}
+  uuidColumns: ["id", "profile_image_id", "talent_id"],
+};
 
-const youtubeVideosTable: WritableTableDefinition<'youtube_videos'> = {
+const youtubeVideosTable: WritableTableDefinition<"youtube_videos"> = {
   collection: asMockCollection(youtubeVideos),
   defaults: () => ({
     id: crypto.randomUUID(),
   }),
-  kind: 'table',
-  name: 'youtube_videos',
-  notNullColumns: notNullColumns<'youtube_videos'>({
+  kind: "table",
+  name: "youtube_videos",
+  notNullColumns: notNullColumns<"youtube_videos">({
     id: true,
     video_id: true,
     youtube_channel_id: true,
@@ -662,22 +665,22 @@ const youtubeVideosTable: WritableTableDefinition<'youtube_videos'> = {
   relations: [
     VIDEO_RELATION,
     {
-      column: 'youtube_channel_id',
+      column: "youtube_channel_id",
       many: false,
-      referencedColumn: 'id',
-      table: 'youtube_channels',
+      referencedColumn: "id",
+      table: "youtube_channels",
     },
   ],
   unique: [
-    { columns: ['video_id'], name: 'youtube_videos_video_id_unique' },
+    { columns: ["video_id"], name: "youtube_videos_video_id_unique" },
     {
-      columns: ['youtube_video_id'],
-      name: 'youtube_videos_youtube_video_id_key',
+      columns: ["youtube_video_id"],
+      name: "youtube_videos_youtube_video_id_key",
     },
   ],
   updatedAtTrigger: false,
-  uuidColumns: ['id', 'video_id', 'youtube_channel_id'],
-}
+  uuidColumns: ["id", "video_id", "youtube_channel_id"],
+};
 
 /**
  * The tables (and views) that the mock serves at `/rest/v1/<name>`. Tables
@@ -697,18 +700,18 @@ export const TABLES: readonly AnyTableDefinition[] = [
   videosTable,
   youtubeChannelsTable,
   youtubeVideosTable,
-]
+];
 
 /** The definition of a table, if the mock serves it. */
 export function findTable(name: string): AnyTableDefinition | undefined {
-  return TABLES.find((table) => table.name === name)
+  return TABLES.find((table) => table.name === name);
 }
 
 /** The current rows of a table. */
 export async function getRows<Name extends TableName>(
-  table: TableDefinition<Name>,
+  table: TableDefinition<Name>
 ): Promise<Tables<Name>[]> {
-  return table.kind === 'view'
+  return table.kind === "view"
     ? await table.rows()
-    : table.collection.findMany()
+    : table.collection.findMany();
 }

@@ -1,8 +1,9 @@
 import {
   fetchTalentList,
   fetchTalentStreamStatusesSafe,
-} from '@/lib/data/talents'
-import TalentGrid from './talent-grid'
+} from "@/lib/data/talents";
+
+import TalentGrid from "./talent-grid";
 
 /**
  * The number of talents, shown where the description of the page goes.
@@ -10,9 +11,9 @@ import TalentGrid from './talent-grid'
  * `TalentListGrid`.
  */
 export async function TalentCount() {
-  const talents = await fetchTalentList()
+  const talents = await fetchTalentList();
 
-  return <p className="tabular-nums">{talents.length}人</p>
+  return <p className="tabular-nums">{talents.length}人</p>;
 }
 
 export function TalentCountSkeleton() {
@@ -21,7 +22,7 @@ export function TalentCountSkeleton() {
       aria-hidden="true"
       className="h-[1lh] w-12 animate-pulse rounded-control bg-muted"
     />
-  )
+  );
 }
 
 /**
@@ -32,7 +33,7 @@ export async function TalentListGrid() {
   const [talents, streamStatuses] = await Promise.all([
     fetchTalentList(),
     fetchTalentStreamStatusesSafe(),
-  ])
+  ]);
 
-  return <TalentGrid streamStatuses={streamStatuses} talents={talents} />
+  return <TalentGrid streamStatuses={streamStatuses} talents={talents} />;
 }

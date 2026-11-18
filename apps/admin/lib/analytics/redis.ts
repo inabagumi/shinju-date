@@ -1,9 +1,10 @@
-import { formatDateKey } from '@shinju-date/temporal-fns'
-import { listDatesInRange } from './list-dates-in-range'
+import { formatDateKey } from "@shinju-date/temporal-fns";
+
+import { listDatesInRange } from "./list-dates-in-range";
 
 export interface ScoredMember {
-  member: string
-  score: number
+  member: string;
+  score: number;
 }
 
 /**
@@ -16,43 +17,43 @@ export interface ScoredMember {
  * so it is turned back.
  */
 export function parseScoredMembers(
-  result: readonly unknown[] | null | undefined,
+  result: readonly unknown[] | null | undefined
 ): ScoredMember[] {
-  const members: ScoredMember[] = []
+  const members: ScoredMember[] = [];
 
   if (!result) {
-    return members
+    return members;
   }
 
   for (let i = 0; i + 1 < result.length; i += 2) {
-    const member = result[i]
-    const score = Number(result[i + 1])
+    const member = result[i];
+    const score = Number(result[i + 1]);
 
     if (member == null || Number.isNaN(score)) {
-      continue
+      continue;
     }
 
-    members.push({ member: String(member), score })
+    members.push({ member: String(member), score });
   }
 
-  return members
+  return members;
 }
 
 /**
  * Sum the scores of the result of `zrange(..., { withScores: true })`.
  */
 export function sumScores(
-  result: readonly unknown[] | null | undefined,
+  result: readonly unknown[] | null | undefined
 ): number {
   return parseScoredMembers(result).reduce(
     (total, { score }) => total + score,
-    0,
-  )
+    0
+  );
 }
 
 export interface DateRange {
-  end: Temporal.PlainDate
-  start: Temporal.PlainDate
+  end: Temporal.PlainDate;
+  start: Temporal.PlainDate;
 }
 
 /**
@@ -63,6 +64,6 @@ export interface DateRange {
  */
 export function dailyKeys(prefix: string, { end, start }: DateRange): string[] {
   return listDatesInRange(start, end).map(
-    (date) => `${prefix}${formatDateKey(date)}`,
-  )
+    (date) => `${prefix}${formatDateKey(date)}`
+  );
 }

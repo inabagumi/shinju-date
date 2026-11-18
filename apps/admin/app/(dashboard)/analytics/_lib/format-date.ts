@@ -1,7 +1,7 @@
-import { formatDate } from '@shinju-date/temporal-fns'
+import { formatDate } from "@shinju-date/temporal-fns";
 
 interface FormatDateLabelOptions {
-  includeYear?: boolean
+  includeYear?: boolean;
 }
 
 /**
@@ -10,19 +10,19 @@ interface FormatDateLabelOptions {
  */
 export function formatDateLabel(
   isoDate: string,
-  options: FormatDateLabelOptions = {},
+  options: FormatDateLabelOptions = {}
 ): string {
-  return formatDate(Temporal.PlainDate.from(isoDate), options)
+  return formatDate(Temporal.PlainDate.from(isoDate), options);
 }
 
 interface DateRange {
-  endDate: string
-  startDate: string
+  endDate: string;
+  startDate: string;
 }
 
 /**
  * Formats a date range as `YYYY/MM/DD 〜 YYYY/MM/DD`.
  */
 export function formatDateRange({ endDate, startDate }: DateRange): string {
-  return `${formatDateLabel(startDate)} 〜 ${formatDateLabel(endDate)}`
+  return `${formatDateLabel(startDate)} 〜 ${formatDateLabel(endDate)}`;
 }

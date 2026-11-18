@@ -1,21 +1,22 @@
-'use client'
+"use client";
 
-import type { Tables } from '@shinju-date/database'
-import { Button } from '@shinju-date/ui'
-import { TalentLifecycleDialog } from '../../_components/talent-lifecycle-dialog'
+import type { Tables } from "@shinju-date/database";
+import { Button } from "@shinju-date/ui";
 
-type Talent = Pick<Tables<'talents'>, 'id' | 'name' | 'status' | 'deleted_at'>
+import { TalentLifecycleDialog } from "../../_components/talent-lifecycle-dialog";
+
+type Talent = Pick<Tables<"talents">, "id" | "name" | "status" | "deleted_at">;
 
 interface TalentLifecycleActionsProps {
-  talent: Talent
+  talent: Talent;
 }
 
 export function TalentLifecycleActions({
   talent,
 }: TalentLifecycleActionsProps) {
-  const isDeleted = talent.deleted_at !== null
-  const isRetired = !isDeleted && talent.status === 'retired'
-  const isActive = !isDeleted && talent.status === 'active'
+  const isDeleted = talent.deleted_at !== null;
+  const isRetired = !isDeleted && talent.status === "retired";
+  const isActive = !isDeleted && talent.status === "active";
 
   if (isDeleted) {
     return (
@@ -24,7 +25,7 @@ export function TalentLifecycleActions({
         talent={talent}
         trigger={<Button variant="primary">復活</Button>}
       />
-    )
+    );
   }
 
   return (
@@ -49,5 +50,5 @@ export function TalentLifecycleActions({
         trigger={<Button variant="danger">削除</Button>}
       />
     </div>
-  )
+  );
 }

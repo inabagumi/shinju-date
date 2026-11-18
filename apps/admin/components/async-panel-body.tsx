@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { Alert, Button } from '@shinju-date/ui'
-import { type ReactNode, useTransition } from 'react'
+import { Alert, Button } from "@shinju-date/ui";
+import { type ReactNode, useTransition } from "react";
 
 interface AsyncPanelBodyProps {
   /** 最後に取得できたデータで描いた中身。取り直しに失敗しても、そのまま出す */
-  children: ReactNode
+  children: ReactNode;
   /** 取り直しが失敗した理由（`usePolledResource` の `error`） */
-  error: string | null
+  error: string | null;
   /** 「再試行」で呼ぶ、取り直しの関数（`usePolledResource` の `reload`） */
-  onRetry: () => Promise<void>
+  onRetry: () => Promise<void>;
 }
 
 /**
@@ -21,7 +21,7 @@ export function AsyncPanelBody({
   error,
   onRetry,
 }: AsyncPanelBodyProps) {
-  const [isPending, startTransition] = useTransition()
+  const [isPending, startTransition] = useTransition();
 
   return (
     <>
@@ -45,5 +45,5 @@ export function AsyncPanelBody({
       )}
       {children}
     </>
-  )
+  );
 }

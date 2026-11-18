@@ -1,26 +1,27 @@
-import { PageHeader } from '@shinju-date/ui'
-import type { Metadata } from 'next'
-import { redirect } from 'next/navigation'
-import { Suspense } from 'react'
+import { PageHeader } from "@shinju-date/ui";
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
+
 import {
   EmailUpdateForm,
   EmailUpdateFormSkeleton,
-} from './_components/email-update-form'
-import { PasswordUpdateForm } from './_components/password-update-form'
-import { getCurrentUserEmail } from './_lib/get-current-user-email'
+} from "./_components/email-update-form";
+import { PasswordUpdateForm } from "./_components/password-update-form";
+import { getCurrentUserEmail } from "./_lib/get-current-user-email";
 
 export const metadata: Metadata = {
-  title: 'アカウント設定',
-}
+  title: "アカウント設定",
+};
 
 async function UserEmailData() {
-  const currentEmail = await getCurrentUserEmail()
+  const currentEmail = await getCurrentUserEmail();
 
   if (currentEmail === null) {
-    redirect('/login')
+    redirect("/login");
   }
 
-  return <EmailUpdateForm currentEmail={currentEmail} />
+  return <EmailUpdateForm currentEmail={currentEmail} />;
 }
 
 export default function AccountPage() {
@@ -42,5 +43,5 @@ export default function AccountPage() {
         <PasswordUpdateForm />
       </div>
     </div>
-  )
+  );
 }

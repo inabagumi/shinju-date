@@ -1,53 +1,57 @@
-import type { Tables } from '@shinju-date/database'
-import type { ButtonProps } from '@shinju-date/ui'
-import type { ServerActionResult } from '@/lib/use-server-action'
+import type { Tables } from "@shinju-date/database";
+import type { ButtonProps } from "@shinju-date/ui";
+
+import type { ServerActionResult } from "@/lib/use-server-action";
+
 import {
   type BulkVideoActionData,
   restoreAction,
   softDeleteAction,
   toggleVisibilityAction,
-} from '../_actions'
+} from "../_actions";
 
 /** 動画に対する操作の種類 */
-export type VideoAction = 'toggle' | 'delete' | 'restore'
+export type VideoAction = "toggle" | "delete" | "restore";
 
 /** 操作の対象の動画 */
-export interface VideoActionTarget
-  extends Pick<Tables<'videos'>, 'id' | 'title'> {
+export interface VideoActionTarget extends Pick<
+  Tables<"videos">,
+  "id" | "title"
+> {
   /**
    * 操作する前の表示状態。1件の表示を切り替えるときに渡すと、切り替えた後の
    * 状態を成功の文で知らせる
    */
-  visible?: boolean | undefined
+  visible?: boolean | undefined;
 }
 
 /** 操作のアクションの戻り値 */
 interface VideoActionResult extends ServerActionResult {
   /** 更新された動画の件数など */
-  data?: BulkVideoActionData | undefined
+  data?: BulkVideoActionData | undefined;
 }
 
 /** 確認のダイアログの文言 */
 export interface VideoActionConfirmConfig {
-  title: string
-  description: (count: number) => string
-  confirmLabel: string
-  confirmVariant: ButtonProps['variant']
+  title: string;
+  description: (count: number) => string;
+  confirmLabel: string;
+  confirmVariant: ButtonProps["variant"];
   /** 指定すると、この文字列を入力するまで実行できない */
-  requireKeyword?: string | undefined
+  requireKeyword?: string | undefined;
 }
 
 interface VideoActionDefinition {
   /** 呼ぶ Server Action */
-  action: (ids: string[]) => Promise<VideoActionResult>
+  action: (ids: string[]) => Promise<VideoActionResult>;
   /** 成功したときにトーストで出す文 */
   successText: (
     result: VideoActionResult,
-    targets: readonly VideoActionTarget[],
-  ) => string
+    targets: readonly VideoActionTarget[]
+  ) => string;
   /** 失敗したが `error` が空のときにトーストで出す文 */
-  errorText: string
-  confirm: VideoActionConfirmConfig
+  errorText: string;
+  confirm: VideoActionConfirmConfig;
 }
 
 /**
@@ -58,74 +62,74 @@ export const VIDEO_ACTIONS = {
   delete: {
     action: softDeleteAction,
     confirm: {
-      confirmLabel: '削除する',
-      confirmVariant: 'danger',
+      confirmLabel: "削除する",
+      confirmVariant: "danger",
       description: (count) =>
         count > 1
           ? `${count}件の動画を削除しようとしています。この操作は取り消せません。`
-          : '以下の動画を削除します。この操作は取り消せません。',
-      requireKeyword: 'DELETE',
-      title: '動画を削除',
+          : "以下の動画を削除します。この操作は取り消せません。",
+      requireKeyword: "DELETE",
+      title: "動画を削除",
     },
-    errorText: '削除に失敗しました。',
+    errorText: "削除に失敗しました。",
     successText: (result) => {
-      const { skippedCount = 0, updatedCount = 0 } = result.data ?? {}
+      const { skippedCount = 0, updatedCount = 0 } = result.data ?? {};
 
       // 選んだ動画の一部が、すでに削除されていたとき
       return skippedCount > 0
         ? `${updatedCount} 件を削除しました（${skippedCount} 件は削除済みでした）。`
-        : '動画を削除しました。'
+        : "動画を削除しました。";
     },
   },
   restore: {
     action: restoreAction,
     confirm: {
-      confirmLabel: '復元する',
-      confirmVariant: 'primary',
+      confirmLabel: "復元する",
+      confirmVariant: "primary",
       description: (count) =>
         count > 1
           ? `${count}件の動画を復元します。`
-          : '以下の動画を復元します。',
-      title: '動画を復元',
+          : "以下の動画を復元します。",
+      title: "動画を復元",
     },
-    errorText: '復元に失敗しました。',
+    errorText: "復元に失敗しました。",
     successText: (result) => {
-      const { skippedCount = 0, updatedCount = 0 } = result.data ?? {}
+      const { skippedCount = 0, updatedCount = 0 } = result.data ?? {};
 
       // 選んだ動画の一部が、削除されていなかったとき
       return skippedCount > 0
         ? `${updatedCount} 件を復元しました（${skippedCount} 件は削除されていませんでした）。`
-        : '動画を復元しました。'
+        : "動画を復元しました。";
     },
   },
   toggle: {
     action: toggleVisibilityAction,
     confirm: {
-      confirmLabel: '切り替える',
-      confirmVariant: 'primary',
+      confirmLabel: "切り替える",
+      confirmVariant: "primary",
       description: (count) =>
         count > 1
           ? `${count}件の動画の表示状態を切り替えます。`
-          : '以下の動画の表示状態を切り替えます。',
-      title: '表示状態を切り替え',
+          : "以下の動画の表示状態を切り替えます。",
+      title: "表示状態を切り替え",
     },
-    errorText: '更新に失敗しました。',
+    errorText: "更新に失敗しました。",
     successText: (result, targets) => {
-      const [target] = targets
+      const [target] = targets;
 
       if (targets.length === 1 && target?.visible !== undefined) {
-        return `動画を${target.visible ? '非表示' : '表示'}に変更しました。`
+        return `動画を${target.visible ? "非表示" : "表示"}に変更しました。`;
       }
 
-      return `${result.data?.updatedCount ?? targets.length} 件の動画の表示状態を更新しました。`
+      return `${result.data?.updatedCount ?? targets.length} 件の動画の表示状態を更新しました。`;
     },
   },
-} as const satisfies Record<VideoAction, VideoActionDefinition>
+} as const satisfies Record<VideoAction, VideoActionDefinition>;
 
 /** `runVideoAction` の戻り値。トーストの文を作るため、操作と対象も持つ */
 export interface VideoActionRunResult extends VideoActionResult {
-  action: VideoAction
-  targets: readonly VideoActionTarget[]
+  action: VideoAction;
+  targets: readonly VideoActionTarget[];
 }
 
 /**
@@ -134,22 +138,22 @@ export interface VideoActionRunResult extends VideoActionResult {
  */
 export async function runVideoAction(
   action: VideoAction,
-  targets: readonly VideoActionTarget[],
+  targets: readonly VideoActionTarget[]
 ): Promise<VideoActionRunResult> {
-  const definition: VideoActionDefinition = VIDEO_ACTIONS[action]
-  const result = await definition.action(targets.map((target) => target.id))
+  const definition: VideoActionDefinition = VIDEO_ACTIONS[action];
+  const result = await definition.action(targets.map((target) => target.id));
 
   return {
     ...result,
     action,
     error: result.success ? result.error : result.error || definition.errorText,
     targets,
-  }
+  };
 }
 
 /** 成功したときにトーストで出す文を、表に従って作る */
 export function getVideoActionSuccessText(result: VideoActionRunResult) {
-  const definition: VideoActionDefinition = VIDEO_ACTIONS[result.action]
+  const definition: VideoActionDefinition = VIDEO_ACTIONS[result.action];
 
-  return definition.successText(result, result.targets)
+  return definition.successText(result, result.targets);
 }

@@ -6,11 +6,11 @@
 
 入口を3つに分けています。ブラウザ向けの出力に、サーバー用のコード（`@sentry/profiling-node` や MSW）が入らないようにするためです。
 
-| 入口                                       | エクスポート                              | 呼ぶ場所                    |
-| ------------------------------------------ | ----------------------------------------- | --------------------------- |
-| `@shinju-date/instrumentation/server`      | `registerServer()`、`onRequestError`      | `instrumentation.ts`        |
-| `@shinju-date/instrumentation/client`      | `initClient()`、`onRouterTransitionStart` | `instrumentation-client.ts` |
-| `@shinju-date/instrumentation/next-config` | `withSentry()`                            | `next.config.ts`            |
+| 入口 | エクスポート | 呼ぶ場所 |
+| --- | --- | --- |
+| `@shinju-date/instrumentation/server` | `registerServer()`、`onRequestError` | `instrumentation.ts` |
+| `@shinju-date/instrumentation/client` | `initClient()`、`onRouterTransitionStart` | `instrumentation-client.ts` |
+| `@shinju-date/instrumentation/next-config` | `withSentry()` | `next.config.ts` |
 
 `NEXT_PUBLIC_SENTRY_DSN` がなければ、Sentry は初期化せず、`withSentry()` は設定をそのまま返します。`VERCEL_ENV`（ブラウザでは `NEXT_PUBLIC_VERCEL_ENV` も）が `production` のときだけ、Sentry に送信します。
 
@@ -21,18 +21,18 @@
 ### `instrumentation.ts`
 
 ```typescript
-import { registerServer } from '@shinju-date/instrumentation/server'
+import { registerServer } from "@shinju-date/instrumentation/server";
 
-export { onRequestError } from '@shinju-date/instrumentation/server'
+export { onRequestError } from "@shinju-date/instrumentation/server";
 
 export async function register() {
-  const { serverEnv } = await import('./lib/env')
+  const { serverEnv } = await import("./lib/env");
 
   await registerServer({
     enableMsw: serverEnv.ENABLE_MSW,
     profileSessionSampleRate: 1.0,
     tracesSampleRate: 1.0,
-  })
+  });
 }
 ```
 
@@ -41,9 +41,9 @@ export async function register() {
 ### `instrumentation-client.ts`
 
 ```typescript
-import { initClient } from '@shinju-date/instrumentation/client'
+import { initClient } from "@shinju-date/instrumentation/client";
 
-export { onRouterTransitionStart } from '@shinju-date/instrumentation/client'
+export { onRouterTransitionStart } from "@shinju-date/instrumentation/client";
 
 initClient({
   profileSessionSampleRate: 1.0,
@@ -52,7 +52,7 @@ initClient({
     sessionSampleRate: 0.1,
   },
   tracesSampleRate: 1.0,
-})
+});
 ```
 
 `@sentry/nextjs` の読み込みや初期化に失敗したときは、コンソールにログを出します。Sentry 以外の処理（Temporal のポリフィルの読み込みなど）は、アプリの `instrumentation-client.ts` に書きます。
@@ -60,9 +60,9 @@ initClient({
 ### `next.config.ts`
 
 ```typescript
-import { withSentry } from '@shinju-date/instrumentation/next-config'
+import { withSentry } from "@shinju-date/instrumentation/next-config";
 
-export default withSentry(nextConfig)
+export default withSentry(nextConfig);
 ```
 
 ほかのプラグイン（`withMDX` など）を使うときは、`withSentry()` を最後に適用します。
@@ -70,7 +70,7 @@ export default withSentry(nextConfig)
 ページを持たず、ルートハンドラーだけのアプリ（`apps/batch`）では、`browser: false` を渡します。ブラウザ向けのオプション（`reactComponentAnnotation`、`tunnelRoute`、`widenClientFileUpload`）を付けません。このようなアプリには `instrumentation-client.ts` を置きません。
 
 ```typescript
-export default withSentry(nextConfig, { browser: false })
+export default withSentry(nextConfig, { browser: false });
 ```
 
 ## テスト

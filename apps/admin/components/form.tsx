@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   Alert,
@@ -11,7 +11,7 @@ import {
   type SelectProps as UISelectProps,
   Textarea as UITextarea,
   type TextareaProps as UITextareaProps,
-} from '@shinju-date/ui'
+} from "@shinju-date/ui";
 import {
   type ChangeEventHandler,
   type ComponentPropsWithoutRef,
@@ -24,27 +24,28 @@ import {
   useContext,
   useId,
   useState,
-} from 'react'
-import { useFormStatus } from 'react-dom'
-import type { FormState } from '@/lib/action'
+} from "react";
+import { useFormStatus } from "react-dom";
 
-export type { FormState }
+import type { FormState } from "@/lib/action";
 
-const FormContext = createContext<FormState>({})
+export type { FormState };
+
+const FormContext = createContext<FormState>({});
 
 interface FormFieldContextValue {
-  id?: string
-  name?: string
+  id?: string;
+  name?: string;
 }
 
-const FormFieldContext = createContext<FormFieldContextValue>({})
+const FormFieldContext = createContext<FormFieldContextValue>({});
 
-interface Props extends Omit<ComponentPropsWithoutRef<'form'>, 'action'> {
+interface Props extends Omit<ComponentPropsWithoutRef<"form">, "action"> {
   action: (
     currentState: FormState,
-    payload: FormData,
-  ) => FormState | Promise<FormState>
-  initialState?: Awaited<FormState>
+    payload: FormData
+  ) => FormState | Promise<FormState>;
+  initialState?: Awaited<FormState>;
 }
 
 /**
@@ -70,26 +71,26 @@ export default function Form({
   onSubmit,
   ...props
 }: Props) {
-  const [state, formAction] = useActionState(action, initialState)
+  const [state, formAction] = useActionState(action, initialState);
 
   const handleSubmit: SubmitEventHandler<HTMLFormElement> = (event) => {
-    onSubmit?.(event)
+    onSubmit?.(event);
 
     if (event.defaultPrevented) {
-      return
+      return;
     }
 
-    event.preventDefault()
+    event.preventDefault();
 
     const formData = new FormData(
       event.currentTarget,
-      event.nativeEvent.submitter,
-    )
+      event.nativeEvent.submitter
+    );
 
     startTransition(() => {
-      formAction(formData)
-    })
-  }
+      formAction(formData);
+    });
+  };
 
   return (
     <FormContext.Provider value={state}>
@@ -103,11 +104,11 @@ export default function Form({
         {children}
       </form>
     </FormContext.Provider>
-  )
+  );
 }
 
 interface MessageLinesProps {
-  messages: string[]
+  messages: string[];
 }
 
 function MessageLines({ messages }: MessageLinesProps) {
@@ -116,7 +117,7 @@ function MessageLines({ messages }: MessageLinesProps) {
       {i > 0 && <br />}
       {message}
     </Fragment>
-  ))
+  ));
 }
 
 /**
@@ -124,10 +125,10 @@ function MessageLines({ messages }: MessageLinesProps) {
  * 置き忘れないよう、`Form` がフォームの先頭に必ず描く。
  */
 function FormError() {
-  const { error, errors } = useContext(FormContext)
+  const { error, errors } = useContext(FormContext);
   const messages = [
-    ...new Set([...(error ? [error] : []), ...(errors?.['generic'] ?? [])]),
-  ]
+    ...new Set([...(error ? [error] : []), ...(errors?.["generic"] ?? [])]),
+  ];
 
   return (
     messages.length > 0 && (
@@ -135,19 +136,19 @@ function FormError() {
         <MessageLines messages={messages} />
       </Alert>
     )
-  )
+  );
 }
 
-type SubmitButtonProps = Omit<UIButtonProps, 'asChild'>
+type SubmitButtonProps = Omit<UIButtonProps, "asChild">;
 
 export function SubmitButton({
   disabled,
-  type = 'submit',
-  variant = 'primary',
-  size = 'md',
+  type = "submit",
+  variant = "primary",
+  size = "md",
   ...props
 }: SubmitButtonProps) {
-  const { pending } = useFormStatus()
+  const { pending } = useFormStatus();
 
   return (
     <UIButton
@@ -157,24 +158,24 @@ export function SubmitButton({
       variant={variant}
       {...props}
     />
-  )
+  );
 }
 
-interface ErrorMessageProps extends ComponentPropsWithoutRef<'p'> {}
+interface ErrorMessageProps extends ComponentPropsWithoutRef<"p"> {}
 
 export function ErrorMessage({
   className,
-  role = 'alert',
+  role = "alert",
   ...props
 }: ErrorMessageProps) {
-  const { errors } = useContext(FormContext)
-  const { id, name } = useContext(FormFieldContext)
-  const errorMessages = (name && errors?.[name]) || []
+  const { errors } = useContext(FormContext);
+  const { id, name } = useContext(FormFieldContext);
+  const errorMessages = (name && errors?.[name]) || [];
 
   return (
     errorMessages.length > 0 && (
       <p
-        className={twMerge('mt-1 text-meta text-danger', className)}
+        className={twMerge("mt-1 text-meta text-danger", className)}
         id={id ? `${id}-error-message` : undefined}
         role={role}
         {...props}
@@ -182,15 +183,15 @@ export function ErrorMessage({
         <MessageLines messages={errorMessages} />
       </p>
     )
-  )
+  );
 }
 
-interface FormFieldProps extends ComponentPropsWithoutRef<'div'> {
-  name?: string
+interface FormFieldProps extends ComponentPropsWithoutRef<"div"> {
+  name?: string;
 }
 
 export function FormField({ name, ...props }: FormFieldProps) {
-  const id = useId()
+  const id = useId();
 
   return (
     <FormFieldContext.Provider
@@ -201,19 +202,19 @@ export function FormField({ name, ...props }: FormFieldProps) {
     >
       <div {...props} />
     </FormFieldContext.Provider>
-  )
+  );
 }
 
-interface SuccessMessageProps extends ComponentPropsWithoutRef<'p'> {
-  message?: string
+interface SuccessMessageProps extends ComponentPropsWithoutRef<"p"> {
+  message?: string;
 }
 
 export function SuccessMessage({
-  message = '更新が完了しました。',
-  role = 'status',
+  message = "更新が完了しました。",
+  role = "status",
   ...props
 }: SuccessMessageProps) {
-  const { success } = useContext(FormContext)
+  const { success } = useContext(FormContext);
 
   return (
     success && (
@@ -221,32 +222,32 @@ export function SuccessMessage({
         {message}
       </p>
     )
-  )
+  );
 }
 
-type InputPropsCustom = Omit<UIInputProps, 'value' | 'onChange' | 'variant'>
+type InputPropsCustom = Omit<UIInputProps, "value" | "onChange" | "variant">;
 
 export function Input({
-  defaultValue = '',
+  defaultValue = "",
   disabled,
   id: newId,
   name: newName,
-  type = 'text',
-  inputSize = 'md',
+  type = "text",
+  inputSize = "md",
   ...props
 }: InputPropsCustom) {
-  const [value, setValue] = useState(defaultValue)
-  const { pending } = useFormStatus()
-  const { errors } = useContext(FormContext)
-  const { id, name } = useContext(FormFieldContext)
-  const invalid = typeof name !== 'undefined' && !!errors?.[name]
+  const [value, setValue] = useState(defaultValue);
+  const { pending } = useFormStatus();
+  const { errors } = useContext(FormContext);
+  const { id, name } = useContext(FormFieldContext);
+  const invalid = typeof name !== "undefined" && !!errors?.[name];
 
   const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     ({ target }) => {
-      setValue(target.value)
+      setValue(target.value);
     },
-    [],
-  )
+    []
+  );
 
   return (
     <UIInput
@@ -259,14 +260,16 @@ export function Input({
       onChange={handleChange}
       type={type}
       value={value}
-      variant={invalid ? 'danger' : 'default'}
+      variant={invalid ? "danger" : "default"}
       {...props}
     />
-  )
+  );
 }
 
-interface CheckboxProps
-  extends Omit<ComponentPropsWithoutRef<'input'>, 'checked' | 'type'> {}
+interface CheckboxProps extends Omit<
+  ComponentPropsWithoutRef<"input">,
+  "checked" | "type"
+> {}
 
 /**
  * `FormField` の ID と `name` を付けたチェックボックス。`Label` の `htmlFor`
@@ -281,19 +284,19 @@ export function Checkbox({
   disabled,
   id: newId,
   name: newName,
-  value = 'true',
+  value = "true",
   ...props
 }: CheckboxProps) {
-  const { pending } = useFormStatus()
-  const { errors } = useContext(FormContext)
-  const { id, name } = useContext(FormFieldContext)
-  const invalid = typeof name !== 'undefined' && !!errors?.[name]
+  const { pending } = useFormStatus();
+  const { errors } = useContext(FormContext);
+  const { id, name } = useContext(FormFieldContext);
+  const invalid = typeof name !== "undefined" && !!errors?.[name];
 
   return (
     <input
       aria-describedby={invalid && id ? `${id}-error-message` : undefined}
       aria-invalid={invalid ? true : undefined}
-      className={twMerge('size-4 accent-accent', className)}
+      className={twMerge("size-4 accent-accent", className)}
       disabled={disabled ?? (pending ? true : undefined)}
       id={newId ?? id}
       name={newName ?? name}
@@ -301,50 +304,50 @@ export function Checkbox({
       value={value}
       {...props}
     />
-  )
+  );
 }
 
-interface LabelProps extends ComponentPropsWithoutRef<'label'> {}
+interface LabelProps extends ComponentPropsWithoutRef<"label"> {}
 
 export function Label({ className, htmlFor, ...props }: LabelProps) {
-  const { pending } = useFormStatus()
-  const { id } = useContext(FormFieldContext)
+  const { pending } = useFormStatus();
+  const { id } = useContext(FormFieldContext);
 
   return (
     // biome-ignore lint/a11y/noLabelWithoutControl: ラッパーなので無効に。
     <label
       aria-disabled={pending ? true : undefined}
       className={twMerge(
-        'mb-2 block text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
-        className,
+        "mb-2 block text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50",
+        className
       )}
       htmlFor={htmlFor ?? id}
       {...props}
     />
-  )
+  );
 }
 
-type SelectProps = Omit<UISelectProps, 'value' | 'variant'>
+type SelectProps = Omit<UISelectProps, "value" | "variant">;
 
 export function Select({
-  defaultValue = '',
+  defaultValue = "",
   disabled,
   id: newId,
   name: newName,
   ...props
 }: SelectProps) {
-  const [value, setValue] = useState(defaultValue)
-  const { pending } = useFormStatus()
-  const { errors } = useContext(FormContext)
-  const { id, name } = useContext(FormFieldContext)
-  const invalid = typeof name !== 'undefined' && !!errors?.[name]
+  const [value, setValue] = useState(defaultValue);
+  const { pending } = useFormStatus();
+  const { errors } = useContext(FormContext);
+  const { id, name } = useContext(FormFieldContext);
+  const invalid = typeof name !== "undefined" && !!errors?.[name];
 
   const handleChange = useCallback<ChangeEventHandler<HTMLSelectElement>>(
     ({ target }) => {
-      setValue(target.value)
+      setValue(target.value);
     },
-    [],
-  )
+    []
+  );
 
   return (
     <UISelect
@@ -355,33 +358,33 @@ export function Select({
       name={newName ?? name}
       onChange={handleChange}
       value={value}
-      variant={invalid ? 'danger' : 'default'}
+      variant={invalid ? "danger" : "default"}
       {...props}
     />
-  )
+  );
 }
 
-type TextareaProps = Omit<UITextareaProps, 'value' | 'variant'>
+type TextareaProps = Omit<UITextareaProps, "value" | "variant">;
 
 export function Textarea({
-  defaultValue = '',
+  defaultValue = "",
   disabled,
   id: newId,
   name: newName,
   ...props
 }: TextareaProps) {
-  const [value, setValue] = useState(defaultValue)
-  const { pending } = useFormStatus()
-  const { errors } = useContext(FormContext)
-  const { id, name } = useContext(FormFieldContext)
-  const invalid = typeof name !== 'undefined' && !!errors?.[name]
+  const [value, setValue] = useState(defaultValue);
+  const { pending } = useFormStatus();
+  const { errors } = useContext(FormContext);
+  const { id, name } = useContext(FormFieldContext);
+  const invalid = typeof name !== "undefined" && !!errors?.[name];
 
   const handleChange = useCallback<ChangeEventHandler<HTMLTextAreaElement>>(
     ({ target }) => {
-      setValue(target.value)
+      setValue(target.value);
     },
-    [],
-  )
+    []
+  );
 
   return (
     <UITextarea
@@ -392,8 +395,8 @@ export function Textarea({
       name={newName ?? name}
       onChange={handleChange}
       value={value}
-      variant={invalid ? 'danger' : 'default'}
+      variant={invalid ? "danger" : "default"}
       {...props}
     />
-  )
+  );
 }

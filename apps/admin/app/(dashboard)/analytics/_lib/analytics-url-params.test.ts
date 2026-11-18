@@ -1,40 +1,41 @@
-import { describe, expect, it } from 'vitest'
-import { getDateRangeUpdates } from './analytics-url-params'
+import { describe, expect, it } from "vitest";
 
-describe('getDateRangeUpdates', () => {
-  const dateRange = { endDate: '2025-11-07', startDate: '2025-11-01' }
+import { getDateRangeUpdates } from "./analytics-url-params";
 
-  it('sets from and to when no day is selected', () => {
+describe("getDateRangeUpdates", () => {
+  const dateRange = { endDate: "2025-11-07", startDate: "2025-11-01" };
+
+  it("sets from and to when no day is selected", () => {
     expect(getDateRangeUpdates(null, dateRange)).toEqual({
-      from: '2025-11-01',
-      to: '2025-11-07',
-    })
-  })
+      from: "2025-11-01",
+      to: "2025-11-07",
+    });
+  });
 
-  it('keeps the selected day when it is within the new range', () => {
-    for (const date of ['2025-11-01', '2025-11-03', '2025-11-07']) {
+  it("keeps the selected day when it is within the new range", () => {
+    for (const date of ["2025-11-01", "2025-11-03", "2025-11-07"]) {
       expect(getDateRangeUpdates(date, dateRange)).toEqual({
-        from: '2025-11-01',
-        to: '2025-11-07',
-      })
+        from: "2025-11-01",
+        to: "2025-11-07",
+      });
     }
-  })
+  });
 
-  it('removes the selected day when it is outside the new range', () => {
-    for (const date of ['2025-10-31', '2025-11-08']) {
+  it("removes the selected day when it is outside the new range", () => {
+    for (const date of ["2025-10-31", "2025-11-08"]) {
       expect(getDateRangeUpdates(date, dateRange)).toEqual({
         date: null,
-        from: '2025-11-01',
-        to: '2025-11-07',
-      })
+        from: "2025-11-01",
+        to: "2025-11-07",
+      });
     }
-  })
+  });
 
-  it('removes a selected day that is not a valid date', () => {
-    expect(getDateRangeUpdates('invalid', dateRange)).toEqual({
+  it("removes a selected day that is not a valid date", () => {
+    expect(getDateRangeUpdates("invalid", dateRange)).toEqual({
       date: null,
-      from: '2025-11-01',
-      to: '2025-11-07',
-    })
-  })
-})
+      from: "2025-11-01",
+      to: "2025-11-07",
+    });
+  });
+});

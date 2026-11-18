@@ -1,22 +1,24 @@
-'use server'
+"use server";
 
-import { logger } from '@shinju-date/logger'
-import { cookies } from 'next/headers'
-import { selectCurrentAnnouncement } from '@/lib/announcement'
+import { logger } from "@shinju-date/logger";
+import { cookies } from "next/headers";
+
+import { selectCurrentAnnouncement } from "@/lib/announcement";
 import {
   type Announcement,
   fetchActiveAnnouncements,
-} from '@/lib/data/announcements'
-import { fetchActiveTalents, type Talent } from '@/lib/data/talents'
-import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
-import { COOKIE_NAMES } from '@/lib/site'
-import { supabaseClient } from '@/lib/supabase'
+} from "@/lib/data/announcements";
+import { fetchActiveTalents, type Talent } from "@/lib/data/talents";
+import { getDisplayRecommendationQueries } from "@/lib/recommendations/get-display-queries";
+import { COOKIE_NAMES } from "@/lib/site";
+import { supabaseClient } from "@/lib/supabase";
+
 import {
   type RenderedAnnouncement,
   renderAnnouncement,
-} from '../_components/announcement-message'
+} from "../_components/announcement-message";
 
-const ONE_DAY_IN_SECONDS = 60 * 60 * 24
+const ONE_DAY_IN_SECONDS = 60 * 60 * 24;
 
 /**
  * Get the currently active announcement
@@ -25,13 +27,13 @@ const ONE_DAY_IN_SECONDS = 60 * 60 * 24
  */
 export async function getAnnouncement(): Promise<Announcement | null> {
   try {
-    const announcements = await fetchActiveAnnouncements()
+    const announcements = await fetchActiveAnnouncements();
 
-    return selectCurrentAnnouncement(announcements, Temporal.Now.instant())
+    return selectCurrentAnnouncement(announcements, Temporal.Now.instant());
   } catch (error) {
-    logger.error('Failed to fetch announcement', { error })
+    logger.error("Failed to fetch announcement", { error });
 
-    return null
+    return null;
   }
 }
 
@@ -42,9 +44,9 @@ export async function getAnnouncement(): Promise<Announcement | null> {
  * Returns null if no announcement is active
  */
 export async function getRenderedAnnouncement(): Promise<RenderedAnnouncement | null> {
-  const announcement = await getAnnouncement()
+  const announcement = await getAnnouncement();
 
-  return announcement ? renderAnnouncement(announcement) : null
+  return announcement ? renderAnnouncement(announcement) : null;
 }
 
 /**
@@ -52,19 +54,19 @@ export async function getRenderedAnnouncement(): Promise<RenderedAnnouncement | 
  * This prevents the announcement from being shown again until the cookie expires
  */
 export async function dismissAnnouncement(announcementId: string) {
-  const cookieStore = await cookies()
+  const cookieStore = await cookies();
 
   cookieStore.set(COOKIE_NAMES.DISMISSED_ANNOUNCEMENT_ID, announcementId, {
     httpOnly: true,
     maxAge: ONE_DAY_IN_SECONDS,
-    path: '/',
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-  })
+    path: "/",
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
 }
 
 export interface Suggestion {
-  term: string
+  term: string;
 }
 
 /**
@@ -73,23 +75,23 @@ export interface Suggestion {
  */
 export async function fetchSuggestions(query: string): Promise<Suggestion[]> {
   if (!query || query.trim().length === 0) {
-    return []
+    return [];
   }
 
   try {
-    const { data, error } = await supabaseClient.rpc('suggestions_v2', {
+    const { data, error } = await supabaseClient.rpc("suggestions_v2", {
       p_query: query.trim(),
-    })
+    });
 
     if (error) {
-      logger.error('Failed to fetch suggestions', { error, query })
-      return []
+      logger.error("Failed to fetch suggestions", { error, query });
+      return [];
     }
 
-    return data || []
+    return data || [];
   } catch (err) {
-    logger.error('Failed to fetch suggestions', { error: err, query })
-    return []
+    logger.error("Failed to fetch suggestions", { error: err, query });
+    return [];
   }
 }
 
@@ -99,10 +101,10 @@ export async function fetchSuggestions(query: string): Promise<Suggestion[]> {
  */
 export async function fetchRecommendedQueries(): Promise<string[]> {
   try {
-    return await getDisplayRecommendationQueries()
+    return await getDisplayRecommendationQueries();
   } catch (err) {
-    logger.error('Failed to fetch recommended queries', { error: err })
-    return []
+    logger.error("Failed to fetch recommended queries", { error: err });
+    return [];
   }
 }
 
@@ -112,9 +114,9 @@ export async function fetchRecommendedQueries(): Promise<string[]> {
  */
 export async function fetchSearchModalTalents(): Promise<Talent[]> {
   try {
-    return await fetchActiveTalents()
+    return await fetchActiveTalents();
   } catch (err) {
-    logger.error('Failed to fetch talents', { error: err })
-    return []
+    logger.error("Failed to fetch talents", { error: err });
+    return [];
   }
 }

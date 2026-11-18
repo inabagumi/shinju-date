@@ -1,22 +1,22 @@
-import { Scraper } from '../scraper.js'
+import { Scraper } from "../scraper.js";
 import type {
   AddPastVideosOptions,
   AddPastVideosResult,
   RefreshVideoResult,
   SyncAccountResult,
-} from '../types.js'
-import type { TwitchUserFields } from './accounts.js'
-import { addNewTwitchVideos } from './add-new-videos.js'
-import { addPastTwitchVideos } from './add-past-videos.js'
+} from "../types.js";
+import type { TwitchUserFields } from "./accounts.js";
+import { addNewTwitchVideos } from "./add-new-videos.js";
+import { addPastTwitchVideos } from "./add-past-videos.js";
 import {
   refreshRecentTwitchVideos,
   removeUnavailableTwitchVideos,
-} from './check-videos.js'
-import { TwitchFetcher } from './fetcher.js'
-import { refreshTwitchVideo } from './refresh-video.js'
-import { syncTwitchUsers, syncTwitchUsersOfTalent } from './sync-accounts.js'
-import { syncTwitchLive } from './sync-live.js'
-import type { TwitchScraperOptions } from './types.js'
+} from "./check-videos.js";
+import { TwitchFetcher } from "./fetcher.js";
+import { refreshTwitchVideo } from "./refresh-video.js";
+import { syncTwitchUsers, syncTwitchUsersOfTalent } from "./sync-accounts.js";
+import { syncTwitchLive } from "./sync-live.js";
+import type { TwitchScraperOptions } from "./types.js";
 
 /**
  * Keeps Twitch videos and accounts in the database in sync with Twitch.
@@ -28,18 +28,18 @@ import type { TwitchScraperOptions } from './types.js'
  * that row instead of saving it a second time.
  */
 export class TwitchScraper extends Scraper {
-  readonly provider = 'twitch'
+  readonly provider = "twitch";
 
-  readonly #fetcher: TwitchFetcher
+  readonly #fetcher: TwitchFetcher;
 
   constructor({ client, concurrency, ...options }: TwitchScraperOptions) {
-    super(options)
+    super(options);
 
     this.#fetcher = new TwitchFetcher({
       client,
       concurrency,
       logger: options.logger,
-    })
+    });
   }
 
   /**
@@ -47,7 +47,7 @@ export class TwitchScraper extends Scraper {
    * broadcast that is already tracked is attached to its row.
    */
   async addNewVideos(now?: Temporal.Instant): Promise<boolean> {
-    return (await addNewTwitchVideos(this.#context(now))) > 0
+    return (await addNewTwitchVideos(this.#context(now))) > 0;
   }
 
   /**
@@ -55,11 +55,11 @@ export class TwitchScraper extends Scraper {
    * starts, follows title changes and ends the row when it goes offline.
    */
   async refreshLiveVideos(now?: Temporal.Instant): Promise<boolean> {
-    return (await syncTwitchLive(this.#context(now))) > 0
+    return (await syncTwitchLive(this.#context(now))) > 0;
   }
 
   async refreshRecentVideos(now?: Temporal.Instant): Promise<boolean> {
-    return (await refreshRecentTwitchVideos(this.#context(now))) > 0
+    return (await refreshRecentTwitchVideos(this.#context(now))) > 0;
   }
 
   /**
@@ -68,34 +68,34 @@ export class TwitchScraper extends Scraper {
    */
   refreshVideo(
     videoId: string,
-    now?: Temporal.Instant,
+    now?: Temporal.Instant
   ): Promise<RefreshVideoResult> {
-    return refreshTwitchVideo(this.#context(now), videoId)
+    return refreshTwitchVideo(this.#context(now), videoId);
   }
 
   async removeUnavailableVideos(now?: Temporal.Instant): Promise<boolean> {
-    return (await removeUnavailableTwitchVideos(this.#context(now))) > 0
+    return (await removeUnavailableTwitchVideos(this.#context(now))) > 0;
   }
 
   async syncAccounts(now?: Temporal.Instant): Promise<boolean> {
-    return (await syncTwitchUsers(this.#context(now))) > 0
+    return (await syncTwitchUsers(this.#context(now))) > 0;
   }
 
   syncTalentAccounts(
     talentId: string,
-    now?: Temporal.Instant,
+    now?: Temporal.Instant
   ): Promise<SyncAccountResult<TwitchUserFields>[]> {
-    return syncTwitchUsersOfTalent(this.#context(now), talentId)
+    return syncTwitchUsersOfTalent(this.#context(now), talentId);
   }
 
   addPastVideos({
     now,
     ...options
   }: AddPastVideosOptions): Promise<AddPastVideosResult> {
-    return addPastTwitchVideos(this.#context(now), options)
+    return addPastTwitchVideos(this.#context(now), options);
   }
 
   #context(now: Temporal.Instant | undefined) {
-    return this.createContext(this.#fetcher, now)
+    return this.createContext(this.#fetcher, now);
   }
 }

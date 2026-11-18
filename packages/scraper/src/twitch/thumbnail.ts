@@ -1,15 +1,15 @@
 import {
   createThumbnail,
   type Thumbnail,
-} from '../internal/thumbnails/index.js'
-import type { WriteContext } from '../types.js'
-import { getThumbnailSource } from './video.js'
+} from "../internal/thumbnails/index.js";
+import type { WriteContext } from "../types.js";
+import { getThumbnailSource } from "./video.js";
 
 export interface CreateTwitchThumbnailOptions {
   /** Twitch thumbnail template URL (stream preview or VOD thumbnail). */
-  thumbnailUrl: string
+  thumbnailUrl: string;
   /** Platform video ID the image belongs to; used as the storage folder. */
-  twitchVideoId: string
+  twitchVideoId: string;
 }
 
 /**
@@ -19,12 +19,12 @@ export interface CreateTwitchThumbnailOptions {
  */
 export async function createTwitchThumbnail(
   { now, reportError, supabaseClient }: WriteContext,
-  { thumbnailUrl, twitchVideoId }: CreateTwitchThumbnailOptions,
+  { thumbnailUrl, twitchVideoId }: CreateTwitchThumbnailOptions
 ): Promise<Thumbnail | null> {
-  const source = getThumbnailSource(thumbnailUrl)
+  const source = getThumbnailSource(thumbnailUrl);
 
   if (!source) {
-    return null
+    return null;
   }
 
   try {
@@ -33,10 +33,10 @@ export async function createTwitchThumbnail(
       now,
       source,
       supabaseClient,
-    })
+    });
   } catch (error) {
-    reportError(error, { twitchVideoId })
+    reportError(error, { twitchVideoId });
 
-    return null
+    return null;
   }
 }

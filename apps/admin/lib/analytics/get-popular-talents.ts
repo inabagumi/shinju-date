@@ -1,37 +1,43 @@
-import { REDIS_KEYS } from '@shinju-date/constants'
-import { logger } from '@shinju-date/logger'
-import type { QueryData } from '@supabase/supabase-js'
-import { cacheLife } from 'next/cache'
-import { isNonNullable } from '@/lib/is-non-nullable'
+import { REDIS_KEYS } from "@shinju-date/constants";
+import { logger } from "@shinju-date/logger";
+import type { QueryData } from "@supabase/supabase-js";
+import { cacheLife } from "next/cache";
+
+import { isNonNullable } from "@/lib/is-non-nullable";
 import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
-} from '@/lib/supabase'
-import { DEFAULT_RANKING_LIMIT, type RankingQuery, toDateRange } from './period'
-import { getPopularItems } from './popular-items'
+} from "@/lib/supabase";
+
+import {
+  DEFAULT_RANKING_LIMIT,
+  type RankingQuery,
+  toDateRange,
+} from "./period";
+import { getPopularItems } from "./popular-items";
 
 const POPULAR_TALENT_SELECT = `
   id,
   name,
   youtube_channels (youtube_channel_id)
-`
+`;
 
 function selectPopularTalents(
   supabaseClient: TypedSupabaseClient,
-  talentIds: string[],
+  talentIds: string[]
 ) {
   return supabaseClient
-    .from('talents')
+    .from("talents")
     .select(POPULAR_TALENT_SELECT)
-    .in('id', talentIds)
+    .in("id", talentIds);
 }
 
 type PopularTalentRow = QueryData<
   ReturnType<typeof selectPopularTalents>
->[number]
+>[number];
 
 export interface PopularTalent extends PopularTalentRow {
-  clicks: number
+  clicks: number;
 }
 
 /**
@@ -43,44 +49,44 @@ export async function getPopularTalents({
   limit = DEFAULT_RANKING_LIMIT,
   range,
 }: RankingQuery): Promise<PopularTalent[]> {
-  'use cache: private'
+  "use cache: private";
 
-  cacheLife('minutes')
+  cacheLife("minutes");
 
   const talentScores = await getPopularItems(REDIS_KEYS.CLICK_CHANNEL_PREFIX, {
     limit,
     range: toDateRange(range),
-  })
+  });
 
   if (talentScores.length === 0) {
-    return []
+    return [];
   }
 
-  const supabaseClient = await createSupabaseServerClient()
+  const supabaseClient = await createSupabaseServerClient();
 
-  const talentIds = talentScores.map(([id]) => id)
+  const talentIds = talentScores.map(([id]) => id);
   const { data: talents, error } = await selectPopularTalents(
     supabaseClient,
-    talentIds,
-  )
+    talentIds
+  );
 
   if (error) {
-    logger.error('タレントの詳細取得に失敗しました', {
+    logger.error("タレントの詳細取得に失敗しました", {
       error,
-      talentIds: talentIds.join(','),
-    })
+      talentIds: talentIds.join(","),
+    });
 
-    return []
+    return [];
   }
 
-  const talentMap = new Map(talents.map((c) => [c.id, c]))
+  const talentMap = new Map(talents.map((c) => [c.id, c]));
 
   return talentScores
     .map(([id, clicks]) => {
-      const talent = talentMap.get(id)
-      if (!talent) return null
+      const talent = talentMap.get(id);
+      if (!talent) return null;
 
-      return { ...talent, clicks }
+      return { ...talent, clicks };
     })
-    .filter(isNonNullable)
+    .filter(isNonNullable);
 }

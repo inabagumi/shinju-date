@@ -1,4 +1,4 @@
-import { TIME_ZONE } from '@shinju-date/constants'
+import { TIME_ZONE } from "@shinju-date/constants";
 
 /**
  * アナリティクスで選べる日付の決まり。画面の URL のパラメータ、CSV のエクスポート、
@@ -14,36 +14,36 @@ import { TIME_ZONE } from '@shinju-date/constants'
  */
 
 /** 選べる期間の最長の日数（両端を含む）。集計を保存している日数でもある */
-export const MAX_RANGE_DAYS = 90
+export const MAX_RANGE_DAYS = 90;
 
-const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
+const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
 
 /** 日付が選べない理由。`'future'` は今日より先、`'too-old'` は保存している期間より前 */
-export type DateError = 'future' | 'too-old'
+export type DateError = "future" | "too-old";
 
 /** 期間が選べない理由。`'reversed'` は開始日が終了日より後、`'too-long'` は最長の日数を超える */
-export type DateRangeError = 'reversed' | 'too-long'
+export type DateRangeError = "reversed" | "too-long";
 
 /** `TIME_ZONE` での今日 */
 export function getToday(): Temporal.PlainDate {
-  return Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
+  return Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate();
 }
 
 /** 選べるいちばん古い日付。今日を含めて `MAX_RANGE_DAYS` 日ぶんをさかのぼった日 */
 export function getEarliestDate(
-  today: Temporal.PlainDate = getToday(),
+  today: Temporal.PlainDate = getToday()
 ): Temporal.PlainDate {
-  return today.subtract({ days: MAX_RANGE_DAYS - 1 })
+  return today.subtract({ days: MAX_RANGE_DAYS - 1 });
 }
 
 /** 期間の指定がないときの期間（今日までの7日間） */
 export function getDefaultDateRange(): { startDate: string; endDate: string } {
-  const today = getToday()
+  const today = getToday();
 
   return {
     endDate: today.toString(),
     startDate: today.subtract({ days: 6 }).toString(),
-  }
+  };
 }
 
 /**
@@ -52,17 +52,17 @@ export function getDefaultDateRange(): { startDate: string; endDate: string } {
  */
 export function validateDate(
   date: Temporal.PlainDate,
-  today: Temporal.PlainDate = getToday(),
+  today: Temporal.PlainDate = getToday()
 ): DateError | null {
   if (Temporal.PlainDate.compare(date, today) > 0) {
-    return 'future'
+    return "future";
   }
 
   if (Temporal.PlainDate.compare(date, getEarliestDate(today)) < 0) {
-    return 'too-old'
+    return "too-old";
   }
 
-  return null
+  return null;
 }
 
 /**
@@ -71,14 +71,14 @@ export function validateDate(
  */
 export function parseDateFormat(value: string): Temporal.PlainDate | null {
   if (!DATE_FORMAT.test(value)) {
-    return null
+    return null;
   }
 
   try {
-    return Temporal.PlainDate.from(value)
+    return Temporal.PlainDate.from(value);
   } catch {
     // 2月30日のような、実在しない日付
-    return null
+    return null;
   }
 }
 
@@ -88,15 +88,15 @@ export function parseDateFormat(value: string): Temporal.PlainDate | null {
  */
 export function parseDate(
   value: string,
-  today: Temporal.PlainDate = getToday(),
+  today: Temporal.PlainDate = getToday()
 ): Temporal.PlainDate | null {
-  const date = parseDateFormat(value)
+  const date = parseDateFormat(value);
 
   if (!date) {
-    return null
+    return null;
   }
 
-  return validateDate(date, today) === null ? date : null
+  return validateDate(date, today) === null ? date : null;
 }
 
 /**
@@ -105,17 +105,17 @@ export function parseDate(
  */
 export function validateRange(
   start: Temporal.PlainDate,
-  end: Temporal.PlainDate,
+  end: Temporal.PlainDate
 ): DateRangeError | null {
   if (Temporal.PlainDate.compare(start, end) > 0) {
-    return 'reversed'
+    return "reversed";
   }
 
-  const days = start.until(end, { largestUnit: 'day' }).days + 1
+  const days = start.until(end, { largestUnit: "day" }).days + 1;
 
   if (days > MAX_RANGE_DAYS) {
-    return 'too-long'
+    return "too-long";
   }
 
-  return null
+  return null;
 }

@@ -1,38 +1,38 @@
 /** 検索と頭文字のグループ分けに使う、用語の項目 */
 interface GroupableTerm {
-  term: string
-  readings: string[]
-  synonyms: string[]
+  term: string;
+  readings: string[];
+  synonyms: string[];
 }
 
 /** 頭文字のグループ。カタカナは行（ア行、カ行など）にまとめる */
 const KATAKANA_GROUPS = [
-  { end: 'オ', group: 'ア', start: 'ア' },
-  { end: 'ゴ', group: 'カ', start: 'カ' },
-  { end: 'ゾ', group: 'サ', start: 'サ' },
-  { end: 'ド', group: 'タ', start: 'タ' },
-  { end: 'ノ', group: 'ナ', start: 'ナ' },
-  { end: 'ポ', group: 'ハ', start: 'ハ' },
-  { end: 'モ', group: 'マ', start: 'マ' },
-  { end: 'ヨ', group: 'ヤ', start: 'ヤ' },
-  { end: 'ロ', group: 'ラ', start: 'ラ' },
-  { end: 'ン', group: 'ワ', start: 'ワ' },
-] as const
+  { end: "オ", group: "ア", start: "ア" },
+  { end: "ゴ", group: "カ", start: "カ" },
+  { end: "ゾ", group: "サ", start: "サ" },
+  { end: "ド", group: "タ", start: "タ" },
+  { end: "ノ", group: "ナ", start: "ナ" },
+  { end: "ポ", group: "ハ", start: "ハ" },
+  { end: "モ", group: "マ", start: "マ" },
+  { end: "ヨ", group: "ヤ", start: "ヤ" },
+  { end: "ロ", group: "ラ", start: "ラ" },
+  { end: "ン", group: "ワ", start: "ワ" },
+] as const;
 
 /**
  * 頭文字のグループの名前。カタカナは行の最初の文字にし、それ以外は大文字にした
  * 最初の文字にする
  */
 export function getInitialGroup(text: string): string {
-  const firstChar = text.charAt(0).toUpperCase()
+  const firstChar = text.charAt(0).toUpperCase();
 
   for (const { end, group, start } of KATAKANA_GROUPS) {
     if (firstChar >= start && firstChar <= end) {
-      return group
+      return group;
     }
   }
 
-  return firstChar
+  return firstChar;
 }
 
 /**
@@ -41,26 +41,26 @@ export function getInitialGroup(text: string): string {
  */
 export function filterTerms<T extends GroupableTerm>(
   terms: readonly T[],
-  search: string | undefined,
+  search: string | undefined
 ): T[] {
   if (!search) {
-    return [...terms]
+    return [...terms];
   }
 
-  const query = search.toLowerCase()
+  const query = search.toLowerCase();
 
   return terms.filter(
     (term) =>
       term.term.toLowerCase().includes(query) ||
       term.readings.some((reading) => reading.toLowerCase().includes(query)) ||
-      term.synonyms.some((synonym) => synonym.toLowerCase().includes(query)),
-  )
+      term.synonyms.some((synonym) => synonym.toLowerCase().includes(query))
+  );
 }
 
 /** 頭文字のグループと、そのグループの用語 */
 export interface TermGroup<T> {
-  group: string
-  terms: T[]
+  group: string;
+  terms: T[];
 }
 
 /**
@@ -68,22 +68,22 @@ export interface TermGroup<T> {
  * 名前の順に並べ、グループの中は渡した順のままにする
  */
 export function groupTermsByInitial<T extends GroupableTerm>(
-  terms: readonly T[],
+  terms: readonly T[]
 ): TermGroup<T>[] {
-  const groups = new Map<string, T[]>()
+  const groups = new Map<string, T[]>();
 
   for (const term of terms) {
-    const group = getInitialGroup(term.readings[0] || term.term)
-    const groupTerms = groups.get(group)
+    const group = getInitialGroup(term.readings[0] || term.term);
+    const groupTerms = groups.get(group);
 
     if (groupTerms) {
-      groupTerms.push(term)
+      groupTerms.push(term);
     } else {
-      groups.set(group, [term])
+      groups.set(group, [term]);
     }
   }
 
   return [...groups.entries()]
     .toSorted(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-    .map(([group, groupTerms]) => ({ group, terms: groupTerms }))
+    .map(([group, groupTerms]) => ({ group, terms: groupTerms }));
 }

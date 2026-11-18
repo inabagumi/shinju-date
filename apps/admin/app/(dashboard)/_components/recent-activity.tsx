@@ -1,14 +1,16 @@
-import { range } from '@shinju-date/helpers'
-import { EmptyState, Skeleton } from '@shinju-date/ui'
-import { Panel, PanelSkeleton } from '@/components/panel'
-import { getAuditLogs } from '../_lib/get-audit-logs'
-import { LogItem } from './log-item'
+import { range } from "@shinju-date/helpers";
+import { EmptyState, Skeleton } from "@shinju-date/ui";
+
+import { Panel, PanelSkeleton } from "@/components/panel";
+
+import { getAuditLogs } from "../_lib/get-audit-logs";
+import { LogItem } from "./log-item";
 
 /** 表示する操作の件数 */
-const RECENT_ACTIVITY_LIMIT = 10
+const RECENT_ACTIVITY_LIMIT = 10;
 
 export async function RecentActivity() {
-  const logs = await getAuditLogs(RECENT_ACTIVITY_LIMIT)
+  const logs = await getAuditLogs(RECENT_ACTIVITY_LIMIT);
 
   return (
     <Panel title="最近のアクティビティ">
@@ -22,7 +24,7 @@ export async function RecentActivity() {
         </ul>
       )}
     </Panel>
-  )
+  );
 }
 
 /** 読み込み中の `RecentActivity`。取得する件数ぶんの行を並べる */
@@ -44,5 +46,5 @@ export function RecentActivitySkeleton() {
         ))}
       </ul>
     </PanelSkeleton>
-  )
+  );
 }

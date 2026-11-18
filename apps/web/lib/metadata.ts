@@ -1,8 +1,9 @@
-import type { Metadata } from 'next'
-import { SITE_NAME } from '@/lib/site'
+import type { Metadata } from "next";
+
+import { SITE_NAME } from "@/lib/site";
 
 /** The Open Graph types the pages use. */
-export type PageType = 'article' | 'profile' | 'website'
+export type PageType = "article" | "profile" | "website";
 
 export interface PageMetadataOptions {
   /**
@@ -12,15 +13,15 @@ export interface PageMetadataOptions {
    * titles for sharing are then `title` alone, and `og:site_name`, which would
    * repeat it, is left out.
    */
-  absoluteTitle?: string
-  description?: string
+  absoluteTitle?: string;
+  description?: string;
   /** `false` keeps the page out of search engines. */
-  index?: boolean
+  index?: boolean;
   /** The path of the canonical URL of the page. */
-  path: string
+  path: string;
   /** The title of the page, without the site name. */
-  title: string
-  type?: PageType
+  title: string;
+  type?: PageType;
 }
 
 /**
@@ -29,19 +30,19 @@ export interface PageMetadataOptions {
  */
 export interface PageMetadata extends Metadata {
   alternates: {
-    canonical: string
-  }
+    canonical: string;
+  };
   openGraph: {
-    description?: string
-    siteName?: string
-    title: string
-    type: PageType
-    url: string
-  }
+    description?: string;
+    siteName?: string;
+    title: string;
+    type: PageType;
+    url: string;
+  };
   twitter: {
-    card: 'summary_large_image'
-    title: string
-  }
+    card: "summary_large_image";
+    title: string;
+  };
 }
 
 /**
@@ -66,9 +67,9 @@ export function createPageMetadata({
   index,
   path,
   title,
-  type = 'website',
+  type = "website",
 }: PageMetadataOptions): PageMetadata {
-  const hasSiteName = absoluteTitle === undefined
+  const hasSiteName = absoluteTitle === undefined;
 
   return {
     alternates: {
@@ -85,8 +86,8 @@ export function createPageMetadata({
     ...(index !== undefined && { robots: { index } }),
     title: hasSiteName ? title : { absolute: absoluteTitle },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title: hasSiteName ? `${title} - ${SITE_NAME}` : title,
     },
-  }
+  };
 }

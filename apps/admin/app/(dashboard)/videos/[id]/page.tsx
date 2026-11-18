@@ -1,93 +1,95 @@
-import { formatNumber } from '@shinju-date/helpers'
-import { formatDuration } from '@shinju-date/temporal-fns'
-import { Alert, Button, PageHeader, Skeleton } from '@shinju-date/ui'
-import { ExternalLink } from 'lucide-react'
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import { type ReactNode, Suspense } from 'react'
-import { BackLink } from '@/components/back-link'
+import { formatNumber } from "@shinju-date/helpers";
+import { formatDuration } from "@shinju-date/temporal-fns";
+import { Alert, Button, PageHeader, Skeleton } from "@shinju-date/ui";
+import { ExternalLink } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { type ReactNode, Suspense } from "react";
+
+import { BackLink } from "@/components/back-link";
 import {
   ExternalVideoLink,
   getExternalVideoUrl,
-} from '@/components/external-video-link'
+} from "@/components/external-video-link";
 import {
   DetailList,
   DetailListSkeleton,
   DetailRow,
   Panel,
   PanelSkeleton,
-} from '@/components/panel'
-import { PlatformBadge } from '@/components/platform-badge'
-import { VideoStatusBadge } from '@/components/video-status-badge'
-import { VideoThumbnail } from '@/components/video-thumbnail'
-import { formatDateTimeFromISO } from '@/lib/format'
-import { VideoKindBadge } from '../_components/video-kind-badge'
-import getVideo from '../_lib/get-video'
+} from "@/components/panel";
+import { PlatformBadge } from "@/components/platform-badge";
+import { VideoStatusBadge } from "@/components/video-status-badge";
+import { VideoThumbnail } from "@/components/video-thumbnail";
+import { formatDateTimeFromISO } from "@/lib/format";
+
+import { VideoKindBadge } from "../_components/video-kind-badge";
+import getVideo from "../_lib/get-video";
 import {
   VideoActionsButtons,
   VideoActionsProvider,
   VideoDeleteButton,
-} from './_components/video-actions-buttons'
+} from "./_components/video-actions-buttons";
 
 interface DetailItem {
-  label: string
-  value: ReactNode
+  label: string;
+  value: ReactNode;
 }
 
 export async function generateMetadata({
   params,
-}: Pick<PageProps<'/videos/[id]'>, 'params'>): Promise<Metadata> {
-  const { id } = await params
+}: Pick<PageProps<"/videos/[id]">, "params">): Promise<Metadata> {
+  const { id } = await params;
 
-  const video = await getVideo(id)
+  const video = await getVideo(id);
 
   if (!video) {
     return {
-      title: '動画が見つかりません',
-    }
+      title: "動画が見つかりません",
+    };
   }
 
   return {
     title: `${video.title} - 動画詳細`,
-  }
+  };
 }
 
 async function VideoDetails({
   params,
-}: Pick<PageProps<'/videos/[id]'>, 'params'>) {
-  const { id } = await params
+}: Pick<PageProps<"/videos/[id]">, "params">) {
+  const { id } = await params;
 
-  const video = await getVideo(id)
+  const video = await getVideo(id);
 
   if (!video) {
-    notFound()
+    notFound();
   }
 
-  const isDeleted = video.deleted_at !== null
-  const hasExternalUrl = getExternalVideoUrl(video) !== null
+  const isDeleted = video.deleted_at !== null;
+  const hasExternalUrl = getExternalVideoUrl(video) !== null;
 
   const details: DetailItem[] = [
-    { label: 'タイトル', value: video.title },
+    { label: "タイトル", value: video.title },
     {
-      label: 'プラットフォーム',
+      label: "プラットフォーム",
       value: <PlatformBadge platform={video.platform} />,
     },
     {
-      label: video.platform === 'twitch' ? 'Twitch動画ID' : 'YouTube動画ID',
+      label: video.platform === "twitch" ? "Twitch動画ID" : "YouTube動画ID",
       value: (
         <code className="rounded-control bg-muted px-2 py-1 font-mono text-caption">
-          {video.platform === 'twitch'
-            ? (video.twitch_video?.twitch_video_id ?? 'N/A')
-            : (video.youtube_video?.youtube_video_id ?? 'N/A')}
+          {video.platform === "twitch"
+            ? (video.twitch_video?.twitch_video_id ?? "N/A")
+            : (video.youtube_video?.youtube_video_id ?? "N/A")}
         </code>
       ),
     },
-    ...(video.platform === 'twitch' && video.twitch_video?.type
-      ? [{ label: 'Twitch種別', value: video.twitch_video.type }]
+    ...(video.platform === "twitch" && video.twitch_video?.type
+      ? [{ label: "Twitch種別", value: video.twitch_video.type }]
       : []),
     {
-      label: 'タレント',
+      label: "タレント",
       value: video.talent ? (
         <Link
           className="text-accent hover:underline"
@@ -100,7 +102,7 @@ async function VideoDetails({
       ),
     },
     {
-      label: '再生時間',
+      label: "再生時間",
       value: (
         <span className="tabular-nums">
           {formatDuration(Temporal.Duration.from(video.duration))}
@@ -108,15 +110,15 @@ async function VideoDetails({
       ),
     },
     {
-      label: '動画種別',
+      label: "動画種別",
       value: <VideoKindBadge videoKind={video.video_kind} />,
     },
     {
-      label: 'クリック数（7日間）',
+      label: "クリック数（7日間）",
       value: <span className="tabular-nums">{formatNumber(video.clicks)}</span>,
     },
     {
-      label: '公開日時',
+      label: "公開日時",
       value: (
         <time className="tabular-nums" dateTime={video.published_at}>
           {formatDateTimeFromISO(video.published_at)}
@@ -124,7 +126,7 @@ async function VideoDetails({
       ),
     },
     {
-      label: '作成日時',
+      label: "作成日時",
       value: (
         <time className="tabular-nums" dateTime={video.created_at}>
           {formatDateTimeFromISO(video.created_at)}
@@ -132,7 +134,7 @@ async function VideoDetails({
       ),
     },
     {
-      label: '最終更新日時',
+      label: "最終更新日時",
       value: (
         <time className="tabular-nums" dateTime={video.updated_at}>
           {formatDateTimeFromISO(video.updated_at)}
@@ -142,7 +144,7 @@ async function VideoDetails({
     ...(video.deleted_at
       ? [
           {
-            label: '削除日時',
+            label: "削除日時",
             value: (
               <time className="tabular-nums" dateTime={video.deleted_at}>
                 {formatDateTimeFromISO(video.deleted_at)}
@@ -151,7 +153,7 @@ async function VideoDetails({
           },
         ]
       : []),
-  ]
+  ];
 
   return (
     <VideoActionsProvider video={video}>
@@ -206,16 +208,16 @@ async function VideoDetails({
         <Panel
           className="mt-6"
           description={
-            video.platform === 'twitch'
-              ? 'Twitch上のオリジナル動画へのリンク'
-              : 'YouTube上のオリジナル動画へのリンク'
+            video.platform === "twitch"
+              ? "Twitch上のオリジナル動画へのリンク"
+              : "YouTube上のオリジナル動画へのリンク"
           }
           title="外部リンク"
         >
           {hasExternalUrl && (
             <Button asChild className="gap-2" variant="secondary">
               <ExternalVideoLink video={video}>
-                {video.platform === 'twitch' ? 'Twitchで見る' : 'YouTubeで見る'}
+                {video.platform === "twitch" ? "Twitchで見る" : "YouTubeで見る"}
                 <ExternalLink aria-hidden="true" className="size-4" />
               </ExternalVideoLink>
             </Button>
@@ -237,7 +239,7 @@ async function VideoDetails({
         )}
       </div>
     </VideoActionsProvider>
-  )
+  );
 }
 
 /**
@@ -288,10 +290,10 @@ function VideoDetailsSkeleton() {
 
       <Skeleton className="mt-6 h-24 w-full rounded-container" />
     </div>
-  )
+  );
 }
 
-export default function VideoDetailPage({ params }: PageProps<'/videos/[id]'>) {
+export default function VideoDetailPage({ params }: PageProps<"/videos/[id]">) {
   return (
     <div>
       <div className="mb-4">
@@ -302,5 +304,5 @@ export default function VideoDetailPage({ params }: PageProps<'/videos/[id]'>) {
         <VideoDetails params={params} />
       </Suspense>
     </div>
-  )
+  );
 }

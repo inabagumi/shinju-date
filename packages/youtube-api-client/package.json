@@ -1,38 +1,38 @@
 {
-  "author": "Haneru Developers",
-  "dependencies": {
-    "@googleapis/youtube": "catalog:",
-    "@shinju-date/database": "workspace:*",
-    "@shinju-date/helpers": "workspace:*"
-  },
+  "name": "@shinju-date/youtube-api-client",
+  "version": "1.0.0",
+  "private": true,
   "description": "YouTube API client package for SHINJU DATE",
-  "devDependencies": {
-    "@shinju-date/config": "workspace:*",
-    "@types/node": "catalog:",
-    "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "author": "Haneru Developers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git",
+    "directory": "packages/youtube-api-client"
   },
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "homepage": "https://shinju.date/",
-  "license": "MIT",
-  "name": "@shinju-date/youtube-api-client",
-  "private": true,
-  "repository": {
-    "directory": "packages/youtube-api-client",
-    "type": "git",
-    "url": "https://github.com/inabagumi/shinju-date.git"
-  },
   "scripts": {
     "build": "tsdown",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "type": "module",
-  "version": "1.0.0"
+  "dependencies": {
+    "@googleapis/youtube": "catalog:",
+    "@shinju-date/database": "workspace:*",
+    "@shinju-date/helpers": "workspace:*"
+  },
+  "devDependencies": {
+    "@shinju-date/config": "workspace:*",
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
 }

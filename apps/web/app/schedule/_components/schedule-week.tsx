@@ -1,13 +1,14 @@
-import { twMerge } from '@shinju-date/ui'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import type { CSSProperties } from 'react'
+import { twMerge } from "@shinju-date/ui";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { CSSProperties } from "react";
+
 import {
   NavigationLink,
   NavigationLinkIcon,
-} from '@/components/navigation-link'
-import { fetchScheduleVideos, type ScheduleVideo } from '@/lib/data/schedule'
-import { formatWeekday } from '@/lib/date-heading'
-import { groupVideosByDate } from '@/lib/group-videos-by-date'
+} from "@/components/navigation-link";
+import { fetchScheduleVideos, type ScheduleVideo } from "@/lib/data/schedule";
+import { formatWeekday } from "@/lib/date-heading";
+import { groupVideosByDate } from "@/lib/group-videos-by-date";
 import {
   formatWeekRange,
   getSchedulePath,
@@ -15,37 +16,38 @@ import {
   isWeekInRange,
   layoutDay,
   type ScheduleLayout,
-} from '@/lib/schedule'
-import { HOUR_HEIGHT_REM } from '../_lib/layout'
+} from "@/lib/schedule";
+
+import { HOUR_HEIGHT_REM } from "../_lib/layout";
 import {
   resolveScheduleWeek,
   type SchedulePageParams,
-} from '../_lib/resolve-schedule-week'
-import ScheduleDayHeader from './schedule-day-header'
+} from "../_lib/resolve-schedule-week";
+import ScheduleDayHeader from "./schedule-day-header";
 import ScheduleItem, {
   getTitleLines,
   ScheduleItemSkeleton,
-} from './schedule-item'
+} from "./schedule-item";
 
 export interface ScheduleWeekSectionProps {
   /** `/schedule` では渡さず、今日を含む週を表示する */
-  params?: SchedulePageParams | undefined
+  params?: SchedulePageParams | undefined;
 }
 
 function getDayId(date: Temporal.PlainDate): string {
-  return `day-${date.toString()}`
+  return `day-${date.toString()}`;
 }
 
 /** 週の範囲と、前の週・今週・次の週へのリンク */
 const WEEK_NAVIGATION_CLASS_NAME =
-  'mb-6 flex min-h-[1lh] flex-wrap items-center justify-between gap-x-6 gap-y-3 text-heading'
+  "mb-6 flex min-h-[1lh] flex-wrap items-center justify-between gap-x-6 gap-y-3 text-heading";
 
 export async function ScheduleWeekNavigation({
   params,
 }: ScheduleWeekSectionProps) {
-  const { range, weekStart } = await resolveScheduleWeek(params)
-  const previousWeek = weekStart.subtract({ weeks: 1 })
-  const nextWeek = weekStart.add({ weeks: 1 })
+  const { range, weekStart } = await resolveScheduleWeek(params);
+  const previousWeek = weekStart.subtract({ weeks: 1 });
+  const nextWeek = weekStart.add({ weeks: 1 });
 
   return (
     <div className={WEEK_NAVIGATION_CLASS_NAME}>
@@ -84,7 +86,7 @@ export async function ScheduleWeekNavigation({
         </ul>
       </nav>
     </div>
-  )
+  );
 }
 
 export function ScheduleWeekNavigationSkeleton() {
@@ -93,10 +95,10 @@ export function ScheduleWeekNavigationSkeleton() {
       <span className="inline-block h-[1lh] w-80 max-w-full animate-pulse rounded-control bg-muted" />
       <span className="inline-block h-4 w-40 animate-pulse rounded-control bg-muted" />
     </div>
-  )
+  );
 }
 
-const WEEKDAY_BAND_CLASS_NAME = 'mb-6 grid grid-cols-7 gap-1 lg:hidden'
+const WEEKDAY_BAND_CLASS_NAME = "mb-6 grid grid-cols-7 gap-1 lg:hidden";
 
 /**
  * 1024px 未満で、日付ごとのセクションへ飛ぶページ内リンク（「月 9」「火 10」…）。
@@ -104,7 +106,7 @@ const WEEKDAY_BAND_CLASS_NAME = 'mb-6 grid grid-cols-7 gap-1 lg:hidden'
 export async function ScheduleWeekdayBand({
   params,
 }: ScheduleWeekSectionProps) {
-  const { weekStart } = await resolveScheduleWeek(params)
+  const { weekStart } = await resolveScheduleWeek(params);
 
   return (
     <nav aria-label="曜日">
@@ -124,7 +126,7 @@ export async function ScheduleWeekdayBand({
         ))}
       </ul>
     </nav>
-  )
+  );
 }
 
 export function ScheduleWeekdayBandSkeleton() {
@@ -138,14 +140,14 @@ export function ScheduleWeekdayBandSkeleton() {
         />
       ))}
     </div>
-  )
+  );
 }
 
 /**
  * 1時間の高さ（`--hour`）。タイトルの行数の計算（`getTitleLines`）と同じ
  * `HOUR_HEIGHT_REM` から渡す
  */
-const DAYS_STYLE = { '--hour': `${HOUR_HEIGHT_REM}rem` } as CSSProperties
+const DAYS_STYLE = { "--hour": `${HOUR_HEIGHT_REM}rem` } as CSSProperties;
 
 /**
  * 1024px 以上では、時刻の列と7日の列を並べ、各列は CSS の subgrid で見出しの
@@ -154,27 +156,27 @@ const DAYS_STYLE = { '--hour': `${HOUR_HEIGHT_REM}rem` } as CSSProperties
  * セクションを縦に積み、項目を開始時刻の順に並べる。
  */
 const DAYS_CLASS_NAME =
-  'space-y-8 lg:grid lg:grid-cols-[auto_repeat(7,minmax(0,1fr))] lg:grid-rows-[auto_auto] lg:gap-x-2 lg:space-y-0'
+  "space-y-8 lg:grid lg:grid-cols-[auto_repeat(7,minmax(0,1fr))] lg:grid-rows-[auto_auto] lg:gap-x-2 lg:space-y-0";
 // `grid-cols-1` は `minmax(0, 1fr)` の1列。列幅を指定しないと、長いチャンネル名
 // やタイトルに合わせて列が広がり、隣の日にはみ出す
 const COLUMN_CLASS_NAME =
-  'lg:row-span-2 lg:grid lg:grid-cols-1 lg:grid-rows-subgrid'
+  "lg:row-span-2 lg:grid lg:grid-cols-1 lg:grid-rows-subgrid";
 /** 24時間の本体。1時間ごとに区切りの線を引く */
 const BODY_CLASS_NAME =
-  'lg:relative lg:h-[calc(var(--hour)*24)] lg:bg-[repeating-linear-gradient(to_bottom,var(--color-border)_0,var(--color-border)_1px,transparent_1px,transparent_var(--hour))]'
+  "lg:relative lg:h-[calc(var(--hour)*24)] lg:bg-[repeating-linear-gradient(to_bottom,var(--color-border)_0,var(--color-border)_1px,transparent_1px,transparent_var(--hour))]";
 
 /** 0時から23時までの24時間 */
-const HOURS = Array.from({ length: 24 }, (_, hour) => hour)
+const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
 function formatHour(hour: number): string {
-  return `${hour.toString(10).padStart(2, '0')}:00`
+  return `${hour.toString(10).padStart(2, "0")}:00`;
 }
 
 /** 日の列の間の余白（`gap-x-2`） */
-const DAY_GAP = '0.5rem'
+const DAY_GAP = "0.5rem";
 
 /** 広げたときの最低の幅 */
-const EXPANDED_MIN_WIDTH = '14rem'
+const EXPANDED_MIN_WIDTH = "14rem";
 
 /**
  * 項目を置く位置。`layoutDay` の結果を CSS 変数で渡し、1024px 以上だけ
@@ -186,19 +188,19 @@ const EXPANDED_MIN_WIDTH = '14rem'
  */
 function getPlacementStyle(
   { column, columns, length, start }: ScheduleLayout<ScheduleVideo>,
-  daysAfter: number,
+  daysAfter: number
 ): CSSProperties {
-  const left = `(100% * ${column} / ${columns})`
-  const toDayEnd = `(100% - ${left})`
-  const toWeekEnd = `(${toDayEnd} + ${daysAfter} * (100% + ${DAY_GAP}))`
+  const left = `(100% * ${column} / ${columns})`;
+  const toDayEnd = `(100% - ${left})`;
+  const toWeekEnd = `(${toDayEnd} + ${daysAfter} * (100% + ${DAY_GAP}))`;
 
   return {
-    '--column': column,
-    '--columns': columns,
-    '--expanded-width': `min(max(calc${toDayEnd}, ${EXPANDED_MIN_WIDTH}), calc${toWeekEnd})`,
-    '--length': length,
-    '--start': start,
-  } as CSSProperties
+    "--column": column,
+    "--columns": columns,
+    "--expanded-width": `min(max(calc${toDayEnd}, ${EXPANDED_MIN_WIDTH}), calc${toWeekEnd})`,
+    "--length": length,
+    "--start": start,
+  } as CSSProperties;
 }
 
 /**
@@ -207,22 +209,22 @@ function getPlacementStyle(
  * しない）。項目は縦の flex で、この要素の高さいっぱいに広がる
  */
 const PLACEMENT_CLASS_NAME =
-  'group/item lg:absolute lg:top-[calc(var(--hour)*var(--start)/60)] lg:left-[calc(100%*var(--column)/var(--columns))] lg:flex lg:h-[calc(var(--hour)*var(--length)/60)] lg:w-[calc(100%/var(--columns))] lg:flex-col lg:pr-0.5 lg:pb-0.5 lg:focus-within:z-30 lg:focus-within:h-auto lg:focus-within:min-h-[calc(var(--hour)*var(--length)/60)] lg:focus-within:w-(--expanded-width) lg:hover:z-30 lg:hover:h-auto lg:hover:min-h-[calc(var(--hour)*var(--length)/60)] lg:hover:w-(--expanded-width)'
+  "group/item lg:absolute lg:top-[calc(var(--hour)*var(--start)/60)] lg:left-[calc(100%*var(--column)/var(--columns))] lg:flex lg:h-[calc(var(--hour)*var(--length)/60)] lg:w-[calc(100%/var(--columns))] lg:flex-col lg:pr-0.5 lg:pb-0.5 lg:focus-within:z-30 lg:focus-within:h-auto lg:focus-within:min-h-[calc(var(--hour)*var(--length)/60)] lg:focus-within:w-(--expanded-width) lg:hover:z-30 lg:hover:h-auto lg:hover:min-h-[calc(var(--hour)*var(--length)/60)] lg:hover:w-(--expanded-width)";
 
 interface ScheduleDayProps {
-  date: Temporal.PlainDate
-  items: ScheduleVideo[]
-  referenceDate: string
+  date: Temporal.PlainDate;
+  items: ScheduleVideo[];
+  referenceDate: string;
 }
 
 function ScheduleDay({ date, items, referenceDate }: ScheduleDayProps) {
-  const id = getDayId(date)
-  const headingId = `${id}-heading`
+  const id = getDayId(date);
+  const headingId = `${id}-heading`;
 
   return (
     <section
       aria-labelledby={headingId}
-      className={twMerge(COLUMN_CLASS_NAME, 'min-w-0 scroll-mt-20')}
+      className={twMerge(COLUMN_CLASS_NAME, "min-w-0 scroll-mt-20")}
       data-testid="schedule-day"
       id={id}
     >
@@ -258,7 +260,7 @@ function ScheduleDay({ date, items, referenceDate }: ScheduleDayProps) {
         )}
       </div>
     </section>
-  )
+  );
 }
 
 /**
@@ -266,10 +268,10 @@ function ScheduleDay({ date, items, referenceDate }: ScheduleDayProps) {
  * ない日も日付は出す。
  */
 export async function ScheduleDays({ params }: ScheduleWeekSectionProps) {
-  const { today, weekStart } = await resolveScheduleWeek(params)
+  const { today, weekStart } = await resolveScheduleWeek(params);
   // リンク先が作れない動画は、`fetchScheduleVideos` が除くので件数にも入らない
-  const videos = await fetchScheduleVideos(weekStart.toString())
-  const groups = groupVideosByDate(videos)
+  const videos = await fetchScheduleVideos(weekStart.toString());
+  const groups = groupVideosByDate(videos);
 
   return (
     <div className={DAYS_CLASS_NAME} style={DAYS_STYLE}>
@@ -284,7 +286,7 @@ export async function ScheduleDays({ params }: ScheduleWeekSectionProps) {
         />
       ))}
     </div>
-  )
+  );
 }
 
 /** 時刻の列。各項目にも開始時刻があるので、読み上げない */
@@ -293,11 +295,11 @@ function TimeColumn() {
     // ラベルは絶対配置で列の幅にならないので、幅を決めておく
     <div
       aria-hidden="true"
-      className={twMerge(COLUMN_CLASS_NAME, 'hidden lg:w-12')}
+      className={twMerge(COLUMN_CLASS_NAME, "hidden lg:w-12")}
     >
       {/* 日付の見出しと一緒に固定し、下を流れる時刻を隠す */}
       <span className="sticky top-14 z-40 bg-background" />
-      <div className={twMerge(BODY_CLASS_NAME, 'lg:bg-none')}>
+      <div className={twMerge(BODY_CLASS_NAME, "lg:bg-none")}>
         {HOURS.map((hour) => (
           <span
             className="absolute right-1 -translate-y-1/2 text-caption text-muted tabular-nums first:translate-y-0"
@@ -309,7 +311,7 @@ function TimeColumn() {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 export function ScheduleDaysSkeleton() {
@@ -319,16 +321,16 @@ export function ScheduleDaysSkeleton() {
 
       {Array.from({ length: 7 }, (_, index) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: 件数が決まっていて並びも変わらないスケルトンなので、インデックスをキーにする
-        <div className={twMerge(COLUMN_CLASS_NAME, 'min-w-0')} key={index}>
+        <div className={twMerge(COLUMN_CLASS_NAME, "min-w-0")} key={index}>
           <div className="border-b border-border pb-1">
             <span className="inline-block h-[1lh] w-20 animate-pulse rounded-control bg-muted text-body" />
           </div>
-          <div className={twMerge(BODY_CLASS_NAME, 'mt-2 space-y-2 lg:mt-0')}>
+          <div className={twMerge(BODY_CLASS_NAME, "mt-2 space-y-2 lg:mt-0")}>
             <ScheduleItemSkeleton />
             <ScheduleItemSkeleton />
           </div>
         </div>
       ))}
     </div>
-  )
+  );
 }

@@ -1,37 +1,39 @@
-import { PageHeader } from '@shinju-date/ui'
-import type { Metadata } from 'next'
-import { Suspense } from 'react'
-import { Panel } from '@/components/panel'
+import { PageHeader } from "@shinju-date/ui";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+
+import { Panel } from "@/components/panel";
+
 import {
   DateRangePickerClient,
   DateRangePickerSkeleton,
-} from '../_components/date-range-picker-client'
-import { RankingWidgetSkeleton } from '../_components/ranking-widget'
-import { VolumeChart, VolumeChartSkeleton } from '../_components/volume-chart'
-import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
-import { PopularKeywordsWidget } from './_components/popular-keywords-widget'
-import { RateWidgetSkeleton } from './_components/rate-widget-skeleton'
-import { RepeatSearchRateWidget } from './_components/repeat-search-rate-widget'
-import { SearchEngagementRateWidget } from './_components/search-engagement-rate-widget'
+} from "../_components/date-range-picker-client";
+import { RankingWidgetSkeleton } from "../_components/ranking-widget";
+import { VolumeChart, VolumeChartSkeleton } from "../_components/volume-chart";
+import { analyticsSearchParamsSchema } from "../_lib/search-params-schema";
+import { PopularKeywordsWidget } from "./_components/popular-keywords-widget";
+import { RateWidgetSkeleton } from "./_components/rate-widget-skeleton";
+import { RepeatSearchRateWidget } from "./_components/repeat-search-rate-widget";
+import { SearchEngagementRateWidget } from "./_components/search-engagement-rate-widget";
 import {
   SearchExitRateWidget,
   SearchExitRateWidgetSkeleton,
-} from './_components/search-exit-rate-widget'
+} from "./_components/search-exit-rate-widget";
 import {
   ZeroResultKeywordsWidget,
   ZeroResultKeywordsWidgetSkeleton,
-} from './_components/zero-result-keywords-widget'
+} from "./_components/zero-result-keywords-widget";
 
 export const metadata: Metadata = {
-  title: '検索アナリティクス',
-}
+  title: "検索アナリティクス",
+};
 
 export default function SearchAnalyticsPage({
   searchParams,
-}: PageProps<'/analytics/search'>) {
+}: PageProps<"/analytics/search">) {
   const parsedSearchParams = searchParams.then((params) =>
-    analyticsSearchParamsSchema.parse(params),
-  )
+    analyticsSearchParamsSchema.parse(params)
+  );
 
   return (
     <div>
@@ -96,5 +98,5 @@ export default function SearchAnalyticsPage({
         </div>
       </section>
     </div>
-  )
+  );
 }

@@ -1,26 +1,27 @@
-import Link from 'next/link'
-import type { ReactNode } from 'react'
-import { ExportLink, type ExportType } from './export-link'
-import { RankingTable, RankingTableSkeleton } from './ranking-table'
-import { WidgetHeader, WidgetHeaderSkeleton } from './widget-header'
+import Link from "next/link";
+import type { ReactNode } from "react";
+
+import { ExportLink, type ExportType } from "./export-link";
+import { RankingTable, RankingTableSkeleton } from "./ranking-table";
+import { WidgetHeader, WidgetHeaderSkeleton } from "./widget-header";
 
 interface RankingWidgetProps<T> {
-  dateRange: { startDate: string; endDate: string }
-  description: ReactNode
+  dateRange: { startDate: string; endDate: string };
+  description: ReactNode;
   /** CSV のエクスポートの種類 */
-  exportType: ExportType
+  exportType: ExportType;
   /** 行の名前のリンク先。省略すると、名前をリンクにしない */
-  getHref?: (row: T) => string
-  getKey: (row: T) => string
-  getLabel: (row: T) => ReactNode
-  getValue: (row: T) => number
+  getHref?: (row: T) => string;
+  getKey: (row: T) => string;
+  getLabel: (row: T) => ReactNode;
+  getValue: (row: T) => number;
   /** 名前の列の見出し（「キーワード」「動画」など） */
-  labelHeading: string
-  rows: T[]
-  selectedDate: string | null
-  title: ReactNode
+  labelHeading: string;
+  rows: T[];
+  selectedDate: string | null;
+  title: ReactNode;
   /** 回数の列の見出し */
-  valueHeading: string
+  valueHeading: string;
 }
 
 /**
@@ -58,7 +59,7 @@ export function RankingWidget<T>({
       />
       <RankingTable
         items={rows.map((row) => {
-          const label = getLabel(row)
+          const label = getLabel(row);
 
           return {
             key: getKey(row),
@@ -70,18 +71,18 @@ export function RankingWidget<T>({
               label
             ),
             value: getValue(row),
-          }
+          };
         })}
         labelHeading={labelHeading}
         valueHeading={valueHeading}
       />
     </div>
-  )
+  );
 }
 
 interface RankingWidgetSkeletonProps {
   /** 見出し。読み込み後と同じ文言を渡す */
-  title: ReactNode
+  title: ReactNode;
 }
 
 /** 読み込み中の `RankingWidget`。見出しとエクスポートのボタン、ランキングの表を並べる */
@@ -91,5 +92,5 @@ export function RankingWidgetSkeleton({ title }: RankingWidgetSkeletonProps) {
       <WidgetHeaderSkeleton actions title={title} />
       <RankingTableSkeleton />
     </div>
-  )
+  );
 }

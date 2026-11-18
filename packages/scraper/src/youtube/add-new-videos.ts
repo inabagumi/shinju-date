@@ -1,15 +1,15 @@
-import { countChanges } from '../internal/concurrency.js'
-import { WRITE_CONCURRENCY } from '../internal/constants.js'
+import { countChanges } from "../internal/concurrency.js";
+import { WRITE_CONCURRENCY } from "../internal/constants.js";
 import {
   findSavedYouTubeVideoIds,
   getActiveAccounts,
   type TalentAccount,
   YOUTUBE_CHANNELS,
-} from '../internal/database/index.js'
-import { saveVideoWithThumbnail } from '../internal/operations/save-video.js'
-import type { CrawlContext } from '../types.js'
-import type { YouTubeFetcher } from './fetcher.js'
-import { YOUTUBE_NEW_VIDEOS } from './platform.js'
+} from "../internal/database/index.js";
+import { saveVideoWithThumbnail } from "../internal/operations/save-video.js";
+import type { CrawlContext } from "../types.js";
+import type { YouTubeFetcher } from "./fetcher.js";
+import { YOUTUBE_NEW_VIDEOS } from "./platform.js";
 
 /**
  * Adds videos that appeared on the channels of active talents.
@@ -22,43 +22,43 @@ import { YOUTUBE_NEW_VIDEOS } from './platform.js'
  * @returns The number of videos added.
  */
 export async function addNewYouTubeVideos(
-  context: CrawlContext<YouTubeFetcher>,
+  context: CrawlContext<YouTubeFetcher>
 ): Promise<number> {
-  const { fetcher, logger, reportError, supabaseClient } = context
-  const channels = await getActiveAccounts(supabaseClient, YOUTUBE_CHANNELS)
+  const { fetcher, logger, reportError, supabaseClient } = context;
+  const channels = await getActiveAccounts(supabaseClient, YOUTUBE_CHANNELS);
 
   if (channels.length === 0) {
-    return 0
+    return 0;
   }
 
   const { failures, missingAccountIds, videos } = await fetcher.getRecentVideos(
-    channels.map((channel) => channel.platformId),
-  )
+    channels.map((channel) => channel.platformId)
+  );
 
   for (const { accountId, error } of failures) {
-    reportError(error, { youtubeChannelId: accountId })
+    reportError(error, { youtubeChannelId: accountId });
   }
 
   if (missingAccountIds.length > 0) {
-    logger.warn('YouTubeでチャンネルが見つかりませんでした', {
-      channelIds: missingAccountIds.join(','),
-    })
+    logger.warn("YouTubeでチャンネルが見つかりませんでした", {
+      channelIds: missingAccountIds.join(","),
+    });
   }
 
   const channelById = new Map(
-    channels.map((channel) => [channel.platformId, channel]),
-  )
-  const channelByVideoId = new Map<string, TalentAccount>()
+    channels.map((channel) => [channel.platformId, channel])
+  );
+  const channelByVideoId = new Map<string, TalentAccount>();
 
   for (const { channelId, videoId } of videos) {
-    const channel = channelById.get(channelId)
+    const channel = channelById.get(channelId);
 
     if (channel) {
-      channelByVideoId.set(videoId, channel)
+      channelByVideoId.set(videoId, channel);
     }
   }
 
-  return saveNewYouTubeVideos(context, channelByVideoId)
+  return saveNewYouTubeVideos(context, channelByVideoId);
 }
 
 /**
@@ -74,29 +74,29 @@ export async function addNewYouTubeVideos(
 export async function saveNewYouTubeVideos(
   context: CrawlContext<YouTubeFetcher>,
   channelByVideoId: ReadonlyMap<string, TalentAccount>,
-  concurrency = WRITE_CONCURRENCY,
+  concurrency = WRITE_CONCURRENCY
 ): Promise<number> {
-  const { fetcher, logger, reportError, supabaseClient } = context
-  const listedIds = [...channelByVideoId.keys()]
+  const { fetcher, logger, reportError, supabaseClient } = context;
+  const listedIds = [...channelByVideoId.keys()];
 
   if (listedIds.length === 0) {
-    return 0
+    return 0;
   }
 
-  const savedIds = await findSavedYouTubeVideoIds(supabaseClient, listedIds)
-  const newIds = listedIds.filter((id) => !savedIds.has(id))
+  const savedIds = await findSavedYouTubeVideoIds(supabaseClient, listedIds);
+  const newIds = listedIds.filter((id) => !savedIds.has(id));
 
   if (newIds.length === 0) {
-    return 0
+    return 0;
   }
 
-  const { videos } = await fetcher.getVideos(newIds)
+  const { videos } = await fetcher.getVideos(newIds);
 
   return countChanges(
     videos,
     concurrency,
     async (video) => {
-      const channel = channelByVideoId.get(video.id)
+      const channel = channelByVideoId.get(video.id);
 
       if (
         !channel ||
@@ -104,21 +104,21 @@ export async function saveNewYouTubeVideos(
           context,
           YOUTUBE_NEW_VIDEOS,
           video,
-          channel,
+          channel
         ))
       ) {
-        return false
+        return false;
       }
 
-      logger.info('動画を追加しました', {
-        duration: video.contentDetails.duration ?? 'P0D',
-        platform: 'youtube',
-        title: video.snippet.title ?? '',
+      logger.info("動画を追加しました", {
+        duration: video.contentDetails.duration ?? "P0D",
+        platform: "youtube",
+        title: video.snippet.title ?? "",
         youtubeVideoId: video.id,
-      })
+      });
 
-      return true
+      return true;
     },
-    (error, video) => reportError(error, { youtubeVideoId: video.id }),
-  )
+    (error, video) => reportError(error, { youtubeVideoId: video.id })
+  );
 }

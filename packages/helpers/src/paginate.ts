@@ -2,12 +2,12 @@
  * One page of a paginated API, as {@link paginate} reads it.
  */
 export interface Page<T> {
-  items: readonly T[]
+  items: readonly T[];
   /**
    * Position of the next page (a page token or a cursor), or `null` /
    * `undefined` when this was the last page.
    */
-  next: string | null | undefined
+  next: string | null | undefined;
 }
 
 /**
@@ -24,15 +24,15 @@ export interface Page<T> {
  *   page, then with the `next` of the previous page.
  */
 export async function* paginate<T>(
-  fetchPage: (cursor: string | undefined) => Promise<Page<T>>,
+  fetchPage: (cursor: string | undefined) => Promise<Page<T>>
 ): AsyncGenerator<T, void, undefined> {
-  let cursor: string | undefined
+  let cursor: string | undefined;
 
   do {
-    const { items, next } = await fetchPage(cursor)
+    const { items, next } = await fetchPage(cursor);
 
-    yield* items
+    yield* items;
 
-    cursor = next ?? undefined
-  } while (cursor)
+    cursor = next ?? undefined;
+  } while (cursor);
 }

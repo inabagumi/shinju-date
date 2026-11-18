@@ -5,17 +5,17 @@
  */
 export function listDatesInRange(
   start: Temporal.PlainDate,
-  end: Temporal.PlainDate,
+  end: Temporal.PlainDate
 ): Temporal.PlainDate[] {
-  const dates: Temporal.PlainDate[] = []
+  const dates: Temporal.PlainDate[] = [];
 
   for (
     let date = start;
     Temporal.PlainDate.compare(date, end) <= 0;
     date = date.add({ days: 1 })
   ) {
-    dates.push(date)
+    dates.push(date);
   }
 
-  return dates
+  return dates;
 }

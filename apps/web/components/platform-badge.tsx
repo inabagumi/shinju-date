@@ -1,14 +1,14 @@
-import type { Tables } from '@shinju-date/database'
-import { twMerge } from '@shinju-date/ui'
+import type { Tables } from "@shinju-date/database";
+import { twMerge } from "@shinju-date/ui";
 
-const PLATFORM_LABELS: Record<Tables<'videos'>['platform'], string> = {
-  twitch: 'Twitch',
-  youtube: 'YouTube',
-}
+const PLATFORM_LABELS: Record<Tables<"videos">["platform"], string> = {
+  twitch: "Twitch",
+  youtube: "YouTube",
+};
 
 interface PlatformBadgeProps {
-  className?: string
-  platform: Tables<'videos'>['platform']
+  className?: string;
+  platform: Tables<"videos">["platform"];
 }
 
 /**
@@ -19,18 +19,18 @@ export default function PlatformBadge({
   className,
   platform,
 }: PlatformBadgeProps) {
-  if (platform === 'youtube') {
-    return null
+  if (platform === "youtube") {
+    return null;
   }
 
   return (
     <span
       className={twMerge(
-        'inline-flex items-center rounded-control bg-twitch px-1.5 py-0.5 text-caption font-semibold text-twitch-foreground',
-        className,
+        "inline-flex items-center rounded-control bg-twitch px-1.5 py-0.5 text-caption font-semibold text-twitch-foreground",
+        className
       )}
     >
       {PLATFORM_LABELS[platform]}
     </span>
-  )
+  );
 }

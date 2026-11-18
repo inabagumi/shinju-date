@@ -6,13 +6,14 @@ import {
   getVideosByUser,
   getVideosByUserPage,
   TWITCH_API_MAX_RESULTS,
-} from '@shinju-date/twitch-api-client'
-import { unique } from '../internal/batch.js'
-import { DEFAULT_RECENT_VIDEOS_LIMIT, Fetcher } from '../internal/fetcher.js'
+} from "@shinju-date/twitch-api-client";
+
+import { unique } from "../internal/batch.js";
 import type {
   RecentVideosResult,
   VideoLookupResult,
-} from '../internal/fetcher-types.js'
+} from "../internal/fetcher-types.js";
+import { DEFAULT_RECENT_VIDEOS_LIMIT, Fetcher } from "../internal/fetcher.js";
 import type {
   ClipLookupResult,
   TwitchApi,
@@ -23,7 +24,7 @@ import type {
   TwitchVideo,
   TwitchVideoFilter,
   TwitchVideoPage,
-} from './types.js'
+} from "./types.js";
 
 const defaultClient: TwitchApi = {
   getClips,
@@ -32,7 +33,7 @@ const defaultClient: TwitchApi = {
   getVideos,
   getVideosByUser,
   getVideosByUserPage,
-}
+};
 
 /**
  * Reads users, videos, clips and live streams from the Twitch Helix API.
@@ -48,14 +49,14 @@ export class TwitchFetcher extends Fetcher<
   TwitchVideo,
   TwitchRecentVideosOptions
 > {
-  readonly provider = 'twitch'
+  readonly provider = "twitch";
 
-  readonly #client: TwitchApi
+  readonly #client: TwitchApi;
 
   constructor({ client, ...options }: TwitchFetcherOptions = {}) {
-    super(options)
+    super(options);
 
-    this.#client = client ?? defaultClient
+    this.#client = client ?? defaultClient;
   }
 
   /**
@@ -63,10 +64,10 @@ export class TwitchFetcher extends Fetcher<
    */
   async getAccounts(accountIds: readonly string[]): Promise<TwitchUser[]> {
     const { found } = await this.fetchByIds(accountIds, (ids) =>
-      this.#client.getUsers({ ids, schedule: this.request }),
-    )
+      this.#client.getUsers({ ids, schedule: this.request })
+    );
 
-    return found
+    return found;
   }
 
   /**
@@ -79,16 +80,16 @@ export class TwitchFetcher extends Fetcher<
     accountIds: readonly string[],
     {
       limit = DEFAULT_RECENT_VIDEOS_LIMIT,
-      type = 'archive',
-    }: TwitchRecentVideosOptions = {},
+      type = "archive",
+    }: TwitchRecentVideosOptions = {}
   ): Promise<RecentVideosResult<TwitchVideo>> {
     const { failures, results } = await this.fetchPerAccount(
       accountIds,
       (userId) =>
-        Array.fromAsync(this.#client.getVideosByUser({ limit, type, userId })),
-    )
+        Array.fromAsync(this.#client.getVideosByUser({ limit, type, userId }))
+    );
 
-    return { failures, videos: results.flatMap(({ value }) => value) }
+    return { failures, videos: results.flatMap(({ value }) => value) };
   }
 
   /**
@@ -99,8 +100,8 @@ export class TwitchFetcher extends Fetcher<
     accountId: string,
     {
       cursor,
-      type = 'all',
-    }: { cursor?: string | null | undefined; type?: TwitchVideoFilter } = {},
+      type = "all",
+    }: { cursor?: string | null | undefined; type?: TwitchVideoFilter } = {}
   ): Promise<TwitchVideoPage> {
     return this.request(() =>
       this.#client.getVideosByUserPage({
@@ -108,8 +109,8 @@ export class TwitchFetcher extends Fetcher<
         limit: TWITCH_API_MAX_RESULTS,
         type,
         userId: accountId,
-      }),
-    )
+      })
+    );
   }
 
   /**
@@ -117,13 +118,13 @@ export class TwitchFetcher extends Fetcher<
    * resource: see {@link getClips}.
    */
   async getVideos(
-    videoIds: readonly string[],
+    videoIds: readonly string[]
   ): Promise<VideoLookupResult<TwitchVideo>> {
     const { found, missingIds } = await this.fetchByIds(videoIds, (ids) =>
-      this.#client.getVideos({ ids, schedule: this.request }),
-    )
+      this.#client.getVideos({ ids, schedule: this.request })
+    );
 
-    return { missingIds, videos: found }
+    return { missingIds, videos: found };
   }
 
   /**
@@ -135,8 +136,8 @@ export class TwitchFetcher extends Fetcher<
       this.#client.getStreamsByUserIds({
         schedule: this.request,
         userIds: unique(accountIds),
-      }),
-    )
+      })
+    );
   }
 
   /**
@@ -144,9 +145,9 @@ export class TwitchFetcher extends Fetcher<
    */
   async getClips(clipIds: readonly string[]): Promise<ClipLookupResult> {
     const { found, missingIds } = await this.fetchByIds(clipIds, (ids) =>
-      this.#client.getClips({ ids, schedule: this.request }),
-    )
+      this.#client.getClips({ ids, schedule: this.request })
+    );
 
-    return { clips: found, missingIds }
+    return { clips: found, missingIds };
   }
 }

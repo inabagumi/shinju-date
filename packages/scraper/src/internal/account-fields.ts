@@ -1,4 +1,4 @@
-import type { AccountChanges, AccountFields } from '../types.js'
+import type { AccountChanges, AccountFields } from "../types.js";
 
 /**
  * Picks the columns of an account whose value differs between the saved row
@@ -8,18 +8,18 @@ import type { AccountChanges, AccountFields } from '../types.js'
  */
 export function diffAccountFields<TFields extends AccountFields>(
   before: TFields,
-  after: TFields,
+  after: TFields
 ): AccountChanges<TFields> | undefined {
-  const changes: AccountChanges<TFields> = { after: {}, before: {} }
-  let changed = false
+  const changes: AccountChanges<TFields> = { after: {}, before: {} };
+  let changed = false;
 
   for (const key of Object.keys(after) as (keyof TFields)[]) {
     if (before[key] !== after[key]) {
-      changes.after[key] = after[key]
-      changes.before[key] = before[key]
-      changed = true
+      changes.after[key] = after[key];
+      changes.before[key] = before[key];
+      changed = true;
     }
   }
 
-  return changed ? changes : undefined
+  return changed ? changes : undefined;
 }

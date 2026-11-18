@@ -1,24 +1,17 @@
 {
-  "author": "Haneru Developers",
+  "name": "@shinju-date/msw-handlers",
+  "version": "1.0.0",
+  "private": true,
   "description": "Common mock server handlers using MSW for SHINJU DATE monorepo",
-  "dependencies": {
-    "@msw/data": "1.1.8",
-    "@shinju-date/database": "workspace:*",
-    "@shinju-date/video-backfill": "workspace:*",
-    "msw": "catalog:",
-    "zod": "catalog:"
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "author": "Haneru Developers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git",
+    "directory": "packages/msw-handlers"
   },
-  "devDependencies": {
-    "@faker-js/faker": "10.6.0",
-    "@shinju-date/config": "workspace:*",
-    "@shinju-date/constants": "workspace:*",
-    "@shinju-date/temporal-fns": "workspace:*",
-    "@types/node": "catalog:",
-    "@upstash/redis": "catalog:",
-    "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
-  },
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -37,20 +30,27 @@
       "default": "./dist/register.js"
     }
   },
-  "homepage": "https://shinju.date/",
-  "license": "MIT",
-  "name": "@shinju-date/msw-handlers",
-  "private": true,
-  "repository": {
-    "directory": "packages/msw-handlers",
-    "type": "git",
-    "url": "https://github.com/inabagumi/shinju-date.git"
-  },
   "scripts": {
     "build": "tsdown",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "type": "module",
-  "version": "1.0.0"
+  "dependencies": {
+    "@msw/data": "1.1.8",
+    "@shinju-date/database": "workspace:*",
+    "@shinju-date/video-backfill": "workspace:*",
+    "msw": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "10.6.0",
+    "@shinju-date/config": "workspace:*",
+    "@shinju-date/constants": "workspace:*",
+    "@shinju-date/temporal-fns": "workspace:*",
+    "@types/node": "catalog:",
+    "@upstash/redis": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
 }

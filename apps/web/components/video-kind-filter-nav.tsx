@@ -1,25 +1,26 @@
-import { twMerge } from '@shinju-date/ui'
-import Link from 'next/link'
+import { twMerge } from "@shinju-date/ui";
+import Link from "next/link";
+
 import {
   VIDEO_KIND_FILTER_OPTIONS,
   type VideoKindFilter,
-} from '@/lib/video-kind-filter'
+} from "@/lib/video-kind-filter";
 
 const PILL_CLASS_NAME =
-  'inline-flex h-9 items-center rounded-full border px-4 text-meta font-semibold focus-ring'
+  "inline-flex h-9 items-center rounded-full border px-4 text-meta font-semibold focus-ring";
 
 /** 選択中は `accent` の地に `accent-foreground` の文字 */
 const SELECTED_PILL_CLASS_NAME =
-  'border-accent bg-accent text-accent-foreground'
+  "border-accent bg-accent text-accent-foreground";
 
 const UNSELECTED_PILL_CLASS_NAME =
-  'border-border text-foreground hover:bg-muted'
+  "border-border text-foreground hover:bg-muted";
 
 interface VideoKindFilterNavProps {
-  className?: string | undefined
-  current: VideoKindFilter
+  className?: string | undefined;
+  current: VideoKindFilter;
   /** 種別ごとの切り替え先のパス。ほかの絞り込みの条件はここで残す */
-  getPath: (kind: VideoKindFilter) => string
+  getPath: (kind: VideoKindFilter) => string;
 }
 
 /**
@@ -34,28 +35,28 @@ export default function VideoKindFilterNav({
     <nav aria-label="種別" className={className}>
       <ul className="flex flex-wrap gap-2">
         {VIDEO_KIND_FILTER_OPTIONS.map((option) => {
-          const isSelected = option.value === current
+          const isSelected = option.value === current;
 
           return (
             <li key={option.value}>
               <Link
-                aria-current={isSelected ? 'page' : undefined}
+                aria-current={isSelected ? "page" : undefined}
                 className={twMerge(
                   PILL_CLASS_NAME,
                   isSelected
                     ? SELECTED_PILL_CLASS_NAME
-                    : UNSELECTED_PILL_CLASS_NAME,
+                    : UNSELECTED_PILL_CLASS_NAME
                 )}
                 href={getPath(option.value)}
               >
                 {option.label}
               </Link>
             </li>
-          )
+          );
         })}
       </ul>
     </nav>
-  )
+  );
 }
 
 export function VideoKindFilterNavSkeleton() {
@@ -68,5 +69,5 @@ export function VideoKindFilterNavSkeleton() {
         />
       ))}
     </div>
-  )
+  );
 }

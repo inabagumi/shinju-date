@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import Form, {
   FormField,
@@ -6,17 +6,18 @@ import Form, {
   Select,
   SubmitButton,
   SuccessMessage,
-} from '@/components/form'
-import { updateFeatureRequestStatusAction } from '../../_actions/update-feedback'
+} from "@/components/form";
+
+import { updateFeatureRequestStatusAction } from "../../_actions/update-feedback";
 import {
   FEATURE_REQUEST_STATUS_LABELS,
   FEATURE_REQUEST_STATUSES,
   type FeatureRequestStatus,
-} from '../../_lib/feature-request-status'
+} from "../../_lib/feature-request-status";
 
 interface FeedbackStatusFormProps {
-  id: string
-  status: FeatureRequestStatus
+  id: string;
+  status: FeatureRequestStatus;
 }
 
 /** 機能要望の対応ステータスを変えるフォーム */
@@ -42,5 +43,5 @@ export function FeedbackStatusForm({ id, status }: FeedbackStatusFormProps) {
         />
       </div>
     </Form>
-  )
+  );
 }

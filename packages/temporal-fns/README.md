@@ -12,7 +12,7 @@ Temporal API を使用した日時操作ユーティリティを提供するパ�
 すべての関数を、パッケージの入口（`@shinju-date/temporal-fns`）から名前付きで import します。
 
 ```typescript
-import { TIME_ZONE } from '@shinju-date/constants'
+import { TIME_ZONE } from "@shinju-date/constants";
 import {
   formatDateKey,
   formatDateTimeFromISO,
@@ -20,25 +20,25 @@ import {
   max,
   min,
   startOfHour,
-} from '@shinju-date/temporal-fns'
+} from "@shinju-date/temporal-fns";
 
 // 日付をキー用フォーマット（YYYYMMDD形式）
-const dateKey = formatDateKey(zonedDateTime) // "20251111"
+const dateKey = formatDateKey(zonedDateTime); // "20251111"
 
 // 週の月曜日を取得
-const monday = getMondayOfWeek(zonedDateTime)
+const monday = getMondayOfWeek(zonedDateTime);
 
 // 時間の開始点を取得
-const hourStart = startOfHour(zonedDateTime)
+const hourStart = startOfHour(zonedDateTime);
 
 // 最大・最小値の取得
-const maxDate = max(zonedDateTime1, zonedDateTime2)
-const minDate = min(zonedDateTime1, zonedDateTime2)
+const maxDate = max(zonedDateTime1, zonedDateTime2);
+const minDate = min(zonedDateTime1, zonedDateTime2);
 
 // ISO 8601 の文字列を、指定したタイムゾーンの日時にフォーマット
-const dateTime = formatDateTimeFromISO('2026-03-25T16:22:03Z', {
+const dateTime = formatDateTimeFromISO("2026-03-25T16:22:03Z", {
   timeZone: TIME_ZONE,
-}) // "2026/03/26 01:22:03"
+}); // "2026/03/26 01:22:03"
 ```
 
 日の始まりは、`Temporal.ZonedDateTime` の `startOfDay()` を使います。

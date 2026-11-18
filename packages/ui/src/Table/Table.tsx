@@ -1,5 +1,6 @@
-import type { ComponentPropsWithRef } from 'react'
-import { twMerge } from '../tw-merge.js'
+import type { ComponentPropsWithRef } from "react";
+
+import { twMerge } from "../tw-merge.js";
 
 /**
  * 表。外枠を `border` と角丸で囲み、列がはみ出す場合は表の中で横にスクロールする。
@@ -23,7 +24,7 @@ import { twMerge } from '../tw-merge.js'
  * </Table>
  * ```
  */
-export function Table({ className, ...props }: ComponentPropsWithRef<'table'>) {
+export function Table({ className, ...props }: ComponentPropsWithRef<"table">) {
   return (
     <div
       className="relative w-full overflow-x-auto rounded-container border border-border bg-surface focus-ring"
@@ -32,65 +33,65 @@ export function Table({ className, ...props }: ComponentPropsWithRef<'table'>) {
     >
       <table
         className={twMerge(
-          'w-full border-collapse text-left text-meta text-foreground',
-          className,
+          "w-full border-collapse text-left text-meta text-foreground",
+          className
         )}
         {...props}
       />
     </div>
-  )
+  );
 }
 
 /** 見出し行をまとめる `<thead>`。地は `bg-muted` */
 export function TableHeader({
   className,
   ...props
-}: ComponentPropsWithRef<'thead'>) {
-  return <thead className={twMerge('bg-muted', className)} {...props} />
+}: ComponentPropsWithRef<"thead">) {
+  return <thead className={twMerge("bg-muted", className)} {...props} />;
 }
 
 /** 本文の行をまとめる `<tbody>` */
 export function TableBody({
   className,
   ...props
-}: ComponentPropsWithRef<'tbody'>) {
+}: ComponentPropsWithRef<"tbody">) {
   return (
     <tbody
-      className={twMerge('[&>tr:last-child]:border-b-0', className)}
+      className={twMerge("[&>tr:last-child]:border-b-0", className)}
       {...props}
     />
-  )
+  );
 }
 
 /** 行。下端を `border` の線で区切り、ホバーで地を `bg-muted` にする */
-export function TableRow({ className, ...props }: ComponentPropsWithRef<'tr'>) {
+export function TableRow({ className, ...props }: ComponentPropsWithRef<"tr">) {
   return (
     <tr
       className={twMerge(
-        'border-b border-border transition-colors hover:bg-muted',
-        className,
+        "border-b border-border transition-colors hover:bg-muted",
+        className
       )}
       {...props}
     />
-  )
+  );
 }
 
 /** 見出しのセル（`<th>`）。`scope` は既定で `col` */
 export function TableHead({
   className,
-  scope = 'col',
+  scope = "col",
   ...props
-}: ComponentPropsWithRef<'th'>) {
+}: ComponentPropsWithRef<"th">) {
   return (
     <th
       className={twMerge(
-        'px-4 py-3 text-left align-middle text-caption font-semibold whitespace-nowrap text-muted',
-        className,
+        "px-4 py-3 text-left align-middle text-caption font-semibold whitespace-nowrap text-muted",
+        className
       )}
       scope={scope}
       {...props}
     />
-  )
+  );
 }
 
 /**
@@ -100,11 +101,11 @@ export function TableHead({
 export function TableCell({
   className,
   ...props
-}: ComponentPropsWithRef<'td'>) {
+}: ComponentPropsWithRef<"td">) {
   return (
     <td
-      className={twMerge('px-4 py-3 align-middle whitespace-nowrap', className)}
+      className={twMerge("px-4 py-3 align-middle whitespace-nowrap", className)}
       {...props}
     />
-  )
+  );
 }

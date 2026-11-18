@@ -1,5 +1,5 @@
-import { Button } from '@shinju-date/ui'
-import Link from 'next/link'
+import { Button } from "@shinju-date/ui";
+import Link from "next/link";
 
 export function NotFoundContent() {
   return (
@@ -25,5 +25,5 @@ export function NotFoundContent() {
         </div>
       </div>
     </div>
-  )
+  );
 }

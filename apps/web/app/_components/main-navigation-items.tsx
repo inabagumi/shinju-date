@@ -1,9 +1,10 @@
-import { SITE_NAME as siteName } from '@/lib/site'
-import { ContactLink } from './contact-link'
-import { NavLink } from './nav-link'
+import { SITE_NAME as siteName } from "@/lib/site";
+
+import { ContactLink } from "./contact-link";
+import { NavLink } from "./nav-link";
 
 interface MainNavigationItemsProps {
-  linkClassName: string
+  linkClassName: string;
 }
 
 /**
@@ -39,5 +40,5 @@ export function MainNavigationItems({
         <ContactLink className={linkClassName}>お問い合わせ</ContactLink>
       </li>
     </>
-  )
+  );
 }

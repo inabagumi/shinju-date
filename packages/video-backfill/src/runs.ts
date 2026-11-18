@@ -1,22 +1,23 @@
-import { REDIS_KEYS } from '@shinju-date/constants'
-import type { Redis } from '@upstash/redis'
-import { getJobActivity } from './jobs.js'
-import { BACKFILL_JOB_TTL_SECONDS, getRunResultKey } from './keys.js'
-import { BackfillQueue } from './queue.js'
+import { REDIS_KEYS } from "@shinju-date/constants";
+import type { Redis } from "@upstash/redis";
+
+import { getJobActivity } from "./jobs.js";
+import { BACKFILL_JOB_TTL_SECONDS, getRunResultKey } from "./keys.js";
+import { BackfillQueue } from "./queue.js";
 import type {
   BackfillActivityStatus,
   BackfillJob,
   BackfillJobActivity,
   BackfillProvider,
   BackfillRequest,
-} from './types.js'
+} from "./types.js";
 
 /**
  * How long a request for a check holds the lock that keeps a second one from
  * starting at the same moment. Longer than a request may take; a request
  * that died holds it until it runs out.
  */
-export const BACKFILL_RUN_LOCK_SECONDS = 5 * 60
+export const BACKFILL_RUN_LOCK_SECONDS = 5 * 60;
 
 /**
  * Deletes the lock of a request for a check only if it still holds the
@@ -33,7 +34,7 @@ export const RUN_UNLOCK_SCRIPT = `-- video-backfill:run-unlock
 if redis.call('GET', KEYS[1]) == ARGV[1] then
   return redis.call('DEL', KEYS[1])
 end
-return 0`
+return 0`;
 
 /**
  * The keys that a job of a check is also saved to when it finishes: its
@@ -47,25 +48,25 @@ return 0`
  * ```
  */
 export function getBackfillRunResultKeys(
-  job: Pick<BackfillJob, 'id' | 'runId'>,
+  job: Pick<BackfillJob, "id" | "runId">
 ): string[] {
-  return job.runId ? [getRunResultKey(job.runId, job.id)] : []
+  return job.runId ? [getRunResultKey(job.runId, job.id)] : [];
 }
 
 /** Accounts queued at the same time when a check is requested. */
-const ENQUEUE_CONCURRENCY = 10
+const ENQUEUE_CONCURRENCY = 10;
 
 /** A job of a check, as it was queued. */
 export interface BackfillRunJob {
-  accountId: string
+  accountId: string;
   /**
    * Videos the job had saved before the check, when it resumed a job that
    * failed or was interrupted; not counted as added by the check.
    */
-  addedBefore: number
-  id: string
-  provider: BackfillProvider
-  talentId: string
+  addedBefore: number;
+  id: string;
+  provider: BackfillProvider;
+  talentId: string;
 }
 
 /**
@@ -74,76 +75,76 @@ export interface BackfillRunJob {
  */
 export interface BackfillRun {
   /** Accounts that could not be queued because of an error. */
-  failed: number
-  id: string
+  failed: number;
+  id: string;
   /** Jobs the check queued. */
-  jobs: BackfillRunJob[]
-  requestedAt: string
+  jobs: BackfillRunJob[];
+  requestedAt: string;
   /** ID of the admin user who requested the check. */
-  requestedBy: string | null
+  requestedBy: string | null;
   /** Accounts left out because a job for them was queued or being read. */
-  skipped: number
+  skipped: number;
 }
 
 /**
  * Status of a job of a check, as {@link getJobActivity} tells it. A job that
  * is gone without an outcome (e.g. it expired) is `interrupted` too.
  */
-export type BackfillRunJobStatus = BackfillActivityStatus
+export type BackfillRunJobStatus = BackfillActivityStatus;
 
 export interface BackfillRunJobProgress extends BackfillRunJob {
   /** Whether the job is queued or being read. */
-  active: boolean
+  active: boolean;
   /** Videos saved since the check queued the job. */
-  added: number
-  error: string | null
-  status: BackfillRunJobStatus
-  updatedAt: string | null
+  added: number;
+  error: string | null;
+  status: BackfillRunJobStatus;
+  updatedAt: string | null;
 }
 
 export interface BackfillRunProgress {
   /** Whether any job of the check is queued or being read. */
-  active: boolean
+  active: boolean;
   /** Videos saved by the check, across all jobs. */
-  added: number
-  counts: Record<BackfillRunJobStatus, number>
-  jobs: BackfillRunJobProgress[]
-  run: BackfillRun
+  added: number;
+  counts: Record<BackfillRunJobStatus, number>;
+  jobs: BackfillRunJobProgress[];
+  run: BackfillRun;
 }
 
 /** An account to check, without who requested it. */
-export type BackfillRunRequest = Omit<BackfillRequest, 'requestedBy' | 'runId'>
+export type BackfillRunRequest = Omit<BackfillRequest, "requestedBy" | "runId">;
 
 export interface StartBackfillRunOptions {
   /** Called for each account that could not be queued. */
-  onError?: (request: BackfillRunRequest, error: unknown) => void
-  requestedBy: string | null
+  onError?: (request: BackfillRunRequest, error: unknown) => void;
+  requestedBy: string | null;
 }
 
 export type StartBackfillRunResult =
   | {
       /** Accounts that could not be queued because of an error. */
-      failed: number
-      run: BackfillRun
+      failed: number;
+      run: BackfillRun;
       /** Accounts left out because a job for them was queued or being read. */
-      skipped: number
-      status: 'started'
+      skipped: number;
+      status: "started";
     }
   /** The latest check is still in progress. */
-  | { progress: BackfillRunProgress; status: 'active' }
+  | { progress: BackfillRunProgress; status: "active" }
   /** Another request for a check is being handled at the same moment. */
-  | { status: 'busy' }
+  | { status: "busy" }
   /** No account was queued: every one was skipped or failed. */
-  | { failed: number; skipped: number; status: 'empty' }
+  | { failed: number; skipped: number; status: "empty" };
 
 function createCounts(): Record<BackfillRunJobStatus, number> {
-  return { done: 0, failed: 0, interrupted: 0, pending: 0, running: 0 }
+  return { done: 0, failed: 0, interrupted: 0, pending: 0, running: 0 };
 }
 
 function toProgress(
   runJob: BackfillRunJob,
   job: BackfillJob,
-  { active, status }: BackfillJobActivity,
+  { active, status }: BackfillJobActivity
 ): BackfillRunJobProgress {
   return {
     ...runJob,
@@ -152,30 +153,30 @@ function toProgress(
     error: job.error,
     status,
     updatedAt: job.updatedAt,
-  }
+  };
 }
 
 async function mapWithConcurrency<T, R>(
   items: readonly T[],
   concurrency: number,
-  callback: (item: T) => Promise<R>,
+  callback: (item: T) => Promise<R>
 ): Promise<R[]> {
-  const results = new Array<R>(items.length)
-  let next = 0
+  const results = new Array<R>(items.length);
+  let next = 0;
 
   const work = async () => {
     while (next < items.length) {
-      const index = next++
+      const index = next++;
 
-      results[index] = await callback(items[index] as T)
+      results[index] = await callback(items[index] as T);
     }
-  }
+  };
 
   await Promise.all(
-    Array.from({ length: Math.min(concurrency, items.length) }, work),
-  )
+    Array.from({ length: Math.min(concurrency, items.length) }, work)
+  );
 
-  return results
+  return results;
 }
 
 /**
@@ -187,12 +188,12 @@ async function mapWithConcurrency<T, R>(
  * progress, nor while another request for one is being handled.
  */
 export class BackfillRuns {
-  readonly #queue: BackfillQueue
-  readonly #redis: Redis
+  readonly #queue: BackfillQueue;
+  readonly #redis: Redis;
 
   constructor(redis: Redis, queue: BackfillQueue = new BackfillQueue(redis)) {
-    this.#queue = queue
-    this.#redis = redis
+    this.#queue = queue;
+    this.#redis = redis;
   }
 
   /**
@@ -201,13 +202,13 @@ export class BackfillRuns {
    * @returns `null` when there was no check (or it was long ago).
    */
   async getLatest(
-    now: Temporal.Instant = Temporal.Now.instant(),
+    now: Temporal.Instant = Temporal.Now.instant()
   ): Promise<BackfillRunProgress | null> {
     const run = await this.#redis.get<BackfillRun>(
-      REDIS_KEYS.VIDEO_BACKFILL_RUN,
-    )
+      REDIS_KEYS.VIDEO_BACKFILL_RUN
+    );
 
-    return run ? this.getProgress(run, now) : null
+    return run ? this.getProgress(run, now) : null;
   }
 
   /**
@@ -220,23 +221,23 @@ export class BackfillRuns {
    */
   async getProgress(
     run: BackfillRun,
-    now: Temporal.Instant = Temporal.Now.instant(),
+    now: Temporal.Instant = Temporal.Now.instant()
   ): Promise<BackfillRunProgress> {
-    const ids = run.jobs.map((job) => job.id)
+    const ids = run.jobs.map((job) => job.id);
     const [states, outcomes] = await Promise.all([
       this.#queue.getJobs(ids, now),
       ids.length > 0
         ? this.#redis.mget<(BackfillJob | null)[]>(
-            ...ids.map((id) => getRunResultKey(run.id, id)),
+            ...ids.map((id) => getRunResultKey(run.id, id))
           )
         : Promise.resolve([]),
-    ])
-    const counts = createCounts()
-    let added = 0
+    ]);
+    const counts = createCounts();
+    let added = 0;
 
     const jobs = run.jobs.map((runJob, index): BackfillRunJobProgress => {
-      const state = states[index]
-      const outcome = outcomes[index]
+      const state = states[index];
+      const outcome = outcomes[index];
       const progress =
         state && state.job.runId === run.id
           ? toProgress(runJob, state.job, state)
@@ -245,7 +246,7 @@ export class BackfillRuns {
               toProgress(
                 runJob,
                 outcome,
-                getJobActivity(outcome, { locked: false, now }),
+                getJobActivity(outcome, { locked: false, now })
               )
             : // Gone without an outcome, e.g. expired.
               {
@@ -253,15 +254,15 @@ export class BackfillRuns {
                 active: false,
                 added: 0,
                 error: null,
-                status: 'interrupted' as const,
+                status: "interrupted" as const,
                 updatedAt: null,
-              }
+              };
 
-      counts[progress.status]++
-      added += progress.added
+      counts[progress.status]++;
+      added += progress.added;
 
-      return progress
-    })
+      return progress;
+    });
 
     return {
       active: jobs.some((job) => job.active),
@@ -269,7 +270,7 @@ export class BackfillRuns {
       counts,
       jobs,
       run,
-    }
+    };
   }
 
   /**
@@ -282,39 +283,39 @@ export class BackfillRuns {
   async start(
     requests: readonly BackfillRunRequest[],
     { onError, requestedBy }: StartBackfillRunOptions,
-    now: Temporal.Instant = Temporal.Now.instant(),
+    now: Temporal.Instant = Temporal.Now.instant()
   ): Promise<StartBackfillRunResult> {
-    const token = crypto.randomUUID()
+    const token = crypto.randomUUID();
     const locked = await this.#redis.set(
       REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK,
       token,
-      { ex: BACKFILL_RUN_LOCK_SECONDS, nx: true },
-    )
+      { ex: BACKFILL_RUN_LOCK_SECONDS, nx: true }
+    );
 
-    if (locked !== 'OK') {
-      return { status: 'busy' }
+    if (locked !== "OK") {
+      return { status: "busy" };
     }
 
     try {
-      const latest = await this.getLatest(now)
+      const latest = await this.getLatest(now);
 
       if (latest?.active) {
-        return { progress: latest, status: 'active' }
+        return { progress: latest, status: "active" };
       }
 
-      const runId = crypto.randomUUID()
+      const runId = crypto.randomUUID();
       const outcomes = await mapWithConcurrency(
         requests,
         ENQUEUE_CONCURRENCY,
-        async (request): Promise<BackfillRunJob | 'failed' | 'skipped'> => {
+        async (request): Promise<BackfillRunJob | "failed" | "skipped"> => {
           try {
             const result = await this.#queue.enqueue(
               { ...request, requestedBy, runId },
-              now,
-            )
+              now
+            );
 
             if (!result.enqueued) {
-              return 'skipped'
+              return "skipped";
             }
 
             return {
@@ -323,22 +324,24 @@ export class BackfillRuns {
               id: result.job.id,
               provider: request.provider,
               talentId: request.talentId,
-            }
+            };
           } catch (error) {
-            onError?.(request, error)
+            onError?.(request, error);
 
-            return 'failed'
+            return "failed";
           }
-        },
-      )
+        }
+      );
       const jobs = outcomes.filter(
-        (outcome): outcome is BackfillRunJob => typeof outcome === 'object',
-      )
-      const failed = outcomes.filter((outcome) => outcome === 'failed').length
-      const skipped = outcomes.filter((outcome) => outcome === 'skipped').length
+        (outcome): outcome is BackfillRunJob => typeof outcome === "object"
+      );
+      const failed = outcomes.filter((outcome) => outcome === "failed").length;
+      const skipped = outcomes.filter(
+        (outcome) => outcome === "skipped"
+      ).length;
 
       if (jobs.length === 0) {
-        return { failed, skipped, status: 'empty' }
+        return { failed, skipped, status: "empty" };
       }
 
       const run: BackfillRun = {
@@ -348,15 +351,15 @@ export class BackfillRuns {
         requestedAt: now.toString(),
         requestedBy,
         skipped,
-      }
+      };
 
       await this.#redis.set(REDIS_KEYS.VIDEO_BACKFILL_RUN, run, {
         ex: BACKFILL_JOB_TTL_SECONDS,
-      })
+      });
 
-      return { failed, run, skipped, status: 'started' }
+      return { failed, run, skipped, status: "started" };
     } finally {
-      await this.#unlock(token)
+      await this.#unlock(token);
     }
   }
 
@@ -370,8 +373,8 @@ export class BackfillRuns {
       await this.#redis.eval<[string], number>(
         RUN_UNLOCK_SCRIPT,
         [REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK],
-        [token],
-      )
+        [token]
+      );
     } catch {
       // Runs out after BACKFILL_RUN_LOCK_SECONDS.
     }

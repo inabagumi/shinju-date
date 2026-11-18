@@ -7,26 +7,28 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@shinju-date/ui'
-import { SearchInput } from '@/components/search-input'
-import { TableSkeleton } from '@/components/table-skeleton'
-import { AddQueryForm } from './add-query-form'
-import { DeleteQueryButton } from './delete-query-button'
+} from "@shinju-date/ui";
+
+import { SearchInput } from "@/components/search-input";
+import { TableSkeleton } from "@/components/table-skeleton";
+
+import { AddQueryForm } from "./add-query-form";
+import { DeleteQueryButton } from "./delete-query-button";
 
 const AUTO_QUERIES_DESCRIPTION =
-  '検索トレンドに基づいて自動的に選出されたクエリです。スコアは時間減衰を考慮した重み付けスコアです。'
+  "検索トレンドに基づいて自動的に選出されたクエリです。スコアは時間減衰を考慮した重み付けスコアです。";
 
 interface QueriesListProps {
   /** 検索で絞り込んだ、手動追加のクエリ */
-  manualQueries: string[]
+  manualQueries: string[];
   /** 手動追加のクエリの全件の数 */
-  manualTotal: number
+  manualTotal: number;
   /** 検索で絞り込んだ、自動選出のクエリ */
-  autoQueries: Array<{ query: string; score: number }>
+  autoQueries: Array<{ query: string; score: number }>;
   /** 自動選出のクエリの全件の数 */
-  autoTotal: number
+  autoTotal: number;
   /** URL の `search`。前後の空白を取り除いたもの */
-  search: string | undefined
+  search: string | undefined;
 }
 
 /**
@@ -66,8 +68,8 @@ export function QueriesList({
             className="rounded-container border border-border bg-surface"
             title={
               search
-                ? '検索結果がありません。'
-                : '手動追加されたおすすめクエリがありません。'
+                ? "検索結果がありません。"
+                : "手動追加されたおすすめクエリがありません。"
             }
           />
         ) : (
@@ -110,8 +112,8 @@ export function QueriesList({
             className="rounded-container border border-border bg-surface"
             title={
               search
-                ? '検索結果がありません。'
-                : '自動選出されたおすすめクエリがありません。'
+                ? "検索結果がありません。"
+                : "自動選出されたおすすめクエリがありません。"
             }
           />
         ) : (
@@ -136,7 +138,7 @@ export function QueriesList({
         )}
       </section>
     </div>
-  )
+  );
 }
 
 /**
@@ -161,12 +163,12 @@ export function QueriesListSkeleton() {
         <h2 className="text-heading font-bold">手動追加クエリ</h2>
         <TableSkeleton
           columns={[
-            { cell: <Skeleton className="h-4 w-48" />, id: 'query' },
+            { cell: <Skeleton className="h-4 w-48" />, id: "query" },
             {
-              align: 'end',
+              align: "end",
               cell: <Skeleton className="h-7 w-14" />,
-              className: 'w-24',
-              id: 'actions',
+              className: "w-24",
+              id: "actions",
             },
           ]}
         />
@@ -181,16 +183,16 @@ export function QueriesListSkeleton() {
         </div>
         <TableSkeleton
           columns={[
-            { cell: <Skeleton className="h-4 w-48" />, id: 'query' },
+            { cell: <Skeleton className="h-4 w-48" />, id: "query" },
             {
-              align: 'end',
+              align: "end",
               cell: <Skeleton className="h-4 w-10" />,
-              className: 'w-32',
-              id: 'score',
+              className: "w-32",
+              id: "score",
             },
           ]}
         />
       </section>
     </div>
-  )
+  );
 }

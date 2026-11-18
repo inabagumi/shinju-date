@@ -1,27 +1,27 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { type ComponentProps, Suspense } from 'react'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { type ComponentProps, Suspense } from "react";
 
-interface NavLinkProps extends Omit<ComponentProps<typeof Link>, 'href'> {
-  href: string
+interface NavLinkProps extends Omit<ComponentProps<typeof Link>, "href"> {
+  href: string;
 }
 
 function isCurrentPath(pathname: string, href: string): boolean {
-  return pathname === href || pathname.startsWith(`${href}/`)
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 function ActiveNavLink({ href, ...props }: NavLinkProps) {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <Link
       {...props}
-      aria-current={isCurrentPath(pathname, href) ? 'page' : undefined}
+      aria-current={isCurrentPath(pathname, href) ? "page" : undefined}
       href={href}
     />
-  )
+  );
 }
 
 /**
@@ -37,5 +37,5 @@ export function NavLink(props: NavLinkProps) {
     <Suspense fallback={<Link {...props} />}>
       <ActiveNavLink {...props} />
     </Suspense>
-  )
+  );
 }

@@ -3,8 +3,8 @@ import {
   type TwitchVideoType,
   type VideoPlatform,
   type VideoStatus,
-} from '@shinju-date/helpers'
-import type { ComponentPropsWithoutRef } from 'react'
+} from "@shinju-date/helpers";
+import type { ComponentPropsWithoutRef } from "react";
 
 /**
  * 外部のリンク先を作るのに使う動画の列。Supabase の埋め込み
@@ -12,17 +12,17 @@ import type { ComponentPropsWithoutRef } from 'react'
  * 受け取る。
  */
 export interface ExternalVideo {
-  platform: VideoPlatform
-  status?: VideoStatus | null | undefined
+  platform: VideoPlatform;
+  status?: VideoStatus | null | undefined;
   twitch_video?:
     | {
-        twitch_user?: { twitch_login_name: string | null } | null | undefined
-        twitch_video_id: string
-        type?: TwitchVideoType | null | undefined
+        twitch_user?: { twitch_login_name: string | null } | null | undefined;
+        twitch_video_id: string;
+        type?: TwitchVideoType | null | undefined;
       }
     | null
-    | undefined
-  youtube_video?: { youtube_video_id: string } | null | undefined
+    | undefined;
+  youtube_video?: { youtube_video_id: string } | null | undefined;
 }
 
 /**
@@ -36,12 +36,14 @@ export function getExternalVideoUrl(video: ExternalVideo): string | null {
     twitchVideoId: video.twitch_video?.twitch_video_id,
     twitchVideoType: video.twitch_video?.type,
     youtubeVideoId: video.youtube_video?.youtube_video_id,
-  })
+  });
 }
 
-interface ExternalVideoLinkProps
-  extends Omit<ComponentPropsWithoutRef<'a'>, 'href' | 'rel' | 'target'> {
-  video: ExternalVideo
+interface ExternalVideoLinkProps extends Omit<
+  ComponentPropsWithoutRef<"a">,
+  "href" | "rel" | "target"
+> {
+  video: ExternalVideo;
 }
 
 /**
@@ -53,15 +55,15 @@ export function ExternalVideoLink({
   video,
   ...props
 }: ExternalVideoLinkProps) {
-  const href = getExternalVideoUrl(video)
+  const href = getExternalVideoUrl(video);
 
   if (!href) {
-    return <>{children}</>
+    return <>{children}</>;
   }
 
   return (
     <a href={href} rel="noopener noreferrer" target="_blank" {...props}>
       {children}
     </a>
-  )
+  );
 }

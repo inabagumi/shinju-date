@@ -6,12 +6,12 @@ Next.js は、フレームワークの知識を `node_modules/next/dist/docs/` �
 
 ## 入れているスキル
 
-| スキル                               | 使いどころ                                                                                                                                                                                 |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `next-dev-loop`                      | 起動中の `next dev` に対し、MCP（`/_next/mcp`）と `agent-browser` で、編集のたびに動作を確かめる。保留中の Suspense の境界やコンポーネントツリーも見られる。ほかのスキルの検証の土台になる |
-| `next-cache-components-optimizer`    | 指定したルートの静的シェルを広げる。先に失敗する `instant()` テストを書き、通るまで直して、テストを回帰テストとして残す                                                                    |
-| `next-partial-prefetching-optimizer` | 指定した遷移で、クリック前に用意しておく UI を `instant()` テストで決めて最適化する                                                                                                        |
-| `next-bundle-optimizer`              | Turbopack のバンドル分析から、初期ロードを重くしているクライアントバンドルを特定する。既定は変更を加えない監査だけのモードで、レポートを返す                                               |
+| スキル | 使いどころ |
+| --- | --- |
+| `next-dev-loop` | 起動中の `next dev` に対し、MCP（`/_next/mcp`）と `agent-browser` で、編集のたびに動作を確かめる。保留中の Suspense の境界やコンポーネントツリーも見られる。ほかのスキルの検証の土台になる |
+| `next-cache-components-optimizer` | 指定したルートの静的シェルを広げる。先に失敗する `instant()` テストを書き、通るまで直して、テストを回帰テストとして残す |
+| `next-partial-prefetching-optimizer` | 指定した遷移で、クリック前に用意しておく UI を `instant()` テストで決めて最適化する |
+| `next-bundle-optimizer` | Turbopack のバンドル分析から、初期ロードを重くしているクライアントバンドルを特定する。既定は変更を加えない監査だけのモードで、レポートを返す |
 
 エージェントには、次のように頼みます。
 
@@ -46,7 +46,7 @@ pnpm dlx skills add vercel/next.js --skill next-dev-loop --skill next-cache-comp
 
 - ルートの `package.json` に `devEngines` があるため、`npx` は使えません。`pnpm dlx` を使ってください
 - `-a universal` で `.agents/skills/` に実体を置き、`-a claude-code` で `.claude/skills/` にシンボリックリンクを張ります。`-a claude-code` だけを指定すると、`.claude/skills/` にコピーが置かれるので注意してください
-- `.agents/skills/next-*` と `skills-lock.json` は、上流のファイルをそのまま置くために Biome の対象から外しています。手で編集しないでください
+- `.agents/skills/next-*` と `skills-lock.json` は、上流のファイルをそのまま置くために Biome と oxfmt の対象から外しています。手で編集しないでください
 - 更新するときは `pnpm dlx skills update` を実行し、差分を確認してコミットしてください
 
 ## agent-browser

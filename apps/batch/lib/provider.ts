@@ -1,5 +1,5 @@
-import { Constants } from '@shinju-date/database'
-import { z } from 'zod'
+import { Constants } from "@shinju-date/database";
+import { z } from "zod";
 
 /**
  * Content provider for multi-platform batch jobs.
@@ -7,9 +7,9 @@ import { z } from 'zod'
  */
 export const providerSchema = z
   .enum(Constants.public.Enums.platform_type)
-  .default('youtube')
+  .default("youtube");
 
 /** Query of the routes that only take `provider`. */
 export const providerQuerySchema = z.object({
   provider: providerSchema,
-})
+});

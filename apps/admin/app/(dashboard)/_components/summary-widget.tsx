@@ -1,15 +1,17 @@
-import { Skeleton } from '@shinju-date/ui'
-import { Panel, PanelSkeleton } from '@/components/panel'
-import { StatTileSkeleton } from '@/components/stat-tile-skeleton'
-import { getHistoricalStats } from '../_lib/get-historical-stats'
-import { getSummaryStats } from '../_lib/get-summary-stats'
+import { Skeleton } from "@shinju-date/ui";
+
+import { Panel, PanelSkeleton } from "@/components/panel";
+import { StatTileSkeleton } from "@/components/stat-tile-skeleton";
+
+import { getHistoricalStats } from "../_lib/get-historical-stats";
+import { getSummaryStats } from "../_lib/get-summary-stats";
 import {
   getVideoListHref,
   VIDEO_SUMMARY_FILTERS,
-} from '../_lib/video-summary-filters'
-import { StatTileLink } from './trend-indicator'
-import { VideoStatsChartEmpty } from './video-stats-chart-empty'
-import { VideoStatsChartUI } from './video-stats-chart-ui'
+} from "../_lib/video-summary-filters";
+import { StatTileLink } from "./trend-indicator";
+import { VideoStatsChartEmpty } from "./video-stats-chart-empty";
+import { VideoStatsChartUI } from "./video-stats-chart-ui";
 
 /**
  * VideoSummaryWidget - Displays video statistics with 7-day chart
@@ -19,7 +21,7 @@ export async function VideoSummaryWidget() {
   const [stats, historicalStats] = await Promise.all([
     getSummaryStats(),
     getHistoricalStats(7),
-  ])
+  ]);
 
   return (
     <Panel title="動画サマリー">
@@ -62,7 +64,7 @@ export async function VideoSummaryWidget() {
         )}
       </div>
     </Panel>
-  )
+  );
 }
 
 /** 読み込み中の `VideoSummaryWidget`。4つのタイルと、7日間のグラフの高さを確保する */
@@ -82,7 +84,7 @@ export function VideoSummaryWidgetSkeleton() {
         <Skeleton className="h-80 w-full rounded-container" />
       </div>
     </PanelSkeleton>
-  )
+  );
 }
 
 /**
@@ -90,7 +92,7 @@ export function VideoSummaryWidgetSkeleton() {
  * This is an async Server Component that fetches its own data
  */
 export async function ContentSummaryWidget() {
-  const stats = await getSummaryStats()
+  const stats = await getSummaryStats();
 
   return (
     <Panel title="コンテンツサマリー">
@@ -109,7 +111,7 @@ export async function ContentSummaryWidget() {
         />
       </div>
     </Panel>
-  )
+  );
 }
 
 /** 読み込み中の `ContentSummaryWidget` */
@@ -121,5 +123,5 @@ export function ContentSummaryWidgetSkeleton() {
         <StatTileSkeleton change />
       </div>
     </PanelSkeleton>
-  )
+  );
 }

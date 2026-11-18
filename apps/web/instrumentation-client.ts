@@ -1,10 +1,10 @@
 // Node.js provides Temporal natively on the server, so the polyfill is only
 // needed in the browser. It installs itself only when Temporal is missing.
-import 'temporal-polyfill/global'
-import { initClient } from '@shinju-date/instrumentation/client'
-import { initBotId } from 'botid/client/core'
+import "temporal-polyfill/global";
+import { initClient } from "@shinju-date/instrumentation/client";
+import { initBotId } from "botid/client/core";
 
-export { onRouterTransitionStart } from '@shinju-date/instrumentation/client'
+export { onRouterTransitionStart } from "@shinju-date/instrumentation/client";
 
 // Protect Server Actions invoked from public form pages.
 // Path is the page route (not the action module path).
@@ -13,20 +13,20 @@ initBotId({
   protect: [
     {
       advancedOptions: {
-        checkLevel: 'basic',
+        checkLevel: "basic",
       },
-      method: 'POST',
-      path: '/contact',
+      method: "POST",
+      path: "/contact",
     },
     {
       advancedOptions: {
-        checkLevel: 'basic',
+        checkLevel: "basic",
       },
-      method: 'POST',
-      path: '/feedback',
+      method: "POST",
+      path: "/feedback",
     },
   ],
-})
+});
 
 initClient({
   profileSessionSampleRate: 0.333,
@@ -35,4 +35,4 @@ initClient({
     sessionSampleRate: 0.1,
   },
   tracesSampleRate: 0.333,
-})
+});

@@ -1,31 +1,36 @@
-import { formatNumber } from '@shinju-date/helpers'
-import { PageHeader, Skeleton } from '@shinju-date/ui'
-import type { Metadata } from 'next'
-import { Suspense } from 'react'
-import { toURLSearchParams } from '@/lib/search-params-href'
-import { getTalents } from '../talents/_lib/get-talents'
-import Pagination from './_components/pagination'
-import { VideoFilters, VideoFiltersSkeleton } from './_components/video-filters'
-import VideoList, { VideoListSkeleton } from './_components/video-list'
-import { getVideosForPage, VIDEOS_PER_PAGE } from './_lib/get-videos-for-page'
+import { formatNumber } from "@shinju-date/helpers";
+import { PageHeader, Skeleton } from "@shinju-date/ui";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+
+import { toURLSearchParams } from "@/lib/search-params-href";
+
+import { getTalents } from "../talents/_lib/get-talents";
+import Pagination from "./_components/pagination";
+import {
+  VideoFilters,
+  VideoFiltersSkeleton,
+} from "./_components/video-filters";
+import VideoList, { VideoListSkeleton } from "./_components/video-list";
+import { getVideosForPage, VIDEOS_PER_PAGE } from "./_lib/get-videos-for-page";
 
 export const metadata: Metadata = {
-  title: '動画管理',
-}
+  title: "動画管理",
+};
 
 async function VideoFiltersData() {
-  const talents = await getTalents()
+  const talents = await getTalents();
 
-  return <VideoFilters talents={talents} />
+  return <VideoFilters talents={talents} />;
 }
 
 async function VideoTableData({
   searchParams,
-}: Pick<PageProps<'/videos'>, 'searchParams'>) {
+}: Pick<PageProps<"/videos">, "searchParams">) {
   const [{ currentPage, sort, totalPages, videos }, query] = await Promise.all([
     getVideosForPage(searchParams),
     searchParams,
-  ])
+  ]);
 
   return (
     <>
@@ -38,18 +43,20 @@ async function VideoTableData({
         <Pagination currentPage={currentPage} totalPages={totalPages} />
       )}
     </>
-  )
+  );
 }
 
 async function VideoCountData({
   searchParams,
-}: Pick<PageProps<'/videos'>, 'searchParams'>) {
-  const { total } = await getVideosForPage(searchParams)
+}: Pick<PageProps<"/videos">, "searchParams">) {
+  const { total } = await getVideosForPage(searchParams);
 
-  return <span className="tabular-nums">全 {formatNumber(total)} 件の動画</span>
+  return (
+    <span className="tabular-nums">全 {formatNumber(total)} 件の動画</span>
+  );
 }
 
-export default function VideosPage({ searchParams }: PageProps<'/videos'>) {
+export default function VideosPage({ searchParams }: PageProps<"/videos">) {
   return (
     <div>
       <PageHeader
@@ -75,5 +82,5 @@ export default function VideosPage({ searchParams }: PageProps<'/videos'>) {
         <VideoTableData searchParams={searchParams} />
       </Suspense>
     </div>
-  )
+  );
 }

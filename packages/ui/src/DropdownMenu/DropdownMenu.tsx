@@ -1,15 +1,17 @@
-import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
-import type { ComponentPropsWithRef } from 'react'
-import { twMerge } from '../tw-merge.js'
+import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
+import type { ComponentPropsWithRef } from "react";
+
+import { twMerge } from "../tw-merge.js";
 
 /**
  * ボタンから開くメニュー。矢印キーでの移動、Enter での実行、Escape と外側の
  * クリックで閉じること、文字を打っての移動は Radix に任せる。
  */
-export const DropdownMenu = DropdownMenuPrimitive.Root
+export const DropdownMenu = DropdownMenuPrimitive.Root;
 
-export interface DropdownMenuTriggerProps
-  extends ComponentPropsWithRef<typeof DropdownMenuPrimitive.Trigger> {}
+export interface DropdownMenuTriggerProps extends ComponentPropsWithRef<
+  typeof DropdownMenuPrimitive.Trigger
+> {}
 
 /**
  * メニューを開くボタン。既定は行末の「︙」などに使うアイコンのボタンの見た目にする。
@@ -28,17 +30,18 @@ export function DropdownMenuTrigger({
         asChild
           ? className
           : twMerge(
-              'rounded-control p-1 text-muted transition-colors focus-ring hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50',
-              className,
+              "rounded-control p-1 text-muted focus-ring transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50",
+              className
             )
       }
       {...props}
     />
-  )
+  );
 }
 
-export interface DropdownMenuContentProps
-  extends ComponentPropsWithRef<typeof DropdownMenuPrimitive.Content> {}
+export interface DropdownMenuContentProps extends ComponentPropsWithRef<
+  typeof DropdownMenuPrimitive.Content
+> {}
 
 /**
  * メニューの中身。ポータルに描画するため、横にスクロールする表の中に置いても
@@ -46,7 +49,7 @@ export interface DropdownMenuContentProps
  * `MultiSelect` のポップオーバーと同じで、開いたボタンの側から広がる。
  */
 export function DropdownMenuContent({
-  align = 'end',
+  align = "end",
   className,
   collisionPadding = 8,
   sideOffset = 4,
@@ -57,26 +60,27 @@ export function DropdownMenuContent({
       <DropdownMenuPrimitive.Content
         align={align}
         className={twMerge(
-          'z-50 min-w-40 origin-(--radix-dropdown-menu-content-transform-origin) rounded-container border border-border bg-surface p-1 text-foreground shadow-overlay motion-safe:data-[state=closed]:animate-scale-out motion-safe:data-[state=open]:animate-scale-in',
-          className,
+          "z-50 min-w-40 origin-(--radix-dropdown-menu-content-transform-origin) rounded-container border border-border bg-surface p-1 text-foreground shadow-overlay motion-safe:data-[state=closed]:animate-scale-out motion-safe:data-[state=open]:animate-scale-in",
+          className
         )}
         collisionPadding={collisionPadding}
         sideOffset={sideOffset}
         {...props}
       />
     </DropdownMenuPrimitive.Portal>
-  )
+  );
 }
 
 const itemVariantClassNames = {
-  danger: 'text-danger data-highlighted:bg-danger/10',
-  default: 'text-foreground data-highlighted:bg-muted',
-} as const
+  danger: "text-danger data-highlighted:bg-danger/10",
+  default: "text-foreground data-highlighted:bg-muted",
+} as const;
 
-export interface DropdownMenuItemProps
-  extends ComponentPropsWithRef<typeof DropdownMenuPrimitive.Item> {
+export interface DropdownMenuItemProps extends ComponentPropsWithRef<
+  typeof DropdownMenuPrimitive.Item
+> {
   /** 削除など、取り消せない操作は `danger` にする */
-  variant?: keyof typeof itemVariantClassNames
+  variant?: keyof typeof itemVariantClassNames;
 }
 
 /**
@@ -85,23 +89,24 @@ export interface DropdownMenuItemProps
  */
 export function DropdownMenuItem({
   className,
-  variant = 'default',
+  variant = "default",
   ...props
 }: DropdownMenuItemProps) {
   return (
     <DropdownMenuPrimitive.Item
       className={twMerge(
-        'flex w-full items-center gap-2 rounded-control px-3 py-2 text-left text-meta leading-5 whitespace-nowrap transition-colors outline-none select-none data-disabled:pointer-events-none data-disabled:opacity-50',
+        "flex w-full items-center gap-2 rounded-control px-3 py-2 text-left text-meta leading-5 whitespace-nowrap transition-colors outline-none select-none data-disabled:pointer-events-none data-disabled:opacity-50",
         itemVariantClassNames[variant],
-        className,
+        className
       )}
       {...props}
     />
-  )
+  );
 }
 
-export interface DropdownMenuSeparatorProps
-  extends ComponentPropsWithRef<typeof DropdownMenuPrimitive.Separator> {}
+export interface DropdownMenuSeparatorProps extends ComponentPropsWithRef<
+  typeof DropdownMenuPrimitive.Separator
+> {}
 
 /** 項目のまとまりを分ける線 */
 export function DropdownMenuSeparator({
@@ -110,8 +115,8 @@ export function DropdownMenuSeparator({
 }: DropdownMenuSeparatorProps) {
   return (
     <DropdownMenuPrimitive.Separator
-      className={twMerge('my-1 h-px bg-border', className)}
+      className={twMerge("my-1 h-px bg-border", className)}
       {...props}
     />
-  )
+  );
 }

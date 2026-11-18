@@ -1,4 +1,4 @@
-import type { Tables } from '@shinju-date/database'
+import type { Tables } from "@shinju-date/database";
 import {
   Button,
   EmptyState,
@@ -9,25 +9,27 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@shinju-date/ui'
-import { Megaphone } from 'lucide-react'
-import { ConfirmDialog } from '@/components/confirm-dialog'
-import { Markdown } from '@/components/markdown'
-import { TableSkeleton } from '@/components/table-skeleton'
-import { formatDateTimeFromISO } from '@/lib/format'
-import { deleteAnnouncementAction } from '../_actions'
-import { AnnouncementModal } from './announcement-modal'
-import { LevelBadge, StatusBadge } from './badges'
+} from "@shinju-date/ui";
+import { Megaphone } from "lucide-react";
+
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { Markdown } from "@/components/markdown";
+import { TableSkeleton } from "@/components/table-skeleton";
+import { formatDateTimeFromISO } from "@/lib/format";
+
+import { deleteAnnouncementAction } from "../_actions";
+import { AnnouncementModal } from "./announcement-modal";
+import { LevelBadge, StatusBadge } from "./badges";
 
 /** 削除の確認文に入れるため、本文を50文字までに切り詰める */
 function truncateMessage(message: string): string {
-  return message.length > 50 ? `${message.substring(0, 50)}...` : message
+  return message.length > 50 ? `${message.substring(0, 50)}...` : message;
 }
 
 function AnnouncementRow({
   announcement,
 }: {
-  announcement: Tables<'announcements'>
+  announcement: Tables<"announcements">;
 }) {
   return (
     <TableRow>
@@ -43,8 +45,8 @@ function AnnouncementRow({
       <TableCell className="text-muted tabular-nums">
         {formatDateTimeFromISO(announcement.start_at, {
           includeSeconds: false,
-        })}{' '}
-        〜{' '}
+        })}{" "}
+        〜{" "}
         {formatDateTimeFromISO(announcement.end_at, { includeSeconds: false })}
       </TableCell>
       <TableCell>
@@ -65,13 +67,13 @@ function AnnouncementRow({
         </div>
       </TableCell>
     </TableRow>
-  )
+  );
 }
 
 export function AnnouncementsList({
   announcements,
 }: {
-  announcements: Tables<'announcements'>[]
+  announcements: Tables<"announcements">[];
 }) {
   if (announcements.length === 0) {
     return (
@@ -81,7 +83,7 @@ export function AnnouncementsList({
         icon={<Megaphone />}
         title="お知らせがありません。"
       />
-    )
+    );
   }
 
   return (
@@ -100,7 +102,7 @@ export function AnnouncementsList({
         ))}
       </TableBody>
     </Table>
-  )
+  );
 }
 
 /** 読み込み中の `AnnouncementsList`。4列の表を並べる */
@@ -115,8 +117,8 @@ export function AnnouncementsListSkeleton() {
               <Skeleton className="h-4 w-2/3" />
             </div>
           ),
-          className: 'w-full',
-          id: 'message',
+          className: "w-full",
+          id: "message",
         },
         {
           cell: (
@@ -125,21 +127,21 @@ export function AnnouncementsListSkeleton() {
               <Skeleton className="h-5 w-16" />
             </div>
           ),
-          id: 'status',
+          id: "status",
         },
-        { cell: <Skeleton className="h-4 w-72" />, id: 'period' },
+        { cell: <Skeleton className="h-4 w-72" />, id: "period" },
         {
-          align: 'end',
+          align: "end",
           cell: (
             <div className="flex gap-4">
               <Skeleton className="h-7 w-14" />
               <Skeleton className="h-7 w-14" />
             </div>
           ),
-          id: 'actions',
+          id: "actions",
         },
       ]}
       rows={4}
     />
-  )
+  );
 }

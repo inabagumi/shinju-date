@@ -1,46 +1,51 @@
-'use client'
+"use client";
 
-import { useActionState, useState } from 'react'
+import { useActionState, useState } from "react";
+
 import {
   CheckboxField,
   InputField,
   SelectField,
   TextareaField,
-} from '@/components/form/form-fields'
-import { FormStatus } from '@/components/form/form-status'
-import { FormSubmitButton } from '@/components/form/form-submit-button'
-import { type ContactFormState, submitContactForm } from '../_lib/actions'
+} from "@/components/form/form-fields";
+import { FormStatus } from "@/components/form/form-status";
+import { FormSubmitButton } from "@/components/form/form-submit-button";
+
+import { type ContactFormState, submitContactForm } from "../_lib/actions";
 
 interface WantsReplyChange {
-  checked: boolean
-  state: ContactFormState | null
+  checked: boolean;
+  state: ContactFormState | null;
 }
 
 export function ContactForm() {
-  const [state, formAction, isPending] = useActionState(submitContactForm, null)
-  const fieldErrors = isPending ? undefined : state?.fieldErrors
+  const [state, formAction, isPending] = useActionState(
+    submitContactForm,
+    null
+  );
+  const fieldErrors = isPending ? undefined : state?.fieldErrors;
   // React resets the form after the action, so restore the submitted values
   // when it fails. They are absent on success, which clears the form.
-  const values = state?.values
+  const values = state?.values;
   // The checkbox follows the submitted value after each submission and the
   // user's last change in between. Tying the change to the state it was made
   // in keeps the email field in sync with the checkbox after the reset.
   const [wantsReplyChange, setWantsReplyChange] =
-    useState<WantsReplyChange | null>(null)
+    useState<WantsReplyChange | null>(null);
   const wantsReply =
     wantsReplyChange && wantsReplyChange.state === state
       ? wantsReplyChange.checked
-      : values?.wantsReply === 'on'
+      : values?.wantsReply === "on";
 
   return (
     <form action={formAction} className="space-y-6">
       {/* Contact Type */}
       <SelectField
-        defaultValue={values?.type ?? ''}
+        defaultValue={values?.type ?? ""}
         error={fieldErrors?.type}
         // React does not apply a changed `defaultValue` to a mounted
         // <select>, so remount it to restore the submitted value.
-        key={values?.type ?? ''}
+        key={values?.type ?? ""}
         label="お問い合わせ種別"
         name="type"
         required
@@ -62,7 +67,7 @@ export function ContactForm() {
 
       {/* Reply Checkbox */}
       <CheckboxField
-        defaultChecked={values?.wantsReply === 'on'}
+        defaultChecked={values?.wantsReply === "on"}
         label="返信を希望する"
         name="wantsReply"
         onChange={(e) =>
@@ -98,5 +103,5 @@ export function ContactForm() {
 
       <FormStatus state={isPending ? null : state} />
     </form>
-  )
+  );
 }

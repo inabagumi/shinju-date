@@ -1,99 +1,101 @@
-'use server'
+"use server";
 
-import { CACHE_TAGS } from '@shinju-date/constants'
-import { revalidateTags } from '@shinju-date/web-cache'
-import { revalidatePath } from 'next/cache'
+import { CACHE_TAGS } from "@shinju-date/constants";
+import { revalidateTags } from "@shinju-date/web-cache";
+import { revalidatePath } from "next/cache";
+
 import {
   ActionError,
   type ActionResult,
   adminAction,
   adminFormAction,
-} from '@/lib/action'
-import { createAuditLog } from '@/lib/audit-log'
-import { termSchema, updateTermSchema } from '../_lib/schema'
+} from "@/lib/action";
+import { createAuditLog } from "@/lib/audit-log";
 
-const ID_REQUIRED_ERROR = 'IDが指定されていません。'
+import { termSchema, updateTermSchema } from "../_lib/schema";
+
+const ID_REQUIRED_ERROR = "IDが指定されていません。";
 
 async function revalidateTerms(): Promise<void> {
-  revalidatePath('/terms')
-  await revalidateTags([CACHE_TAGS.VIDEOS])
+  revalidatePath("/terms");
+  await revalidateTags([CACHE_TAGS.VIDEOS]);
 }
 
 export const createTermAction = adminFormAction(
-  'createTermAction',
+  "createTermAction",
   termSchema,
   async ({ supabaseClient }, { readings, synonyms, term }) => {
     const { data: newTerm, error } = await supabaseClient
-      .from('terms')
+      .from("terms")
       .insert({ readings, synonyms, term })
-      .select('id, term')
-      .single()
+      .select("id, term")
+      .single();
 
     if (error) {
-      throw error
+      throw error;
     }
 
-    await createAuditLog(supabaseClient, 'TERM_CREATE', newTerm.id, {
+    await createAuditLog(supabaseClient, "TERM_CREATE", newTerm.id, {
       entityName: newTerm.term,
-    })
+    });
 
-    await revalidateTerms()
-  },
-)
+    await revalidateTerms();
+  }
+);
 
 export const updateTermAction = adminFormAction(
-  'updateTermAction',
+  "updateTermAction",
   updateTermSchema,
   async ({ supabaseClient }, { id, readings, synonyms, term }) => {
     const { data: updatedTerm, error } = await supabaseClient
-      .from('terms')
+      .from("terms")
       .update({
         readings,
         synonyms,
         term,
       })
-      .eq('id', id)
-      .select('term')
-      .single()
+      .eq("id", id)
+      .select("term")
+      .single();
 
     if (error) {
-      throw error
+      throw error;
     }
 
-    await createAuditLog(supabaseClient, 'TERM_UPDATE', id, {
+    await createAuditLog(supabaseClient, "TERM_UPDATE", id, {
       entityName: updatedTerm.term,
-    })
+    });
 
-    await revalidateTerms()
+    await revalidateTerms();
   },
   // `id` は隠しフィールドで、画面に対応する入力欄がない
-  { hiddenFields: ['id'] },
-)
+  { hiddenFields: ["id"] }
+);
 
 export const deleteTermAction = adminAction(
-  'deleteTermAction',
+  "deleteTermAction",
   async ({ supabaseClient }, id: string): Promise<ActionResult> => {
     if (!id) {
-      throw new ActionError(ID_REQUIRED_ERROR)
+      throw new ActionError(ID_REQUIRED_ERROR);
     }
 
     const { data: deletedTerm, error } = await supabaseClient
-      .from('terms')
+      .from("terms")
       .delete()
-      .eq('id', id)
-      .select('term')
-      .single()
+      .eq("id", id)
+      .select("term")
+      .single();
 
     if (error) {
-      throw error
+      throw error;
     }
 
-    await createAuditLog(supabaseClient, 'TERM_DELETE', id, {
+    await createAuditLog(supabaseClient, "TERM_DELETE", id, {
       entityName: deletedTerm.term,
-    })
+    });
 
-    await revalidateTerms()
+    await revalidateTerms();
 
-    return { success: true }
-  },
-)
+    return { success: true };
+  }
+);

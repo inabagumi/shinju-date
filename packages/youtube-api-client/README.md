@@ -33,7 +33,7 @@ import {
   type FilteredYouTubeChannel,
   type FilteredYouTubeVideo,
   type FilteredYouTubePlaylistItem,
-} from '@shinju-date/youtube-api-client'
+} from "@shinju-date/youtube-api-client";
 ```
 
 ### Get YouTube channels
@@ -54,16 +54,16 @@ for await (const channel of getChannels({ ids: channelIds })) {
 import {
   parseYouTubeChannelIdentifier,
   resolveYouTubeChannel,
-} from '@shinju-date/youtube-api-client'
+} from "@shinju-date/youtube-api-client";
 
 const identifier = parseYouTubeChannelIdentifier(
-  'https://www.youtube.com/@example',
-)
+  "https://www.youtube.com/@example"
+);
 // => { kind: 'handle', handle: 'example' }
 
 if (identifier) {
-  const channel = await resolveYouTubeChannel(identifier)
-  console.log(channel?.id, channel?.snippet.title, channel?.snippet.customUrl)
+  const channel = await resolveYouTubeChannel(identifier);
+  console.log(channel?.id, channel?.snippet.title, channel?.snippet.customUrl);
 }
 ```
 
@@ -110,11 +110,11 @@ import {
   getPublishedAt,
   getVideoKind,
   getVideoStatus,
-} from '@shinju-date/youtube-api-client'
+} from "@shinju-date/youtube-api-client";
 
-getVideoStatus(video, now) // 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
-getVideoKind(video) // 'standard' | 'short'
-getPublishedAt(video) // start of the broadcast, or the publication time
+getVideoStatus(video, now); // 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
+getVideoKind(video); // 'standard' | 'short'
+getPublishedAt(video); // start of the broadcast, or the publication time
 ```
 
 ### Using a specific client
@@ -122,10 +122,10 @@ getPublishedAt(video) // start of the broadcast, or the publication time
 Every function uses the shared client by default. Pass `client` to use another one (for example a fake in tests):
 
 ```typescript
-import { youtube_v3 as youtube } from '@googleapis/youtube'
-import { getVideos } from '@shinju-date/youtube-api-client'
+import { youtube_v3 as youtube } from "@googleapis/youtube";
+import { getVideos } from "@shinju-date/youtube-api-client";
 
-const client = new youtube.Youtube({ auth: apiKey })
+const client = new youtube.Youtube({ auth: apiKey });
 
 for await (const video of getVideos({ client, ids: videoIds })) {
   // ...
@@ -139,9 +139,9 @@ for await (const video of getVideos({ client, ids: videoIds })) {
 `getChannels`, `getVideos` and `getVideoIds` accept any number of IDs and split them into batches of `YOUTUBE_DATA_API_MAX_RESULTS` (50). The batches are requested one after another. Pass `schedule` to run each request through it instead: every batch is requested at once, and `schedule` decides how many requests run at a time.
 
 ```typescript
-import PQueue from 'p-queue'
+import PQueue from "p-queue";
 
-const queue = new PQueue({ concurrency: 5 })
+const queue = new PQueue({ concurrency: 5 });
 
 for await (const video of getVideos({
   ids: videoIds,

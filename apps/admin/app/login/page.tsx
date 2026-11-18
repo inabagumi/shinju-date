@@ -1,20 +1,22 @@
-import type { Metadata } from 'next'
-import { Suspense } from 'react'
+import type { Metadata } from "next";
+import { Suspense } from "react";
+
 import Form, {
   ErrorMessage,
   FormField,
   Input,
   Label,
   SubmitButton,
-} from '@/components/form'
-import { LogoIcon } from '@/components/logo-icon'
-import { Panel } from '@/components/panel'
-import { getSafeRedirectPath, REDIRECT_PARAM } from '@/lib/redirect-path'
-import { signInAction } from './_actions/sign-in'
+} from "@/components/form";
+import { LogoIcon } from "@/components/logo-icon";
+import { Panel } from "@/components/panel";
+import { getSafeRedirectPath, REDIRECT_PARAM } from "@/lib/redirect-path";
+
+import { signInAction } from "./_actions/sign-in";
 
 export const metadata: Metadata = {
-  title: 'ログイン',
-}
+  title: "ログイン",
+};
 
 /**
  * ログイン後の戻り先をフォームと一緒に送るための hidden input。
@@ -23,18 +25,18 @@ export const metadata: Metadata = {
  */
 async function RedirectPathInput({
   searchParams,
-}: Pick<PageProps<'/login'>, 'searchParams'>) {
-  const { [REDIRECT_PARAM]: value } = await searchParams
-  const redirectPath = getSafeRedirectPath(value)
+}: Pick<PageProps<"/login">, "searchParams">) {
+  const { [REDIRECT_PARAM]: value } = await searchParams;
+  const redirectPath = getSafeRedirectPath(value);
 
-  if (redirectPath === '/') {
-    return null
+  if (redirectPath === "/") {
+    return null;
   }
 
-  return <input name={REDIRECT_PARAM} type="hidden" value={redirectPath} />
+  return <input name={REDIRECT_PARAM} type="hidden" value={redirectPath} />;
 }
 
-export default function Login({ searchParams }: PageProps<'/login'>) {
+export default function Login({ searchParams }: PageProps<"/login">) {
   return (
     <div className="grid min-h-svh place-items-center bg-background p-4">
       <div className="grid w-full max-w-md gap-6">
@@ -73,5 +75,5 @@ export default function Login({ searchParams }: PageProps<'/login'>) {
         </Panel>
       </div>
     </div>
-  )
+  );
 }

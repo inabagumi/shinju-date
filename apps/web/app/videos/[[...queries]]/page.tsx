@@ -1,50 +1,52 @@
-import type { Metadata, ResolvingMetadata } from 'next'
-import { Suspense } from 'react'
-import { SearchResultsSkeleton } from '@/components/search-results'
-import { createPageMetadata } from '@/lib/metadata'
-import { TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
-import { parseQueries } from '@/lib/url'
+import type { Metadata, ResolvingMetadata } from "next";
+import { Suspense } from "react";
+
+import { SearchResultsSkeleton } from "@/components/search-results";
+import { createPageMetadata } from "@/lib/metadata";
+import { TALENT_SEARCH_PARAM } from "@/lib/talent-filter";
+import { parseQueries } from "@/lib/url";
 import {
   getVideosCalendarPath,
   getVideosPath,
   parseVideoKindFilter,
   VIDEO_KIND_SEARCH_PARAM,
-} from '@/lib/video-kind-filter'
+} from "@/lib/video-kind-filter";
+
 import {
   getSelectedTalentIds,
   VideosPageHeading,
   VideosPageHeadingSkeleton,
   VideosPageResults,
-} from './_components/videos-page-sections'
+} from "./_components/videos-page-sections";
 
 export async function generateMetadata(
-  { params, searchParams }: PageProps<'/videos/[[...queries]]'>,
-  parent: ResolvingMetadata,
+  { params, searchParams }: PageProps<"/videos/[[...queries]]">,
+  parent: ResolvingMetadata
 ): Promise<Metadata> {
   const [{ queries }, searchParamValues, parentMetadata] = await Promise.all([
     params,
     searchParams,
     parent,
-  ])
-  const query = parseQueries(queries)
+  ]);
+  const query = parseQueries(queries);
   const talentIds = await getSelectedTalentIds(
-    searchParamValues[TALENT_SEARCH_PARAM],
-  )
-  const kind = parseVideoKindFilter(searchParamValues[VIDEO_KIND_SEARCH_PARAM])
+    searchParamValues[TALENT_SEARCH_PARAM]
+  );
+  const kind = parseVideoKindFilter(searchParamValues[VIDEO_KIND_SEARCH_PARAM]);
   const metadata = createPageMetadata({
     // タレントでの絞り込みは検索結果と同じく、検索エンジンに載せない
     index: !query && talentIds.length === 0,
-    path: getVideosPath(query, 'all'),
-    title: query ? `『${query}』の検索結果` : '動画一覧',
-    type: 'article',
-  })
+    path: getVideosPath(query, "all"),
+    title: query ? `『${query}』の検索結果` : "動画一覧",
+    type: "article",
+  });
 
   return {
     ...metadata,
     alternates: {
       ...metadata.alternates,
       types: {
-        'text/calendar': !query ? getVideosCalendarPath(kind, talentIds) : null,
+        "text/calendar": !query ? getVideosCalendarPath(kind, talentIds) : null,
       },
     },
     openGraph: {
@@ -56,13 +58,13 @@ export async function generateMetadata(
         images: parentMetadata.openGraph.images,
       }),
     },
-  }
+  };
 }
 
 export default function VideosPage({
   params,
   searchParams,
-}: PageProps<'/videos/[[...queries]]'>) {
+}: PageProps<"/videos/[[...queries]]">) {
   return (
     <>
       <Suspense fallback={<VideosPageHeadingSkeleton />}>
@@ -72,5 +74,5 @@ export default function VideosPage({
         <VideosPageResults params={params} searchParams={searchParams} />
       </Suspense>
     </>
-  )
+  );
 }

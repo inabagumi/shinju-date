@@ -1,31 +1,15 @@
 {
-  "author": "Haneru Developers",
+  "name": "@shinju-date/monorepo",
+  "version": "1.0.0",
+  "private": true,
   "description": "SHINJU DATE is a web service for searching videos.",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "onFail": "download",
-      "version": "12.21.0"
-    },
-    "runtime": {
-      "name": "node",
-      "onFail": "download",
-      "version": "26.13.1"
-    }
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.6.8",
-    "supabase": "3.2.0",
-    "turbo": "2.11.11",
-    "typescript": "catalog:"
-  },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "name": "@shinju-date/monorepo",
-  "private": true,
+  "author": "Haneru Developers",
+  "type": "module",
   "scripts": {
     "build": "turbo build",
-    "check": "biome check",
+    "check": "biome check && oxfmt --check",
     "check:cache-directives": "node scripts/check-cache-directives.mjs",
     "check:dev-secrets": "node scripts/check-dev-secrets.mjs",
     "check:docs": "node scripts/check-docs.mjs",
@@ -35,12 +19,31 @@
     "db:schema": "./scripts/generate-types.sh",
     "db:import": "./scripts/import-data.sh",
     "dev": "turbo watch dev --env-mode=loose",
+    "fix": "biome check --fix && oxfmt",
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
     "test:scripts": "node --test 'scripts/**/*.test.mjs'",
     "typecheck": "turbo typecheck",
     "typegen": "turbo typegen"
   },
-  "type": "module",
-  "version": "1.0.0"
+  "devDependencies": {
+    "@biomejs/biome": "2.6.8",
+    "oxfmt": "0.79.0",
+    "supabase": "3.2.0",
+    "turbo": "2.11.11",
+    "typescript": "catalog:",
+    "ultracite": "8.2.1"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.21.0",
+      "onFail": "download"
+    },
+    "runtime": {
+      "name": "node",
+      "version": "26.13.1",
+      "onFail": "download"
+    }
+  }
 }

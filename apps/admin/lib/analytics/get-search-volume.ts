@@ -1,14 +1,16 @@
-import { REDIS_KEYS } from '@shinju-date/constants'
-import { logger } from '@shinju-date/logger'
-import { formatDateKey } from '@shinju-date/temporal-fns'
-import { cacheLife } from 'next/cache'
-import { getRedisClient } from '@/lib/redis'
-import { listDatesInRange } from './list-dates-in-range'
-import { type PeriodQuery, toDateRange } from './period'
+import { REDIS_KEYS } from "@shinju-date/constants";
+import { logger } from "@shinju-date/logger";
+import { formatDateKey } from "@shinju-date/temporal-fns";
+import { cacheLife } from "next/cache";
+
+import { getRedisClient } from "@/lib/redis";
+
+import { listDatesInRange } from "./list-dates-in-range";
+import { type PeriodQuery, toDateRange } from "./period";
 
 export interface DailySearchVolume {
-  count: number
-  date: string
+  count: number;
+  date: string;
 }
 
 /**
@@ -18,42 +20,40 @@ export interface DailySearchVolume {
 export async function getSearchVolume({
   range,
 }: PeriodQuery): Promise<DailySearchVolume[]> {
-  'use cache: private'
+  "use cache: private";
 
-  cacheLife('minutes')
+  cacheLife("minutes");
 
   try {
-    const redisClient = getRedisClient()
-    const { end, start } = toDateRange(range)
-    const dates = listDatesInRange(start, end)
+    const redisClient = getRedisClient();
+    const { end, start } = toDateRange(range);
+    const dates = listDatesInRange(start, end);
 
     if (dates.length === 0) {
-      return []
+      return [];
     }
 
     // Fetch every day in a single request instead of one round trip per day
-    const pipeline = redisClient.pipeline()
+    const pipeline = redisClient.pipeline();
     for (const date of dates) {
       pipeline.get<number>(
-        `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${formatDateKey(date)}`,
-      )
+        `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${formatDateKey(date)}`
+      );
     }
-    const counts = await pipeline.exec<(number | null)[]>()
+    const counts = await pipeline.exec<(number | null)[]>();
 
-    const volumes = dates.map(
-      (date, index): DailySearchVolume => ({
-        count: counts[index] ?? 0,
-        date: date.toString(),
-      }),
-    )
+    const volumes = dates.map((date, index): DailySearchVolume => ({
+      count: counts[index] ?? 0,
+      date: date.toString(),
+    }));
 
-    return volumes
+    return volumes;
   } catch (error) {
-    logger.error('Redisから検索ボリュームの取得に失敗しました', {
+    logger.error("Redisから検索ボリュームの取得に失敗しました", {
       endDate: range.end,
       error,
       startDate: range.start,
-    })
-    return []
+    });
+    return [];
   }
 }

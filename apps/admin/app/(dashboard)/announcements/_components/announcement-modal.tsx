@@ -1,10 +1,11 @@
-'use client'
+"use client";
 
-import { TIME_ZONE } from '@shinju-date/constants'
-import type { Tables } from '@shinju-date/database'
-import { Button } from '@shinju-date/ui'
-import { useMemo } from 'react'
-import type { FormState } from '@/components/form'
+import { TIME_ZONE } from "@shinju-date/constants";
+import type { Tables } from "@shinju-date/database";
+import { Button } from "@shinju-date/ui";
+import { useMemo } from "react";
+
+import type { FormState } from "@/components/form";
 import {
   Checkbox,
   ErrorMessage,
@@ -13,22 +14,26 @@ import {
   Label,
   Select,
   Textarea,
-} from '@/components/form'
-import { FormDialog } from '@/components/form-dialog'
-import { createAnnouncementAction, updateAnnouncementAction } from '../_actions'
+} from "@/components/form";
+import { FormDialog } from "@/components/form-dialog";
+
+import {
+  createAnnouncementAction,
+  updateAnnouncementAction,
+} from "../_actions";
 
 // Convert datetime-local format to ISO string
 function toISOString(dateTimeLocal: string): string {
   // Parse as plain datetime in JST timezone
-  const plainDateTime = Temporal.PlainDateTime.from(dateTimeLocal)
-  const zonedDateTime = plainDateTime.toZonedDateTime(TIME_ZONE)
-  return zonedDateTime.toInstant().toString()
+  const plainDateTime = Temporal.PlainDateTime.from(dateTimeLocal);
+  const zonedDateTime = plainDateTime.toZonedDateTime(TIME_ZONE);
+  return zonedDateTime.toInstant().toString();
 }
 
 export function AnnouncementModal({
   announcement,
 }: {
-  announcement?: Tables<'announcements'>
+  announcement?: Tables<"announcements">;
 }) {
   const defaultStartAt = useMemo(
     () =>
@@ -36,63 +41,63 @@ export function AnnouncementModal({
         ? Temporal.Instant.from(announcement.start_at)
         : Temporal.Now.instant().round({
             roundingIncrement: 30,
-            roundingMode: 'expand',
-            smallestUnit: 'minute',
+            roundingMode: "expand",
+            smallestUnit: "minute",
           })
       ).toZonedDateTimeISO(TIME_ZONE),
-    [announcement],
-  )
+    [announcement]
+  );
   const defaultEndAt = useMemo(
     () =>
       announcement
         ? Temporal.Instant.from(announcement.end_at).toZonedDateTimeISO(
-            TIME_ZONE,
+            TIME_ZONE
           )
         : defaultStartAt.add({ weeks: 1 }),
-    [announcement, defaultStartAt],
-  )
+    [announcement, defaultStartAt]
+  );
 
-  const isEditing = !!announcement
+  const isEditing = !!announcement;
 
   const handleAction = async (
     currentState: FormState,
-    formData: FormData,
+    formData: FormData
   ): Promise<FormState> => {
     // Convert datetime-local values to ISO strings
-    const startAtLocal = formData.get('start_at_local') as string
-    const endAtLocal = formData.get('end_at_local') as string
+    const startAtLocal = formData.get("start_at_local") as string;
+    const endAtLocal = formData.get("end_at_local") as string;
 
     // Always set start_at and end_at, even if empty (for validation)
-    if (startAtLocal && startAtLocal.trim() !== '') {
-      formData.set('start_at', toISOString(startAtLocal))
+    if (startAtLocal && startAtLocal.trim() !== "") {
+      formData.set("start_at", toISOString(startAtLocal));
     } else {
-      formData.set('start_at', '')
+      formData.set("start_at", "");
     }
 
-    if (endAtLocal && endAtLocal.trim() !== '') {
-      formData.set('end_at', toISOString(endAtLocal))
+    if (endAtLocal && endAtLocal.trim() !== "") {
+      formData.set("end_at", toISOString(endAtLocal));
     } else {
-      formData.set('end_at', '')
+      formData.set("end_at", "");
     }
 
     const action = isEditing
       ? updateAnnouncementAction
-      : createAnnouncementAction
+      : createAnnouncementAction;
 
-    return action(currentState, formData)
-  }
+    return action(currentState, formData);
+  };
 
   return (
     <FormDialog
       action={handleAction}
       description={
         isEditing
-          ? 'お知らせの内容を編集してください。'
-          : 'サイト全体に表示するお知らせを作成してください。'
+          ? "お知らせの内容を編集してください。"
+          : "サイト全体に表示するお知らせを作成してください。"
       }
       size="lg"
-      submitLabel={isEditing ? '更新' : '追加'}
-      title={isEditing ? 'お知らせを編集' : '新しいお知らせを追加'}
+      submitLabel={isEditing ? "更新" : "追加"}
+      title={isEditing ? "お知らせを編集" : "新しいお知らせを追加"}
       trigger={
         isEditing ? (
           <Button size="sm" variant="secondary">
@@ -107,7 +112,7 @@ export function AnnouncementModal({
       <FormField name="message">
         <Label>メッセージ</Label>
         <Textarea
-          defaultValue={announcement?.message ?? ''}
+          defaultValue={announcement?.message ?? ""}
           required
           rows={3}
         />
@@ -115,7 +120,7 @@ export function AnnouncementModal({
       </FormField>
       <FormField name="level">
         <Label>レベル</Label>
-        <Select defaultValue={announcement?.level ?? 'info'}>
+        <Select defaultValue={announcement?.level ?? "info"}>
           <option value="info">情報 (青)</option>
           <option value="warning">警告 (黄)</option>
           <option value="alert">重要 (赤)</option>
@@ -127,7 +132,7 @@ export function AnnouncementModal({
         <Input
           defaultValue={defaultStartAt
             .toPlainDateTime()
-            .toString({ smallestUnit: 'minute' })}
+            .toString({ smallestUnit: "minute" })}
           required
           step={60 * 30}
           type="datetime-local"
@@ -139,7 +144,7 @@ export function AnnouncementModal({
         <Input
           defaultValue={defaultEndAt
             .toPlainDateTime()
-            .toString({ smallestUnit: 'minute' })}
+            .toString({ smallestUnit: "minute" })}
           required
           step={60 * 30}
           type="datetime-local"
@@ -154,5 +159,5 @@ export function AnnouncementModal({
         <ErrorMessage />
       </FormField>
     </FormDialog>
-  )
+  );
 }

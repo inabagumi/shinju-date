@@ -1,21 +1,23 @@
-'use server'
+"use server";
 
-import { logger } from '@shinju-date/logger'
-import { BackfillRuns } from '@shinju-date/video-backfill'
-import { ActionError, type ActionResult, adminAction } from '@/lib/action'
-import { createAuditLog } from '@/lib/audit-log'
-import { getRedisClient } from '@/lib/redis'
-import { getBackfillAccounts } from '../_lib/backfill-accounts'
+import { logger } from "@shinju-date/logger";
+import { BackfillRuns } from "@shinju-date/video-backfill";
+
+import { ActionError, type ActionResult, adminAction } from "@/lib/action";
+import { createAuditLog } from "@/lib/audit-log";
+import { getRedisClient } from "@/lib/redis";
+
+import { getBackfillAccounts } from "../_lib/backfill-accounts";
 import {
   countTargets,
   readVideoBackfillRun,
   type VideoBackfillRunState,
-} from '../_lib/get-video-backfill-run'
+} from "../_lib/get-video-backfill-run";
 
 /** 取得漏れチェックをキューに追加できたときに、画面に知らせること */
 interface VideoBackfillRunRequestSummary {
   /** 成功のトーストに出す文 */
-  message: string
+  message: string;
 }
 
 /**
@@ -32,58 +34,60 @@ interface VideoBackfillRunRequestSummary {
  * - 一部のアカウントだけを追加できなかったときは、成功として返し、`warnings` で知らせる
  */
 export const requestVideoBackfillRunAction = adminAction(
-  'requestVideoBackfillRunAction',
+  "requestVideoBackfillRunAction",
   async ({
     supabaseClient,
     user,
   }): Promise<ActionResult<VideoBackfillRunRequestSummary>> => {
-    const { targets } = await getBackfillAccounts(supabaseClient)
+    const { targets } = await getBackfillAccounts(supabaseClient);
 
     if (targets.length === 0) {
-      throw new ActionError('active なタレントに紐づくアカウントはありません。')
+      throw new ActionError(
+        "active なタレントに紐づくアカウントはありません。"
+      );
     }
 
     const result = await new BackfillRuns(getRedisClient()).start(targets, {
       onError: (request, error) => {
-        logger.error('過去動画の取り込みをキューに追加できませんでした', {
+        logger.error("過去動画の取り込みをキューに追加できませんでした", {
           accountId: request.accountId,
           error,
           provider: request.provider,
           talentId: request.talentId,
-        })
+        });
       },
       requestedBy: user.id,
-    })
+    });
 
     switch (result.status) {
-      case 'active':
-        throw new ActionError('全タレントの取得漏れチェックは既に実行中です。')
-      case 'busy':
+      case "active":
+        throw new ActionError("全タレントの取得漏れチェックは既に実行中です。");
+      case "busy":
         throw new ActionError(
-          '別の取得漏れチェックの依頼を処理しています。しばらくしてから再度お試しください。',
-        )
-      case 'empty':
+          "別の取得漏れチェックの依頼を処理しています。しばらくしてから再度お試しください。"
+        );
+      case "empty":
         throw new ActionError(
           result.failed > 0
-            ? '取得漏れチェックをキューに追加できませんでした。'
-            : 'すべてのアカウントで過去動画の取り込みが実行中です。',
-        )
+            ? "取得漏れチェックをキューに追加できませんでした。"
+            : "すべてのアカウントで過去動画の取り込みが実行中です。"
+        );
     }
 
-    const { failed, run, skipped } = result
+    const { failed, run, skipped } = result;
 
-    await createAuditLog(supabaseClient, 'VIDEO_BACKFILL', run.id, {
+    await createAuditLog(supabaseClient, "VIDEO_BACKFILL", run.id, {
       accounts: run.jobs.length,
       entityName: `全タレントの取得漏れチェック（${run.jobs.length}件）`,
       failed,
-      scope: 'all',
+      scope: "all",
       skipped,
       targets: countTargets(targets),
-    })
+    });
 
     const message = `全タレントの取得漏れチェックを${run.jobs.length}件キューに追加しました${
-      skipped > 0 ? `（実行中の${skipped}件は除く）` : ''
-    }。`
+      skipped > 0 ? `（実行中の${skipped}件は除く）` : ""
+    }。`;
 
     return {
       data: { message },
@@ -95,17 +99,17 @@ export const requestVideoBackfillRunAction = adminAction(
             ],
           }
         : {}),
-    }
-  },
-)
+    };
+  }
+);
 
 /**
  * 全タレントの取得漏れチェックの対象数と、最新のチェックの進捗を返す。定期的な再取得に使う。
  */
 export const getVideoBackfillRunAction = adminAction(
-  'getVideoBackfillRunAction',
+  "getVideoBackfillRunAction",
   async ({ supabaseClient }): Promise<ActionResult<VideoBackfillRunState>> => ({
     data: await readVideoBackfillRun(supabaseClient),
     success: true,
-  }),
-)
+  })
+);

@@ -1,32 +1,33 @@
-import { describe, expect, it } from 'vitest'
-import { createErrorResponse } from './create-error-response.js'
+import { describe, expect, it } from "vitest";
 
-describe('createErrorResponse', () => {
-  it('should create an error response with default status 500', async () => {
-    const response = createErrorResponse('Something went wrong', {})
+import { createErrorResponse } from "./create-error-response.js";
 
-    expect(response.status).toBe(500)
-    expect(response.headers.get('Cache-Control')).toBe('no-store')
+describe("createErrorResponse", () => {
+  it("should create an error response with default status 500", async () => {
+    const response = createErrorResponse("Something went wrong", {});
 
-    const json = await response.json()
-    expect(json).toEqual({ error: 'Something went wrong' })
-  })
+    expect(response.status).toBe(500);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
 
-  it('should create an error response with custom status', async () => {
-    const response = createErrorResponse('Not found', { status: 404 })
+    const json = await response.json();
+    expect(json).toEqual({ error: "Something went wrong" });
+  });
 
-    expect(response.status).toBe(404)
+  it("should create an error response with custom status", async () => {
+    const response = createErrorResponse("Not found", { status: 404 });
 
-    const json = await response.json()
-    expect(json).toEqual({ error: 'Not found' })
-  })
+    expect(response.status).toBe(404);
 
-  it('should create an unauthorized response', async () => {
-    const response = createErrorResponse('Unauthorized', { status: 401 })
+    const json = await response.json();
+    expect(json).toEqual({ error: "Not found" });
+  });
 
-    expect(response.status).toBe(401)
+  it("should create an unauthorized response", async () => {
+    const response = createErrorResponse("Unauthorized", { status: 401 });
 
-    const json = await response.json()
-    expect(json).toEqual({ error: 'Unauthorized' })
-  })
-})
+    expect(response.status).toBe(401);
+
+    const json = await response.json();
+    expect(json).toEqual({ error: "Unauthorized" });
+  });
+});

@@ -34,8 +34,10 @@ Dev Container設定（`.devcontainer/`）を変更する場合は、`@devcontain
 **重要**: すべてのコード変更後は、必ず以下のコマンドを実行してください。
 
 ```bash
-pnpm run check --fix
+pnpm run fix
 ```
+
+リントは Biome、整形（import の並べ替えと Tailwind のクラスの並べ替えを含む）は [Ultracite](https://www.ultracite.ai/) のプリセットを使った oxfmt で行います。`pnpm run fix` は自動修正と整形をし、`pnpm run check` は直さずに確かめるだけです（CI と同じ）。
 
 Biome の組み込みのルールで確かめられない決まりは、`config/biome/` に GritQL のプラグインとして置き、`biome.json` の `plugins` で有効にしています。プラグインと `scripts/` のスクリプトを変えたら、テストを実行してください。
 
@@ -170,8 +172,8 @@ git checkout -b fix/issue-description
 - テストが通ることを確認
 
 ```bash
-# 品質チェック
-pnpm run check --fix
+# 品質チェック（自動修正と整形）
+pnpm run fix
 
 # 型チェック
 pnpm run typecheck
@@ -199,7 +201,7 @@ pnpm run build
 
 CI は、プルリクエストごとに次のことを確かめます。どれかが失敗すると、マージできません。
 
-- **リント**: Biome のフォーマットとリントに違反がないこと。Markdown の中の、リポジトリの中へのリンクとファイルのパスが実在すること
+- **リント**: Biome のリントと oxfmt の整形に違反がないこと。Markdown の中の、リポジトリの中へのリンクとファイルのパスが実在すること
 - **URL**: タイトル、本文、コミットのメッセージに、ほとんどの人が開けない URL がないこと（[コミットメッセージ](#コミットメッセージ)）
 - **型チェック**: テストのファイルを含めて、すべてのパッケージとアプリケーションの型に誤りがないこと
 - **テスト**: パッケージとアプリケーションのユニットテストが通ること

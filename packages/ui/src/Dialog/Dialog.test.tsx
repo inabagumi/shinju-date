@@ -1,6 +1,7 @@
-import { act, render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { act, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it } from "vitest";
+
 import {
   Dialog,
   DialogClose,
@@ -10,7 +11,7 @@ import {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
-} from './Dialog'
+} from "./Dialog";
 
 function renderDialog() {
   return render(
@@ -30,110 +31,112 @@ function renderDialog() {
           </DialogContent>
         </DialogPortal>
       </Dialog>
-    </>,
-  )
+    </>
+  );
 }
 
-describe('Dialog', () => {
-  it('opens with the trigger', async () => {
-    const user = userEvent.setup()
+describe("Dialog", () => {
+  it("opens with the trigger", async () => {
+    const user = userEvent.setup();
 
-    renderDialog()
+    renderDialog();
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: '削除する' }))
+    await user.click(screen.getByRole("button", { name: "削除する" }));
 
-    const dialog = screen.getByRole('dialog')
+    const dialog = screen.getByRole("dialog");
 
-    expect(dialog).toBeVisible()
+    expect(dialog).toBeVisible();
     expect(dialog).toHaveClass(
-      'rounded-container',
-      'bg-surface',
-      'text-foreground',
-      'shadow-overlay',
-    )
-    expect(screen.getByTestId('overlay')).toHaveClass('fixed', 'inset-0')
-  })
+      "rounded-container",
+      "bg-surface",
+      "text-foreground",
+      "shadow-overlay"
+    );
+    expect(screen.getByTestId("overlay")).toHaveClass("fixed", "inset-0");
+  });
 
-  it('links the title and the description to the dialog', async () => {
-    const user = userEvent.setup()
+  it("links the title and the description to the dialog", async () => {
+    const user = userEvent.setup();
 
-    renderDialog()
+    renderDialog();
 
-    await user.click(screen.getByRole('button', { name: '削除する' }))
+    await user.click(screen.getByRole("button", { name: "削除する" }));
 
-    const dialog = screen.getByRole('dialog', { name: '動画を削除しますか？' })
-    const title = screen.getByText('動画を削除しますか？')
+    const dialog = screen.getByRole("dialog", { name: "動画を削除しますか？" });
+    const title = screen.getByText("動画を削除しますか？");
 
-    expect(dialog).toHaveAttribute('aria-labelledby', title.id)
-    expect(dialog).toHaveAccessibleDescription('削除した動画は元に戻せません。')
-    expect(title).toHaveClass('text-heading', 'font-bold')
-  })
+    expect(dialog).toHaveAttribute("aria-labelledby", title.id);
+    expect(dialog).toHaveAccessibleDescription(
+      "削除した動画は元に戻せません。"
+    );
+    expect(title).toHaveClass("text-heading", "font-bold");
+  });
 
-  it('closes with the Escape key', async () => {
-    const user = userEvent.setup()
+  it("closes with the Escape key", async () => {
+    const user = userEvent.setup();
 
-    renderDialog()
+    renderDialog();
 
-    const trigger = screen.getByRole('button', { name: '削除する' })
+    const trigger = screen.getByRole("button", { name: "削除する" });
 
-    await user.click(trigger)
-    await user.keyboard('{Escape}')
+    await user.click(trigger);
+    await user.keyboard("{Escape}");
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(trigger).toHaveFocus()
-  })
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
 
-  it('closes with the close button', async () => {
-    const user = userEvent.setup()
+  it("closes with the close button", async () => {
+    const user = userEvent.setup();
 
-    renderDialog()
+    renderDialog();
 
-    await user.click(screen.getByRole('button', { name: '削除する' }))
-    await user.click(screen.getByRole('button', { name: 'キャンセル' }))
+    await user.click(screen.getByRole("button", { name: "削除する" }));
+    await user.click(screen.getByRole("button", { name: "キャンセル" }));
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-  })
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
 
-  it('keeps the focus inside while open', async () => {
-    const user = userEvent.setup()
+  it("keeps the focus inside while open", async () => {
+    const user = userEvent.setup();
 
-    renderDialog()
+    renderDialog();
 
-    await user.click(screen.getByRole('button', { name: '削除する' }))
+    await user.click(screen.getByRole("button", { name: "削除する" }));
 
-    const cancel = screen.getByRole('button', { name: 'キャンセル' })
-    const remove = screen.getByRole('button', { name: '削除' })
+    const cancel = screen.getByRole("button", { name: "キャンセル" });
+    const remove = screen.getByRole("button", { name: "削除" });
 
-    expect(cancel).toHaveFocus()
+    expect(cancel).toHaveFocus();
 
-    await user.tab()
+    await user.tab();
 
-    expect(remove).toHaveFocus()
+    expect(remove).toHaveFocus();
 
-    await user.tab()
+    await user.tab();
 
-    expect(cancel).toHaveFocus()
+    expect(cancel).toHaveFocus();
 
-    await user.tab({ shift: true })
+    await user.tab({ shift: true });
 
-    expect(remove).toHaveFocus()
+    expect(remove).toHaveFocus();
 
     // ダイアログの外の要素は支援技術から隠れ、フォーカスを移しても中へ戻る
     expect(
-      screen.queryByRole('button', { name: 'ダイアログの外' }),
-    ).not.toBeInTheDocument()
+      screen.queryByRole("button", { name: "ダイアログの外" })
+    ).not.toBeInTheDocument();
 
-    const outside = screen.getByText('ダイアログの外')
+    const outside = screen.getByText("ダイアログの外");
 
     act(() => {
-      outside.focus()
-    })
+      outside.focus();
+    });
 
-    expect(outside).not.toHaveFocus()
-    expect(screen.getByRole('dialog')).toContainElement(
-      document.activeElement as HTMLElement,
-    )
-  })
-})
+    expect(outside).not.toHaveFocus();
+    expect(screen.getByRole("dialog")).toContainElement(
+      document.activeElement as HTMLElement
+    );
+  });
+});

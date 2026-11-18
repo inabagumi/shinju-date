@@ -210,7 +210,7 @@
 
 @layer base {
   @media (prefers-color-scheme: dark) {
-    :root:not([data-color-scheme='light']) {
+    :root:not([data-color-scheme="light"]) {
       --color-background: var(--color-zinc-950);
       --color-foreground: var(--color-zinc-100);
 
@@ -240,15 +240,15 @@
 
 /* ボタン・リンク・タブなど、押して操作する部品。部品から 2px 離して線を出す */
 @utility focus-ring {
-  @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
+  @apply focus-visible:outline-accent focus-visible:outline-2 focus-visible:outline-offset-2;
 }
 
 /* 文字を入力する部品。枠の線の色を変え、同じ色の線を外側に重ねる */
 @utility field-focus-ring {
-  @apply focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent;
+  @apply focus-visible:border-accent focus-visible:outline-accent focus-visible:outline-2 focus-visible:outline-offset-0;
 }
 
 /* 入力に誤りがある状態の、文字を入力する部品 */
 @utility field-focus-ring-danger {
-  @apply focus-visible:border-danger focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-danger;
+  @apply focus-visible:border-danger focus-visible:outline-danger focus-visible:outline-2 focus-visible:outline-offset-0;
 }

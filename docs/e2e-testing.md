@@ -150,17 +150,17 @@ E2Eテスト実行時、以下のAPIがMSWによってモックされます：
 ### 例：
 
 ```typescript
-import { expect, test } from '@playwright/test'
+import { expect, test } from "@playwright/test";
 
-test.describe('新しい機能', () => {
-  test('機能Aが動作する', async ({ page }) => {
-    await page.goto('http://localhost:3000/new-feature')
-    await page.waitForLoadState('networkidle')
+test.describe("新しい機能", () => {
+  test("機能Aが動作する", async ({ page }) => {
+    await page.goto("http://localhost:3000/new-feature");
+    await page.waitForLoadState("networkidle");
 
-    const heading = page.locator('h1')
-    await expect(heading).toBeVisible()
-  })
-})
+    const heading = page.locator("h1");
+    await expect(heading).toBeVisible();
+  });
+});
 ```
 
 ## トラブルシューティング

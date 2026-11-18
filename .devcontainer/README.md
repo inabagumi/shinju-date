@@ -10,11 +10,11 @@
 
 バージョンは、リポジトリのほかの設定に合わせています。
 
-| ツール    | Dev Container の設定                                    | 合わせる先                                                                  |
-| --------- | ------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Node.js   | `Dockerfile` の基底のイメージ（`typescript-node:5-26`） | `.node-version` と `package.json` の `devEngines`（同じメジャーバージョン） |
-| pnpm      | `Dockerfile` の `PNPM_VERSION`                          | `package.json` の `devEngines.packageManager`                               |
-| Terraform | `devcontainer.json` の Terraform の機能の `version`     | `terraform/versions.tf` の `required_version`                               |
+| ツール | Dev Container の設定 | 合わせる先 |
+| --- | --- | --- |
+| Node.js | `Dockerfile` の基底のイメージ（`typescript-node:5-26`） | `.node-version` と `package.json` の `devEngines`（同じメジャーバージョン） |
+| pnpm | `Dockerfile` の `PNPM_VERSION` | `package.json` の `devEngines.packageManager` |
+| Terraform | `devcontainer.json` の Terraform の機能の `version` | `terraform/versions.tf` の `required_version` |
 
 Node.js のメジャーバージョンは、Renovate が `.node-version` と一緒に上げます（共有プリセット（[inabagumi/.github](https://github.com/inabagumi/.github) の `renovate-config/default.json5`）の「Node.js major」のグループ）。
 
@@ -132,10 +132,10 @@ SQL を書いたら、`pnpm exec supabase db reset` でローカルに適用し�
 
 ## 設定を変更した場合
 
-| 変更したファイル                         | 反映のしかた                                                                           |
-| ---------------------------------------- | -------------------------------------------------------------------------------------- |
-| `Dockerfile`、`devcontainer.json`        | `Dev Containers: Rebuild Container` で、コンテナを作り直す                             |
-| `compose.yml`、`compose.override.yml`    | コンテナを作り直す（`devcontainer down` の後に `devcontainer up`）                     |
+| 変更したファイル | 反映のしかた |
+| --- | --- |
+| `Dockerfile`、`devcontainer.json` | `Dev Containers: Rebuild Container` で、コンテナを作り直す |
+| `compose.yml`、`compose.override.yml` | コンテナを作り直す（`devcontainer down` の後に `devcontainer up`） |
 | `post-create.sh`、`scripts/setup-dev.sh` | 次のコンテナの作成時に反映される。今のコンテナでは `./scripts/setup-dev.sh` を実行する |
 
 ## Dev Container のテスト

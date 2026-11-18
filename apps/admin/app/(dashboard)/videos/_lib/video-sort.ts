@@ -1,10 +1,11 @@
-import { buildSearchParamsHref } from '@/lib/search-params-href'
-import type { VideoSortField, VideoSortOrder } from './get-videos'
+import { buildSearchParamsHref } from "@/lib/search-params-href";
+
+import type { VideoSortField, VideoSortOrder } from "./get-videos";
 
 /** 動画の一覧の並べ替え */
 export interface VideoSort {
-  field: VideoSortField
-  order: VideoSortOrder
+  field: VideoSortField;
+  order: VideoSortOrder;
 }
 
 /**
@@ -16,18 +17,18 @@ export interface VideoSort {
 export function getVideoSortHref(
   searchParams: URLSearchParams | string,
   current: VideoSort,
-  field: VideoSortField,
+  field: VideoSortField
 ): string {
   return buildSearchParamsHref(
-    '/videos',
+    "/videos",
     searchParams,
     current.field === field
-      ? { sortOrder: current.order === 'asc' ? 'desc' : 'asc' }
-      : { sortField: field, sortOrder: 'desc' },
-  )
+      ? { sortOrder: current.order === "asc" ? "desc" : "asc" }
+      : { sortField: field, sortOrder: "desc" }
+  );
 }
 
 /** 並べ替えの向きを、見出しの `aria-sort` の値にする */
-export function toAriaSort(order: VideoSortOrder): 'ascending' | 'descending' {
-  return order === 'asc' ? 'ascending' : 'descending'
+export function toAriaSort(order: VideoSortOrder): "ascending" | "descending" {
+  return order === "asc" ? "ascending" : "descending";
 }

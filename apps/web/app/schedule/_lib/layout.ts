@@ -9,10 +9,10 @@
 /**
  * 1時間の高さ（rem）。`schedule-week.tsx` が `--hour` として CSS に渡す
  */
-export const HOUR_HEIGHT_REM = 4
+export const HOUR_HEIGHT_REM = 4;
 
 /** 1rem の px。ルートの文字サイズは変えていないので、ブラウザの既定の 16px */
-export const ROOT_FONT_SIZE = 16
+export const ROOT_FONT_SIZE = 16;
 
 /**
  * タイトルより上の高さ（px）。ラベルとハッシュタグの行は、1024px 以上で
@@ -24,10 +24,10 @@ export const ROOT_FONT_SIZE = 16
  * - 20: 1行目（`h-5`）
  * - 2: 1行目とタイトルの間（タイトルの `mt-0.5`）
  */
-export const ITEM_CHROME_HEIGHT = 8 + 2 + 2 + 20 + 2
+export const ITEM_CHROME_HEIGHT = 8 + 2 + 2 + 20 + 2;
 
 /**
  * タイトルの1行の高さ（px）。`text-meta` の文字サイズ 14px（0.875rem）と行の
  * 高さ 1.6（`packages/tailwind-config/theme.css`）の積
  */
-export const TITLE_LINE_HEIGHT = 0.875 * ROOT_FONT_SIZE * 1.6
+export const TITLE_LINE_HEIGHT = 0.875 * ROOT_FONT_SIZE * 1.6;
