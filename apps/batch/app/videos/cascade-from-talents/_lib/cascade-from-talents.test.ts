@@ -49,7 +49,7 @@ function createClientMock(options: {
     // Deferred thenable: resolve only when awaited so the chain is recorded
     // first.
     const thenable = {
-      // biome-ignore lint/suspicious/noThenProperty: intentional thenable mock for Supabase query chains
+      // oxlint-disable-next-line unicorn/no-thenable -- intentional thenable mock for Supabase query chains
       then(
         onfulfilled?: ((value: QueryResult) => unknown) | null,
         onrejected?: ((reason: unknown) => unknown) | null

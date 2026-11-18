@@ -28,7 +28,7 @@ export function Table({ className, ...props }: ComponentPropsWithRef<"table">) {
   return (
     <div
       className="relative w-full overflow-x-auto rounded-container border border-border bg-surface focus-ring"
-      // biome-ignore lint/a11y/noNoninteractiveTabindex: 横にはみ出した列をキーボードでもスクロールできるようにする
+      // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- 横にはみ出した列をキーボードでもスクロールできるようにする
       tabIndex={0}
     >
       <table

@@ -314,7 +314,6 @@ export function Label({ className, htmlFor, ...props }: LabelProps) {
   const { id } = useContext(FormFieldContext);
 
   return (
-    // biome-ignore lint/a11y/noLabelWithoutControl: ラッパーなので無効に。
     <label
       aria-disabled={pending ? true : undefined}
       className={twMerge(

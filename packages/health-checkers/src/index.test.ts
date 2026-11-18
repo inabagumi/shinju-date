@@ -1,4 +1,4 @@
-// biome-ignore-all lint/suspicious/noExplicitAny: Testing health check functions with any type for simplicity
+/* oxlint-disable typescript/no-explicit-any -- Testing health check functions with any type for simplicity */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Redis } from "@upstash/redis";

@@ -66,7 +66,7 @@ export function createFakeSupabaseClient(
         select() {
           return builder;
         },
-        // biome-ignore lint/suspicious/noThenProperty: Supabase query builders are thenable
+        // oxlint-disable-next-line unicorn/no-thenable -- Supabase query builders are thenable
         then(resolve: (result: unknown) => unknown) {
           const message = errors[table];
           if (message) {

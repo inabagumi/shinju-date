@@ -4,7 +4,7 @@ import { getVideoUrl } from "@/lib/video-url";
 
 import type { Video } from "./get-video-by-url";
 
-// biome-ignore lint/style/useConsistentTypeDefinitions: interface には暗黙のインデックスシグネチャがなく、vercelTrack の Record<string, AllowedPropertyValues> に渡せないため
+// oxlint-disable-next-line typescript/consistent-type-definitions -- interface には暗黙のインデックスシグネチャがなく、vercelTrack の Record<string, AllowedPropertyValues> に渡せないため
 type TrackProperties = {
   provider: "YouTube" | "Twitch";
   talent_id: string;

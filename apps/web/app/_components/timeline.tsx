@@ -125,7 +125,6 @@ export function TimelineSkeleton() {
       >
         <div className={VIDEO_CARD_LIST_CLASS_NAMES.row}>
           {Array.from({ length: 2 }, (_, index) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: 件数が決まっていて並びも変わらないスケルトンなので、インデックスをキーにする
             <div aria-hidden="true" className={ITEM_CLASS_NAME} key={index}>
               <span
                 className={twMerge(

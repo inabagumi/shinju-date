@@ -69,7 +69,7 @@ export default async function Image({
         }}
       >
         {icon ? (
-          // biome-ignore lint/performance/noImgElement: ImageResponse（next/og）では next/image を使えないため
+          // oxlint-disable-next-line nextjs/no-img-element -- ImageResponse（next/og）では next/image を使えないため
           <img
             alt=""
             height={ICON_SIZE}

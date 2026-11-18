@@ -98,7 +98,7 @@ export async function createOgImage(title: string): Promise<ImageResponse> {
           <path d={LOGO_PATH} fill={TEXT_COLOR} />
         </svg>
       </div>
-      {/* biome-ignore lint/performance/noImgElement: ImageResponse（next/og）では next/image を使えないため */}
+      {/* oxlint-disable-next-line nextjs/no-img-element -- ImageResponse（next/og）では next/image を使えないため */}
       <img
         alt=""
         height={KEY_VISUAL_SIZE.height}

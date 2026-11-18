@@ -48,9 +48,9 @@ async function run(
   supabase: { from: unknown; rpc: unknown }
 ) {
   return updateTermPopularity(
-    // biome-ignore lint/suspicious/noExplicitAny: Mocked Redis client
+    // oxlint-disable-next-line typescript/no-explicit-any -- Mocked Redis client
     redis as any,
-    // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
+    // oxlint-disable-next-line typescript/no-explicit-any -- Mocked Supabase client
     supabase as any
   );
 }
