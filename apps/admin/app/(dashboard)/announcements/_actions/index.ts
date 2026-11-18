@@ -4,7 +4,6 @@ import { CACHE_TAGS } from '@shinju-date/constants'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
-import * as z from 'zod'
 import {
   ActionError,
   type ActionResult,
@@ -12,62 +11,13 @@ import {
   adminFormAction,
 } from '@/lib/action'
 import { createAuditLog } from '@/lib/audit-log'
+import {
+  ANNOUNCEMENT_HIDDEN_FIELDS,
+  announcementSchema,
+  updateAnnouncementSchema,
+} from '../_lib/schema'
 
-const MESSAGE_REQUIRED_ERROR = 'お知らせメッセージを入力してください。'
 const ID_REQUIRED_ERROR = 'IDが指定されていません。'
-
-const createAnnouncementSchema = z.object({
-  enabled: z
-    .string()
-    .optional()
-    .transform((value) => value === 'true'),
-  end_at: z.string().optional(),
-  level: z.string().optional(),
-  message: z
-    .string({ error: MESSAGE_REQUIRED_ERROR })
-    .trim()
-    .min(1, MESSAGE_REQUIRED_ERROR),
-  start_at: z.string().optional(),
-})
-
-const updateAnnouncementSchema = createAnnouncementSchema.extend({
-  id: z.string({ error: ID_REQUIRED_ERROR }).min(1, ID_REQUIRED_ERROR),
-})
-
-interface AnnouncementPeriod {
-  end: Temporal.Instant
-  start: Temporal.Instant
-}
-
-/**
- * 掲載の開始日時と終了日時を読む。どちらかがない、形式が正しくない、終了が
- * 開始より後でないときは、`ActionError` を投げる
- */
-function parsePeriod(
-  startAt: string | undefined,
-  endAt: string | undefined,
-): AnnouncementPeriod {
-  if (!startAt?.trim() || !endAt?.trim()) {
-    throw new ActionError('開始日時と終了日時を入力してください。')
-  }
-
-  let period: AnnouncementPeriod
-
-  try {
-    period = {
-      end: Temporal.Instant.from(endAt),
-      start: Temporal.Instant.from(startAt),
-    }
-  } catch {
-    throw new ActionError('日時の形式が正しくありません。')
-  }
-
-  if (Temporal.Instant.compare(period.start, period.end) >= 0) {
-    throw new ActionError('終了日時は開始日時より後に設定してください。')
-  }
-
-  return period
-}
 
 async function revalidateAnnouncements(): Promise<void> {
   revalidatePath('/announcements')
@@ -77,18 +27,17 @@ async function revalidateAnnouncements(): Promise<void> {
 
 export const createAnnouncementAction = adminFormAction(
   'createAnnouncementAction',
-  createAnnouncementSchema,
+  announcementSchema,
   async (
     { supabaseClient },
-    { enabled, end_at: endAt, level, message, start_at: startAt },
+    { enabled, end_at: end, level, message, start_at: start },
   ) => {
-    const { end, start } = parsePeriod(startAt, endAt)
     const { data: newAnnouncement, error } = await supabaseClient
       .from('announcements')
       .insert({
         enabled,
         end_at: toDBString(end),
-        level: level || 'info',
+        level,
         message,
         start_at: toDBString(start),
       })
@@ -110,6 +59,7 @@ export const createAnnouncementAction = adminFormAction(
 
     await revalidateAnnouncements()
   },
+  { hiddenFields: ANNOUNCEMENT_HIDDEN_FIELDS },
 )
 
 export const updateAnnouncementAction = adminFormAction(
@@ -117,15 +67,14 @@ export const updateAnnouncementAction = adminFormAction(
   updateAnnouncementSchema,
   async (
     { supabaseClient },
-    { enabled, end_at: endAt, id, level, message, start_at: startAt },
+    { enabled, end_at: end, id, level, message, start_at: start },
   ) => {
-    const { end, start } = parsePeriod(startAt, endAt)
     const { data: updatedAnnouncement, error } = await supabaseClient
       .from('announcements')
       .update({
         enabled,
         end_at: toDBString(end),
-        level: level || 'info',
+        level,
         message,
         start_at: toDBString(start),
         updated_at: toDBString(Temporal.Now.instant()),
@@ -144,8 +93,8 @@ export const updateAnnouncementAction = adminFormAction(
 
     await revalidateAnnouncements()
   },
-  // `id` は隠しフィールドで、画面に対応する入力欄がない
-  { hiddenFields: ['id'] },
+  // `id` も隠しフィールドで、画面に対応する入力欄がない
+  { hiddenFields: [...ANNOUNCEMENT_HIDDEN_FIELDS, 'id'] },
 )
 
 export const deleteAnnouncementAction = adminAction(
