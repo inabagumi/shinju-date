@@ -1,187 +1,186 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { cacheLife, cacheTag } from 'next/cache'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  createTalent,
+  createThumbnail,
+  createTwitchUser,
+  createVideo,
+  createVideoOnTwitch,
+  createVideoOnYouTube,
+  createYouTubeChannel,
+} from '@/test/factories'
+import { mockNow } from '@/test/now'
+import {
+  failSupabase,
+  seedSupabase,
+  setupSupabase,
+  videoSeed,
+} from '@/test/supabase'
+import {
+  fetchOldestVideoDate,
+  fetchScheduleToday,
+  fetchScheduleVideos,
+} from './schedule'
 
-const query = vi.hoisted(() => ({
-  eq: vi.fn(),
-  gt: vi.fn(),
-  gte: vi.fn(),
-  in: vi.fn(),
-  is: vi.fn(),
-  limit: vi.fn(),
-  lt: vi.fn(),
-  lte: vi.fn(),
-  maybeSingle: vi.fn(),
-  neq: vi.fn(),
-  order: vi.fn(),
-  select: vi.fn(),
-}))
-
+// Vitest does not run `'use cache'`, so only what the fetchers pass to the
+// cache is checked
 vi.mock('next/cache', () => ({
   cacheLife: vi.fn(),
   cacheTag: vi.fn(),
 }))
 
-vi.mock('@/lib/supabase', () => ({
-  supabaseClient: {
-    from: vi.fn(() => query),
-  },
-}))
+setupSupabase()
 
-import { cacheLife, cacheTag } from 'next/cache'
-import { supabaseClient } from '@/lib/supabase'
-import {
-  fetchOldestVideoDate,
-  fetchScheduleToday,
-  fetchScheduleVideos,
-  type ScheduleVideo,
-} from './schedule'
+/** The IDs of the given rows or results, to compare them in order */
+function ids(rows: readonly { id: string }[]): string[] {
+  return rows.map((row) => row.id)
+}
+
+const talent = createTalent({ name: '朝霧ミオ' })
+const otherTalent = createTalent({ name: '風花リツ' })
+const channel = createYouTubeChannel({ talent_id: talent.id })
+const otherChannel = createYouTubeChannel({ talent_id: otherTalent.id })
+const twitchUser = createTwitchUser({
+  talent_id: otherTalent.id,
+  twitch_login_name: 'ritsu',
+})
+
+/** Put the talents, their accounts and the given videos in the database */
+function seedVideos(
+  rows: Parameters<typeof videoSeed>[0],
+): ReturnType<typeof seedSupabase> {
+  return seedSupabase({
+    talents: [talent, otherTalent],
+    twitchUsers: [twitchUser],
+    youtubeChannels: [channel, otherChannel],
+    ...videoSeed(rows),
+  })
+}
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('fetchScheduleVideos', () => {
-  function createScheduleVideo(
-    index: number,
-    overrides: Partial<ScheduleVideo> = {},
-  ): ScheduleVideo {
-    return {
-      duration: 'PT1H',
-      id: `video-${index}`,
-      platform: 'youtube',
-      published_at: '2026-11-10T12:00:00Z',
-      status: 'ENDED',
-      talent: { id: 'talent-1', name: '朝霧ミオ', theme_color: null },
-      title: `動画${index}`,
-      twitch_video: null,
-      video_kind: 'standard',
-      youtube_video: {
-        youtube_channel: {
-          name: null,
-          profile_image: null,
-          youtube_handle: null,
-        },
-        youtube_video_id: `YT${index}`,
-      },
-      ...overrides,
-    }
-  }
+  const video = (publishedAt: string, overrides = {}) =>
+    createVideoOnYouTube(channel, { published_at: publishedAt, ...overrides })
 
-  beforeEach(() => {
-    vi.clearAllMocks()
+  test('returns the standard videos of every status from Sunday to Saturday in Japan, by start', async () => {
+    // 00:00 on Sunday, 8 November in Japan
+    const first = video('2026-11-07T15:00:00Z', { status: 'ENDED' })
+    const published = video('2026-11-09T12:00:00Z', { status: 'PUBLISHED' })
+    const live = video('2026-11-12T12:00:00Z', { status: 'LIVE' })
+    const last = video('2026-11-14T14:59:59Z', { status: 'UPCOMING' })
 
-    query.select.mockReturnValue(query)
-    query.gte.mockReturnValue(query)
-    query.lt.mockReturnValue(query)
-    query.eq.mockReturnValue(query)
-    query.order.mockReturnValue(query)
-    query.limit.mockResolvedValue({ data: [], error: null })
-  })
+    await seedVideos([
+      last,
+      live,
+      first,
+      published,
+      video('2026-11-07T14:59:59Z'),
+      // 00:00 on Sunday, 15 November in Japan
+      video('2026-11-14T15:00:00Z'),
+      video('2026-11-10T12:00:00Z', { video_kind: 'short' }),
+    ])
 
-  test('requests the standard videos from Sunday to Saturday in Japan', async () => {
-    await fetchScheduleVideos('2026-11-08')
-
-    expect(supabaseClient.from).toHaveBeenCalledWith('videos')
-    // 00:00 on Sunday, 8 November and on Sunday, 15 November in Japan
-    expect(query.gte).toHaveBeenCalledWith(
-      'published_at',
-      '2026-11-07T15:00:00Z',
-    )
-    expect(query.lt).toHaveBeenCalledWith(
-      'published_at',
-      '2026-11-14T15:00:00Z',
-    )
-    expect(query.eq).toHaveBeenCalledWith('video_kind', 'standard')
-    expect(query.eq).not.toHaveBeenCalledWith('status', expect.anything())
-    expect(query.order).toHaveBeenCalledWith('published_at', {
-      ascending: true,
-    })
-    expect(query.limit).toHaveBeenCalledWith(1000)
+    expect(ids(await fetchScheduleVideos('2026-11-08'))).toEqual([
+      first.video.id,
+      published.video.id,
+      live.video.id,
+      last.video.id,
+    ])
     expect(cacheLife).toHaveBeenCalledWith('hours')
     expect(cacheTag).toHaveBeenCalledWith('videos')
   })
 
-  test('does not select the thumbnail but the theme color', async () => {
-    await fetchScheduleVideos('2026-11-08')
+  test('returns the theme color of the talent without the thumbnail', async () => {
+    const thumbnail = createThumbnail()
+    const row = video('2026-11-10T12:00:00Z', { thumbnail_id: thumbnail.id })
 
-    const select = query.select.mock.calls[0]?.[0] as string
+    await seedSupabase({
+      talents: [{ ...talent, theme_color: '#FF6B9D' }],
+      thumbnails: [thumbnail],
+      youtubeChannels: [channel],
+      ...videoSeed([row]),
+    })
 
-    expect(select).not.toMatch(/thumbnail/)
-    expect(select).toMatch(/talent:talents!inner \(id, name, theme_color\)/)
+    const [scheduleVideo] = await fetchScheduleVideos('2026-11-08')
+
+    expect(scheduleVideo).not.toHaveProperty('thumbnail')
+    expect(scheduleVideo?.talent).toEqual({
+      id: talent.id,
+      name: '朝霧ミオ',
+      theme_color: '#FF6B9D',
+    })
   })
 
   test('drops the videos without a YouTube or Twitch video', async () => {
-    query.limit.mockResolvedValue({
-      data: [
-        createScheduleVideo(1),
-        createScheduleVideo(2, { youtube_video: null }),
-      ],
-      error: null,
-    })
+    const shown = video('2026-11-10T12:00:00Z')
 
-    expect(
-      (await fetchScheduleVideos('2026-11-08')).map((video) => video.id),
-    ).toEqual(['video-1'])
+    await seedVideos([
+      shown,
+      createVideo({
+        published_at: '2026-11-10T12:00:00Z',
+        talent_id: talent.id,
+      }),
+    ])
+
+    expect(ids(await fetchScheduleVideos('2026-11-08'))).toEqual([
+      shown.video.id,
+    ])
   })
 
   test('drops the videos that cannot be linked to', async () => {
-    query.limit.mockResolvedValue({
-      data: [
-        createScheduleVideo(1),
-        // A Twitch stream whose archive is not ready, without the login name
-        // to link to the channel
-        createScheduleVideo(2, {
-          platform: 'twitch',
-          twitch_video: {
-            twitch_user: {
-              name: null,
-              profile_image: null,
-              twitch_login_name: null,
-            },
-            twitch_video_id: 'live:12345678901',
-            type: null,
-          },
-          youtube_video: null,
-        }),
-      ],
-      error: null,
+    const shown = video('2026-11-10T12:00:00Z')
+    // A Twitch stream whose archive is not ready, by a user without the login
+    // name to link to the channel
+    const userWithoutLogin = createTwitchUser({ talent_id: talent.id })
+
+    await seedSupabase({
+      talents: [talent],
+      twitchUsers: [userWithoutLogin],
+      youtubeChannels: [channel],
+      ...videoSeed([
+        shown,
+        createVideoOnTwitch(
+          userWithoutLogin,
+          { published_at: '2026-11-10T13:00:00Z', status: 'ENDED' },
+          { twitch_video_id: 'live:12345678901', type: null },
+        ),
+      ]),
     })
 
-    expect(
-      (await fetchScheduleVideos('2026-11-08')).map((video) => video.id),
-    ).toEqual(['video-1'])
+    expect(ids(await fetchScheduleVideos('2026-11-08'))).toEqual([
+      shown.video.id,
+    ])
   })
 
   test('throws when the videos cannot be fetched', async () => {
-    query.limit.mockResolvedValue({ data: null, error: { message: 'failed' } })
+    failSupabase('videos', 'failed')
 
     await expect(fetchScheduleVideos('2026-11-08')).rejects.toThrow('failed')
   })
 })
 
 describe('fetchOldestVideoDate', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-
-    query.select.mockReturnValue(query)
-    query.order.mockReturnValue(query)
-    query.limit.mockReturnValue(query)
-  })
-
   test('returns the date in Japan the oldest video starts on', async () => {
-    // 00:30 on 1 April 2019 in Japan
-    query.maybeSingle.mockResolvedValue({
-      data: { published_at: '2019-03-31T15:30:00Z' },
-      error: null,
-    })
+    await seedVideos([
+      createVideoOnYouTube(channel, { published_at: '2020-01-01T00:00:00Z' }),
+      // 00:30 on 1 April 2019 in Japan
+      createVideoOnYouTube(channel, { published_at: '2019-03-31T15:30:00Z' }),
+      createVideoOnYouTube(channel, { published_at: '2019-06-01T00:00:00Z' }),
+    ])
 
     await expect(fetchOldestVideoDate()).resolves.toBe('2019-04-01')
-    expect(query.order).toHaveBeenCalledWith('published_at', {
-      ascending: true,
-    })
-    expect(query.limit).toHaveBeenCalledWith(1)
     expect(cacheLife).toHaveBeenCalledWith('days')
     expect(cacheTag).toHaveBeenCalledWith('videos')
   })
 
   test('returns null without any video', async () => {
-    query.maybeSingle.mockResolvedValue({ data: null, error: null })
-
     await expect(fetchOldestVideoDate()).resolves.toBeNull()
   })
 })
@@ -189,17 +188,9 @@ describe('fetchOldestVideoDate', () => {
 describe('fetchScheduleToday', () => {
   test('returns today in Japan', async () => {
     // 00:30 on Monday, 16 November 2026 in Japan, still Sunday in UTC
-    const spy = vi
-      .spyOn(Temporal.Now, 'zonedDateTimeISO')
-      .mockImplementation((timeZone) =>
-        Temporal.Instant.from('2026-11-15T15:30:00Z').toZonedDateTimeISO(
-          timeZone ?? 'UTC',
-        ),
-      )
+    mockNow('2026-11-15T15:30:00Z')
 
     await expect(fetchScheduleToday()).resolves.toBe('2026-11-16')
     expect(cacheLife).toHaveBeenCalledWith('minutes')
-
-    spy.mockRestore()
   })
 })

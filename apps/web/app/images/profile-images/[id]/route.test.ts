@@ -1,26 +1,17 @@
 // @vitest-environment node
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { getSupabaseAdminClient } from '@/lib/supabase'
+import { createProfileImage } from '@/test/factories'
+import {
+  failSupabase,
+  seedSupabase,
+  setupSupabase,
+  supabaseRequests,
+} from '@/test/supabase'
 
-const mocks = vi.hoisted(() => {
-  const query = {
-    eq: vi.fn(),
-    maybeSingle: vi.fn(),
-    select: vi.fn(),
-  }
-  const adminClient = { from: vi.fn(), storage: {} }
-
-  return {
-    adminClient,
-    publicClient: { from: vi.fn(() => query) },
-    query,
-    serveStorageImage: vi.fn(),
-  }
-})
-
-vi.mock('@/lib/supabase', () => ({
-  getSupabaseAdminClient: vi.fn(() => mocks.adminClient),
-  supabaseClient: mocks.publicClient,
+const mocks = vi.hoisted(() => ({
+  serveStorageImage: vi.fn(),
 }))
 
 vi.mock('@/lib/storage-image', () => ({
@@ -28,6 +19,8 @@ vi.mock('@/lib/storage-image', () => ({
 }))
 
 import { GET } from './route'
+
+setupSupabase()
 
 function get(id: string): Promise<Response> {
   return GET(
@@ -42,45 +35,41 @@ describe('GET /images/profile-images/[id]', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    mocks.query.select.mockReturnValue(mocks.query)
-    mocks.query.eq.mockReturnValue(mocks.query)
     mocks.serveStorageImage.mockResolvedValue(new Response('image'))
   })
 
-  it('serves an icon the public may read from the profile-images bucket', async () => {
-    mocks.query.maybeSingle.mockResolvedValue({
-      data: { path: 'youtube/UC1/a.webp' },
-      error: null,
-    })
+  it('serves an icon from the profile-images bucket with the service role', async () => {
+    const icon = createProfileImage({ path: 'youtube/UC1/a.webp' })
 
-    const response = await get('image-1')
+    await seedSupabase({ profileImages: [createProfileImage(), icon] })
+
+    const response = await get(icon.id)
 
     expect(await response.text()).toBe('image')
-    // The lookup goes through the public client, so RLS applies.
-    expect(mocks.publicClient.from).toHaveBeenCalledWith('profile_images')
-    expect(mocks.adminClient.from).not.toHaveBeenCalled()
-    expect(mocks.query.eq).toHaveBeenCalledWith('id', 'image-1')
+    // The lookup is sent with the public key, so RLS applies
+    expect(supabaseRequests('profile_images').map(({ role }) => role)).toEqual([
+      'anon',
+    ])
     expect(mocks.serveStorageImage).toHaveBeenCalledWith(expect.any(Request), {
       bucket: 'profile-images',
       path: 'youtube/UC1/a.webp',
-      supabaseClient: mocks.adminClient,
+      supabaseClient: getSupabaseAdminClient(),
     })
   })
 
-  it('answers 404 for icons that are not in use', async () => {
-    mocks.query.maybeSingle.mockResolvedValue({ data: null, error: null })
+  // RLS hides the icons that are not in use from the public key, which the
+  // lookup is sent with
+  it('answers 404 for icons that cannot be read', async () => {
+    await seedSupabase({ profileImages: [createProfileImage()] })
 
-    const response = await get('image-unused')
+    const response = await get(crypto.randomUUID())
 
     expect(response.status).toBe(404)
     expect(mocks.serveStorageImage).not.toHaveBeenCalled()
   })
 
   it('answers 404 when the lookup fails', async () => {
-    mocks.query.maybeSingle.mockResolvedValue({
-      data: null,
-      error: { code: '22P02', message: 'invalid input syntax for type uuid' },
-    })
+    failSupabase('profile_images', 'invalid input syntax for type uuid')
 
     const response = await get('not-a-uuid')
 
