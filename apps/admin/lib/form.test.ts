@@ -158,6 +158,22 @@ describe('zodErrorToFormState', () => {
       },
     })
   })
+
+  it('reports the same message of the same field only once', () => {
+    const message = '入力が正しくありません。'
+    const schema = z.object({
+      id: z.guid({ error: message }),
+      status: z.enum(['open', 'closed'], { error: message }),
+    })
+    const result = schema.safeParse({ id: 'invalid', status: 'unknown' })
+
+    expect(result.success).toBe(false)
+    expect(
+      zodErrorToFormState(result.error as z.ZodError, {
+        hiddenFields: ['id', 'status'],
+      }),
+    ).toEqual({ errors: { generic: [message] } })
+  })
 })
 
 describe('actionErrorToFormState', () => {

@@ -17,7 +17,8 @@ export interface ZodErrorToFormStateOptions {
 }
 
 /**
- * zod の検証エラーを、項目ごとのエラーの `FormState` に直す
+ * zod の検証エラーを、項目ごとのエラーの `FormState` に直す。同じ項目の同じ文は
+ * 1つにまとめる（`hiddenFields` の項目が、同じ文で `generic` に集まるときなど）
  */
 export function zodErrorToFormState(
   error: z.ZodError,
@@ -28,6 +29,10 @@ export function zodErrorToFormState(
       const path = issue.path.join('.')
       const name = hiddenFields.includes(path) ? 'generic' : path
       const previousMessages = previousErrors[name] ?? []
+
+      if (previousMessages.includes(issue.message)) {
+        return { errors: previousErrors }
+      }
 
       return {
         errors: {
