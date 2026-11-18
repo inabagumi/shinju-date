@@ -1,8 +1,9 @@
 -- Tests for the video search by kind (#6804) and its pages, which leave out the
--- videos the site does not show (#7200). Run with `supabase test db`.
+-- videos the site does not show (#7200) or cannot link to (#7050). Run with
+-- `supabase test db`.
 BEGIN;
 
-SELECT plan(13);
+SELECT plan(17);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures: a talent with regular videos and shorts, and a deleted talent.
@@ -39,6 +40,37 @@ VALUES
     ('e1000000-0000-0000-0000-000000000003', 'YTsearch0003', 'e2000000-0000-0000-0000-000000000001'),
     ('e1000000-0000-0000-0000-000000000004', 'YTsearch0004', 'e2000000-0000-0000-0000-000000000001'),
     ('e1000000-0000-0000-0000-000000000005', 'YTsearch0005', 'e2000000-0000-0000-0000-000000000002');
+
+-- ---------------------------------------------------------------------------
+-- Fixtures: a talent with videos on Twitch, some of which the site cannot link
+-- to. They are the newest, so they would take up a page if they were left out
+-- after the page size is applied.
+-- ---------------------------------------------------------------------------
+INSERT INTO "public"."talents" ("id", "name")
+VALUES ('e0000000-0000-0000-0000-000000000003', 'Twitch talent');
+
+INSERT INTO "public"."twitch_users" ("id", "talent_id", "twitch_user_id", "twitch_login_name")
+VALUES
+    ('e3000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000003', '900000001', 'searchtalent'),
+    ('e3000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000003', '900000002', NULL);
+
+INSERT INTO "public"."videos" ("id", "talent_id", "title", "duration", "published_at", "platform", "status", "video_kind")
+VALUES
+    -- An archive, linked to by its ID
+    ('e1000000-0000-0000-0000-000000000011', 'e0000000-0000-0000-0000-000000000003', '配信 アーカイブ', 'PT1H', '2026-11-10T12:00:00Z', 'twitch', 'ENDED', 'standard'),
+    -- An archive that is not ready yet, linked to the channel of its user
+    ('e1000000-0000-0000-0000-000000000012', 'e0000000-0000-0000-0000-000000000003', '配信 アーカイブ準備中', 'PT1H', '2026-11-11T12:00:00Z', 'twitch', 'ENDED', 'standard'),
+    -- An archive that is not ready yet, by a user without the login name
+    ('e1000000-0000-0000-0000-000000000013', 'e0000000-0000-0000-0000-000000000003', '配信 リンクなし', 'PT1H', '2026-11-14T12:00:00Z', 'twitch', 'ENDED', 'standard'),
+    -- A video on YouTube with only a Twitch video
+    ('e1000000-0000-0000-0000-000000000014', 'e0000000-0000-0000-0000-000000000003', '配信 プラットフォーム違い', 'PT1H', '2026-11-14T13:00:00Z', 'youtube', 'ENDED', 'standard');
+
+INSERT INTO "public"."twitch_videos" ("video_id", "twitch_video_id", "type", "twitch_user_id")
+VALUES
+    ('e1000000-0000-0000-0000-000000000011', '900000011', 'archive', 'e3000000-0000-0000-0000-000000000002'),
+    ('e1000000-0000-0000-0000-000000000012', 'live:900000012', NULL, 'e3000000-0000-0000-0000-000000000001'),
+    ('e1000000-0000-0000-0000-000000000013', 'live:900000013', NULL, 'e3000000-0000-0000-0000-000000000002'),
+    ('e1000000-0000-0000-0000-000000000014', '900000014', 'archive', 'e3000000-0000-0000-0000-000000000001');
 
 -- Search as the public site does, so the row-level security applies.
 SET LOCAL ROLE "anon";
@@ -103,6 +135,20 @@ SELECT results_eq(
     'the videos the site does not show are left out before the page size is applied'
 );
 
+SELECT results_eq(
+    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[], 1)$$,
+    $$VALUES ('e1000000-0000-0000-0000-000000000012'::uuid)$$,
+    'the videos the site cannot link to are left out before the page size is applied'
+);
+
+SELECT results_eq(
+    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[], 10)$$,
+    $$VALUES
+        ('e1000000-0000-0000-0000-000000000012'::uuid),
+        ('e1000000-0000-0000-0000-000000000011'::uuid)$$,
+    'only the videos the site can link to are returned'
+);
+
 -- The pages and the count agree
 SELECT is(
     (SELECT count(*) FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002']::uuid[], 1000)),
@@ -141,6 +187,18 @@ SELECT is(
     "public"."count_videos_v1"('動画なし', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[]),
     0::bigint,
     'the videos with neither a YouTube nor a Twitch video are not counted'
+);
+
+SELECT is(
+    "public"."count_videos_v1"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[]),
+    2::bigint,
+    'the videos the site cannot link to are not counted'
+);
+
+SELECT is(
+    (SELECT count(*) FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[], 1000)),
+    "public"."count_videos_v1"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[]),
+    'the search returns as many videos on Twitch as count_videos_v1 counts'
 );
 
 RESET ROLE;

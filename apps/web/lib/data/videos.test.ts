@@ -1,5 +1,6 @@
 import { cacheLife, cacheTag } from 'next/cache'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { SEARCH_RESULT_COUNT } from '@/lib/site'
 import {
   createProfileImage,
   createTalent,
@@ -134,23 +135,31 @@ describe('fetchVideos', () => {
     expect(ids(await fetchVideos({}))).toEqual([shown.video.id])
   })
 
-  test('keeps the videos that cannot be linked to, so a page is not cut short', async () => {
+  test('leaves out the videos that cannot be linked to before the page size', async () => {
     const userWithoutLogin = createTwitchUser({ talent_id: talent.id })
-    // A Twitch stream whose archive is not ready, by a user without the login
-    // name to link to the channel
+    const shown = Array.from({ length: SEARCH_RESULT_COUNT }, (_, index) =>
+      createVideoOnYouTube(channel, {
+        published_at: `2026-11-1${index}T12:00:00Z`,
+      }),
+    )
+    // The newest is a Twitch stream whose archive is not ready, by a user
+    // without the login name to link to the channel
     const pending = createVideoOnTwitch(
       userWithoutLogin,
-      { published_at: '2026-11-14T12:00:00Z', status: 'ENDED' },
+      { published_at: '2026-11-14T13:00:00Z', status: 'ENDED' },
       { twitch_video_id: 'live:12345678901', type: null },
     )
 
     await seedSupabase({
       talents: [talent],
       twitchUsers: [userWithoutLogin],
-      ...videoSeed([pending]),
+      youtubeChannels: [channel],
+      ...videoSeed([pending, ...shown]),
     })
 
-    expect(ids(await fetchVideos({}))).toEqual([pending.video.id])
+    expect(ids(await fetchVideos({}))).toEqual(
+      shown.map((row) => row.video.id).toReversed(),
+    )
   })
 
   test('throws when the videos cannot be searched', async () => {
@@ -185,6 +194,26 @@ describe('countVideos', () => {
     await expect(
       countVideos({ query: '歌', talentIds: [talent.id] }),
     ).resolves.toBe(1)
+  })
+
+  test('does not count the videos that cannot be linked to', async () => {
+    const userWithoutLogin = createTwitchUser({ talent_id: talent.id })
+
+    await seedSupabase({
+      talents: [talent],
+      twitchUsers: [userWithoutLogin],
+      youtubeChannels: [channel],
+      ...videoSeed([
+        createVideoOnYouTube(channel),
+        createVideoOnTwitch(
+          userWithoutLogin,
+          { status: 'ENDED' },
+          { twitch_video_id: 'live:12345678901', type: null },
+        ),
+      ]),
+    })
+
+    await expect(countVideos({})).resolves.toBe(1)
   })
 
   test('throws when the videos cannot be counted', async () => {

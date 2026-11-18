@@ -5,6 +5,7 @@ import {
   auditLogs,
   talents,
   terms,
+  twitchUsers,
   twitchVideos,
   videos,
   youtubeVideos,
@@ -156,7 +157,10 @@ async function filterMockVideos({
 
 /**
  * The videos of `filterMockVideos` that the site shows: the ones whose talent
- * is not deleted and that have a YouTube or Twitch video.
+ * is not deleted and that the site can link to. A YouTube video needs its
+ * YouTube video. A Twitch video needs its Twitch video, and either the login
+ * name of its user or an ID that is not the placeholder of an archive that is
+ * not ready yet (`live:{stream_id}`), unless it is a clip.
  */
 async function filterShownMockVideos(params: SearchVideosParams) {
   const matchedVideos = await filterMockVideos(params)
@@ -166,15 +170,36 @@ async function filterShownMockVideos(params: SearchVideosParams) {
       .filter((talent) => talent.deleted_at === null)
       .map((talent) => talent.id),
   )
-  const videoIdsWithSource = new Set(
-    [...youtubeVideos.findMany(), ...twitchVideos.findMany()].map(
-      (video) => video.video_id,
-    ),
+  const loginNames = new Map(
+    twitchUsers
+      .findMany()
+      .map((user) => [user.id, user.twitch_login_name] as const),
+  )
+  const linkableYouTubeVideoIds = new Set(
+    youtubeVideos
+      .findMany()
+      .filter((video) => video.youtube_video_id !== '')
+      .map((video) => video.video_id),
+  )
+  const linkableTwitchVideoIds = new Set(
+    twitchVideos
+      .findMany()
+      .filter(
+        (video) =>
+          !!loginNames.get(video.twitch_user_id) ||
+          (video.twitch_video_id !== '' &&
+            (video.type === 'clip' ||
+              !video.twitch_video_id.startsWith('live:'))),
+      )
+      .map((video) => video.video_id),
   )
 
   return matchedVideos.filter(
     (video) =>
-      visibleTalentIds.has(video.talent_id) && videoIdsWithSource.has(video.id),
+      visibleTalentIds.has(video.talent_id) &&
+      (video.platform === 'twitch'
+        ? linkableTwitchVideoIds.has(video.id)
+        : linkableYouTubeVideoIds.has(video.id)),
   )
 }
 
