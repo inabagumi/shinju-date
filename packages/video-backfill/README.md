@@ -8,7 +8,7 @@
 - バッチはジョブを `claim` し、1 ページずつ読んでは `recordPage` で進捗（カーソル・追加件数）を記録します。最後のページなら、`recordPage` がジョブを終えます。時間内に読み終わらなければ `requeue` でキューの末尾に戻し、次の実行で続きから読みます
 - ページを読めなかったときは `recordFailure` で記録します。試した回数を増やし、最大の回数（`BackfillQueue` を作るときの `maxAttempts`、既定は `BACKFILL_MAX_ATTEMPTS`）に達したか、`permanent`（アカウントが消えた、など）なら `failed` にし、そうでなければキューに戻して次の実行で再試行します。ジョブの項目を書き換えるのはこのパッケージだけで、バッチは直接書き換えません
 - 待機中・処理中のジョブは二重に依頼できません。失敗・中断したジョブは続きから、完了したジョブは最新の動画から読み直します
-- 依頼の保存は、読み取った時点からジョブが変わっていないときだけ行う compare-and-set です（`ENQUEUE_SCRIPT`、Redis 上で原子的に実行）。同時に来た依頼や途中で止まった依頼が、互いの進捗やワーカーの進捗を上書きすることはありません。ジョブの保存とキューへの追加は常に一体で行います
+- 依頼の保存は、読み取った時点からジョブが変わっていないときだけ行う compare-and-set です（`ENQUEUE_SCRIPT`、Redis 上で原子的に実行）。ジョブは番号（`version`）を持ち、書き込むたびに 1 増やします。依頼は、読み取ったときの番号と Redis のジョブの番号を比べます（番号のない、保存済みのジョブは 0 として扱います）。同時に来た依頼や途中で止まった依頼が、互いの進捗やワーカーの進捗を上書きすることはありません。ジョブの保存とキューへの追加は常に一体で行います
 - `claim` したジョブはロックされ、同じジョブを 2 つのワーカーが同時に読むことはありません。ロックの長さ（`leaseSeconds`）は、`BackfillQueue` を作るときの「1 回の実行の最長の時間」（`maxRunSeconds`、バッチはルートの `maxDuration` を渡す）に、余裕（`BACKFILL_LEASE_MARGIN_SECONDS`）を足したものです。ワーカーが落ちてもロックの期限が切れれば再依頼できます
 - `claim` は、キューからの取り出し・ロック・`running` への更新を 1 つのスクリプト（`CLAIM_SCRIPT`）で行います。途中で止まっても、キューから消えたのに `pending` のまま、というジョブは残りません
 - ロックの値は `claim` のたびに作るトークンです。`claim` はジョブとトークン（`BackfillClaim`）を返し、`recordPage`・`recordFailure`・`requeue` は、ロックがそのトークンを持っているときだけ書き込みます。ロックの期限が切れたあと（別のワーカーが取り出したかもしれない）は何も書き込まず、`{ status: 'lost' }` を返すので、バッチはそのジョブの処理をやめて次へ進みます
@@ -24,6 +24,17 @@
 
 `pending` や `running` のまま、待機も処理もされていないジョブは「中断」（`interrupted`）です。この判定は `getJobActivity(job, { locked })` の 1 か所で行い、`getJobs`、`BackfillRuns`、管理画面の表示が使います。
 
+## ファイル
+
+| ファイル         | 中身                                                               |
+| ---------------- | ------------------------------------------------------------------ |
+| `src/types.ts`   | ジョブと結果の型                                                   |
+| `src/keys.ts`    | Redis のキーの作り方と、有効期限の定数                             |
+| `src/jobs.ts`    | 状態の遷移（`BACKFILL_JOB_TRANSITIONS`）と判定（`getJobActivity`） |
+| `src/scripts.ts` | Lua のスクリプトと、それを呼び出す関数                             |
+| `src/queue.ts`   | `BackfillQueue`                                                    |
+| `src/runs.ts`    | 全アカウントのチェック（`BackfillRuns`）                           |
+
 ## 全アカウントのチェック（`BackfillRuns`）
 
 管理画面の「システム」から、active な全タレントの全アカウントの取得漏れチェックを 1 回の操作で依頼できます。
@@ -33,6 +44,7 @@
 - 前回のチェックが実行中のあいだは新しいチェックを始められません。同時に来た依頼はロック（`BACKFILL_RUN_LOCK_SECONDS`）で 1 つに絞ります
 - タレント詳細から依頼されて待機中・処理中のアカウントは除外して数えます
 - 失敗・中断した子ジョブをタレント詳細から再依頼すると、そのままチェックの進捗に反映されます。完了した子ジョブは終了時の結果を残すので、あとで個別に読み直してもチェックの結果は変わりません
+- 終了時の結果は、`BackfillQueue` を作るときの `finishedJobKeys` に `getBackfillRunResultKeys` を渡すと、ジョブを終える保存と同じスクリプト（`FINISH_SCRIPT`）の中で書き込まれます（バッチが渡します）。途中で止まっても、ジョブだけが終わって結果が残らない、ということはありません。`BackfillQueue` は、渡されたキーにジョブを書き込むだけで、チェックのことは知りません
 - 保持するのは最新のチェックだけです
 
 ## 履歴と失敗の再試行
@@ -64,7 +76,11 @@ Redis のジョブは最後の変更から 7 日で消えるため、終えた�
 ## 使い方
 
 ```ts
-import { BackfillQueue, BackfillRuns } from '@shinju-date/video-backfill'
+import {
+  BackfillQueue,
+  BackfillRuns,
+  getBackfillRunResultKeys,
+} from '@shinju-date/video-backfill'
 
 // 管理画面: 依頼する
 const queue = new BackfillQueue(redisClient)
@@ -72,7 +88,11 @@ const queue = new BackfillQueue(redisClient)
 await queue.enqueue({ accountId, provider: 'youtube', requestedBy, talentId })
 
 // バッチ: 処理する（ロックは、実行の最長の時間と余裕のぶん）
-const worker = new BackfillQueue(redisClient, { maxRunSeconds: maxDuration })
+const worker = new BackfillQueue(redisClient, {
+  maxRunSeconds: maxDuration,
+  // 終えた子ジョブの結果を、チェックのために、ジョブと一緒に残す
+  finishedJobKeys: getBackfillRunResultKeys,
+})
 const claim = await worker.claim()
 
 if (claim) {

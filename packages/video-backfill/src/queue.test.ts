@@ -20,8 +20,8 @@ import {
   canTransition,
   getBackfillJobId,
   getJobActivity,
-  getRunResultKey,
 } from './index.js'
+import { createRequestedJob } from './jobs.js'
 
 const now = Temporal.Instant.from('2026-11-14T00:00:00Z')
 const later = (minutes: number) => now.add({ minutes })
@@ -355,6 +355,7 @@ describeOnEachRedis((createClient) => {
           cursor: 'page-2',
           pages: 1,
           updatedAt: later(2).toString(),
+          version: 3,
         },
         status: 'saved',
       })
@@ -801,37 +802,188 @@ describeOnEachRedis((createClient) => {
       })
     })
 
-    it('keeps the outcome of a job of a check when it finishes', async () => {
-      const { queue, redis } = createQueue()
+    it('saves a job that a worker completed or gave up to the keys it is given', async () => {
+      const { queue, redis } = createQueue({
+        finishedJobKeys: (job) => [`copy:${job.status}`],
+      })
 
-      await queue.enqueue({ ...request, runId: 'run-1' }, now)
-      const done = await queue.recordPage(
+      await queue.enqueue(request, now)
+      const completed = await queue.recordPage(
         await claimJob(queue, later(1)),
         lastPage(3),
         later(2),
       )
-      const resultKey = getRunResultKey('run-1', jobId)
-
-      expect(done.status).toBe('saved')
-      expect(await redis.get(resultKey)).toEqual(
-        done.status === 'saved' && done.job,
+      await queue.enqueue(request, later(3))
+      const failed = await queue.recordFailure(
+        await claimJob(queue, later(4)),
+        new Error('account not found'),
+        { permanent: true },
+        later(5),
       )
-      await expectTtl(redis, resultKey, BACKFILL_JOB_TTL_SECONDS)
+
+      expect(await redis.get('copy:done')).toEqual(
+        completed.status === 'saved' && completed.job,
+      )
+      expect(await redis.get('copy:failed')).toEqual(
+        failed.status === 'saved' && failed.job,
+      )
+      await expectTtl(redis, 'copy:done', BACKFILL_JOB_TTL_SECONDS)
+      await expectTtl(redis, 'copy:failed', BACKFILL_JOB_TTL_SECONDS)
     })
 
-    it('keeps no outcome for a job without a check', async () => {
-      const { queue, scoped } = createQueue()
+    it('saves a finished job to the keys it is given in one call to Redis', async () => {
+      const { queue, redis } = createQueue({
+        finishedJobKeys: () => ['copy-1', 'copy-2'],
+      })
+
+      await queue.enqueue(request, now)
+      const claim = await claimJob(queue, later(1))
+
+      const methods = redis as unknown as Record<string, () => unknown>
+      const calls = Object.keys(methods)
+        .filter((name) => typeof methods[name] === 'function')
+        .map((name) => vi.spyOn(methods, name))
+
+      const done = await queue.recordPage(claim, lastPage(), later(2))
+
+      expect(calls.reduce((sum, spy) => sum + spy.mock.calls.length, 0)).toBe(1)
+      vi.restoreAllMocks()
+      expect(await redis.mget('copy-1', 'copy-2')).toEqual([
+        done.status === 'saved' && done.job,
+        done.status === 'saved' && done.job,
+      ])
+    })
+
+    it('does not save a job that a worker keeps, puts back or lost to them', async () => {
+      const { queue, redis } = createQueue({ finishedJobKeys: () => ['copy'] })
+
+      await queue.enqueue(request, now)
+      const claim = await claimJob(queue, later(1))
+      const recorded = await queue.recordPage(claim, page(1, 'page-2'))
+      await queue.recordFailure(next(claim, recorded), 'error')
+      const stale = await claimJob(queue, later(2))
+      await redis.del(lockKey)
+      await queue.recordPage(stale, lastPage())
+
+      expect(await redis.get('copy')).toBeNull()
+    })
+
+    it('increments the version of a job with every write', async () => {
+      const { queue, redis } = createQueue()
+      const stored = async () =>
+        (
+          await redis.get<BackfillJob>(
+            `${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${jobId}`,
+          )
+        )?.version
+
+      await queue.enqueue(request, now)
+      expect(await stored()).toBe(1)
+
+      const claim = await claimJob(queue, later(1))
+      expect(claim.job.version).toBe(2)
+      expect(await stored()).toBe(2)
+
+      const recorded = await queue.recordPage(claim, page(1, 'page-2'))
+      expect(recorded).toMatchObject({ job: { version: 3 } })
+      expect(await stored()).toBe(3)
+
+      await queue.requeue(next(claim, recorded))
+      expect(await stored()).toBe(4)
+
+      const done = await queue.recordPage(
+        await claimJob(queue, later(2)),
+        lastPage(),
+      )
+      expect(done).toMatchObject({ job: { version: 6 } })
+      expect(await stored()).toBe(6)
+
+      await expect(queue.enqueue(request, later(3))).resolves.toMatchObject({
+        job: { version: 7 },
+      })
+    })
+
+    it('lets a job saved without a version be requested again', async () => {
+      const { queue, redis } = createQueue()
+      const { version: _, ...saved }: BackfillJob = {
+        ...createRequestedJob(request, null, now),
+        cursor: 'page-3',
+        error: 'quota exceeded',
+        status: 'failed',
+      }
+
+      await redis.set(`${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${jobId}`, saved)
+
+      await expect(queue.enqueue(request, later(1))).resolves.toMatchObject({
+        enqueued: true,
+        job: { cursor: 'page-3', status: 'pending', version: 1 },
+      })
+    })
+
+    it('compares the version of a job, not how it is written', async () => {
+      const { queue, redis } = createQueue()
+      const job: BackfillJob = {
+        ...createRequestedJob(request, null, now),
+        status: 'done',
+        version: 4,
+      }
+      // The same job with its fields in another order.
+      const reordered = Object.fromEntries(Object.entries(job).reverse())
+
+      await redis.set(
+        `${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${jobId}`,
+        JSON.stringify(reordered),
+      )
+
+      await expect(queue.enqueue(request, later(1))).resolves.toMatchObject({
+        enqueued: true,
+        job: { version: 5 },
+      })
+    })
+
+    it('requeues a job once when two requests read it at the same moment', async () => {
+      const { queue, redis, scoped } = createQueue()
 
       await queue.enqueue(request, now)
       await queue.recordPage(await claimJob(queue, later(1)), lastPage())
 
+      // Both requests read the job that is done before either writes it.
+      let second: Promise<unknown> | undefined
+      scoped.beforeNextScript(async () => {
+        second = queue.enqueue({ ...request, requestedBy: 'user-2' }, later(2))
+        await second
+      })
+
+      const first = await queue.enqueue(request, later(2))
+
+      await expect(second).resolves.toMatchObject({
+        enqueued: true,
+        job: { requestedBy: 'user-2', version: 4 },
+      })
+      expect(first).toMatchObject({
+        enqueued: false,
+        job: { requestedBy: 'user-2' },
+      })
       expect(
-        scoped
-          .keys()
-          .filter((key) =>
-            key.startsWith(REDIS_KEYS.VIDEO_BACKFILL_RUN_RESULT_PREFIX),
-          ),
-      ).toEqual([])
+        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1),
+      ).toEqual([jobId])
+    })
+
+    it('requeues a job once when two requests are made at the same moment', async () => {
+      const { queue, redis } = createQueue()
+
+      await queue.enqueue(request, now)
+      await queue.recordPage(await claimJob(queue, later(1)), lastPage())
+
+      const results = await Promise.all([
+        queue.enqueue(request, later(2)),
+        queue.enqueue({ ...request, requestedBy: 'user-2' }, later(2)),
+      ])
+
+      expect(results.filter((result) => result.enqueued)).toHaveLength(1)
+      expect(
+        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1),
+      ).toEqual([jobId])
     })
   })
 })

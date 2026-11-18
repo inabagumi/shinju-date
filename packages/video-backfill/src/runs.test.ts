@@ -13,6 +13,8 @@ import {
   type BackfillRunRequest,
   BackfillRuns,
   getBackfillJobId,
+  getBackfillRunResultKeys,
+  getRunResultKey,
 } from './index.js'
 
 const now = Temporal.Instant.from('2026-11-14T00:00:00Z')
@@ -101,10 +103,14 @@ describeOnEachRedis((createClient) => {
     const getScopedRedis = useScopedRedis(createClient)
 
     function createRuns() {
-      const { redis } = getScopedRedis()
-      const queue = new BackfillQueue(redis)
+      const scoped = getScopedRedis()
+      const { redis } = scoped
+      // The queue of the workers, which keeps the outcomes of the jobs.
+      const queue = new BackfillQueue(redis, {
+        finishedJobKeys: getBackfillRunResultKeys,
+      })
 
-      return { queue, redis, runs: new BackfillRuns(redis, queue) }
+      return { queue, redis, runs: new BackfillRuns(redis, queue), scoped }
     }
 
     it('queues one job per account and keeps the check as the latest', async () => {
@@ -470,6 +476,42 @@ describeOnEachRedis((createClient) => {
         counts: { done: 1, pending: 2 },
         jobs: [{ active: false, added: 4, status: 'done' }, {}, {}],
       })
+    })
+
+    it('keeps the outcome of a job of a check when it finishes', async () => {
+      const { queue, redis, runs } = createRuns()
+
+      const run = await startRun(runs)
+      const job = await claimJob(queue, youtubeJobId, later(1))
+      const done = await recordPage(queue, job, 3, null, later(2))
+      const resultKey = getRunResultKey(run.id, youtubeJobId)
+
+      expect(await redis.get(resultKey)).toEqual(done.job)
+      await expectTtl(redis, resultKey, BACKFILL_JOB_TTL_SECONDS)
+    })
+
+    it('keeps no outcome for a job without a check', async () => {
+      const { queue, scoped } = createRuns()
+
+      await queue.enqueue(
+        {
+          accountId: 'channel-row-1',
+          provider: 'youtube',
+          requestedBy: 'user-1',
+          talentId: 'talent-1',
+        },
+        now,
+      )
+      const job = await claimJob(queue, youtubeJobId, later(1))
+      await recordPage(queue, job, 3, null, later(2))
+
+      expect(
+        scoped
+          .keys()
+          .filter((key) =>
+            key.startsWith(REDIS_KEYS.VIDEO_BACKFILL_RUN_RESULT_PREFIX),
+          ),
+      ).toEqual([])
     })
 
     it('shows a job that is gone as interrupted', async () => {

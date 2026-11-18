@@ -1,11 +1,11 @@
+import { RUN_UNLOCK_SCRIPT } from '../runs.js'
 import {
   CLAIM_SCRIPT,
   ENQUEUE_SCRIPT,
   FINISH_SCRIPT,
   REQUEUE_SCRIPT,
   SAVE_SCRIPT,
-} from '../queue.js'
-import { RUN_UNLOCK_SCRIPT } from '../runs.js'
+} from '../scripts.js'
 
 /** A reply of Redis, as the REST API of Upstash returns it in JSON. */
 export type RedisReply = number | string | null | RedisReply[]
@@ -34,6 +34,29 @@ export function getScriptName(script: string): string | undefined {
   return script.match(/^--\s*(\S+)/)?.[1]
 }
 
+/**
+ * The version of a stored job, as `ENQUEUE_SCRIPT` reads it: 0 for a job
+ * without one, and `undefined` for a value that is not a job, which never
+ * matches a version.
+ */
+function getVersion(value: string): number | undefined {
+  let job: unknown
+
+  try {
+    job = JSON.parse(value)
+  } catch {
+    return undefined
+  }
+
+  if (typeof job !== 'object' || job === null) {
+    return undefined
+  }
+
+  const { version } = job as { version?: unknown }
+
+  return typeof version === 'number' ? version : 0
+}
+
 function nameOf(script: string): string {
   const name = getScriptName(script)
 
@@ -58,7 +81,12 @@ export const SCRIPT_EMULATIONS: Readonly<Record<string, ScriptEmulation>> = {
     const [expected = '', value = '', ttl = '', id = ''] = argv
     const current = call('GET', job)
 
-    if (expected === '' ? current !== null : current !== expected) {
+    if (
+      expected === ''
+        ? current !== null
+        : typeof current !== 'string' ||
+          getVersion(current) !== Number(expected)
+    ) {
       return 0
     }
 
@@ -102,6 +130,8 @@ export const SCRIPT_EMULATIONS: Readonly<Record<string, ScriptEmulation>> = {
             startedAt: job['startedAt'] ?? timestamp,
             status: 'running',
             updatedAt: timestamp,
+            version:
+              (typeof job['version'] === 'number' ? job['version'] : 0) + 1,
           })
 
           call('SET', key, encoded, 'EX', ttl)
@@ -113,7 +143,7 @@ export const SCRIPT_EMULATIONS: Readonly<Record<string, ScriptEmulation>> = {
       }
     }
   },
-  [nameOf(FINISH_SCRIPT)]: (call, [job = '', lock = '', outcome], argv) => {
+  [nameOf(FINISH_SCRIPT)]: (call, [job = '', lock = '', ...copies], argv) => {
     const [token = '', value = '', ttl = ''] = argv
 
     if (call('GET', lock) !== token) {
@@ -122,8 +152,8 @@ export const SCRIPT_EMULATIONS: Readonly<Record<string, ScriptEmulation>> = {
 
     call('SET', job, value, 'EX', ttl)
 
-    if (outcome !== undefined) {
-      call('SET', outcome, value, 'EX', ttl)
+    for (const copy of copies) {
+      call('SET', copy, value, 'EX', ttl)
     }
 
     call('DEL', lock)
