@@ -2,8 +2,9 @@
 -- Only the names change: the tables, the columns, the conditions of the
 -- policies and the bodies of the functions stay the same.
 --
---   1. `search_videos_v4` and `count_videos_v2`: `talent_ids` instead of
---      `channel_ids` (`talents` was once `channels`)
+--   1. `search_videos_v4` and `count_videos_v2`: `p_talent_ids` instead of
+--      `channel_ids` (`talents` was once `channels`), and `p_` before every
+--      argument as the newer functions do
 --   2. Indexes: `idx_<table>_<columns>`
 --   3. Policies: `<table>: admins can <operation>` and
 --      `<table>: anyone can <operation>`
@@ -19,24 +20,25 @@
 --    the functions are added under new names. They are the same as
 --    `search_videos_v3` and `count_videos_v1`
 --    (`20261118100000_page_only_linkable_videos_in_search_videos_v3.sql`)
---    except for the name of `talent_ids`. `search_videos_v3` and
---    `count_videos_v1` are kept until the deployed site stops calling them,
---    as `search_videos_v2` was.
+--    except for the names of the arguments, which start with `p_` as in the
+--    newer functions (e.g. `suggestions_v2`) so that they are not mistaken
+--    for the columns. `search_videos_v3` and `count_videos_v1` are kept until
+--    the deployed site stops calling them, as `search_videos_v2` was.
 --
 --    The functions run with the caller's rights, so the row-level security of
 --    each table applies to the subqueries.
 -- ---------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION "public"."search_videos_v4"("query" "text", "until" timestamp with time zone, "talent_ids" "uuid"[], "perpage" bigint DEFAULT 20, "video_kinds" "public"."video_kind"[] DEFAULT NULL) RETURNS SETOF "public"."videos"
+CREATE OR REPLACE FUNCTION "public"."search_videos_v4"("p_query" "text", "p_until" timestamp with time zone, "p_talent_ids" "uuid"[], "p_perpage" bigint DEFAULT 20, "p_video_kinds" "public"."video_kind"[] DEFAULT NULL) RETURNS SETOF "public"."videos"
     LANGUAGE "sql"
     SET "search_path" TO 'public', 'extensions'
     AS $$
   SELECT *
   FROM videos
   WHERE
-    (query IS NULL OR query = '' OR videos.title &@~ pgroonga_query_expand('terms', 'synonyms', 'synonyms', '"' || query || '"')) AND
-    (COALESCE(array_length(talent_ids, 1), 0) = 0 OR videos.talent_id = ANY(talent_ids)) AND
-    (video_kinds IS NULL OR videos.video_kind = ANY(video_kinds)) AND
-    videos.published_at < until AND
+    (p_query IS NULL OR p_query = '' OR videos.title &@~ pgroonga_query_expand('terms', 'synonyms', 'synonyms', '"' || p_query || '"')) AND
+    (COALESCE(array_length(p_talent_ids, 1), 0) = 0 OR videos.talent_id = ANY(p_talent_ids)) AND
+    (p_video_kinds IS NULL OR videos.video_kind = ANY(p_video_kinds)) AND
+    videos.published_at < p_until AND
     EXISTS (SELECT 1 FROM talents WHERE talents.id = videos.talent_id) AND
     CASE videos.platform
       WHEN 'twitch' THEN EXISTS (
@@ -62,21 +64,21 @@ CREATE OR REPLACE FUNCTION "public"."search_videos_v4"("query" "text", "until" t
   ORDER BY
     videos.published_at DESC
   LIMIT
-    perpage;
+    p_perpage;
 $$;
-ALTER FUNCTION "public"."search_videos_v4"("query" "text", "until" timestamp with time zone, "talent_ids" "uuid"[], "perpage" bigint, "video_kinds" "public"."video_kind"[]) OWNER TO "postgres";
+ALTER FUNCTION "public"."search_videos_v4"("p_query" "text", "p_until" timestamp with time zone, "p_talent_ids" "uuid"[], "p_perpage" bigint, "p_video_kinds" "public"."video_kind"[]) OWNER TO "postgres";
 
-CREATE OR REPLACE FUNCTION "public"."count_videos_v2"("query" "text", "until" timestamp with time zone, "talent_ids" "uuid"[], "video_kinds" "public"."video_kind"[] DEFAULT NULL) RETURNS bigint
+CREATE OR REPLACE FUNCTION "public"."count_videos_v2"("p_query" "text", "p_until" timestamp with time zone, "p_talent_ids" "uuid"[], "p_video_kinds" "public"."video_kind"[] DEFAULT NULL) RETURNS bigint
     LANGUAGE "sql"
     SET "search_path" TO 'public', 'extensions'
     AS $$
   SELECT count(*)
   FROM videos
   WHERE
-    (query IS NULL OR query = '' OR videos.title &@~ pgroonga_query_expand('terms', 'synonyms', 'synonyms', '"' || query || '"')) AND
-    (COALESCE(array_length(talent_ids, 1), 0) = 0 OR videos.talent_id = ANY(talent_ids)) AND
-    (video_kinds IS NULL OR videos.video_kind = ANY(video_kinds)) AND
-    videos.published_at < until AND
+    (p_query IS NULL OR p_query = '' OR videos.title &@~ pgroonga_query_expand('terms', 'synonyms', 'synonyms', '"' || p_query || '"')) AND
+    (COALESCE(array_length(p_talent_ids, 1), 0) = 0 OR videos.talent_id = ANY(p_talent_ids)) AND
+    (p_video_kinds IS NULL OR videos.video_kind = ANY(p_video_kinds)) AND
+    videos.published_at < p_until AND
     EXISTS (SELECT 1 FROM talents WHERE talents.id = videos.talent_id) AND
     CASE videos.platform
       WHEN 'twitch' THEN EXISTS (
@@ -100,14 +102,14 @@ CREATE OR REPLACE FUNCTION "public"."count_videos_v2"("query" "text", "until" ti
       )
     END;
 $$;
-ALTER FUNCTION "public"."count_videos_v2"("query" "text", "until" timestamp with time zone, "talent_ids" "uuid"[], "video_kinds" "public"."video_kind"[]) OWNER TO "postgres";
+ALTER FUNCTION "public"."count_videos_v2"("p_query" "text", "p_until" timestamp with time zone, "p_talent_ids" "uuid"[], "p_video_kinds" "public"."video_kind"[]) OWNER TO "postgres";
 
-GRANT ALL ON FUNCTION "public"."search_videos_v4"("query" "text", "until" timestamp with time zone, "talent_ids" "uuid"[], "perpage" bigint, "video_kinds" "public"."video_kind"[]) TO "anon";
-GRANT ALL ON FUNCTION "public"."search_videos_v4"("query" "text", "until" timestamp with time zone, "talent_ids" "uuid"[], "perpage" bigint, "video_kinds" "public"."video_kind"[]) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."search_videos_v4"("query" "text", "until" timestamp with time zone, "talent_ids" "uuid"[], "perpage" bigint, "video_kinds" "public"."video_kind"[]) TO "service_role";
-GRANT ALL ON FUNCTION "public"."count_videos_v2"("query" "text", "until" timestamp with time zone, "talent_ids" "uuid"[], "video_kinds" "public"."video_kind"[]) TO "anon";
-GRANT ALL ON FUNCTION "public"."count_videos_v2"("query" "text", "until" timestamp with time zone, "talent_ids" "uuid"[], "video_kinds" "public"."video_kind"[]) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."count_videos_v2"("query" "text", "until" timestamp with time zone, "talent_ids" "uuid"[], "video_kinds" "public"."video_kind"[]) TO "service_role";
+GRANT ALL ON FUNCTION "public"."search_videos_v4"("p_query" "text", "p_until" timestamp with time zone, "p_talent_ids" "uuid"[], "p_perpage" bigint, "p_video_kinds" "public"."video_kind"[]) TO "anon";
+GRANT ALL ON FUNCTION "public"."search_videos_v4"("p_query" "text", "p_until" timestamp with time zone, "p_talent_ids" "uuid"[], "p_perpage" bigint, "p_video_kinds" "public"."video_kind"[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."search_videos_v4"("p_query" "text", "p_until" timestamp with time zone, "p_talent_ids" "uuid"[], "p_perpage" bigint, "p_video_kinds" "public"."video_kind"[]) TO "service_role";
+GRANT ALL ON FUNCTION "public"."count_videos_v2"("p_query" "text", "p_until" timestamp with time zone, "p_talent_ids" "uuid"[], "p_video_kinds" "public"."video_kind"[]) TO "anon";
+GRANT ALL ON FUNCTION "public"."count_videos_v2"("p_query" "text", "p_until" timestamp with time zone, "p_talent_ids" "uuid"[], "p_video_kinds" "public"."video_kind"[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."count_videos_v2"("p_query" "text", "p_until" timestamp with time zone, "p_talent_ids" "uuid"[], "p_video_kinds" "public"."video_kind"[]) TO "service_role";
 
 -- ---------------------------------------------------------------------------
 -- 2. Indexes: `idx_<table>_<columns>`

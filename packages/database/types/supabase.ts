@@ -277,7 +277,7 @@ isOneToOne: false
 { Args: { "channel_ids": (string)[],"query": string,"until": string,"video_kinds"?: (Database["public"]['Enums']["video_kind"])[] }; Returns: number
                            },
 "count_videos_v2":
-{ Args: { "query": string,"talent_ids": (string)[],"until": string,"video_kinds"?: (Database["public"]['Enums']["video_kind"])[] }; Returns: number
+{ Args: { "p_query": string,"p_talent_ids": (string)[],"p_until": string,"p_video_kinds"?: (Database["public"]['Enums']["video_kind"])[] }; Returns: number
                            },
 "get_audit_logs":
 { Args: { "p_limit"?: number,"p_offset"?: number,"p_sort_by"?: string,"p_sort_direction"?: string }; Returns: {
@@ -323,7 +323,7 @@ isOneToOne: false
         isSetofReturn: true
       } },
 "search_videos_v4":
-{ Args: { "perpage"?: number,"query": string,"talent_ids": (string)[],"until": string,"video_kinds"?: (Database["public"]['Enums']["video_kind"])[] }; Returns: {
+{ Args: { "p_perpage"?: number,"p_query": string,"p_talent_ids": (string)[],"p_until": string,"p_video_kinds"?: (Database["public"]['Enums']["video_kind"])[] }; Returns: {
               "created_at": string,
 "deleted_at": string | null,
 "deleted_reason": Database["public"]['Enums']["video_deleted_reason"] | null,

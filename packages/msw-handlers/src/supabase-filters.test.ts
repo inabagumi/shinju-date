@@ -362,7 +362,7 @@ describe('Supabase filters', () => {
         const response = await fetch(
           `${REST_URL}/rpc/search_videos_v4?select=id&${filter}`,
           {
-            body: JSON.stringify({ perpage: 1000, query: '' }),
+            body: JSON.stringify({ p_perpage: 1000, p_query: '' }),
             headers: { 'Content-Type': 'application/json' },
             method: 'POST',
           },

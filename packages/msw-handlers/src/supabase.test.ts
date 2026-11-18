@@ -1161,7 +1161,7 @@ describe('Supabase Handlers', () => {
         const response = await fetch(
           `https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=${encodeURIComponent(select)}`,
           {
-            body: JSON.stringify({ perpage, query: '' }),
+            body: JSON.stringify({ p_perpage: perpage, p_query: '' }),
             headers: { 'Content-Type': 'application/json' },
             method: 'POST',
           },
@@ -1380,7 +1380,7 @@ describe('Supabase Handlers', () => {
       const response = await fetch(
         `https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=${encodeURIComponent(select)}`,
         {
-          body: JSON.stringify({ query: '', ...body }),
+          body: JSON.stringify({ p_query: '', ...body }),
           headers: { 'Content-Type': 'application/json' },
           method: 'POST',
         },
@@ -1483,7 +1483,7 @@ describe('Supabase Handlers', () => {
     })
 
     it('should search videos newest first, including Twitch videos', async () => {
-      const data = await searchVideos({ perpage: 100 })
+      const data = await searchVideos({ p_perpage: 100 })
       const publishedAt = data.map((video) => video.published_at)
 
       expect(publishedAt).toEqual(
@@ -1506,8 +1506,8 @@ describe('Supabase Handlers', () => {
         await seedCollections({ now })
 
         const firstPage = await searchVideos({
-          perpage: 6,
-          until: now.toString(),
+          p_perpage: 6,
+          p_until: now.toString(),
         })
 
         expect(firstPage.some((video) => video.platform === 'twitch')).toBe(
@@ -1520,7 +1520,7 @@ describe('Supabase Handlers', () => {
 
     it('should search only videos published before until', async () => {
       const until = Temporal.Now.instant().toString()
-      const data = await searchVideos({ perpage: 100, until })
+      const data = await searchVideos({ p_perpage: 100, p_until: until })
 
       expect(data.length).toBeGreaterThan(0)
       expect(
@@ -1532,10 +1532,10 @@ describe('Supabase Handlers', () => {
     })
 
     it('should search only videos of the given talents', async () => {
-      const [video] = await searchVideos({ perpage: 1 })
+      const [video] = await searchVideos({ p_perpage: 1 })
       const data = await searchVideos({
-        perpage: 100,
-        talent_ids: [video?.talent.id],
+        p_perpage: 100,
+        p_talent_ids: [video?.talent.id],
       })
 
       expect(data.length).toBeGreaterThan(0)
@@ -1547,7 +1547,7 @@ describe('Supabase Handlers', () => {
         const response = await fetch(
           'https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=title',
           {
-            body: JSON.stringify({ perpage: 100, query }),
+            body: JSON.stringify({ p_perpage: 100, p_query: query }),
             headers: { 'Content-Type': 'application/json' },
             method: 'POST',
           },
@@ -1580,7 +1580,7 @@ describe('Supabase Handlers', () => {
       const response = await fetch(
         'https://fake.supabase.test/rest/v1/rpc/search_videos_v4',
         {
-          body: JSON.stringify({ perpage: 100, query: '' }),
+          body: JSON.stringify({ p_perpage: 100, p_query: '' }),
           headers: { 'Content-Type': 'application/json' },
           method: 'POST',
         },
@@ -1603,9 +1603,9 @@ describe('Supabase Handlers', () => {
           'https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=video_kind',
           {
             body: JSON.stringify({
-              perpage: 1000,
-              query: '',
-              ...(videoKinds ? { video_kinds: videoKinds } : {}),
+              p_perpage: 1000,
+              p_query: '',
+              ...(videoKinds ? { p_video_kinds: videoKinds } : {}),
             }),
             headers: { 'Content-Type': 'application/json' },
             method: 'POST',
@@ -1642,13 +1642,13 @@ describe('Supabase Handlers', () => {
         'id,talent:talents(deleted_at),youtube_video:youtube_videos(youtube_video_id),twitch_video:twitch_videos(twitch_video_id)'
 
       for (const body of [
-        { query: '' },
-        { query: 'Twitch' },
-        { query: '', video_kinds: ['short'] },
+        { p_query: '' },
+        { p_query: 'Twitch' },
+        { p_query: '', p_video_kinds: ['short'] },
       ]) {
         const videos = (await post(
           `https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=${encodeURIComponent(select)}`,
-          { ...body, perpage: 1000 },
+          { ...body, p_perpage: 1000 },
         )) as {
           talent: { deleted_at: string | null } | null
           twitch_video: unknown
@@ -1680,7 +1680,7 @@ describe('Supabase Handlers', () => {
         const response = await fetch(
           `${restUrl}/rpc/search_videos_v4?select=id`,
           {
-            body: JSON.stringify({ perpage, query: '' }),
+            body: JSON.stringify({ p_perpage: perpage, p_query: '' }),
             headers: { 'Content-Type': 'application/json' },
             method: 'POST',
           },

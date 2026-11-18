@@ -61,11 +61,11 @@ async function getMockAuditLogs({
 }
 
 interface SearchVideosParams {
-  talent_ids?: string[]
-  perpage?: number
-  query?: string
-  until?: string
-  video_kinds?: ('short' | 'standard')[] | null
+  p_perpage?: number
+  p_query?: string
+  p_talent_ids?: string[]
+  p_until?: string
+  p_video_kinds?: ('short' | 'standard')[] | null
 }
 
 /**
@@ -131,13 +131,13 @@ async function expandMockQuery(query: string): Promise<string[]> {
 
 /**
  * The visible videos of the given talents and kinds whose titles contain the
- * query or one of its synonyms and that were published before `until`.
+ * query or one of its synonyms and that were published before `p_until`.
  */
 async function filterMockVideos({
-  talent_ids: talentIds = [],
-  query = '',
-  until,
-  video_kinds: videoKinds,
+  p_query: query = '',
+  p_talent_ids: talentIds = [],
+  p_until: until,
+  p_video_kinds: videoKinds,
 }: SearchVideosParams) {
   const keywords = query === '' ? [] : await expandMockQuery(query)
 
@@ -221,7 +221,7 @@ function pageMockVideos<T extends { published_at: string }>(
  * is applied.
  */
 async function searchShownMockVideos({
-  perpage,
+  p_perpage: perpage,
   ...params
 }: SearchVideosParams) {
   return pageMockVideos(await filterShownMockVideos(params), perpage)
