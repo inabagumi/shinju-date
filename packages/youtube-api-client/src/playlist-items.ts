@@ -1,4 +1,5 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
+import { paginate } from '@shinju-date/helpers'
 import { YOUTUBE_DATA_API_MAX_RESULTS } from './batches.js'
 import { type ClientOptions, getYouTubeClient } from './client.js'
 import type {
@@ -39,34 +40,28 @@ export async function* getPlaylistItems({
   void,
   undefined
 > {
-  let pageToken: string | undefined
-
-  while (true) {
-    const {
-      data: { items, nextPageToken },
-    } = await client.playlistItems.list({
+  if (!all) {
+    const { items } = await getPlaylistItemsPage({
+      client,
       maxResults,
-      part: ['contentDetails'],
-      playlistId: playlistID,
-      ...(pageToken
-        ? {
-            pageToken,
-          }
-        : {}),
+      playlistID,
     })
 
-    if (!items || items.length < 1) {
-      break
-    }
+    yield* items
 
-    yield* items.filter(isFilteredYouTubePlaylistItem)
-
-    if (!all || !nextPageToken) {
-      break
-    }
-
-    pageToken = nextPageToken
+    return
   }
+
+  yield* paginate(async (pageToken) => {
+    const { items, nextPageToken } = await getPlaylistItemsPage({
+      client,
+      maxResults,
+      pageToken,
+      playlistID,
+    })
+
+    return { items, next: nextPageToken }
+  })
 }
 
 interface GetPlaylistItemsPageOptions extends ClientOptions {
@@ -100,6 +95,8 @@ export async function getPlaylistItemsPage({
 
   return {
     items: (items ?? []).filter(isFilteredYouTubePlaylistItem),
-    nextPageToken: nextPageToken || null,
+    // An empty page ends the walk even if YouTube returns a token with it.
+    nextPageToken:
+      items && items.length > 0 && nextPageToken ? nextPageToken : null,
   }
 }

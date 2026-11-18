@@ -1,11 +1,11 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import {
   getChannels,
+  getErrorStatus,
   getPlaylistItems,
   getPlaylistItemsPage,
   getVideoIds,
   getVideos,
-  isYouTubeApiError,
   YOUTUBE_DATA_API_MAX_RESULTS,
 } from '@shinju-date/youtube-api-client'
 import { unique } from '../internal/batch.js'
@@ -104,7 +104,7 @@ export class YouTubeFetcher extends Fetcher<
       return unique(items.map((item) => item.contentDetails.videoId))
     } catch (error) {
       // The uploads playlist of a channel without any upload does not exist.
-      if (isYouTubeApiError(error, 404)) {
+      if (getErrorStatus(error) === 404) {
         return []
       }
 
@@ -144,7 +144,7 @@ export class YouTubeFetcher extends Fetcher<
       }
     } catch (error) {
       // The uploads playlist of a channel without any upload does not exist.
-      if (isYouTubeApiError(error, 404)) {
+      if (getErrorStatus(error) === 404) {
         return { cursor: null, videoIds: [] }
       }
 

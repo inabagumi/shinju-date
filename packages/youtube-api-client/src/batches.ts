@@ -1,3 +1,4 @@
+import { chunk } from '@shinju-date/helpers'
 import type { RequestScheduler } from './types.js'
 
 export const YOUTUBE_DATA_API_MAX_RESULTS = 50
@@ -21,11 +22,7 @@ export async function* requestInBatches<T>(
   schedule: RequestScheduler | undefined,
   request: (ids: string[]) => Promise<readonly T[]>,
 ): AsyncGenerator<T, void, undefined> {
-  const batches: string[][] = []
-
-  for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
-    batches.push(ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS))
-  }
+  const batches = chunk(ids, YOUTUBE_DATA_API_MAX_RESULTS)
 
   if (!schedule) {
     for (const batch of batches) {

@@ -1,9 +1,13 @@
 /**
- * Returns true when a YouTube Data API call failed with the given HTTP status.
+ * Returns the HTTP status a YouTube Data API call failed with, or `undefined`
+ * when `error` does not carry one.
+ *
+ * The status is read from `status`, `response.status` or `code`, whichever
+ * the client set (`code` may be a string).
  */
-export function isYouTubeApiError(error: unknown, status: number): boolean {
+export function getErrorStatus(error: unknown): number | undefined {
   if (typeof error !== 'object' || error === null) {
-    return false
+    return undefined
   }
 
   const candidate = error as {
@@ -12,9 +16,17 @@ export function isYouTubeApiError(error: unknown, status: number): boolean {
     status?: unknown
   }
 
-  return (
-    candidate.status === status ||
-    candidate.response?.status === status ||
-    Number(candidate.code) === status
-  )
+  for (const value of [
+    candidate.status,
+    candidate.response?.status,
+    candidate.code,
+  ]) {
+    const status = typeof value === 'string' ? Number(value) : value
+
+    if (typeof status === 'number' && Number.isInteger(status)) {
+      return status
+    }
+  }
+
+  return undefined
 }
