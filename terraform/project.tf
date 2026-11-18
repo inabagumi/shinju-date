@@ -37,8 +37,7 @@ locals {
     }
   }
 
-  # admin と batch が必須にする、YouTube と Twitch の API のキー
-  # （apps/admin/lib/env.ts と apps/batch/lib/env.ts の API_KEY_NAMES）
+  # admin と batch が必須にする API のキー
   api_key_environment_variables = {
     google_api_key = {
       key       = "GOOGLE_API_KEY"

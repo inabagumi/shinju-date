@@ -1,11 +1,7 @@
-# Vercel の画面から手で追加されていた環境変数を、作り直さずに取り込む。
-# apply が済んだら、このファイルを消す。
-#
-# 取り込みには環境変数の ID が要るので、plan のときに Vercel から読み、名前と対象で探す。
-# 当てはまる環境変数が Vercel になければ、取り込まずに新しく作る。
+# 手で追加されていた環境変数を取り込む。apply が済んだら、このファイルを消す
 
 locals {
-  # 取り込む環境変数（プロジェクト => Vercel の環境変数の名前 => project.tf のキー）
+  # プロジェクト => Vercel の環境変数の名前 => project.tf のキー
   imported_environment_variables = {
     admin = {
       GOOGLE_API_KEY       = "google_api_key"
@@ -18,7 +14,6 @@ locals {
     }
   }
 
-  # 取り込む環境変数ごとの、取り込みの ID と取り込み先。
   # environment は値を含むので全体が sensitive になるが、ID と名前は秘密ではない
   environment_variable_imports = merge([
     for project, names in local.imported_environment_variables : {
@@ -27,15 +22,13 @@ locals {
           id  = environment_variable.id
           key = environment_variable.key
         }
-        # 同じ名前の環境変数が、対象ごとに分けて登録されていることがある（development 用など）。
-        # project.tf の定義と対象が重ならないものは、Terraform で管理しないので取り込まない
+        # 同じ名前でも、定義と対象が重ならないもの（development 用など）は取り込まない
         if length(setintersection(
           environment_variable.target == null ? [] : environment_variable.target,
           try(local.projects[project].environment_variables[names[environment_variable.key]].target, []),
         )) > 0
       ]) :
       "${project}/${names[environment_variable.key]}" => {
-        # チーム/プロジェクト/環境変数
         id = join("/", [
           var.vercel_team_id,
           data.vercel_project.imported[project].id,
