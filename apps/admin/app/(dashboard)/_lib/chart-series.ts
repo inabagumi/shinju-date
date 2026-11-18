@@ -3,7 +3,7 @@
  *
  * 色は、Recharts の色の props（`fill`、`stroke`、`stopColor`）に `currentColor` を渡し、
  * `className` の `text-*`（`theme.css` のセマンティックカラー）で指定する。
- * クラスで書くと、エディターの補完や色の表示、Biome のクラスの並べ替えが効き、
+ * クラスで書くと、エディターの補完や色の表示、oxfmt のクラスの並べ替えが効き、
  * ライトとダークも自動で切り替わる。
  */
 export interface ChartSeries {

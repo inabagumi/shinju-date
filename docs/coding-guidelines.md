@@ -8,9 +8,9 @@
 
 **原則として、オブジェクトの型定義には `interface` を使用してください。**
 
-`pnpm run check` が、Biome の `style/useConsistentTypeDefinitions` で確かめます。`type X = { … }` と書くとエラーになります。ユニオン型や `z.infer<typeof schema>` のような、ほかの型から導く `type` は対象になりません。
+`pnpm run check` が、oxlint の `typescript/consistent-type-definitions` で確かめます。`type X = { … }` と書くとエラーになります。ユニオン型や `z.infer<typeof schema>` のような、ほかの型から導く `type` は対象になりません。
 
-`interface` には暗黙のインデックスシグネチャがないため、`Record<string, …>` を受け取る関数に渡せないことがあります。その場合だけ、`// biome-ignore lint/style/useConsistentTypeDefinitions: <理由>` を付けて `type` を使います。
+`interface` には暗黙のインデックスシグネチャがないため、`Record<string, …>` を受け取る関数に渡せないことがあります。その場合だけ、`// oxlint-disable-next-line typescript/consistent-type-definitions -- <理由>` を付けて `type` を使います。
 
 #### 理由
 
@@ -212,7 +212,7 @@ interface EventHandler {
 
 ### コードフォーマット
 
-- **リント**: Biome を使用
+- **リント**: Ultracite のプリセットを使った oxlint（JavaScript、TypeScript）と Stylelint（CSS）を使用
 - **整形**: Ultracite のプリセットを使った oxfmt を使用（JavaScript、TypeScript、CSS、Markdown、YAML、JSON。import と Tailwind のクラスの並べ替えを含む）
 
 すべてのコード変更後は必ず以下を実行：
@@ -241,7 +241,7 @@ refactor(admin): convert type definitions to interface
 - `'use cache'`（`'use cache: remote'` / `'use cache: private'` を含む）の直後に、空行を1行入れる
 - `cacheLife()` や `cacheTag()` などのキャッシュ設定の並びの後にも、空行を1行入れる
 - この2つは、例外なく、すべてのファイルに適用する
-- `pnpm run check:cache-directives`（`scripts/check-cache-directives.mjs`）が確かめる（Biome のプラグインは、空行を判定できないため）
+- `pnpm run check:cache-directives`（`scripts/check-cache-directives.mjs`）が確かめる（oxlint のルールでは、まだ確かめていないため）
 
 ディレクティブとキャッシュの設定を、本文から一目で区別できるようにするためです。過去に、まとめて直しています。
 
@@ -408,16 +408,16 @@ await redis.set("summary:stats:2025-11-11", data);
 
 - `new Date()` と `Date.now()` は、原則として使わない。サーバーとブラウザで値がずれ、React のハイドレーションのエラーの主な原因になる
   - ライブラリとの受け渡しなど、やむを得ない場合だけ使う。その場合も、サーバーとブラウザで値が違いうることに注意する
-  - `pnpm run check` が、`Date` を使っている箇所をエラーにする（`style/noRestrictedGlobals`）。型として書いた `Date` もエラーになる。やむを得ず使う行には、理由を書いた `biome-ignore` を付ける
+  - `pnpm run check` が、`Date` を使っている箇所をエラーにする（`no-restricted-globals`）。やむを得ず使う行には、`// oxlint-disable-next-line no-restricted-globals -- <理由>` のように、理由を書いて付ける
   - テストのファイル（`**/*.test.*`、`**/e2e/**`）は対象外（`vi.setSystemTime(new Date(…))` などで使う）
 - 時刻には、グローバルの `Temporal` を使う。`import { Temporal } from 'temporal-polyfill'` とは書かない
   - サーバー（Node.js v26 以降）では、ネイティブ実装が使われる。ブラウザでは、各アプリの `instrumentation-client.ts` が `temporal-polyfill/global` を読み込み、ネイティブ実装がない場合だけポリフィルする
-  - `pnpm run check` が、`temporal-polyfill` とそのサブパス（`temporal-polyfill/global` など）からの import をエラーにする（`style/noRestrictedImports`）。各アプリの `instrumentation-client.ts` は対象外
+  - `pnpm run check` が、`temporal-polyfill` とそのサブパス（`temporal-polyfill/global` など）からの import をエラーにする（`no-restricted-imports`）。各アプリの `instrumentation-client.ts` は対象外
 - テストで現在時刻を固定するときは、`vi.mock('temporal-polyfill')` ではなく、`vi.spyOn(Temporal.Now, 'instant')` などを使う
 - タイムゾーンに依存しない絶対時刻は、`Temporal.Now.instant()` で取る
 - API で送受信するときは、ISO 8601 の文字列にする。`Temporal.Instant` の `toString()` は、常に UTC（末尾が `Z`。例: `2025-11-01T12:00:00Z`）で出力する。タイムゾーン付きの文字列（例: `2025-11-01T21:00:00+09:00`）が要る場合は、`Temporal.ZonedDateTime` の `toString()` を使う
 - ユーザーに時刻を表示するときなど、タイムゾーンが要る場合は、`'Asia/Tokyo'` などを直接書かず、`@shinju-date/constants` の `TIME_ZONE` を使う
-  - `pnpm run check` が、`'Asia/Tokyo'` を含む文字列をエラーにする（`config/biome/no-hardcoded-time-zone.grit`）。`TIME_ZONE` の定義と、テストのファイルは対象外
+  - `pnpm run check` が、`'Asia/Tokyo'` を含む文字列をエラーにする（`config/oxlint/src/no-hardcoded-time-zone.ts`）。`TIME_ZONE` の定義と、テストのファイルは対象外
 
 ```typescript
 import { TIME_ZONE } from "@shinju-date/constants";

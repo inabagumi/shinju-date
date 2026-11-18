@@ -435,24 +435,17 @@ CI環境では以下のように実行されます：
 pnpm test --filter <package-name> -- --reporter=github-actions
 ```
 
-#### Biome（リント）
+#### oxlint、Stylelint（リント）と oxfmt（整形）
 
-Biomeは**GitHubレポーター**を使用し、以下の機能を提供します：
-
-- **GitHub Annotations**: リントエラーがPull Requestの該当行に直接表示されます
-- **チェックラン**: Biomeの結果がGitHub Checksに統合され、PRのUIから確認できます
-- **問題の分類**: エラー、警告、情報がカテゴリごとに整理されます
-
-CI環境では以下のように実行されます：
+CI では、`pnpm run check` に oxlint の GitHub 向けの出力（`--format=github`）を指定して実行します。oxlint のエラーは、プルリクエストの該当の行に直接表示されます。
 
 ```bash
 # GitHub Actionsワークフローで自動的に実行
-pnpm biome ci --reporter=github .
+pnpm run check --format=github
 ```
 
-#### oxfmt（整形）
-
-整形されていないファイルがあると、CI の `pnpm oxfmt --check` が失敗し、ファイルの一覧を出力します。ローカルで `pnpm run fix` を実行して直してください。
+- `--format=github` は、`pnpm run check` の最後に実行する `ultracite check` を通して oxlint に渡ります
+- Stylelint の違反と、整形されていないファイルは、ログにファイルの一覧を出力します。ローカルで `pnpm run fix` を実行して直してください
 
 #### Playwright（E2Eテスト）
 
@@ -463,7 +456,7 @@ PlaywrightのGitHub Actionsレポーターについては、[E2E Testing Guide](
 ローカル環境では、CI環境変数が設定されていないため、通常のレポーター（デフォルト）が使用されます：
 
 - **Vitest**: デフォルトレポーター（カラフルなコンソール出力）
-- **Biome**: デフォルトレポーター（カラフルなコンソール出力）
+- **oxlint**: デフォルトの出力（カラフルなコンソール出力）
 - **Playwright**: HTMLレポーター（ブラウザで結果を表示）
 
 これにより、ローカルとCIで異なる視覚的体験を提供しながら、両方の環境で最適な結果表示が実現されています。

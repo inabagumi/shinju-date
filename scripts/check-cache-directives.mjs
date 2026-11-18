@@ -11,8 +11,7 @@
  * Nothing is required when the directive or the run ends the block. See
  * "キャッシュのディレクティブ" in AGENTS.md.
  *
- * Biome's GritQL plugins cannot check this, because the text of a node does
- * not include the whitespace (trivia) between the nodes.
+ * This is not an oxlint rule yet, so this script checks it.
  *
  * Usage:
  *   node scripts/check-cache-directives.mjs [files...]

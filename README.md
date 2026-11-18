@@ -42,7 +42,7 @@
 - **キャッシュ**: Upstash Redis
 - **パッケージマネージャー**: pnpm
 - **モノレポ管理**: Turborepo
-- **コード品質**: Biome（リント）、oxfmt（整形）
+- **コード品質**: oxlint と Stylelint（リント）、oxfmt（整形）。どれも [Ultracite](https://www.ultracite.ai/) のプリセットを使う
 
 ## 開発を始める
 

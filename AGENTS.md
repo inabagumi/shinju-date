@@ -28,7 +28,7 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 
 ## 品質チェック
 
-- コードを変えたら、**必ず** `pnpm run fix` を実行する（Biome によるリントの自動修正と、oxfmt による整形と import の並べ替え）。`pnpm run check` は、直さずに確かめるだけ
+- コードを変えたら、**必ず** `pnpm run fix` を実行する（oxlint と Stylelint によるリントの自動修正と、oxfmt による整形と import の並べ替え）。`pnpm run check` は、直さずに確かめるだけ
 - TypeScript を変えたら、`pnpm run typecheck`（1つのパッケージなら `pnpm run typecheck --filter=<パッケージ名>`）も実行する
 - Markdown を変えたら、`pnpm run check:docs` も実行する（リポジトリの中へのリンクとファイルのパスが実在するかを確かめる。[ドキュメントのリンク](CONTRIBUTING.md#ドキュメントのリンク)）
 - `packages/*` の `tsdown.config.ts` や `package.json` の `exports` を変えたら、ビルドのあとに `pnpm run check:package-exports` も実行する（[パッケージのビルドと `exports`](CONTRIBUTING.md#パッケージのビルドと-exports)）
@@ -121,7 +121,7 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 
 [理由と例](docs/coding-guidelines.md#時刻の扱い)
 
-- `new Date()` と `Date.now()` は原則として使わない（`pnpm run check` が確かめる。テストのファイルは対象外）。ライブラリとの受け渡しなど、やむを得ない場合だけ、理由を書いた `biome-ignore` を付け、サーバーとブラウザで値が違いうることに注意して使う
+- `new Date()` と `Date.now()` は原則として使わない（`pnpm run check` が確かめる。テストのファイルは対象外）。ライブラリとの受け渡しなど、やむを得ない場合だけ、理由を書いた `oxlint-disable-next-line` を付け、サーバーとブラウザで値が違いうることに注意して使う
 - 時刻には、グローバルの `Temporal` を使う。`import { Temporal } from 'temporal-polyfill'` とは書かない（`pnpm run check` が確かめる。ブラウザでは、各アプリの `instrumentation-client.ts` が `temporal-polyfill/global` を読み込む）
 - テストで現在時刻を固定するときは、`vi.mock('temporal-polyfill')` ではなく `vi.spyOn(Temporal.Now, 'instant')` などを使う
 - 現在の絶対時刻は `Temporal.Now.instant()` で取る

@@ -334,7 +334,7 @@ export function TalentsListSkeleton() {
 
 ### `twMerge` について
 
-`theme.css` で追加した文字サイズ、角丸、影を `tailwind-merge` に登録した `twMerge` を、`@shinju-date/ui` から使ってください。`tailwind-merge` の `twMerge` は `text-body` などを文字色として扱うため、`twMerge('text-body text-foreground')` の `text-body` が消えてしまいます。`tailwind-merge` から直接インポートすると Biome のエラーになります。
+`theme.css` で追加した文字サイズ、角丸、影を `tailwind-merge` に登録した `twMerge` を、`@shinju-date/ui` から使ってください。`tailwind-merge` の `twMerge` は `text-body` などを文字色として扱うため、`twMerge('text-body text-foreground')` の `text-body` が消えてしまいます。`tailwind-merge` から直接インポートすると、`pnpm run check` のエラーになります（oxlint の `no-restricted-imports`）。
 
 ```tsx
 import { twMerge } from "@shinju-date/ui";
@@ -438,7 +438,7 @@ import { twMerge } from "@shinju-date/ui";
 
 ## 新しい画面を作るとき
 
-`dark:` と、Tailwind の既定の文字サイズ（`text-sm` など）・角丸（`rounded-md` など）・影（`shadow-lg` など）は、`pnpm run check` がエラーにします（`config/biome/no-default-tailwind-scale.grit`。`class` と `className` の値、`twMerge` と `cva` の引数を調べます）。
+`dark:` と、Tailwind の既定の文字サイズ（`text-sm` など）・角丸（`rounded-md` など）・影（`shadow-lg` など）は、`pnpm run check` がエラーにします（`config/oxlint/src/no-default-tailwind-scale.ts`。`class` と `className` の値、`twMerge` と `cva` の引数を調べます）。
 
 - [ ] 色はセマンティックカラーで指定し、`dark:` で手書きしていない
 - [ ] 紫は要所（リンク・選択中・主ボタン・フォーカス・フッター）だけ、ピンクは配信中だけに使っている
