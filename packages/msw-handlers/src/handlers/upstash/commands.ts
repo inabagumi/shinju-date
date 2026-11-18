@@ -7,6 +7,11 @@
  * silently get `null`.
  */
 import {
+  SCRIPT_EMULATIONS as BACKFILL_SCRIPT_EMULATIONS,
+  getScriptName,
+  type ScriptEmulation,
+} from '@shinju-date/video-backfill/testing'
+import {
   type MockRedisStore,
   RedisError,
   type RedisValueOf,
@@ -460,56 +465,21 @@ function incrementString(
 /** Delete a lock only if it still holds the given token. */
 function releaseLock(
   call: (...command: string[]) => RedisReply,
-  [lock = '']: string[],
-  [token]: string[],
+  [lock = '']: readonly string[],
+  [token]: readonly string[],
 ): RedisReply {
   return call('GET', lock) === token ? call('DEL', lock) : 0
 }
 
-/** The scripts of `EVAL` that the mock emulates, as the commands they run. */
-const SCRIPTS: Record<
-  string,
-  (
-    call: (...command: string[]) => RedisReply,
-    keys: string[],
-    argv: string[],
-  ) => RedisReply
-> = {
+/**
+ * The scripts of `EVAL` that the mock emulates, as the commands they run, by
+ * the name on their first line. The scripts of `@shinju-date/video-backfill`
+ * come from that package, which tests its emulations against real Redis.
+ */
+const SCRIPTS: Readonly<Record<string, ScriptEmulation>> = {
   // `RELEASE_LOCK_SCRIPT` of the cron jobs of batch
   'batch:release-lock': (call, keys, argv) => releaseLock(call, keys, argv),
-  // `ENQUEUE_SCRIPT` of `@shinju-date/video-backfill`
-  'video-backfill:enqueue': (call, [job = '', queue = '', lock = ''], argv) => {
-    const [expected = '', value = '', ttl = '', id = ''] = argv
-    const current = call('GET', job)
-
-    if (expected === '' ? current !== null : current !== expected) {
-      return 0
-    }
-
-    if (call('EXISTS', lock) === 1) {
-      return 0
-    }
-
-    call('LPUSH', queue, id)
-    call('EXPIRE', queue, ttl)
-    call('SET', job, value, 'EX', ttl)
-
-    return 1
-  },
-  // `REQUEUE_SCRIPT` of `@shinju-date/video-backfill`
-  'video-backfill:requeue': (call, [queue = '', job = '', lock = ''], argv) => {
-    const [id = '', value = '', ttl = ''] = argv
-
-    call('LPUSH', queue, id)
-    call('EXPIRE', queue, ttl)
-    call('SET', job, value, 'EX', ttl)
-    call('DEL', lock)
-
-    return 1
-  },
-  // `RUN_UNLOCK_SCRIPT` of `@shinju-date/video-backfill`
-  'video-backfill:run-unlock': (call, keys, argv) =>
-    releaseLock(call, keys, argv),
+  ...BACKFILL_SCRIPT_EMULATIONS,
 }
 
 /** The commands that the mock supports, by their lowercase names. */
@@ -535,7 +505,7 @@ export const COMMANDS: Record<string, CommandHandler> = {
     // Lua cannot run here, so the known scripts are emulated with the
     // commands that they run. They are found by the comment on their first
     // line, such as `-- video-backfill:enqueue`.
-    const name = script.match(/^--\s*(\S+)/)?.[1] ?? ''
+    const name = getScriptName(script) ?? ''
     const emulate = SCRIPTS[name]
 
     if (!emulate) {

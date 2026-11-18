@@ -90,7 +90,7 @@ const { data } = await supabase
 - `GET` / `MGET` / `SET` / `DEL` - 値の取得、設定、削除
 - `INCR` - 数値の加算（batch の `/videos/backfill` のレート制限用）
 - `EXPIRE` - 有効期限の設定（キーの有無だけを返し、期限切れで消しはしない）
-- `EVAL` - スクリプトの実行（過去の動画の取得のキューと、batch の cron のロックの解除で使う既知のスクリプトだけを模擬する）
+- `EVAL` - スクリプトの実行（過去の動画の取得のキューと、batch の cron のロックの解除で使う既知のスクリプトだけを模擬する。キューのスクリプトの模擬は `@shinju-date/video-backfill/testing` のものを使う）
 - `PING` - 接続確認
 
 パイプラインサポート：
