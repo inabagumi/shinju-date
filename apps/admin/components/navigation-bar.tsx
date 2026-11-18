@@ -18,10 +18,10 @@ import {
   useState,
   useTransition,
 } from 'react'
+import { signOutAction } from '@/app/login/_actions/sign-out'
 import { useActionToast } from '@/components/action-toast'
 import Form, { SubmitButton } from '@/components/form'
 import { LogoIcon } from '@/components/logo-icon'
-import { signOut } from '@/lib/actions/sign-out'
 import { SERVER_ACTION_FALLBACK_ERROR } from '@/lib/use-server-action'
 
 function ActiveNavigationLink({
@@ -142,7 +142,7 @@ function SignOutMenuItem() {
       let message: string | undefined
 
       try {
-        const state = await signOut()
+        const state = await signOutAction()
 
         message = state.errors?.['generic']?.[0]
       } catch (error) {
@@ -277,7 +277,7 @@ export function NavigationBar({ lastSync }: NavigationBarProps) {
               </div>
             ))}
             <Form
-              action={signOut}
+              action={signOutAction}
               className="border-t border-primary-foreground/20 pt-4"
             >
               <SubmitButton

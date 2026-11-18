@@ -25,7 +25,7 @@ const formSchema = z.object({
     .min(8, 'パスワードは8文字以上入力する必要があります。'),
 })
 
-export async function signIn(
+export async function signInAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {

@@ -5,7 +5,7 @@ import { ActionToastProvider } from '@/components/action-toast'
 
 const mocks = vi.hoisted(() => ({
   pathname: '/videos',
-  signOut: vi.fn(),
+  signOutAction: vi.fn(),
 }))
 
 vi.mock('next/navigation', () => ({
@@ -13,8 +13,8 @@ vi.mock('next/navigation', () => ({
   usePathname: () => mocks.pathname,
 }))
 
-vi.mock('@/lib/actions/sign-out', () => ({
-  signOut: mocks.signOut,
+vi.mock('@/app/login/_actions/sign-out', () => ({
+  signOutAction: mocks.signOutAction,
 }))
 
 const { NavigationBar } = await import('./navigation-bar')
@@ -32,7 +32,7 @@ function renderNavigationBar() {
 
 describe('NavigationBar', () => {
   beforeEach(() => {
-    mocks.signOut.mockReset()
+    mocks.signOutAction.mockReset()
   })
 
   it('does not open the menu on hover', async () => {
@@ -112,7 +112,7 @@ describe('NavigationBar', () => {
 
     const result = Promise.withResolvers<object>()
 
-    mocks.signOut.mockReturnValue(result.promise)
+    mocks.signOutAction.mockReturnValue(result.promise)
     renderNavigationBar()
 
     await user.click(screen.getByRole('button', { name: 'ユーザーメニュー' }))
@@ -120,7 +120,7 @@ describe('NavigationBar', () => {
 
     const item = screen.getByRole('menuitem', { name: 'ログアウト' })
 
-    expect(mocks.signOut).toHaveBeenCalledTimes(1)
+    expect(mocks.signOutAction).toHaveBeenCalledTimes(1)
     // 終わるまでメニューを開いたままにし、項目を無効にする
     expect(item).toHaveAttribute('aria-disabled', 'true')
 
@@ -135,7 +135,7 @@ describe('NavigationBar', () => {
   it('shows a toast when signing out fails', async () => {
     const user = userEvent.setup()
 
-    mocks.signOut.mockResolvedValue({
+    mocks.signOutAction.mockResolvedValue({
       errors: { generic: ['ログアウトに失敗しました。'] },
     })
     renderNavigationBar()

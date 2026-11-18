@@ -21,7 +21,7 @@ vi.mock('@/lib/supabase', () => ({
   }),
 }))
 
-import { signIn } from './actions'
+import { signInAction } from './sign-in'
 
 function createFormData(next?: string): FormData {
   const formData = new FormData()
@@ -35,7 +35,7 @@ function createFormData(next?: string): FormData {
   return formData
 }
 
-describe('signIn', () => {
+describe('signInAction', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     signOutMock.mockResolvedValue({ error: null })
@@ -47,7 +47,7 @@ describe('signIn', () => {
       error: null,
     })
 
-    await signIn({}, createFormData())
+    await signInAction({}, createFormData())
 
     expect(redirectMock).toHaveBeenCalledWith('/')
     expect(signOutMock).not.toHaveBeenCalled()
@@ -59,7 +59,7 @@ describe('signIn', () => {
       error: null,
     })
 
-    await signIn({}, createFormData('/analytics/click?from=2025-11-01'))
+    await signInAction({}, createFormData('/analytics/click?from=2025-11-01'))
 
     expect(redirectMock).toHaveBeenCalledWith(
       '/analytics/click?from=2025-11-01',
@@ -74,7 +74,7 @@ describe('signIn', () => {
         error: null,
       })
 
-      await signIn({}, createFormData(next))
+      await signInAction({}, createFormData(next))
 
       expect(redirectMock).toHaveBeenCalledWith('/')
     },
@@ -86,7 +86,7 @@ describe('signIn', () => {
       error: null,
     })
 
-    const result = await signIn({}, createFormData())
+    const result = await signInAction({}, createFormData())
 
     expect(result).toEqual({
       errors: {
@@ -103,7 +103,7 @@ describe('signIn', () => {
       error: new Error('Invalid login credentials'),
     })
 
-    const result = await signIn({}, createFormData())
+    const result = await signInAction({}, createFormData())
 
     expect(result).toEqual({
       errors: {
@@ -119,7 +119,7 @@ describe('signIn', () => {
     formData.set('email', 'invalid')
     formData.set('password', 'short')
 
-    const result = await signIn({}, formData)
+    const result = await signInAction({}, formData)
 
     expect(result).toEqual({
       errors: {
@@ -131,7 +131,7 @@ describe('signIn', () => {
   })
 
   it('returns the errors for each field when the values are missing', async () => {
-    const result = await signIn({}, new FormData())
+    const result = await signInAction({}, new FormData())
 
     expect(result).toEqual({
       errors: {
