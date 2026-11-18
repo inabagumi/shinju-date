@@ -380,4 +380,27 @@ describe('with an invalid input', () => {
     test.expectNoAuditLog()
     test.expectNotRevalidated()
   })
+
+  it('updates nothing for a memo longer than 10,000 characters', async () => {
+    await expect(
+      updateFeatureRequestMemoAction({}, memoForm('あ'.repeat(10_001))),
+    ).resolves.toEqual(errorState('メモは10,000文字以内で入力してください。'))
+    expect(supabase.requests).toEqual([])
+    test.expectNoAuditLog()
+    test.expectNotRevalidated()
+  })
+
+  it('accepts a memo of 10,000 characters', async () => {
+    const memo = 'あ'.repeat(10_000)
+    supabase.on('select', 'feature_requests', [
+      { admin_memo: null, message: 'Message' },
+    ])
+
+    await expect(
+      updateFeatureRequestMemoAction({}, memoForm(memo)),
+    ).resolves.toEqual({ success: true })
+    expect(
+      supabase.calls('update', 'feature_requests').map(({ body }) => body),
+    ).toEqual([{ admin_memo: memo }])
+  })
 })
