@@ -1,4 +1,3 @@
-import { getVideoExternalUrl } from '@shinju-date/helpers'
 import { max, min } from '@shinju-date/temporal-fns'
 import {
   convertTimestampToArray,
@@ -7,6 +6,7 @@ import {
 } from 'ics'
 import type { CalendarVideo } from '@/lib/data/videos'
 import { SITE_NAME as siteName } from './site'
+import { getVideoUrl } from './video-url'
 
 /**
  * The calendar apps fetch the subscribed URLs periodically, so let the CDN
@@ -87,14 +87,7 @@ export function createEventAttributesList(
   const events: EventAttributes[] = []
 
   for (const video of videos) {
-    const url = getVideoExternalUrl({
-      platform: video.platform,
-      status: video.status,
-      twitchLoginName: video.twitch_video?.twitch_user.twitch_login_name,
-      twitchVideoId: video.twitch_video?.twitch_video_id,
-      twitchVideoType: video.twitch_video?.type,
-      youtubeVideoId: video.youtube_video?.youtube_video_id,
-    })
+    const url = getVideoUrl(video)
 
     if (!url) {
       continue

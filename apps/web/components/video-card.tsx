@@ -1,5 +1,4 @@
 import { TIME_ZONE } from '@shinju-date/constants'
-import { getVideoExternalUrl } from '@shinju-date/helpers'
 import { formatDuration } from '@shinju-date/temporal-fns'
 import { twMerge } from '@shinju-date/ui'
 import { ImageIcon } from 'lucide-react'
@@ -7,6 +6,7 @@ import Image from 'next/image'
 import type { Video } from '@/lib/data/videos'
 import { getVideoCreator } from '@/lib/video-creator'
 import { getVideoTitleParts } from '@/lib/video-title'
+import { getVideoUrl } from '@/lib/video-url'
 import FormattedTime from './formatted-time'
 import LiveBadge from './live-badge'
 import PlatformBadge from './platform-badge'
@@ -179,14 +179,7 @@ export default function VideoCard({
     value.talent.name,
   )
 
-  const href = getVideoExternalUrl({
-    platform: value.platform,
-    status: value.status,
-    twitchLoginName: value.twitch_video?.twitch_user.twitch_login_name,
-    twitchVideoId: value.twitch_video?.twitch_video_id,
-    twitchVideoType: value.twitch_video?.type,
-    youtubeVideoId: value.youtube_video?.youtube_video_id,
-  })
+  const href = getVideoUrl(value)
 
   if (!href) {
     return null

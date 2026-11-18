@@ -1,10 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { ScheduleVideo } from '@/lib/data/schedule'
-import ScheduleItem, {
-  getScheduleVideoUrl,
-  getTitleLines,
-} from './schedule-item'
+import ScheduleItem, { getTitleLines } from './schedule-item'
 
 const profileImage = {
   blur_data_url: 'data:image/webp;base64,AAAA',
@@ -328,45 +325,5 @@ describe('getTitleLines', () => {
     expect(getTitleLinesOfTallerHours(30)).toBe(1)
     expect(getTitleLinesOfTallerHours(60)).toBe(4)
     expect(getTitleLinesOfTallerHours(120)).toBe(9)
-  })
-})
-
-describe('getScheduleVideoUrl', () => {
-  test('should return null for a pending Twitch archive without the login', () => {
-    const video = createTwitchVideo({}, null)
-
-    expect(
-      getScheduleVideoUrl({
-        ...video,
-        twitch_video: {
-          twitch_user: {
-            name: '朝霧ミオ',
-            profile_image: null,
-            twitch_login_name: null,
-          },
-          twitch_video_id: 'live:12345678901',
-          type: null,
-        },
-      }),
-    ).toBeNull()
-  })
-
-  test('should link a pending Twitch archive to the channel', () => {
-    const video = createTwitchVideo()
-
-    expect(
-      getScheduleVideoUrl({
-        ...video,
-        twitch_video: {
-          twitch_user: {
-            name: '朝霧ミオ',
-            profile_image: null,
-            twitch_login_name: 'mio',
-          },
-          twitch_video_id: 'live:12345678901',
-          type: null,
-        },
-      }),
-    ).toBe('https://www.twitch.tv/mio')
   })
 })
