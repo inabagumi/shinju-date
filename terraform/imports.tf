@@ -1,8 +1,8 @@
 # Vercel の画面から手で追加されていた環境変数を、作り直さずに取り込む。
 # apply が済んだら、このファイルを消す。
 #
-# 取り込みには環境変数の ID が要るので、plan のときに Vercel から読み、名前で探す。
-# 同じ名前の環境変数が Vercel になければ、取り込まずに新しく作る。
+# 取り込みには環境変数の ID が要るので、plan のときに Vercel から読み、名前と対象で探す。
+# 当てはまる環境変数が Vercel になければ、取り込まずに新しく作る。
 
 locals {
   # 取り込む環境変数（プロジェクト => Vercel の環境変数の名前 => project.tf のキー）
@@ -27,6 +27,12 @@ locals {
           id  = environment_variable.id
           key = environment_variable.key
         }
+        # 同じ名前の環境変数が、対象ごとに分けて登録されていることがある（development 用など）。
+        # project.tf の定義と対象が重ならないものは、Terraform で管理しないので取り込まない
+        if length(setintersection(
+          environment_variable.target == null ? [] : environment_variable.target,
+          try(local.projects[project].environment_variables[names[environment_variable.key]].target, []),
+        )) > 0
       ]) :
       "${project}/${names[environment_variable.key]}" => {
         # チーム/プロジェクト/環境変数
@@ -38,7 +44,6 @@ locals {
         name    = names[environment_variable.key]
         project = project
       }
-      if contains(keys(names), environment_variable.key)
     }
   ]...)
 }
