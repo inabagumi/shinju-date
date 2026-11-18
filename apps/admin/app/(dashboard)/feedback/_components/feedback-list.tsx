@@ -1,11 +1,8 @@
-'use client'
-
 import type { Tables } from '@shinju-date/database'
 import {
   Badge,
   EmptyState,
   FilterBar,
-  Select,
   Skeleton,
   Table,
   TableBody,
@@ -16,13 +13,13 @@ import {
 } from '@shinju-date/ui'
 import { Inbox } from 'lucide-react'
 import Link from 'next/link'
+import { SearchParamSelect } from '@/components/search-param-select'
 import {
   FieldSkeleton,
   FilterBarSkeleton,
   TableSkeleton,
 } from '@/components/table-skeleton'
 import { formatDateTimeFromISO } from '@/lib/format'
-import { useUpdateSearchParams } from '@/lib/use-update-search-params'
 import {
   FEATURE_REQUEST_STATUS_LABELS,
   FEATURE_REQUEST_STATUSES,
@@ -31,6 +28,7 @@ import {
 import type { FeedbackSearchParams } from '../_lib/search-params-schema'
 
 interface FeatureRequestListProps {
+  /** 絞り込みを済ませた機能要望 */
   featureRequests: Tables<'feature_requests'>[]
   /** URL の `read`。`undefined` はすべて */
   readFilter: FeedbackSearchParams['read']
@@ -51,26 +49,17 @@ const statusColors: Record<
   resolved: 'success',
 }
 
+/**
+ * 機能要望の一覧。表と行はサーバーで描き、絞り込みのセレクトだけをクライアントの
+ * 部品に任せる
+ */
 export function FeatureRequestList({
   featureRequests,
   readFilter,
   statusFilter,
 }: FeatureRequestListProps) {
-  const updateSearchParams = useUpdateSearchParams()
-
-  const filteredRequests = featureRequests.filter((item) => {
-    if (statusFilter !== undefined && item.status !== statusFilter) return false
-    if (readFilter === 'read' && !item.is_read) return false
-    if (readFilter === 'unread' && item.is_read) return false
-    return true
-  })
-
   const activeCount =
     (statusFilter === undefined ? 0 : 1) + (readFilter === undefined ? 0 : 1)
-
-  const changeFilter = (name: 'read' | 'status', value: string) => {
-    updateSearchParams({ [name]: value === ALL ? null : value })
-  }
 
   return (
     <div className="space-y-4">
@@ -79,9 +68,10 @@ export function FeatureRequestList({
           <label className="text-meta font-semibold" htmlFor="status-filter">
             ステータス
           </label>
-          <Select
+          <SearchParamSelect
+            defaultValue={ALL}
             id="status-filter"
-            onChange={(e) => changeFilter('status', e.target.value)}
+            paramName="status"
             value={statusFilter ?? ALL}
           >
             <option value={ALL}>すべて</option>
@@ -90,25 +80,26 @@ export function FeatureRequestList({
                 {FEATURE_REQUEST_STATUS_LABELS[status]}
               </option>
             ))}
-          </Select>
+          </SearchParamSelect>
         </div>
         <div className="flex flex-col gap-1 md:w-48">
           <label className="text-meta font-semibold" htmlFor="read-filter">
             既読状態
           </label>
-          <Select
+          <SearchParamSelect
+            defaultValue={ALL}
             id="read-filter"
-            onChange={(e) => changeFilter('read', e.target.value)}
+            paramName="read"
             value={readFilter ?? ALL}
           >
             <option value={ALL}>すべて</option>
             <option value="unread">未読</option>
             <option value="read">既読</option>
-          </Select>
+          </SearchParamSelect>
         </div>
       </FilterBar>
 
-      {filteredRequests.length === 0 ? (
+      {featureRequests.length === 0 ? (
         <EmptyState
           className="rounded-container border border-border bg-surface"
           icon={<Inbox />}
@@ -124,7 +115,7 @@ export function FeatureRequestList({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredRequests.map((item) => {
+            {featureRequests.map((item) => {
               const formattedDate = formatDateTimeFromISO(item.created_at, {
                 includeSeconds: false,
               })
