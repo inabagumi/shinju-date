@@ -83,13 +83,28 @@ export const youtubeClient: youtube.Youtube = new Proxy({} as youtube.Youtube, {
   },
 })
 
+/**
+ * Runs one API request, e.g. once a slot of a queue that bounds the requests
+ * in flight is free.
+ */
+export type RequestScheduler = <T>(request: () => Promise<T>) => Promise<T>
+
 // Options types
 interface ClientOptions {
   /** YouTube client to use. Defaults to the shared singleton. */
   client?: youtube.Youtube | undefined
 }
 
-export interface GetChannelsOptions extends ClientOptions {
+interface BatchOptions {
+  /**
+   * Runs each request for a batch of IDs. When given, every batch is handed
+   * to it at once and it decides how many run at a time; otherwise the
+   * batches are requested one after another.
+   */
+  schedule?: RequestScheduler | undefined
+}
+
+export interface GetChannelsOptions extends ClientOptions, BatchOptions {
   ids: string[]
 }
 
@@ -105,12 +120,45 @@ export interface GetPlaylistItemsOptions extends ClientOptions {
   playlistID: string
 }
 
-export interface GetVideosOptions extends ClientOptions {
+export interface GetVideosOptions extends ClientOptions, BatchOptions {
   ids: string[]
 }
 
-export interface GetVideoIdsOptions extends ClientOptions {
+export interface GetVideoIdsOptions extends ClientOptions, BatchOptions {
   ids: string[]
+}
+
+/**
+ * Requests `ids` in batches of {@link YOUTUBE_DATA_API_MAX_RESULTS}, the most
+ * one request accepts, and yields what each batch returned in the order of
+ * the batches.
+ */
+async function* requestInBatches<T>(
+  ids: readonly string[],
+  schedule: RequestScheduler | undefined,
+  request: (ids: string[]) => Promise<readonly T[]>,
+): AsyncGenerator<T, void, undefined> {
+  const batches: string[][] = []
+
+  for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
+    batches.push(ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS))
+  }
+
+  if (!schedule) {
+    for (const batch of batches) {
+      yield* await request(batch)
+    }
+
+    return
+  }
+
+  const results = await Promise.all(
+    batches.map((batch) => schedule(() => request(batch))),
+  )
+
+  for (const items of results) {
+    yield* items
+  }
 }
 
 /**
@@ -340,26 +388,23 @@ function validateVideo(
 export async function* getChannels({
   client = getYouTubeClient(),
   ids,
+  schedule,
 }: GetChannelsOptions): AsyncGenerator<
   FilteredYouTubeChannel,
   void,
   undefined
 > {
-  for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
+  yield* requestInBatches(ids, schedule, async (batch) => {
     const {
       data: { items },
     } = await client.channels.list({
-      id: ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS),
+      id: batch,
       maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
       part: ['contentDetails', 'id', 'snippet'],
     })
 
-    if (!items || items.length < 1) {
-      continue
-    }
-
-    yield* items.filter(validateChannel)
-  }
+    return (items ?? []).filter(validateChannel)
+  })
 }
 
 /**
@@ -508,22 +553,19 @@ export async function getPlaylistItemsPage({
 export async function* getVideos({
   client = getYouTubeClient(),
   ids,
+  schedule,
 }: GetVideosOptions): AsyncGenerator<FilteredYouTubeVideo, void, undefined> {
-  for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
+  yield* requestInBatches(ids, schedule, async (batch) => {
     const {
       data: { items },
     } = await client.videos.list({
-      id: ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS),
+      id: batch,
       maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
       part: ['contentDetails', 'liveStreamingDetails', 'snippet'],
     })
 
-    if (!items || items.length < 1) {
-      continue
-    }
-
-    yield* items.filter(validateVideo)
-  }
+    return (items ?? []).filter(validateVideo)
+  })
 }
 
 /**
@@ -536,20 +578,19 @@ export async function* getVideos({
 export async function* getVideoIds({
   client = getYouTubeClient(),
   ids,
+  schedule,
 }: GetVideoIdsOptions): AsyncGenerator<string, void, undefined> {
-  for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
+  yield* requestInBatches(ids, schedule, async (batch) => {
     const {
       data: { items },
     } = await client.videos.list({
-      id: ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS),
+      id: batch,
       maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
       part: ['id'],
     })
 
-    for (const item of items ?? []) {
-      if (typeof item.id === 'string') {
-        yield item.id
-      }
-    }
-  }
+    return (items ?? []).flatMap((item) =>
+      typeof item.id === 'string' ? [item.id] : [],
+    )
+  })
 }
