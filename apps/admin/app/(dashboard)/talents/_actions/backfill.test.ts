@@ -105,7 +105,13 @@ describe('requestVideoBackfillAction', () => {
 
     const result = await requestVideoBackfillAction(talentId, 'youtube')
 
-    expect(result.message).toContain('実行中の1件は除く')
+    expect(result).toEqual({
+      data: {
+        message:
+          'YouTubeの過去動画の取り込みを1件キューに追加しました（実行中の1件は除く）。',
+      },
+      success: true,
+    })
     expect(test.createAuditLog).toHaveBeenCalledWith(
       supabase.client,
       'VIDEO_BACKFILL',
@@ -116,7 +122,7 @@ describe('requestVideoBackfillAction', () => {
     )
   })
 
-  it('records the jobs that were queued when another one fails', async () => {
+  it('succeeds with a warning and records the jobs that were queued when another one fails', async () => {
     mocks.enqueue
       .mockResolvedValueOnce({ enqueued: true, job: {} })
       .mockRejectedValueOnce(new Error('redis unavailable'))
@@ -124,9 +130,13 @@ describe('requestVideoBackfillAction', () => {
     await expect(
       requestVideoBackfillAction(talentId, 'youtube'),
     ).resolves.toEqual({
-      error:
-        'YouTubeの過去動画の取り込みを1件キューに追加しましたが、1件は追加できませんでした（redis unavailable）。',
-      success: false,
+      data: {
+        message: 'YouTubeの過去動画の取り込みを1件キューに追加しました。',
+      },
+      success: true,
+      warnings: [
+        'YouTubeの過去動画の取り込みのうち、1件はキューに追加できませんでした。',
+      ],
     })
     expect(test.createAuditLog).toHaveBeenCalledWith(
       supabase.client,
@@ -144,8 +154,7 @@ describe('requestVideoBackfillAction', () => {
     await expect(
       requestVideoBackfillAction(talentId, 'twitch'),
     ).resolves.toEqual({
-      error:
-        'Twitchの過去動画の取り込みをキューに追加できませんでした（redis unavailable）。',
+      error: 'Twitchの過去動画の取り込みをキューに追加できませんでした。',
       success: false,
     })
     expect(test.createAuditLog).not.toHaveBeenCalled()
@@ -213,27 +222,30 @@ describe('getVideoBackfillStatusAction', () => {
       'twitch:twitch-row-1',
     ])
     expect(result).toEqual({
-      accounts: [
-        expect.objectContaining({
-          accountId: 'channel-row-1',
-          active: true,
-          added: 12,
-          name: 'Main',
-          status: 'running',
-        }),
-        expect.objectContaining({
-          accountId: 'channel-row-2',
-          active: false,
-          added: 0,
-          status: null,
-        }),
-        expect.objectContaining({
-          accountId: 'twitch-row-1',
-          name: 'alice',
-          provider: 'twitch',
-          status: null,
-        }),
-      ],
+      data: {
+        accounts: [
+          expect.objectContaining({
+            accountId: 'channel-row-1',
+            active: true,
+            added: 12,
+            name: 'Main',
+            status: 'running',
+          }),
+          expect.objectContaining({
+            accountId: 'channel-row-2',
+            active: false,
+            added: 0,
+            status: null,
+          }),
+          expect.objectContaining({
+            accountId: 'twitch-row-1',
+            name: 'alice',
+            provider: 'twitch',
+            status: null,
+          }),
+        ],
+        success: true,
+      },
       success: true,
     })
   })
@@ -259,11 +271,14 @@ describe('getVideoBackfillStatusAction', () => {
     const result = await getVideoBackfillStatusAction(talentId)
 
     expect(result).toMatchObject({
-      accounts: [
-        { accountId: 'channel-row-1', active: false, status: 'interrupted' },
-        { status: null },
-        { status: null },
-      ],
+      data: {
+        accounts: [
+          { accountId: 'channel-row-1', active: false, status: 'interrupted' },
+          { status: null },
+          { status: null },
+        ],
+      },
+      success: true,
     })
   })
 })

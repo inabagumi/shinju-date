@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/dropdown-menu'
 import { useServerAction } from '@/lib/use-server-action'
-import { syncTalentAccounts } from '../_actions/sync'
+import { syncTalentAccountsAction } from '../_actions/sync'
 import {
   TalentLifecycleDialog,
   type TalentLifecycleOperation,
@@ -25,12 +25,12 @@ interface TalentActionsProps {
 
 export function TalentActions({ talent }: TalentActionsProps) {
   const { isPending: isSyncPending, run: runSync } = useServerAction(
-    syncTalentAccounts,
+    syncTalentAccountsAction,
     {
       errorText: '同期に失敗しました。',
-      successText: (result) =>
-        result.message ??
-        (result.unchanged
+      successText: ({ data }) =>
+        data?.message ??
+        (data?.unchanged
           ? 'アカウント情報は既に最新です。'
           : 'アカウント情報を同期しました。'),
     },

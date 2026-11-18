@@ -27,6 +27,14 @@ vi.mock('@/lib/youtube-channel-icon', () => ({
 }))
 
 const test = setupActionTest()
+
+/**
+ * 予期しない例外のときに画面に出る文（`@/lib/action` の `ACTION_FAILED_ERROR_MESSAGE`）。
+ * `@/lib/action` を読み込むと、`@/test/action-harness` のモックより先に `@/lib/auth` が
+ * 読み込まれてしまうため、ここに書く。
+ */
+const ACTION_FAILED_ERROR =
+  '処理に失敗しました。時間をおいて、もう一度お試しください。'
 const { supabase } = test
 
 vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
@@ -68,7 +76,7 @@ describe('updateTalentAction', () => {
 
     const result = await updateTalentAction({}, formData)
 
-    expect(result).toEqual({})
+    expect(result).toEqual({ success: true })
     expect(talentUpdates()[0]?.body).toEqual({
       name: 'Updated Talent',
       reading: null,
@@ -119,7 +127,7 @@ describe('updateTalentAction', () => {
 
     const result = await updateTalentAction({}, formData)
 
-    expect(result).toEqual({})
+    expect(result).toEqual({ success: true })
     expect(talentUpdates()).toHaveLength(1)
     test.expectAuditLog('CHANNEL_UPDATE', seedTalentId, {
       entityName: 'Updated Talent',
@@ -171,7 +179,7 @@ describe('updateTalentAction', () => {
 
     const result = await updateTalentAction({}, formData)
 
-    expect(result).toEqual({})
+    expect(result).toEqual({ success: true })
     expect(talentUpdates()[0]?.body).toEqual({
       name: 'Updated Talent',
       reading: null,
@@ -191,7 +199,7 @@ describe('updateTalentAction', () => {
 
     const result = await updateTalentAction({}, formData)
 
-    expect(result).toEqual({})
+    expect(result).toEqual({ success: true })
     expect(talentUpdates()[0]?.body).toEqual({
       name: 'Updated Talent',
       reading: 'しんじゅー',
@@ -229,7 +237,7 @@ describe('updateTalentAction', () => {
 
     const result = await updateTalentAction({}, formData)
 
-    expect(result).toEqual({})
+    expect(result).toEqual({ success: true })
     expect(talentUpdates()[0]?.body).toEqual(
       expect.objectContaining({ reading: null }),
     )
@@ -266,8 +274,12 @@ describe('updateTalentAction', () => {
 
     const result = await updateTalentAction({}, formData)
 
-    expect(result.errors?.['generic']).toBeDefined()
-    expect(test.logger.error).toHaveBeenCalled()
+    // 予期しないエラーの文は画面に出さない
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR })
+    expect(test.logger.error).toHaveBeenCalledWith(
+      'Server Action が失敗しました',
+      { action: 'updateTalentAction', error: DATABASE_ERROR },
+    )
   })
 })
 
@@ -282,8 +294,6 @@ interface LifecycleActionCase {
   expectedDeletedAtFilter: 'is null' | 'is not null'
   notFoundWarning: string
   notFoundError: string
-  failureLog: string
-  failureError: string
 }
 
 const lifecycleActionCases: LifecycleActionCase[] = [
@@ -293,8 +303,6 @@ const lifecycleActionCases: LifecycleActionCase[] = [
     expectedDeletedAtFilter: 'is null',
     expectedStatusFilter: null,
     expectedUpdate: { deleted_at: NOW, updated_at: NOW },
-    failureError: 'タレントの削除に失敗しました。',
-    failureLog: 'タレントの削除に失敗しました',
     name: 'deleteTalentAction',
     notFoundError:
       '指定されたタレントが見つかりません。既に削除されているか、存在しないIDが指定されています。',
@@ -306,8 +314,6 @@ const lifecycleActionCases: LifecycleActionCase[] = [
     expectedDeletedAtFilter: 'is not null',
     expectedStatusFilter: null,
     expectedUpdate: { deleted_at: null, updated_at: NOW },
-    failureError: 'タレントの復活に失敗しました。',
-    failureLog: 'タレントの復活に失敗しました',
     name: 'restoreTalentAction',
     notFoundError:
       '指定されたタレントが見つかりません。既に復活しているか、存在しないIDが指定されています。',
@@ -319,8 +325,6 @@ const lifecycleActionCases: LifecycleActionCase[] = [
     expectedDeletedAtFilter: 'is null',
     expectedStatusFilter: 'active',
     expectedUpdate: { status: 'retired', updated_at: NOW },
-    failureError: 'タレントの引退に失敗しました。',
-    failureLog: 'タレントの引退に失敗しました',
     name: 'retireTalentAction',
     notFoundError:
       '指定されたタレントが見つかりません。既に引退・削除されているか、存在しないIDが指定されています。',
@@ -332,8 +336,6 @@ const lifecycleActionCases: LifecycleActionCase[] = [
     expectedDeletedAtFilter: 'is null',
     expectedStatusFilter: 'retired',
     expectedUpdate: { status: 'active', updated_at: NOW },
-    failureError: 'タレントのアクティブ化に失敗しました。',
-    failureLog: 'タレントのアクティブ化に失敗しました',
     name: 'activateTalentAction',
     notFoundError:
       '指定されたタレントが見つかりません。既にアクティブ・削除されているか、存在しないIDが指定されています。',
@@ -421,14 +423,15 @@ describe.each(lifecycleActionCases)('$name', (testCase) => {
 
     const result = await testCase.action(TALENT_ID)
 
+    // 予期しないエラーの文は画面に出さない
     expect(result).toEqual({
-      error: testCase.failureError,
+      error: ACTION_FAILED_ERROR,
       success: false,
     })
-    expect(test.logger.error).toHaveBeenCalledWith(testCase.failureLog, {
-      error: DATABASE_ERROR,
-      id: TALENT_ID,
-    })
+    expect(test.logger.error).toHaveBeenCalledWith(
+      'Server Action が失敗しました',
+      { action: testCase.name, args: [TALENT_ID], error: DATABASE_ERROR },
+    )
     test.expectNoAuditLog()
     expect(test.revalidateTags).not.toHaveBeenCalled()
   })
@@ -769,7 +772,11 @@ describe('createTalentAction', () => {
 
     const result = await createTalentAction({}, formData)
 
-    expect(result.errors?.['generic']).toBeDefined()
-    expect(test.logger.error).toHaveBeenCalled()
+    // 予期しないエラーの文は画面に出さない
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR })
+    expect(test.logger.error).toHaveBeenCalledWith(
+      'Server Action が失敗しました',
+      { action: 'createTalentAction', error: DATABASE_ERROR },
+    )
   })
 })

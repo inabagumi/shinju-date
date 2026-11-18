@@ -91,11 +91,12 @@ function formDataToObject(formData: FormData): Record<string, unknown> {
 export function parseFormData<T extends z.ZodType>(
   schema: T,
   formData: FormData,
+  options?: ZodErrorToFormStateOptions,
 ): ParseFormDataResult<z.output<T>> {
   const result = schema.safeParse(formDataToObject(formData))
 
   if (!result.success) {
-    return { state: zodErrorToFormState(result.error), success: false }
+    return { state: zodErrorToFormState(result.error, options), success: false }
   }
 
   return { data: result.data, success: true }

@@ -167,6 +167,18 @@ describe('adminFormAction', () => {
     expect(handler).not.toHaveBeenCalled()
   })
 
+  it('returns the errors of the hidden fields as generic errors', async () => {
+    const handler = vi.fn()
+    const action = adminFormAction('testFormAction', schema, handler, {
+      hiddenFields: ['name'],
+    })
+
+    await expect(action({}, formData({ name: '' }))).resolves.toEqual({
+      errors: { generic: ['名前を入力してください。'] },
+    })
+    expect(handler).not.toHaveBeenCalled()
+  })
+
   it('calls the handler with the context and the parsed data and returns success', async () => {
     const handler = vi.fn(async () => undefined)
     const action = adminFormAction('testFormAction', schema, handler)

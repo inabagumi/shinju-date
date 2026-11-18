@@ -184,11 +184,14 @@ describe('VideoBackfillPanel', () => {
 
   it('requests the backfill when confirmed', async () => {
     mocks.requestVideoBackfillAction.mockResolvedValue({
-      message: 'キューに追加しました。',
+      data: { message: 'キューに追加しました。' },
       success: true,
     })
     mocks.getVideoBackfillStatusAction.mockResolvedValue({
-      accounts: [createAccount({ active: true, status: 'pending' })],
+      data: {
+        accounts: [createAccount({ active: true, status: 'pending' })],
+        success: true,
+      },
       success: true,
     })
 
@@ -215,7 +218,10 @@ describe('VideoBackfillPanel', () => {
   it('refreshes the page when the backfill added videos', async () => {
     mocks.requestVideoBackfillAction.mockResolvedValue({ success: true })
     mocks.getVideoBackfillStatusAction.mockResolvedValue({
-      accounts: [createAccount({ added: 15, status: 'done' })],
+      data: {
+        accounts: [createAccount({ added: 15, status: 'done' })],
+        success: true,
+      },
       success: true,
     })
 

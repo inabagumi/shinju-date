@@ -5,12 +5,9 @@ import type { Enums, Tables } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
+import { ActionError, adminAction } from '@/lib/action'
 import { createAuditLog } from '@/lib/audit-log'
-import {
-  type AuthenticatedContext,
-  requireAuthenticatedUser,
-  unauthenticatedResult,
-} from '@/lib/auth'
+import type { AuthenticatedContext } from '@/lib/auth'
 import { createScraper } from '@/lib/scraper'
 import { touchTalent } from '@/lib/talent-accounts'
 import {
@@ -25,16 +22,10 @@ type Platform = Enums<'platform_type'>
 
 type Talent = Pick<Tables<'talents'>, 'id' | 'name'>
 
-function toErrorMessage(error: unknown): string {
-  return error instanceof Error
-    ? error.message
-    : '予期しないエラーが発生しました。'
-}
-
 /**
  * タレントの1つのプラットフォームのアカウントを、scraper の `syncTalentAccounts` で同期する。
  * 変更があれば、タレントの更新日時を進め、監査ログを残し、再検証する。
- * 例外は投げず、失敗は `failed` として返す。
+ * 例外は投げず、失敗は `failed` として返す（まとめて同期するとき、片方の失敗でもう片方を止めない）。
  */
 async function syncPlatform(
   { supabaseClient }: AuthenticatedContext,
@@ -91,36 +82,32 @@ async function syncPlatform(
       talentId: talent.id,
     })
 
-    return { error: toErrorMessage(error), status: 'failed' }
+    return { status: 'failed' }
   }
 }
 
-/** 削除されていないタレントを読み、`run` で同期して結果を返す。例外は投げない。 */
+/** 削除されていないタレントを読み、`run` で同期して結果を返す。 */
 async function syncTalent(
   { supabaseClient }: AuthenticatedContext,
   talentId: string,
   run: (talent: Talent) => Promise<SyncResult>,
 ): Promise<SyncResult> {
-  try {
-    const { data: talent, error } = await supabaseClient
-      .from('talents')
-      .select('id, name')
-      .eq('id', talentId)
-      .is('deleted_at', null)
-      .maybeSingle()
+  const { data: talent, error } = await supabaseClient
+    .from('talents')
+    .select('id, name')
+    .eq('id', talentId)
+    .is('deleted_at', null)
+    .maybeSingle()
 
-    if (error) {
-      throw error
-    }
-
-    return talent
-      ? await run(talent)
-      : { error: 'タレントが見つかりませんでした。', success: false }
-  } catch (error) {
-    logger.error('タレントの同期に失敗しました', { error, talentId })
-
-    return { error: toErrorMessage(error), success: false }
+  if (error) {
+    throw error
   }
+
+  if (!talent) {
+    throw new ActionError('タレントが見つかりませんでした。')
+  }
+
+  return run(talent)
 }
 
 /**
@@ -129,59 +116,45 @@ async function syncTalent(
  * 同期は `@shinju-date/scraper` の `syncTalentAccounts` が、定期の同期と同じ関数で行う
  * （変更があったアカウントだけを更新する）。タレント名（`talents.name`）は更新しない（#5622）。
  */
-export async function syncTalentWithYouTube(
-  talentId: string,
-): Promise<SyncResult> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  return syncTalent(auth, talentId, async (talent) =>
-    toSyncResult('youtube', await syncPlatform(auth, talent, 'youtube')),
-  )
-}
+export const syncTalentWithYouTubeAction = adminAction(
+  'syncTalentWithYouTubeAction',
+  (context, talentId: string) =>
+    syncTalent(context, talentId, async (talent) =>
+      toSyncResult('youtube', await syncPlatform(context, talent, 'youtube')),
+    ),
+)
 
 /**
  * タレントに紐づく Twitch ユーザーを Twitch に合わせる（表示名、login、アイコン）。
- * 同期の仕方は {@link syncTalentWithYouTube} と同じ。
+ * 同期の仕方は {@link syncTalentWithYouTubeAction} と同じ。
  */
-export async function syncTalentWithTwitch(
-  talentId: string,
-): Promise<SyncResult> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  return syncTalent(auth, talentId, async (talent) =>
-    toSyncResult('twitch', await syncPlatform(auth, talent, 'twitch')),
-  )
-}
+export const syncTalentWithTwitchAction = adminAction(
+  'syncTalentWithTwitchAction',
+  (context, talentId: string) =>
+    syncTalent(context, talentId, async (talent) =>
+      toSyncResult('twitch', await syncPlatform(context, talent, 'twitch')),
+    ),
+)
 
 /**
  * タレントに紐づく YouTube チャンネルと Twitch ユーザーをまとめて同期する（タレント一覧の「同期」）。
  * プラットフォームごとに独立して同期するので、片方の失敗でもう片方を止めない。
+ * 一部のプラットフォームだけが失敗したときは、成功として返し、失敗を `warnings` に入れる。
  */
-export async function syncTalentAccounts(
-  talentId: string,
-): Promise<SyncResult> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  return syncTalent(auth, talentId, async (talent) =>
-    toSyncSummary(
-      await Promise.all(
-        (['youtube', 'twitch'] as const).map(
-          async (platform) =>
-            [platform, await syncPlatform(auth, talent, platform)] as const,
+export const syncTalentAccountsAction = adminAction(
+  'syncTalentAccountsAction',
+  (context, talentId: string) =>
+    syncTalent(context, talentId, async (talent) =>
+      toSyncSummary(
+        await Promise.all(
+          (['youtube', 'twitch'] as const).map(
+            async (platform) =>
+              [
+                platform,
+                await syncPlatform(context, talent, platform),
+              ] as const,
+          ),
         ),
       ),
     ),
-  )
-}
+)

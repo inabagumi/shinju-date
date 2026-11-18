@@ -4,8 +4,8 @@ import { Button } from '@shinju-date/ui'
 import { Loader2 } from 'lucide-react'
 import { useServerAction } from '@/lib/use-server-action'
 import {
-  syncTalentWithTwitch,
-  syncTalentWithYouTube,
+  syncTalentWithTwitchAction,
+  syncTalentWithYouTubeAction,
 } from '../../_actions/sync'
 
 interface Props {
@@ -19,19 +19,19 @@ export function SyncTalentButton({
   hasYouTubeChannels,
   hasTwitchUsers,
 }: Props) {
-  const youtube = useServerAction(syncTalentWithYouTube, {
+  const youtube = useServerAction(syncTalentWithYouTubeAction, {
     errorText: '同期に失敗しました。',
-    successText: (result) =>
-      result.message ??
-      (result.unchanged
+    successText: ({ data }) =>
+      data?.message ??
+      (data?.unchanged
         ? 'チャンネル情報は既に最新です。'
         : 'チャンネル情報を同期しました。'),
   })
-  const twitch = useServerAction(syncTalentWithTwitch, {
+  const twitch = useServerAction(syncTalentWithTwitchAction, {
     errorText: '同期に失敗しました。',
-    successText: (result) =>
-      result.message ??
-      (result.unchanged
+    successText: ({ data }) =>
+      data?.message ??
+      (data?.unchanged
         ? 'Twitchユーザー情報は既に最新です。'
         : 'Twitchユーザー情報を同期しました。'),
   })

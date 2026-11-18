@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
   refresh: vi.fn(),
   restoreTalentAction: vi.fn(),
   retireTalentAction: vi.fn(),
-  syncTalentAccounts: vi.fn(),
+  syncTalentAccountsAction: vi.fn(),
 }))
 
 vi.mock('next/navigation', () => ({
@@ -23,7 +23,7 @@ vi.mock('../_actions', () => ({
 }))
 
 vi.mock('../_actions/sync', () => ({
-  syncTalentAccounts: mocks.syncTalentAccounts,
+  syncTalentAccountsAction: mocks.syncTalentAccountsAction,
 }))
 
 const { TalentActions } = await import('./talent-actions')
@@ -109,5 +109,27 @@ describe('TalentActions', () => {
       await screen.findByText('タレントをアクティブに戻しました。'),
     ).toBeInTheDocument()
     expect(mocks.activateTalentAction).toHaveBeenCalledWith('talent-1')
+  })
+
+  it('shows the platforms that failed to sync as warnings', async () => {
+    mocks.syncTalentAccountsAction.mockResolvedValue({
+      data: {
+        message: 'Twitch: ユーザー情報を同期しました。',
+        unchanged: false,
+      },
+      success: true,
+      warnings: ['YouTube: 同期に失敗しました。'],
+    })
+    renderActions()
+
+    openMenuItem('同期')
+
+    expect(
+      await screen.findByText('Twitch: ユーザー情報を同期しました。'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('YouTube: 同期に失敗しました。'),
+    ).toBeInTheDocument()
+    expect(mocks.syncTalentAccountsAction).toHaveBeenCalledWith('talent-1')
   })
 })

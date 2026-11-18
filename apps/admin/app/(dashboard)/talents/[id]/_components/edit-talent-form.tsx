@@ -73,8 +73,7 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
   ): Promise<FormState> => {
     const result = await updateTalentAction(currentState, formData)
 
-    // Exit edit mode if there are no errors
-    if (!result.errors || Object.keys(result.errors).length === 0) {
+    if (result.success) {
       setIsEditing(false)
     }
 
