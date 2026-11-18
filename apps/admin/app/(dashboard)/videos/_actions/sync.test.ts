@@ -13,6 +13,14 @@ const scraper = vi.hoisted(() => ({
 vi.mock('@/lib/scraper', () => ({ createScraper: scraper.createScraper }))
 
 const test = setupActionTest()
+
+/**
+ * 予期しない例外のときに画面に出る文（`@/lib/action` の `ACTION_FAILED_ERROR_MESSAGE`）。
+ * `@/lib/action` を読み込むと、`@/test/action-harness` のモックより先に `@/lib/auth` が
+ * 読み込まれてしまうため、ここに書く。
+ */
+const ACTION_FAILED_ERROR =
+  '処理に失敗しました。時間をおいて、もう一度お試しください。'
 const { supabase } = test
 
 const now = Temporal.Instant.from('2024-11-24T17:00:00Z')
@@ -66,7 +74,7 @@ describe('syncVideoAction', () => {
     const result = await syncVideoAction(videoId)
 
     expect(result).toEqual({
-      message: '動画情報を同期しました。',
+      data: { message: '動画情報を同期しました。' },
       success: true,
     })
     test.expectAuditLog('VIDEO_SYNC', videoId, {
@@ -86,9 +94,8 @@ describe('syncVideoAction', () => {
     const result = await syncVideoAction(videoId)
 
     expect(result).toEqual({
-      message: '動画情報は既に最新です。',
+      data: { message: '動画情報は既に最新です。', unchanged: true },
       success: true,
-      unchanged: true,
     })
     test.expectNoAuditLog()
     test.expectNotRevalidated()
@@ -106,7 +113,9 @@ describe('syncVideoAction', () => {
       const result = await syncVideoAction(videoId)
 
       expect(result).toEqual({
-        message: `${label}で動画が見つからなかったため、動画を削除しました。`,
+        data: {
+          message: `${label}で動画が見つからなかったため、動画を削除しました。`,
+        },
         success: true,
       })
       test.expectAuditLog('VIDEO_SYNC', videoId, {
@@ -157,10 +166,16 @@ describe('syncVideoAction', () => {
 
     const result = await syncVideoAction(videoId)
 
-    expect(result).toEqual({ error: 'YouTube is down', success: false })
+    expect(result).toEqual({
+      error: ACTION_FAILED_ERROR,
+      success: false,
+    })
     expect(test.logger.error).toHaveBeenCalledWith(
-      '動画の同期に失敗しました',
-      expect.objectContaining({ videoId }),
+      'Server Action が失敗しました',
+      expect.objectContaining({
+        action: 'syncVideoAction',
+        args: [videoId],
+      }),
     )
     test.expectNoAuditLog()
     test.expectNotRevalidated()
