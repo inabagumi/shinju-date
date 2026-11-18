@@ -90,15 +90,17 @@ export async function createThumbnail({
     path: thumbnail.path,
   })
 
+  const timestamp = toDBString(now)
   const { error: insertError } = await supabaseClient
     .from('thumbnails')
     .insert({
       blur_data_url: blurDataURL,
+      created_at: timestamp,
       etag: downloaded.etag,
       height: source.height,
       id: thumbnail.id,
       path: thumbnail.path,
-      updated_at: toDBString(now),
+      updated_at: timestamp,
       width: source.width,
     })
 

@@ -37,6 +37,7 @@ describe('createThumbnail', () => {
     ])
     expect(supabase.written('POST', 'thumbnails')[0]?.body).toEqual({
       blur_data_url: expect.stringMatching(/^data:image\/jpeg;base64,/),
+      created_at: '2024-05-01T12:34:56Z',
       etag: '"etag-1"',
       height: 720,
       id: thumbnail?.id,
