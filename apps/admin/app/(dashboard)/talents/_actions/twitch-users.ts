@@ -1,8 +1,12 @@
 'use server'
 
-import { adminAction, adminFormAction } from '@/lib/action'
+import { adminAction, adminFormAction, parseActionInput } from '@/lib/action'
 import { linkAccount, unlinkAccount } from '@/lib/talent-accounts'
-import { addTwitchUserSchema } from '../_lib/talent-schema'
+import {
+  addTwitchUserSchema,
+  talentAccountIdSchema,
+  talentIdSchema,
+} from '../_lib/talent-schema'
 
 export const addTwitchUserAction = adminFormAction(
   'addTwitchUserAction',
@@ -18,11 +22,11 @@ export const addTwitchUserAction = adminFormAction(
 
 export const removeTwitchUserAction = adminAction(
   'removeTwitchUserAction',
-  async ({ supabaseClient }, twitchUserRowId: string, talentId: string) => {
+  async ({ supabaseClient }, accountId: string, talentId: string) => {
     await unlinkAccount('twitch', {
-      accountId: twitchUserRowId,
+      accountId: parseActionInput(talentAccountIdSchema, accountId),
       supabaseClient,
-      talentId,
+      talentId: parseActionInput(talentIdSchema, talentId),
     })
 
     return { success: true }

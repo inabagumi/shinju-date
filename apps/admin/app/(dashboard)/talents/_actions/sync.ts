@@ -5,7 +5,7 @@ import type { Enums, Tables } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
-import { ActionError, adminAction } from '@/lib/action'
+import { ActionError, adminAction, parseActionInput } from '@/lib/action'
 import { createAuditLog } from '@/lib/audit-log'
 import type { AuthenticatedContext } from '@/lib/auth'
 import { createScraper } from '@/lib/scraper'
@@ -17,6 +17,7 @@ import {
   toSyncResult,
   toSyncSummary,
 } from '../_lib/sync-result'
+import { talentIdSchema } from '../_lib/talent-schema'
 
 type Platform = Enums<'platform_type'>
 
@@ -86,12 +87,13 @@ async function syncPlatform(
   }
 }
 
-/** 削除されていないタレントを読み、`run` で同期して結果を返す。 */
+/** タレントの ID を検証し、削除されていないタレントを読み、`run` で同期して結果を返す。 */
 async function syncTalent(
   { supabaseClient }: AuthenticatedContext,
-  talentId: string,
+  id: string,
   run: (talent: Talent) => Promise<SyncResult>,
 ): Promise<SyncResult> {
+  const talentId = parseActionInput(talentIdSchema, id)
   const { data: talent, error } = await supabaseClient
     .from('talents')
     .select('id, name')
