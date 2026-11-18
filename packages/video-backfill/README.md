@@ -44,7 +44,7 @@
 - 前回のチェックが実行中のあいだは新しいチェックを始められません。同時に来た依頼はロック（`BACKFILL_RUN_LOCK_SECONDS`）で 1 つに絞ります
 - タレント詳細から依頼されて待機中・処理中のアカウントは除外して数えます
 - 失敗・中断した子ジョブをタレント詳細から再依頼すると、そのままチェックの進捗に反映されます。完了した子ジョブは終了時の結果を残すので、あとで個別に読み直してもチェックの結果は変わりません
-- 終了時の結果は、`BackfillQueue` を作るときの `onFinish` に `createBackfillRunResultRecorder(redis)` を渡すと書き込まれます（バッチが渡します）。`BackfillQueue` は、ジョブが終わったことを `onFinish` に知らせるだけで、チェックのことは知りません
+- 終了時の結果は、`BackfillQueue` を作るときの `finishedJobKeys` に `getBackfillRunResultKeys` を渡すと、ジョブを終える保存と同じスクリプト（`FINISH_SCRIPT`）の中で書き込まれます（バッチが渡します）。途中で止まっても、ジョブだけが終わって結果が残らない、ということはありません。`BackfillQueue` は、渡されたキーにジョブを書き込むだけで、チェックのことは知りません
 - 保持するのは最新のチェックだけです
 
 ## 履歴と失敗の再試行
@@ -79,7 +79,7 @@ Redis のジョブは最後の変更から 7 日で消えるため、終えた�
 import {
   BackfillQueue,
   BackfillRuns,
-  createBackfillRunResultRecorder,
+  getBackfillRunResultKeys,
 } from '@shinju-date/video-backfill'
 
 // 管理画面: 依頼する
@@ -90,8 +90,8 @@ await queue.enqueue({ accountId, provider: 'youtube', requestedBy, talentId })
 // バッチ: 処理する（ロックは、実行の最長の時間と余裕のぶん）
 const worker = new BackfillQueue(redisClient, {
   maxRunSeconds: maxDuration,
-  // 終えた子ジョブの結果を、チェックのために残す
-  onFinish: createBackfillRunResultRecorder(redisClient),
+  // 終えた子ジョブの結果を、チェックのために、ジョブと一緒に残す
+  finishedJobKeys: getBackfillRunResultKeys,
 })
 const claim = await worker.claim()
 

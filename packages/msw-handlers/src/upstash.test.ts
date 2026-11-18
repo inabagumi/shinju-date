@@ -409,17 +409,18 @@ describe('Upstash Redis Handlers', () => {
         send([
           'eval',
           '-- video-backfill:finish\n...',
-          2,
+          3,
           'test:save-job',
           'test:save-lock',
+          'test:save-outcome',
           'token-1',
           job,
           60,
         ]),
       ).resolves.toBe(1)
       await expect(
-        send(['mget', 'test:save-job', 'test:save-lock']),
-      ).resolves.toEqual([job, null])
+        send(['mget', 'test:save-job', 'test:save-outcome', 'test:save-lock']),
+      ).resolves.toEqual([job, job, null])
     })
 
     it('emulates the unlock script of a check of all accounts', async () => {

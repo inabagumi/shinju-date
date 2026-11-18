@@ -12,8 +12,8 @@ import {
   BackfillQueue,
   type BackfillRunRequest,
   BackfillRuns,
-  createBackfillRunResultRecorder,
   getBackfillJobId,
+  getBackfillRunResultKeys,
   getRunResultKey,
 } from './index.js'
 
@@ -107,7 +107,7 @@ describeOnEachRedis((createClient) => {
       const { redis } = scoped
       // The queue of the workers, which keeps the outcomes of the jobs.
       const queue = new BackfillQueue(redis, {
-        onFinish: createBackfillRunResultRecorder(redis),
+        finishedJobKeys: getBackfillRunResultKeys,
       })
 
       return { queue, redis, runs: new BackfillRuns(redis, queue), scoped }

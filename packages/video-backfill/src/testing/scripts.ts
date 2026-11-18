@@ -143,7 +143,7 @@ export const SCRIPT_EMULATIONS: Readonly<Record<string, ScriptEmulation>> = {
       }
     }
   },
-  [nameOf(FINISH_SCRIPT)]: (call, [job = '', lock = ''], argv) => {
+  [nameOf(FINISH_SCRIPT)]: (call, [job = '', lock = '', ...copies], argv) => {
     const [token = '', value = '', ttl = ''] = argv
 
     if (call('GET', lock) !== token) {
@@ -151,6 +151,11 @@ export const SCRIPT_EMULATIONS: Readonly<Record<string, ScriptEmulation>> = {
     }
 
     call('SET', job, value, 'EX', ttl)
+
+    for (const copy of copies) {
+      call('SET', copy, value, 'EX', ttl)
+    }
+
     call('DEL', lock)
 
     return 1

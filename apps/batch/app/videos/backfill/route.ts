@@ -3,7 +3,7 @@ import type { Scraper } from '@shinju-date/scraper'
 import {
   type BackfillProvider,
   BackfillQueue,
-  createBackfillRunResultRecorder,
+  getBackfillRunResultKeys,
 } from '@shinju-date/video-backfill'
 import { revalidateTags } from '@shinju-date/web-cache'
 import type { NextRequest } from 'next/server'
@@ -45,8 +45,8 @@ export async function POST(request: NextRequest): Promise<Response> {
       // A job is locked for as long as this run may last, and a little more.
       // A job of a check keeps its outcome for the check when it finishes.
       queue: new BackfillQueue(redisClient, {
+        finishedJobKeys: getBackfillRunResultKeys,
         maxRunSeconds: maxDuration,
-        onFinish: createBackfillRunResultRecorder(redisClient),
       }),
     })
 

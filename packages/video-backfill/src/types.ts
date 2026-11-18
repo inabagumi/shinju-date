@@ -120,6 +120,12 @@ export type BackfillWriteResult =
 
 export interface BackfillQueueOptions {
   /**
+   * Keys that a job a worker completed or gave up is also saved to, in the
+   * same step as the job itself, such as its outcome for the check it
+   * belongs to (`getBackfillRunResultKeys`). They are kept as long as jobs.
+   */
+  finishedJobKeys?: (job: BackfillJob) => readonly string[]
+  /**
    * Runs in a row that may fail before a job is given up (default:
    * `BACKFILL_MAX_ATTEMPTS`).
    */
@@ -133,13 +139,6 @@ export interface BackfillQueueOptions {
    * runs out.
    */
   maxRunSeconds?: number
-  /**
-   * Called with each job a worker completed or gave up, once it is saved and
-   * released, e.g. to keep its outcome for the check it belongs to
-   * (`createBackfillRunResultRecorder`). An error it throws is thrown by the
-   * write, which was made nonetheless.
-   */
-  onFinish?: (job: BackfillJob) => Promise<void> | void
 }
 
 /** The result of reading one page of a claimed job. */

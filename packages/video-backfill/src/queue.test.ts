@@ -802,9 +802,10 @@ describeOnEachRedis((createClient) => {
       })
     })
 
-    it('tells the jobs that a worker completed or gave up', async () => {
-      const onFinish = vi.fn()
-      const { queue } = createQueue({ onFinish })
+    it('saves a job that a worker completed or gave up to the keys it is given', async () => {
+      const { queue, redis } = createQueue({
+        finishedJobKeys: (job) => [`copy:${job.status}`],
+      })
 
       await queue.enqueue(request, now)
       const completed = await queue.recordPage(
@@ -820,19 +821,41 @@ describeOnEachRedis((createClient) => {
         later(5),
       )
 
-      expect(onFinish.mock.calls).toEqual([
-        [completed.status === 'saved' && completed.job],
-        [failed.status === 'saved' && failed.job],
-      ])
-      expect(onFinish.mock.calls.map(([job]) => job.status)).toEqual([
-        'done',
-        'failed',
+      expect(await redis.get('copy:done')).toEqual(
+        completed.status === 'saved' && completed.job,
+      )
+      expect(await redis.get('copy:failed')).toEqual(
+        failed.status === 'saved' && failed.job,
+      )
+      await expectTtl(redis, 'copy:done', BACKFILL_JOB_TTL_SECONDS)
+      await expectTtl(redis, 'copy:failed', BACKFILL_JOB_TTL_SECONDS)
+    })
+
+    it('saves a finished job to the keys it is given in one call to Redis', async () => {
+      const { queue, redis } = createQueue({
+        finishedJobKeys: () => ['copy-1', 'copy-2'],
+      })
+
+      await queue.enqueue(request, now)
+      const claim = await claimJob(queue, later(1))
+
+      const methods = redis as unknown as Record<string, () => unknown>
+      const calls = Object.keys(methods)
+        .filter((name) => typeof methods[name] === 'function')
+        .map((name) => vi.spyOn(methods, name))
+
+      const done = await queue.recordPage(claim, lastPage(), later(2))
+
+      expect(calls.reduce((sum, spy) => sum + spy.mock.calls.length, 0)).toBe(1)
+      vi.restoreAllMocks()
+      expect(await redis.mget('copy-1', 'copy-2')).toEqual([
+        done.status === 'saved' && done.job,
+        done.status === 'saved' && done.job,
       ])
     })
 
-    it('does not tell the jobs that a worker keeps, puts back or lost', async () => {
-      const onFinish = vi.fn()
-      const { queue, redis } = createQueue({ onFinish })
+    it('does not save a job that a worker keeps, puts back or lost to them', async () => {
+      const { queue, redis } = createQueue({ finishedJobKeys: () => ['copy'] })
 
       await queue.enqueue(request, now)
       const claim = await claimJob(queue, later(1))
@@ -842,26 +865,7 @@ describeOnEachRedis((createClient) => {
       await redis.del(lockKey)
       await queue.recordPage(stale, lastPage())
 
-      expect(onFinish).not.toHaveBeenCalled()
-    })
-
-    it('throws the error of what it tells once the job is saved', async () => {
-      const { queue } = createQueue({
-        onFinish: () => {
-          throw new Error('cannot record')
-        },
-      })
-
-      await queue.enqueue(request, now)
-
-      await expect(
-        queue.recordPage(await claimJob(queue, later(1)), lastPage()),
-      ).rejects.toThrow('cannot record')
-      await expect(queue.getJobs([jobId], later(2))).resolves.toEqual([
-        expect.objectContaining({
-          job: expect.objectContaining({ status: 'done' }),
-        }),
-      ])
+      expect(await redis.get('copy')).toBeNull()
     })
 
     it('increments the version of a job with every write', async () => {

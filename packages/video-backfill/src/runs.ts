@@ -36,27 +36,20 @@ end
 return 0`
 
 /**
- * Makes the `onFinish` of a {@link BackfillQueue} that works off jobs: a job
- * of a check keeps its outcome for the check when it finishes, so that the
- * check still shows it as it finished after the job is requested again on
- * its own.
+ * The keys that a job of a check is also saved to when it finishes: its
+ * outcome for the check, so that the check still shows it as it finished
+ * after the job is requested again on its own. For the `finishedJobKeys` of
+ * the {@link BackfillQueue} that works off jobs, which saves them in the
+ * same step as the job.
  *
  * ```ts
- * new BackfillQueue(redis, { onFinish: createBackfillRunResultRecorder(redis) })
+ * new BackfillQueue(redis, { finishedJobKeys: getBackfillRunResultKeys })
  * ```
  */
-export function createBackfillRunResultRecorder(
-  redis: Redis,
-): (job: BackfillJob) => Promise<void> {
-  return async (job) => {
-    if (!job.runId) {
-      return
-    }
-
-    await redis.set(getRunResultKey(job.runId, job.id), job, {
-      ex: BACKFILL_JOB_TTL_SECONDS,
-    })
-  }
+export function getBackfillRunResultKeys(
+  job: Pick<BackfillJob, 'id' | 'runId'>,
+): string[] {
+  return job.runId ? [getRunResultKey(job.runId, job.id)] : []
 }
 
 /** Accounts queued at the same time when a check is requested. */

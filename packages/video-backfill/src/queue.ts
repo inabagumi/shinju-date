@@ -48,20 +48,20 @@ export class BackfillQueue {
   readonly leaseSeconds: number
   /** Failures in a row that a job may have before it is given up. */
   readonly maxAttempts: number
-  readonly #onFinish: BackfillQueueOptions['onFinish']
+  readonly #finishedJobKeys: BackfillQueueOptions['finishedJobKeys']
   readonly #redis: Redis
 
   constructor(
     redis: Redis,
     {
+      finishedJobKeys,
       maxAttempts = BACKFILL_MAX_ATTEMPTS,
       maxRunSeconds,
-      onFinish,
     }: BackfillQueueOptions = {},
   ) {
     this.leaseSeconds = getLeaseSeconds(maxRunSeconds)
     this.maxAttempts = maxAttempts
-    this.#onFinish = onFinish
+    this.#finishedJobKeys = finishedJobKeys
     this.#redis = redis
   }
 
@@ -182,19 +182,18 @@ export class BackfillQueue {
     return requeueJob(this.#redis, { job: pending, token })
   }
 
-  /** Saves a claimed job as `done` or `failed`, releases it and reports it. */
-  async #finish(
+  /** Saves a job as `done` or `failed`, with its copies, and releases it. */
+  #finish(
     { job, token }: BackfillClaim,
     operation: 'complete' | 'fail',
     now: Temporal.Instant,
   ): Promise<BackfillWriteResult> {
     const finished = moveJob(job, operation, now)
-    const result = await finishJob(this.#redis, { job: finished, token })
 
-    if (result.status === 'saved') {
-      await this.#onFinish?.(result.job)
-    }
-
-    return result
+    return finishJob(
+      this.#redis,
+      { job: finished, token },
+      this.#finishedJobKeys?.(finished),
+    )
   }
 }

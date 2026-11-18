@@ -94,10 +94,12 @@ redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
 return 1`
 
 /**
- * Saves a claimed job that finished and releases it, only while its lock
- * holds the claim's token.
+ * Saves a claimed job that finished, also to the keys given after its lock
+ * (such as its outcome for a check), and releases it, only while its lock
+ * holds the claim's token. `SET` replaces a key of any type, so once the
+ * lock is checked nothing here can fail halfway.
  *
- * KEYS: job, worker lock
+ * KEYS: job, worker lock, keys to also save the job to (any number)
  * ARGV: lock token, job, TTL
  *
  * @returns 1 when the job was saved, 0 when the lock was lost.
@@ -105,6 +107,9 @@ return 1`
 export const FINISH_SCRIPT = `-- video-backfill:finish
 if redis.call('GET', KEYS[2]) ~= ARGV[1] then return 0 end
 redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
+for i = 3, #KEYS do
+  redis.call('SET', KEYS[i], ARGV[2], 'EX', ARGV[3])
+end
 redis.call('DEL', KEYS[2])
 return 1`
 
@@ -271,15 +276,19 @@ export function saveJob(
   )
 }
 
-/** Saves a claimed job that finished with {@link FINISH_SCRIPT}. */
+/**
+ * Saves a claimed job that finished with {@link FINISH_SCRIPT}, also to
+ * `copies`, and releases it.
+ */
 export function finishJob(
   redis: Redis,
   { job, token }: BackfillClaim,
+  copies: readonly string[] = [],
 ): Promise<BackfillWriteResult> {
   return writeClaimed(
     redis,
     FINISH_SCRIPT,
-    [jobKey(job.id), lockKey(job.id)],
+    [jobKey(job.id), lockKey(job.id), ...copies],
     (value) => [token, value, BACKFILL_JOB_TTL_SECONDS],
     job,
   )
