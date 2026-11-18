@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import Form, {
+  Checkbox,
   ErrorMessage,
   FormField,
   type FormState,
@@ -216,6 +217,95 @@ describe('ErrorMessage', () => {
     const input = screen.getByLabelText('メールアドレス')
     expect(input).toHaveAttribute('aria-invalid', 'true')
     expect(input).toHaveAttribute('aria-describedby', alert.id)
+  })
+})
+
+describe('Checkbox', () => {
+  function renderCheckboxForm(
+    action: (
+      currentState: FormState,
+      formData: FormData,
+    ) => FormState | Promise<FormState>,
+  ) {
+    render(
+      <Form action={action}>
+        <FormField name="enabled">
+          <Label className="mb-0 flex items-center gap-2">
+            <Checkbox defaultChecked={false} />
+            有効化
+          </Label>
+          <ErrorMessage />
+        </FormField>
+        <SubmitButton>保存</SubmitButton>
+      </Form>,
+    )
+  }
+
+  it('is named by the label of the field', () => {
+    renderCheckboxForm(() => ({}))
+
+    const checkbox = screen.getByRole('checkbox', { name: '有効化' })
+    expect(checkbox).toHaveAttribute('name', 'enabled')
+    expect(checkbox).toHaveAttribute('value', 'true')
+    expect(screen.getByText('有効化')).toHaveAttribute('for', checkbox.id)
+  })
+
+  it('toggles when the label is clicked', () => {
+    renderCheckboxForm(() => ({}))
+
+    const checkbox = screen.getByRole('checkbox', { name: '有効化' })
+    expect(checkbox).not.toBeChecked()
+
+    fireEvent.click(screen.getByText('有効化'))
+    expect(checkbox).toBeChecked()
+
+    fireEvent.click(screen.getByText('有効化'))
+    expect(checkbox).not.toBeChecked()
+  })
+
+  it('sends the value only when checked', async () => {
+    const action = vi.fn<
+      (currentState: FormState, formData: FormData) => FormState
+    >(() => ({}))
+    renderCheckboxForm(action)
+
+    submit()
+    await vi.waitFor(() => expect(action).toHaveBeenCalledTimes(1))
+    expect(action.mock.calls[0]?.[1].get('enabled')).toBeNull()
+
+    fireEvent.click(screen.getByText('有効化'))
+    submit()
+    await vi.waitFor(() => expect(action).toHaveBeenCalledTimes(2))
+    expect(action.mock.calls[1]?.[1].get('enabled')).toBe('true')
+  })
+
+  it('is disabled while submitting', async () => {
+    const deferred = createDeferred<FormState>()
+    renderCheckboxForm(() => deferred.promise)
+
+    submit()
+
+    const checkbox = screen.getByRole('checkbox', { name: '有効化' })
+    await vi.waitFor(() => expect(checkbox).toBeDisabled())
+
+    await act(async () => {
+      deferred.resolve({})
+    })
+
+    expect(checkbox).toBeEnabled()
+  })
+
+  it('refers to the error of the field', async () => {
+    renderCheckboxForm(() => ({
+      errors: { enabled: ['有効化の値が正しくありません。'] },
+    }))
+
+    submit()
+
+    const alert = await screen.findByRole('alert')
+    const checkbox = screen.getByRole('checkbox', { name: '有効化' })
+    expect(checkbox).toHaveAttribute('aria-invalid', 'true')
+    expect(checkbox).toHaveAttribute('aria-describedby', alert.id)
   })
 })
 
