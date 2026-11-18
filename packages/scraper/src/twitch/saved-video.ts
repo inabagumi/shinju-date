@@ -1,7 +1,7 @@
 import { isLiveTwitchVideoId } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
+import { chunk } from '@shinju-date/helpers'
 import type { QueryData } from '@supabase/supabase-js'
-import { chunk } from '../internal/batch.js'
 import { IN_FILTER_CHUNK_SIZE } from '../internal/constants.js'
 import { DatabaseError } from '../internal/errors.js'
 import type { TypedSupabaseClient } from '../types.js'

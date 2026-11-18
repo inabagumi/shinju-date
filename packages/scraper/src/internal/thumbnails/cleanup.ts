@@ -1,6 +1,6 @@
+import { chunk } from '@shinju-date/helpers'
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { TypedSupabaseClient } from '../../types.js'
-import { chunk } from '../batch.js'
 import { IN_FILTER_CHUNK_SIZE } from '../constants.js'
 import { DatabaseError, isForeignKeyViolation } from '../errors.js'
 import { removeStoredImages } from '../images/index.js'
