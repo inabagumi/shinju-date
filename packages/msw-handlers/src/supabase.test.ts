@@ -1344,7 +1344,7 @@ describe('Supabase Handlers', () => {
   })
 
   describe('Twitch videos', () => {
-    // The select of the public site (apps/web/lib/fetchers.ts)
+    // The select of the public site (apps/web/lib/data/selects.ts)
     const select = [
       'id',
       'platform',
