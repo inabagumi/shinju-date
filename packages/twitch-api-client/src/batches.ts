@@ -1,3 +1,5 @@
+import { chunk } from '@shinju-date/helpers'
+import { getErrorStatus } from './errors.js'
 import type { RequestScheduler } from './types.js'
 
 export const TWITCH_API_MAX_RESULTS = 100
@@ -23,11 +25,7 @@ export async function* requestInBatches<T>(
   schedule: RequestScheduler | undefined,
   request: (ids: string[], run: RequestScheduler) => Promise<readonly T[]>,
 ): AsyncGenerator<T, void, undefined> {
-  const batches: string[][] = []
-
-  for (let i = 0; i < ids.length; i += TWITCH_API_MAX_RESULTS) {
-    batches.push(ids.slice(i, i + TWITCH_API_MAX_RESULTS))
-  }
+  const batches = chunk(ids, TWITCH_API_MAX_RESULTS)
 
   if (!schedule) {
     for (const batch of batches) {
@@ -44,18 +42,6 @@ export async function* requestInBatches<T>(
   for (const items of results) {
     yield* items
   }
-}
-
-/**
- * Returns true when a Helix call failed with HTTP 404.
- */
-function isNotFoundError(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'statusCode' in error &&
-    error.statusCode === 404
-  )
 }
 
 /**
@@ -77,7 +63,7 @@ export async function lookupByIds<T>(
   try {
     return await lookup(ids)
   } catch (error) {
-    if (!isNotFoundError(error)) {
+    if (getErrorStatus(error) !== 404) {
       throw error
     }
 

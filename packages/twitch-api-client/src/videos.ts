@@ -1,3 +1,4 @@
+import { paginate } from '@shinju-date/helpers'
 import {
   type BatchOptions,
   lookupByIds,
@@ -19,7 +20,7 @@ interface GetVideosOptions extends ClientOptions, BatchOptions {
 interface GetVideosByUserOptions extends ClientOptions {
   /** Drain every page when true (default: first page only). */
   all?: boolean
-  /** Page size, up to 100 (default: 20). */
+  /** Page size, up to 100. Defaults to 100 when `all` is set, 20 otherwise. */
   limit?: number
   type?: TwitchVideoFilter
   userId: string
@@ -62,33 +63,34 @@ export async function* getVideos({
 export async function* getVideosByUser({
   all = false,
   client = getTwitchApiClient(),
-  limit = 20,
+  limit = all ? TWITCH_API_MAX_RESULTS : 20,
   type = 'archive',
   userId,
 }: GetVideosByUserOptions): AsyncGenerator<TwitchVideo, void, undefined> {
-  if (all) {
-    const paginator = client.videos.getVideosByUserPaginated(userId, { type })
+  if (!all) {
+    const { videos } = await getVideosByUserPage({
+      client,
+      limit,
+      type,
+      userId,
+    })
 
-    for await (const video of paginator) {
-      const mapped = mapVideo(video)
-      if (mapped) {
-        yield mapped
-      }
-    }
+    yield* videos
+
     return
   }
 
-  const { data: videos } = await client.videos.getVideosByUser(userId, {
-    limit,
-    type,
-  })
+  yield* paginate(async (after) => {
+    const { cursor, videos } = await getVideosByUserPage({
+      after,
+      client,
+      limit,
+      type,
+      userId,
+    })
 
-  for (const video of videos) {
-    const mapped = mapVideo(video)
-    if (mapped) {
-      yield mapped
-    }
-  }
+    return { items: videos, next: cursor }
+  })
 }
 
 /**

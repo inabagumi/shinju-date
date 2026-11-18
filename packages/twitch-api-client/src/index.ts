@@ -7,6 +7,7 @@ export {
   type TwitchVideoStatus,
 } from './broadcasts.js'
 export { getClips } from './clips.js'
+export { getErrorStatus } from './errors.js'
 export {
   parseTwitchUserIdentifier,
   type TwitchUserIdentifier,

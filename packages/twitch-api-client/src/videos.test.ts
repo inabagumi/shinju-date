@@ -1,12 +1,12 @@
 import type { ApiClient } from '@twurple/api'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { RequestScheduler } from './types.js'
-import { getVideos, getVideosByUserPage } from './videos.js'
+import { getVideos, getVideosByUser, getVideosByUserPage } from './videos.js'
 
 const getVideosByIds = vi.fn()
-const getVideosByUser = vi.fn()
+const helixGetVideosByUser = vi.fn()
 const client = {
-  videos: { getVideosByIds, getVideosByUser },
+  videos: { getVideosByIds, getVideosByUser: helixGetVideosByUser },
 } as unknown as ApiClient
 
 function notFound(): Error {
@@ -38,7 +38,7 @@ function helixVideo(id: string) {
 
 beforeEach(() => {
   getVideosByIds.mockReset()
-  getVideosByUser.mockReset()
+  helixGetVideosByUser.mockReset()
 })
 
 describe('getVideos', () => {
@@ -159,7 +159,7 @@ describe('getVideos', () => {
 
 describe('getVideosByUserPage', () => {
   it('returns one page of a broadcaster with the cursor of the next', async () => {
-    getVideosByUser.mockResolvedValue({
+    helixGetVideosByUser.mockResolvedValue({
       cursor: 'next',
       data: [helixVideo('1'), helixVideo('2')],
     })
@@ -171,7 +171,7 @@ describe('getVideosByUserPage', () => {
       userId: 'user-1',
     })
 
-    expect(getVideosByUser).toHaveBeenCalledWith('user-1', {
+    expect(helixGetVideosByUser).toHaveBeenCalledWith('user-1', {
       after: 'current',
       limit: 100,
       type: 'all',
@@ -181,7 +181,7 @@ describe('getVideosByUserPage', () => {
   })
 
   it('ends the walk at an empty page even when Helix returns a cursor', async () => {
-    getVideosByUser.mockResolvedValue({ cursor: 'stale', data: [] })
+    helixGetVideosByUser.mockResolvedValue({ cursor: 'stale', data: [] })
 
     await expect(
       getVideosByUserPage({ client, userId: 'user-1' }),
@@ -189,9 +189,47 @@ describe('getVideosByUserPage', () => {
       cursor: null,
       videos: [],
     })
-    expect(getVideosByUser).toHaveBeenCalledWith('user-1', {
+    expect(helixGetVideosByUser).toHaveBeenCalledWith('user-1', {
       limit: 100,
       type: 'archive',
     })
+  })
+})
+
+describe('getVideosByUser', () => {
+  it('gets only the first page by default', async () => {
+    helixGetVideosByUser.mockResolvedValue({
+      cursor: 'next',
+      data: [helixVideo('1')],
+    })
+
+    const videos = await Array.fromAsync(
+      getVideosByUser({ client, userId: 'user-1' }),
+    )
+
+    expect(videos.map((video) => video.id)).toEqual(['1'])
+    expect(helixGetVideosByUser).toHaveBeenCalledTimes(1)
+    expect(helixGetVideosByUser).toHaveBeenCalledWith('user-1', {
+      limit: 20,
+      type: 'archive',
+    })
+  })
+
+  it('walks every page with `all`', async () => {
+    helixGetVideosByUser
+      .mockResolvedValueOnce({ cursor: 'c1', data: [helixVideo('1')] })
+      .mockResolvedValueOnce({ cursor: 'c2', data: [helixVideo('2')] })
+      .mockResolvedValueOnce({ cursor: 'stale', data: [] })
+
+    const videos = await Array.fromAsync(
+      getVideosByUser({ all: true, client, type: 'all', userId: 'user-1' }),
+    )
+
+    expect(videos.map((video) => video.id)).toEqual(['1', '2'])
+    expect(helixGetVideosByUser.mock.calls).toEqual([
+      ['user-1', { limit: 100, type: 'all' }],
+      ['user-1', { after: 'c1', limit: 100, type: 'all' }],
+      ['user-1', { after: 'c2', limit: 100, type: 'all' }],
+    ])
   })
 })
