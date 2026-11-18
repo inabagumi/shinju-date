@@ -3,7 +3,6 @@
     "vscode": {
       "extensions": [
         "EditorConfig.EditorConfig",
-        "biomejs.biome",
         "bradlc.vscode-tailwindcss",
         "oxc.oxc-vscode",
         "unifiedjs.vscode-mdx"
