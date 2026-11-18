@@ -233,7 +233,7 @@ describe('syncYouTubeChannelIcon', () => {
 
     await expect(result).rejects.toBeInstanceOf(StorageError)
     await expect(result).rejects.toMatchObject({
-      operation: 'Failed to upload a profile image',
+      operation: 'Failed to upload an image to profile-images',
     })
     expect(supabase.requests).toHaveLength(0)
   })

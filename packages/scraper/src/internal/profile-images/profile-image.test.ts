@@ -95,7 +95,7 @@ describe('downloadProfileImage', () => {
     )
 
     await expect(downloadProfileImage(IMAGE_URL, saved)).rejects.toThrow(
-      'Failed to download a profile image (404)',
+      'Failed to download an image (404)',
     )
   })
 
