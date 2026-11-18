@@ -34,6 +34,7 @@ export const allHandlers = [
 export {
   announcements,
   ensureCollectionsSeeded,
+  featureRequests,
   profileImages,
   type SeedCollectionsOptions,
   seedCollections,
