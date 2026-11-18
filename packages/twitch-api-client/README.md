@@ -7,7 +7,6 @@ Twitch Helix API client for the SHINJU DATE monorepo, powered by [twurple](https
 - **App Access Token** auth via `@twurple/auth` (`AppTokenAuthProvider`)
 - **Users / Videos / Clips / Streams** lookup for admin registration and batch ingestion
 - **User video listing** with pagination helpers for batch discovery
-- **Live stream helpers** (`toLiveTwitchVideoId` / `isLiveTwitchVideoId`) for placeholder platform IDs
 - **Identifier parsing** for login names, user IDs, and Twitch URLs
 - Durations are mapped to ISO 8601 using twurple's `durationInSeconds` and `Temporal`
 
@@ -41,7 +40,6 @@ import {
   getVideosByUser,
   getStreamsByUserIds,
   getClips,
-  getTwitchApiClient,
 } from '@shinju-date/twitch-api-client'
 
 const identifier = parseTwitchUserIdentifier('https://www.twitch.tv/example')
@@ -50,9 +48,26 @@ const user = identifier ? await resolveTwitchUser(identifier) : null
 for await (const stream of getStreamsByUserIds({ userIds: ['125328655'] })) {
   console.log(stream.title, stream.id)
 }
+```
 
-// Low-level access when needed
-const api = getTwitchApiClient()
+The helpers for the placeholder IDs of live streams (`toLiveTwitchVideoId` / `isLiveTwitchVideoId`) are in `@shinju-date/constants`, so browser code can use them without twurple.
+
+### Passing a client
+
+Every function that calls Helix takes an optional `client` (a twurple `ApiClient`). Without it, the shared client made from `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` is used. Tests pass their own:
+
+```typescript
+import type { ApiClient } from '@twurple/api'
+
+const client = {
+  videos: { getVideosByIds: async () => [] },
+} as unknown as ApiClient
+
+for await (const video of getVideos({ client, ids: ['1'] })) {
+  // ...
+}
+
+const user = await resolveTwitchUser(identifier, { client })
 ```
 
 ### Lookups by ID
