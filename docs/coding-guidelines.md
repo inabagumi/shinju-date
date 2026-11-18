@@ -479,9 +479,10 @@ export const deleteSomethingAction = adminAction(
 - `requireAuthenticatedUser()` と `proxy.ts` は、管理者のロールを持たないユーザーを、未認証として扱う
 - 管理画面向けの RLS のポリシーは、`TO "authenticated"` に加えて、**必ず** `(SELECT "public"."is_admin"())` を条件にする（`USING (true)` は使わない）。`supabase/tests/database/admin_role.test.sql` が、これを検査する
 - `SECURITY DEFINER` の関数は RLS を迂回するため、関数の中で `public.is_admin()` を確かめる
+- ポリシーの名前は、管理画面向けのものを「`<テーブル>: admins can <操作>`」、それ以外を「`<テーブル>: anyone can <操作>`」にする。操作は `read`（`SELECT`）、`insert`、`update`、`delete`、`manage`（`ALL`）。インデックスの名前は `idx_<テーブル>_<列>` にする（複数の列は `_` でつなぐ。並び順は付けない。同じ列の部分インデックスが2つ以上あるときだけ、後ろに条件を付ける）。`supabase/tests/database/naming.test.sql` が、これを検査する
 
 ```sql
-CREATE POLICY "Enable update for admins"
+CREATE POLICY "some_table: admins can update"
     ON "public"."some_table"
     FOR UPDATE
     TO "authenticated"
