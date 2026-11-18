@@ -9,6 +9,14 @@ import {
 } from './index'
 
 const test = setupActionTest()
+
+/**
+ * 予期しない例外のときに画面に出る文（`@/lib/action` の `ACTION_FAILED_ERROR_MESSAGE`）。
+ * `@/lib/action` を読み込むと、`@/test/action-harness` のモックより先に `@/lib/auth` が
+ * 読み込まれてしまうため、ここに書く。
+ */
+const ACTION_FAILED_ERROR =
+  '処理に失敗しました。時間をおいて、もう一度お試しください。'
 const { supabase } = test
 
 vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
@@ -47,7 +55,7 @@ describe('restoreAction', () => {
 
     const result = await restoreAction(['video-id-1'])
 
-    expect(result).toEqual({ success: true })
+    expect(result).toEqual({ data: { updatedCount: 1 }, success: true })
     test.expectAuditLogs([
       {
         action: 'VIDEO_RESTORE',
@@ -55,7 +63,10 @@ describe('restoreAction', () => {
         targetRecordId: 'video-id-1',
       },
     ])
-    test.expectRevalidated({ paths: ['/videos'], tags: [['videos']] })
+    test.expectRevalidated({
+      paths: ['/videos', '/videos/video-id-1'],
+      tags: [['videos']],
+    })
   })
 
   it('should successfully restore video with thumbnail', async () => {
@@ -69,7 +80,7 @@ describe('restoreAction', () => {
 
     const result = await restoreAction(['video-id-1'])
 
-    expect(result).toEqual({ success: true })
+    expect(result).toEqual({ data: { updatedCount: 1 }, success: true })
     // Once for the select, once for the video update and once for the
     // thumbnail update
     expect(supabase.requests).toHaveLength(3)
@@ -91,7 +102,7 @@ describe('restoreAction', () => {
 
     const result = await restoreAction(['video-id-1', 'video-id-2'])
 
-    expect(result).toEqual({ success: true })
+    expect(result).toEqual({ data: { updatedCount: 2 }, success: true })
     // Both videos are recorded with one call
     test.expectAuditLogs([
       {
@@ -119,8 +130,7 @@ describe('restoreAction', () => {
 
     const result = await restoreAction(['video-id-1'])
 
-    expect(result.success).toBe(false)
-    expect(result.error).toBeTruthy()
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false })
     expect(test.logger.error).toHaveBeenCalled()
   })
 
@@ -140,8 +150,7 @@ describe('restoreAction', () => {
 
     const result = await restoreAction(['video-id-1'])
 
-    expect(result.success).toBe(false)
-    expect(result.error).toBeTruthy()
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false })
   })
 
   it('should handle fetch error', async () => {
@@ -149,8 +158,7 @@ describe('restoreAction', () => {
 
     const result = await restoreAction(['video-id-1'])
 
-    expect(result.success).toBe(false)
-    expect(result.error).toBeTruthy()
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false })
   })
 })
 
@@ -163,7 +171,7 @@ describe('softDeleteAction', () => {
 
     const result = await softDeleteAction(['video-id-1', 'video-id-2'])
 
-    expect(result).toEqual({ success: true })
+    expect(result).toEqual({ data: { updatedCount: 2 }, success: true })
     test.expectAuditLogs([
       {
         action: 'VIDEO_DELETE',
@@ -176,7 +184,10 @@ describe('softDeleteAction', () => {
         targetRecordId: 'video-id-2',
       },
     ])
-    test.expectRevalidated({ paths: ['/videos'], tags: [['videos']] })
+    test.expectRevalidated({
+      paths: ['/videos', '/videos/video-id-1', '/videos/video-id-2'],
+      tags: [['videos']],
+    })
   })
 
   it('should not record audit logs when the update fails', async () => {
@@ -245,7 +256,7 @@ describe('toggleVisibilityAction', () => {
 
     const result = await toggleVisibilityAction(ids)
 
-    expect(result).toEqual({ success: true, updatedCount: 3 })
+    expect(result).toEqual({ data: { updatedCount: 3 }, success: true })
     expect(
       supabase.calls('update', 'videos').map(({ body, query }) => ({
         body,
@@ -290,7 +301,6 @@ describe('toggleVisibilityAction', () => {
     expect(result).toEqual({
       error: '2 件を更新し、1 件は失敗しました。',
       success: false,
-      updatedCount: 2,
     })
     test.expectAuditLogs([
       {
@@ -328,7 +338,6 @@ describe('toggleVisibilityAction', () => {
     expect(result).toEqual({
       error: '動画の表示状態を更新できませんでした。',
       success: false,
-      updatedCount: 0,
     })
     test.expectNoAuditLog()
     test.expectNotRevalidated()
@@ -345,7 +354,6 @@ describe('toggleVisibilityAction', () => {
     expect(result).toEqual({
       error: '2 件を更新し、1 件は失敗しました。',
       success: false,
-      updatedCount: 2,
     })
     test.expectAuditLogs([
       {

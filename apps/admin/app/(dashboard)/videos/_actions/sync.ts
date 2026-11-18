@@ -1,27 +1,23 @@
 'use server'
 
 import { CACHE_TAGS } from '@shinju-date/constants'
-import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
 import { PLATFORM_LABELS } from '@/components/platform-badge'
+import { ActionError, type ActionResult, adminAction } from '@/lib/action'
 import { createAuditLog } from '@/lib/audit-log'
-import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 import { createScraper } from '@/lib/scraper'
 
-export interface SyncVideoResult {
-  error?: string
-  message?: string
-  success: boolean
+/** 動画の同期が成功したときに、画面に知らせること */
+export interface SyncVideoSummary {
+  /** 成功のトーストに出す文 */
+  message: string
   /** 動画がすでにプラットフォームと一致していた */
   unchanged?: boolean
 }
 
-const NOT_FOUND_RESULT: SyncVideoResult = {
-  error: '動画が見つかりませんでした。',
-  success: false,
-}
+const NOT_FOUND_ERROR_MESSAGE = '動画が見つかりませんでした。'
 
 async function revalidateVideo(videoId: string): Promise<void> {
   revalidatePath(`/videos/${videoId}`)
@@ -38,18 +34,12 @@ async function revalidateVideo(videoId: string): Promise<void> {
  * 論理削除される。Twitch の配信中の行とアーカイブの結び付け、クリップの
  * 確認も含む。
  */
-export async function syncVideoAction(
-  videoId: string,
-): Promise<SyncVideoResult> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  const { supabaseClient } = auth
-
-  try {
+export const syncVideoAction = adminAction(
+  'syncVideoAction',
+  async (
+    { supabaseClient },
+    videoId: string,
+  ): Promise<ActionResult<SyncVideoSummary>> => {
     const { data: video, error: fetchError } = await supabaseClient
       .from('videos')
       .select('platform, title')
@@ -62,7 +52,7 @@ export async function syncVideoAction(
     }
 
     if (!video) {
-      return NOT_FOUND_RESULT
+      throw new ActionError(NOT_FOUND_ERROR_MESSAGE)
     }
 
     const now = Temporal.Now.instant()
@@ -73,13 +63,12 @@ export async function syncVideoAction(
 
     switch (result.status) {
       case 'not-found':
-        return NOT_FOUND_RESULT
+        throw new ActionError(NOT_FOUND_ERROR_MESSAGE)
 
       case 'unchanged':
         return {
-          message: '動画情報は既に最新です。',
+          data: { message: '動画情報は既に最新です。', unchanged: true },
           success: true,
-          unchanged: true,
         }
 
       case 'unavailable':
@@ -96,7 +85,9 @@ export async function syncVideoAction(
         await revalidateVideo(videoId)
 
         return {
-          message: `${PLATFORM_LABELS[video.platform]}で動画が見つからなかったため、動画を削除しました。`,
+          data: {
+            message: `${PLATFORM_LABELS[video.platform]}で動画が見つからなかったため、動画を削除しました。`,
+          },
           success: true,
         }
 
@@ -107,17 +98,7 @@ export async function syncVideoAction(
         })
         await revalidateVideo(videoId)
 
-        return { message: '動画情報を同期しました。', success: true }
+        return { data: { message: '動画情報を同期しました。' }, success: true }
     }
-  } catch (error) {
-    logger.error('動画の同期に失敗しました', { error, videoId })
-
-    return {
-      error:
-        error instanceof Error
-          ? error.message
-          : '予期しないエラーが発生しました。',
-      success: false,
-    }
-  }
-}
+  },
+)

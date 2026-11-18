@@ -18,11 +18,7 @@ interface SyncVideoButtonProps {
 function SyncVideoButton({ videoId, platform }: SyncVideoButtonProps) {
   const { isPending, run } = useServerAction(syncVideoAction, {
     errorText: '同期に失敗しました。',
-    successText: (result) =>
-      result.message ??
-      (result.unchanged
-        ? '動画情報は既に最新です。'
-        : '動画情報を同期しました。'),
+    successText: ({ data }) => data?.message ?? '動画情報を同期しました。',
   })
 
   const label = platform === 'twitch' ? 'Twitchと同期' : 'YouTubeと同期'

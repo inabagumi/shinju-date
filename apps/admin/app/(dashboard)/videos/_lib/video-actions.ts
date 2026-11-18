@@ -2,6 +2,7 @@ import type { Tables } from '@shinju-date/database'
 import type { ButtonProps } from '@shinju-date/ui'
 import type { ServerActionResult } from '@/lib/use-server-action'
 import {
+  type BulkVideoActionData,
   restoreAction,
   softDeleteAction,
   toggleVisibilityAction,
@@ -22,8 +23,8 @@ export interface VideoActionTarget
 
 /** 操作のアクションの戻り値 */
 interface VideoActionResult extends ServerActionResult {
-  /** 表示を切り替えた動画の件数 */
-  updatedCount?: number | undefined
+  /** 更新された動画の件数など */
+  data?: BulkVideoActionData | undefined
 }
 
 /** 確認のダイアログの文言 */
@@ -102,7 +103,7 @@ export const VIDEO_ACTIONS = {
         return `動画を${target.visible ? '非表示' : '表示'}に変更しました。`
       }
 
-      return `${result.updatedCount ?? targets.length} 件の動画の表示状態を更新しました。`
+      return `${result.data?.updatedCount ?? targets.length} 件の動画の表示状態を更新しました。`
     },
   },
 } as const satisfies Record<VideoAction, VideoActionDefinition>
