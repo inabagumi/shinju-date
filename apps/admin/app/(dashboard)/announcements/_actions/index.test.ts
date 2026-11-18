@@ -179,9 +179,6 @@ describe('createAnnouncementAction', () => {
 
 describe('updateAnnouncementAction', () => {
   it('updates the announcement', async () => {
-    vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
-      Temporal.Instant.from('2026-01-02T03:04:05.678Z'),
-    )
     supabase.on('update', 'announcements', { message: MESSAGE })
 
     const result = await updateAnnouncementAction(
@@ -198,11 +195,14 @@ describe('updateAnnouncementAction', () => {
           level: 'alert',
           message: MESSAGE,
           start_at: '2025-12-31T15:00:00Z',
-          updated_at: '2026-01-02T03:04:05Z',
         },
         query: { id: `eq.${ID}` },
       },
     ])
+    // `updated_at` is left to the trigger of the table
+    expect(
+      supabase.calls('update', 'announcements')[0]?.body,
+    ).not.toHaveProperty('updated_at')
     test.expectAuditLog('ANNOUNCEMENT_UPDATE', ID, { entityName: MESSAGE })
     test.expectRevalidated(REVALIDATION)
   })
