@@ -1,14 +1,12 @@
 # @shinju-date/youtube-api-client
 
-A shared YouTube API client package with Zod runtime validation for the SHINJU DATE monorepo.
+A shared YouTube Data API client package for the SHINJU DATE monorepo.
 
 ## Features
 
-- **Type-safe**: Full TypeScript support with inferred types from Zod schemas
-- **Runtime Validation**: All API responses are validated using Zod schemas
+- **Type-safe**: Returns only the fetched items that have the fields SHINJU DATE requires, typed so that those fields are present
 - **DRY**: Centralized YouTube API logic for reuse across applications
 - **Lazy Initialization**: Client is created only when needed for better testability
-- **Error Handling**: Robust validation with automatic filtering of invalid responses
 
 ## Installation
 
@@ -28,7 +26,6 @@ This is a private workspace package. To use it in your app:
 
 ```typescript
 import {
-  youtubeClient,
   getChannels,
   getVideos,
   getVideoIds,
@@ -57,7 +54,6 @@ for await (const channel of getChannels({ ids: channelIds })) {
 import {
   parseYouTubeChannelIdentifier,
   resolveYouTubeChannel,
-  getChannelByHandle,
 } from '@shinju-date/youtube-api-client'
 
 const identifier = parseYouTubeChannelIdentifier(
@@ -69,9 +65,6 @@ if (identifier) {
   const channel = await resolveYouTubeChannel(identifier)
   console.log(channel?.id, channel?.snippet.title, channel?.snippet.customUrl)
 }
-
-// Or look up by handle directly
-const byHandle = await getChannelByHandle({ handle: '@example' })
 ```
 
 ### Get YouTube videos
@@ -129,9 +122,10 @@ getPublishedAt(video) // start of the broadcast, or the publication time
 Every function uses the shared client by default. Pass `client` to use another one (for example a fake in tests):
 
 ```typescript
-import { createYouTubeClient, getVideos } from '@shinju-date/youtube-api-client'
+import { youtube_v3 as youtube } from '@googleapis/youtube'
+import { getVideos } from '@shinju-date/youtube-api-client'
 
-const client = createYouTubeClient()
+const client = new youtube.Youtube({ auth: apiKey })
 
 for await (const video of getVideos({ client, ids: videoIds })) {
   // ...
@@ -165,19 +159,19 @@ The package requires a Google API key to be set:
 GOOGLE_API_KEY=your_api_key_here
 ```
 
-## Validation
+## Filtering
 
-All responses are validated using Zod schemas:
+Of the fetched items, only those that have the fields below are returned:
 
-- `YouTubeChannelSchema`: Validates channel responses
-- `YouTubeVideoSchema`: Validates video responses
-- `YouTubePlaylistItemSchema`: Validates playlist item responses
+- Channels (`FilteredYouTubeChannel`): the channel ID, the uploads playlist ID and the title
+- Videos (`FilteredYouTubeVideo`): the video ID and the publication time
+- Playlist items (`FilteredYouTubePlaylistItem`): the video ID
 
-Invalid responses are automatically filtered out and will not be yielded by the generator functions.
+Items without them are left out.
 
 ## Testing
 
-The package includes comprehensive unit tests for schema validation:
+Run the unit tests:
 
 ```bash
 pnpm test
