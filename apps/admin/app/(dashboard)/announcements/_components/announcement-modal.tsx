@@ -6,6 +6,7 @@ import { Button } from '@shinju-date/ui'
 import { useMemo } from 'react'
 import type { FormState } from '@/components/form'
 import {
+  Checkbox,
   ErrorMessage,
   FormField,
   Input,
@@ -147,13 +148,7 @@ export function AnnouncementModal({
       </FormField>
       <FormField name="enabled">
         <Label className="mb-0 flex items-center gap-2">
-          <input
-            className="size-4 accent-accent"
-            defaultChecked={announcement?.enabled ?? false}
-            name="enabled"
-            type="checkbox"
-            value="true"
-          />
+          <Checkbox defaultChecked={announcement?.enabled ?? false} />
           有効化
         </Label>
         <ErrorMessage />

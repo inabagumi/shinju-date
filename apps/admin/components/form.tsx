@@ -265,6 +265,45 @@ export function Input({
   )
 }
 
+interface CheckboxProps
+  extends Omit<ComponentPropsWithoutRef<'input'>, 'checked' | 'type'> {}
+
+/**
+ * `FormField` の ID と `name` を付けたチェックボックス。`Label` の `htmlFor`
+ * がこの ID を指すので、`Label` の中に入れても外に置いても、ラベルを押すと
+ * チェックが切り替わり、ラベルの文がチェックボックスの名前になる。
+ *
+ * `Form` は送信のあとにフォームをリセットしないので、`defaultChecked` を使う
+ * 制御されていない入力欄のままでよい。
+ */
+export function Checkbox({
+  className,
+  disabled,
+  id: newId,
+  name: newName,
+  value = 'true',
+  ...props
+}: CheckboxProps) {
+  const { pending } = useFormStatus()
+  const { errors } = useContext(FormContext)
+  const { id, name } = useContext(FormFieldContext)
+  const invalid = typeof name !== 'undefined' && !!errors?.[name]
+
+  return (
+    <input
+      aria-describedby={invalid && id ? `${id}-error-message` : undefined}
+      aria-invalid={invalid ? true : undefined}
+      className={twMerge('size-4 accent-accent', className)}
+      disabled={disabled ?? (pending ? true : undefined)}
+      id={newId ?? id}
+      name={newName ?? name}
+      type="checkbox"
+      value={value}
+      {...props}
+    />
+  )
+}
+
 interface LabelProps extends ComponentPropsWithoutRef<'label'> {}
 
 export function Label({ className, htmlFor, ...props }: LabelProps) {
