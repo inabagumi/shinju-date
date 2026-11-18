@@ -6,7 +6,12 @@ import {
   BackfillQueue,
 } from '@shinju-date/video-backfill'
 import { PLATFORM_LABELS } from '@/components/platform-badge'
-import { ActionError, type ActionResult, adminAction } from '@/lib/action'
+import {
+  ActionError,
+  type ActionResult,
+  adminAction,
+  parseActionInput,
+} from '@/lib/action'
 import { createAuditLog } from '@/lib/audit-log'
 import { getRedisClient } from '@/lib/redis'
 import {
@@ -14,6 +19,7 @@ import {
   readVideoBackfillStatus,
   type VideoBackfillStatus,
 } from '../_lib/get-video-backfill-status'
+import { backfillProviderSchema, talentIdSchema } from '../_lib/talent-schema'
 
 /** 過去動画の取り込みをキューに追加できたときに、画面に知らせること */
 interface BackfillRequestSummary {
@@ -36,13 +42,11 @@ export const requestVideoBackfillAction = adminAction(
   'requestVideoBackfillAction',
   async (
     { supabaseClient, user },
-    talentId: string,
-    provider: BackfillProvider,
+    id: string,
+    platform: BackfillProvider,
   ): Promise<ActionResult<BackfillRequestSummary>> => {
-    if (provider !== 'youtube' && provider !== 'twitch') {
-      throw new ActionError('不明なプラットフォームです。')
-    }
-
+    const talentId = parseActionInput(talentIdSchema, id)
+    const provider = parseActionInput(backfillProviderSchema, platform)
     const label = PLATFORM_LABELS[provider]
     const talent = await getTalentAccounts(supabaseClient, talentId)
 
@@ -136,8 +140,9 @@ export const getVideoBackfillStatusAction = adminAction(
   'getVideoBackfillStatusAction',
   async (
     { supabaseClient },
-    talentId: string,
+    id: string,
   ): Promise<ActionResult<VideoBackfillStatus>> => {
+    const talentId = parseActionInput(talentIdSchema, id)
     const status = await readVideoBackfillStatus(supabaseClient, talentId)
 
     if (!status) {

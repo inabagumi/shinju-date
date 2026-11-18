@@ -402,17 +402,22 @@ describe.each(lifecycleActionCases)('$name', (testCase) => {
     expect(test.revalidateTags).not.toHaveBeenCalled()
   })
 
-  it('should return error when ID is not provided', async () => {
+  it.each([
+    ['no ID', ''],
+    ['an ID that is not a UUID', 'talent-1'],
+    ['a value that is not a string', ['123e4567-e89b-12d3-a456-426614174000']],
+  ])('should return error without updating anything for %s', async (_, id) => {
     mockTalentUpdate('Test Talent')
 
-    const result = await testCase.action('')
+    const result = await testCase.action(id as string)
 
     expect(result).toEqual({
-      error: 'IDが指定されていません。',
+      error: '入力が正しくありません。',
       success: false,
     })
     expect(supabase.requests).toHaveLength(0)
     test.expectNoAuditLog()
+    test.expectNotRevalidated()
   })
 
   it('should handle database errors other than a missing row', async () => {

@@ -449,3 +449,25 @@ describe('syncTalentAccountsAction', () => {
     expect(scraper.createScraper).not.toHaveBeenCalled()
   })
 })
+
+describe.each([
+  ['syncTalentWithYouTubeAction', syncTalentWithYouTubeAction],
+  ['syncTalentWithTwitchAction', syncTalentWithTwitchAction],
+  ['syncTalentAccountsAction', syncTalentAccountsAction],
+])('%s with an invalid talent ID', (_, action) => {
+  it.each([
+    ['no ID', ''],
+    ['an ID that is not a UUID', 'talent-1'],
+  ])('returns an error without syncing anything for %s', async (_, id) => {
+    const result = await action(id)
+
+    expect(result).toEqual({
+      error: '入力が正しくありません。',
+      success: false,
+    })
+    expect(supabase.requests).toEqual([])
+    expect(scraper.createScraper).not.toHaveBeenCalled()
+    test.expectNoAuditLog()
+    test.expectNotRevalidated()
+  })
+})

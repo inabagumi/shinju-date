@@ -183,17 +183,31 @@ describe('requestVideoBackfillAction', () => {
     })
   })
 
-  it('rejects an unknown platform', async () => {
+  it.each([
+    ['an unknown platform', talentId, 'niconico'],
+    ['a talent ID that is not a UUID', 'talent-1', 'youtube'],
+    ['no talent ID', '', 'youtube'],
+  ])('rejects %s without queueing anything', async (_, id, provider) => {
     await expect(
-      requestVideoBackfillAction(talentId, 'niconico' as unknown as 'youtube'),
-    ).resolves.toMatchObject({ success: false })
-    expect(supabase.calls('select', 'talents')).toEqual([])
+      requestVideoBackfillAction(id, provider as 'youtube'),
+    ).resolves.toEqual({ error: '入力が正しくありません。', success: false })
+    expect(supabase.requests).toEqual([])
+    expect(mocks.enqueue).not.toHaveBeenCalled()
+    test.expectNoAuditLog()
   })
 })
 
 describe('getVideoBackfillStatusAction', () => {
   beforeEach(() => {
     supabase.on('select', 'talents', [talent])
+  })
+
+  it('rejects a talent ID that is not a UUID without reading anything', async () => {
+    await expect(getVideoBackfillStatusAction('talent-1')).resolves.toEqual({
+      error: '入力が正しくありません。',
+      success: false,
+    })
+    expect(supabase.requests).toEqual([])
   })
 
   it('returns the progress of every account', async () => {

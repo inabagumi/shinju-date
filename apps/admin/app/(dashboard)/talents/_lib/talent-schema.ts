@@ -1,3 +1,4 @@
+import { Constants } from '@shinju-date/database'
 import { parseTwitchUserIdentifier } from '@shinju-date/twitch-api-client'
 import { parseYouTubeChannelIdentifier } from '@shinju-date/youtube-api-client'
 import * as z from 'zod'
@@ -140,3 +141,21 @@ export const addTwitchUserSchema = z.object({
   talent_id: z.string().default(''),
   twitch_user: twitchUserInputSchema,
 })
+
+/**
+ * タレントの ID（削除・復活・引退・アクティブ化、同期、過去動画の取り込みの
+ * アクションの引数）
+ */
+export const talentIdSchema = uuidSchema
+
+/**
+ * タレントに結び付いたアカウントの行の ID（`youtube_channels.id`、`twitch_users.id`。
+ * 結び付きを外すアクションの引数）。YouTube のチャンネル ID や Twitch のユーザー ID
+ * ではない
+ */
+export const talentAccountIdSchema = uuidSchema
+
+/** 過去動画の取り込みのプラットフォーム（DB の enum `platform_type` の値） */
+export const backfillProviderSchema = z.enum(
+  Constants.public.Enums.platform_type,
+)

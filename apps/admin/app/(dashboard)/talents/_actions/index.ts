@@ -11,13 +11,18 @@ import {
   type ActionResult,
   adminAction,
   adminFormAction,
+  parseActionInput,
 } from '@/lib/action'
 import { type AuditAction, createAuditLog } from '@/lib/audit-log'
 import type { AuthenticatedContext } from '@/lib/auth'
 import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 import { isNotFoundError } from '@/lib/supabase/query'
 import { linkAccount, resolveAccount } from '@/lib/talent-accounts'
-import { createTalentSchema, updateTalentSchema } from '../_lib/talent-schema'
+import {
+  createTalentSchema,
+  talentIdSchema,
+  updateTalentSchema,
+} from '../_lib/talent-schema'
 
 export const createTalentAction = adminFormAction(
   'createTalentAction',
@@ -201,13 +206,10 @@ const TALENT_LIFECYCLE_TRANSITIONS = {
  */
 async function transitionTalentLifecycle(
   { supabaseClient }: AuthenticatedContext,
-  id: string,
+  talentId: string,
   transition: TalentLifecycleTransition,
 ): Promise<ActionResult> {
-  if (!id) {
-    throw new ActionError('IDが指定されていません。')
-  }
-
+  const id = parseActionInput(talentIdSchema, talentId)
   const now = toDBString(Temporal.Now.instant())
 
   let query = supabaseClient

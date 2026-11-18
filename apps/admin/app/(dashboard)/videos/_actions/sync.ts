@@ -5,9 +5,15 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
 import { PLATFORM_LABELS } from '@/components/platform-badge'
-import { ActionError, type ActionResult, adminAction } from '@/lib/action'
+import {
+  ActionError,
+  type ActionResult,
+  adminAction,
+  parseActionInput,
+} from '@/lib/action'
 import { createAuditLog } from '@/lib/audit-log'
 import { createScraper } from '@/lib/scraper'
+import { videoIdSchema } from '../_lib/schema'
 
 /** 動画の同期が成功したときに、画面に知らせること */
 export interface SyncVideoSummary {
@@ -38,8 +44,9 @@ export const syncVideoAction = adminAction(
   'syncVideoAction',
   async (
     { supabaseClient },
-    videoId: string,
+    id: string,
   ): Promise<ActionResult<SyncVideoSummary>> => {
+    const videoId = parseActionInput(videoIdSchema, id)
     const { data: video, error: fetchError } = await supabaseClient
       .from('videos')
       .select('platform, title')

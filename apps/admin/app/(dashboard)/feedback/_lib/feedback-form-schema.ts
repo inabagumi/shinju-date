@@ -1,11 +1,15 @@
 import * as z from 'zod'
+import { INVALID_INPUT_ERROR_MESSAGE } from '@/lib/schemas'
 import { FEATURE_REQUEST_STATUSES } from './feature-request-status'
 
 /**
  * 検証に失敗したときの文。入力欄は選択肢とメモだけで、ほかの値は隠しフィールド
- * なので、検証の失敗は項目ごとに分けず、すべてこの文にする
+ * なので、検証の失敗は項目ごとに分けず、メモの長さのほかは、すべてこの文にする
  */
-export const INVALID_INPUT_ERROR = '入力が正しくありません。'
+const INVALID_INPUT_ERROR = INVALID_INPUT_ERROR_MESSAGE
+
+/** メモ（`feature_requests.admin_memo`）の長さの上限 */
+const MAX_ADMIN_MEMO_LENGTH = 10_000
 
 /**
  * フィードバックの ID。DB の `uuid` 型と同じく、RFC 9562 のバージョンとバリアントを
@@ -19,9 +23,17 @@ export const feedbackStatusFormSchema = z.object({
   status: z.enum(FEATURE_REQUEST_STATUSES, { error: INVALID_INPUT_ERROR }),
 })
 
-/** メモの保存のフォーム。空のメモは、メモを消すことを表す */
+/**
+ * メモの保存のフォーム。空のメモは、メモを消すことを表す。長すぎるメモは、
+ * 利用者が直せるので、直し方の分かる文にする
+ */
 export const feedbackMemoFormSchema = z.object({
-  admin_memo: z.string({ error: INVALID_INPUT_ERROR }),
+  admin_memo: z
+    .string({ error: INVALID_INPUT_ERROR })
+    .max(
+      MAX_ADMIN_MEMO_LENGTH,
+      `メモは${MAX_ADMIN_MEMO_LENGTH.toLocaleString('en-US')}文字以内で入力してください。`,
+    ),
   id: feedbackIdSchema,
 })
 

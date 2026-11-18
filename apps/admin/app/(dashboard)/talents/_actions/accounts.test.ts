@@ -45,7 +45,7 @@ vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
 )
 
 const talentId = '123e4567-e89b-12d3-a456-426614174000'
-const accountId = 'account-row-123'
+const accountId = '223e4567-e89b-12d3-a456-426614174000'
 const talent = { name: 'Example Talent' }
 
 const youtubeChannelId = 'UCabcdefghijklmnopqrstuv'
@@ -552,20 +552,30 @@ describe.each(platformCases)('$platform accounts', (platformCase) => {
     })
 
     it.each([
-      { accountId: '', label: 'the account ID', talentId },
-      { accountId, label: 'the talent ID', talentId: '' },
-    ])('should return an error when $label is missing', async (ids) => {
-      const result = await platformCase.removeAction(
-        ids.accountId,
-        ids.talentId,
-      )
+      { accountId: '', label: 'the account ID is missing', talentId },
+      { accountId, label: 'the talent ID is missing', talentId: '' },
+      {
+        accountId: 'account-row-123',
+        label: 'the account ID is not a UUID',
+        talentId,
+      },
+      { accountId, label: 'the talent ID is not a UUID', talentId: 'talent-1' },
+    ])(
+      'should return an error without removing anything when $label',
+      async (ids) => {
+        const result = await platformCase.removeAction(
+          ids.accountId,
+          ids.talentId,
+        )
 
-      expect(result).toEqual({
-        error: messages.unlinkIdsRequired,
-        success: false,
-      })
-      expect(supabase.requests).toHaveLength(0)
-    })
+        expect(result).toEqual({
+          error: '入力が正しくありません。',
+          success: false,
+        })
+        expect(supabase.requests).toHaveLength(0)
+        expectNothingCompleted()
+      },
+    )
 
     it('should return an error when the account cannot be removed', async () => {
       answerAccount()

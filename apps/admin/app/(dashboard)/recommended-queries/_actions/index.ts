@@ -3,9 +3,10 @@
 import { CACHE_TAGS, REDIS_KEYS } from '@shinju-date/constants'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
-import { ActionError, type ActionResult, adminAction } from '@/lib/action'
+import { type ActionResult, adminAction, parseActionInput } from '@/lib/action'
 import { createAuditLog } from '@/lib/audit-log'
 import { getRedisClient } from '@/lib/redis'
+import { recommendedQuerySchema } from '../_lib/schema'
 
 async function revalidateRecommendedQueries(): Promise<void> {
   revalidatePath('/recommended-queries')
@@ -16,11 +17,7 @@ async function revalidateRecommendedQueries(): Promise<void> {
 export const addQueryAction = adminAction(
   'addQueryAction',
   async ({ supabaseClient }, query: string): Promise<ActionResult> => {
-    const trimmedQuery = query?.trim()
-
-    if (!trimmedQuery) {
-      throw new ActionError('クエリを入力してください。')
-    }
+    const trimmedQuery = parseActionInput(recommendedQuerySchema, query)
 
     await getRedisClient().sadd(
       REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED,
@@ -40,14 +37,16 @@ export const addQueryAction = adminAction(
 export const deleteQueryAction = adminAction(
   'deleteQueryAction',
   async ({ supabaseClient }, query: string): Promise<ActionResult> => {
-    if (!query) {
-      throw new ActionError('クエリが指定されていません。')
-    }
+    // 追加のときに前後の空白を除いているので、除いた値で削除する
+    const trimmedQuery = parseActionInput(recommendedQuerySchema, query)
 
-    await getRedisClient().srem(REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED, query)
+    await getRedisClient().srem(
+      REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED,
+      trimmedQuery,
+    )
 
     await createAuditLog(supabaseClient, 'RECOMMENDED_QUERY_DELETE', null, {
-      entityName: query,
+      entityName: trimmedQuery,
     })
 
     await revalidateRecommendedQueries()
