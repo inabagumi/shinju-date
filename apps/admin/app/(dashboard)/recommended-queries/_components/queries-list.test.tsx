@@ -24,7 +24,9 @@ function renderList() {
   return render(
     <QueriesList
       autoQueries={[]}
+      autoTotal={0}
       manualQueries={['ホロライブ', '歌枠']}
+      manualTotal={2}
       search={undefined}
     />,
     { wrapper: ActionToastProvider },
@@ -121,4 +123,52 @@ describe('QueriesList', () => {
     ).toBeInTheDocument()
     expect(input).toHaveValue('雑談')
   })
+
+  it('renders the filtered queries with the total counts', () => {
+    render(
+      <QueriesList
+        autoQueries={[{ query: '歌枠 練習', score: 1.234 }]}
+        autoTotal={5}
+        manualQueries={['歌枠']}
+        manualTotal={3}
+        search="歌枠"
+      />,
+      { wrapper: ActionToastProvider },
+    )
+
+    expect(
+      screen.getByRole('heading', { name: /手動追加クエリ/ }),
+    ).toHaveTextContent('3件')
+    expect(
+      screen.getByRole('heading', { name: /自動選出クエリ/ }),
+    ).toHaveTextContent('5件')
+    expect(screen.getByRole('cell', { name: '歌枠' })).toBeInTheDocument()
+    expect(screen.getByRole('cell', { name: '1.23' })).toBeInTheDocument()
+  })
+
+  it.each([
+    ['歌枠', '検索結果がありません。', '検索結果がありません。'],
+    [
+      undefined,
+      '手動追加されたおすすめクエリがありません。',
+      '自動選出されたおすすめクエリがありません。',
+    ],
+  ])(
+    'tells that there is no query for the search %s',
+    (search, manual, auto) => {
+      render(
+        <QueriesList
+          autoQueries={[]}
+          autoTotal={0}
+          manualQueries={[]}
+          manualTotal={0}
+          search={search}
+        />,
+        { wrapper: ActionToastProvider },
+      )
+
+      expect(screen.getAllByText(manual)[0]).toBeInTheDocument()
+      expect(screen.getAllByText(auto)[0]).toBeInTheDocument()
+    },
+  )
 })

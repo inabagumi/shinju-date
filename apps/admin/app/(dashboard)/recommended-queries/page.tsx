@@ -2,6 +2,7 @@ import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { QueriesList, QueriesListSkeleton } from './_components/queries-list'
+import { filterQueries } from './_lib/filter-queries'
 import getRecommendedQueries from './_lib/get-recommended-queries'
 import { recommendedQueriesSearchParamsSchema } from './_lib/search-params-schema'
 
@@ -19,7 +20,13 @@ async function QueriesListData({
   const { search } = recommendedQueriesSearchParamsSchema.parse(rawParams)
 
   return (
-    <QueriesList autoQueries={auto} manualQueries={manual} search={search} />
+    <QueriesList
+      autoQueries={filterQueries(auto, search, (item) => item.query)}
+      autoTotal={auto.length}
+      manualQueries={filterQueries(manual, search, (query) => query)}
+      manualTotal={manual.length}
+      search={search}
+    />
   )
 }
 
