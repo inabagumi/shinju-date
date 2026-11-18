@@ -30,6 +30,7 @@
     "check:dev-secrets": "node scripts/check-dev-secrets.mjs",
     "check:docs": "node scripts/check-docs.mjs",
     "check:package-exports": "node scripts/check-package-exports.mjs",
+    "check:private-urls": "node scripts/check-private-urls.mjs",
     "db:export": "./scripts/export-production-data.sh",
     "db:schema": "./scripts/generate-types.sh",
     "db:import": "./scripts/import-data.sh",

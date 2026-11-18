@@ -1,0 +1,69 @@
+name: Check Private URLs
+
+# Checks that the title, the body and the commits of a pull request have no
+# URLs that most people cannot open (see scripts/check-private-urls.mjs).
+# A separate workflow from CI, so editing the title or the body runs only this.
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+# A newer edit or push cancels the older run
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check-private-urls:
+    name: Check Private URLs
+    runs-on: ubuntu-26.04
+
+    steps:
+      # The head commit, not the merge commit, so the check runs even when the
+      # pull request has conflicts
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha }}
+          sparse-checkout: scripts
+
+      - name: Check the pull request and its commits
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { GUIDANCE, findProblems, formatProblem } = await import(
+              `${process.env.GITHUB_WORKSPACE}/scripts/check-private-urls.mjs`
+            )
+
+            // The payload has the title and the body after the edit
+            const pr = context.payload.pull_request
+
+            // The API lists up to 250 commits of a pull request
+            const commits = await github.paginate(github.rest.pulls.listCommits, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100,
+            })
+
+            const problems = findProblems([
+              { label: 'プルリクエストのタイトル', text: pr.title },
+              { label: 'プルリクエストの本文', text: pr.body },
+              ...commits.map(({ commit, sha }) => ({
+                label: `commit ${sha.slice(0, 7)}`,
+                text: commit.message,
+              })),
+            ])
+
+            for (const problem of problems) {
+              core.error(formatProblem(problem))
+            }
+
+            if (problems.length > 0) {
+              core.setFailed(`${problems.length} 件の問題があります。${GUIDANCE}`)
+            } else {
+              core.info(`タイトル、本文、${commits.length} 件のコミットに問題はありません。`)
+            }
