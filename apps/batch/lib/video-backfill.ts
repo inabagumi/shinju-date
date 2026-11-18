@@ -2,9 +2,11 @@ import * as Sentry from '@sentry/nextjs'
 import { logger } from '@shinju-date/logger'
 import { AccountNotFoundError, type Scraper } from '@shinju-date/scraper'
 import type {
+  BackfillClaim,
   BackfillJob,
   BackfillProvider,
   BackfillQueue,
+  BackfillWriteResult,
 } from '@shinju-date/video-backfill'
 
 /** Runs in a row that may fail before a job is given up. */
@@ -49,18 +51,39 @@ function isBefore(clock: Clock, deadline: Temporal.Instant): boolean {
 }
 
 /**
- * Reads pages of a claimed job until its history ends or the deadline
- * passes, then completes, requeues or fails it.
- *
- * @returns The number of videos saved.
+ * Tells whether a write kept the job, and logs it when the lock was lost:
+ * the lease ran out, so another worker may be reading the job, and this one
+ * must stop working on it.
+ */
+function isSaved(
+  result: BackfillWriteResult,
+  job: BackfillJob,
+): result is Extract<BackfillWriteResult, { status: 'saved' }> {
+  if (result.status === 'saved') {
+    return true
+  }
+
+  logger.warn(
+    '過去動画の取り込みのロックが切れたため、このジョブの処理をやめます',
+    { jobId: job.id, talentId: job.talentId },
+  )
+
+  return false
+}
+
+/**
+ * Reports a job that was completed or given up, unless its lock was lost.
  */
 async function reportFinished(
   onFinish: OnFinish | undefined,
-  job: BackfillJob,
+  result: BackfillWriteResult,
+  attempted: BackfillJob,
 ): Promise<void> {
-  if (!onFinish) {
+  if (!isSaved(result, attempted) || !onFinish) {
     return
   }
+
+  const { job } = result
 
   try {
     await onFinish(job)
@@ -76,10 +99,17 @@ async function reportFinished(
   }
 }
 
+/**
+ * Reads pages of a claimed job until its history ends or the deadline
+ * passes, then completes, requeues or fails it. Stops early when the lock of
+ * the job is lost.
+ *
+ * @returns The number of videos saved.
+ */
 async function workOnJob(
   queue: BackfillQueue,
   scraper: Scraper,
-  claimed: BackfillJob,
+  { job: claimed, token }: BackfillClaim,
   deadline: Temporal.Instant,
   clock: Clock,
   onFinish: OnFinish | undefined,
@@ -119,16 +149,23 @@ async function workOnJob(
           ...context,
           error: message,
         })
+
+        const failed = { ...job, attempts }
+
         await reportFinished(
           onFinish,
-          await queue.fail({ ...job, attempts }, message),
+          await queue.fail({ job: failed, token }, message),
+          failed,
         )
       } else {
         logger.warn('過去動画の取り込みに失敗したため後で再試行します', {
           ...context,
           error: message,
         })
-        await queue.requeue({ ...job, attempts, error: message })
+
+        const retried = { ...job, attempts, error: message }
+
+        isSaved(await queue.requeue({ job: retried, token }), retried)
       }
 
       return added
@@ -151,24 +188,26 @@ async function workOnJob(
         pages: job.pages,
         talentId: job.talentId,
       })
-      await reportFinished(onFinish, await queue.complete(job))
+      await reportFinished(onFinish, await queue.complete({ job, token }), job)
 
       return added
     }
 
     if (!isBefore(clock, deadline)) {
-      await queue.requeue(job)
+      isSaved(await queue.requeue({ job, token }), job)
 
       return added
     }
 
+    let saved: BackfillWriteResult
+
     try {
-      job = await queue.update(job)
+      saved = await queue.update({ job, token })
     } catch (error) {
       // The job is off the queue and marked running: put it back with the
       // progress made so far, or it would wait until it is requested again.
       try {
-        await queue.requeue(job)
+        await queue.requeue({ job, token })
       } catch (requeueError) {
         logger.error('過去動画の取り込みを再キューできませんでした', {
           error: requeueError,
@@ -178,6 +217,12 @@ async function workOnJob(
 
       throw error
     }
+
+    if (!isSaved(saved, job)) {
+      return added
+    }
+
+    job = saved.job
   }
 }
 
@@ -200,14 +245,16 @@ export async function workOffBackfillQueue({
   let added = 0
 
   while (isBefore(clock, deadline)) {
-    const job = await queue.claim()
+    const claim = await queue.claim()
 
-    if (!job) {
+    if (!claim) {
       break
     }
 
+    const { job } = claim
+
     if (seen.has(job.id)) {
-      await queue.requeue(job)
+      isSaved(await queue.requeue(claim), job)
       break
     }
 
@@ -215,7 +262,7 @@ export async function workOffBackfillQueue({
     added += await workOnJob(
       queue,
       getScraper(job.provider),
-      job,
+      claim,
       deadline,
       clock,
       onFinish,
