@@ -10,7 +10,7 @@
       ]
     }
   ],
-  "extends": ["github>inabagumi/renovate-config"],
+  "extends": ["github>inabagumi/.github//renovate-config/default.json5"],
   "minimumReleaseAge": "1 day",
   "packageRules": [
     {
