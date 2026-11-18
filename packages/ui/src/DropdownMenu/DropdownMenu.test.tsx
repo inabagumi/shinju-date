@@ -65,6 +65,23 @@ describe('DropdownMenu', () => {
     )
   })
 
+  it('animates opening and closing from the side of the trigger', async () => {
+    const user = userEvent.setup()
+
+    renderMenu()
+
+    await user.click(screen.getByRole('button', { name: '操作' }))
+
+    const menu = screen.getByRole('menu')
+
+    expect(menu).toHaveAttribute('data-state', 'open')
+    expect(menu).toHaveClass(
+      'origin-(--radix-dropdown-menu-content-transform-origin)',
+      'motion-safe:data-[state=open]:animate-scale-in',
+      'motion-safe:data-[state=closed]:animate-scale-out',
+    )
+  })
+
   it('moves between the items with the arrow keys and skips disabled ones', async () => {
     const user = userEvent.setup()
 
