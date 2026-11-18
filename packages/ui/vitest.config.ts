@@ -1,13 +1,9 @@
+import { defineVitestConfig } from '@shinju-date/config/vitest'
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
-import react from '@vitejs/plugin-react'
 import { playwright } from '@vitest/browser-playwright'
-import { defineConfig } from 'vitest/config'
 
-export default defineConfig({
-  plugins: [react()],
+export default defineVitestConfig.react({
   test: {
-    environment: 'jsdom',
-    globals: true,
     projects: [
       // Regular unit tests
       {

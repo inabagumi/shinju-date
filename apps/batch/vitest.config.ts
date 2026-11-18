@@ -1,6 +1,6 @@
-import { defineConfig } from 'vitest/config'
+import { defineVitestConfig } from '@shinju-date/config/vitest'
 
-export default defineConfig({
+export default defineVitestConfig({
   resolve: {
     tsconfigPaths: true,
   },
@@ -19,7 +19,6 @@ export default defineConfig({
       UPSTASH_REDIS_REST_URL: 'https://fake.upstash.test',
     },
     exclude: ['**/node_modules/**', '**/e2e/**'],
-    globals: true,
     setupFiles: ['./vitest.setup.ts'],
   },
 })
