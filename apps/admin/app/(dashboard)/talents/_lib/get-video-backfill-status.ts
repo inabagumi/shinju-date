@@ -3,7 +3,6 @@ import {
   BackfillQueue,
   type BackfillRunJobStatus,
   getBackfillJobId,
-  getBackfillRunJobStatus,
 } from '@shinju-date/video-backfill'
 import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
@@ -125,9 +124,7 @@ export async function readVideoBackfillStatus(
         finishedAt: state?.job.finishedAt ?? null,
         pages: state?.job.pages ?? 0,
         requestedAt: state?.job.requestedAt ?? null,
-        status: state
-          ? getBackfillRunJobStatus(state.job.status, state.active)
-          : null,
+        status: state?.status ?? null,
         updatedAt: state?.job.updatedAt ?? null,
       }
     }),

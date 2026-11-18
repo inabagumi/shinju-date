@@ -9,9 +9,6 @@ import type {
   BackfillWriteResult,
 } from '@shinju-date/video-backfill'
 
-/** Runs in a row that may fail before a job is given up. */
-export const BACKFILL_MAX_ATTEMPTS = 3
-
 export interface WorkOffBackfillQueueOptions {
   /** Current time (default: the system clock); replaced in tests. */
   clock?: () => Temporal.Instant
@@ -100,129 +97,152 @@ async function reportFinished(
 }
 
 /**
+ * Reports the error that stopped a page of a job, as the queue recorded it:
+ * given up, retried in a later run, or not recorded at all (the lock was
+ * lost, or the write failed), in which case the job is not given up here.
+ */
+function reportFailure(
+  error: unknown,
+  job: BackfillJob,
+  recorded: BackfillWriteResult | null,
+): void {
+  const saved = recorded?.status === 'saved' ? recorded.job : null
+  const givingUp = saved?.status === 'failed'
+  const context = {
+    attempts: saved?.attempts ?? null,
+    jobId: job.id,
+    talentId: job.talentId,
+  }
+
+  Sentry.captureException(error, {
+    extra: context,
+    level: givingUp ? 'error' : 'warning',
+    tags: {
+      [BACKFILL_SENTRY_TAG]: givingUp ? 'failed' : 'retrying',
+      provider: job.provider,
+    },
+  })
+
+  if (!saved) {
+    return
+  }
+
+  const message = error instanceof Error ? error.message : String(error)
+
+  if (givingUp) {
+    logger.error('過去動画の取り込みを中止しました', {
+      ...context,
+      error: message,
+    })
+  } else {
+    logger.warn('過去動画の取り込みに失敗したため後で再試行します', {
+      ...context,
+      error: message,
+    })
+  }
+}
+
+/**
+ * Records the error that stopped a page of a job; the queue decides whether
+ * to retry the job or give it up.
+ */
+async function recordFailure(
+  queue: BackfillQueue,
+  claim: BackfillClaim,
+  error: unknown,
+  onFinish: OnFinish | undefined,
+): Promise<void> {
+  let recorded: BackfillWriteResult
+
+  try {
+    recorded = await queue.recordFailure(claim, error, {
+      // A missing account will not come back by retrying.
+      permanent: error instanceof AccountNotFoundError,
+    })
+  } catch (writeError) {
+    reportFailure(error, claim.job, null)
+
+    throw writeError
+  }
+
+  reportFailure(error, claim.job, recorded)
+
+  if (recorded.status === 'saved' && recorded.job.status === 'failed') {
+    await reportFinished(onFinish, recorded, claim.job)
+  } else {
+    isSaved(recorded, claim.job)
+  }
+}
+
+/**
  * Reads pages of a claimed job until its history ends or the deadline
- * passes, then completes, requeues or fails it. Stops early when the lock of
- * the job is lost.
+ * passes, recording each one, and puts the job back in the queue when the
+ * time is up. Stops early when the lock of the job is lost.
  *
  * @returns The number of videos saved.
  */
 async function workOnJob(
   queue: BackfillQueue,
   scraper: Scraper,
-  { job: claimed, token }: BackfillClaim,
+  claimed: BackfillClaim,
   deadline: Temporal.Instant,
   clock: Clock,
   onFinish: OnFinish | undefined,
 ): Promise<number> {
-  let job = claimed
+  let claim = claimed
   let added = 0
 
   while (true) {
-    let result: Awaited<ReturnType<Scraper['addPastVideos']>>
+    const { job, token } = claim
+    let page: Awaited<ReturnType<Scraper['addPastVideos']>>
 
     try {
-      result = await scraper.addPastVideos({
+      page = await scraper.addPastVideos({
         accountId: job.accountId,
         cursor: job.cursor,
         now: clock(),
       })
     } catch (error) {
-      const attempts = job.attempts + 1
-      const message = error instanceof Error ? error.message : String(error)
-      const context = { attempts, jobId: job.id, talentId: job.talentId }
-      // A missing account will not come back by retrying.
-      const givingUp =
-        error instanceof AccountNotFoundError ||
-        attempts >= BACKFILL_MAX_ATTEMPTS
+      await recordFailure(queue, claim, error, onFinish)
 
-      Sentry.captureException(error, {
-        extra: context,
-        level: givingUp ? 'error' : 'warning',
-        tags: {
-          [BACKFILL_SENTRY_TAG]: givingUp ? 'failed' : 'retrying',
-          provider: job.provider,
-        },
-      })
+      return added
+    }
 
-      if (givingUp) {
-        logger.error('過去動画の取り込みを中止しました', {
-          ...context,
-          error: message,
+    added += page.added
+
+    const done = page.cursor === null
+    const recorded = await queue.recordPage(claim, {
+      added: page.added,
+      done,
+      nextCursor: page.cursor,
+    })
+
+    if (done) {
+      if (recorded.status === 'saved') {
+        logger.info('過去動画の取り込みが完了しました', {
+          added: recorded.job.added,
+          jobId: job.id,
+          pages: recorded.job.pages,
+          talentId: job.talentId,
         })
-
-        const failed = { ...job, attempts }
-
-        await reportFinished(
-          onFinish,
-          await queue.fail({ job: failed, token }, message),
-          failed,
-        )
-      } else {
-        logger.warn('過去動画の取り込みに失敗したため後で再試行します', {
-          ...context,
-          error: message,
-        })
-
-        const retried = { ...job, attempts, error: message }
-
-        isSaved(await queue.requeue({ job: retried, token }), retried)
       }
 
-      return added
-    }
-
-    added += result.added
-    job = {
-      ...job,
-      added: job.added + result.added,
-      attempts: 0,
-      cursor: result.cursor,
-      error: null,
-      pages: job.pages + 1,
-    }
-
-    if (result.cursor === null) {
-      logger.info('過去動画の取り込みが完了しました', {
-        added: job.added,
-        jobId: job.id,
-        pages: job.pages,
-        talentId: job.talentId,
-      })
-      await reportFinished(onFinish, await queue.complete({ job, token }), job)
+      await reportFinished(onFinish, recorded, job)
 
       return added
     }
+
+    if (!isSaved(recorded, job)) {
+      return added
+    }
+
+    claim = { job: recorded.job, token }
 
     if (!isBefore(clock, deadline)) {
-      isSaved(await queue.requeue({ job, token }), job)
+      isSaved(await queue.requeue(claim), job)
 
       return added
     }
-
-    let saved: BackfillWriteResult
-
-    try {
-      saved = await queue.update({ job, token })
-    } catch (error) {
-      // The job is off the queue and marked running: put it back with the
-      // progress made so far, or it would wait until it is requested again.
-      try {
-        await queue.requeue({ job, token })
-      } catch (requeueError) {
-        logger.error('過去動画の取り込みを再キューできませんでした', {
-          error: requeueError,
-          jobId: job.id,
-        })
-      }
-
-      throw error
-    }
-
-    if (!isSaved(saved, job)) {
-      return added
-    }
-
-    job = saved.job
   }
 }
 

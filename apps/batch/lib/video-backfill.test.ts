@@ -1,10 +1,13 @@
+import { REDIS_KEYS } from '@shinju-date/constants'
 import { AccountNotFoundError, type Scraper } from '@shinju-date/scraper'
-import type {
-  BackfillClaim,
-  BackfillJob,
+import {
+  BACKFILL_MAX_ATTEMPTS,
+  type BackfillClaim,
+  type BackfillJob,
   BackfillQueue,
-  BackfillWriteResult,
 } from '@shinju-date/video-backfill'
+import { FakeRedis } from '@shinju-date/video-backfill/testing'
+import type { Redis } from '@upstash/redis'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const captureException = vi.fn()
@@ -13,8 +16,12 @@ const logger = { error: vi.fn(), info: vi.fn(), warn: vi.fn() }
 vi.mock('@sentry/nextjs', () => ({ captureException }))
 vi.mock('@shinju-date/logger', () => ({ logger }))
 
-const { BACKFILL_MAX_ATTEMPTS, BACKFILL_SENTRY_TAG, workOffBackfillQueue } =
-  await import('./video-backfill')
+const { BACKFILL_SENTRY_TAG, workOffBackfillQueue } = await import(
+  './video-backfill'
+)
+
+const youtubeId = 'youtube:channel-row-1'
+const twitchId = 'twitch:twitch-row-1'
 
 function createJob(overrides: Partial<BackfillJob> = {}): BackfillJob {
   return {
@@ -24,20 +31,27 @@ function createJob(overrides: Partial<BackfillJob> = {}): BackfillJob {
     cursor: null,
     error: null,
     finishedAt: null,
-    id: 'youtube:channel-row-1',
+    id: youtubeId,
     pages: 0,
     provider: 'youtube',
     requestedAt: '2026-11-14T00:00:00Z',
     requestedBy: 'user-1',
-    startedAt: '2026-11-14T00:01:00Z',
-    status: 'running',
+    startedAt: null,
+    status: 'pending',
     talentId: 'talent-1',
-    updatedAt: '2026-11-14T00:01:00Z',
+    updatedAt: Temporal.Now.instant().toString(),
     ...overrides,
   }
 }
 
-const lost: BackfillWriteResult = { status: 'lost' }
+function createTwitchJob(overrides: Partial<BackfillJob> = {}): BackfillJob {
+  return createJob({
+    accountId: 'twitch-row-1',
+    id: twitchId,
+    provider: 'twitch',
+    ...overrides,
+  })
+}
 
 /** A claim of a job whose job has the given fields. */
 function claimOf(fields: Partial<BackfillJob>) {
@@ -45,58 +59,35 @@ function claimOf(fields: Partial<BackfillJob>) {
 }
 
 /**
- * Hands out the given jobs in order and puts requeued jobs at the end, like
- * the Redis queue does. Every write keeps the lock unless a test says
- * otherwise.
+ * A queue on {@link FakeRedis} that holds the given jobs, queued in order,
+ * so that the batch is tested with the policy of the queue.
  */
-function createQueue(jobs: BackfillJob[]) {
-  const queued = [...jobs]
-  let claims = 0
-  const queue = {
-    claim: vi.fn(async (): Promise<BackfillClaim | null> => {
-      const job = queued.shift()
+async function createQueue(jobs: BackfillJob[]) {
+  const redis = new FakeRedis() as unknown as Redis
 
-      return job ? { job, token: `token-${++claims}` } : null
-    }),
-    complete: vi.fn(
-      async ({ job }: BackfillClaim): Promise<BackfillWriteResult> => ({
-        job: {
-          ...job,
-          finishedAt: '2026-11-14T00:05:00Z',
-          status: 'done' as const,
-        },
-        status: 'saved' as const,
-      }),
-    ),
-    fail: vi.fn(
-      async (
-        { job }: BackfillClaim,
-        error: string,
-      ): Promise<BackfillWriteResult> => ({
-        job: {
-          ...job,
-          error,
-          finishedAt: '2026-11-14T00:05:00Z',
-          status: 'failed' as const,
-        },
-        status: 'saved' as const,
-      }),
-    ),
-    requeue: vi.fn(
-      async ({ job }: BackfillClaim): Promise<BackfillWriteResult> => {
-        queued.push(job)
-        return { job, status: 'saved' as const }
-      },
-    ),
-    update: vi.fn(
-      async ({ job }: BackfillClaim): Promise<BackfillWriteResult> => ({
-        job,
-        status: 'saved' as const,
-      }),
-    ),
+  for (const job of jobs) {
+    await redis.set(`${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${job.id}`, job)
+    await redis.lpush(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, job.id)
   }
 
-  return { queue, typed: queue as unknown as BackfillQueue }
+  const queue = new BackfillQueue(redis)
+  const spies = {
+    claim: vi.spyOn(queue, 'claim'),
+    recordFailure: vi.spyOn(queue, 'recordFailure'),
+    recordPage: vi.spyOn(queue, 'recordPage'),
+    requeue: vi.spyOn(queue, 'requeue'),
+  }
+
+  return {
+    /** Lets the lease of a job run out. */
+    expireLock: (id: string) =>
+      redis.del(`${REDIS_KEYS.VIDEO_BACKFILL_LOCK_PREFIX}${id}`),
+    /** The job as it is saved. */
+    getJob: async (id: string) => (await queue.getJobs([id]))[0]?.job,
+    getQueued: () => redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1),
+    queue,
+    spies,
+  }
 }
 
 function createScraper() {
@@ -116,7 +107,7 @@ describe('workOffBackfillQueue', () => {
   })
 
   it('reads every page of a job and completes it', async () => {
-    const { queue, typed } = createQueue([createJob()])
+    const { getJob, getQueued, queue, spies } = await createQueue([createJob()])
     const { addPastVideos, getScraper } = createScraper()
 
     addPastVideos
@@ -124,7 +115,7 @@ describe('workOffBackfillQueue', () => {
       .mockResolvedValueOnce({ added: 1, cursor: null, listed: 10 })
 
     await expect(
-      workOffBackfillQueue({ deadline: farFuture, getScraper, queue: typed }),
+      workOffBackfillQueue({ deadline: farFuture, getScraper, queue }),
     ).resolves.toEqual({ added: 4, jobs: 1 })
 
     expect(getScraper).toHaveBeenCalledWith('youtube')
@@ -136,17 +127,30 @@ describe('workOffBackfillQueue', () => {
       2,
       expect.objectContaining({ cursor: 'page-2' }),
     )
-    expect(queue.update).toHaveBeenCalledWith(
-      claimOf({ added: 3, cursor: 'page-2', pages: 1 }),
-    )
-    expect(queue.complete).toHaveBeenCalledWith(
-      claimOf({ added: 4, cursor: null, pages: 2 }),
-    )
-    expect(queue.requeue).not.toHaveBeenCalled()
+    expect(spies.recordPage.mock.calls).toEqual([
+      [
+        claimOf({ added: 0, cursor: null, pages: 0 }),
+        { added: 3, done: false, nextCursor: 'page-2' },
+      ],
+      [
+        claimOf({ added: 3, cursor: 'page-2', pages: 1 }),
+        { added: 1, done: true, nextCursor: null },
+      ],
+    ])
+    expect(spies.requeue).not.toHaveBeenCalled()
+    await expect(getJob(youtubeId)).resolves.toMatchObject({
+      added: 4,
+      cursor: null,
+      pages: 2,
+      status: 'done',
+    })
+    await expect(getQueued()).resolves.toEqual([])
   })
 
   it('puts a job back with its cursor when the time is up', async () => {
-    const { queue, typed } = createQueue([createJob({ added: 5, pages: 2 })])
+    const { getJob, getQueued, queue, spies } = await createQueue([
+      createJob({ added: 5, pages: 2 }),
+    ])
     const { addPastVideos, getScraper } = createScraper()
     const start = Temporal.Instant.from('2026-11-14T00:00:00Z')
     const deadline = start.add({ seconds: 50 })
@@ -164,130 +168,131 @@ describe('workOffBackfillQueue', () => {
         clock: () => now,
         deadline,
         getScraper,
-        queue: typed,
+        queue,
       }),
     ).resolves.toEqual({ added: 2, jobs: 1 })
 
     expect(addPastVideos).toHaveBeenCalledTimes(1)
-    expect(queue.requeue).toHaveBeenCalledWith(
+    expect(spies.requeue).toHaveBeenCalledWith(
       claimOf({ added: 7, cursor: 'page-4', pages: 3 }),
     )
-    expect(queue.complete).not.toHaveBeenCalled()
+    await expect(getJob(youtubeId)).resolves.toMatchObject({
+      added: 7,
+      cursor: 'page-4',
+      pages: 3,
+      status: 'pending',
+    })
+    await expect(getQueued()).resolves.toEqual([youtubeId])
   })
 
-  it('puts a job back with its progress when recording it fails', async () => {
-    const { queue, typed } = createQueue([createJob()])
+  it('stops when a page cannot be recorded', async () => {
+    const { queue, spies } = await createQueue([createJob()])
     const { addPastVideos, getScraper } = createScraper()
 
     addPastVideos.mockResolvedValue({ added: 3, cursor: 'page-2', listed: 50 })
-    queue.update.mockRejectedValue(new Error('redis unavailable'))
+    spies.recordPage.mockRejectedValue(new Error('redis unavailable'))
 
     await expect(
-      workOffBackfillQueue({ deadline: farFuture, getScraper, queue: typed }),
-    ).rejects.toThrow('redis unavailable')
-
-    expect(queue.requeue).toHaveBeenCalledWith(
-      claimOf({ added: 3, cursor: 'page-2', pages: 1 }),
-    )
-  })
-
-  it('keeps the original error when putting the job back fails too', async () => {
-    const { queue, typed } = createQueue([createJob()])
-    const { addPastVideos, getScraper } = createScraper()
-
-    addPastVideos.mockResolvedValue({ added: 0, cursor: 'page-2', listed: 50 })
-    queue.update.mockRejectedValue(new Error('redis unavailable'))
-    queue.requeue.mockRejectedValue(new Error('still unavailable'))
-
-    await expect(
-      workOffBackfillQueue({ deadline: farFuture, getScraper, queue: typed }),
+      workOffBackfillQueue({ deadline: farFuture, getScraper, queue }),
     ).rejects.toThrow('redis unavailable')
   })
 
   it('takes turns between jobs and works on each at most once per run', async () => {
-    const other = createJob({
-      accountId: 'twitch-row-1',
-      id: 'twitch:twitch-row-1',
-      provider: 'twitch',
-    })
-    const { queue, typed } = createQueue([createJob(), other])
+    const { getJob, getQueued, queue } = await createQueue([
+      createJob(),
+      createTwitchJob(),
+    ])
     const { addPastVideos, getScraper } = createScraper()
 
     addPastVideos.mockRejectedValueOnce(new Error('quota exceeded'))
     addPastVideos.mockResolvedValueOnce({ added: 0, cursor: null, listed: 0 })
 
     await expect(
-      workOffBackfillQueue({ deadline: farFuture, getScraper, queue: typed }),
+      workOffBackfillQueue({ deadline: farFuture, getScraper, queue }),
     ).resolves.toEqual({ added: 0, jobs: 2 })
 
     expect(getScraper).toHaveBeenCalledWith('twitch')
     // The failed job came around again and was left for the next run.
     expect(addPastVideos).toHaveBeenCalledTimes(2)
-    expect(queue.requeue).toHaveBeenCalledTimes(2)
-    expect(queue.requeue).toHaveBeenNthCalledWith(
-      1,
-      claimOf({ attempts: 1, error: 'quota exceeded' }),
-    )
+    await expect(getJob(youtubeId)).resolves.toMatchObject({
+      attempts: 1,
+      error: 'quota exceeded',
+      status: 'pending',
+    })
+    await expect(getQueued()).resolves.toEqual([youtubeId])
   })
 
   it('gives a job up after repeated failures', async () => {
-    const { queue, typed } = createQueue([
+    const { getJob, getQueued, queue } = await createQueue([
       createJob({ attempts: BACKFILL_MAX_ATTEMPTS - 1, cursor: 'page-9' }),
     ])
     const { addPastVideos, getScraper } = createScraper()
 
     addPastVideos.mockRejectedValue(new Error('quota exceeded'))
 
-    await workOffBackfillQueue({
-      deadline: farFuture,
-      getScraper,
-      queue: typed,
-    })
+    await workOffBackfillQueue({ deadline: farFuture, getScraper, queue })
 
-    expect(queue.fail).toHaveBeenCalledWith(
-      claimOf({ attempts: BACKFILL_MAX_ATTEMPTS, cursor: 'page-9' }),
-      'quota exceeded',
-    )
-    expect(queue.requeue).not.toHaveBeenCalled()
+    await expect(getJob(youtubeId)).resolves.toMatchObject({
+      attempts: BACKFILL_MAX_ATTEMPTS,
+      cursor: 'page-9',
+      error: 'quota exceeded',
+      status: 'failed',
+    })
+    await expect(getQueued()).resolves.toEqual([])
+  })
+
+  it('retries a job that failed fewer times than allowed', async () => {
+    const { getJob, queue } = await createQueue([
+      createJob({ attempts: BACKFILL_MAX_ATTEMPTS - 2, cursor: 'page-9' }),
+    ])
+    const { addPastVideos, getScraper } = createScraper()
+
+    addPastVideos.mockRejectedValue(new Error('quota exceeded'))
+
+    await workOffBackfillQueue({ deadline: farFuture, getScraper, queue })
+
+    await expect(getJob(youtubeId)).resolves.toMatchObject({
+      attempts: BACKFILL_MAX_ATTEMPTS - 1,
+      cursor: 'page-9',
+      status: 'pending',
+    })
   })
 
   it('gives a job up at once when the account is gone', async () => {
-    const { queue, typed } = createQueue([createJob()])
+    const { getJob, queue, spies } = await createQueue([createJob()])
     const { addPastVideos, getScraper } = createScraper()
+    const error = new AccountNotFoundError('channel-row-1')
 
-    addPastVideos.mockRejectedValue(new AccountNotFoundError('channel-row-1'))
+    addPastVideos.mockRejectedValue(error)
 
-    await workOffBackfillQueue({
-      deadline: farFuture,
-      getScraper,
-      queue: typed,
-    })
+    await workOffBackfillQueue({ deadline: farFuture, getScraper, queue })
 
-    expect(queue.fail).toHaveBeenCalledWith(
-      claimOf({ attempts: 1 }),
-      'Account not found: channel-row-1',
+    expect(spies.recordFailure).toHaveBeenCalledWith(
+      claimOf({ attempts: 0 }),
+      error,
+      { permanent: true },
     )
+    await expect(getJob(youtubeId)).resolves.toMatchObject({
+      attempts: 1,
+      error: 'Account not found: channel-row-1',
+      status: 'failed',
+    })
   })
 
   it('does nothing while the queue is empty', async () => {
-    const { queue, typed } = createQueue([])
+    const { queue, spies } = await createQueue([])
     const { getScraper } = createScraper()
 
     await expect(
-      workOffBackfillQueue({ deadline: farFuture, getScraper, queue: typed }),
+      workOffBackfillQueue({ deadline: farFuture, getScraper, queue }),
     ).resolves.toEqual({ added: 0, jobs: 0 })
 
-    expect(queue.claim).toHaveBeenCalledTimes(1)
+    expect(spies.claim).toHaveBeenCalledTimes(1)
     expect(getScraper).not.toHaveBeenCalled()
   })
 
   it('reports the jobs that finish with how they finished', async () => {
-    const other = createJob({
-      accountId: 'twitch-row-1',
-      id: 'twitch:twitch-row-1',
-      provider: 'twitch',
-    })
-    const { typed } = createQueue([createJob(), other])
+    const { queue } = await createQueue([createJob(), createTwitchJob()])
     const { addPastVideos, getScraper } = createScraper()
     const onFinish = vi.fn()
 
@@ -299,22 +304,22 @@ describe('workOffBackfillQueue', () => {
       deadline: farFuture,
       getScraper,
       onFinish,
-      queue: typed,
+      queue,
     })
 
     expect(onFinish.mock.calls).toEqual([
       [
         expect.objectContaining({
           added: 2,
-          finishedAt: '2026-11-14T00:05:00Z',
-          id: 'youtube:channel-row-1',
+          finishedAt: expect.any(String),
+          id: youtubeId,
           status: 'done',
         }),
       ],
       [
         expect.objectContaining({
           error: 'Account not found: twitch-row-1',
-          id: 'twitch:twitch-row-1',
+          id: twitchId,
           status: 'failed',
         }),
       ],
@@ -322,7 +327,7 @@ describe('workOffBackfillQueue', () => {
   })
 
   it('does not report jobs that are put back to continue later', async () => {
-    const { queue, typed } = createQueue([createJob()])
+    const { queue } = await createQueue([createJob()])
     const { addPastVideos, getScraper } = createScraper()
     const onFinish = vi.fn()
 
@@ -332,20 +337,14 @@ describe('workOffBackfillQueue', () => {
       deadline: farFuture,
       getScraper,
       onFinish,
-      queue: typed,
+      queue,
     })
 
-    expect(queue.requeue).toHaveBeenCalled()
     expect(onFinish).not.toHaveBeenCalled()
   })
 
   it('keeps working when a finished job cannot be reported', async () => {
-    const other = createJob({
-      accountId: 'twitch-row-1',
-      id: 'twitch:twitch-row-1',
-      provider: 'twitch',
-    })
-    const { queue, typed } = createQueue([createJob(), other])
+    const { queue } = await createQueue([createJob(), createTwitchJob()])
     const { addPastVideos, getScraper } = createScraper()
     const onFinish = vi
       .fn()
@@ -358,11 +357,10 @@ describe('workOffBackfillQueue', () => {
         deadline: farFuture,
         getScraper,
         onFinish,
-        queue: typed,
+        queue,
       }),
     ).resolves.toEqual({ added: 2, jobs: 2 })
 
-    expect(queue.complete).toHaveBeenCalledTimes(2)
     expect(onFinish).toHaveBeenCalledTimes(2)
     expect(captureException).toHaveBeenCalledWith(
       new Error('database unavailable'),
@@ -371,24 +369,15 @@ describe('workOffBackfillQueue', () => {
   })
 
   it('tags the error that made a job give up apart from retried ones', async () => {
-    const { typed } = createQueue([
+    const { queue } = await createQueue([
       createJob(),
-      createJob({
-        accountId: 'twitch-row-1',
-        attempts: BACKFILL_MAX_ATTEMPTS - 1,
-        id: 'twitch:twitch-row-1',
-        provider: 'twitch',
-      }),
+      createTwitchJob({ attempts: BACKFILL_MAX_ATTEMPTS - 1 }),
     ])
     const { addPastVideos, getScraper } = createScraper()
 
     addPastVideos.mockRejectedValue(new Error('quota exceeded'))
 
-    await workOffBackfillQueue({
-      deadline: farFuture,
-      getScraper,
-      queue: typed,
-    })
+    await workOffBackfillQueue({ deadline: farFuture, getScraper, queue })
 
     expect(captureException.mock.calls).toEqual([
       [
@@ -408,22 +397,41 @@ describe('workOffBackfillQueue', () => {
     ])
   })
 
+  it('reports the error of a page when recording it fails', async () => {
+    const { queue, spies } = await createQueue([createJob()])
+    const { addPastVideos, getScraper } = createScraper()
+
+    addPastVideos.mockRejectedValue(new Error('quota exceeded'))
+    spies.recordFailure.mockRejectedValue(new Error('redis unavailable'))
+
+    await expect(
+      workOffBackfillQueue({ deadline: farFuture, getScraper, queue }),
+    ).rejects.toThrow('redis unavailable')
+
+    expect(captureException).toHaveBeenCalledWith(
+      new Error('quota exceeded'),
+      expect.objectContaining({ level: 'warning' }),
+    )
+  })
+
   it('stops working on a job whose lock was lost and goes on to the next', async () => {
-    const other = createJob({
-      accountId: 'twitch-row-1',
-      id: 'twitch:twitch-row-1',
-      provider: 'twitch',
-    })
-    const { queue, typed } = createQueue([createJob(), other])
+    const { expireLock, getJob, getQueued, queue } = await createQueue([
+      createJob(),
+      createTwitchJob(),
+    ])
     const { addPastVideos, getScraper } = createScraper()
 
     addPastVideos
-      .mockResolvedValueOnce({ added: 3, cursor: 'page-2', listed: 50 })
+      .mockImplementationOnce(async () => {
+        // The lease runs out while the page is read.
+        await expireLock(youtubeId)
+
+        return { added: 3, cursor: 'page-2', listed: 50 }
+      })
       .mockResolvedValueOnce({ added: 1, cursor: null, listed: 1 })
-    queue.update.mockResolvedValueOnce(lost)
 
     await expect(
-      workOffBackfillQueue({ deadline: farFuture, getScraper, queue: typed }),
+      workOffBackfillQueue({ deadline: farFuture, getScraper, queue }),
     ).resolves.toEqual({ added: 4, jobs: 2 })
 
     // The first job was not read further nor put back.
@@ -431,62 +439,61 @@ describe('workOffBackfillQueue', () => {
       2,
       expect.objectContaining({ accountId: 'twitch-row-1' }),
     )
-    expect(queue.requeue).not.toHaveBeenCalled()
-    expect(queue.complete).toHaveBeenCalledTimes(1)
-    expect(queue.complete).toHaveBeenCalledWith(
-      claimOf({ id: 'twitch:twitch-row-1' }),
-    )
+    await expect(getJob(youtubeId)).resolves.toMatchObject({
+      cursor: null,
+      status: 'running',
+    })
+    await expect(getJob(twitchId)).resolves.toMatchObject({ status: 'done' })
+    await expect(getQueued()).resolves.toEqual([])
     expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining('ロック'),
-      expect.objectContaining({ jobId: 'youtube:channel-row-1' }),
+      expect.objectContaining({ jobId: youtubeId }),
     )
   })
 
-  it('passes the token of the claim to every write', async () => {
-    const { queue, typed } = createQueue([createJob()])
+  it('passes the claim to every write', async () => {
+    const { queue, spies } = await createQueue([createJob()])
     const { addPastVideos, getScraper } = createScraper()
 
     addPastVideos
       .mockResolvedValueOnce({ added: 3, cursor: 'page-2', listed: 50 })
       .mockResolvedValueOnce({ added: 1, cursor: null, listed: 1 })
 
-    await workOffBackfillQueue({
-      deadline: farFuture,
-      getScraper,
-      queue: typed,
-    })
+    await workOffBackfillQueue({ deadline: farFuture, getScraper, queue })
 
-    expect(queue.update).toHaveBeenCalledWith(
-      expect.objectContaining({ token: 'token-1' }),
-    )
-    expect(queue.complete).toHaveBeenCalledWith(
-      expect.objectContaining({ token: 'token-1' }),
-    )
+    const claim = (await spies.claim.mock.results[0]?.value) as BackfillClaim
+
+    expect(spies.recordPage).toHaveBeenCalledTimes(2)
+    for (const [written] of spies.recordPage.mock.calls) {
+      expect(written.token).toBe(claim.token)
+    }
   })
 
   it('does not report a job whose lock was lost when it finished', async () => {
-    const { queue, typed } = createQueue([
+    const { expireLock, queue } = await createQueue([
       createJob(),
-      createJob({
-        accountId: 'twitch-row-1',
-        id: 'twitch:twitch-row-1',
-        provider: 'twitch',
-      }),
+      createTwitchJob(),
     ])
     const { addPastVideos, getScraper } = createScraper()
     const onFinish = vi.fn()
 
     addPastVideos
-      .mockResolvedValueOnce({ added: 1, cursor: null, listed: 1 })
-      .mockRejectedValueOnce(new AccountNotFoundError('twitch-row-1'))
-    queue.complete.mockResolvedValueOnce(lost)
-    queue.fail.mockResolvedValueOnce(lost)
+      .mockImplementationOnce(async () => {
+        await expireLock(youtubeId)
+
+        return { added: 1, cursor: null, listed: 1 }
+      })
+      .mockImplementationOnce(async () => {
+        await expireLock(twitchId)
+
+        throw new AccountNotFoundError('twitch-row-1')
+      })
 
     await workOffBackfillQueue({
       deadline: farFuture,
       getScraper,
       onFinish,
-      queue: typed,
+      queue,
     })
 
     expect(onFinish).not.toHaveBeenCalled()

@@ -2,11 +2,13 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import type { Redis } from '@upstash/redis'
 import {
   BACKFILL_JOB_TTL_SECONDS,
+  type BackfillActivityStatus,
   type BackfillJob,
-  type BackfillJobStatus,
+  type BackfillJobActivity,
   type BackfillProvider,
   BackfillQueue,
   type BackfillRequest,
+  getJobActivity,
   getRunResultKey,
 } from './queue.js'
 
@@ -68,11 +70,10 @@ export interface BackfillRun {
 }
 
 /**
- * Status of a job of a check. `interrupted` is a job that stopped without
- * finishing (e.g. its worker timed out, or it was lost) and can be requested
- * again to resume.
+ * Status of a job of a check, as {@link getJobActivity} tells it. A job that
+ * is gone without an outcome (e.g. it expired) is `interrupted` too.
  */
-export type BackfillRunJobStatus = BackfillJobStatus | 'interrupted'
+export type BackfillRunJobStatus = BackfillActivityStatus
 
 export interface BackfillRunJobProgress extends BackfillRunJob {
   /** Whether the job is queued or being read. */
@@ -123,31 +124,17 @@ function createCounts(): Record<BackfillRunJobStatus, number> {
   return { done: 0, failed: 0, interrupted: 0, pending: 0, running: 0 }
 }
 
-/**
- * Tells the status of a job as it is shown to admins: a job that is `pending`
- * or `running` but neither queued nor being read stopped without finishing,
- * so it is `interrupted`.
- */
-export function getBackfillRunJobStatus(
-  status: BackfillJobStatus,
-  active: boolean,
-): BackfillRunJobStatus {
-  return !active && (status === 'pending' || status === 'running')
-    ? 'interrupted'
-    : status
-}
-
 function toProgress(
   runJob: BackfillRunJob,
   job: BackfillJob,
-  active: boolean,
+  { active, status }: BackfillJobActivity,
 ): BackfillRunJobProgress {
   return {
     ...runJob,
     active,
     added: Math.max(0, job.added - runJob.addedBefore),
     error: job.error,
-    status: getBackfillRunJobStatus(job.status, active),
+    status,
     updatedAt: job.updatedAt,
   }
 }
@@ -236,9 +223,14 @@ export class BackfillRuns {
       const outcome = outcomes[index]
       const progress =
         state && state.job.runId === run.id
-          ? toProgress(runJob, state.job, state.active)
+          ? toProgress(runJob, state.job, state)
           : outcome
-            ? toProgress(runJob, outcome, false)
+            ? // Finished, so no worker holds it for the check any more.
+              toProgress(
+                runJob,
+                outcome,
+                getJobActivity(outcome, { locked: false, now }),
+              )
             : // Gone without an outcome, e.g. expired.
               {
                 ...runJob,

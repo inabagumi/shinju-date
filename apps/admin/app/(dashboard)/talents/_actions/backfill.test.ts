@@ -209,6 +209,7 @@ describe('getVideoBackfillStatusAction', () => {
           status: 'running',
           updatedAt: '2026-11-14T00:02:00Z',
         },
+        status: 'running',
       },
       null,
       null,
@@ -263,6 +264,8 @@ describe('getVideoBackfillStatusAction', () => {
           status: 'running',
           updatedAt: '2026-11-14T00:02:00Z',
         },
+        // As `getJobActivity` tells a job whose worker died.
+        status: 'interrupted',
       },
       null,
       null,
