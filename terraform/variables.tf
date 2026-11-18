@@ -3,6 +3,15 @@ variable "google_api_key" {
   type      = string
 }
 
+variable "twitch_client_id" {
+  type = string
+}
+
+variable "twitch_client_secret" {
+  sensitive = true
+  type      = string
+}
+
 variable "upstash_redis_rest_token" {
   sensitive = true
   type      = string
