@@ -290,6 +290,9 @@ isOneToOne: false
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"restore_videos":
+{ Args: { "p_reason"?: Database["public"]['Enums']["video_deleted_reason"],"p_video_ids": (string)[] }; Returns: string[]
+                           },
 "search_videos_v2":
 { Args: { "channel_ids": (string)[],"perpage"?: number,"query": string,"until": string }; Returns: {
               "created_at": string,
@@ -336,6 +339,9 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"soft_delete_videos":
+{ Args: { "p_deleted_at": string,"p_reason": Database["public"]['Enums']["video_deleted_reason"],"p_video_ids": (string)[] }; Returns: string[]
+                           },
 "suggestions_v2":
 { Args: { "p_query": string }; Returns: {
               "priority": number,"term": string
