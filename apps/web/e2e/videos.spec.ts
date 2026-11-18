@@ -112,3 +112,36 @@ test.describe('Videos page', () => {
     await expect(getVideoCards(page).first()).toBeVisible()
   })
 })
+
+test.describe('Open Graph image of the videos page', () => {
+  for (const [description, path] of [
+    ['the videos page', '/videos'],
+    // A catch-all segment cannot have an image, so the page takes over that
+    // of `/videos`, which has no search terms in it
+    ['the search results', `/videos/${encodeURIComponent(QUERY)}`],
+  ] as const) {
+    test(`should point to the image of the videos page for ${description}`, async ({
+      page,
+      request,
+    }) => {
+      await page.goto(path, { timeout: NAVIGATION_TIMEOUT })
+
+      const ogImage = page.locator('meta[property="og:image"]')
+
+      await expect(ogImage).toHaveAttribute(
+        'content',
+        /\/videos\/opengraph-image\?/,
+      )
+      await expect(
+        page.locator('meta[property="og:image:alt"]'),
+      ).toHaveAttribute('content', '動画一覧')
+
+      const response = await request.get(
+        (await ogImage.getAttribute('content')) ?? '',
+      )
+
+      expect(response.status()).toBe(200)
+      expect(response.headers()['content-type']).toBe('image/png')
+    })
+  }
+})
