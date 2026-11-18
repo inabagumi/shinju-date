@@ -487,6 +487,45 @@ async function insertMockVideo({
   return videoId
 }
 
+/**
+ * Mirrors `touch_talent`: moves `updated_at` of the talent to the current
+ * time, as the trigger of the table does, without changing anything else.
+ */
+async function touchMockTalent({ p_talent_id: id }: { p_talent_id: string }) {
+  const updatedAt = toDBString(Temporal.Now.instant())
+
+  for (const talent of talents.findMany().filter((row) => row.id === id)) {
+    await talents.update(talent, {
+      data(draft) {
+        draft.updated_at = updatedAt
+      },
+    })
+  }
+}
+
+/**
+ * Mirrors `touch_thumbnail`: moves `updated_at` of the thumbnail to the
+ * current time, as the trigger of the table does, without changing anything
+ * else.
+ */
+async function touchMockThumbnail({
+  p_thumbnail_id: id,
+}: {
+  p_thumbnail_id: string
+}) {
+  const updatedAt = toDBString(Temporal.Now.instant())
+
+  for (const thumbnail of thumbnails
+    .findMany()
+    .filter((row) => row.id === id)) {
+    await thumbnails.update(thumbnail, {
+      data(draft) {
+        draft.updated_at = updatedAt
+      },
+    })
+  }
+}
+
 /** The handlers of the database functions (`/rest/v1/rpc/<name>`). */
 export const rpcHandlers = [
   rest.post(`${REST_URL}/rpc/suggestions_v2`, async ({ request }) => {
@@ -545,6 +584,20 @@ export const rpcHandlers = [
     const body = (await request.json()) as InsertVideoParams
 
     return HttpResponse.json(await insertMockVideo(body))
+  }),
+
+  rest.post(`${REST_URL}/rpc/touch_talent`, async ({ request }) => {
+    await touchMockTalent((await request.json()) as { p_talent_id: string })
+
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  rest.post(`${REST_URL}/rpc/touch_thumbnail`, async ({ request }) => {
+    await touchMockThumbnail(
+      (await request.json()) as { p_thumbnail_id: string },
+    )
+
+    return new HttpResponse(null, { status: 204 })
   }),
 
   rest.post(`${REST_URL}/rpc/restore_videos`, async ({ request }) => {

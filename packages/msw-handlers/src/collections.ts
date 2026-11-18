@@ -170,14 +170,14 @@ export const terms = new Collection({
 // Announcements collection
 export const announcements = new Collection({
   schema: z.object({
-    created_at: z.string().nullable(),
+    created_at: z.string(),
     enabled: z.boolean(),
     end_at: z.string(),
     id: z.string().uuid(),
     level: z.string(),
     message: z.string(),
     start_at: z.string(),
-    updated_at: z.string().nullable(),
+    updated_at: z.string(),
   }) satisfies z.ZodType<Tables<'announcements'>>,
 })
 
