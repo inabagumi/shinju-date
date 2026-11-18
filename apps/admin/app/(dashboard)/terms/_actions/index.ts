@@ -4,7 +4,6 @@ import { CACHE_TAGS } from '@shinju-date/constants'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
-import * as z from 'zod'
 import {
   ActionError,
   type ActionResult,
@@ -12,28 +11,9 @@ import {
   adminFormAction,
 } from '@/lib/action'
 import { createAuditLog } from '@/lib/audit-log'
+import { termSchema, updateTermSchema } from '../_lib/schema'
 
-const TERM_REQUIRED_ERROR = '用語を入力してください。'
 const ID_REQUIRED_ERROR = 'IDが指定されていません。'
-
-/** 読み方と同義語の並び。前後の空白を除き、空の値は捨てる */
-const termValuesSchema = z
-  .array(z.string().trim())
-  .transform((values) => values.filter(Boolean))
-  .default([])
-
-const createTermSchema = z.object({
-  readings: termValuesSchema,
-  synonyms: termValuesSchema,
-  term: z
-    .string({ error: TERM_REQUIRED_ERROR })
-    .trim()
-    .min(1, TERM_REQUIRED_ERROR),
-})
-
-const updateTermSchema = createTermSchema.extend({
-  id: z.string({ error: ID_REQUIRED_ERROR }).min(1, ID_REQUIRED_ERROR),
-})
 
 async function revalidateTerms(): Promise<void> {
   revalidatePath('/terms')
@@ -42,7 +22,7 @@ async function revalidateTerms(): Promise<void> {
 
 export const createTermAction = adminFormAction(
   'createTermAction',
-  createTermSchema,
+  termSchema,
   async ({ supabaseClient }, { readings, synonyms, term }) => {
     const { data: newTerm, error } = await supabaseClient
       .from('terms')

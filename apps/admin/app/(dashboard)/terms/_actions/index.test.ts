@@ -142,11 +142,17 @@ describe('updateTermAction', () => {
     })
   })
 
-  it('returns a generic error without the ID', async () => {
-    const result = await updateTermAction({}, termForm({ term: 'Term' }, {}))
+  it.each([
+    ['missing', {}],
+    ['not a UUID', { id: 'not-a-uuid' }],
+  ])('returns a generic error when the ID is %s', async (_label, entries) => {
+    const result = await updateTermAction(
+      {},
+      termForm({ ...entries, term: 'Term' }, {}),
+    )
 
     expect(result).toEqual({
-      errors: { generic: ['IDが指定されていません。'] },
+      errors: { generic: ['有効なIDではありません。'] },
     })
     expect(supabase.requests).toEqual([])
   })
