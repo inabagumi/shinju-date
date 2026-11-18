@@ -1,5 +1,4 @@
-// oxlint-disable-next-line import/default -- @shinju-date/database exports the Database type as a type-only default export, which this rule cannot see
-import type DefaultDatabase from "@shinju-date/database";
+import type { Database as DefaultDatabase } from "@shinju-date/database";
 import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";

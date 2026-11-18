@@ -1,6 +1,4 @@
-// oxlint-disable-next-line import/default -- the default export is type-only (`export type { Database as default }`), which the rule does not see
-import type Database from "@shinju-date/database";
-import type { Tables, TablesInsert } from "@shinju-date/database";
+import type { Database, Tables, TablesInsert } from "@shinju-date/database";
 import { toDBString } from "@shinju-date/temporal-fns";
 
 import {

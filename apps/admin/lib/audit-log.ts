@@ -1,6 +1,4 @@
-// oxlint-disable-next-line import/default -- @shinju-date/database exports the Database type as a type-only default export, which this rule cannot see
-import type Database from "@shinju-date/database";
-import type { Enums, Tables } from "@shinju-date/database";
+import type { Database, Enums, Tables } from "@shinju-date/database";
 import { logger } from "@shinju-date/logger";
 import type { AccountChanges } from "@shinju-date/scraper";
 
