@@ -8,7 +8,7 @@ import Form, {
   SuccessMessage,
 } from '@/components/form'
 import { Panel, PanelSkeleton } from '@/components/panel'
-import { updateUserEmail } from '../_actions'
+import { updateUserEmailAction } from '../_actions'
 
 interface Props {
   currentEmail: string
@@ -17,7 +17,7 @@ interface Props {
 export function EmailUpdateForm({ currentEmail }: Props) {
   return (
     <Panel className="max-w-text" title="メールアドレスの変更">
-      <Form action={updateUserEmail} className="space-y-4">
+      <Form action={updateUserEmailAction} className="space-y-4">
         <div className="rounded-control bg-muted p-3">
           <p className="text-meta text-muted">
             現在のメールアドレス:{' '}

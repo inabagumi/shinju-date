@@ -7,12 +7,12 @@ import Form, {
   SuccessMessage,
 } from '@/components/form'
 import { Panel } from '@/components/panel'
-import { updateUserPassword } from '../_actions'
+import { updateUserPasswordAction } from '../_actions'
 
 export function PasswordUpdateForm() {
   return (
     <Panel className="max-w-text" title="パスワードの変更">
-      <Form action={updateUserPassword} className="space-y-4">
+      <Form action={updateUserPasswordAction} className="space-y-4">
         <SuccessMessage
           className="rounded-control bg-success/10 p-3 text-meta text-success"
           message="パスワードを更新しました。"
