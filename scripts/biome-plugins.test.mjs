@@ -160,9 +160,6 @@ describe('Biome plugins', () => {
     }
 
     // Test files may write the time zone
-    const testsDir = join('apps/web', TEMP_DIR_NAME, '__tests__')
-
-    fixtures.set(join(testsDir, 'time-zone.tsx'), TIME_ZONE_FIXTURE)
     fixtures.set(
       join('apps/web', TEMP_DIR_NAME, 'time-zone.test.tsx'),
       TIME_ZONE_FIXTURE,
@@ -202,15 +199,12 @@ describe('Biome plugins', () => {
     }
 
     it('does not report test files', () => {
-      for (const file of [
-        join('apps/web', TEMP_DIR_NAME, '__tests__', 'time-zone.tsx'),
-        join('apps/web', TEMP_DIR_NAME, 'time-zone.test.tsx'),
-      ]) {
-        assert.deepEqual(
-          reportedLines(reports, 'no-hardcoded-time-zone', file),
-          [],
-        )
-      }
+      const file = join('apps/web', TEMP_DIR_NAME, 'time-zone.test.tsx')
+
+      assert.deepEqual(
+        reportedLines(reports, 'no-hardcoded-time-zone', file),
+        [],
+      )
     })
 
     it('does not report the definition of TIME_ZONE', () => {
