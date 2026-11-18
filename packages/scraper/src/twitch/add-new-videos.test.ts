@@ -2,7 +2,11 @@ import { HttpResponse, http } from 'msw'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../internal/testing/context.js'
 import { createFakeTwitchFetcher } from '../internal/testing/fetcher.js'
-import { postgresError, setupSupabase } from '../internal/testing/supabase.js'
+import {
+  alreadySaved,
+  postgresError,
+  setupSupabase,
+} from '../internal/testing/supabase.js'
 import {
   createSavedVideo,
   createStream,
@@ -206,14 +210,12 @@ describe('addNewTwitchVideos', () => {
       type: 'upload',
     })
 
-    const videos = supabase
-      .written('POST', 'videos')
-      .map((request) => request.body as Record<string, unknown>)
+    const videos = supabase.insertedVideos().map(({ video }) => video)
     const twitchVideos = supabase
-      .written('POST', 'twitch_videos')
-      .map((request) => request.body as Record<string, unknown>)
+      .insertedVideos()
+      .map(({ platformVideo }) => platformVideo)
 
-    expect(videos.find((video) => video['title'] === 'Archive')).toMatchObject({
+    expect(videos.find((video) => video.title === 'Archive')).toMatchObject({
       duration: 'PT2H',
       platform: 'twitch',
       published_at: '2024-05-01T09:00:00Z',
@@ -222,7 +224,7 @@ describe('addNewTwitchVideos', () => {
       thumbnail_id: 'thumb-new',
       video_kind: 'standard',
     })
-    expect(videos.find((video) => video['title'] === 'Upload')).toMatchObject({
+    expect(videos.find((video) => video.title === 'Upload')).toMatchObject({
       status: 'PUBLISHED',
     })
     expect(twitchVideos).toEqual(
@@ -252,7 +254,7 @@ describe('addNewTwitchVideos', () => {
     const added = await addNewTwitchVideos(createContext(fetcher))
 
     expect(added).toBe(1)
-    expect(supabase.written('POST', 'videos')).toHaveLength(0)
+    expect(supabase.insertedVideos()).toHaveLength(0)
     expect(supabase.written('PATCH', 'twitch_videos')[0]).toMatchObject({
       body: { twitch_video_id: 'vod-1', type: 'archive' },
       query: { id: 'eq.twitch-row-1' },
@@ -327,12 +329,12 @@ describe('addNewTwitchVideos', () => {
     const added = await addNewTwitchVideos(createContext(fetcher))
 
     expect(added).toBe(1)
-    expect(supabase.written('POST', 'videos')[0]?.body).toMatchObject({
+    expect(supabase.insertedVideos()[0]?.video).toMatchObject({
       duration: 'P0D',
       status: 'LIVE',
       title: 'Live now',
     })
-    expect(supabase.written('POST', 'twitch_videos')[0]?.body).toMatchObject({
+    expect(supabase.insertedVideos()[0]?.platformVideo).toMatchObject({
       stream_id: 'stream-1',
       twitch_video_id: 'vod-1',
       type: 'archive',
@@ -360,7 +362,7 @@ describe('addNewTwitchVideos', () => {
     await addNewTwitchVideos(createContext(fetcher))
 
     expect(createThumbnail).not.toHaveBeenCalled()
-    expect(supabase.written('POST', 'videos')[0]?.body).toMatchObject({
+    expect(supabase.insertedVideos()[0]?.video).toMatchObject({
       thumbnail_id: null,
     })
   })
@@ -388,14 +390,14 @@ describe('addNewTwitchVideos', () => {
   it('quietly skips a video another run saved first', async () => {
     supabase.respondWith({
       'GET talents': TWITCH_TALENTS,
-      'POST twitch_videos': () => postgresError('23505', 'duplicate key value'),
+      'POST rpc/insert_video': () => alreadySaved(),
     })
     const { fetcher } = createFakeTwitchFetcher({ archives: [createVideo()] })
 
     const added = await addNewTwitchVideos(createContext(fetcher))
 
     expect(added).toBe(0)
-    expect(supabase.written('DELETE', 'videos')).toHaveLength(1)
+    expect(supabase.insertedVideos()).toHaveLength(1)
     expect(reportError).not.toHaveBeenCalled()
   })
 

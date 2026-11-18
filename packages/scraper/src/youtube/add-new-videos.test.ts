@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../internal/testing/context.js'
 import { createFakeFetcher } from '../internal/testing/fetcher.js'
-import { postgresError, setupSupabase } from '../internal/testing/supabase.js'
+import {
+  alreadySaved,
+  newVideoId,
+  postgresError,
+  setupSupabase,
+} from '../internal/testing/supabase.js'
 import { createVideo, YOUTUBE_TALENTS } from '../internal/testing/youtube.js'
 import {
   createThumbnail,
@@ -55,12 +60,11 @@ describe('addNewYouTubeVideos', () => {
     expect(getRecentVideos).toHaveBeenCalledWith(['UCaaa', 'UCbbb'])
     expect(getVideos).toHaveBeenCalledWith(['new-1'])
 
-    const video = supabase.written('POST', 'videos')[0]?.body as { id: string }
+    const [inserted] = supabase.insertedVideos()
 
-    expect(video).toEqual({
+    expect(inserted?.video).toEqual({
       created_at: '2024-05-01T12:00:00Z',
       duration: 'PT10M',
-      id: expect.any(String),
       platform: 'youtube',
       published_at: '2024-05-01T10:00:00Z',
       status: 'PUBLISHED',
@@ -71,8 +75,8 @@ describe('addNewYouTubeVideos', () => {
       video_kind: 'standard',
       visible: true,
     })
-    expect(supabase.written('POST', 'youtube_videos')[0]?.body).toEqual({
-      video_id: video.id,
+    expect(inserted?.platform).toBe('youtube')
+    expect(inserted?.platformVideo).toEqual({
       youtube_channel_id: 'channel-row-1',
       youtube_video_id: 'new-1',
     })
@@ -102,8 +106,8 @@ describe('addNewYouTubeVideos', () => {
 
     expect(
       supabase
-        .written('POST', 'youtube_videos')
-        .map((request) => request.body)
+        .insertedVideos()
+        .map(({ platformVideo }) => platformVideo)
         .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
     ).toEqual(
       expect.arrayContaining([
@@ -132,7 +136,7 @@ describe('addNewYouTubeVideos', () => {
 
     expect(added).toBe(0)
     expect(getVideos).not.toHaveBeenCalled()
-    expect(supabase.written('POST', 'videos')).toHaveLength(0)
+    expect(supabase.insertedVideos()).toHaveLength(0)
   })
 
   it('still adds a video whose thumbnail cannot be stored', async () => {
@@ -147,7 +151,7 @@ describe('addNewYouTubeVideos', () => {
     const added = await addNewYouTubeVideos(createContext(fetcher))
 
     expect(added).toBe(1)
-    expect(supabase.written('POST', 'videos')[0]?.body).toMatchObject({
+    expect(supabase.insertedVideos()[0]?.video).toMatchObject({
       thumbnail_id: null,
     })
     expect(reportError).toHaveBeenCalledWith(error, { youtubeVideoId: 'new-1' })
@@ -156,8 +160,7 @@ describe('addNewYouTubeVideos', () => {
   it('discards its thumbnail when another run saved the video first', async () => {
     supabase.respondWith({
       'GET talents': YOUTUBE_TALENTS,
-      'POST youtube_videos': () =>
-        postgresError('23505', 'duplicate key value'),
+      'POST rpc/insert_video': () => alreadySaved(),
     })
     const { fetcher } = createFakeFetcher<YouTubeFetcher>({
       recentVideos: [{ channelId: 'UCaaa', videoId: 'new-1' }],
@@ -180,10 +183,10 @@ describe('addNewYouTubeVideos', () => {
   it('keeps adding the other videos when one cannot be saved', async () => {
     supabase.respondWith({
       'GET talents': YOUTUBE_TALENTS,
-      'POST videos': ({ body }) =>
-        (body as { title: string }).title === 'Video bad-1'
+      'POST rpc/insert_video': ({ body }) =>
+        (body as { p_video: { title: string } }).p_video.title === 'Video bad-1'
           ? postgresError('23502', 'null value in column')
-          : [],
+          : newVideoId(),
     })
     const { fetcher } = createFakeFetcher<YouTubeFetcher>({
       recentVideos: [

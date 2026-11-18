@@ -5,7 +5,7 @@ import {
   StalledPaginationError,
 } from '../internal/errors.js'
 import { TEST_NOW } from '../internal/testing/context.js'
-import { setupSupabase } from '../internal/testing/supabase.js'
+import { newVideoId, setupSupabase } from '../internal/testing/supabase.js'
 import {
   createPlaylistItem,
   YOUTUBE_TALENTS,
@@ -150,6 +150,10 @@ describe('YouTubeScraper', () => {
   describe('addNewVideos', () => {
     it('saves uploads that are not in the database yet', async () => {
       supabase.respond(({ method, table }) => {
+        if (table === 'rpc/insert_video') {
+          return newVideoId()
+        }
+
         if (method !== 'GET') {
           return []
         }
@@ -170,16 +174,22 @@ describe('YouTubeScraper', () => {
       expect(videosList).toHaveBeenCalledWith(
         expect.objectContaining({ id: ['new-1'] }),
       )
-      expect(supabase.written('POST', 'videos')[0]?.body).toMatchObject({
-        created_at: '2024-05-01T12:00:00Z',
-        platform: 'youtube',
-        talent_id: 'talent-1',
-        thumbnail_id: null,
-        title: 'Video new-1',
-      })
-      expect(supabase.written('POST', 'youtube_videos')[0]?.body).toMatchObject(
-        { youtube_channel_id: 'channel-row-1', youtube_video_id: 'new-1' },
-      )
+      expect(supabase.insertedVideos()).toEqual([
+        {
+          platform: 'youtube',
+          platformVideo: {
+            youtube_channel_id: 'channel-row-1',
+            youtube_video_id: 'new-1',
+          },
+          video: expect.objectContaining({
+            created_at: '2024-05-01T12:00:00Z',
+            platform: 'youtube',
+            talent_id: 'talent-1',
+            thumbnail_id: null,
+            title: 'Video new-1',
+          }),
+        },
+      ])
     })
 
     it('reports nothing new without asking for video details', async () => {
@@ -203,9 +213,7 @@ describe('YouTubeScraper', () => {
 
     it('reports a channel that cannot be read and handles the others', async () => {
       const error = new Error('quota exceeded')
-      supabase.respond(({ method, table }) =>
-        method === 'GET' && table === 'talents' ? YOUTUBE_TALENTS : [],
-      )
+      supabase.respondWith({ 'GET talents': YOUTUBE_TALENTS })
       const { scraper } = createScraper({
         channels: { UCaaa: 'Alice', UCbbb: 'Bob' },
         uploads: { UCaaa: error, UCbbb: ['b-1'] },
@@ -664,6 +672,10 @@ describe('YouTubeScraper', () => {
 
     it('saves the videos of one page that are not saved yet', async () => {
       supabase.respond(({ method, table }) => {
+        if (table === 'rpc/insert_video') {
+          return newVideoId()
+        }
+
         if (method !== 'GET') {
           return []
         }
@@ -701,13 +713,13 @@ describe('YouTubeScraper', () => {
         id: 'eq.channel-row-1',
         'talents.deleted_at': 'is.null',
       })
-      expect(supabase.written('POST', 'youtube_videos')).toEqual([
-        expect.objectContaining({
-          body: expect.objectContaining({
-            youtube_channel_id: 'channel-row-1',
-            youtube_video_id: 'old',
-          }),
-        }),
+      expect(
+        supabase.insertedVideos().map(({ platformVideo }) => platformVideo),
+      ).toEqual([
+        {
+          youtube_channel_id: 'channel-row-1',
+          youtube_video_id: 'old',
+        },
       ])
     })
 

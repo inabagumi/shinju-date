@@ -4,7 +4,11 @@ import {
   StalledPaginationError,
 } from '../internal/errors.js'
 import { TEST_NOW } from '../internal/testing/context.js'
-import { postgresError, setupSupabase } from '../internal/testing/supabase.js'
+import {
+  newVideoId,
+  postgresError,
+  setupSupabase,
+} from '../internal/testing/supabase.js'
 import {
   createClip,
   createSavedVideo,
@@ -172,21 +176,19 @@ describe('TwitchScraper', () => {
 
   describe('refreshLiveVideos', () => {
     it('adds a LIVE row when a stream goes on air', async () => {
-      supabase.respond(({ method, table }) =>
-        method === 'GET' && table === 'talents' ? TWITCH_TALENTS : [],
-      )
+      supabase.respondWith({ 'GET talents': TWITCH_TALENTS })
       const { scraper } = createScraper({ liveStreams: [createStream()] })
 
       await expect(scraper.refreshLiveVideos(TEST_NOW)).resolves.toBe(true)
 
-      expect(supabase.written('POST', 'videos')[0]?.body).toMatchObject({
+      expect(supabase.insertedVideos()[0]?.video).toMatchObject({
         platform: 'twitch',
         status: 'LIVE',
         talent_id: 'talent-1',
         thumbnail_id: 'thumb-new',
         title: 'Live now',
       })
-      expect(supabase.written('POST', 'twitch_videos')[0]?.body).toMatchObject({
+      expect(supabase.insertedVideos()[0]?.platformVideo).toMatchObject({
         stream_id: 'stream-1',
         twitch_user_id: 'user-row-1',
         twitch_video_id: 'live:stream-1',
@@ -246,9 +248,7 @@ describe('TwitchScraper', () => {
 
   describe('addNewVideos', () => {
     it('saves archives and uploads that are not in the database yet', async () => {
-      supabase.respond(({ method, table }) =>
-        method === 'GET' && table === 'talents' ? TWITCH_TALENTS : [],
-      )
+      supabase.respondWith({ 'GET talents': TWITCH_TALENTS })
       const { client, scraper } = createScraper({
         archives: [createVideo()],
         uploads: [
@@ -266,17 +266,15 @@ describe('TwitchScraper', () => {
       )
       expect(
         supabase
-          .written('POST', 'twitch_videos')
-          .map((request) => (request.body as { type: string }).type)
+          .insertedVideos()
+          .map(({ platformVideo }) => (platformVideo as { type: string }).type)
           .sort(),
       ).toEqual(['archive', 'upload'])
     })
 
     it('reports an account that cannot be read and handles the rest', async () => {
       const error = new Error('helix unavailable')
-      supabase.respond(({ method, table }) =>
-        method === 'GET' && table === 'talents' ? TWITCH_TALENTS : [],
-      )
+      supabase.respondWith({ 'GET talents': TWITCH_TALENTS })
       const { client, scraper } = createScraper({})
       vi.mocked(client.getVideosByUser).mockImplementation(({ type }) => {
         if (type === 'upload') {
@@ -473,7 +471,7 @@ describe('TwitchScraper', () => {
           body: { title: 'Live now', updated_at: '2024-05-01T12:00:00Z' },
         }),
       ])
-      expect(supabase.written('POST', 'videos')).toEqual([])
+      expect(supabase.insertedVideos()).toEqual([])
     })
 
     it('reports a link to the archive as an update', async () => {
@@ -724,6 +722,10 @@ describe('TwitchScraper', () => {
 
     it('saves the videos of one page that are not saved yet', async () => {
       supabase.respond(({ method, table }) => {
+        if (table === 'rpc/insert_video') {
+          return newVideoId()
+        }
+
         if (method !== 'GET') {
           return []
         }
@@ -769,9 +771,7 @@ describe('TwitchScraper', () => {
         'talents.deleted_at': 'is.null',
       })
       expect(
-        supabase
-          .written('POST', 'twitch_videos')
-          .map((request) => request.body),
+        supabase.insertedVideos().map(({ platformVideo }) => platformVideo),
       ).toEqual([
         expect.objectContaining({
           twitch_user_id: 'user-row-1',
@@ -813,7 +813,7 @@ describe('TwitchScraper', () => {
       await expect(
         scraper.addPastVideos({ accountId: 'user-row-1', cursor: 'page-2' }),
       ).rejects.toBeInstanceOf(StalledPaginationError)
-      expect(supabase.written('POST', 'videos')).toEqual([])
+      expect(supabase.insertedVideos()).toEqual([])
     })
 
     it('rejects an account that is unknown or whose talent was deleted', async () => {

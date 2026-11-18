@@ -1,8 +1,13 @@
+import { HttpResponse } from 'msw'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { TalentAccount } from '../database/index.js'
 import { createTestContext } from '../testing/context.js'
 import { createImage, mockStorage, serveImage } from '../testing/images.js'
-import { postgresError, setupSupabase } from '../testing/supabase.js'
+import {
+  alreadySaved,
+  postgresError,
+  setupSupabase,
+} from '../testing/supabase.js'
 import { createThumbnail, THUMBNAILS_BUCKET } from '../thumbnails/thumbnail.js'
 import { type NewVideoAdapter, saveVideoWithThumbnail } from './save-video.js'
 
@@ -68,9 +73,9 @@ interface Row {
 }
 
 /**
- * Keeps the rows written to `videos`, `youtube_videos` and `thumbnails`, and
- * rejects a second `youtube_videos` row for the same platform video ID like
- * the unique constraint does.
+ * Keeps the rows written to `thumbnails` and by `insert_video`, which
+ * inserts nothing and returns `NULL` for a platform video ID that is already
+ * saved, like the function does.
  */
 function mockDatabase() {
   const rows = {
@@ -90,24 +95,21 @@ function mockDatabase() {
       case 'DELETE thumbnails':
         if (id) rows.thumbnails.delete(id)
         return []
-      case 'POST videos':
-        rows.videos.set((body as Row).id, body as Row)
-        return []
-      case 'DELETE videos':
-        if (id) rows.videos.delete(id)
-        return []
-      case 'POST youtube_videos': {
-        const { video_id, youtube_video_id } = body as {
-          video_id: string
-          youtube_video_id: string
+      case 'POST rpc/insert_video': {
+        const { p_platform_video, p_video } = body as {
+          p_platform_video: { youtube_video_id: string }
+          p_video: Omit<Row, 'id'>
         }
 
-        if (rows.youtubeVideos.has(youtube_video_id)) {
-          return postgresError('23505', 'duplicate key value')
+        if (rows.youtubeVideos.has(p_platform_video.youtube_video_id)) {
+          return alreadySaved()
         }
 
-        rows.youtubeVideos.set(youtube_video_id, video_id)
-        return []
+        const videoId = crypto.randomUUID()
+
+        rows.videos.set(videoId, { ...p_video, id: videoId })
+        rows.youtubeVideos.set(p_platform_video.youtube_video_id, videoId)
+        return HttpResponse.json(videoId)
       }
       default:
         return []
@@ -138,15 +140,14 @@ describe('saveVideoWithThumbnail', () => {
     ).resolves.toBe(true)
 
     const [thumbnail] = [...rows.thumbnails.values()]
-    const video = supabase.written('POST', 'videos')[0]?.body as Row
+    const [inserted] = supabase.insertedVideos()
 
     expect(storage.uploads).toEqual([
       expect.objectContaining({ path: expect.stringMatching(/^video-1\//) }),
     ])
-    expect(video).toEqual({
+    expect(inserted?.video).toEqual({
       created_at: '2024-05-01T12:00:00Z',
       duration: 'PT10M',
-      id: expect.any(String),
       platform: 'youtube',
       published_at: '2024-05-01T10:00:00Z',
       status: 'PUBLISHED',
@@ -157,11 +158,12 @@ describe('saveVideoWithThumbnail', () => {
       video_kind: 'standard',
       visible: true,
     })
-    expect(supabase.written('POST', 'youtube_videos')[0]?.body).toEqual({
-      video_id: video.id,
+    expect(inserted?.platform).toBe('youtube')
+    expect(inserted?.platformVideo).toEqual({
       youtube_channel_id: 'channel-row-1',
       youtube_video_id: 'video-1',
     })
+    expect(rows.videos.size).toBe(1)
     expect(reportError).not.toHaveBeenCalled()
   })
 
@@ -180,7 +182,7 @@ describe('saveVideoWithThumbnail', () => {
 
     expect(storage.uploads).toHaveLength(0)
     expect(rows.thumbnails.size).toBe(0)
-    expect(supabase.written('POST', 'videos')[0]?.body).toMatchObject({
+    expect(supabase.insertedVideos()[0]?.video).toMatchObject({
       thumbnail_id: null,
     })
   })
@@ -218,7 +220,8 @@ describe('saveVideoWithThumbnail', () => {
     const storage = mockStorage(supabase, THUMBNAILS_BUCKET)
     serveImage(supabase, THUMBNAIL_URL, { body: image })
     supabase.respondWith({
-      'POST videos': () => postgresError('23502', 'null value in column'),
+      'POST rpc/insert_video': () =>
+        postgresError('23502', 'null value in column'),
     })
 
     await expect(
