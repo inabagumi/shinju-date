@@ -1,10 +1,6 @@
-'use client'
-
-import type { Tables } from '@shinju-date/database'
 import {
   EmptyState,
   FilterBar,
-  Select,
   Skeleton,
   Table,
   TableBody,
@@ -15,11 +11,12 @@ import {
 } from '@shinju-date/ui'
 import { ArrowDown, ArrowUp, Users } from 'lucide-react'
 import Link from 'next/link'
-import { useMemo } from 'react'
 import { SearchInput } from '@/components/search-input'
+import { SearchParamSelect } from '@/components/search-param-select'
 import { FilterBarSkeleton, TableSkeleton } from '@/components/table-skeleton'
 import { formatDateTimeFromISO } from '@/lib/format'
-import { useUpdateSearchParams } from '@/lib/use-update-search-params'
+import { buildSearchParamsHref } from '@/lib/search-params-href'
+import type { TalentListItem } from '../_lib/get-talents'
 import {
   DEFAULT_TALENT_LIST_FILTERS,
   type TalentSortOrder,
@@ -29,24 +26,17 @@ import { TalentActions } from './talent-actions'
 import { TalentModal } from './talent-modal'
 import { TalentStatusBadge } from './talent-status-badge'
 
-type Talent = Pick<
-  Tables<'talents'>,
-  'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at' | 'status'
-> & {
-  youtube_channels?: Pick<
-    Tables<'youtube_channels'>,
-    'id' | 'name' | 'youtube_channel_id' | 'youtube_handle'
-  >[]
-}
-
 interface TalentsListProps {
   /** URL の `search`。前後の空白を取り除いたもの */
   search: string | undefined
+  /** 今のページの URL のパラメータ。並べ替えのリンクで絞り込みを引き継ぐ */
+  searchParams: URLSearchParams | string
   /** URL の `sort` */
   sortOrder: TalentSortOrder
   /** URL の `status` */
   statusFilter: TalentStatusFilter
-  talents: Talent[]
+  /** 絞り込みと並べ替えを済ませたタレント */
+  talents: TalentListItem[]
 }
 
 const FILTER_OPTIONS: { value: TalentStatusFilter; label: string }[] = [
@@ -57,70 +47,32 @@ const FILTER_OPTIONS: { value: TalentStatusFilter; label: string }[] = [
   { label: 'すべて', value: 'all' },
 ]
 
-function matchesFilter(talent: Talent, filter: TalentStatusFilter): boolean {
-  const isDeleted = talent.deleted_at !== null
+/**
+ * 最終更新日時の並べ替えのリンク先。向きを反対にし、ほかのパラメータ（絞り込み）は
+ * 引き継ぐ。既定の向きのときは、パラメータを付けない
+ */
+function getSortHref(
+  searchParams: URLSearchParams | string,
+  sortOrder: TalentSortOrder,
+): string {
+  const nextOrder = sortOrder === 'desc' ? 'asc' : 'desc'
 
-  switch (filter) {
-    case 'all':
-      return true
-    case 'deleted':
-      return isDeleted
-    case 'active':
-      return !isDeleted && talent.status === 'active'
-    case 'retired':
-      return !isDeleted && talent.status === 'retired'
-    case 'not_deleted':
-      return !isDeleted
-  }
+  return buildSearchParamsHref('/talents', searchParams, {
+    sort: nextOrder === DEFAULT_TALENT_LIST_FILTERS.sort ? null : nextOrder,
+  })
 }
 
+/**
+ * タレントの一覧。表と行はサーバーで描き、検索ボックス、状態のセレクト、追加の
+ * モーダル、行ごとの操作のメニューだけをクライアントの部品に任せる
+ */
 export function TalentsList({
   search,
+  searchParams,
   sortOrder,
   statusFilter,
   talents,
 }: TalentsListProps) {
-  const updateSearchParams = useUpdateSearchParams()
-
-  const filteredAndSortedTalents = useMemo(() => {
-    let filtered = talents.filter((talent) =>
-      matchesFilter(talent, statusFilter),
-    )
-
-    if (search) {
-      const query = search.toLowerCase()
-      filtered = filtered.filter(
-        (talent) =>
-          talent.name.toLowerCase().includes(query) ||
-          talent.id.toLowerCase().includes(query),
-      )
-    }
-
-    return filtered.sort((a, b) => {
-      const order = Temporal.Instant.compare(
-        Temporal.Instant.from(a.updated_at),
-        Temporal.Instant.from(b.updated_at),
-      )
-      return sortOrder === 'desc' ? -order : order
-    })
-  }, [talents, search, sortOrder, statusFilter])
-
-  // 既定の値のときは、パラメータを付けない
-  const changeStatusFilter = (nextFilter: TalentStatusFilter) => {
-    updateSearchParams({
-      status:
-        nextFilter === DEFAULT_TALENT_LIST_FILTERS.status ? null : nextFilter,
-    })
-  }
-
-  const toggleSortOrder = () => {
-    const nextOrder = sortOrder === 'desc' ? 'asc' : 'desc'
-
-    updateSearchParams({
-      sort: nextOrder === DEFAULT_TALENT_LIST_FILTERS.sort ? null : nextOrder,
-    })
-  }
-
   const isStatusFiltered = statusFilter !== DEFAULT_TALENT_LIST_FILTERS.status
   const isFiltered = search !== undefined || isStatusFiltered
   const activeFilterCount =
@@ -135,12 +87,11 @@ export function TalentsList({
             className="md:max-w-sm"
             placeholder="タレント名またはIDで検索..."
           />
-          <Select
+          <SearchParamSelect
             aria-label="状態で絞り込み"
             className="md:w-48"
-            onChange={(e) =>
-              changeStatusFilter(e.target.value as TalentStatusFilter)
-            }
+            defaultValue={DEFAULT_TALENT_LIST_FILTERS.status}
+            paramName="status"
             value={statusFilter}
           >
             {FILTER_OPTIONS.map((option) => (
@@ -148,12 +99,12 @@ export function TalentsList({
                 {option.label}
               </option>
             ))}
-          </Select>
+          </SearchParamSelect>
         </FilterBar>
         <TalentModal />
       </div>
 
-      {filteredAndSortedTalents.length === 0 ? (
+      {talents.length === 0 ? (
         <EmptyState
           icon={<Users />}
           title={isFiltered ? '検索結果がありません。' : 'タレントがいません。'}
@@ -168,10 +119,10 @@ export function TalentsList({
               <TableHead
                 aria-sort={sortOrder === 'desc' ? 'descending' : 'ascending'}
               >
-                <button
+                <Link
                   className="inline-flex items-center gap-1 rounded-control focus-ring hover:text-foreground"
-                  onClick={toggleSortOrder}
-                  type="button"
+                  href={getSortHref(searchParams, sortOrder)}
+                  replace
                 >
                   最終更新日時
                   {sortOrder === 'desc' ? (
@@ -179,7 +130,7 @@ export function TalentsList({
                   ) : (
                     <ArrowUp aria-hidden="true" className="size-3" />
                   )}
-                </button>
+                </Link>
               </TableHead>
               <TableHead className="text-right">
                 <span className="sr-only">操作</span>
@@ -187,7 +138,7 @@ export function TalentsList({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAndSortedTalents.map((talent) => (
+            {talents.map((talent) => (
               <TableRow key={talent.id}>
                 <TableCell className="min-w-48 whitespace-normal">
                   <Link
@@ -196,25 +147,22 @@ export function TalentsList({
                   >
                     {talent.name}
                   </Link>
-                  {talent.youtube_channels &&
-                    talent.youtube_channels.length > 0 && (
-                      <div className="mt-1 space-y-1">
-                        {talent.youtube_channels.map((channel) => (
-                          <div key={channel.id}>
-                            {channel.name && channel.name !== talent.name && (
-                              <div className="text-caption text-muted">
-                                YouTube: {channel.name}
-                              </div>
-                            )}
-                            <div className="font-mono text-caption break-all text-muted">
-                              {channel.youtube_channel_id}
+                  {talent.youtube_channels.length > 0 ? (
+                    <div className="mt-1 space-y-1">
+                      {talent.youtube_channels.map((channel) => (
+                        <div key={channel.id}>
+                          {channel.name && channel.name !== talent.name && (
+                            <div className="text-caption text-muted">
+                              YouTube: {channel.name}
                             </div>
+                          )}
+                          <div className="font-mono text-caption break-all text-muted">
+                            {channel.youtube_channel_id}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  {(!talent.youtube_channels ||
-                    talent.youtube_channels.length === 0) && (
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
                     <div className="font-mono text-caption break-all text-muted">
                       {talent.id}
                     </div>
@@ -234,7 +182,15 @@ export function TalentsList({
                   </time>
                 </TableCell>
                 <TableCell className="w-12 text-right">
-                  <TalentActions talent={talent} />
+                  {/* クライアントに送る値を、操作に要る項目だけにする */}
+                  <TalentActions
+                    talent={{
+                      deleted_at: talent.deleted_at,
+                      id: talent.id,
+                      name: talent.name,
+                      status: talent.status,
+                    }}
+                  />
                 </TableCell>
               </TableRow>
             ))}
