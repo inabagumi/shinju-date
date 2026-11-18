@@ -45,9 +45,11 @@ function renderActions(talent: TalentActionsTalent = activeTalent) {
   )
 }
 
+// メニューはポインターを押したときかキーで開くため、Enter で開く
 function openMenuItem(name: string) {
-  fireEvent.click(
+  fireEvent.keyDown(
     screen.getByRole('button', { name: '「テストタレント」の操作' }),
+    { key: 'Enter' },
   )
   fireEvent.click(screen.getByRole('menuitem', { name }))
 }
