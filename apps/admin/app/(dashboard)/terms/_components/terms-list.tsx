@@ -1,5 +1,3 @@
-'use client'
-
 import { range } from '@shinju-date/helpers'
 import {
   Button,
@@ -13,12 +11,11 @@ import {
   TableRow,
 } from '@shinju-date/ui'
 import { BookOpen } from 'lucide-react'
-import { Fragment, Suspense, use, useMemo } from 'react'
-import { ConfirmDialog } from '@/components/confirm-dialog'
+import { Fragment } from 'react'
 import { SearchInput } from '@/components/search-input'
 import { TableSkeleton } from '@/components/table-skeleton'
-import { deleteTermAction } from '../_actions'
-import type { TermsSearchParams } from '../_lib/search-params-schema'
+import type { TermGroup } from '../_lib/group-terms'
+import { DeleteTermButton } from './delete-term-button'
 import { TermModal } from './term-modal'
 
 interface Term {
@@ -28,126 +25,63 @@ interface Term {
   synonyms: string[]
 }
 
-interface TermsListProps {
-  /** URL のパラメータを解釈したもの */
-  filters: Promise<TermsSearchParams>
-  terms: Promise<Term[]>
+/** 頭文字のグループの行の ID。索引のリンク先にする */
+function getGroupId(group: string): string {
+  return `group-${group}`
 }
 
-// Helper function to get the first character for grouping
-function getFirstCharacter(term: string): string {
-  const firstChar = term.charAt(0).toUpperCase()
-  // Katakana ranges
-  const hiraganaRanges = [
-    { end: 'オ', group: 'ア', start: 'ア' },
-    { end: 'ゴ', group: 'カ', start: 'カ' },
-    { end: 'ゾ', group: 'サ', start: 'サ' },
-    { end: 'ド', group: 'タ', start: 'タ' },
-    { end: 'ノ', group: 'ナ', start: 'ナ' },
-    { end: 'ポ', group: 'ハ', start: 'ハ' },
-    { end: 'モ', group: 'マ', start: 'マ' },
-    { end: 'ヨ', group: 'ヤ', start: 'ヤ' },
-    { end: 'ロ', group: 'ラ', start: 'ラ' },
-    { end: 'ン', group: 'ワ', start: 'ワ' },
-  ]
-
-  for (const range of hiraganaRanges) {
-    if (firstChar >= range.start && firstChar <= range.end) {
-      return range.group
-    }
-  }
-
-  // If not hiragana, return first character as-is
-  return firstChar
-}
-
-export function TermsList({ filters, terms }: TermsListProps) {
+/**
+ * 用語の一覧の上に並べる、検索ボックスと追加のボタン。データを待たずに出せるため、
+ * 一覧の Suspense の外に置く
+ */
+export function TermsToolbar() {
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <SearchInput
-          aria-label="用語を検索"
-          className="sm:max-w-md"
-          placeholder="用語、読み方、類義語で検索..."
-        />
-        <TermModal />
-      </div>
-
-      <Suspense fallback={<TermsResultsSkeleton />}>
-        <TermsResults filters={filters} terms={terms} />
-      </Suspense>
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <SearchInput
+        aria-label="用語を検索"
+        className="sm:max-w-md"
+        placeholder="用語、読み方、類義語で検索..."
+      />
+      <TermModal />
     </div>
   )
 }
 
-function TermsResults({ filters, terms }: TermsListProps) {
-  const resolvedTerms = use(terms)
-  const searchQuery = use(filters).search ?? ''
+interface TermsListProps {
+  /** 検索と頭文字のグループ分けを済ませた用語 */
+  groups: TermGroup<Term>[]
+  /** URL の `search`。前後の空白を取り除いたもの */
+  search: string | undefined
+}
 
-  // Filter terms based on search query
-  const filteredTerms = useMemo(() => {
-    if (!searchQuery.trim()) return resolvedTerms
-
-    const query = searchQuery.toLowerCase()
-    return resolvedTerms.filter(
-      (term) =>
-        term.term.toLowerCase().includes(query) ||
-        term.readings.some((reading) =>
-          reading.toLowerCase().includes(query),
-        ) ||
-        term.synonyms.some((synonym) => synonym.toLowerCase().includes(query)),
-    )
-  }, [resolvedTerms, searchQuery])
-
-  // Group terms by first character
-  const groupedTerms = useMemo(() => {
-    const groups = new Map<string, Term[]>()
-
-    for (const term of filteredTerms) {
-      const group = getFirstCharacter(term.readings[0] || term.term)
-      if (!groups.has(group)) {
-        groups.set(group, [])
-      }
-      groups.get(group)?.push(term)
-    }
-
-    // Sort groups by key
-    return new Map([...groups.entries()].toSorted())
-  }, [filteredTerms])
-
-  const groupKeys = Array.from(groupedTerms.keys())
-
-  const scrollToGroup = (group: string) => {
-    const element = document.getElementById(`group-${group}`)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }
-
-  if (filteredTerms.length === 0) {
+/**
+ * 頭文字の索引と、頭文字ごとにまとめた用語の表。サーバーで描き、編集のモーダルと
+ * 削除のボタンだけをクライアントの部品に任せる
+ */
+export function TermsList({ groups, search }: TermsListProps) {
+  if (groups.length === 0) {
     return (
       <EmptyState
         icon={<BookOpen />}
-        title={searchQuery ? '検索結果がありません。' : '用語がありません。'}
+        title={search ? '検索結果がありません。' : '用語がありません。'}
       />
     )
   }
 
   return (
     <div className="space-y-4">
-      {/* Index of first characters */}
-      {groupKeys.length > 0 && !searchQuery && (
+      {/* 頭文字の索引。検索している間は出さない */}
+      {!search && (
         <nav aria-label="頭文字の索引" className="flex flex-wrap gap-1">
-          {groupKeys.map((group) => (
+          {groups.map(({ group }) => (
             <Button
+              asChild
               className="min-w-9 px-2"
               key={group}
-              onClick={() => scrollToGroup(group)}
               size="sm"
-              type="button"
               variant="ghost"
             >
-              {group}
+              <a href={`#${getGroupId(group)}`}>{group}</a>
             </Button>
           ))}
         </nav>
@@ -163,11 +97,11 @@ function TermsResults({ filters, terms }: TermsListProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {Array.from(groupedTerms.entries()).map(([group, groupTerms]) => (
+          {groups.map(({ group, terms }) => (
             <Fragment key={group}>
               <TableRow
                 className="scroll-mt-16 bg-muted/50 hover:bg-muted/50"
-                id={`group-${group}`}
+                id={getGroupId(group)}
               >
                 <TableHead
                   className="py-2 text-foreground"
@@ -176,11 +110,11 @@ function TermsResults({ filters, terms }: TermsListProps) {
                 >
                   {group}
                   <span className="ml-2 font-normal text-muted tabular-nums">
-                    {groupTerms.length}件
+                    {terms.length}件
                   </span>
                 </TableHead>
               </TableRow>
-              {groupTerms.map((term) => (
+              {terms.map((term) => (
                 <TableRow key={term.id}>
                   <TableCell className="font-semibold">{term.term}</TableCell>
                   <TableCell className="whitespace-normal text-muted">
@@ -192,18 +126,7 @@ function TermsResults({ filters, terms }: TermsListProps) {
                   <TableCell>
                     <div className="flex justify-end gap-4">
                       <TermModal term={term} />
-                      <ConfirmDialog
-                        confirmLabel="削除"
-                        confirmVariant="danger"
-                        description={`本当に「${term.term}」を削除しますか？この操作は取り消せません。`}
-                        onConfirm={() => deleteTermAction(term.id)}
-                        title="用語を削除"
-                        trigger={
-                          <Button size="sm" variant="danger">
-                            削除
-                          </Button>
-                        }
-                      />
+                      <DeleteTermButton id={term.id} term={term.term} />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -216,8 +139,8 @@ function TermsResults({ filters, terms }: TermsListProps) {
   )
 }
 
-/** 読み込み中の `TermsResults`。頭文字の索引と、4列の表を並べる */
-function TermsResultsSkeleton() {
+/** 読み込み中の `TermsList`。頭文字の索引と、4列の表を並べる */
+export function TermsListSkeleton() {
   return (
     <TableSkeleton
       columns={[

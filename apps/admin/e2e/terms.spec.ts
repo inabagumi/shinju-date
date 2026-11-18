@@ -118,4 +118,28 @@ test.describe('Terms', () => {
     await page.mouse.up()
     await expect.poll(synonymValues).toEqual(['カラオケ配信', '歌ってみた'])
   })
+
+  test('should search the terms on the server through the URL', async ({
+    page,
+  }) => {
+    await page.goto('/terms')
+
+    await expect(
+      page.getByRole('navigation', { name: '頭文字の索引' }),
+    ).toBeVisible()
+
+    await page.getByRole('searchbox', { name: '用語を検索' }).fill('ASMR')
+    await expect(page).toHaveURL(/\/terms\?search=ASMR$/)
+
+    await expect(
+      page.getByRole('cell', { exact: true, name: 'ASMR' }),
+    ).toBeVisible()
+    await expect(
+      page.getByRole('cell', { exact: true, name: '歌枠' }),
+    ).toHaveCount(0)
+    // The index is hidden while searching
+    await expect(
+      page.getByRole('navigation', { name: '頭文字の索引' }),
+    ).toHaveCount(0)
+  })
 })
