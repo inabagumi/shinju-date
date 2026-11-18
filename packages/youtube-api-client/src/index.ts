@@ -1,5 +1,4 @@
 import { youtube_v3 as youtube } from '@googleapis/youtube'
-import { z } from 'zod'
 
 export { getPublishedAt } from './get-published-at.js'
 export { getVideoKind, type YouTubeVideoKind } from './get-video-kind.js'
@@ -9,43 +8,6 @@ export {
 } from './get-video-status.js'
 
 export const YOUTUBE_DATA_API_MAX_RESULTS = 50
-
-// Zod schemas for YouTube API responses
-export const YouTubeChannelSnippetSchema = z.object({
-  customUrl: z.string().optional(),
-  title: z.string(),
-})
-
-export const YouTubeChannelSchema = z.object({
-  contentDetails: z.object({
-    relatedPlaylists: z.object({
-      uploads: z.string(),
-    }),
-  }),
-  id: z.string(),
-  snippet: YouTubeChannelSnippetSchema,
-})
-
-export const YouTubePlaylistItemSchema = z.object({
-  contentDetails: z.object({
-    videoId: z.string(),
-  }),
-})
-
-export const YouTubeVideoSnippetSchema = z.object({
-  publishedAt: z.string(),
-})
-
-export const YouTubeVideoSchema = z.object({
-  contentDetails: z.object({}),
-  id: z.string(),
-  snippet: YouTubeVideoSnippetSchema,
-})
-
-// Infer TypeScript types from Zod schemas
-export type YouTubeChannel = z.infer<typeof YouTubeChannelSchema>
-export type YouTubePlaylistItem = z.infer<typeof YouTubePlaylistItemSchema>
-export type YouTubeVideo = z.infer<typeof YouTubeVideoSchema>
 
 // Client creation function
 export function createYouTubeClient() {
@@ -316,68 +278,43 @@ export type FilteredYouTubeVideo = youtube.Schema$Video & {
 }
 
 /**
- * Validates a channel response using Zod schema
+ * Returns true when the channel has the ID, the uploads playlist and the
+ * title that {@link FilteredYouTubeChannel} requires.
  */
-function validateChannel(
+function isFilteredYouTubeChannel(
   channel: youtube.Schema$Channel,
 ): channel is FilteredYouTubeChannel {
-  try {
-    YouTubeChannelSchema.parse({
-      contentDetails: {
-        relatedPlaylists: {
-          uploads: channel.contentDetails?.relatedPlaylists?.uploads,
-        },
-      },
-      id: channel.id,
-      snippet: {
-        ...(channel.snippet?.customUrl
-          ? { customUrl: channel.snippet.customUrl }
-          : {}),
-        title: channel.snippet?.title,
-      },
-    })
-    return true
-  } catch {
-    return false
-  }
+  return (
+    typeof channel.id === 'string' &&
+    typeof channel.contentDetails?.relatedPlaylists?.uploads === 'string' &&
+    typeof channel.snippet?.title === 'string'
+  )
 }
 
 /**
- * Validates a playlist item response using Zod schema
+ * Returns true when the playlist item has the video ID that
+ * {@link FilteredYouTubePlaylistItem} requires.
  */
-function validatePlaylistItem(
+function isFilteredYouTubePlaylistItem(
   item: youtube.Schema$PlaylistItem,
 ): item is FilteredYouTubePlaylistItem {
-  try {
-    YouTubePlaylistItemSchema.parse({
-      contentDetails: {
-        videoId: item.contentDetails?.videoId,
-      },
-    })
-    return true
-  } catch {
-    return false
-  }
+  return typeof item.contentDetails?.videoId === 'string'
 }
 
 /**
- * Validates a video response using Zod schema
+ * Returns true when the video has the ID and the publication time that
+ * {@link FilteredYouTubeVideo} requires.
+ *
+ * `contentDetails` is not checked: the requests ask for that part, so YouTube
+ * returns it with every video.
  */
-function validateVideo(
+function isFilteredYouTubeVideo(
   video: youtube.Schema$Video,
 ): video is FilteredYouTubeVideo {
-  try {
-    YouTubeVideoSchema.parse({
-      contentDetails: video.contentDetails || {},
-      id: video.id,
-      snippet: {
-        publishedAt: video.snippet?.publishedAt,
-      },
-    })
-    return true
-  } catch {
-    return false
-  }
+  return (
+    typeof video.id === 'string' &&
+    typeof video.snippet?.publishedAt === 'string'
+  )
 }
 
 /**
@@ -403,7 +340,7 @@ export async function* getChannels({
       part: ['contentDetails', 'id', 'snippet'],
     })
 
-    return (items ?? []).filter(validateChannel)
+    return (items ?? []).filter(isFilteredYouTubeChannel)
   })
 }
 
@@ -443,7 +380,7 @@ export async function getChannelByHandle({
     return null
   }
 
-  const channel = items.find(validateChannel)
+  const channel = items.find(isFilteredYouTubeChannel)
   return channel ?? null
 }
 
@@ -494,7 +431,7 @@ export async function* getPlaylistItems({
       break
     }
 
-    yield* items.filter(validatePlaylistItem)
+    yield* items.filter(isFilteredYouTubePlaylistItem)
 
     if (!all || !nextPageToken) {
       break
@@ -540,7 +477,7 @@ export async function getPlaylistItemsPage({
   })
 
   return {
-    items: (items ?? []).filter(validatePlaylistItem),
+    items: (items ?? []).filter(isFilteredYouTubePlaylistItem),
     nextPageToken: nextPageToken || null,
   }
 }
@@ -564,7 +501,7 @@ export async function* getVideos({
       part: ['contentDetails', 'liveStreamingDetails', 'snippet'],
     })
 
-    return (items ?? []).filter(validateVideo)
+    return (items ?? []).filter(isFilteredYouTubeVideo)
   })
 }
 
