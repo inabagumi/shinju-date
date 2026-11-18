@@ -37,6 +37,28 @@ locals {
     }
   }
 
+  # admin と batch が必須にする API のキー
+  api_key_environment_variables = {
+    google_api_key = {
+      key       = "GOOGLE_API_KEY"
+      sensitive = true
+      target    = ["production", "preview"]
+      value     = var.google_api_key
+    }
+    twitch_client_id = {
+      key       = "TWITCH_CLIENT_ID"
+      sensitive = true
+      target    = ["production", "preview"]
+      value     = var.twitch_client_id
+    }
+    twitch_client_secret = {
+      key       = "TWITCH_CLIENT_SECRET"
+      sensitive = true
+      target    = ["production", "preview"]
+      value     = var.twitch_client_secret
+    }
+  }
+
   projects = {
     web = {
       name                      = "shinju-date"
@@ -57,27 +79,21 @@ locals {
       # 管理画面は低いスペックで足りるため、ほかより小さい 0.6 vCPU にする
       function_default_cpu_type = "standard_legacy"
       function_default_timeout  = 30
-      environment_variables     = {}
+      environment_variables     = local.api_key_environment_variables
     }
     batch = {
       name                      = "shinju-date-batch"
       root_directory            = "apps/batch"
       function_default_cpu_type = "standard"
       function_default_timeout  = 120
-      environment_variables = {
-        google_api_key = {
-          key       = "GOOGLE_API_KEY"
-          sensitive = true
-          target    = ["production", "preview"]
-          value     = var.google_api_key
-        }
+      environment_variables = merge(local.api_key_environment_variables, {
         cron_secret = {
           key       = "CRON_SECRET"
           sensitive = true
           target    = ["production"]
           value     = random_password.cron_secret.result
         }
-      }
+      })
     }
   }
 }
