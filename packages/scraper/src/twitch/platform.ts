@@ -1,3 +1,5 @@
+import type { Tables } from '@shinju-date/database'
+import type { NewVideoAdapter } from '../internal/operations/save-video.js'
 import type { PlatformAdapter } from '../internal/platform.js'
 import type { TwitchFetcher } from './fetcher.js'
 import {
@@ -6,7 +8,13 @@ import {
   type SavedTwitchVideo,
 } from './saved-video.js'
 import type { TwitchClip, TwitchVideo } from './types.js'
-import { type TwitchVideoType, toClipFields, toVideoFields } from './video.js'
+import {
+  getThumbnailSource,
+  type TwitchVideoFields,
+  type TwitchVideoType,
+  toClipFields,
+  toVideoFields,
+} from './video.js'
 
 /** What Twitch returns for a saved video: a Helix video, or a clip. */
 export type TwitchLookedUpVideo = TwitchClip | TwitchVideo
@@ -71,4 +79,28 @@ export function createTwitchPlatform(
       video_kind: 'standard',
     }),
   }
+}
+
+/** A Twitch video, or the placeholder of a live broadcast, to save. */
+export interface NewTwitchVideo {
+  fields: TwitchVideoFields
+  /** Twitch thumbnail template URL (stream preview or VOD thumbnail). */
+  thumbnailUrl: string
+  twitchVideo: Pick<
+    Tables<'twitch_videos'>,
+    'stream_id' | 'twitch_video_id' | 'type'
+  >
+}
+
+/** Describes Twitch to the saving of new videos. */
+export const TWITCH_NEW_VIDEOS: NewVideoAdapter<NewTwitchVideo> = {
+  getPlatformVideoId: (video) => video.twitchVideo.twitch_video_id,
+  getThumbnailSource: (video) => getThumbnailSource(video.thumbnailUrl),
+  platformVideoIdKey: 'twitchVideoId',
+  // Twitch has no kinds; every Twitch video is saved as `standard`.
+  toFields: (video) => ({ ...video.fields, video_kind: 'standard' }),
+  toPlatformVideo: (video, user) => ({
+    platform: 'twitch',
+    values: { ...video.twitchVideo, twitch_user_id: user.id },
+  }),
 }

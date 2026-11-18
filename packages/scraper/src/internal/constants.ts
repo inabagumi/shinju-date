@@ -4,6 +4,13 @@
  */
 export const WRITE_CONCURRENCY = 8
 
+/**
+ * Videos a backfill saves at once. Lower than the discovery of new videos:
+ * a backfill is not urgent, and every video downloads and resizes a
+ * thumbnail.
+ */
+export const BACKFILL_SAVE_CONCURRENCY = 4
+
 /** How many of the newest finished videos a refresh re-reads. */
 export const RECENT_VIDEO_COUNT = 100
 

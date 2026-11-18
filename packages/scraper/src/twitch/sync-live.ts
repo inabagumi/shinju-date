@@ -14,6 +14,7 @@ import {
   updateVideo,
 } from '../internal/database/index.js'
 import { DatabaseError } from '../internal/errors.js'
+import { saveVideoWithThumbnail } from '../internal/operations/save-video.js'
 import type {
   CrawlContext,
   TypedSupabaseClient,
@@ -22,7 +23,7 @@ import type {
 import { applyNewVideoAction, planNewVideos } from './add-new-videos.js'
 import { attachArchive } from './attach-archive.js'
 import type { TwitchFetcher } from './fetcher.js'
-import { saveTwitchVideo } from './save-video.js'
+import { TWITCH_NEW_VIDEOS } from './platform.js'
 import {
   findSavedTwitchVideos,
   isLivePlaceholder,
@@ -318,16 +319,20 @@ export async function syncTwitchLive(
         return false
       }
 
-      return saveTwitchVideo(context, {
-        fields: toLiveFields(stream),
-        thumbnailUrl: stream.thumbnail_url,
-        twitchVideo: {
-          stream_id: stream.id,
-          twitch_video_id: toLiveTwitchVideoId(stream.id),
-          type: null,
+      return saveVideoWithThumbnail(
+        context,
+        TWITCH_NEW_VIDEOS,
+        {
+          fields: toLiveFields(stream),
+          thumbnailUrl: stream.thumbnail_url,
+          twitchVideo: {
+            stream_id: stream.id,
+            twitch_video_id: toLiveTwitchVideoId(stream.id),
+            type: null,
+          },
         },
         user,
-      })
+      )
     },
     (error, stream) => reportError(error, { twitchStreamId: stream.id }),
   )

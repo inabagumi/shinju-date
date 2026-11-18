@@ -1,3 +1,4 @@
+import type { NewVideoAdapter } from '../internal/operations/save-video.js'
 import type { PlatformAdapter } from '../internal/platform.js'
 import type { YouTubeFetcher } from './fetcher.js'
 import {
@@ -5,7 +6,7 @@ import {
   type SavedYouTubeVideo,
 } from './saved-video.js'
 import type { YouTubeVideo } from './types.js'
-import { toVideoFields } from './video.js'
+import { getThumbnailSource, toVideoFields } from './video.js'
 
 export type YouTubePlatformAdapter = PlatformAdapter<
   YouTubeVideo,
@@ -41,4 +42,19 @@ export function createYouTubePlatform(
     savedVideoColumns: SAVED_YOUTUBE_VIDEO_COLUMNS,
     toFields: toVideoFields,
   }
+}
+
+/** Describes YouTube to the saving of new videos. */
+export const YOUTUBE_NEW_VIDEOS: NewVideoAdapter<YouTubeVideo> = {
+  getPlatformVideoId: (video) => video.id,
+  getThumbnailSource,
+  platformVideoIdKey: 'youtubeVideoId',
+  toFields: toVideoFields,
+  toPlatformVideo: (video, channel) => ({
+    platform: 'youtube',
+    values: {
+      youtube_channel_id: channel.id,
+      youtube_video_id: video.id,
+    },
+  }),
 }
