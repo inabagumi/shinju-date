@@ -74,7 +74,7 @@ function findUsedCommands(): Map<string, Set<string>> {
       (file) =>
         file !== '' &&
         !file.startsWith('packages/msw-handlers/') &&
-        !/(^|\/)(__tests__|e2e|test)\/|\.(test|spec)\.tsx?$/.test(file),
+        !/(^|\/)(e2e|test)\/|\.(test|spec)\.tsx?$/.test(file),
     )
   const used = new Map<string, Set<string>>()
 
