@@ -46,7 +46,7 @@ pnpm dlx skills add vercel/next.js --skill next-dev-loop --skill next-cache-comp
 
 - ルートの `package.json` に `devEngines` があるため、`npx` は使えません。`pnpm dlx` を使ってください
 - `-a universal` で `.agents/skills/` に実体を置き、`-a claude-code` で `.claude/skills/` にシンボリックリンクを張ります。`-a claude-code` だけを指定すると、`.claude/skills/` にコピーが置かれるので注意してください
-- `.agents/skills/next-*` と `skills-lock.json` は、上流のファイルをそのまま置くために Biome の対象から外しています。手で編集しないでください
+- `.agents/skills/next-*` と `skills-lock.json` は、上流のファイルをそのまま置くために Biome と oxfmt の対象から外しています。手で編集しないでください
 - 更新するときは `pnpm dlx skills update` を実行し、差分を確認してコミットしてください
 
 ## agent-browser

@@ -406,7 +406,7 @@ pnpm run build
 ### Linting
 
 ```bash
-pnpm run check --fix
+pnpm run fix
 ```
 
 ### Testing
@@ -487,7 +487,7 @@ When adding new handlers or modifying existing ones:
 2. **Add TypeScript types** where possible
 3. **Update the README** with new functionality
 4. **Test your changes** with the tests and with `ENABLE_MSW=true` in an app
-5. **Run linting** with `pnpm run check --fix`
+5. **Run linting and formatting** with `pnpm run fix`
 
 ## License
 

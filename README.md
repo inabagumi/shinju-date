@@ -42,7 +42,7 @@
 - **キャッシュ**: Upstash Redis
 - **パッケージマネージャー**: pnpm
 - **モノレポ管理**: Turborepo
-- **コード品質**: Biome (JavaScript/TypeScript)
+- **コード品質**: Biome（リント）、oxfmt（整形）
 
 ## 開発を始める
 
@@ -73,8 +73,8 @@ pnpm run test
 # 型チェック
 pnpm run typecheck
 
-# コード品質チェック
-pnpm run check --fix
+# コード品質チェック（自動修正と整形）
+pnpm run fix
 ```
 
 ## ドキュメント

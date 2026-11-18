@@ -209,13 +209,13 @@ interface EventHandler {
 
 ### コードフォーマット
 
-- **JavaScript/TypeScript**: Biome を使用
+- **リント**: Biome を使用
+- **整形**: Ultracite のプリセットを使った oxfmt を使用（JavaScript、TypeScript、CSS、Markdown、YAML、JSON。import と Tailwind のクラスの並べ替えを含む）
 
 すべてのコード変更後は必ず以下を実行：
 
 ```bash
-# JavaScript/TypeScript
-pnpm run check --fix
+pnpm run fix
 ```
 
 ### コミットメッセージ

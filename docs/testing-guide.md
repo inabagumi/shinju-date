@@ -256,7 +256,7 @@ describe('MyComponent', () => {
 - `supabase.ts`: 本物の Supabase のクライアントを使い、PostgREST へのリクエストを MSW で受ける偽のデータベース。テーブルと操作（`select`、`insert`、`upsert`、`update`、`delete`、`rpc`）ごとに応答を決め、送られたリクエストを確かめる
 - `factories.ts`: タレント、動画、チャンネルなどの行のフィクスチャ
 
-`setupActionTest()` のモックは、このモジュールを読み込んだときに登録されます。テストの対象の Action は、`@/test/action-harness` より後に、相対パスで読み込んでください（Biome の並べ替えで、この順になります）。モックしたモジュールは、テストのファイルで読み込まず、`setupActionTest()` の戻り値から使います。
+`setupActionTest()` のモックは、このモジュールを読み込んだときに登録されます。テストの対象の Action は、`@/test/action-harness` より後に、相対パスで読み込んでください（oxfmt の import の並べ替えで、この順になります）。モックしたモジュールは、テストのファイルで読み込まず、`setupActionTest()` の戻り値から使います。
 
 ```ts
 import { describe, expect, it } from 'vitest'
@@ -429,11 +429,11 @@ CI環境では以下のように実行されます：
 pnpm test --filter <package-name> -- --reporter=github-actions
 ```
 
-#### Biome（リント・フォーマット）
+#### Biome（リント）
 
 Biomeは**GitHubレポーター**を使用し、以下の機能を提供します：
 
-- **GitHub Annotations**: リントエラーやフォーマットの問題がPull Requestの該当行に直接表示されます
+- **GitHub Annotations**: リントエラーがPull Requestの該当行に直接表示されます
 - **チェックラン**: Biomeの結果がGitHub Checksに統合され、PRのUIから確認できます
 - **問題の分類**: エラー、警告、情報がカテゴリごとに整理されます
 
@@ -443,6 +443,10 @@ CI環境では以下のように実行されます：
 # GitHub Actionsワークフローで自動的に実行
 pnpm biome ci --reporter=github .
 ```
+
+#### oxfmt（整形）
+
+整形されていないファイルがあると、CI の `pnpm oxfmt --check` が失敗し、ファイルの一覧を出力します。ローカルで `pnpm run fix` を実行して直してください。
 
 #### Playwright（E2Eテスト）
 
