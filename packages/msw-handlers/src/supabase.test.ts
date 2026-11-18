@@ -1833,6 +1833,95 @@ describe('Supabase Handlers', () => {
     })
   })
 
+  describe('Inserting videos', () => {
+    const restUrl = 'https://fake.supabase.test/rest/v1'
+
+    async function insertVideo(
+      youtubeVideoId: string,
+      channel: { id: string; talent_id: string },
+    ) {
+      const response = await fetch(`${restUrl}/rpc/insert_video`, {
+        body: JSON.stringify({
+          p_platform: 'youtube',
+          p_platform_video: {
+            youtube_channel_id: channel.id,
+            youtube_video_id: youtubeVideoId,
+          },
+          p_video: {
+            duration: 'PT10M',
+            platform: 'youtube',
+            published_at: '2099-01-01T00:00:00Z',
+            status: 'PUBLISHED',
+            talent_id: channel.talent_id,
+            title: 'Inserted video',
+          },
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      })
+
+      expect(response.status).toBe(200)
+
+      return (await response.json()) as string | null
+    }
+
+    it('should insert the video with its platform row, and nothing when it is already saved', async () => {
+      const [channel] = (await (
+        await fetch(`${restUrl}/youtube_channels?select=id,talent_id&limit=1`)
+      ).json()) as { id: string; talent_id: string }[]
+      const [saved] = (await (
+        await fetch(`${restUrl}/youtube_videos?select=youtube_video_id&limit=1`)
+      ).json()) as { youtube_video_id: string }[]
+
+      if (!channel || !saved) {
+        throw new Error('The seed has no YouTube channels or videos')
+      }
+
+      const videoId = await insertVideo('inserted-video-1', channel)
+
+      try {
+        expect(videoId).toEqual(expect.any(String))
+        expect(
+          await (
+            await fetch(
+              `${restUrl}/videos?select=title,status,visible,youtube_video:youtube_videos(youtube_channel_id,youtube_video_id)&id=eq.${videoId}`,
+            )
+          ).json(),
+        ).toEqual([
+          {
+            status: 'PUBLISHED',
+            title: 'Inserted video',
+            visible: true,
+            youtube_video: {
+              youtube_channel_id: channel.id,
+              youtube_video_id: 'inserted-video-1',
+            },
+          },
+        ])
+
+        const count = async () =>
+          (
+            (await (
+              await fetch(`${restUrl}/videos?select=id&title=eq.Inserted video`)
+            ).json()) as unknown[]
+          ).length
+
+        await expect(insertVideo('inserted-video-1', channel)).resolves.toBe(
+          null,
+        )
+        await expect(
+          insertVideo(saved.youtube_video_id, channel),
+        ).resolves.toBeNull()
+        await expect(count()).resolves.toBe(1)
+      } finally {
+        await fetch(`${restUrl}/youtube_videos?video_id=eq.${videoId}`, {
+          method: 'DELETE',
+        })
+        await fetch(`${restUrl}/videos?id=eq.${videoId}`, { method: 'DELETE' })
+      }
+    })
+  })
+
   describe('Term popularity', () => {
     it('should count the terms matching the given terms, ignoring the case', async () => {
       const response = await fetch(
