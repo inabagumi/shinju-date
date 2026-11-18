@@ -314,6 +314,43 @@ describe('restoreAction', () => {
 
 `toDBString` はモックせず、本物を使います。秒に丸めるので、期待する日時は `2024-11-24T17:00:00Z` のように書きます。
 
+#### 公開サイトの Supabase を使うテスト
+
+`apps/web` の取得関数やルートハンドラーのテストでは、`@/lib/supabase` を `vi.mock()` で置き換えず、`apps/web/test/` の補助を使います。クエリの組み立てを模倣すると、条件の順番を入れ替えただけで壊れ、条件の誤りは見逃すためです。
+
+- `supabase.ts`: `@shinju-date/msw-handlers` の PostgREST のモックを、テストのファイルごとに MSW で起動する
+  - `setupSupabase()`: サーバーを起動し、各テストの前にデータベースを空にする。モックしていないホストへのリクエストは、テストを失敗させる
+  - `seedSupabase({ talents, videos, … })`: テーブルの行を入れ替える。`videoSeed()` は、動画と YouTube / Twitch の動画の行に分ける
+  - `failSupabase(table)`: そのテーブル（または `rpc/<名前>`）へのリクエストを、PostgreSQL のエラーにする
+  - `supabaseRequests(table)`: 送られたリクエスト。キャッシュで2回目を送らないことや、公開のキー（`role: 'anon'`）で送ったことを確かめるときだけに使う
+- `factories.ts`: テーブルの行（`createTalent`、`createVideo`、`createVideoOnYouTube` など）と、取得関数が返す値（`createVideoItem`、`createTalentDetail` など。部品のテスト用）
+
+データを入れ、取得関数を呼び、返った行を確かめます。「どのメソッドが、どの引数で呼ばれたか」は確かめません。`'use cache'` はテストでは働かないので、`next/cache` は今までどおりモックします。
+
+```ts
+import { createTalent } from '@/test/factories'
+import { seedSupabase, setupSupabase } from '@/test/supabase'
+import { fetchActiveTalents } from './talents'
+
+vi.mock('next/cache', () => ({ cacheLife: vi.fn(), cacheTag: vi.fn() }))
+
+setupSupabase()
+
+test('returns the active talents', async () => {
+  const talent = createTalent({ name: 'あおい' })
+
+  await seedSupabase({
+    talents: [talent, createTalent({ status: 'retired' })],
+  })
+
+  await expect(fetchActiveTalents()).resolves.toEqual([
+    { id: talent.id, name: 'あおい' },
+  ])
+})
+```
+
+モックは PostgREST の条件を実際と同じように扱いますが、RLS は再現しません。RLS で見えない行は、入れないことで表します。
+
 ### 5. 非同期処理のテスト
 
 ```tsx

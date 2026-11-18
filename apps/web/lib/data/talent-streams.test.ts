@@ -1,38 +1,22 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-
-const query = vi.hoisted(() => ({
-  eq: vi.fn(),
-  gt: vi.fn(),
-  gte: vi.fn(),
-  in: vi.fn(),
-  is: vi.fn(),
-  limit: vi.fn(),
-  lt: vi.fn(),
-  lte: vi.fn(),
-  maybeSingle: vi.fn(),
-  neq: vi.fn(),
-  order: vi.fn(),
-  select: vi.fn(),
-}))
-
-vi.mock('@shinju-date/logger', () => ({
-  logger: { error: vi.fn() },
-}))
-
-vi.mock('next/cache', () => ({
-  cacheLife: vi.fn(),
-  cacheTag: vi.fn(),
-}))
-
-vi.mock('@/lib/supabase', () => ({
-  supabaseClient: {
-    from: vi.fn(() => query),
-  },
-}))
-
+// @vitest-environment node
 import { logger } from '@shinju-date/logger'
 import { cacheLife, cacheTag } from 'next/cache'
-import { supabaseClient } from '@/lib/supabase'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  createTalent,
+  createTwitchUser,
+  createVideo,
+  createVideoOnTwitch,
+  createVideoOnYouTube,
+  createYouTubeChannel,
+} from '@/test/factories'
+import { mockNow } from '@/test/now'
+import {
+  failSupabase,
+  seedSupabase,
+  setupSupabase,
+  videoSeed,
+} from '@/test/supabase'
 import {
   fetchTalentStreamStarts,
   fetchTalentStreamStatuses,
@@ -40,69 +24,98 @@ import {
 } from './talents'
 import { DataFetchError } from './unwrap'
 
-const TALENT_IDS = [
-  '0f6b7c84-1a1e-4b4e-9d3a-5c7a0c1e2f01',
-  '7d2e4b1a-3c5f-4e6a-8b9c-0d1e2f3a4b02',
-]
+vi.mock('@shinju-date/logger', () => ({
+  logger: { error: vi.fn() },
+}))
+
+// Vitest does not run `'use cache'`, so only what the fetchers pass to the
+// cache is checked
+vi.mock('next/cache', () => ({
+  cacheLife: vi.fn(),
+  cacheTag: vi.fn(),
+}))
+
+setupSupabase()
+
+const talent = createTalent({ name: '朝霧ミオ' })
+const otherTalent = createTalent({ name: '風花リツ' })
+const channel = createYouTubeChannel({ talent_id: talent.id })
+const otherChannel = createYouTubeChannel({ talent_id: otherTalent.id })
+const twitchUser = createTwitchUser({
+  talent_id: otherTalent.id,
+  twitch_login_name: 'ritsu',
+})
+
+/** Put the talents, their accounts and the given videos in the database */
+function seedVideos(
+  rows: Parameters<typeof videoSeed>[0],
+): ReturnType<typeof seedSupabase> {
+  return seedSupabase({
+    talents: [talent, otherTalent],
+    twitchUsers: [twitchUser],
+    youtubeChannels: [channel, otherChannel],
+    ...videoSeed(rows),
+  })
+}
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('fetchTalentStreamStatuses', () => {
-  const [talentId, otherTalentId] = TALENT_IDS as [string, string]
-  const youtubeVideo = { youtube_video_id: 'abcdefghijk' }
-
-  function createVideo(
-    overrides: Partial<{
-      published_at: string
-      status: string
-      talent_id: string
-      twitch_video: { twitch_video_id: string } | null
-      youtube_video: { youtube_video_id: string } | null
-    }> = {},
-  ) {
-    return {
-      published_at: '2026-11-16T11:00:00Z',
-      status: 'UPCOMING',
-      talent_id: talentId,
-      twitch_video: null,
-      youtube_video: youtubeVideo,
-      ...overrides,
-    }
-  }
-
   beforeEach(() => {
-    vi.clearAllMocks()
-
-    vi.spyOn(Temporal.Now, 'zonedDateTimeISO').mockReturnValue(
-      Temporal.ZonedDateTime.from('2026-11-15T12:34:56+09:00[Asia/Tokyo]'),
-    )
-
-    query.select.mockReturnValue(query)
-    query.in.mockReturnValue(query)
-    query.lte.mockReturnValue(query)
-    query.order.mockResolvedValue({ data: [], error: null })
+    // 03:34:56 in UTC, so this hour starts at 03:00
+    mockNow('2026-11-15T03:34:56Z')
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
+  test('returns the earliest upcoming stream of each talent within a week', async () => {
+    await seedVideos([
+      createVideoOnYouTube(channel, {
+        published_at: '2026-11-16T11:00:00Z',
+        status: 'UPCOMING',
+      }),
+      createVideoOnYouTube(channel, {
+        published_at: '2026-11-15T10:00:00Z',
+        status: 'UPCOMING',
+      }),
+      createVideoOnYouTube(channel, {
+        published_at: '2026-11-15T04:00:00Z',
+        status: 'ENDED',
+      }),
+      createVideoOnTwitch(twitchUser, {
+        published_at: '2026-11-15T12:00:00Z',
+        status: 'UPCOMING',
+      }),
+      // A week from the start of the hour, like the upcoming videos of the
+      // home page
+      createVideoOnTwitch(twitchUser, {
+        published_at: '2026-11-22T03:00:01Z',
+        status: 'UPCOMING',
+      }),
+    ])
 
-  test('requests the live and upcoming videos within a week by start', async () => {
-    await fetchTalentStreamStatuses()
-
-    const select = String(query.select.mock.calls[0]?.[0]).replace(/\s+/g, ' ')
-
-    expect(supabaseClient.from).toHaveBeenCalledWith('videos')
-    expect(select).toContain('published_at, status, talent_id')
-    expect(select).not.toContain('title')
-    expect(query.in).toHaveBeenCalledWith('status', ['LIVE', 'UPCOMING'])
-    // A week from the start of the hour, like the upcoming videos of the home
-    // page
-    expect(query.lte).toHaveBeenCalledWith(
-      'published_at',
-      '2026-11-22T03:00:00Z',
-    )
-    expect(query.order).toHaveBeenCalledWith('published_at', {
-      ascending: true,
+    await expect(fetchTalentStreamStatuses()).resolves.toEqual({
+      [otherTalent.id]: {
+        isLive: false,
+        nextStreamAt: '2026-11-15T12:00:00Z',
+      },
+      [talent.id]: { isLive: false, nextStreamAt: '2026-11-15T10:00:00Z' },
     })
+  })
+
+  test('returns no talent without a stream within a week', async () => {
+    await seedVideos([
+      createVideoOnYouTube(channel, {
+        published_at: '2026-11-22T03:00:01Z',
+        status: 'UPCOMING',
+      }),
+    ])
+
+    await expect(fetchTalentStreamStatuses()).resolves.toEqual({})
   })
 
   test('is cached for minutes with the videos tag', async () => {
@@ -113,82 +126,65 @@ describe('fetchTalentStreamStatuses', () => {
     expect(cacheTag).not.toHaveBeenCalledWith('talents')
   })
 
-  test('returns the earliest upcoming stream of each talent', async () => {
-    query.order.mockResolvedValue({
-      data: [
-        createVideo({ published_at: '2026-11-15T10:00:00Z' }),
-        createVideo({
-          published_at: '2026-11-15T12:00:00Z',
-          talent_id: otherTalentId,
-          twitch_video: { twitch_video_id: '1234567890' },
-          youtube_video: null,
-        }),
-        createVideo({ published_at: '2026-11-16T11:00:00Z' }),
-      ],
-      error: null,
-    })
-
-    await expect(fetchTalentStreamStatuses()).resolves.toEqual({
-      [otherTalentId]: {
-        isLive: false,
-        nextStreamAt: '2026-11-15T12:00:00Z',
-      },
-      [talentId]: { isLive: false, nextStreamAt: '2026-11-15T10:00:00Z' },
-    })
-  })
-
   test('returns no next stream for a talent that is live', async () => {
-    query.order.mockResolvedValue({
-      data: [
-        createVideo({ published_at: '2026-11-15T01:00:00Z', status: 'LIVE' }),
-        createVideo({ published_at: '2026-11-15T10:00:00Z' }),
-      ],
-      error: null,
-    })
+    await seedVideos([
+      createVideoOnYouTube(channel, {
+        published_at: '2026-11-15T01:00:00Z',
+        status: 'LIVE',
+      }),
+      createVideoOnYouTube(channel, {
+        published_at: '2026-11-15T10:00:00Z',
+        status: 'UPCOMING',
+      }),
+    ])
 
     await expect(fetchTalentStreamStatuses()).resolves.toEqual({
-      [talentId]: { isLive: true, nextStreamAt: null },
+      [talent.id]: { isLive: true, nextStreamAt: null },
     })
   })
 
   test('skips the videos without YouTube or Twitch videos', async () => {
-    query.order.mockResolvedValue({
-      data: [
-        createVideo({ status: 'LIVE', youtube_video: null }),
-        createVideo({ talent_id: otherTalentId, youtube_video: null }),
-        createVideo({ published_at: '2026-11-17T11:00:00Z' }),
-      ],
-      error: null,
-    })
+    await seedVideos([
+      createVideo({ status: 'LIVE', talent_id: talent.id }),
+      createVideo({
+        published_at: '2026-11-15T10:00:00Z',
+        status: 'UPCOMING',
+        talent_id: otherTalent.id,
+      }),
+      createVideoOnYouTube(channel, {
+        published_at: '2026-11-17T11:00:00Z',
+        status: 'UPCOMING',
+      }),
+    ])
 
     await expect(fetchTalentStreamStatuses()).resolves.toEqual({
-      [talentId]: { isLive: false, nextStreamAt: '2026-11-17T11:00:00Z' },
+      [talent.id]: { isLive: false, nextStreamAt: '2026-11-17T11:00:00Z' },
     })
   })
 
   test('skips the upcoming streams that should have started before this hour', async () => {
-    query.order.mockResolvedValue({
-      data: [
-        createVideo({ published_at: '2026-11-15T02:59:59Z' }),
-        createVideo({ published_at: '2026-11-15T03:00:00Z' }),
-        createVideo({
-          published_at: '2026-11-14T10:00:00Z',
-          talent_id: otherTalentId,
-        }),
-      ],
-      error: null,
-    })
+    await seedVideos([
+      createVideoOnYouTube(channel, {
+        published_at: '2026-11-15T02:59:59Z',
+        status: 'UPCOMING',
+      }),
+      createVideoOnYouTube(channel, {
+        published_at: '2026-11-15T03:00:00Z',
+        status: 'UPCOMING',
+      }),
+      createVideoOnYouTube(otherChannel, {
+        published_at: '2026-11-14T10:00:00Z',
+        status: 'UPCOMING',
+      }),
+    ])
 
     await expect(fetchTalentStreamStatuses()).resolves.toEqual({
-      [talentId]: { isLive: false, nextStreamAt: '2026-11-15T03:00:00Z' },
+      [talent.id]: { isLive: false, nextStreamAt: '2026-11-15T03:00:00Z' },
     })
   })
 
   test('throws when the videos cannot be fetched', async () => {
-    query.order.mockResolvedValue({
-      data: null,
-      error: { message: 'failed' },
-    })
+    failSupabase('videos', 'failed')
 
     await expect(fetchTalentStreamStatuses()).rejects.toThrow('failed')
   })
@@ -196,40 +192,25 @@ describe('fetchTalentStreamStatuses', () => {
 
 describe('fetchTalentStreamStatusesSafe', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-
-    query.select.mockReturnValue(query)
-    query.in.mockReturnValue(query)
-    query.lte.mockReturnValue(query)
+    mockNow('2026-11-15T03:34:56Z')
   })
 
   test('returns the stream statuses', async () => {
-    const [talentId] = TALENT_IDS as [string]
-
-    query.order.mockResolvedValue({
-      data: [
-        {
-          published_at: '2026-11-15T01:00:00Z',
-          status: 'LIVE',
-          talent_id: talentId,
-          twitch_video: null,
-          youtube_video: { youtube_video_id: 'abcdefghijk' },
-        },
-      ],
-      error: null,
-    })
+    await seedVideos([
+      createVideoOnYouTube(channel, {
+        published_at: '2026-11-15T01:00:00Z',
+        status: 'LIVE',
+      }),
+    ])
 
     await expect(fetchTalentStreamStatusesSafe()).resolves.toEqual({
-      [talentId]: { isLive: true, nextStreamAt: null },
+      [talent.id]: { isLive: true, nextStreamAt: null },
     })
     expect(logger.error).not.toHaveBeenCalled()
   })
 
   test('returns no statuses and logs the error when they cannot be fetched', async () => {
-    query.order.mockResolvedValue({
-      data: null,
-      error: { message: 'failed' },
-    })
+    failSupabase('videos', 'failed')
 
     await expect(fetchTalentStreamStatusesSafe()).resolves.toEqual({})
     expect(logger.error).toHaveBeenCalledWith(
@@ -240,72 +221,52 @@ describe('fetchTalentStreamStatusesSafe', () => {
 })
 
 describe('fetchTalentStreamStarts', () => {
-  const [talentId] = TALENT_IDS as [string]
-
   beforeEach(() => {
-    vi.clearAllMocks()
-
-    vi.spyOn(Temporal.Now, 'zonedDateTimeISO').mockReturnValue(
-      Temporal.ZonedDateTime.from('2026-11-15T00:34:56+09:00[Asia/Tokyo]'),
-    )
-
-    query.select.mockReturnValue(query)
-    query.eq.mockReturnValue(query)
-    query.gte.mockReturnValue(query)
-    query.lt.mockReturnValue(query)
-    query.order.mockReturnValue(query)
-    query.limit.mockResolvedValue({ data: [], error: null })
+    // 00:34:56 on 15 November in Japan, so today starts at 15:00 in UTC
+    mockNow('2026-11-14T15:34:56Z')
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
+  test('returns the starts of the finished streams of the talent for 90 days before today', async () => {
+    const ended = (publishedAt: string, overrides = {}) =>
+      createVideoOnYouTube(channel, {
+        published_at: publishedAt,
+        status: 'ENDED',
+        ...overrides,
+      })
 
-  test('requests the finished streams of the talent for 90 days before today', async () => {
-    await fetchTalentStreamStarts(talentId)
+    await seedVideos([
+      ended('2026-11-13T13:00:00Z'),
+      // From 0:00 in Japan 90 days before today
+      ended('2026-08-16T15:00:00Z'),
+      ended('2026-08-16T14:59:59Z'),
+      // To 0:00 of today
+      ended('2026-11-14T14:59:59Z'),
+      ended('2026-11-14T15:00:00Z'),
+      ended('2026-11-14T12:00:00Z', { video_kind: 'short' }),
+      ended('2026-11-14T12:00:00Z', { status: 'PUBLISHED' }),
+      createVideoOnYouTube(otherChannel, {
+        published_at: '2026-11-14T12:00:00Z',
+        status: 'ENDED',
+      }),
+    ])
 
-    expect(supabaseClient.from).toHaveBeenCalledWith('videos')
-    expect(query.select).toHaveBeenCalledWith('published_at')
-    expect(query.eq).toHaveBeenCalledWith('talent_id', talentId)
-    expect(query.eq).toHaveBeenCalledWith('status', 'ENDED')
-    expect(query.eq).toHaveBeenCalledWith('video_kind', 'standard')
-    // From 0:00 in Japan 90 days before today to 0:00 of today
-    expect(query.gte).toHaveBeenCalledWith(
-      'published_at',
+    await expect(fetchTalentStreamStarts(talent.id)).resolves.toEqual([
+      '2026-11-14T14:59:59Z',
+      '2026-11-13T13:00:00Z',
       '2026-08-16T15:00:00Z',
-    )
-    expect(query.lt).toHaveBeenCalledWith(
-      'published_at',
-      '2026-11-14T15:00:00Z',
-    )
-    expect(query.limit).toHaveBeenCalledWith(1000)
+    ])
   })
 
   test('is cached for days with the videos tag', async () => {
-    await fetchTalentStreamStarts(talentId)
+    await fetchTalentStreamStarts(talent.id)
 
     expect(cacheLife).toHaveBeenCalledWith('days')
     expect(cacheTag).toHaveBeenCalledWith('videos')
   })
 
-  test('returns the starts of the streams', async () => {
-    query.limit.mockResolvedValue({
-      data: [
-        { published_at: '2026-11-14T12:00:00+00:00' },
-        { published_at: '2026-11-13T13:00:00+00:00' },
-      ],
-      error: null,
-    })
-
-    await expect(fetchTalentStreamStarts(talentId)).resolves.toEqual([
-      '2026-11-14T12:00:00+00:00',
-      '2026-11-13T13:00:00+00:00',
-    ])
-  })
-
   test('throws when the streams cannot be fetched', async () => {
-    query.limit.mockResolvedValue({ data: null, error: { message: 'failed' } })
+    failSupabase('videos', 'failed')
 
-    await expect(fetchTalentStreamStarts(talentId)).rejects.toThrow('failed')
+    await expect(fetchTalentStreamStarts(talent.id)).rejects.toThrow('failed')
   })
 })
