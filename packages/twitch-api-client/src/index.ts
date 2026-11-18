@@ -430,10 +430,64 @@ function mapStream(stream: {
 }
 
 // ---------------------------------------------------------------------------
+// Lookups by ID
+// ---------------------------------------------------------------------------
+
+/**
+ * Runs one Helix request, e.g. once a slot of a queue that bounds the
+ * requests in flight is free.
+ */
+export type RequestScheduler = <T>(request: () => Promise<T>) => Promise<T>
+
+interface BatchOptions {
+  /**
+   * Runs each Helix request. When given, every batch of IDs is requested at
+   * once and it decides how many requests run at a time; otherwise the
+   * batches are requested one after another.
+   */
+  schedule?: RequestScheduler | undefined
+}
+
+const runNow: RequestScheduler = (request) => request()
+
+/**
+ * Requests `ids` in batches of {@link TWITCH_API_MAX_RESULTS}, the most one
+ * request accepts, and yields what each batch returned in the order of the
+ * batches. `request` makes its Helix requests through `run`.
+ */
+async function* requestInBatches<T>(
+  ids: readonly string[],
+  schedule: RequestScheduler | undefined,
+  request: (ids: string[], run: RequestScheduler) => Promise<readonly T[]>,
+): AsyncGenerator<T, void, undefined> {
+  const batches: string[][] = []
+
+  for (let i = 0; i < ids.length; i += TWITCH_API_MAX_RESULTS) {
+    batches.push(ids.slice(i, i + TWITCH_API_MAX_RESULTS))
+  }
+
+  if (!schedule) {
+    for (const batch of batches) {
+      yield* await request(batch, runNow)
+    }
+
+    return
+  }
+
+  const results = await Promise.all(
+    batches.map((batch) => request(batch, schedule)),
+  )
+
+  for (const items of results) {
+    yield* items
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Users
 // ---------------------------------------------------------------------------
 
-export interface GetUsersOptions {
+export interface GetUsersOptions extends BatchOptions {
   ids?: string[]
   logins?: string[]
 }
@@ -444,6 +498,7 @@ export interface GetUsersOptions {
 export async function* getUsers({
   ids = [],
   logins = [],
+  schedule,
 }: GetUsersOptions): AsyncGenerator<TwitchUser, void, undefined> {
   if (ids.length === 0 && logins.length === 0) {
     return
@@ -451,20 +506,16 @@ export async function* getUsers({
 
   const client = getTwitchApiClient()
 
-  for (let i = 0; i < ids.length; i += TWITCH_API_MAX_RESULTS) {
-    const chunk = ids.slice(i, i + TWITCH_API_MAX_RESULTS)
-    const users = await client.users.getUsersByIds(chunk)
-    for (const user of users) {
-      yield mapUser(user)
-    }
+  for await (const user of requestInBatches(ids, schedule, (batch, run) =>
+    run(() => client.users.getUsersByIds(batch)),
+  )) {
+    yield mapUser(user)
   }
 
-  for (let i = 0; i < logins.length; i += TWITCH_API_MAX_RESULTS) {
-    const chunk = logins.slice(i, i + TWITCH_API_MAX_RESULTS)
-    const users = await client.users.getUsersByNames(chunk)
-    for (const user of users) {
-      yield mapUser(user)
-    }
+  for await (const user of requestInBatches(logins, schedule, (batch, run) =>
+    run(() => client.users.getUsersByNames(batch)),
+  )) {
+    yield mapUser(user)
   }
 }
 
@@ -546,7 +597,7 @@ async function lookupByIds<T>(
   }
 }
 
-export interface GetVideosOptions {
+export interface GetVideosOptions extends BatchOptions {
   ids: string[]
 }
 
@@ -556,19 +607,18 @@ export interface GetVideosOptions {
  */
 export async function* getVideos({
   ids,
+  schedule,
 }: GetVideosOptions): AsyncGenerator<TwitchVideo, void, undefined> {
   const client = getTwitchApiClient()
 
-  for (let i = 0; i < ids.length; i += TWITCH_API_MAX_RESULTS) {
-    const chunk = ids.slice(i, i + TWITCH_API_MAX_RESULTS)
-    const videos = await lookupByIds(chunk, (chunkIds) =>
-      client.videos.getVideosByIds(chunkIds),
-    )
-    for (const video of videos) {
-      const mapped = mapVideo(video)
-      if (mapped) {
-        yield mapped
-      }
+  for await (const video of requestInBatches(ids, schedule, (batch, run) =>
+    lookupByIds(batch, (batchIds) =>
+      run(() => client.videos.getVideosByIds(batchIds)),
+    ),
+  )) {
+    const mapped = mapVideo(video)
+    if (mapped) {
+      yield mapped
     }
   }
 }
@@ -668,7 +718,7 @@ export async function getVideosByUserPage({
 // Clips
 // ---------------------------------------------------------------------------
 
-export interface GetClipsOptions {
+export interface GetClipsOptions extends BatchOptions {
   ids: string[]
 }
 
@@ -678,17 +728,16 @@ export interface GetClipsOptions {
  */
 export async function* getClips({
   ids,
+  schedule,
 }: GetClipsOptions): AsyncGenerator<TwitchClip, void, undefined> {
   const client = getTwitchApiClient()
 
-  for (let i = 0; i < ids.length; i += TWITCH_API_MAX_RESULTS) {
-    const chunk = ids.slice(i, i + TWITCH_API_MAX_RESULTS)
-    const clips = await lookupByIds(chunk, (chunkIds) =>
-      client.clips.getClipsByIds(chunkIds),
-    )
-    for (const clip of clips) {
-      yield mapClip(clip)
-    }
+  for await (const clip of requestInBatches(ids, schedule, (batch, run) =>
+    lookupByIds(batch, (batchIds) =>
+      run(() => client.clips.getClipsByIds(batchIds)),
+    ),
+  )) {
+    yield mapClip(clip)
   }
 }
 
@@ -696,7 +745,7 @@ export async function* getClips({
 // Streams (live broadcasts)
 // ---------------------------------------------------------------------------
 
-export interface GetStreamsByUserIdsOptions {
+export interface GetStreamsByUserIdsOptions extends BatchOptions {
   userIds: string[]
 }
 
@@ -705,6 +754,7 @@ export interface GetStreamsByUserIdsOptions {
  * Offline users are omitted from the response (same as Helix).
  */
 export async function* getStreamsByUserIds({
+  schedule,
   userIds,
 }: GetStreamsByUserIdsOptions): AsyncGenerator<TwitchStream, void, undefined> {
   if (userIds.length === 0) {
@@ -713,14 +763,12 @@ export async function* getStreamsByUserIds({
 
   const client = getTwitchApiClient()
 
-  for (let i = 0; i < userIds.length; i += TWITCH_API_MAX_RESULTS) {
-    const chunk = userIds.slice(i, i + TWITCH_API_MAX_RESULTS)
-    const streams = await client.streams.getStreamsByUserIds(chunk)
-    for (const stream of streams) {
-      const mapped = mapStream(stream)
-      if (mapped) {
-        yield mapped
-      }
+  for await (const stream of requestInBatches(userIds, schedule, (batch, run) =>
+    run(() => client.streams.getStreamsByUserIds(batch)),
+  )) {
+    const mapped = mapStream(stream)
+    if (mapped) {
+      yield mapped
     }
   }
 }
