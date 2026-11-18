@@ -83,7 +83,6 @@ const temporarilyDisabled = defineConfig({
     "typescript/parameter-properties": "off",
     "unicorn/consistent-function-scoping": "off",
     "unicorn/error-message": "off",
-    "unicorn/filename-case": "off",
     "unicorn/import-style": "off",
     "unicorn/no-array-for-each": "off",
     "unicorn/no-array-reduce": "off",

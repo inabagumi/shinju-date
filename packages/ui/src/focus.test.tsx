@@ -1,13 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { Button } from "./Button/Button";
-import { Input } from "./Input/Input";
-import { MultiSelect } from "./MultiSelect/MultiSelect";
-import type { MultiSelectProps } from "./MultiSelect/MultiSelect";
-import { Select } from "./Select/Select";
-import { Textarea } from "./Textarea/Textarea";
-import { ToastClose, ToastProvider } from "./Toast/Toast";
+import { Button } from "./button/button";
+import { Input } from "./input/input";
+import { MultiSelect } from "./multi-select/multi-select";
+import type { MultiSelectProps } from "./multi-select/multi-select";
+import { Select } from "./select/select";
+import { Textarea } from "./textarea/textarea";
+import { ToastClose, ToastProvider } from "./toast/toast";
 
 describe("focus styles", () => {
   it("gives buttons the focus ring", () => {
