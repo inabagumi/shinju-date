@@ -1154,12 +1154,12 @@ describe('Supabase Handlers', () => {
       )
     })
 
-    it('should apply the select of search_videos_v2', async () => {
+    it('should apply the select of search_videos_v3', async () => {
       const select =
         'id,talent:talents(id,name),youtube_video:youtube_videos(youtube_video_id,youtube_channel:youtube_channels(name,profile_image:profile_images(id)))'
       const search = async (perpage: number) => {
         const response = await fetch(
-          `https://fake.supabase.test/rest/v1/rpc/search_videos_v2?select=${encodeURIComponent(select)}`,
+          `https://fake.supabase.test/rest/v1/rpc/search_videos_v3?select=${encodeURIComponent(select)}`,
           {
             body: JSON.stringify({ perpage, query: '' }),
             headers: { 'Content-Type': 'application/json' },
@@ -1378,7 +1378,7 @@ describe('Supabase Handlers', () => {
       body: Record<string, unknown>,
     ): Promise<VideoRow[]> {
       const response = await fetch(
-        `https://fake.supabase.test/rest/v1/rpc/search_videos_v2?select=${encodeURIComponent(select)}`,
+        `https://fake.supabase.test/rest/v1/rpc/search_videos_v3?select=${encodeURIComponent(select)}`,
         {
           body: JSON.stringify({ query: '', ...body }),
           headers: { 'Content-Type': 'application/json' },
@@ -1545,7 +1545,7 @@ describe('Supabase Handlers', () => {
     it('should search only videos whose titles match the query', async () => {
       const searchTitles = async (query: string) => {
         const response = await fetch(
-          'https://fake.supabase.test/rest/v1/rpc/search_videos_v2?select=title',
+          'https://fake.supabase.test/rest/v1/rpc/search_videos_v3?select=title',
           {
             body: JSON.stringify({ perpage: 100, query }),
             headers: { 'Content-Type': 'application/json' },
@@ -1576,9 +1576,9 @@ describe('Supabase Handlers', () => {
       expect(await searchTitles('zzzzzzzzqqq')).toEqual([])
     })
 
-    it('should embed Twitch videos in search_videos_v2 without a select', async () => {
+    it('should embed Twitch videos in search_videos_v3 without a select', async () => {
       const response = await fetch(
-        'https://fake.supabase.test/rest/v1/rpc/search_videos_v2',
+        'https://fake.supabase.test/rest/v1/rpc/search_videos_v3',
         {
           body: JSON.stringify({ perpage: 100, query: '' }),
           headers: { 'Content-Type': 'application/json' },
@@ -1676,9 +1676,9 @@ describe('Supabase Handlers', () => {
       const restUrl = 'https://fake.supabase.test/rest/v1'
       const select =
         'id,talent:talents(deleted_at),youtube_video:youtube_videos(youtube_video_id),twitch_video:twitch_videos(twitch_video_id)'
-      const searchRows = async (functionName: string, perpage: number) => {
+      const search = async (perpage: number) => {
         const response = await fetch(
-          `${restUrl}/rpc/${functionName}?select=${encodeURIComponent(select)}`,
+          `${restUrl}/rpc/search_videos_v3?select=id`,
           {
             body: JSON.stringify({ perpage, query: '' }),
             headers: { 'Content-Type': 'application/json' },
@@ -1688,15 +1688,10 @@ describe('Supabase Handlers', () => {
 
         expect(response.ok).toBe(true)
 
-        return (await response.json()) as {
-          id: string
-          talent: { deleted_at: string | null } | null
-          twitch_video: unknown
-          youtube_video: unknown
-        }[]
+        return ((await response.json()) as { id: string }[]).map(
+          (video) => video.id,
+        )
       }
-      const search = async (functionName: string, perpage: number) =>
-        (await searchRows(functionName, perpage)).map((video) => video.id)
       const [shownVideo] = (await (
         await fetch(`${restUrl}/videos?select=id,talent_id&limit=1`)
       ).json()) as { id: string; talent_id: string }[]
@@ -1729,8 +1724,19 @@ describe('Supabase Handlers', () => {
       expect(created.status).toBe(201)
 
       try {
-        // search_videos_v2 returns the videos before they are left out
-        const shownVideoIds = (await searchRows('search_videos_v2', 1000))
+        // The videos the search matches, newest first, before the videos the
+        // site does not show are left out
+        const matchedVideos = (await (
+          await fetch(
+            `${restUrl}/videos?select=${encodeURIComponent(select)}&deleted_at=is.null&visible=is.true&order=published_at.desc`,
+          )
+        ).json()) as {
+          id: string
+          talent: { deleted_at: string | null } | null
+          twitch_video: unknown
+          youtube_video: unknown
+        }[]
+        const shownVideoIds = matchedVideos
           .filter(
             (video) =>
               video.talent?.deleted_at === null &&
@@ -1740,13 +1746,11 @@ describe('Supabase Handlers', () => {
 
         expect(shownVideoIds.length).toBeGreaterThan(2)
 
-        expect(await search('search_videos_v2', 2)).toEqual(
+        expect(matchedVideos.slice(0, 2).map((video) => video.id)).toEqual(
           hiddenVideoIds.toReversed(),
         )
-        expect(await search('search_videos_v3', 2)).toEqual(
-          shownVideoIds.slice(0, 2),
-        )
-        expect(await search('search_videos_v3', 1000)).toEqual(shownVideoIds)
+        expect(await search(2)).toEqual(shownVideoIds.slice(0, 2))
+        expect(await search(1000)).toEqual(shownVideoIds)
       } finally {
         await fetch(`${restUrl}/videos?id=in.(${hiddenVideoIds.join(',')})`, {
           method: 'DELETE',
