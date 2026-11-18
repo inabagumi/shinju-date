@@ -1851,6 +1851,48 @@ describe('Supabase Handlers', () => {
     })
   })
 
+  describe('Touching rows', () => {
+    const restUrl = 'https://fake.supabase.test/rest/v1'
+
+    it.each([
+      ['touch_talent', 'talents', 'p_talent_id'],
+      ['touch_thumbnail', 'thumbnails', 'p_thumbnail_id'],
+    ])(
+      'should move updated_at of the row with %s, like the trigger',
+      async (name, table, param) => {
+        const [row] = (await (
+          await fetch(`${restUrl}/${table}?select=*&limit=1`)
+        ).json()) as ({ id: string; updated_at: string } & Record<
+          string,
+          unknown
+        >)[]
+
+        expect(row).toBeDefined()
+
+        const response = await fetch(`${restUrl}/rpc/${name}`, {
+          body: JSON.stringify({ [param]: row?.id }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        })
+
+        expect(response.status).toBe(204)
+
+        const [touched] = (await (
+          await fetch(`${restUrl}/${table}?select=*&id=eq.${row?.id}`)
+        ).json()) as ({ updated_at: string } & Record<string, unknown>)[]
+
+        expect(touched?.updated_at).not.toBe(row?.updated_at)
+        expect(touched?.updated_at).toMatch(
+          /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/,
+        )
+        expect({ ...touched, updated_at: undefined }).toEqual({
+          ...row,
+          updated_at: undefined,
+        })
+      },
+    )
+  })
+
   describe('Inserting videos', () => {
     const restUrl = 'https://fake.supabase.test/rest/v1'
 

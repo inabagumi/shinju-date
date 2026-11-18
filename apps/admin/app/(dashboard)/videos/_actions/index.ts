@@ -30,7 +30,7 @@ export interface BulkVideoActionData {
 interface BulkVideoUpdateContext extends AuthenticatedContext {
   /** 選ばれた動画のうち、見つかったもの */
   videos: BulkVideo[]
-  /** 更新日時などに使う、今の日時（`toDBString` 済み） */
+  /** 削除日時（`deleted_at`）に使う、今の日時（`toDBString` 済み） */
   now: string
 }
 
@@ -148,7 +148,7 @@ export const toggleVisibilityAction = adminAction(
     runBulkVideoAction(context, {
       auditAction: 'VIDEO_VISIBILITY_TOGGLE',
       ids,
-      update: async ({ now, supabaseClient, videos }) => {
+      update: async ({ supabaseClient, videos }) => {
         // 切り替え先ごとにまとめ、表示にする動画と非表示にする動画をそれぞれ1回で更新する
         const groups = [
           {
@@ -165,7 +165,7 @@ export const toggleVisibilityAction = adminAction(
           groups.map((group) =>
             supabaseClient
               .from('videos')
-              .update({ updated_at: now, visible: group.visible })
+              .update({ visible: group.visible })
               .in('id', group.ids)
               // 読み取った後にほかの操作で切り替わった動画は更新しない
               .eq('visible', !group.visible)

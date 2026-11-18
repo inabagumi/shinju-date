@@ -98,8 +98,8 @@ function syncTo({
   }
 }
 
-function talentUpdates() {
-  return supabase.calls('update', 'talents')
+function talentTouches() {
+  return supabase.calls('rpc', 'touch_talent')
 }
 
 beforeEach(() => {
@@ -132,9 +132,7 @@ describe('syncTalentWithYouTubeAction', () => {
     const result = await syncTalentWithYouTubeAction(talentId)
 
     expect(result).toEqual({ data: { unchanged: false }, success: true })
-    expect(talentUpdates()[0]?.body).toEqual({
-      updated_at: '2024-11-24T17:00:00Z',
-    })
+    expect(talentTouches()[0]?.body).toEqual({ p_talent_id: talentId })
     test.expectAuditLog('CHANNEL_SYNC', talentId, {
       accounts: [
         {
@@ -173,7 +171,7 @@ describe('syncTalentWithYouTubeAction', () => {
       data: { message: 'チャンネル情報は既に最新です。', unchanged: true },
       success: true,
     })
-    expect(talentUpdates()).toHaveLength(0)
+    expect(talentTouches()).toHaveLength(0)
     test.expectNoAuditLog()
     test.expectNotRevalidated()
   })
@@ -222,8 +220,8 @@ describe('syncTalentWithYouTubeAction', () => {
   it('fails when the talent cannot be touched', async () => {
     syncTo({ youtube: [updatedChannel] })
     supabase.on(
-      'update',
-      'talents',
+      'rpc',
+      'touch_talent',
       postgresError('42501', 'permission denied'),
     )
 

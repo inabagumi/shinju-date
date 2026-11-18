@@ -437,10 +437,12 @@ import { toDBString } from '@shinju-date/temporal-fns'
 const now = Temporal.Now.instant()
 
 await supabase
-  .from('videos')
-  .update({ updated_at: toDBString(now) }) // ✅ now.toString() は使わない
-  .eq('id', videoId)
+  .from('announcements')
+  .update({ start_at: toDBString(now) }) // ✅ now.toString() は使わない
+  .eq('id', announcementId)
 ```
+
+`updated_at` は、UPDATE で書きません。すべてのテーブルに、行を更新するとデータベースの現在時刻（秒に切り捨て）を入れるトリガー（`handle_updated_at`）が付いており、書いた値は使われないためです。ほかの列を変えずに `updated_at` だけを進めるときは、`touch_talent` / `touch_thumbnail` のように、トリガーを動かすデータベースの関数を呼びます。INSERT のときは、1回の処理で挿入する行の時刻を揃えるため、`created_at` / `updated_at` に `toDBString(now)` を入れてかまいません。
 
 ## admin の Server Action の認証
 

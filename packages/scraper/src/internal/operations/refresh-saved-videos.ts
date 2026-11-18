@@ -1,4 +1,3 @@
-import { toDBString } from '@shinju-date/temporal-fns'
 import type { VideoFields, WriteContext } from '../../types.js'
 import { countChanges } from '../concurrency.js'
 import { RECENT_VIDEO_COUNT, WRITE_CONCURRENCY } from '../constants.js'
@@ -90,10 +89,7 @@ async function applyRefresh<TVideo, TSaved extends SavedVideoBase>(
   const fieldsChanged = Object.keys(changes).length > 0
 
   if (fieldsChanged) {
-    await updateVideo(supabaseClient, saved.id, {
-      ...changes,
-      updated_at: toDBString(now),
-    })
+    await updateVideo(supabaseClient, saved.id, changes)
   }
 
   const hookChanged = afterRefresh ? await afterRefresh(saved, fetched) : false
