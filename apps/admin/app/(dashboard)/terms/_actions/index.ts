@@ -1,64 +1,52 @@
 'use server'
 
 import { CACHE_TAGS } from '@shinju-date/constants'
-import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
-import type { FormState } from '@/components/form'
-import { createAuditLog } from '@/lib/audit-log'
+import * as z from 'zod'
 import {
-  requireAuthenticatedUser,
-  unauthenticatedFormState,
-  unauthenticatedResult,
-} from '@/lib/auth'
+  ActionError,
+  type ActionResult,
+  adminAction,
+  adminFormAction,
+} from '@/lib/action'
+import { createAuditLog } from '@/lib/audit-log'
 
-export async function createTermAction(
-  _currentState: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const auth = await requireAuthenticatedUser()
+const TERM_REQUIRED_ERROR = '用語を入力してください。'
+const ID_REQUIRED_ERROR = 'IDが指定されていません。'
 
-  if (!auth) {
-    return unauthenticatedFormState()
-  }
+/** 読み方と同義語の並び。前後の空白を除き、空の値は捨てる */
+const termValuesSchema = z
+  .array(z.string().trim())
+  .transform((values) => values.filter(Boolean))
+  .default([])
 
-  const { supabaseClient } = auth
+const createTermSchema = z.object({
+  readings: termValuesSchema,
+  synonyms: termValuesSchema,
+  term: z
+    .string({ error: TERM_REQUIRED_ERROR })
+    .trim()
+    .min(1, TERM_REQUIRED_ERROR),
+})
 
-  const term = formData.get('term') as string
+const updateTermSchema = createTermSchema.extend({
+  id: z.string({ error: ID_REQUIRED_ERROR }).min(1, ID_REQUIRED_ERROR),
+})
 
-  if (!term || term.trim() === '') {
-    return {
-      errors: {
-        term: ['用語を入力してください。'],
-      },
-    }
-  }
+async function revalidateTerms(): Promise<void> {
+  revalidatePath('/terms')
+  await revalidateTags([CACHE_TAGS.VIDEOS])
+}
 
-  // Extract array values from FormData
-  const readingsArray: string[] = []
-  const synonymsArray: string[] = []
-
-  for (const [key, value] of formData.entries()) {
-    if (key.startsWith('readings[') && typeof value === 'string') {
-      readingsArray.push(value)
-    } else if (key.startsWith('synonyms[') && typeof value === 'string') {
-      synonymsArray.push(value)
-    }
-  }
-
-  // Filter out empty values
-  const filteredReadings = readingsArray.map((r) => r.trim()).filter(Boolean)
-  const filteredSynonyms = synonymsArray.map((s) => s.trim()).filter(Boolean)
-
-  try {
+export const createTermAction = adminFormAction(
+  'createTermAction',
+  createTermSchema,
+  async ({ supabaseClient }, { readings, synonyms, term }) => {
     const { data: newTerm, error } = await supabaseClient
       .from('terms')
-      .insert({
-        readings: filteredReadings,
-        synonyms: filteredSynonyms,
-        term: term.trim(),
-      })
+      .insert({ readings, synonyms, term })
       .select('id, term')
       .single()
 
@@ -66,72 +54,24 @@ export async function createTermAction(
       throw error
     }
 
-    // Log audit entry
     await createAuditLog(supabaseClient, 'TERM_CREATE', newTerm.id, {
       entityName: newTerm.term,
     })
 
-    revalidatePath('/terms')
-    await revalidateTags([CACHE_TAGS.VIDEOS])
-    return { success: true }
-  } catch (error) {
-    logger.error('用語の追加に失敗しました', { error, term: term.trim() })
-    return {
-      errors: {
-        generic: [
-          error instanceof Error ? error.message : '用語の追加に失敗しました。',
-        ],
-      },
-    }
-  }
-}
+    await revalidateTerms()
+  },
+)
 
-export async function updateTermAction(
-  _currentState: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedFormState()
-  }
-
-  const { supabaseClient } = auth
-
-  const id = formData.get('id') as string
-  const term = formData.get('term') as string
-
-  if (!id || !term || term.trim() === '') {
-    return {
-      errors: {
-        term: ['用語を入力してください。'],
-      },
-    }
-  }
-
-  // Extract array values from FormData
-  const readingsArray: string[] = []
-  const synonymsArray: string[] = []
-
-  for (const [key, value] of formData.entries()) {
-    if (key.startsWith('readings[') && typeof value === 'string') {
-      readingsArray.push(value)
-    } else if (key.startsWith('synonyms[') && typeof value === 'string') {
-      synonymsArray.push(value)
-    }
-  }
-
-  // Filter out empty values
-  const filteredReadings = readingsArray.map((r) => r.trim()).filter(Boolean)
-  const filteredSynonyms = synonymsArray.map((s) => s.trim()).filter(Boolean)
-
-  try {
-    const { data: newTerm, error } = await supabaseClient
+export const updateTermAction = adminFormAction(
+  'updateTermAction',
+  updateTermSchema,
+  async ({ supabaseClient }, { id, readings, synonyms, term }) => {
+    const { data: updatedTerm, error } = await supabaseClient
       .from('terms')
       .update({
-        readings: filteredReadings,
-        synonyms: filteredSynonyms,
-        term: term.trim(),
+        readings,
+        synonyms,
+        term,
         updated_at: toDBString(Temporal.Now.instant()),
       })
       .eq('id', id)
@@ -142,43 +82,23 @@ export async function updateTermAction(
       throw error
     }
 
-    // Log audit entry
     await createAuditLog(supabaseClient, 'TERM_UPDATE', id, {
-      entityName: newTerm.term,
+      entityName: updatedTerm.term,
     })
 
-    revalidatePath('/terms')
-    await revalidateTags([CACHE_TAGS.VIDEOS])
-    return { success: true }
-  } catch (error) {
-    logger.error('用語の更新に失敗しました', { error, id, term: term.trim() })
-    return {
-      errors: {
-        generic: [
-          error instanceof Error ? error.message : '用語の更新に失敗しました。',
-        ],
-      },
+    await revalidateTerms()
+  },
+  // `id` は隠しフィールドで、画面に対応する入力欄がない
+  { hiddenFields: ['id'] },
+)
+
+export const deleteTermAction = adminAction(
+  'deleteTermAction',
+  async ({ supabaseClient }, id: string): Promise<ActionResult> => {
+    if (!id) {
+      throw new ActionError(ID_REQUIRED_ERROR)
     }
-  }
-}
 
-export async function deleteTermAction(id: string): Promise<{
-  success: boolean
-  error?: string
-}> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  const { supabaseClient } = auth
-
-  if (!id) {
-    return { error: 'IDが指定されていません。', success: false }
-  }
-
-  try {
     const { data: deletedTerm, error } = await supabaseClient
       .from('terms')
       .delete()
@@ -190,20 +110,12 @@ export async function deleteTermAction(id: string): Promise<{
       throw error
     }
 
-    // Log audit entry
     await createAuditLog(supabaseClient, 'TERM_DELETE', id, {
       entityName: deletedTerm.term,
     })
 
-    revalidatePath('/terms')
-    await revalidateTags([CACHE_TAGS.VIDEOS])
+    await revalidateTerms()
+
     return { success: true }
-  } catch (error) {
-    logger.error('用語の削除に失敗しました', { error, id })
-    return {
-      error:
-        error instanceof Error ? error.message : '用語の削除に失敗しました。',
-      success: false,
-    }
-  }
-}
+  },
+)

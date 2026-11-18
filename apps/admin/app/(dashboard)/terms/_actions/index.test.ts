@@ -1,119 +1,204 @@
+import { CACHE_TAGS } from '@shinju-date/constants'
 import { describe, expect, it } from 'vitest'
+import { setupActionTest } from '@/test/action-harness'
+import { postgresError } from '@/test/supabase'
+import { createTermAction, deleteTermAction, updateTermAction } from './index'
+
+const test = setupActionTest()
+const { supabase } = test
 
 /**
- * Test data extraction logic for term actions
- * These tests verify the FormData processing logic used in createTermAction and updateTermAction
+ * 予期しない例外のときに画面に出る文（`@/lib/action` の `ACTION_FAILED_ERROR_MESSAGE`）。
+ * `@/lib/action` を読み込むと、認証のモックより先に `@/lib/auth` が読み込まれるため、
+ * ここに書く
  */
+const ACTION_FAILED_ERROR =
+  '処理に失敗しました。時間をおいて、もう一度お試しください。'
 
-describe('Term action FormData processing', () => {
-  describe('array extraction from FormData', () => {
-    it('should extract readings array from FormData entries', () => {
-      const formDataEntries: [string, FormDataEntryValue][] = [
-        ['term', 'test term'],
-        ['readings[0]', 'reading1'],
-        ['readings[1]', 'reading2'],
-        ['readings[2]', 'reading3'],
-      ]
+const ID = '80000000-0000-0000-0000-000000000001'
 
-      const readingsArray: string[] = []
-      for (const [key, value] of formDataEntries) {
-        if (key.startsWith('readings[') && typeof value === 'string') {
-          readingsArray.push(value)
-        }
-      }
+function termForm(
+  entries: Record<string, string>,
+  {
+    readings = [],
+    synonyms = [],
+  }: { readings?: string[]; synonyms?: string[] },
+): FormData {
+  const formData = new FormData()
 
-      expect(readingsArray).toEqual(['reading1', 'reading2', 'reading3'])
-    })
+  for (const [key, value] of Object.entries(entries)) {
+    formData.set(key, value)
+  }
 
-    it('should extract synonyms array from FormData entries', () => {
-      const formDataEntries: [string, FormDataEntryValue][] = [
-        ['term', 'test term'],
-        ['synonyms[0]', 'synonym1'],
-        ['synonyms[1]', 'synonym2'],
-      ]
+  readings.forEach((reading, index) => {
+    formData.set(`readings[${index}]`, reading)
+  })
+  synonyms.forEach((synonym, index) => {
+    formData.set(`synonyms[${index}]`, synonym)
+  })
 
-      const synonymsArray: string[] = []
-      for (const [key, value] of formDataEntries) {
-        if (key.startsWith('synonyms[') && typeof value === 'string') {
-          synonymsArray.push(value)
-        }
-      }
+  return formData
+}
 
-      expect(synonymsArray).toEqual(['synonym1', 'synonym2'])
-    })
+describe('createTermAction', () => {
+  it('adds the term with the trimmed, non-empty readings and synonyms', async () => {
+    supabase.on('insert', 'terms', { id: ID, term: '配信' })
 
-    it('should extract both readings and synonyms arrays', () => {
-      const formDataEntries: [string, FormDataEntryValue][] = [
-        ['term', 'test term'],
-        ['readings[0]', 'reading1'],
-        ['synonyms[0]', 'synonym1'],
-        ['readings[1]', 'reading2'],
-        ['synonyms[1]', 'synonym2'],
-      ]
+    const result = await createTermAction(
+      {},
+      termForm(
+        { term: '  配信  ' },
+        {
+          readings: [' はいしん ', '', '   '],
+          synonyms: ['', ' 生放送 ', 'ライブ'],
+        },
+      ),
+    )
 
-      const readingsArray: string[] = []
-      const synonymsArray: string[] = []
-
-      for (const [key, value] of formDataEntries) {
-        if (key.startsWith('readings[') && typeof value === 'string') {
-          readingsArray.push(value)
-        } else if (key.startsWith('synonyms[') && typeof value === 'string') {
-          synonymsArray.push(value)
-        }
-      }
-
-      expect(readingsArray).toEqual(['reading1', 'reading2'])
-      expect(synonymsArray).toEqual(['synonym1', 'synonym2'])
-    })
-
-    it('should handle empty arrays', () => {
-      const formDataEntries: [string, FormDataEntryValue][] = [
-        ['term', 'test term'],
-      ]
-
-      const readingsArray: string[] = []
-      const synonymsArray: string[] = []
-
-      for (const [key, value] of formDataEntries) {
-        if (key.startsWith('readings[') && typeof value === 'string') {
-          readingsArray.push(value)
-        } else if (key.startsWith('synonyms[') && typeof value === 'string') {
-          synonymsArray.push(value)
-        }
-      }
-
-      expect(readingsArray).toEqual([])
-      expect(synonymsArray).toEqual([])
+    expect(result).toEqual({ success: true })
+    expect(supabase.calls('insert', 'terms')).toMatchObject([
+      {
+        body: {
+          readings: ['はいしん'],
+          synonyms: ['生放送', 'ライブ'],
+          term: '配信',
+        },
+      },
+    ])
+    test.expectAuditLog('TERM_CREATE', ID, { entityName: '配信' })
+    test.expectRevalidated({
+      paths: ['/terms'],
+      tags: [[CACHE_TAGS.VIDEOS]],
     })
   })
 
-  describe('filtering and trimming', () => {
-    it('should filter out empty values', () => {
-      const values = ['reading1', '', 'reading2', '   ', 'reading3']
-      const filtered = values.map((r) => r.trim()).filter(Boolean)
+  it('keeps the readings in the order of their indexes', async () => {
+    supabase.on('insert', 'terms', { id: ID, term: 'Term' })
 
-      expect(filtered).toEqual(['reading1', 'reading2', 'reading3'])
+    const formData = new FormData()
+    formData.set('term', 'Term')
+    formData.set('readings[1]', 'second')
+    formData.set('readings[0]', 'first')
+
+    await createTermAction({}, formData)
+
+    expect(supabase.calls('insert', 'terms')).toMatchObject([
+      { body: { readings: ['first', 'second'], synonyms: [] } },
+    ])
+  })
+
+  it.each([
+    ['empty', '   '],
+    ['missing', null],
+  ])('returns an error for the term when it is %s', async (_label, term) => {
+    const result = await createTermAction(
+      {},
+      termForm(term === null ? {} : { term }, {}),
+    )
+
+    expect(result).toEqual({ errors: { term: ['用語を入力してください。'] } })
+    expect(supabase.requests).toEqual([])
+    test.expectNotRevalidated()
+  })
+
+  it('returns the fixed message when the insert fails', async () => {
+    supabase.on('insert', 'terms', postgresError('XX000', 'Database error'))
+
+    const result = await createTermAction({}, termForm({ term: 'Term' }, {}))
+
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR })
+    test.expectNoAuditLog()
+    test.expectNotRevalidated()
+  })
+})
+
+describe('updateTermAction', () => {
+  it('updates the term', async () => {
+    supabase.on('update', 'terms', { term: '配信' })
+
+    const result = await updateTermAction(
+      {},
+      termForm(
+        { id: ID, term: ' 配信 ' },
+        { readings: ['はいしん'], synonyms: [''] },
+      ),
+    )
+
+    expect(result).toEqual({ success: true })
+    expect(supabase.calls('update', 'terms')).toMatchObject([
+      {
+        body: {
+          readings: ['はいしん'],
+          synonyms: [],
+          term: '配信',
+        },
+        query: { id: `eq.${ID}` },
+      },
+    ])
+    test.expectAuditLog('TERM_UPDATE', ID, { entityName: '配信' })
+    test.expectRevalidated({
+      paths: ['/terms'],
+      tags: [[CACHE_TAGS.VIDEOS]],
     })
+  })
 
-    it('should trim whitespace from values', () => {
-      const values = ['  reading1  ', ' reading2 ', 'reading3']
-      const trimmed = values.map((r) => r.trim()).filter(Boolean)
+  it('returns a generic error without the ID', async () => {
+    const result = await updateTermAction({}, termForm({ term: 'Term' }, {}))
 
-      expect(trimmed).toEqual(['reading1', 'reading2', 'reading3'])
+    expect(result).toEqual({
+      errors: { generic: ['IDが指定されていません。'] },
     })
+    expect(supabase.requests).toEqual([])
+  })
 
-    it('should handle all empty values', () => {
-      const values = ['', '  ', '   ']
-      const filtered = values.map((r) => r.trim()).filter(Boolean)
+  it('returns the fixed message when the update fails', async () => {
+    supabase.on('update', 'terms', postgresError('XX000', 'Database error'))
 
-      expect(filtered).toEqual([])
+    const result = await updateTermAction(
+      {},
+      termForm({ id: ID, term: 'Term' }, {}),
+    )
+
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR })
+    test.expectNoAuditLog()
+    test.expectNotRevalidated()
+  })
+})
+
+describe('deleteTermAction', () => {
+  it('deletes the term', async () => {
+    supabase.on('delete', 'terms', { term: '配信' })
+
+    const result = await deleteTermAction(ID)
+
+    expect(result).toEqual({ success: true })
+    expect(supabase.calls('delete', 'terms')).toMatchObject([
+      { query: { id: `eq.${ID}` } },
+    ])
+    test.expectAuditLog('TERM_DELETE', ID, { entityName: '配信' })
+    test.expectRevalidated({
+      paths: ['/terms'],
+      tags: [[CACHE_TAGS.VIDEOS]],
     })
+  })
 
-    it('should preserve order after filtering', () => {
-      const values = ['third', '', 'first', '  ', 'second']
-      const filtered = values.map((r) => r.trim()).filter(Boolean)
+  it('returns an error without the ID', async () => {
+    const result = await deleteTermAction('')
 
-      expect(filtered).toEqual(['third', 'first', 'second'])
+    expect(result).toEqual({
+      error: 'IDが指定されていません。',
+      success: false,
     })
+    expect(supabase.requests).toEqual([])
+  })
+
+  it('returns the fixed message when the delete fails', async () => {
+    supabase.on('delete', 'terms', postgresError('XX000', 'Database error'))
+
+    const result = await deleteTermAction(ID)
+
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false })
+    test.expectNoAuditLog()
+    test.expectNotRevalidated()
   })
 })

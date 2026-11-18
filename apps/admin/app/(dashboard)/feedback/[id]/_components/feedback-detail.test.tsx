@@ -3,15 +3,15 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
-  markFeatureRequestAsRead: vi.fn(),
-  updateFeatureRequestMemo: vi.fn(),
-  updateFeatureRequestStatus: vi.fn(),
+  markFeatureRequestAsReadAction: vi.fn(),
+  updateFeatureRequestMemoAction: vi.fn(),
+  updateFeatureRequestStatusAction: vi.fn(),
 }))
 
 vi.mock('../../_actions/update-feedback', () => ({
-  markFeatureRequestAsRead: mocks.markFeatureRequestAsRead,
-  updateFeatureRequestMemo: mocks.updateFeatureRequestMemo,
-  updateFeatureRequestStatus: mocks.updateFeatureRequestStatus,
+  markFeatureRequestAsReadAction: mocks.markFeatureRequestAsReadAction,
+  updateFeatureRequestMemoAction: mocks.updateFeatureRequestMemoAction,
+  updateFeatureRequestStatusAction: mocks.updateFeatureRequestStatusAction,
 }))
 
 const { FeatureRequestDetail } = await import('./feedback-detail')
@@ -76,7 +76,9 @@ describe('FeatureRequestDetail', () => {
 
   describe('status', () => {
     it('submits the selected status and tells that it was updated', async () => {
-      mocks.updateFeatureRequestStatus.mockResolvedValue({ success: true })
+      mocks.updateFeatureRequestStatusAction.mockResolvedValue({
+        success: true,
+      })
 
       render(<FeatureRequestDetail featureRequest={featureRequest} />)
 
@@ -92,14 +94,14 @@ describe('FeatureRequestDetail', () => {
       expect(await within(form).findByRole('status')).toHaveTextContent(
         '更新しました。',
       )
-      expect(submittedValues(mocks.updateFeatureRequestStatus)).toEqual({
+      expect(submittedValues(mocks.updateFeatureRequestStatusAction)).toEqual({
         id: FEEDBACK_ID,
         status: 'in_progress',
       })
     })
 
     it('shows the error in the form when the update fails', async () => {
-      mocks.updateFeatureRequestStatus.mockResolvedValue({
+      mocks.updateFeatureRequestStatusAction.mockResolvedValue({
         errors: { generic: ['ステータスの更新に失敗しました。'] },
       })
 
@@ -120,7 +122,7 @@ describe('FeatureRequestDetail', () => {
 
   describe('memo', () => {
     it('submits the memo and tells that it was saved', async () => {
-      mocks.updateFeatureRequestMemo.mockResolvedValue({ success: true })
+      mocks.updateFeatureRequestMemoAction.mockResolvedValue({ success: true })
 
       render(<FeatureRequestDetail featureRequest={featureRequest} />)
 
@@ -137,14 +139,14 @@ describe('FeatureRequestDetail', () => {
       expect(await within(form).findByRole('status')).toHaveTextContent(
         '保存しました。',
       )
-      expect(submittedValues(mocks.updateFeatureRequestMemo)).toEqual({
+      expect(submittedValues(mocks.updateFeatureRequestMemoAction)).toEqual({
         admin_memo: '次の四半期に対応する。',
         id: FEEDBACK_ID,
       })
     })
 
     it('shows the error in the form when saving fails', async () => {
-      mocks.updateFeatureRequestMemo.mockResolvedValue({
+      mocks.updateFeatureRequestMemoAction.mockResolvedValue({
         errors: { generic: ['メモの更新に失敗しました。'] },
       })
 
@@ -168,7 +170,9 @@ describe('FeatureRequestDetail', () => {
     ])(
       'submits the opposite state with "$button"',
       async ({ button, isRead, submitted }) => {
-        mocks.markFeatureRequestAsRead.mockResolvedValue({ success: true })
+        mocks.markFeatureRequestAsReadAction.mockResolvedValue({
+          success: true,
+        })
 
         render(
           <FeatureRequestDetail
@@ -183,7 +187,7 @@ describe('FeatureRequestDetail', () => {
         expect(await within(form).findByRole('status')).toHaveTextContent(
           '更新しました。',
         )
-        expect(submittedValues(mocks.markFeatureRequestAsRead)).toEqual({
+        expect(submittedValues(mocks.markFeatureRequestAsReadAction)).toEqual({
           id: FEEDBACK_ID,
           is_read: submitted,
         })
@@ -191,7 +195,7 @@ describe('FeatureRequestDetail', () => {
     )
 
     it('shows the error in the form when the update fails', async () => {
-      mocks.markFeatureRequestAsRead.mockResolvedValue({
+      mocks.markFeatureRequestAsReadAction.mockResolvedValue({
         errors: { generic: ['既読状態の更新に失敗しました。'] },
       })
 

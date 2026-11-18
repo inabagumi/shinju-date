@@ -1,10 +1,10 @@
-import { describe, expect, it } from 'vitest'
-import { setupActionTest } from '@/test/action-harness'
+import { describe, expect, it, vi } from 'vitest'
+import { setupActionTest, TEST_USER } from '@/test/action-harness'
 import { postgresError } from '@/test/supabase'
 import {
-  markFeatureRequestAsRead,
-  updateFeatureRequestMemo,
-  updateFeatureRequestStatus,
+  markFeatureRequestAsReadAction,
+  updateFeatureRequestMemoAction,
+  updateFeatureRequestStatusAction,
 } from './update-feedback'
 
 const test = setupActionTest()
@@ -34,6 +34,14 @@ function readForm(isRead: string, id = ID): FormData {
   return formData
 }
 
+/**
+ * 予期しない例外のときに画面に出る文（`@/lib/action` の `ACTION_FAILED_ERROR_MESSAGE`）。
+ * `@/lib/action` を読み込むと、認証のモックより先に `@/lib/auth` が読み込まれるため、
+ * ここに書く
+ */
+const ACTION_FAILED_ERROR =
+  '処理に失敗しました。時間をおいて、もう一度お試しください。'
+
 function errorState(message: string) {
   return { errors: { generic: [message] } }
 }
@@ -47,13 +55,13 @@ function recordedAuditLogs(): string {
   )
 }
 
-describe('updateFeatureRequestStatus', () => {
+describe('updateFeatureRequestStatusAction', () => {
   it('records the status before and after the change', async () => {
     supabase.on('select', 'feature_requests', [
       { message: '検索結果を配信日で絞り込みたいです', status: 'pending' },
     ])
 
-    const result = await updateFeatureRequestStatus(
+    const result = await updateFeatureRequestStatusAction(
       {},
       statusForm('in_progress'),
     )
@@ -77,7 +85,7 @@ describe('updateFeatureRequestStatus', () => {
       { message: `${'あ'.repeat(40)}\nつづき`, status: 'pending' },
     ])
 
-    await updateFeatureRequestStatus({}, statusForm('resolved'))
+    await updateFeatureRequestStatusAction({}, statusForm('resolved'))
 
     test.expectAuditLog(
       'FEATURE_REQUEST_UPDATE',
@@ -91,7 +99,10 @@ describe('updateFeatureRequestStatus', () => {
       { message: 'Message', status: 'resolved' },
     ])
 
-    const result = await updateFeatureRequestStatus({}, statusForm('resolved'))
+    const result = await updateFeatureRequestStatusAction(
+      {},
+      statusForm('resolved'),
+    )
 
     expect(result).toEqual({ success: true })
     expect(supabase.calls('update', 'feature_requests')).toEqual([])
@@ -99,7 +110,10 @@ describe('updateFeatureRequestStatus', () => {
   })
 
   it('returns an error for a feedback that does not exist', async () => {
-    const result = await updateFeatureRequestStatus({}, statusForm('resolved'))
+    const result = await updateFeatureRequestStatusAction(
+      {},
+      statusForm('resolved'),
+    )
 
     expect(result).toEqual(errorState('フィードバックが見つかりませんでした。'))
     expect(supabase.calls('update', 'feature_requests')).toEqual([])
@@ -116,21 +130,24 @@ describe('updateFeatureRequestStatus', () => {
       postgresError('XX000', 'Database error'),
     )
 
-    const result = await updateFeatureRequestStatus({}, statusForm('resolved'))
+    const result = await updateFeatureRequestStatusAction(
+      {},
+      statusForm('resolved'),
+    )
 
-    expect(result).toEqual(errorState('ステータスの更新に失敗しました。'))
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR })
     test.expectNoAuditLog()
     test.expectNotRevalidated()
   })
 })
 
-describe('updateFeatureRequestMemo', () => {
+describe('updateFeatureRequestMemoAction', () => {
   it('records that a memo was added, without the memo itself', async () => {
     supabase.on('select', 'feature_requests', [
       { admin_memo: null, message: 'Message' },
     ])
 
-    const result = await updateFeatureRequestMemo({}, memoForm(MEMO))
+    const result = await updateFeatureRequestMemoAction({}, memoForm(MEMO))
 
     expect(result).toEqual({ success: true })
     expect(supabase.calls('update', 'feature_requests')).toMatchObject([
@@ -154,7 +171,7 @@ describe('updateFeatureRequestMemo', () => {
       { admin_memo: before, message: 'Message' },
     ])
 
-    await updateFeatureRequestMemo({}, memoForm(MEMO))
+    await updateFeatureRequestMemoAction({}, memoForm(MEMO))
 
     test.expectAuditLog('FEATURE_REQUEST_UPDATE', ID, {
       changes: {
@@ -175,7 +192,7 @@ describe('updateFeatureRequestMemo', () => {
       { admin_memo: MEMO, message: 'Message' },
     ])
 
-    await updateFeatureRequestMemo({}, memoForm(''))
+    await updateFeatureRequestMemoAction({}, memoForm(''))
 
     test.expectAuditLog('FEATURE_REQUEST_UPDATE', ID, {
       changes: {
@@ -196,7 +213,10 @@ describe('updateFeatureRequestMemo', () => {
         { admin_memo: stored, message: 'Message' },
       ])
 
-      const result = await updateFeatureRequestMemo({}, memoForm(adminMemo))
+      const result = await updateFeatureRequestMemoAction(
+        {},
+        memoForm(adminMemo),
+      )
 
       expect(result).toEqual({ success: true })
       expect(supabase.calls('update', 'feature_requests')).toEqual([])
@@ -205,7 +225,7 @@ describe('updateFeatureRequestMemo', () => {
   )
 
   it('returns an error for a feedback that does not exist', async () => {
-    const result = await updateFeatureRequestMemo({}, memoForm(MEMO))
+    const result = await updateFeatureRequestMemoAction({}, memoForm(MEMO))
 
     expect(result).toEqual(errorState('フィードバックが見つかりませんでした。'))
     expect(supabase.calls('update', 'feature_requests')).toEqual([])
@@ -222,19 +242,19 @@ describe('updateFeatureRequestMemo', () => {
       postgresError('XX000', 'Database error'),
     )
 
-    const result = await updateFeatureRequestMemo({}, memoForm(MEMO))
+    const result = await updateFeatureRequestMemoAction({}, memoForm(MEMO))
 
-    expect(result).toEqual(errorState('メモの更新に失敗しました。'))
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR })
     test.expectNoAuditLog()
     test.expectNotRevalidated()
   })
 })
 
-describe('markFeatureRequestAsRead', () => {
+describe('markFeatureRequestAsReadAction', () => {
   it.each([true, false])(
     'sets is_read to %s without recording an audit log',
     async (isRead) => {
-      const result = await markFeatureRequestAsRead(
+      const result = await markFeatureRequestAsReadAction(
         {},
         readForm(String(isRead)),
       )
@@ -255,10 +275,62 @@ describe('markFeatureRequestAsRead', () => {
       postgresError('XX000', 'Database error'),
     )
 
-    const result = await markFeatureRequestAsRead({}, readForm('true'))
+    const result = await markFeatureRequestAsReadAction({}, readForm('true'))
 
-    expect(result).toEqual(errorState('既読状態の更新に失敗しました。'))
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR })
     test.expectNotRevalidated()
+  })
+})
+
+describe('with the client of the signed-in user', () => {
+  /**
+   * サービスロールのクライアントと区別できるように、ログインしたユーザーの
+   * クライアントを、`from()` を記録する別のオブジェクトにする
+   */
+  function signInWithRecordedClient() {
+    const from = vi.fn((table: 'feature_requests') =>
+      supabase.client.from(table),
+    )
+    const supabaseClient = Object.assign(Object.create(supabase.client), {
+      from,
+    })
+
+    test.requireAuthenticatedUser.mockResolvedValue({
+      supabaseClient,
+      user: TEST_USER,
+    })
+
+    return { from, supabaseClient }
+  }
+
+  it.each([
+    [
+      'the status',
+      () => updateFeatureRequestStatusAction({}, statusForm('resolved')),
+      { message: 'Message', status: 'pending' },
+    ],
+    [
+      'the memo',
+      () => updateFeatureRequestMemoAction({}, memoForm(MEMO)),
+      { admin_memo: null, message: 'Message' },
+    ],
+    [
+      'the read state',
+      () => markFeatureRequestAsReadAction({}, readForm('true')),
+      null,
+    ],
+  ])('updates %s', async (_label, action, row) => {
+    if (row) {
+      supabase.on('select', 'feature_requests', [row])
+    }
+
+    const { from } = signInWithRecordedClient()
+
+    await expect(action()).resolves.toEqual({ success: true })
+    expect(supabase.calls('update', 'feature_requests')).toHaveLength(1)
+    // サービスロールのクライアントを通ったリクエストは、`from()` に記録されない
+    expect(from).toHaveBeenCalledTimes(supabase.requests.length)
+    expect(from).toHaveBeenCalledWith('feature_requests')
   })
 })
 
@@ -268,39 +340,39 @@ describe('with an invalid input', () => {
   it.each([
     [
       'a status for an ID that is not a UUID',
-      () => updateFeatureRequestStatus({}, statusForm('resolved', 'abc')),
+      () => updateFeatureRequestStatusAction({}, statusForm('resolved', 'abc')),
     ],
     [
       'a status that is not in the enum',
-      () => updateFeatureRequestStatus({}, statusForm('done')),
+      () => updateFeatureRequestStatusAction({}, statusForm('done')),
     ],
     [
       'a status form without the status',
       () => {
         const formData = statusForm('resolved')
         formData.delete('status')
-        return updateFeatureRequestStatus({}, formData)
+        return updateFeatureRequestStatusAction({}, formData)
       },
     ],
     [
       'a memo for an ID that is not a UUID',
-      () => updateFeatureRequestMemo({}, memoForm(MEMO, 'abc')),
+      () => updateFeatureRequestMemoAction({}, memoForm(MEMO, 'abc')),
     ],
     [
       'a memo form without the memo',
       () => {
         const formData = memoForm(MEMO)
         formData.delete('admin_memo')
-        return updateFeatureRequestMemo({}, formData)
+        return updateFeatureRequestMemoAction({}, formData)
       },
     ],
     [
       'a read state for an ID that is not a UUID',
-      () => markFeatureRequestAsRead({}, readForm('true', 'abc')),
+      () => markFeatureRequestAsReadAction({}, readForm('true', 'abc')),
     ],
     [
       'a read state that is not a boolean',
-      () => markFeatureRequestAsRead({}, readForm('yes')),
+      () => markFeatureRequestAsReadAction({}, readForm('yes')),
     ],
   ])('updates nothing for %s', async (_label, action) => {
     await expect(action()).resolves.toEqual(INVALID_INPUT)

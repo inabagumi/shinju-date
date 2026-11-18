@@ -7,7 +7,7 @@ import Form, {
   SuccessMessage,
   Textarea,
 } from '@/components/form'
-import { updateFeatureRequestMemo } from '../../_actions/update-feedback'
+import { updateFeatureRequestMemoAction } from '../../_actions/update-feedback'
 
 interface FeedbackMemoFormProps {
   adminMemo: string | null
@@ -17,7 +17,7 @@ interface FeedbackMemoFormProps {
 /** 機能要望の管理メモを保存するフォーム */
 export function FeedbackMemoForm({ adminMemo, id }: FeedbackMemoFormProps) {
   return (
-    <Form action={updateFeatureRequestMemo} className="space-y-4">
+    <Form action={updateFeatureRequestMemoAction} className="space-y-4">
       <input name="id" type="hidden" value={id} />
       <FormField name="admin_memo">
         <Label>メモ（Markdown対応）</Label>

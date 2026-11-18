@@ -7,7 +7,7 @@ import Form, {
   SubmitButton,
   SuccessMessage,
 } from '@/components/form'
-import { updateFeatureRequestStatus } from '../../_actions/update-feedback'
+import { updateFeatureRequestStatusAction } from '../../_actions/update-feedback'
 import {
   FEATURE_REQUEST_STATUS_LABELS,
   FEATURE_REQUEST_STATUSES,
@@ -22,7 +22,7 @@ interface FeedbackStatusFormProps {
 /** 機能要望の対応ステータスを変えるフォーム */
 export function FeedbackStatusForm({ id, status }: FeedbackStatusFormProps) {
   return (
-    <Form action={updateFeatureRequestStatus} className="space-y-4">
+    <Form action={updateFeatureRequestStatusAction} className="space-y-4">
       <input name="id" type="hidden" value={id} />
       <FormField name="status">
         <Label>対応ステータス</Label>
