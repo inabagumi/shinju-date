@@ -16,7 +16,7 @@
 | pnpm      | `Dockerfile` の `PNPM_VERSION`                          | `package.json` の `devEngines.packageManager`                               |
 | Terraform | `devcontainer.json` の Terraform の機能の `version`     | `terraform/versions.tf` の `required_version`                               |
 
-Node.js のメジャーバージョンは、Renovate が `.node-version` と一緒に上げます（`.github/renovate.json` の「Node.js major」のグループ）。
+Node.js のメジャーバージョンは、Renovate が `.node-version` と一緒に上げます（`.github/renovate.json5` の「Node.js major」のグループ）。
 
 ## ファイル構成
 
