@@ -119,6 +119,34 @@ describe('fetchScheduleVideos', () => {
     ).toEqual(['video-1'])
   })
 
+  test('drops the videos that cannot be linked to', async () => {
+    query.limit.mockResolvedValue({
+      data: [
+        createScheduleVideo(1),
+        // A Twitch stream whose archive is not ready, without the login name
+        // to link to the channel
+        createScheduleVideo(2, {
+          platform: 'twitch',
+          twitch_video: {
+            twitch_user: {
+              name: null,
+              profile_image: null,
+              twitch_login_name: null,
+            },
+            twitch_video_id: 'live:12345678901',
+            type: null,
+          },
+          youtube_video: null,
+        }),
+      ],
+      error: null,
+    })
+
+    expect(
+      (await fetchScheduleVideos('2026-11-08')).map((video) => video.id),
+    ).toEqual(['video-1'])
+  })
+
   test('throws when the videos cannot be fetched', async () => {
     query.limit.mockResolvedValue({ data: null, error: { message: 'failed' } })
 

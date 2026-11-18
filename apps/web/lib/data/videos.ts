@@ -5,12 +5,12 @@ import type { Tables } from '@shinju-date/database'
 import { startOfHour, toDBString } from '@shinju-date/temporal-fns'
 import type { QueryData } from '@supabase/supabase-js'
 import { cacheLife, cacheTag } from 'next/cache'
-import { hasPlatformSource } from '@/lib/data/has-platform-source'
 import { VIDEO_CALENDAR_SELECT, VIDEO_LIST_SELECT } from '@/lib/data/selects'
 import { unwrap } from '@/lib/data/unwrap'
 import { SEARCH_RESULT_COUNT } from '@/lib/site'
 import { supabaseClient } from '@/lib/supabase'
 import { getVideoKinds, type VideoKindFilter } from '@/lib/video-kind-filter'
+import { hasPlatformSource } from '@/lib/video-url'
 
 /**
  * The query of the videos of the video cards, which the type of the rows is

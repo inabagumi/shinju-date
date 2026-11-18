@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { getVideoUrl, type VideoUrlSource } from './video-url'
+import {
+  getVideoUrl,
+  hasPlatformSource,
+  type VideoUrlSource,
+} from './video-url'
 
 function createYouTubeVideo(
   overrides: Partial<VideoUrlSource> = {},
@@ -100,5 +104,27 @@ describe('getVideoUrl', () => {
         }),
       ),
     ).toBeNull()
+  })
+})
+
+describe('hasPlatformSource', () => {
+  test('is true for a video that can be linked to', () => {
+    expect(hasPlatformSource(createYouTubeVideo())).toBe(true)
+    expect(hasPlatformSource(createTwitchVideo())).toBe(true)
+  })
+
+  test('is false for a video that cannot be linked to', () => {
+    expect(hasPlatformSource(createYouTubeVideo({ youtube_video: null }))).toBe(
+      false,
+    )
+    expect(
+      hasPlatformSource(
+        createTwitchVideo({
+          twitch_user: { twitch_login_name: null },
+          twitch_video_id: 'live:12345678901',
+          type: null,
+        }),
+      ),
+    ).toBe(false)
   })
 })

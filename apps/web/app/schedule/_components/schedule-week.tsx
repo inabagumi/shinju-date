@@ -16,7 +16,6 @@ import {
   layoutDay,
   type ScheduleLayout,
 } from '@/lib/schedule'
-import { getVideoUrl } from '@/lib/video-url'
 import { HOUR_HEIGHT_REM } from '../_lib/layout'
 import {
   resolveScheduleWeek,
@@ -268,10 +267,8 @@ function ScheduleDay({ date, items, referenceDate }: ScheduleDayProps) {
  */
 export async function ScheduleDays({ params }: ScheduleWeekSectionProps) {
   const { today, weekStart } = await resolveScheduleWeek(params)
-  // リンク先が作れない動画は表示しないので、件数にも入れない
-  const videos = (await fetchScheduleVideos(weekStart.toString())).filter(
-    (video) => getVideoUrl(video) !== null,
-  )
+  // リンク先が作れない動画は、`fetchScheduleVideos` が除くので件数にも入らない
+  const videos = await fetchScheduleVideos(weekStart.toString())
   const groups = groupVideosByDate(videos)
 
   return (

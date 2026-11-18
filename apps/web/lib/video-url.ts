@@ -44,3 +44,11 @@ export function getVideoUrl(video: VideoUrlSource): string | null {
     youtubeVideoId: video.youtube_video?.youtube_video_id,
   })
 }
+
+/**
+ * Whether a video can be linked to (`getVideoUrl`). The site leaves out the
+ * videos that cannot, before counting them.
+ */
+export function hasPlatformSource(video: VideoUrlSource): boolean {
+  return getVideoUrl(video) !== null
+}

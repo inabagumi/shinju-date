@@ -4,10 +4,10 @@ import { CACHE_TAGS, TIME_ZONE } from '@shinju-date/constants'
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { QueryData } from '@supabase/supabase-js'
 import { cacheLife, cacheTag } from 'next/cache'
-import { hasPlatformSource } from '@/lib/data/has-platform-source'
 import { VIDEO_SCHEDULE_SELECT } from '@/lib/data/selects'
 import { unwrap } from '@/lib/data/unwrap'
 import { supabaseClient } from '@/lib/supabase'
+import { hasPlatformSource } from '@/lib/video-url'
 
 /** The query of the videos of the schedule, which the type is derived from */
 function selectScheduleVideos() {
