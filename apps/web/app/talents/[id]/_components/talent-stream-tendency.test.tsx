@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/data/talents", () => ({}));
+vi.mock(import("@/lib/data/talents"), () => ({}));
 
 import { StreamTendency } from "./talent-stream-tendency";
 
@@ -30,7 +30,7 @@ const COUNTS = createCounts([
   [0, 0, 1],
 ]);
 
-describe("StreamTendency", () => {
+describe(StreamTendency, () => {
   it("should show the heading and the summary", () => {
     render(<StreamTendency counts={COUNTS} />);
 
@@ -56,7 +56,7 @@ describe("StreamTendency", () => {
     expect(summary).toHaveTextContent("配信の傾向土曜日・21時台が多い");
   });
 
-  it("should read out the count of each cell by the day and the hour", () => {
+  it("should have a column for each hour and a row for each day", () => {
     render(<StreamTendency counts={COUNTS} />);
 
     const table = screen.getByRole("table", {
@@ -70,7 +70,14 @@ describe("StreamTendency", () => {
     expect(
       within(table).getByRole("columnheader", { name: "21時" })
     ).toBeInTheDocument();
+  });
 
+  it("should read out the count of each cell by the day and the hour", () => {
+    render(<StreamTendency counts={COUNTS} />);
+
+    const table = screen.getByRole("table", {
+      name: "曜日と時間帯ごとの配信回数",
+    });
     const saturday = within(table)
       .getByRole("rowheader", { name: "土曜日" })
       .closest("tr");

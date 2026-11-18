@@ -17,7 +17,7 @@ function date(value: string) {
   return Temporal.PlainDate.from(value);
 }
 
-describe("parseScheduleDate", () => {
+describe(parseScheduleDate, () => {
   it("should read a date in YYYY-MM-DD", () => {
     expect(parseScheduleDate("2026-11-12")?.toString()).toBe("2026-11-12");
     expect(parseScheduleDate("2028-02-29")?.toString()).toBe("2028-02-29");
@@ -48,7 +48,7 @@ describe("parseScheduleDate", () => {
   });
 });
 
-describe("getWeekStart", () => {
+describe(getWeekStart, () => {
   it("should return the Sunday of the week", () => {
     // From Sunday, 8 November 2026 to Saturday, 14 November 2026
     for (const day of [8, 9, 10, 11, 12, 13, 14]) {
@@ -71,11 +71,11 @@ describe("getWeekStart", () => {
   });
 });
 
-describe("getWeekDays", () => {
+describe(getWeekDays, () => {
   it("should return the 7 days from Sunday to Saturday", () => {
     expect(
       getWeekDays(date("2026-12-27")).map((day) => day.toString())
-    ).toEqual([
+    ).toStrictEqual([
       "2026-12-27",
       "2026-12-28",
       "2026-12-29",
@@ -87,7 +87,7 @@ describe("getWeekDays", () => {
   });
 });
 
-describe("getSchedulePath", () => {
+describe(getSchedulePath, () => {
   it("should point to the current week without a date", () => {
     expect(getSchedulePath()).toBe("/schedule");
   });
@@ -99,7 +99,7 @@ describe("getSchedulePath", () => {
   });
 });
 
-describe("getScheduleWeekRange", () => {
+describe(getScheduleWeekRange, () => {
   const today = date("2026-11-12");
 
   it("should range from the week of the oldest video to 4 weeks later", () => {
@@ -128,25 +128,25 @@ describe("getScheduleWeekRange", () => {
   });
 });
 
-describe("isWeekInRange", () => {
+describe(isWeekInRange, () => {
   const range = getScheduleWeekRange({
     oldestDate: date("2026-10-28"),
     today: date("2026-11-12"),
   });
 
   it("should accept the weeks from the first to the last", () => {
-    expect(isWeekInRange(date("2026-10-25"), range)).toBe(true);
-    expect(isWeekInRange(date("2026-11-08"), range)).toBe(true);
-    expect(isWeekInRange(date("2026-12-06"), range)).toBe(true);
+    expect(isWeekInRange(date("2026-10-25"), range)).toBeTruthy();
+    expect(isWeekInRange(date("2026-11-08"), range)).toBeTruthy();
+    expect(isWeekInRange(date("2026-12-06"), range)).toBeTruthy();
   });
 
   it("should reject the weeks before the oldest video and after 4 weeks", () => {
-    expect(isWeekInRange(date("2026-10-18"), range)).toBe(false);
-    expect(isWeekInRange(date("2026-12-13"), range)).toBe(false);
+    expect(isWeekInRange(date("2026-10-18"), range)).toBeFalsy();
+    expect(isWeekInRange(date("2026-12-13"), range)).toBeFalsy();
   });
 });
 
-describe("formatWeekRange", () => {
+describe(formatWeekRange, () => {
   it("should write the month of the last day", () => {
     expect(formatWeekRange(date("2026-11-08"))).toBe("2026年11月8日〜11月14日");
     expect(formatWeekRange(date("2026-11-29"))).toBe("2026年11月29日〜12月5日");
@@ -165,7 +165,7 @@ describe("formatWeekRange", () => {
   });
 });
 
-describe("getLengthMinutes", () => {
+describe(getLengthMinutes, () => {
   it("should use the duration of an ended stream and a published video", () => {
     expect(
       getLengthMinutes({
@@ -206,7 +206,7 @@ describe("getLengthMinutes", () => {
   });
 });
 
-describe("layoutDay", () => {
+describe(layoutDay, () => {
   // 21:00 on 9 November 2026 in Japan
   function video(
     id: string,
@@ -241,7 +241,7 @@ describe("layoutDay", () => {
   it("should place a video at its start with its length", () => {
     expect(
       summarize(layoutDay([video("a", "21:30", "PT2H", "ENDED")]))
-    ).toEqual({
+    ).toStrictEqual({
       a: { column: 0, columns: 1, length: 120, start: 21 * 60 + 30 },
     });
   });
@@ -260,7 +260,9 @@ describe("layoutDay", () => {
 
   it("should cut a live stream at the end of the day", () => {
     // A live stream is drawn for an hour, so the part after 24:00 is cut
-    expect(summarize(layoutDay([video("a", "23:30", "P0D", "LIVE")]))).toEqual({
+    expect(
+      summarize(layoutDay([video("a", "23:30", "P0D", "LIVE")]))
+    ).toStrictEqual({
       a: { column: 0, columns: 1, length: 30, start: 23 * 60 + 30 },
     });
     // Even shorter than `MIN_LENGTH_MINUTES`, as the day has no more room
@@ -285,7 +287,7 @@ describe("layoutDay", () => {
           video("d", "20:00"),
         ])
       )
-    ).toEqual({
+    ).toStrictEqual({
       a: { column: 0, columns: 3, length: 60, start: 18 * 60 },
       b: { column: 1, columns: 3, length: 60, start: 18 * 60 },
       c: { column: 2, columns: 3, length: 60, start: 18 * 60 + 30 },
@@ -303,7 +305,7 @@ describe("layoutDay", () => {
           video("c", "19:00"),
         ])
       )
-    ).toEqual({
+    ).toStrictEqual({
       a: { column: 0, columns: 2, length: 180, start: 18 * 60 },
       b: { column: 1, columns: 2, length: 60, start: 18 * 60 },
       c: { column: 1, columns: 2, length: 60, start: 19 * 60 },

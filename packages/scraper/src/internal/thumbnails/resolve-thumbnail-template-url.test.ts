@@ -6,7 +6,7 @@ import {
   resolveThumbnailTemplateUrl,
 } from "./template-url.js";
 
-describe("resolveThumbnailTemplateUrl", () => {
+describe(resolveThumbnailTemplateUrl, () => {
   it("replaces %{width} and %{height} placeholders", () => {
     expect(
       resolveThumbnailTemplateUrl(

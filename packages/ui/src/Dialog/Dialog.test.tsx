@@ -35,7 +35,7 @@ function renderDialog() {
   );
 }
 
-describe("Dialog", () => {
+describe("<Dialog>", () => {
   it("opens with the trigger", async () => {
     const user = userEvent.setup();
 
@@ -122,8 +122,16 @@ describe("Dialog", () => {
     await user.tab({ shift: true });
 
     expect(remove).toHaveFocus();
+  });
 
-    // ダイアログの外の要素は支援技術から隠れ、フォーカスを移しても中へ戻る
+  // ダイアログの外の要素は支援技術から隠れ、フォーカスを移しても中へ戻る
+  it("hides the outside from assistive technology and keeps the focus inside while open", async () => {
+    const user = userEvent.setup();
+
+    renderDialog();
+
+    await user.click(screen.getByRole("button", { name: "削除する" }));
+
     expect(
       screen.queryByRole("button", { name: "ダイアログの外" })
     ).not.toBeInTheDocument();

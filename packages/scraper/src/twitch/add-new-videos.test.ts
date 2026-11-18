@@ -15,16 +15,18 @@ import {
   findSavedVideos,
   TWITCH_TALENTS,
 } from "../internal/testing/twitch.js";
+import type * as Thumbnails from "../internal/thumbnails/index.js";
 import { createThumbnail } from "../internal/thumbnails/index.js";
+import type { ErrorReporter } from "../types.js";
 import { addNewTwitchVideos, planNewVideos } from "./add-new-videos.js";
 
-vi.mock("../internal/thumbnails/index.js", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../internal/thumbnails/index.js")>()),
-  createThumbnail: vi.fn(),
-  removeThumbnail: vi.fn(),
+vi.mock(import("../internal/thumbnails/index.js"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  createThumbnail: vi.fn<typeof Thumbnails.createThumbnail>(),
+  removeThumbnail: vi.fn<typeof Thumbnails.removeThumbnail>(),
 }));
 
-describe("planNewVideos", () => {
+describe(planNewVideos, () => {
   const archive = createVideo();
   const placeholder = createSavedVideo();
 
@@ -36,7 +38,9 @@ describe("planNewVideos", () => {
         savedByVideoId: [],
         videos: [archive],
       })
-    ).toEqual([{ kind: "insert", liveStream: undefined, video: archive }]);
+    ).toStrictEqual([
+      { kind: "insert", liveStream: undefined, video: archive },
+    ]);
   });
 
   it("skips a video that is already saved", () => {
@@ -52,7 +56,7 @@ describe("planNewVideos", () => {
         savedByVideoId: [saved],
         videos: [archive],
       })
-    ).toEqual([]);
+    ).toStrictEqual([]);
   });
 
   it("attaches an archive to the placeholder of its broadcast", () => {
@@ -63,7 +67,7 @@ describe("planNewVideos", () => {
         savedByVideoId: [],
         videos: [archive],
       })
-    ).toEqual([
+    ).toStrictEqual([
       {
         kind: "link",
         liveStream: undefined,
@@ -83,7 +87,7 @@ describe("planNewVideos", () => {
         savedByVideoId: [],
         videos: [archive],
       })
-    ).toEqual([
+    ).toStrictEqual([
       { kind: "link", liveStream: stream, saved: placeholder, video: archive },
     ]);
     expect(
@@ -93,7 +97,7 @@ describe("planNewVideos", () => {
         savedByVideoId: [],
         videos: [archive],
       })
-    ).toEqual([{ kind: "insert", liveStream: stream, video: archive }]);
+    ).toStrictEqual([{ kind: "insert", liveStream: stream, video: archive }]);
   });
 
   it("never brings back a placeholder that was deleted", () => {
@@ -106,7 +110,7 @@ describe("planNewVideos", () => {
         savedByVideoId: [],
         videos: [archive],
       })
-    ).toEqual([]);
+    ).toStrictEqual([]);
   });
 
   it("skips a video whose stream already belongs to another video", () => {
@@ -122,7 +126,7 @@ describe("planNewVideos", () => {
         savedByVideoId: [],
         videos: [archive],
       })
-    ).toEqual([]);
+    ).toStrictEqual([]);
   });
 
   it("does not treat an upload as part of a live broadcast", () => {
@@ -139,7 +143,7 @@ describe("planNewVideos", () => {
         savedByVideoId: [],
         videos: [upload],
       })
-    ).toEqual([{ kind: "insert", liveStream: undefined, video: upload }]);
+    ).toStrictEqual([{ kind: "insert", liveStream: undefined, video: upload }]);
   });
 
   it("plans a video listed twice only once", () => {
@@ -154,10 +158,10 @@ describe("planNewVideos", () => {
   });
 });
 
-describe("addNewTwitchVideos", () => {
+describe(addNewTwitchVideos, () => {
   const supabase = setupSupabase();
   const now = Temporal.Instant.from("2024-05-01T12:00:00.500Z");
-  const reportError = vi.fn();
+  const reportError = vi.fn<ErrorReporter>();
   const createContext = <T>(fetcher: T) =>
     createTestContext({
       fetcher,
@@ -204,12 +208,12 @@ describe("addNewTwitchVideos", () => {
     const added = await addNewTwitchVideos(createContext(fetcher));
 
     expect(added).toBe(2);
-    expect(getRecentVideos).toHaveBeenCalledWith(["twitch-user-1"], {
-      type: "archive",
-    });
-    expect(getRecentVideos).toHaveBeenCalledWith(["twitch-user-1"], {
-      type: "upload",
-    });
+    expect(getRecentVideos.mock.calls).toStrictEqual(
+      expect.arrayContaining([
+        [["twitch-user-1"], { type: "archive" }],
+        [["twitch-user-1"], { type: "upload" }],
+      ])
+    );
 
     const videos = supabase.insertedVideos().map(({ video }) => video);
     const twitchVideos = supabase
@@ -228,7 +232,7 @@ describe("addNewTwitchVideos", () => {
     expect(videos.find((video) => video.title === "Upload")).toMatchObject({
       status: "PUBLISHED",
     });
-    expect(twitchVideos).toEqual(
+    expect(twitchVideos).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
           stream_id: "stream-1",
@@ -271,8 +275,10 @@ describe("addNewTwitchVideos", () => {
       query: { id: "eq.video-1" },
     });
     // Cached pages may still show the preview, so the cleanup removes it later.
-    expect(supabase.written("DELETE", "thumbnails")).toEqual([]);
-    expect(removedImages).toEqual([]);
+    expect({
+      deletedThumbnails: supabase.written("DELETE", "thumbnails"),
+      removedImages,
+    }).toStrictEqual({ deletedThumbnails: [], removedImages: [] });
   });
 
   it("removes the new thumbnail when the placeholder cannot be updated", async () => {
@@ -288,8 +294,8 @@ describe("addNewTwitchVideos", () => {
     expect(added).toBe(0);
     expect(
       supabase.written("DELETE", "thumbnails").map(({ query }) => query["id"])
-    ).toEqual(["eq.thumb-new"]);
-    expect(removedImages).toEqual([{ prefixes: ["vod-1/x.jpg"] }]);
+    ).toStrictEqual(["eq.thumb-new"]);
+    expect(removedImages).toStrictEqual([{ prefixes: ["vod-1/x.jpg"] }]);
     expect(reportError).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.stringContaining("statement timeout"),
@@ -311,7 +317,7 @@ describe("addNewTwitchVideos", () => {
     const added = await addNewTwitchVideos(createContext(fetcher));
 
     expect(added).toBe(0);
-    expect(supabase.written("PATCH", "twitch_videos")[0]?.body).toEqual({
+    expect(supabase.written("PATCH", "twitch_videos")[0]?.body).toStrictEqual({
       twitch_video_id: "vod-1",
       type: "archive",
     });
@@ -382,9 +388,9 @@ describe("addNewTwitchVideos", () => {
     const added = await addNewTwitchVideos(createContext(fetcher));
 
     expect(added).toBe(0);
-    expect(supabase.requests.every((request) => request.method === "GET")).toBe(
-      true
-    );
+    expect(
+      supabase.requests.every((request) => request.method === "GET")
+    ).toBeTruthy();
   });
 
   it("quietly skips a video another run saved first", async () => {

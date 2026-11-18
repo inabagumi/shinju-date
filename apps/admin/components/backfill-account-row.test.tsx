@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { BackfillAccountRow } from "./backfill-account-row";
 
-describe("BackfillAccountRow", () => {
+describe(BackfillAccountRow, () => {
   it("shows the platform, the account and what is put beside them", () => {
     render(
       <ul>

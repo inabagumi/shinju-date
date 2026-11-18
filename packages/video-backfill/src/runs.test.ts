@@ -99,7 +99,7 @@ async function startRun(runs: BackfillRuns, at: Temporal.Instant = now) {
 }
 
 describeOnEachRedis((createClient) => {
-  describe("BackfillRuns", () => {
+  describe(BackfillRuns, () => {
     const getScopedRedis = useScopedRedis(createClient);
 
     function createRuns() {
@@ -118,7 +118,7 @@ describeOnEachRedis((createClient) => {
 
       const result = await runs.start(requests, { requestedBy: "user-1" }, now);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         failed: 0,
         run: {
           failed: 0,
@@ -177,7 +177,7 @@ describeOnEachRedis((createClient) => {
         progress?.jobs.every(
           (job) => job.active && job.status === "pending" && job.added === 0
         )
-      ).toBe(true);
+      ).toBeTruthy();
     });
 
     it("tags the jobs with the check", async () => {
@@ -185,7 +185,7 @@ describeOnEachRedis((createClient) => {
 
       const run = await startRun(runs);
 
-      await expect(queue.getJobs([youtubeJobId], now)).resolves.toEqual([
+      await expect(queue.getJobs([youtubeJobId], now)).resolves.toStrictEqual([
         {
           active: true,
           job: expect.objectContaining({
@@ -232,7 +232,7 @@ describeOnEachRedis((createClient) => {
 
       await expect(
         runs.start(requests, { requestedBy: "user-1" }, now)
-      ).resolves.toEqual({ status: "busy" });
+      ).resolves.toStrictEqual({ status: "busy" });
       await expect(redis.exists(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)).resolves.toBe(
         0
       );
@@ -250,7 +250,7 @@ describeOnEachRedis((createClient) => {
         runs.start(requests, { requestedBy: "user-2" }, now),
       ]);
 
-      expect(results.map((result) => result.status).sort()).toEqual([
+      expect(results.map((result) => result.status).sort()).toStrictEqual([
         "busy",
         "started",
       ]);
@@ -275,7 +275,7 @@ describeOnEachRedis((createClient) => {
       expect(result).toMatchObject({ skipped: 1, status: "started" });
       expect(
         result.status === "started" && result.run.jobs.map((job) => job.id)
-      ).toEqual([youtubeJobId, otherJobId]);
+      ).toStrictEqual([youtubeJobId, otherJobId]);
     });
 
     it("saves no check when no account could be queued", async () => {
@@ -287,7 +287,7 @@ describeOnEachRedis((createClient) => {
 
       await expect(
         runs.start(requests, { requestedBy: "user-1" }, now)
-      ).resolves.toEqual({ failed: 0, skipped: 3, status: "empty" });
+      ).resolves.toStrictEqual({ failed: 0, skipped: 3, status: "empty" });
       await expect(redis.exists(REDIS_KEYS.VIDEO_BACKFILL_RUN)).resolves.toBe(
         0
       );
@@ -306,7 +306,8 @@ describeOnEachRedis((createClient) => {
           ? Promise.reject(error)
           : enqueue(request, at)
       );
-      const onError = vi.fn();
+      const onError =
+        vi.fn<(request: BackfillRunRequest, error: unknown) => void>();
 
       await expect(
         runs.start(requests, { onError, requestedBy: "user-1" }, now)
@@ -422,7 +423,9 @@ describeOnEachRedis((createClient) => {
       const run = await startRun(runs, later(91));
 
       expect(run.jobs[0]).toMatchObject({ addedBefore: 3, id: youtubeJobId });
-      await expect(queue.getJobs([youtubeJobId], later(91))).resolves.toEqual([
+      await expect(
+        queue.getJobs([youtubeJobId], later(91))
+      ).resolves.toStrictEqual([
         {
           active: true,
           job: expect.objectContaining({ cursor: "page-2", runId: run.id }),
@@ -500,7 +503,7 @@ describeOnEachRedis((createClient) => {
       const done = await recordPage(queue, job, 3, null, later(2));
       const resultKey = getRunResultKey(run.id, youtubeJobId);
 
-      await expect(redis.get(resultKey)).resolves.toEqual(done.job);
+      await expect(redis.get(resultKey)).resolves.toStrictEqual(done.job);
       await expectTtl(redis, resultKey, BACKFILL_JOB_TTL_SECONDS);
     });
 
@@ -525,7 +528,7 @@ describeOnEachRedis((createClient) => {
           .filter((key) =>
             key.startsWith(REDIS_KEYS.VIDEO_BACKFILL_RUN_RESULT_PREFIX)
           )
-      ).toEqual([]);
+      ).toStrictEqual([]);
     });
 
     it("shows a job that is gone as interrupted", async () => {

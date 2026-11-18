@@ -1,36 +1,47 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ActionToastProvider } from "@/components/action-toast";
+import type { AppRouter } from "@/test/next-navigation";
 
+import type {
+  activateTalentAction,
+  createTalentAction,
+  deleteTalentAction,
+  restoreTalentAction,
+  retireTalentAction,
+} from "../_actions";
+import type { syncTalentAccountsAction } from "../_actions/sync";
 import type { TalentListItem } from "../_lib/get-talents";
 
 const mocks = vi.hoisted(() => ({
-  push: vi.fn(),
-  replace: vi.fn(),
+  push: vi.fn<AppRouter["push"]>(),
+  replace: vi.fn<AppRouter["replace"]>(),
   searchParams: new URLSearchParams(),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => "/talents",
-  useRouter: () => ({
-    push: mocks.push,
-    refresh: vi.fn(),
-    replace: mocks.replace,
-  }),
-  useSearchParams: () => mocks.searchParams,
+  useRouter: () =>
+    ({
+      push: mocks.push,
+      refresh: vi.fn<AppRouter["refresh"]>(),
+      replace: mocks.replace,
+    }) as Partial<AppRouter> as AppRouter,
+  useSearchParams: () => mocks.searchParams as ReadonlyURLSearchParams,
 }));
 
-vi.mock("../_actions", () => ({
-  activateTalentAction: vi.fn(),
-  createTalentAction: vi.fn(),
-  deleteTalentAction: vi.fn(),
-  restoreTalentAction: vi.fn(),
-  retireTalentAction: vi.fn(),
+vi.mock(import("../_actions"), () => ({
+  activateTalentAction: vi.fn<typeof activateTalentAction>(),
+  createTalentAction: vi.fn<typeof createTalentAction>(),
+  deleteTalentAction: vi.fn<typeof deleteTalentAction>(),
+  restoreTalentAction: vi.fn<typeof restoreTalentAction>(),
+  retireTalentAction: vi.fn<typeof retireTalentAction>(),
 }));
 
-vi.mock("../_actions/sync", () => ({
-  syncTalentAccountsAction: vi.fn(),
+vi.mock(import("../_actions/sync"), () => ({
+  syncTalentAccountsAction: vi.fn<typeof syncTalentAccountsAction>(),
 }));
 
 const { TalentsList } = await import("./talents-list");
@@ -70,7 +81,8 @@ describe("TalentsList", () => {
     mocks.searchParams = new URLSearchParams();
   });
 
-  it("renders a row for each talent with a link, the status and the actions", () => {
+  /** Renders an active talent with a channel and a deleted one without. */
+  function renderTalentRows(): [HTMLElement, HTMLElement] {
     renderList({
       talents: [
         createTalent({
@@ -91,10 +103,16 @@ describe("TalentsList", () => {
       ],
     });
 
-    const rows = screen.getAllByRole("row").slice(1);
-    expect(rows).toHaveLength(2);
+    return screen.getAllByRole("row").slice(1) as [HTMLElement, HTMLElement];
+  }
 
-    const [first, second] = rows as [HTMLElement, HTMLElement];
+  it("renders a row for each talent", () => {
+    expect(renderTalentRows()).toHaveLength(2);
+  });
+
+  it("renders the link, the status and the actions of a talent", () => {
+    const [first] = renderTalentRows();
+
     expect(
       within(first).getByRole("link", { name: "テストタレント" })
     ).toHaveAttribute("href", "/talents/00000000-0000-4000-8000-000000000001");
@@ -104,6 +122,10 @@ describe("TalentsList", () => {
     expect(
       within(first).getByRole("button", { name: "「テストタレント」の操作" })
     ).toBeInTheDocument();
+  });
+
+  it("renders the ID of a talent without channels and its status", () => {
+    const [, second] = renderTalentRows();
 
     // チャンネルがないときは、ID を出す
     expect(second).toHaveTextContent("00000000-0000-4000-8000-000000000002");

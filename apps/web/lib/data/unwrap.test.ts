@@ -14,11 +14,11 @@ const ERROR = {
 // The result of a failed query, as Supabase returns it
 const FAILED = { data: null, error: ERROR };
 
-describe("unwrap", () => {
+describe(unwrap, () => {
   it("returns the data of a successful query", () => {
     expect(
       unwrap({ data: [{ id: "video-1" }], error: null }, "fetchVideos")
-    ).toEqual([{ id: "video-1" }]);
+    ).toStrictEqual([{ id: "video-1" }]);
   });
 
   it("returns null data of a successful query as is", () => {

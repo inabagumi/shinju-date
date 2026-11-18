@@ -22,7 +22,7 @@ function parseSearchParams(href: string) {
 
 const tiles = Object.keys(VIDEO_SUMMARY_FILTERS) as VideoSummaryTile[];
 
-describe("getVideoListHref", () => {
+describe(getVideoListHref, () => {
   it("repeats the status parameter for each status", () => {
     expect(getVideoListHref(VIDEO_SUMMARY_FILTERS.visibleVideos)).toBe(
       "/videos?deleted=false&visible=true&status=ENDED&status=LIVE&status=PUBLISHED"
@@ -37,11 +37,11 @@ describe("getVideoListHref", () => {
         parseSearchParams(getVideoListHref(filter))
       );
 
-      expect(params.deleted).toEqual([filter.deleted]);
-      expect(params.visible).toEqual(
+      expect(params.deleted).toStrictEqual([filter.deleted]);
+      expect(params.visible).toStrictEqual(
         "visible" in filter ? [filter.visible] : undefined
       );
-      expect(params.status).toEqual(
+      expect(params.status).toStrictEqual(
         "status" in filter ? [...filter.status] : undefined
       );
     }

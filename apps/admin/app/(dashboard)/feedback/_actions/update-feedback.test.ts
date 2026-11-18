@@ -57,7 +57,7 @@ function recordedAuditLogs(): string {
   );
 }
 
-describe("updateFeatureRequestStatusAction", () => {
+describe("updateFeatureRequestStatusAction()", () => {
   it("records the status before and after the change", async () => {
     supabase.on("select", "feature_requests", [
       { message: "検索結果を配信日で絞り込みたいです", status: "pending" },
@@ -68,7 +68,7 @@ describe("updateFeatureRequestStatusAction", () => {
       statusForm("in_progress")
     );
 
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(supabase.calls("update", "feature_requests")).toMatchObject([
       { body: { status: "in_progress" }, query: { id: `eq.${ID}` } },
     ]);
@@ -106,8 +106,8 @@ describe("updateFeatureRequestStatusAction", () => {
       statusForm("resolved")
     );
 
-    expect(result).toEqual({ success: true });
-    expect(supabase.calls("update", "feature_requests")).toEqual([]);
+    expect(result).toStrictEqual({ success: true });
+    expect(supabase.calls("update", "feature_requests")).toStrictEqual([]);
     test.expectNoAuditLog();
   });
 
@@ -117,10 +117,10 @@ describe("updateFeatureRequestStatusAction", () => {
       statusForm("resolved")
     );
 
-    expect(result).toEqual(
+    expect(result).toStrictEqual(
       errorState("フィードバックが見つかりませんでした。")
     );
-    expect(supabase.calls("update", "feature_requests")).toEqual([]);
+    expect(supabase.calls("update", "feature_requests")).toStrictEqual([]);
     test.expectNoAuditLog();
   });
 
@@ -139,13 +139,13 @@ describe("updateFeatureRequestStatusAction", () => {
       statusForm("resolved")
     );
 
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR });
+    expect(result).toStrictEqual({ error: ACTION_FAILED_ERROR });
     test.expectNoAuditLog();
     test.expectNotRevalidated();
   });
 });
 
-describe("updateFeatureRequestMemoAction", () => {
+describe("updateFeatureRequestMemoAction()", () => {
   it("records that a memo was added, without the memo itself", async () => {
     supabase.on("select", "feature_requests", [
       { admin_memo: null, message: "Message" },
@@ -153,7 +153,7 @@ describe("updateFeatureRequestMemoAction", () => {
 
     const result = await updateFeatureRequestMemoAction({}, memoForm(MEMO));
 
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(supabase.calls("update", "feature_requests")).toMatchObject([
       { body: { admin_memo: MEMO }, query: { id: `eq.${ID}` } },
     ]);
@@ -192,6 +192,7 @@ describe("updateFeatureRequestMemoAction", () => {
   });
 
   it("records that the memo was removed", async () => {
+    expect.hasAssertions();
     supabase.on("select", "feature_requests", [
       { admin_memo: MEMO, message: "Message" },
     ]);
@@ -222,8 +223,8 @@ describe("updateFeatureRequestMemoAction", () => {
         memoForm(adminMemo)
       );
 
-      expect(result).toEqual({ success: true });
-      expect(supabase.calls("update", "feature_requests")).toEqual([]);
+      expect(result).toStrictEqual({ success: true });
+      expect(supabase.calls("update", "feature_requests")).toStrictEqual([]);
       test.expectNoAuditLog();
     }
   );
@@ -231,10 +232,10 @@ describe("updateFeatureRequestMemoAction", () => {
   it("returns an error for a feedback that does not exist", async () => {
     const result = await updateFeatureRequestMemoAction({}, memoForm(MEMO));
 
-    expect(result).toEqual(
+    expect(result).toStrictEqual(
       errorState("フィードバックが見つかりませんでした。")
     );
-    expect(supabase.calls("update", "feature_requests")).toEqual([]);
+    expect(supabase.calls("update", "feature_requests")).toStrictEqual([]);
     test.expectNoAuditLog();
   });
 
@@ -250,13 +251,13 @@ describe("updateFeatureRequestMemoAction", () => {
 
     const result = await updateFeatureRequestMemoAction({}, memoForm(MEMO));
 
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR });
+    expect(result).toStrictEqual({ error: ACTION_FAILED_ERROR });
     test.expectNoAuditLog();
     test.expectNotRevalidated();
   });
 });
 
-describe("markFeatureRequestAsReadAction", () => {
+describe("markFeatureRequestAsReadAction()", () => {
   it.each([true, false])(
     "sets is_read to %s without recording an audit log",
     async (isRead) => {
@@ -265,7 +266,7 @@ describe("markFeatureRequestAsReadAction", () => {
         readForm(String(isRead))
       );
 
-      expect(result).toEqual({ success: true });
+      expect(result).toStrictEqual({ success: true });
       expect(supabase.calls("update", "feature_requests")).toMatchObject([
         { body: { is_read: isRead }, query: { id: `eq.${ID}` } },
       ]);
@@ -283,7 +284,7 @@ describe("markFeatureRequestAsReadAction", () => {
 
     const result = await markFeatureRequestAsReadAction({}, readForm("true"));
 
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR });
+    expect(result).toStrictEqual({ error: ACTION_FAILED_ERROR });
     test.expectNotRevalidated();
   });
 });
@@ -294,9 +295,9 @@ describe("with the client of the signed-in user", () => {
    * クライアントを、`from()` を記録する別のオブジェクトにする
    */
   function signInWithRecordedClient() {
-    const from = vi.fn((table: "feature_requests") =>
-      supabase.client.from(table)
-    );
+    const fromTable = (table: "feature_requests") =>
+      supabase.client.from(table);
+    const from = vi.fn<typeof fromTable>(fromTable);
     const supabaseClient = Object.assign(Object.create(supabase.client), {
       from,
     });
@@ -332,7 +333,7 @@ describe("with the client of the signed-in user", () => {
 
     const { from } = signInWithRecordedClient();
 
-    await expect(action()).resolves.toEqual({ success: true });
+    await expect(action()).resolves.toStrictEqual({ success: true });
     expect(supabase.calls("update", "feature_requests")).toHaveLength(1);
     // サービスロールのクライアントを通ったリクエストは、`from()` に記録されない
     expect(from).toHaveBeenCalledTimes(supabase.requests.length);
@@ -381,8 +382,8 @@ describe("with an invalid input", () => {
       () => markFeatureRequestAsReadAction({}, readForm("yes")),
     ],
   ])("updates nothing for %s", async (_label, action) => {
-    await expect(action()).resolves.toEqual(INVALID_INPUT);
-    expect(supabase.requests).toEqual([]);
+    await expect(action()).resolves.toStrictEqual(INVALID_INPUT);
+    expect(supabase.requests).toStrictEqual([]);
     test.expectNoAuditLog();
     test.expectNotRevalidated();
   });
@@ -390,8 +391,10 @@ describe("with an invalid input", () => {
   it("updates nothing for a memo longer than 10,000 characters", async () => {
     await expect(
       updateFeatureRequestMemoAction({}, memoForm("あ".repeat(10_001)))
-    ).resolves.toEqual(errorState("メモは10,000文字以内で入力してください。"));
-    expect(supabase.requests).toEqual([]);
+    ).resolves.toStrictEqual(
+      errorState("メモは10,000文字以内で入力してください。")
+    );
+    expect(supabase.requests).toStrictEqual([]);
     test.expectNoAuditLog();
     test.expectNotRevalidated();
   });
@@ -404,9 +407,9 @@ describe("with an invalid input", () => {
 
     await expect(
       updateFeatureRequestMemoAction({}, memoForm(memo))
-    ).resolves.toEqual({ success: true });
+    ).resolves.toStrictEqual({ success: true });
     expect(
       supabase.calls("update", "feature_requests").map(({ body }) => body)
-    ).toEqual([{ admin_memo: memo }]);
+    ).toStrictEqual([{ admin_memo: memo }]);
   });
 });

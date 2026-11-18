@@ -7,7 +7,7 @@ import {
 } from "./_components/search-modal-context";
 import NotFound from "./not-found";
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => "/missing-page",
 }));
 
@@ -26,7 +26,7 @@ function renderNotFound() {
   );
 }
 
-describe("NotFound", () => {
+describe(NotFound, () => {
   it("should render the heading in Japanese", () => {
     renderNotFound();
 

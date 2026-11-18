@@ -3,16 +3,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SITE_DESCRIPTION, SITE_TAGLINE } from "@/lib/site";
 
-vi.mock("@/lib/data/schedule", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/data/schedule")>()),
-  fetchOldestVideoDate: vi.fn(),
-  fetchScheduleToday: vi.fn(),
+vi.mock(import("@/lib/data/schedule"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  fetchOldestVideoDate: vi.fn<typeof fetchOldestVideoDate>(),
+  fetchScheduleToday: vi.fn<typeof fetchScheduleToday>(),
 }));
 
-vi.mock("@/lib/data/talents", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/data/talents")>()),
-  fetchActiveTalents: vi.fn(),
-  fetchTalent: vi.fn(),
+vi.mock(import("@/lib/data/talents"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  fetchActiveTalents: vi.fn<typeof fetchActiveTalents>(),
+  fetchTalent: vi.fn<typeof fetchTalent>(),
 }));
 
 import { fetchOldestVideoDate, fetchScheduleToday } from "@/lib/data/schedule";

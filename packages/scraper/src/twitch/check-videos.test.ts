@@ -10,21 +10,23 @@ import {
   createSavedVideo,
   createVideo,
 } from "../internal/testing/twitch.js";
+import type * as Thumbnails from "../internal/thumbnails/index.js";
 import { createThumbnail } from "../internal/thumbnails/index.js";
+import type { ErrorReporter } from "../types.js";
 import {
   refreshRecentTwitchVideos,
   removeUnavailableTwitchVideos,
 } from "./check-videos.js";
 
-vi.mock("../internal/thumbnails/index.js", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../internal/thumbnails/index.js")>()),
-  createThumbnail: vi.fn(),
-  removeThumbnail: vi.fn(),
+vi.mock(import("../internal/thumbnails/index.js"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  createThumbnail: vi.fn<typeof Thumbnails.createThumbnail>(),
+  removeThumbnail: vi.fn<typeof Thumbnails.removeThumbnail>(),
 }));
 
 const supabase = setupSupabase();
 const now = Temporal.Instant.from("2024-05-01T12:00:00.500Z");
-const reportError = vi.fn();
+const reportError = vi.fn<ErrorReporter>();
 const createContext = <T>(fetcher: T) =>
   createTestContext({
     fetcher,
@@ -33,7 +35,7 @@ const createContext = <T>(fetcher: T) =>
     supabaseClient: supabase.supabaseClient,
   });
 
-describe("refreshRecentTwitchVideos", () => {
+describe(refreshRecentTwitchVideos, () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(createThumbnail).mockResolvedValue({
@@ -71,7 +73,7 @@ describe("refreshRecentTwitchVideos", () => {
     const changed = await refreshRecentTwitchVideos(createContext(fetcher));
 
     expect(changed).toBeGreaterThan(0);
-    expect(supabase.written("PATCH", "videos")).toEqual([
+    expect(supabase.written("PATCH", "videos")).toStrictEqual([
       expect.objectContaining({
         body: {
           duration: "PT2H30M",
@@ -130,7 +132,7 @@ describe("refreshRecentTwitchVideos", () => {
 
     expect(getVideos).toHaveBeenCalledWith(["vod-1"]);
     expect(getClips).toHaveBeenCalledWith(["clip-1"]);
-    expect(supabase.written("PATCH", "videos")).toEqual([
+    expect(supabase.written("PATCH", "videos")).toStrictEqual([
       expect.objectContaining({
         body: { title: "Clip" },
         query: { id: "eq.video-2" },
@@ -155,7 +157,7 @@ describe("refreshRecentTwitchVideos", () => {
         }),
       })
     );
-    expect(supabase.written("PATCH", "videos")[0]?.body).toEqual({
+    expect(supabase.written("PATCH", "videos")[0]?.body).toStrictEqual({
       thumbnail_id: "thumb-new",
     });
   });
@@ -171,9 +173,9 @@ describe("refreshRecentTwitchVideos", () => {
     const changed = await refreshRecentTwitchVideos(createContext(fetcher));
 
     expect(changed).toBe(1);
-    expect(supabase.written("PATCH", "videos").map(({ body }) => body)).toEqual(
-      [{ title: "Renamed" }, { thumbnail_id: "thumb-new" }]
-    );
+    expect(
+      supabase.written("PATCH", "videos").map(({ body }) => body)
+    ).toStrictEqual([{ title: "Renamed" }, { thumbnail_id: "thumb-new" }]);
   });
 
   it("removes the new thumbnail when the video cannot be updated", async () => {
@@ -199,9 +201,8 @@ describe("refreshRecentTwitchVideos", () => {
     expect(changed).toBe(0);
     expect(
       supabase.written("DELETE", "thumbnails").map(({ query }) => query["id"])
-    ).toEqual(["eq.thumb-new"]);
-    expect(reportError).toHaveBeenCalledOnce();
-    expect(reportError).toHaveBeenCalledWith(
+    ).toStrictEqual(["eq.thumb-new"]);
+    expect(reportError).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
         message: expect.stringContaining("statement timeout"),
       }),
@@ -255,7 +256,7 @@ describe("refreshRecentTwitchVideos", () => {
   });
 });
 
-describe("removeUnavailableTwitchVideos", () => {
+describe(removeUnavailableTwitchVideos, () => {
   it("walks every video page by page and deletes the missing ones", async () => {
     const cursors: (string | undefined)[] = [];
     supabase.respond(({ method, query, table }) => {
@@ -291,11 +292,18 @@ describe("removeUnavailableTwitchVideos", () => {
 
     const changed = await removeUnavailableTwitchVideos(createContext(fetcher));
 
-    expect(changed).toBeGreaterThan(0);
-    expect(cursors).toEqual([undefined, "gt.video-3"]);
-    expect(getVideos).toHaveBeenCalledWith(["vod-1"]);
-    expect(getClips).toHaveBeenCalledWith(["clip-1"]);
-    expect(supabase.written("POST", "rpc/soft_delete_videos")).toEqual([
+    expect({ changed: changed > 0, cursors }).toStrictEqual({
+      changed: true,
+      cursors: [undefined, "gt.video-3"],
+    });
+    expect({
+      clips: getClips.mock.calls,
+      videos: getVideos.mock.calls,
+    }).toStrictEqual({
+      clips: expect.arrayContaining([[["clip-1"]]]),
+      videos: expect.arrayContaining([[["vod-1"]]]),
+    });
+    expect(supabase.written("POST", "rpc/soft_delete_videos")).toStrictEqual([
       expect.objectContaining({
         body: expect.objectContaining({ p_video_ids: ["video-2"] }),
       }),

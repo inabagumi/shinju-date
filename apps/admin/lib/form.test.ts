@@ -18,7 +18,7 @@ function createFormData(entries: [string, string][]): FormData {
   return formData;
 }
 
-describe("parseFormData", () => {
+describe(parseFormData, () => {
   const schema = z.object({
     email: z.email({ message: "メールアドレスの形式が正しくありません。" }),
     password: z
@@ -36,7 +36,7 @@ describe("parseFormData", () => {
       ])
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       data: { email: "user@example.com", password: "password123" },
       success: true,
     });
@@ -51,7 +51,7 @@ describe("parseFormData", () => {
       ])
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       state: {
         errors: {
           email: ["メールアドレスの形式が正しくありません。"],
@@ -68,7 +68,7 @@ describe("parseFormData", () => {
       createFormData([["email", "user@example.com"]])
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       state: { errors: { password: ["パスワードは必須です。"] } },
       success: false,
     });
@@ -83,7 +83,7 @@ describe("parseFormData", () => {
       ])
     );
 
-    expect(result).toEqual({ data: { name: "first" }, success: true });
+    expect(result).toStrictEqual({ data: { name: "first" }, success: true });
   });
 
   it("collects keys of the form name[index] into an array in index order", () => {
@@ -97,7 +97,7 @@ describe("parseFormData", () => {
       ])
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       data: {
         readings: ["シンジュデイト", "しんじゅでいと", "shinju date"],
         term: "SHINJU DATE",
@@ -117,14 +117,14 @@ describe("parseFormData", () => {
       ])
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       state: { errors: { "readings.1": ["読みを入力してください。"] } },
       success: false,
     });
   });
 });
 
-describe("zodErrorToFormState", () => {
+describe(zodErrorToFormState, () => {
   it("groups the messages by the path of each issue", () => {
     const schema = z.object({
       password: z
@@ -134,8 +134,8 @@ describe("zodErrorToFormState", () => {
     });
     const result = schema.safeParse({ password: "abc" });
 
-    expect(result.success).toBe(false);
-    expect(zodErrorToFormState(result.error as z.ZodError)).toEqual({
+    expect(result.success).toBeFalsy();
+    expect(zodErrorToFormState(result.error as z.ZodError)).toStrictEqual({
       errors: {
         password: ["8文字以上入力してください。", "数字を含めてください。"],
       },
@@ -149,10 +149,10 @@ describe("zodErrorToFormState", () => {
     });
     const result = schema.safeParse({ id: "invalid", name: "" });
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBeFalsy();
     expect(
       zodErrorToFormState(result.error as z.ZodError, { hiddenFields: ["id"] })
-    ).toEqual({
+    ).toStrictEqual({
       errors: {
         generic: ["有効なIDではありません。"],
         name: ["名前を入力してください。"],
@@ -168,26 +168,28 @@ describe("zodErrorToFormState", () => {
     });
     const result = schema.safeParse({ id: "invalid", status: "unknown" });
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBeFalsy();
     expect(
       zodErrorToFormState(result.error as z.ZodError, {
         hiddenFields: ["id", "status"],
       })
-    ).toEqual({ errors: { generic: [message] } });
+    ).toStrictEqual({ errors: { generic: [message] } });
   });
 });
 
-describe("actionErrorToFormState", () => {
+describe(actionErrorToFormState, () => {
   it("attaches the message to the field of the error", () => {
     expect(
       actionErrorToFormState(
         new ActionError("すでに登録されています。", { field: "name" })
       )
-    ).toEqual({ errors: { name: ["すでに登録されています。"] } });
+    ).toStrictEqual({ errors: { name: ["すでに登録されています。"] } });
   });
 
   it("attaches the message to no field when the error has none", () => {
-    expect(actionErrorToFormState(new ActionError("失敗しました。"))).toEqual({
+    expect(
+      actionErrorToFormState(new ActionError("失敗しました。"))
+    ).toStrictEqual({
       errors: { generic: ["失敗しました。"] },
     });
   });

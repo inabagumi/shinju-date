@@ -64,7 +64,7 @@ const cases = actions.flatMap(([name, action]) =>
 function expectNoSideEffects() {
   expect(test.createSupabaseServerClient).not.toHaveBeenCalled();
   // No PostgREST request at all, through either client
-  expect(supabase.requests).toEqual([]);
+  expect(supabase.requests).toStrictEqual([]);
   expect(test.getRedisClient).not.toHaveBeenCalled();
   test.expectNoAuditLog();
   test.expectNotRevalidated();
@@ -107,6 +107,6 @@ describe('files that start with "use server"', () => {
         )
     );
 
-    expect(files).toEqual([]);
+    expect(files).toStrictEqual([]);
   });
 });

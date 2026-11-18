@@ -3,7 +3,12 @@ import { act, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import type { Video } from "@/lib/data/videos";
+import type { VideoCardSkeleton } from "@/components/video-card";
+import type {
+  fetchDashboardVideos,
+  fetchUpcomingVideos,
+  Video,
+} from "@/lib/data/videos";
 import { queryKeys } from "@/lib/query-keys";
 
 import {
@@ -13,13 +18,19 @@ import {
   ShortsSection,
 } from "./home-sections";
 import type { DashboardVideos } from "./home-sections";
+import type { ShortsCarouselSkeleton } from "./shorts-carousel";
+import type { TimelineSkeleton } from "./timeline";
 
-vi.mock("@/lib/data/videos", () => ({
-  fetchDashboardVideos: vi.fn(() => new Promise(() => {})),
-  fetchUpcomingVideos: vi.fn(() => new Promise(() => {})),
+vi.mock(import("@/lib/data/videos"), () => ({
+  fetchDashboardVideos: vi.fn<typeof fetchDashboardVideos>(
+    () => new Promise(() => {})
+  ),
+  fetchUpcomingVideos: vi.fn<typeof fetchUpcomingVideos>(
+    () => new Promise(() => {})
+  ),
 }));
 
-vi.mock("./shorts-carousel", () => ({
+vi.mock(import("./shorts-carousel"), () => ({
   default: ({ videos }: { videos: Video[] }) => (
     <ul aria-label="carousel">
       {videos.map((video) => (
@@ -27,10 +38,11 @@ vi.mock("./shorts-carousel", () => ({
       ))}
     </ul>
   ),
-  ShortsCarouselSkeleton: () => null,
+  // Renders nothing
+  ShortsCarouselSkeleton: vi.fn<typeof ShortsCarouselSkeleton>(),
 }));
 
-vi.mock("./timeline", () => ({
+vi.mock(import("./timeline"), () => ({
   default: ({ videos }: { videos: Video[] }) => (
     <ol aria-label="timeline">
       {videos.map((video) => (
@@ -38,12 +50,14 @@ vi.mock("./timeline", () => ({
       ))}
     </ol>
   ),
-  TimelineSkeleton: () => null,
+  // Renders nothing
+  TimelineSkeleton: vi.fn<typeof TimelineSkeleton>(),
 }));
 
-vi.mock("@/components/video-card", () => ({
+vi.mock(import("@/components/video-card"), () => ({
   default: ({ value }: { value: Video }) => <article>{value.id}</article>,
-  VideoCardSkeleton: () => null,
+  // Renders nothing
+  VideoCardSkeleton: vi.fn<typeof VideoCardSkeleton>(),
 }));
 
 function createVideos(count: number, prefix: string): Video[] {
@@ -75,7 +89,7 @@ function renderWithQueryClient(ui: ReactNode) {
   return { container, queryClient };
 }
 
-describe("LiveSection", () => {
+describe(LiveSection, () => {
   it("should show the number of live videos next to the heading", () => {
     renderWithQueryClient(
       <LiveSection prefetchedData={createDashboardVideos({ live: 3 })} />
@@ -125,7 +139,7 @@ describe("LiveSection", () => {
   });
 });
 
-describe("ScheduleSection", () => {
+describe(ScheduleSection, () => {
   it("should show the timeline with the number of upcoming videos", () => {
     renderWithQueryClient(
       <ScheduleSection
@@ -143,7 +157,7 @@ describe("ScheduleSection", () => {
       within(within(section).getByRole("list", { name: "timeline" }))
         .getAllByRole("listitem")
         .map((item) => item.textContent)
-    ).toEqual([
+    ).toStrictEqual([
       "upcoming-0",
       "upcoming-1",
       "upcoming-2",
@@ -166,7 +180,7 @@ describe("ScheduleSection", () => {
   });
 });
 
-describe("RecentSection", () => {
+describe(RecentSection, () => {
   it("should show only one row of recent videos and link to the videos page", () => {
     renderWithQueryClient(
       <RecentSection prefetchedData={createDashboardVideos({ recent: 10 })} />
@@ -178,14 +192,14 @@ describe("RecentSection", () => {
       within(section)
         .getAllByRole("article")
         .map((card) => card.textContent)
-    ).toEqual(["recent-0", "recent-1", "recent-2", "recent-3"]);
+    ).toStrictEqual(["recent-0", "recent-1", "recent-2", "recent-3"]);
     expect(
       within(section).getByRole("link", { name: "動画一覧を見る" })
     ).toHaveAttribute("href", "/videos");
   });
 });
 
-describe("ShortsSection", () => {
+describe(ShortsSection, () => {
   it("should show the shorts carousel with the number of shorts", () => {
     renderWithQueryClient(
       <ShortsSection prefetchedData={createDashboardVideos({ shorts: 20 })} />

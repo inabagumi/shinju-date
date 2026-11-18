@@ -4,17 +4,22 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ActionToastProvider } from "@/components/action-toast";
 
 import type {
+  getVideoBackfillHistoryAction,
+  retryFailedVideoBackfillJobsAction,
+} from "../_actions/video-backfill-history";
+import type {
   VideoBackfillFailure,
   VideoBackfillHistory,
   VideoBackfillHistoryEntry,
 } from "../_lib/get-video-backfill-history";
 
 const mocks = vi.hoisted(() => ({
-  getVideoBackfillHistoryAction: vi.fn(),
-  retryFailedVideoBackfillJobsAction: vi.fn(),
+  getVideoBackfillHistoryAction: vi.fn<typeof getVideoBackfillHistoryAction>(),
+  retryFailedVideoBackfillJobsAction:
+    vi.fn<typeof retryFailedVideoBackfillJobsAction>(),
 }));
 
-vi.mock("../_actions/video-backfill-history", () => ({
+vi.mock(import("../_actions/video-backfill-history"), () => ({
   getVideoBackfillHistoryAction: mocks.getVideoBackfillHistoryAction,
   retryFailedVideoBackfillJobsAction: mocks.retryFailedVideoBackfillJobsAction,
 }));
@@ -76,7 +81,7 @@ describe("VideoBackfillHistoryPanel", () => {
     vi.clearAllMocks();
   });
 
-  it("shows what past backfills did and who requested them", () => {
+  function renderHistory() {
     renderPanel({
       entries: [
         createEntry(),
@@ -92,6 +97,10 @@ describe("VideoBackfillHistoryPanel", () => {
         }),
       ],
     });
+  }
+
+  it("shows what past backfills did and who requested them", () => {
+    renderHistory();
 
     expect(
       screen.getByText(
@@ -101,10 +110,20 @@ describe("VideoBackfillHistoryPanel", () => {
     expect(
       screen.getByText("0件追加 · 0ページ · 不明なユーザーが個別に依頼")
     ).toBeTruthy();
+  });
+
+  it("shows the error of a backfill of a removed account", () => {
+    renderHistory();
+
     expect(screen.getByText("削除されたアカウント")).toBeTruthy();
     expect(
       screen.getByText("Account not found: channel-row-gone")
     ).toBeTruthy();
+  });
+
+  it("disables the retry without failures and loads nothing more", () => {
+    renderHistory();
+
     expect(
       screen.getByRole("button", { name: "失敗したジョブを再試行" })
     ).toHaveProperty("disabled", true);
@@ -145,7 +164,8 @@ describe("VideoBackfillHistoryPanel", () => {
     expect(within(failures).getByText("再試行中")).toBeTruthy();
   });
 
-  it("confirms before retrying the failed jobs at once", async () => {
+  /** Renders the failures and clicks the button to retry them. */
+  function openRetryDialog(): HTMLElement {
     mocks.getVideoBackfillHistoryAction.mockResolvedValue({
       data: {
         entries: [],
@@ -179,10 +199,20 @@ describe("VideoBackfillHistoryPanel", () => {
 
     fireEvent.click(button);
 
+    return button;
+  }
+
+  it("confirms before retrying the failed jobs at once", () => {
+    openRetryDialog();
+
     const dialog = screen.getByRole("dialog");
 
     expect(dialog.textContent).toContain("1件のアカウント");
     expect(mocks.retryFailedVideoBackfillJobsAction).not.toHaveBeenCalled();
+  });
+
+  it("retries the failed jobs at once when confirmed", async () => {
+    const button = openRetryDialog();
 
     fireEvent.click(screen.getByRole("button", { name: "再試行する" }));
 

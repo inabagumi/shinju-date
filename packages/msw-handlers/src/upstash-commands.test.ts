@@ -137,7 +137,7 @@ describe("Upstash Redis commands", () => {
     it("finds the commands in the code", () => {
       // A command of each kind that the apps are known to use, so that the
       // search does not silently find nothing
-      expect([...used.keys()]).toEqual(
+      expect([...used.keys()]).toStrictEqual(
         expect.arrayContaining(["eval", "hincrby", "zincrby", "zrange"])
       );
     });
@@ -154,7 +154,7 @@ describe("Upstash Redis commands", () => {
     it("returns the error of Redis with 400 for a single command", async () => {
       const response = await send("/", ["FOOBAR", "a", 1]);
 
-      expect(response).toEqual({
+      expect(response).toStrictEqual({
         body: {
           error:
             "ERR unknown command 'FOOBAR', with args beginning with: 'a' '1' ",
@@ -167,7 +167,7 @@ describe("Upstash Redis commands", () => {
       const response = await send("/v2/foobar", ["a"]);
 
       expect(response.status).toBe(400);
-      expect(response.body).toEqual({
+      expect(response.body).toStrictEqual({
         error: expect.stringMatching(/^ERR unknown command 'foobar'/),
       });
     });
@@ -186,7 +186,7 @@ describe("Upstash Redis commands", () => {
         ["GET", key],
       ]);
 
-      expect(response).toEqual({
+      expect(response).toStrictEqual({
         body: [
           { result: "OK" },
           { error: expect.stringMatching(/^ERR unknown command 'FOOBAR'/) },
@@ -204,7 +204,7 @@ describe("Upstash Redis commands", () => {
       ]);
 
       expect(response.status).toBe(400);
-      expect(response.body).toEqual({
+      expect(response.body).toStrictEqual({
         error: expect.stringMatching(/^EXECABORT .*unknown command 'FOOBAR'/),
       });
       await expect(redis.exists(key)).resolves.toBe(0);
@@ -229,7 +229,7 @@ describe("Upstash Redis commands", () => {
     it("returns an error for the wrong number of arguments", async () => {
       const response = await send("/", ["GET"]);
 
-      expect(response).toEqual({
+      expect(response).toStrictEqual({
         body: { error: "ERR wrong number of arguments for 'get' command" },
         status: 400,
       });
@@ -268,11 +268,15 @@ describe("Upstash Redis commands", () => {
 
       await redis.set(key, "a");
 
-      await expect(redis.ttl(key)).resolves.toBe(-1);
-      await expect(redis.expire(key, 30)).resolves.toBe(1);
-      await expect(redis.ttl(key)).resolves.toBe(30);
-      await expect(redis.setex(other, 10, "b")).resolves.toBe("OK");
-      await expect(redis.ttl(other)).resolves.toBe(10);
+      expect([
+        await redis.ttl(key),
+        await redis.expire(key, 30),
+        await redis.ttl(key),
+      ]).toStrictEqual([-1, 1, 30]);
+      expect([
+        await redis.setex(other, 10, "b"),
+        await redis.ttl(other),
+      ]).toStrictEqual(["OK", 10]);
       // SET removes the expiry
       await redis.set(key, "b");
       await expect(redis.ttl(key)).resolves.toBe(-1);
@@ -291,8 +295,8 @@ describe("Upstash Redis commands", () => {
 
       await redis.set(key, { a: 1 });
 
-      await expect(redis.get(key)).resolves.toEqual({ a: 1 });
-      await expect(send("/", ["GET", key])).resolves.toEqual({
+      await expect(redis.get(key)).resolves.toStrictEqual({ a: 1 });
+      await expect(send("/", ["GET", key])).resolves.toStrictEqual({
         body: { result: '{"a":1}' },
         status: 200,
       });
@@ -303,10 +307,14 @@ describe("Upstash Redis commands", () => {
     it("adds, counts and removes members", async () => {
       const key = uniqueKey("set");
 
-      await expect(redis.sadd(key, "a", "b", "a")).resolves.toBe(2);
-      await expect(redis.scard(key)).resolves.toBe(2);
-      await expect(redis.srem(key, "a", "c")).resolves.toBe(1);
-      await expect(redis.smembers(key)).resolves.toEqual(["b"]);
+      expect([
+        await redis.sadd(key, "a", "b", "a"),
+        await redis.scard(key),
+      ]).toStrictEqual([2, 2]);
+      expect([
+        await redis.srem(key, "a", "c"),
+        await redis.smembers(key),
+      ]).toStrictEqual([1, ["b"]]);
       await expect(redis.srem(key, "b")).resolves.toBe(1);
       // An empty set is removed
       await expect(redis.exists(key)).resolves.toBe(0);
@@ -320,7 +328,7 @@ describe("Upstash Redis commands", () => {
       await expect(redis.hincrby(key, "a", 2)).resolves.toBe(2);
       await expect(redis.hincrby(key, "a", 3)).resolves.toBe(5);
       await expect(redis.hincrby(key, "b", 1)).resolves.toBe(1);
-      await expect(redis.hgetall(key)).resolves.toEqual({ a: 5, b: 1 });
+      await expect(redis.hgetall(key)).resolves.toStrictEqual({ a: 5, b: 1 });
       await expect(redis.hgetall(uniqueKey("none"))).resolves.toBeNull();
     });
   });
@@ -353,7 +361,7 @@ describe("Upstash Redis commands", () => {
       ).resolves.toBe(0);
       await expect(
         redis.zrange(key, 0, -1, { withScores: true })
-      ).resolves.toEqual(["a", 1, "b", 3]);
+      ).resolves.toStrictEqual(["a", 1, "b", 3]);
     });
 
     it("reads ranges by score, in reverse and with a limit", async () => {
@@ -369,18 +377,21 @@ describe("Upstash Redis commands", () => {
 
       await expect(
         redis.zrange(key, 2, "+inf", { byScore: true })
-      ).resolves.toEqual(["b", "c", "d"]);
+      ).resolves.toStrictEqual(["b", "c", "d"]);
       await expect(
         redis.zrange(key, "(4", 2, { byScore: true, rev: true })
-      ).resolves.toEqual(["c", "b"]);
+      ).resolves.toStrictEqual(["c", "b"]);
       await expect(
         redis.zrange(key, "-inf", "+inf", {
           byScore: true,
           count: 2,
           offset: 1,
         })
-      ).resolves.toEqual(["b", "c"]);
-      await expect(redis.zrange(key, -2, -1)).resolves.toEqual(["c", "d"]);
+      ).resolves.toStrictEqual(["b", "c"]);
+      await expect(redis.zrange(key, -2, -1)).resolves.toStrictEqual([
+        "c",
+        "d",
+      ]);
     });
 
     it("stores the union of sorted sets with weights", async () => {
@@ -402,7 +413,7 @@ describe("Upstash Redis commands", () => {
       ).resolves.toBe(2);
       await expect(
         redis.zrange(destination, 0, -1, { withScores: true })
-      ).resolves.toEqual(["a", 5, "b", 6]);
+      ).resolves.toStrictEqual(["a", 5, "b", 6]);
     });
   });
 

@@ -1,5 +1,6 @@
 // @vitest-environment node
 
+import type { logger } from "@shinju-date/logger";
 import { HttpResponse, http } from "msw";
 import sharp from "sharp";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -14,8 +15,13 @@ import {
   supabaseServer,
 } from "@/test/supabase";
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: { warn: vi.fn() },
+vi.mock(import("@shinju-date/logger"), () => ({
+  logger: {
+    debug: vi.fn<typeof logger.debug>(),
+    error: vi.fn<typeof logger.error>(),
+    info: vi.fn<typeof logger.info>(),
+    warn: vi.fn<typeof logger.warn>(),
+  },
 }));
 
 import { fetchTalentIconDataURL, getTalentThemeColor } from "./og-image";
@@ -28,7 +34,7 @@ const ICON = createProfileImage({ path: "youtube/UC1/a.webp" });
 const DOWNLOAD_URL =
   "https://fake.supabase.test/storage/v1/object/profile-images/*";
 
-describe("getTalentThemeColor", () => {
+describe(getTalentThemeColor, () => {
   it("should use the theme color of the talent", () => {
     expect(getTalentThemeColor("#FF6B9D")).toBe("#ff6b9d");
     expect(getTalentThemeColor("#87ceeb")).toBe("#87ceeb");
@@ -57,7 +63,7 @@ describe("getTalentThemeColor", () => {
   });
 });
 
-describe("fetchTalentIconDataURL", () => {
+describe(fetchTalentIconDataURL, () => {
   const profileImage = { blur_data_url: ICON.blur_data_url, id: ICON.id };
 
   beforeEach(async () => {
@@ -93,10 +99,10 @@ describe("fetchTalentIconDataURL", () => {
 
     expect(dataURL).toMatch(/^data:image\/png;base64,/);
     // The lookup is sent with the public key, so RLS applies
-    expect(supabaseRequests("profile_images").map(({ role }) => role)).toEqual([
-      "anon",
-    ]);
-    expect(downloads).toEqual([
+    expect(
+      supabaseRequests("profile_images").map(({ role }) => role)
+    ).toStrictEqual(["anon"]);
+    expect(downloads).toStrictEqual([
       "/storage/v1/object/profile-images/youtube/UC1/a.webp",
     ]);
 
@@ -115,7 +121,7 @@ describe("fetchTalentIconDataURL", () => {
   it("should return null for a talent without an icon", async () => {
     await expect(fetchTalentIconDataURL(null, 320)).resolves.toBeNull();
 
-    expect(supabaseRequests()).toEqual([]);
+    expect(supabaseRequests()).toStrictEqual([]);
   });
 
   // RLS hides the icons that are not in use from the public key

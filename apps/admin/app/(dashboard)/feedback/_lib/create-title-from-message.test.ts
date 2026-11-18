@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { createTitleFromMessage } from "./create-title-from-message";
 
-describe("createTitleFromMessage", () => {
+describe(createTitleFromMessage, () => {
   it("should return the message as-is when it is shorter than 50 characters", () => {
     const message = "Short message";
     const result = createTitleFromMessage(message);

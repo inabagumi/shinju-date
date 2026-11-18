@@ -2,14 +2,16 @@ import { render, screen, within } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { VideoCardSkeleton } from "@/components/video-card";
 import type { Video } from "@/lib/data/videos";
 import { createVideoItem } from "@/test/factories";
 
 import Timeline from "./timeline";
 
-vi.mock("@/components/video-card", () => ({
+vi.mock(import("@/components/video-card"), () => ({
   default: ({ value }: { value: Video }) => <article>{value.title}</article>,
-  VideoCardSkeleton: () => null,
+  // Renders nothing
+  VideoCardSkeleton: vi.fn<typeof VideoCardSkeleton>(),
 }));
 
 function getGroup(name: RegExp | string) {
@@ -22,7 +24,7 @@ function getCardTitles(group: HTMLElement) {
     .map((card) => card.textContent);
 }
 
-describe("Timeline", () => {
+describe(Timeline, () => {
   beforeEach(() => {
     vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(
       Temporal.ZonedDateTime.from("2026-11-14T12:00:00+09:00[Asia/Tokyo]")
@@ -65,12 +67,12 @@ describe("Timeline", () => {
     expect(groups).toHaveLength(3);
     expect(
       groups.map((group) => within(group).getByRole("heading").textContent)
-    ).toEqual(["今日", "明日", "11/16（月）"]);
+    ).toStrictEqual(["今日", "明日", "11/16（月）"]);
 
     for (const [index, title] of ["video-a", "video-b", "video-c"].entries()) {
       const group = groups[index] as HTMLElement;
 
-      expect(getCardTitles(group)).toEqual([title]);
+      expect(getCardTitles(group)).toStrictEqual([title]);
       expect(within(group).getByText("1件")).toBeInTheDocument();
     }
   });
@@ -111,13 +113,13 @@ describe("Timeline", () => {
     const firstGroup = getGroup("今日");
     const secondGroup = getGroup("明日");
 
-    expect(getCardTitles(firstGroup)).toEqual([
+    expect(getCardTitles(firstGroup)).toStrictEqual([
       "video-a",
       "video-b",
       "video-c",
     ]);
     expect(within(firstGroup).getByText("3件")).toBeInTheDocument();
-    expect(getCardTitles(secondGroup)).toEqual(["video-d"]);
+    expect(getCardTitles(secondGroup)).toStrictEqual(["video-d"]);
     expect(within(secondGroup).getByText("1件")).toBeInTheDocument();
   });
 
@@ -220,6 +222,6 @@ describe("Timeline", () => {
       screen
         .getAllByRole("region")
         .map((group) => within(group).getByRole("heading").textContent)
-    ).toEqual(["11/14（土）", "今日"]);
+    ).toStrictEqual(["11/14（土）", "今日"]);
   });
 });

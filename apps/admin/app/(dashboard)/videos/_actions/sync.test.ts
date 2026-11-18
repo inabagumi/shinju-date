@@ -1,18 +1,19 @@
 import { CACHE_TAGS } from "@shinju-date/constants";
-import type { RefreshVideoResult } from "@shinju-date/scraper";
+import type { RefreshVideoResult, Scraper } from "@shinju-date/scraper";
 import { toDBString } from "@shinju-date/temporal-fns";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { createScraper } from "@/lib/scraper";
 import { setupActionTest } from "@/test/action-harness";
 
 import { syncVideoAction } from "./sync";
 
 const scraper = vi.hoisted(() => ({
-  createScraper: vi.fn(),
-  refreshVideo: vi.fn(),
+  createScraper: vi.fn<typeof createScraper>(),
+  refreshVideo: vi.fn<Scraper["refreshVideo"]>(),
 }));
 
-vi.mock("@/lib/scraper", () => ({
+vi.mock(import("@/lib/scraper"), () => ({
   createScraper: scraper.createScraper,
 }));
 
@@ -46,13 +47,13 @@ const revalidated = {
   tags: [[CACHE_TAGS.VIDEOS]],
 };
 
-beforeEach(() => {
-  scraper.createScraper.mockReturnValue({
-    refreshVideo: scraper.refreshVideo,
+describe("syncVideoAction()", () => {
+  beforeEach(() => {
+    scraper.createScraper.mockReturnValue({
+      refreshVideo: scraper.refreshVideo,
+    } as Partial<Scraper> as Scraper);
   });
-});
 
-describe("syncVideoAction", () => {
   it.each(["youtube", "twitch"] as const)(
     "refreshes a %s video with the scraper of its platform",
     async (platform) => {
@@ -77,7 +78,7 @@ describe("syncVideoAction", () => {
 
     const result = await syncVideoAction(videoId);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       data: { message: "動画情報を同期しました。" },
       success: true,
     });
@@ -97,7 +98,7 @@ describe("syncVideoAction", () => {
 
     const result = await syncVideoAction(videoId);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       data: { message: "動画情報は既に最新です。", unchanged: true },
       success: true,
     });
@@ -116,7 +117,7 @@ describe("syncVideoAction", () => {
 
       const result = await syncVideoAction(videoId);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: {
           message: `${label}で動画が見つからなかったため、動画を削除しました。`,
         },
@@ -142,7 +143,7 @@ describe("syncVideoAction", () => {
 
     const result = await syncVideoAction(videoId);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: "動画が見つかりませんでした。",
       success: false,
     });
@@ -155,7 +156,7 @@ describe("syncVideoAction", () => {
 
     const result = await syncVideoAction(videoId);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: "動画が見つかりませんでした。",
       success: false,
     });
@@ -170,7 +171,7 @@ describe("syncVideoAction", () => {
 
     const result = await syncVideoAction(videoId);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: ACTION_FAILED_ERROR,
       success: false,
     });
@@ -192,7 +193,7 @@ describe("syncVideoAction", () => {
   ])("returns an error without syncing anything for %s", async (_, id) => {
     const result = await syncVideoAction(id as string);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: "入力が正しくありません。",
       success: false,
     });

@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { Button } from "./Button/Button";
 import { Input } from "./Input/Input";
 import { MultiSelect } from "./MultiSelect/MultiSelect";
+import type { MultiSelectProps } from "./MultiSelect/MultiSelect";
 import { Select } from "./Select/Select";
 import { Textarea } from "./Textarea/Textarea";
 import { ToastClose, ToastProvider } from "./Toast/Toast";
@@ -33,7 +34,11 @@ describe("focus styles", () => {
           <option>選択肢</option>
         </Select>
         <Textarea aria-label="複数行の入力欄" />
-        <MultiSelect onChange={vi.fn()} options={[]} value={[]} />
+        <MultiSelect
+          onChange={vi.fn<MultiSelectProps["onChange"]>()}
+          options={[]}
+          value={[]}
+        />
       </>
     );
 

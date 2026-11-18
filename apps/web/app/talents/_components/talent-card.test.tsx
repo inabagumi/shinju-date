@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { TalentStreamStatus } from "@/lib/data/talents";
 import { createTalentListItem } from "@/test/factories";
 
-vi.mock("@/lib/data/talents", () => ({}));
+vi.mock(import("@/lib/data/talents"), () => ({}));
 
 import TalentCard from "./talent-card";
 import TalentGrid from "./talent-grid";
@@ -17,7 +17,7 @@ const TALENT = createTalentListItem({
   youtube_channels: [{ profile_image: { blur_data_url: "", id: "icon-1" } }],
 });
 
-describe("TalentCard", () => {
+describe(TalentCard, () => {
   it("should link to the page of the talent by its name", () => {
     render(<TalentCard talent={TALENT} />);
 
@@ -135,6 +135,11 @@ describe("TalentCard with the stream status", () => {
       "dateTime",
       "2026-11-16T20:00:00+09:00"
     );
+  });
+
+  it("should not show the live status before the next stream", () => {
+    render(<TalentCard streamStatus={upcoming} talent={TALENT} />);
+
     expect(screen.queryByText("配信中")).not.toBeInTheDocument();
     expect(screen.getByTestId("talent-icon")).not.toHaveClass("ring-live");
   });
@@ -152,7 +157,7 @@ describe("TalentCard with the stream status", () => {
   });
 });
 
-describe("TalentGrid", () => {
+describe(TalentGrid, () => {
   it("should list the talents in order", () => {
     render(
       <TalentGrid
@@ -170,7 +175,7 @@ describe("TalentGrid", () => {
     const items = screen.getAllByRole("listitem");
 
     expect(items).toHaveLength(2);
-    expect(items.map((item) => item.textContent)).toEqual([
+    expect(items.map((item) => item.textContent)).toStrictEqual([
       "朝霧ミオ",
       "夜宵ルナ",
     ]);
@@ -193,7 +198,7 @@ describe("TalentGrid", () => {
 
     const links = screen.getAllByRole("link");
 
-    expect(links.map((link) => link.getAttribute("href"))).toEqual([
+    expect(links.map((link) => link.getAttribute("href"))).toStrictEqual([
       `/talents/${TALENT_ID}`,
       `/talents/${secondId}`,
     ]);

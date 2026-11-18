@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { createImage } from "../testing/images.js";
 import { createBlurDataURL } from "./blur-data-url.js";
 
-describe("createBlurDataURL", () => {
+describe(createBlurDataURL, () => {
   it("encodes a 10 pixel wide JPEG as a data URL", async () => {
     const dataURL = await createBlurDataURL(await createImage(320, 180));
 
@@ -22,6 +22,6 @@ describe("createBlurDataURL", () => {
   it("rejects broken images", async () => {
     await expect(
       createBlurDataURL(new TextEncoder().encode("not an image"))
-    ).rejects.toThrow();
+    ).rejects.toThrow("Input buffer contains unsupported image format");
   });
 });

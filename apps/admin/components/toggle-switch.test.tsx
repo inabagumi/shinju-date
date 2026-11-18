@@ -28,7 +28,7 @@ function ControlledToggleSwitch({
   );
 }
 
-describe("ToggleSwitch", () => {
+describe(ToggleSwitch, () => {
   it("renders a switch with the label and the checked state", () => {
     const { rerender } = render(
       <ToggleSwitch checked={false} label="メンテナンスモード" />
@@ -46,7 +46,7 @@ describe("ToggleSwitch", () => {
 
   it("calls onChange with the opposite of checked on click", async () => {
     const user = userEvent.setup();
-    const onChange = vi.fn();
+    const onChange = vi.fn<(checked: boolean) => void>();
     const { rerender } = render(
       <ToggleSwitch
         checked={false}
@@ -90,7 +90,7 @@ describe("ToggleSwitch", () => {
 
   it("toggles with the Space and Enter keys", async () => {
     const user = userEvent.setup();
-    const onChange = vi.fn();
+    const onChange = vi.fn<(checked: boolean) => void>();
     render(<ControlledToggleSwitch onChange={onChange} />);
 
     const toggle = screen.getByRole("switch", { name: "メンテナンスモード" });
@@ -106,12 +106,12 @@ describe("ToggleSwitch", () => {
     await user.keyboard("{Enter}");
 
     expect(toggle).toHaveAttribute("aria-checked", "false");
-    expect(onChange.mock.calls).toEqual([[true], [false]]);
+    expect(onChange.mock.calls).toStrictEqual([[true], [false]]);
   });
 
   it("does not toggle when disabled", async () => {
     const user = userEvent.setup();
-    const onChange = vi.fn();
+    const onChange = vi.fn<(checked: boolean) => void>();
     render(
       <ToggleSwitch
         checked={false}

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { Alert } from "./Alert";
 import type { AlertTone } from "./Alert";
 
-describe("Alert", () => {
+describe(Alert, () => {
   it("renders only the body by default", () => {
     const { container } = render(<Alert>同期できません。</Alert>);
 

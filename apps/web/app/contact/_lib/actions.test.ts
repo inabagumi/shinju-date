@@ -1,9 +1,13 @@
+import type { checkBotId } from "botid/server";
+import type { ErrorResponse, Resend } from "resend";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { ServerEnv } from "@/lib/env";
 
 const DEFAULT_ADMIN_EMAIL = "contact@example.org";
 
 const { sendEmail, serverEnv } = vi.hoisted(() => ({
-  sendEmail: vi.fn(),
+  sendEmail: vi.fn<Resend["emails"]["send"]>(),
   serverEnv: {
     ADMIN_EMAIL: "contact@example.org" as string | undefined,
     FROM_EMAIL: "noreply@example.org",
@@ -11,16 +15,29 @@ const { sendEmail, serverEnv } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/lib/env", () => ({ serverEnv }));
-
-vi.mock("resend", () => ({
-  Resend: class {
-    emails = { send: sendEmail };
-  },
+vi.mock(import("@/lib/env"), () => ({
+  serverEnv: serverEnv as Partial<ServerEnv> as ServerEnv,
 }));
 
-vi.mock("botid/server", () => ({
-  checkBotId: vi.fn().mockResolvedValue({ isBot: false }),
+vi.mock(import("resend"), async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    Resend: class extends actual.Resend {
+      override emails = { send: sendEmail } as Partial<
+        Resend["emails"]
+      > as Resend["emails"];
+    },
+  };
+});
+
+vi.mock(import("botid/server"), () => ({
+  checkBotId: vi.fn<typeof checkBotId>().mockResolvedValue({
+    bypassed: false,
+    isBot: false,
+    isHuman: true,
+    isVerifiedBot: false,
+  }),
 }));
 
 import { submitContactForm } from "./actions";
@@ -43,7 +60,7 @@ const SUBMITTED_VALUES = {
   wantsReply: "on",
 };
 
-describe("submitContactForm", () => {
+describe("submitContactForm()", () => {
   beforeEach(() => {
     sendEmail.mockReset();
   });
@@ -59,7 +76,7 @@ describe("submitContactForm", () => {
       createFormData({ message: "", type: "" })
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       fieldErrors: {
         message: "お問い合わせ内容を入力してください",
         type: "お問い合わせ種別を選択してください",
@@ -80,7 +97,7 @@ describe("submitContactForm", () => {
       })
     );
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBeFalsy();
     expect(result.fieldErrors?.email).toBe(
       "メールアドレスの形式が正しくありません"
     );
@@ -96,7 +113,7 @@ describe("submitContactForm", () => {
       })
     );
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBeFalsy();
     expect(result.fieldErrors?.email).toBe(
       "返信を希望する場合はメールアドレスが必須です"
     );
@@ -115,7 +132,7 @@ describe("submitContactForm", () => {
         createFormData(SUBMITTED_VALUES)
       );
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         error: "お問い合わせ機能は現在ご利用いただけません。",
         success: false,
         values: SUBMITTED_VALUES,
@@ -136,7 +153,7 @@ describe("submitContactForm", () => {
       createFormData(SUBMITTED_VALUES)
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       message: "お問い合わせを受け付けました。ありがとうございます。",
       success: true,
     });
@@ -166,12 +183,12 @@ describe("submitContactForm", () => {
       })
     );
 
-    expect(result.success).toBe(true);
+    expect(result.success).toBeTruthy();
 
     const [options] = sendEmail.mock.calls[0] ?? [];
 
     expect(options).not.toHaveProperty("replyTo");
-    expect(options.text).toContain("■ お名前\n山田花子\n");
+    expect(options?.text).toContain("■ お名前\n山田花子\n");
   });
 
   it("marks the name as not entered when it is empty", async () => {
@@ -197,7 +214,7 @@ describe("submitContactForm", () => {
     const consoleError = vi
       .spyOn(console, "error")
       .mockImplementation(() => {});
-    const sendError = {
+    const sendError: ErrorResponse = {
       message: "Internal server error",
       name: "internal_server_error",
       statusCode: 500,
@@ -213,7 +230,7 @@ describe("submitContactForm", () => {
       createFormData(SUBMITTED_VALUES)
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error:
         "送信中にエラーが発生しました。しばらく時間をおいて再度お試しください。",
       success: false,

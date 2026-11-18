@@ -2,17 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import { recommendedQueriesSearchParamsSchema } from "./search-params-schema";
 
-describe("recommendedQueriesSearchParamsSchema", () => {
+describe("recommendedQueriesSearchParamsSchema.parse", () => {
   it("has no search when no parameters are given", () => {
-    expect(recommendedQueriesSearchParamsSchema.parse({})).toEqual({
-      search: undefined,
-    });
+    expect(recommendedQueriesSearchParamsSchema.parse({})).toStrictEqual({});
   });
 
   it("parses the search", () => {
     expect(
       recommendedQueriesSearchParamsSchema.parse({ search: " 歌枠 " })
-    ).toEqual({
+    ).toStrictEqual({
       search: "歌枠",
     });
   });
@@ -20,15 +18,13 @@ describe("recommendedQueriesSearchParamsSchema", () => {
   it("has no search for a blank search", () => {
     expect(
       recommendedQueriesSearchParamsSchema.parse({ search: "  " })
-    ).toEqual({
-      search: undefined,
-    });
+    ).toStrictEqual({ search: undefined });
   });
 
   it("uses the first value when the search is repeated", () => {
     expect(
       recommendedQueriesSearchParamsSchema.parse({ search: ["a", "b"] })
-    ).toEqual({
+    ).toStrictEqual({
       search: "a",
     });
   });

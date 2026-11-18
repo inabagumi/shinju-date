@@ -1,60 +1,51 @@
-import type { Enums } from "@shinju-date/database";
+import type * as Sentry from "@sentry/nextjs";
+import type { TwitchScraper as RealTwitchScraper } from "@shinju-date/scraper/twitch";
+import type { YouTubeScraper as RealYouTubeScraper } from "@shinju-date/scraper/youtube";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const supabaseClient = {};
-const logger = { error: vi.fn(), info: vi.fn(), warn: vi.fn() };
-const captureException = vi.fn();
+import type { TypedSupabaseClient } from "./supabase";
 
-vi.mock("@/lib/supabase", () => ({ supabaseClient }));
-vi.mock("@shinju-date/logger", () => ({ logger }));
-vi.mock("@sentry/nextjs", () => ({ captureException }));
-vi.mock("@shinju-date/scraper/youtube", () => ({
-  YouTubeScraper: class {
-    readonly provider = "youtube";
+const { createLoggerMock } = await vi.hoisted(() => import("@/test/mocks"));
 
-    constructor(readonly options: unknown) {}
-  },
-}));
-vi.mock("@shinju-date/scraper/twitch", () => ({
-  TwitchScraper: class {
-    readonly provider = "twitch";
+const supabaseClient =
+  {} as Partial<TypedSupabaseClient> as TypedSupabaseClient;
+const logger = createLoggerMock();
+const captureException = vi.fn<typeof Sentry.captureException>();
+const YouTubeScraper = vi.fn<typeof RealYouTubeScraper>();
+const TwitchScraper = vi.fn<typeof RealTwitchScraper>();
 
-    constructor(readonly options: unknown) {}
-  },
-}));
+vi.mock(import("@/lib/supabase"), () => ({ supabaseClient }));
+vi.mock(import("@shinju-date/logger"), () => ({ logger }));
+vi.mock(import("@sentry/nextjs"), () => ({ captureException }));
+vi.mock(import("@shinju-date/scraper/youtube"), () => ({ YouTubeScraper }));
+vi.mock(import("@shinju-date/scraper/twitch"), () => ({ TwitchScraper }));
 
 const { createScraper } = await import("./scraper");
-
-interface CreatedScraper {
-  options: {
-    logger: unknown;
-    onError: (error: unknown, context: Record<string, unknown>) => void;
-    supabaseClient: unknown;
-  };
-  provider: Enums<"platform_type">;
-}
 
 describe("createScraper", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it.each(["youtube", "twitch"] as const)(
-    "creates the %s scraper",
-    (provider) => {
-      const scraper = createScraper(provider) as unknown as CreatedScraper;
+  it.each([
+    ["youtube", YouTubeScraper],
+    ["twitch", TwitchScraper],
+  ] as const)("creates the %s scraper", (provider, Scraper) => {
+    const scraper = createScraper(provider);
 
-      expect(scraper.provider).toBe(provider);
-      expect(scraper.options.supabaseClient).toBe(supabaseClient);
-      expect(scraper.options.logger).toBe(logger);
-    }
-  );
+    expect(Scraper.mock.instances).toHaveLength(1);
+    expect(Scraper.mock.instances[0]).toBe(scraper);
+    expect(Scraper.mock.calls[0]?.[0].supabaseClient).toBe(supabaseClient);
+    expect(Scraper.mock.calls[0]?.[0].logger).toBe(logger);
+  });
 
   it("sends failures that do not stop a run to Sentry", () => {
-    const scraper = createScraper("twitch") as unknown as CreatedScraper;
+    createScraper("twitch");
     const error = new Error("helix unavailable");
 
-    scraper.options.onError(error, { twitchUserId: "1001" });
+    TwitchScraper.mock.calls[0]?.[0].onError?.(error, {
+      twitchUserId: "1001",
+    });
 
     expect(captureException).toHaveBeenCalledWith(error, {
       extra: { provider: "twitch", twitchUserId: "1001" },

@@ -1,18 +1,25 @@
 import type { Tables } from "@shinju-date/database";
 import { fireEvent, render, screen, within } from "@testing-library/react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { AppRouter } from "@/test/next-navigation";
 
 import { FeatureRequestList } from "./feedback-list";
 
 const mocks = vi.hoisted(() => ({
-  replace: vi.fn(),
+  replace: vi.fn<AppRouter["replace"]>(),
   searchParams: new URLSearchParams(),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => "/feedback",
-  useRouter: () => ({ push: vi.fn(), replace: mocks.replace }),
-  useSearchParams: () => mocks.searchParams,
+  useRouter: () =>
+    ({
+      push: vi.fn<AppRouter["push"]>(),
+      replace: mocks.replace,
+    }) as Partial<AppRouter> as AppRouter,
+  useSearchParams: () => mocks.searchParams as ReadonlyURLSearchParams,
 }));
 
 function createFeatureRequest(
@@ -30,7 +37,7 @@ function createFeatureRequest(
   };
 }
 
-describe("FeatureRequestList", () => {
+describe(FeatureRequestList, () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.searchParams = new URLSearchParams();

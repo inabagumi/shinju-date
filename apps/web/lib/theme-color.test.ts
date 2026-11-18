@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { parseThemeColor } from "./theme-color";
 
-describe("parseThemeColor", () => {
+describe(parseThemeColor, () => {
   it("should accept #RRGGBB in either case", () => {
     expect(parseThemeColor("#ff6b9d")).toBe("#ff6b9d");
     expect(parseThemeColor("#FF6B9D")).toBe("#ff6b9d");

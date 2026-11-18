@@ -3,48 +3,12 @@ import core from "ultracite/oxlint/core";
 import playwright from "ultracite/oxlint/playwright";
 import vitest from "ultracite/oxlint/vitest";
 
-/** The test files of the Vitest preset, whose rules are set in its overrides */
-const TEST_FILES = [
-  "**/*.{test,spec,test-d,spec-d}.{ts,tsx,js,jsx,mts,cts,mjs,cjs}",
-  "**/__tests__/**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}",
-];
-
 // ---------------------------------------------------------------------------
 // The rules of the presets that the code violates, turned off for now. They
 // are turned back on one by one, with the code fixed, in #7400.
-//
-// The Vitest preset turns on the vitest plugin and its rules only in an
-// override for the test files, so they are turned off in an override for the
-// same files, which also names the plugin (without it, the rules stay on).
 // ---------------------------------------------------------------------------
 
 const temporarilyDisabled = defineConfig({
-  overrides: [
-    {
-      files: TEST_FILES,
-      plugins: ["vitest"],
-      rules: {
-        "vitest/consistent-test-filename": "off",
-        "vitest/expect-expect": "off",
-        "vitest/max-expects": "off",
-        "vitest/no-conditional-expect": "off",
-        "vitest/no-import-node-test": "off",
-        "vitest/prefer-called-exactly-once-with": "off",
-        "vitest/prefer-called-with": "off",
-        "vitest/prefer-describe-function-title": "off",
-        "vitest/prefer-import-in-mock": "off",
-        "vitest/prefer-mock-return-shorthand": "off",
-        "vitest/prefer-strict-equal": "off",
-        "vitest/prefer-to-be": "off",
-        "vitest/prefer-to-be-falsy": "off",
-        "vitest/prefer-to-be-truthy": "off",
-        "vitest/require-mock-type-parameters": "off",
-        "vitest/require-to-throw-message": "off",
-        "vitest/require-top-level-describe": "off",
-        "vitest/valid-expect": "off",
-      },
-    },
-  ],
   rules: {
     "class-methods-use-this": "off",
     complexity: "off",
@@ -164,6 +128,16 @@ export default defineConfig({
   ],
   jsPlugins: ["@shinju-date/oxlint-plugin"],
   overrides: [
+    {
+      // The Playwright specs, which the Vitest preset also matches by
+      // `*.spec.ts`. Playwright runs only `*.spec.ts`, so they keep the name.
+      // Naming the plugin lets the override turn the preset's rule off.
+      files: ["**/e2e/**"],
+      plugins: ["vitest"],
+      rules: {
+        "vitest/consistent-test-filename": "off",
+      },
+    },
     {
       files: ["**/*.test.*", "**/e2e/**"],
       rules: {

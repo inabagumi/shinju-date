@@ -1,15 +1,21 @@
 import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type {
+  getRepeatSearchRate,
+  getSearchEngagementRate,
+  getSearchExitRates,
+} from "@/lib/analytics/get-search-quality-metrics";
+
 import type { AnalyticsSearchParams } from "../../_lib/search-params-schema";
 
 const mocks = vi.hoisted(() => ({
-  getRepeatSearchRate: vi.fn(),
-  getSearchEngagementRate: vi.fn(),
-  getSearchExitRates: vi.fn(),
+  getRepeatSearchRate: vi.fn<typeof getRepeatSearchRate>(),
+  getSearchEngagementRate: vi.fn<typeof getSearchEngagementRate>(),
+  getSearchExitRates: vi.fn<typeof getSearchExitRates>(),
 }));
 
-vi.mock("@/lib/analytics/get-search-quality-metrics", () => ({
+vi.mock(import("@/lib/analytics/get-search-quality-metrics"), () => ({
   getRepeatSearchRate: mocks.getRepeatSearchRate,
   getSearchEngagementRate: mocks.getSearchEngagementRate,
   getSearchExitRates: mocks.getSearchExitRates,
@@ -66,7 +72,7 @@ describe("SearchExitRateWidget", () => {
 
     render(await SearchExitRateWidget({ searchParams: createSearchParams() }));
 
-    expect(getLegend("評価基準")).toEqual([
+    expect(getLegend("評価基準")).toStrictEqual([
       "30%未満: 良好",
       "30-49%: 普通",
       "50-69%: 注意",
@@ -128,7 +134,7 @@ describe("SearchEngagementRateWidget", () => {
       await SearchEngagementRateWidget({ searchParams: createSearchParams() })
     );
 
-    expect(getLegend("判定基準")).toEqual([
+    expect(getLegend("判定基準")).toStrictEqual([
       "30%以上: 優秀",
       "20-29%: 良好",
       "10-19%: 平均的",
@@ -195,7 +201,7 @@ describe("RepeatSearchRateWidget", () => {
       await RepeatSearchRateWidget({ searchParams: createSearchParams() })
     );
 
-    expect(getLegend("参考基準")).toEqual([
+    expect(getLegend("参考基準")).toStrictEqual([
       "3.0回以上: 高いエンゲージメント",
       "2.0-2.9回: 適度なエンゲージメント",
       "1.5-1.9回: 標準的",

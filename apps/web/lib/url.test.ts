@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { parseQueries } from "./url";
 
-describe("parseQueries", () => {
+describe(parseQueries, () => {
   it("should return empty string when queries is undefined", () => {
     const result = parseQueries(undefined);
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { PageHeader } from "./PageHeader";
 
-describe("PageHeader", () => {
+describe(PageHeader, () => {
   it("renders the title as the page heading", () => {
     render(<PageHeader title="動画管理" />);
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { BackfillStatusBadge } from "./backfill-status-badge";
 
-describe("BackfillStatusBadge", () => {
+describe(BackfillStatusBadge, () => {
   it.each([
     ["pending", "待機中"],
     ["running", "取り込み中"],

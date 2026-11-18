@@ -2,6 +2,7 @@ import type { youtube_v3 as youtube } from "@googleapis/youtube";
 import { range } from "@shinju-date/helpers";
 import { describe, expect, it, vi } from "vitest";
 
+import type { Logger } from "../internal/logger.js";
 import {
   createChannel,
   createPlaylistItem,
@@ -16,6 +17,9 @@ interface ListParams {
   playlistId?: string;
 }
 
+/** A `list` method of the YouTube Data API that returns the response. */
+type ListMethod<T> = (params: ListParams) => Promise<{ data: T }>;
+
 interface FakeYouTube {
   /** Channel ID → IDs in its uploads playlist, or an error to throw. */
   uploads?: Record<string, string[] | Error>;
@@ -29,15 +33,19 @@ function createClient({
   uploads = {},
   videoIds = [],
 }: FakeYouTube) {
-  const channelsList = vi.fn(async ({ id = [] }: ListParams) => ({
-    data: {
-      items: id
-        .filter((value) => channelIds.includes(value))
-        .map((value) => createChannel(value)),
-    },
-  }));
+  const channelsList = vi.fn<ListMethod<youtube.Schema$ChannelListResponse>>(
+    async ({ id = [] }: ListParams) => ({
+      data: {
+        items: id
+          .filter((value) => channelIds.includes(value))
+          .map((value) => createChannel(value)),
+      },
+    })
+  );
 
-  const playlistItemsList = vi.fn(async ({ playlistId }: ListParams) => {
+  const playlistItemsList = vi.fn<
+    ListMethod<youtube.Schema$PlaylistItemListResponse>
+  >(async ({ playlistId }: ListParams) => {
     const channelId = `UC${playlistId?.slice(2)}`;
     const result = uploads[channelId] ?? [];
 
@@ -52,15 +60,19 @@ function createClient({
     };
   });
 
-  const videosList = vi.fn(async ({ id = [], part = [] }: ListParams) => ({
-    data: {
-      items: id
-        .filter((value) => videoIds.includes(value))
-        .map((value) =>
-          part.includes("snippet") ? createVideo({ id: value }) : { id: value }
-        ),
-    },
-  }));
+  const videosList = vi.fn<ListMethod<youtube.Schema$VideoListResponse>>(
+    async ({ id = [], part = [] }: ListParams) => ({
+      data: {
+        items: id
+          .filter((value) => videoIds.includes(value))
+          .map((value) =>
+            part.includes("snippet")
+              ? createVideo({ id: value })
+              : { id: value }
+          ),
+      },
+    })
+  );
 
   const client = {
     channels: { list: channelsList },
@@ -78,7 +90,7 @@ function createClient({
 function createSlowClient() {
   let running = 0;
   let peak = 0;
-  const list = vi.fn(async () => {
+  const list = vi.fn<ListMethod<youtube.Schema$VideoListResponse>>(async () => {
     running++;
     peak = Math.max(peak, running);
     await new Promise((resolve) => setTimeout(resolve, 5));
@@ -100,7 +112,7 @@ function notFoundError(): Error {
   });
 }
 
-describe("YouTubeFetcher", () => {
+describe(YouTubeFetcher, () => {
   it("identifies its platform", () => {
     expect(new YouTubeFetcher().provider).toBe("youtube");
   });
@@ -112,7 +124,10 @@ describe("YouTubeFetcher", () => {
 
       const channels = await fetcher.getAccounts(["UCaaa", "UCbbb", "UCzzz"]);
 
-      expect(channels.map((channel) => channel.id)).toEqual(["UCaaa", "UCbbb"]);
+      expect(channels.map((channel) => channel.id)).toStrictEqual([
+        "UCaaa",
+        "UCbbb",
+      ]);
     });
 
     it("requests each ID once in batches of 50", async () => {
@@ -130,7 +145,7 @@ describe("YouTubeFetcher", () => {
       const { channelsList, client } = createClient({});
       const fetcher = new YouTubeFetcher({ client });
 
-      await expect(fetcher.getAccounts([])).resolves.toEqual([]);
+      await expect(fetcher.getAccounts([])).resolves.toStrictEqual([]);
       expect(channelsList).not.toHaveBeenCalled();
     });
   });
@@ -147,7 +162,7 @@ describe("YouTubeFetcher", () => {
         limit: 10,
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         failures: [],
         missingAccountIds: [],
         videos: [
@@ -167,7 +182,7 @@ describe("YouTubeFetcher", () => {
 
       const result = await fetcher.getRecentVideos(["UCaaa", "UCgone"]);
 
-      expect(result.missingAccountIds).toEqual(["UCgone"]);
+      expect(result.missingAccountIds).toStrictEqual(["UCgone"]);
     });
 
     it("keeps going when one channel fails", async () => {
@@ -177,17 +192,19 @@ describe("YouTubeFetcher", () => {
         uploads: { UCaaa: error, UCbbb: ["b1"] },
       });
       const logger = {
-        debug: vi.fn(),
-        error: vi.fn(),
-        info: vi.fn(),
-        warn: vi.fn(),
+        debug: vi.fn<Logger["debug"]>(),
+        error: vi.fn<Logger["error"]>(),
+        info: vi.fn<Logger["info"]>(),
+        warn: vi.fn<Logger["warn"]>(),
       };
       const fetcher = new YouTubeFetcher({ client, logger });
 
       const result = await fetcher.getRecentVideos(["UCaaa", "UCbbb"]);
 
-      expect(result.videos).toEqual([{ channelId: "UCbbb", videoId: "b1" }]);
-      expect(result.failures).toEqual([{ accountId: "UCaaa", error }]);
+      expect(result.videos).toStrictEqual([
+        { channelId: "UCbbb", videoId: "b1" },
+      ]);
+      expect(result.failures).toStrictEqual([{ accountId: "UCaaa", error }]);
       expect(logger.error).toHaveBeenCalledOnce();
     });
 
@@ -200,8 +217,8 @@ describe("YouTubeFetcher", () => {
 
       const result = await fetcher.getRecentVideos(["UCaaa"]);
 
-      expect(result.failures).toEqual([]);
-      expect(result.videos).toEqual([]);
+      expect(result.failures).toStrictEqual([]);
+      expect(result.videos).toStrictEqual([]);
     });
   });
 
@@ -212,8 +229,11 @@ describe("YouTubeFetcher", () => {
 
       const result = await fetcher.getVideos(["v1", "v2", "v3"]);
 
-      expect(result.videos.map((video) => video.id)).toEqual(["v1", "v3"]);
-      expect(result.missingIds).toEqual(["v2"]);
+      expect(result.videos.map((video) => video.id)).toStrictEqual([
+        "v1",
+        "v3",
+      ]);
+      expect(result.missingIds).toStrictEqual(["v2"]);
     });
 
     it("reports every ID as missing when YouTube returns nothing", async () => {
@@ -222,7 +242,7 @@ describe("YouTubeFetcher", () => {
 
       const result = await fetcher.getVideos(["v1", "v2"]);
 
-      expect(result).toEqual({ missingIds: ["v1", "v2"], videos: [] });
+      expect(result).toStrictEqual({ missingIds: ["v1", "v2"], videos: [] });
     });
 
     it("batches large ID lists", async () => {
@@ -233,7 +253,7 @@ describe("YouTubeFetcher", () => {
       const result = await fetcher.getVideos(ids);
 
       expect(result.videos).toHaveLength(120);
-      expect(result.missingIds).toEqual([]);
+      expect(result.missingIds).toStrictEqual([]);
       expect(videosList).toHaveBeenCalledTimes(3);
     });
 
@@ -249,7 +269,11 @@ describe("YouTubeFetcher", () => {
 
     it("rejects when a request fails", async () => {
       const client = {
-        videos: { list: vi.fn().mockRejectedValue(new Error("boom")) },
+        videos: {
+          list: vi
+            .fn<ListMethod<youtube.Schema$VideoListResponse>>()
+            .mockRejectedValue(new Error("boom")),
+        },
       } as unknown as youtube.Youtube;
       const fetcher = new YouTubeFetcher({ client });
 
@@ -264,7 +288,7 @@ describe("YouTubeFetcher", () => {
 
       const missingIds = await fetcher.findMissingVideoIds(["v1", "v2", "v3"]);
 
-      expect(missingIds).toEqual(["v2"]);
+      expect(missingIds).toStrictEqual(["v2"]);
       expect(videosList).toHaveBeenCalledWith(
         expect.objectContaining({ part: ["id"] })
       );
@@ -279,7 +303,7 @@ describe("YouTubeFetcher", () => {
 
       const missingIds = await fetcher.findMissingVideoIds(ids);
 
-      expect(missingIds).toEqual(ids.slice(70));
+      expect(missingIds).toStrictEqual(ids.slice(70));
       expect(videosList).toHaveBeenCalledTimes(2);
     });
 

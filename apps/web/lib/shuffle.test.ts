@@ -17,13 +17,13 @@ function createRandom(seed: number): () => number {
   };
 }
 
-describe("shuffle", () => {
+describe(shuffle, () => {
   it("returns an empty array for an empty input", () => {
-    expect(shuffle([])).toEqual([]);
+    expect(shuffle([])).toStrictEqual([]);
   });
 
   it("returns a single item as is", () => {
-    expect(shuffle(["a"])).toEqual(["a"]);
+    expect(shuffle(["a"])).toStrictEqual(["a"]);
   });
 
   it("does not modify the input array", () => {
@@ -31,7 +31,7 @@ describe("shuffle", () => {
 
     const result = shuffle(items, createRandom(1));
 
-    expect(items).toEqual([1, 2, 3, 4, 5]);
+    expect(items).toStrictEqual([1, 2, 3, 4, 5]);
     expect(result).not.toBe(items);
   });
 
@@ -41,14 +41,14 @@ describe("shuffle", () => {
     const result = shuffle(items, createRandom(2));
 
     expect(result).toHaveLength(items.length);
-    expect(result.toSorted((a, b) => a - b)).toEqual(items);
+    expect(result.toSorted((a, b) => a - b)).toStrictEqual(items);
   });
 
   it("swaps each position with the index picked by `random`", () => {
     // random() = 0 always picks index 0: [1,2,3,4] → [4,2,3,1] → [3,2,4,1] → [2,3,4,1]
-    expect(shuffle([1, 2, 3, 4], () => 0)).toEqual([2, 3, 4, 1]);
+    expect(shuffle([1, 2, 3, 4], () => 0)).toStrictEqual([2, 3, 4, 1]);
     // random() close to 1 always picks the current index, so nothing moves
-    expect(shuffle([1, 2, 3, 4], () => 0.999999)).toEqual([1, 2, 3, 4]);
+    expect(shuffle([1, 2, 3, 4], () => 0.999999)).toStrictEqual([1, 2, 3, 4]);
   });
 
   it("makes every order about equally likely", () => {

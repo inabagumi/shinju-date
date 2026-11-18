@@ -32,14 +32,14 @@ function createTwitchUser(profileImage: ProfileImage | null): TalentTwitchUser {
   };
 }
 
-describe("getTalentProfileImage", () => {
+describe(getTalentProfileImage, () => {
   it("should prefer the icon of a YouTube channel", () => {
     expect(
       getTalentProfileImage({
         twitch_users: [createTwitchUser(createProfileImage("twitch"))],
         youtube_channels: [createYouTubeChannel(createProfileImage("youtube"))],
       })
-    ).toEqual(createProfileImage("youtube"));
+    ).toStrictEqual(createProfileImage("youtube"));
   });
 
   it("should use the first channel that has an icon", () => {
@@ -51,7 +51,7 @@ describe("getTalentProfileImage", () => {
           createYouTubeChannel(createProfileImage("second")),
         ],
       })
-    ).toEqual(createProfileImage("second"));
+    ).toStrictEqual(createProfileImage("second"));
   });
 
   it("should fall back to the icon of a Twitch user", () => {
@@ -60,7 +60,7 @@ describe("getTalentProfileImage", () => {
         twitch_users: [createTwitchUser(createProfileImage("twitch"))],
         youtube_channels: [createYouTubeChannel(null)],
       })
-    ).toEqual(createProfileImage("twitch"));
+    ).toStrictEqual(createProfileImage("twitch"));
   });
 
   it("should return null without any icon", () => {

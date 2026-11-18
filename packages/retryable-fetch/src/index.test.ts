@@ -13,18 +13,18 @@ function respond(status: number, body = `status ${status}`): Response {
   return new Response(status === 304 ? null : body, { status });
 }
 
-beforeEach(() => {
-  vi.useFakeTimers();
-  vi.stubGlobal("fetch", fetchMock);
-});
+describe(retryableFetch, () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", fetchMock);
+  });
 
-afterEach(() => {
-  fetchMock.mockReset();
-  vi.unstubAllGlobals();
-  vi.useRealTimers();
-});
+  afterEach(() => {
+    fetchMock.mockReset();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
 
-describe("retryableFetch", () => {
   it("returns a successful response without retrying", async () => {
     fetchMock.mockResolvedValue(respond(200, "ok"));
 
@@ -53,7 +53,7 @@ describe("retryableFetch", () => {
 
     const response = await retryableFetch(URL);
 
-    await expect(response.json()).resolves.toEqual({ code: "PGRST116" });
+    await expect(response.json()).resolves.toStrictEqual({ code: "PGRST116" });
   });
 
   it.each([408, 429, 500, 502, 503])(
@@ -115,10 +115,10 @@ describe("retryableFetch", () => {
       throw new TypeError("fetch failed");
     });
 
-    const promise = retryableFetch(URL);
-    const assertion = expect(promise).rejects.toThrow("fetch failed");
-    await vi.advanceTimersByTimeAsync(TOTAL_RETRY_DELAY_MS);
-    await assertion;
+    await Promise.all([
+      expect(retryableFetch(URL)).rejects.toThrow("fetch failed"),
+      vi.advanceTimersByTimeAsync(TOTAL_RETRY_DELAY_MS),
+    ]);
 
     expect(fetchMock).toHaveBeenCalledTimes(6);
   });
@@ -163,12 +163,18 @@ describe("retryableFetch", () => {
     const reason = new Error("aborted by the caller");
     fetchMock.mockImplementation(async () => respond(503));
 
-    const promise = retryableFetch(URL, { signal: controller.signal });
-    const assertion = expect(promise).rejects.toBe(reason);
-    await vi.advanceTimersByTimeAsync(1000);
-    controller.abort(reason);
-    await vi.advanceTimersByTimeAsync(TOTAL_RETRY_DELAY_MS);
-    await assertion;
+    const abortAfterTheFirstRetry = async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+      controller.abort(reason);
+      await vi.advanceTimersByTimeAsync(TOTAL_RETRY_DELAY_MS);
+    };
+
+    await Promise.all([
+      expect(retryableFetch(URL, { signal: controller.signal })).rejects.toBe(
+        reason
+      ),
+      abortAfterTheFirstRetry(),
+    ]);
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
@@ -179,7 +185,7 @@ describe("retryableFetch", () => {
 
     await expect(
       retryableFetch(URL, { signal: controller.signal })
-    ).rejects.toThrow();
+    ).rejects.toThrow("This operation was aborted");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -189,7 +195,7 @@ describe("retryableFetch", () => {
 
     await expect(
       retryableFetch(new Request(URL, { signal: controller.signal }))
-    ).rejects.toThrow();
+    ).rejects.toThrow("This operation was aborted");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

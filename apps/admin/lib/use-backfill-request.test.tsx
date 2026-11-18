@@ -2,13 +2,16 @@ import { act, renderHook, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ActionToastProvider } from "@/components/action-toast";
+import type { ActionResult } from "@/lib/action";
 
 import { useBackfillRequest } from "./use-backfill-request";
 
-describe("useBackfillRequest", () => {
+describe(useBackfillRequest, () => {
   it("tells what was queued, then reloads the progress", async () => {
     const calls: string[] = [];
-    const action = vi.fn(async (talentId: string) => {
+    const action = vi.fn<
+      (talentId: string) => Promise<ActionResult<{ message: string }>>
+    >(async (talentId) => {
       calls.push(`action:${talentId}`);
 
       return {
@@ -16,7 +19,7 @@ describe("useBackfillRequest", () => {
         success: true,
       };
     });
-    const reload = vi.fn(async () => {
+    const reload = vi.fn<() => Promise<void>>(async () => {
       calls.push("reload");
     });
 
@@ -26,16 +29,18 @@ describe("useBackfillRequest", () => {
 
     await act(() => result.current("talent-1"));
 
-    expect(calls).toEqual(["action:talent-1", "reload"]);
+    expect(calls).toStrictEqual(["action:talent-1", "reload"]);
     expect(screen.getByText("2件キューに追加しました。")).toBeInTheDocument();
   });
 
   it("reloads the progress even when nothing could be queued", async () => {
-    const action = vi.fn(async () => ({
-      error: "既に実行中です。",
-      success: false,
-    }));
-    const reload = vi.fn(async () => {});
+    const action = vi.fn<() => Promise<ActionResult<{ message: string }>>>(
+      async () => ({
+        error: "既に実行中です。",
+        success: false,
+      })
+    );
+    const reload = vi.fn<() => Promise<void>>(async () => {});
 
     const { result } = renderHook(() => useBackfillRequest(action, reload), {
       wrapper: ActionToastProvider,

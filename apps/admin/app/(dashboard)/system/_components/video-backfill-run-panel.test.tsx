@@ -4,17 +4,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ActionToastProvider } from "@/components/action-toast";
 
 import type {
+  getVideoBackfillRunAction,
+  requestVideoBackfillRunAction,
+} from "../_actions/video-backfill-run";
+import type {
   VideoBackfillRun,
   VideoBackfillRunAccount,
   VideoBackfillRunState,
 } from "../_lib/get-video-backfill-run";
 
 const mocks = vi.hoisted(() => ({
-  getVideoBackfillRunAction: vi.fn(),
-  requestVideoBackfillRunAction: vi.fn(),
+  getVideoBackfillRunAction: vi.fn<typeof getVideoBackfillRunAction>(),
+  requestVideoBackfillRunAction: vi.fn<typeof requestVideoBackfillRunAction>(),
 }));
 
-vi.mock("../_actions/video-backfill-run", () => ({
+vi.mock(import("../_actions/video-backfill-run"), () => ({
   getVideoBackfillRunAction: mocks.getVideoBackfillRunAction,
   requestVideoBackfillRunAction: mocks.requestVideoBackfillRunAction,
 }));
@@ -78,7 +82,8 @@ describe("VideoBackfillRunPanel", () => {
     expect(mocks.getVideoBackfillRunAction).not.toHaveBeenCalled();
   });
 
-  it("confirms the number of accounts before requesting a check", async () => {
+  /** Renders the panel without a check, with the actions to request one. */
+  function renderWithoutRun() {
     mocks.requestVideoBackfillRunAction.mockResolvedValue({
       data: {
         message: "全タレントの取得漏れチェックを3件キューに追加しました。",
@@ -105,14 +110,22 @@ describe("VideoBackfillRunPanel", () => {
     });
 
     renderPanel(null);
+  }
+
+  function clickRequestButton() {
+    fireEvent.click(
+      screen.getByRole("button", { name: "取得漏れをチェックする" })
+    );
+  }
+
+  it("confirms the number of accounts before requesting a check", () => {
+    renderWithoutRun();
 
     expect(
       screen.getByText("最近の取得漏れチェックはありません。")
     ).toBeTruthy();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "取得漏れをチェックする" })
-    );
+    clickRequestButton();
 
     const dialog = screen.getByRole("dialog");
 
@@ -120,6 +133,11 @@ describe("VideoBackfillRunPanel", () => {
     expect(dialog.textContent).toContain("Twitch アカウント 1件");
     expect(dialog.textContent).toContain("合計 3件");
     expect(mocks.requestVideoBackfillRunAction).not.toHaveBeenCalled();
+  });
+
+  it("requests a check when confirmed and shows it", async () => {
+    renderWithoutRun();
+    clickRequestButton();
 
     fireEvent.click(screen.getByRole("button", { name: "チェックする" }));
 
@@ -217,7 +235,7 @@ describe("VideoBackfillRunPanel", () => {
 
     expect(
       screen.getAllByRole("listitem").map((item) => item.textContent)
-    ).toEqual([
+    ).toStrictEqual([
       expect.stringContaining("Running"),
       expect.stringContaining("Interrupted"),
       expect.stringContaining("Done"),

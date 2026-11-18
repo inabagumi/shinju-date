@@ -9,7 +9,7 @@ import {
   PanelSkeleton,
 } from "./panel";
 
-describe("Panel", () => {
+describe(Panel, () => {
   it("renders the title as a heading with the description and actions", () => {
     render(
       <Panel
@@ -65,7 +65,7 @@ describe("Panel", () => {
   });
 });
 
-describe("DetailList", () => {
+describe(DetailList, () => {
   it("pairs each label with its value", () => {
     render(
       <DetailList>
@@ -78,7 +78,7 @@ describe("DetailList", () => {
   });
 });
 
-describe("PanelSkeleton", () => {
+describe(PanelSkeleton, () => {
   it("draws the same heading as Panel and hides itself from assistive technology", () => {
     const { container } = render(
       <PanelSkeleton description="補足" title="タレント情報">
@@ -106,7 +106,7 @@ describe("PanelSkeleton", () => {
   });
 });
 
-describe("DetailListSkeleton", () => {
+describe(DetailListSkeleton, () => {
   it("draws as many rows as given", () => {
     const { container } = render(<DetailListSkeleton rows={4} />);
 

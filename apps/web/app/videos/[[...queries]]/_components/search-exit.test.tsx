@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
   pathname: "/",
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => mocks.pathname,
 }));
 
@@ -77,7 +77,7 @@ describe("search exit tracking", () => {
     ).default;
     SearchExitTracker = (await import("./search-exit-tracker")).default;
 
-    sendBeacon = vi.fn(() => true);
+    sendBeacon = vi.fn<(url: string, data: string) => boolean>(() => true);
     Object.defineProperty(navigator, "sendBeacon", {
       configurable: true,
       value: sendBeacon,
@@ -101,7 +101,7 @@ describe("search exit tracking", () => {
     // `<Link>` でも `router.push` でも、パスが変わる
     navigate(rerender, "/about");
 
-    expect(getSentQueries()).toEqual(["歌"]);
+    expect(getSentQueries()).toStrictEqual(["歌"]);
 
     navigate(rerender, "/talents");
 
@@ -117,11 +117,11 @@ describe("search exit tracking", () => {
       tracker: { hasResults: true, query: "ゲーム" },
     });
 
-    expect(getSentQueries()).toEqual(["歌"]);
+    expect(getSentQueries()).toStrictEqual(["歌"]);
 
     navigate(rerender, "/");
 
-    expect(getSentQueries()).toEqual(["歌", "ゲーム"]);
+    expect(getSentQueries()).toStrictEqual(["歌", "ゲーム"]);
   });
 
   it("records an exit when the next search has no results", () => {
@@ -133,7 +133,7 @@ describe("search exit tracking", () => {
       tracker: { hasResults: false, query: "zzz" },
     });
 
-    expect(getSentQueries()).toEqual(["歌"]);
+    expect(getSentQueries()).toStrictEqual(["歌"]);
   });
 
   it("does not record an exit when changing the filters of the same search", () => {
@@ -151,7 +151,7 @@ describe("search exit tracking", () => {
 
     navigate(rerender, "/");
 
-    expect(getSentQueries()).toEqual(["歌"]);
+    expect(getSentQueries()).toStrictEqual(["歌"]);
   });
 
   it("does not record an exit after opening a video", () => {
@@ -192,7 +192,7 @@ describe("search exit tracking", () => {
     );
     navigate(rerender, "/about");
 
-    expect(getSentQueries()).toEqual(["歌"]);
+    expect(getSentQueries()).toStrictEqual(["歌"]);
   });
 
   it("does not treat a click on another link as opening a video", () => {
@@ -203,7 +203,7 @@ describe("search exit tracking", () => {
     fireEvent.click(getByText("このサイトについて"));
     navigate(rerender, "/about");
 
-    expect(getSentQueries()).toEqual(["歌"]);
+    expect(getSentQueries()).toStrictEqual(["歌"]);
   });
 
   it("does not record an exit for a search without results", () => {
@@ -237,7 +237,7 @@ describe("search exit tracking", () => {
     setVisibilityState("hidden");
     navigate(rerender, "/about");
 
-    expect(getSentQueries()).toEqual(["歌"]);
+    expect(getSentQueries()).toStrictEqual(["歌"]);
   });
 
   it("does not send a beacon when the page becomes visible", () => {
@@ -253,12 +253,14 @@ describe("search exit tracking", () => {
 
     window.dispatchEvent(new Event("pagehide"));
 
-    expect(getSentQueries()).toEqual(["歌"]);
+    expect(getSentQueries()).toStrictEqual(["歌"]);
   });
 
   it("falls back to fetch with keepalive without sendBeacon", () => {
     Reflect.deleteProperty(navigator, "sendBeacon");
-    const fetch = vi.fn(() => Promise.resolve(new Response(null)));
+    const fetch = vi.fn<typeof globalThis.fetch>(() =>
+      Promise.resolve(new Response(null))
+    );
     vi.stubGlobal("fetch", fetch);
 
     render(<Page tracker={{ hasResults: true, query: "歌" }} />);
@@ -273,7 +275,9 @@ describe("search exit tracking", () => {
 
   it("falls back to fetch with keepalive when sendBeacon cannot queue the data", () => {
     sendBeacon.mockReturnValue(false);
-    const fetch = vi.fn(() => Promise.resolve(new Response(null)));
+    const fetch = vi.fn<typeof globalThis.fetch>(() =>
+      Promise.resolve(new Response(null))
+    );
     vi.stubGlobal("fetch", fetch);
 
     render(<Page tracker={{ hasResults: true, query: "歌" }} />);

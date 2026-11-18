@@ -11,7 +11,7 @@ import { createTwitchPlatform } from "./platform.js";
 
 const now = Temporal.Instant.from("2024-05-01T12:00:00Z");
 
-describe("createTwitchPlatform", () => {
+describe(createTwitchPlatform, () => {
   it("identifies a saved video by its Twitch video ID", () => {
     const { fetcher } = createFakeTwitchFetcher();
     const platform = createTwitchPlatform(fetcher);
@@ -38,7 +38,7 @@ describe("createTwitchPlatform", () => {
 
     expect(getVideos).toHaveBeenCalledExactlyOnceWith(["vod-1", "vod-gone"]);
     expect(getClips).toHaveBeenCalledExactlyOnceWith([]);
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       fetchedById: new Map([["vod-1", video]]),
       missingIds: ["vod-gone"],
     });
@@ -65,7 +65,7 @@ describe("createTwitchPlatform", () => {
 
     expect(getVideos).toHaveBeenCalledExactlyOnceWith(["vod-1"]);
     expect(getClips).toHaveBeenCalledExactlyOnceWith(["clip-1", "clip-gone"]);
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       fetchedById: new Map<string, unknown>([
         ["vod-1", video],
         ["clip-1", clip],
@@ -83,13 +83,15 @@ describe("createTwitchPlatform", () => {
 
     expect(getVideos).toHaveBeenCalledExactlyOnceWith([]);
     expect(getClips).toHaveBeenCalledExactlyOnceWith([]);
-    expect(result).toEqual({ fetchedById: new Map(), missingIds: [] });
+    expect(result).toStrictEqual({ fetchedById: new Map(), missingIds: [] });
   });
 
   it("maps a video to its fields, as a standard video", () => {
     const { fetcher } = createFakeTwitchFetcher();
 
-    expect(createTwitchPlatform(fetcher).toFields(createVideo(), now)).toEqual({
+    expect(
+      createTwitchPlatform(fetcher).toFields(createVideo(), now)
+    ).toStrictEqual({
       duration: "PT2H",
       published_at: "2024-05-01T09:00:00Z",
       status: "ENDED",
@@ -101,7 +103,9 @@ describe("createTwitchPlatform", () => {
   it("maps a clip to its fields, as a standard video", () => {
     const { fetcher } = createFakeTwitchFetcher();
 
-    expect(createTwitchPlatform(fetcher).toFields(createClip(), now)).toEqual({
+    expect(
+      createTwitchPlatform(fetcher).toFields(createClip(), now)
+    ).toStrictEqual({
       duration: "PT30S",
       published_at: "2024-05-01T09:00:00Z",
       status: "PUBLISHED",

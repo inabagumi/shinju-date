@@ -30,7 +30,7 @@ async function get(path: string, init?: RequestInit): Promise<Response> {
 async function getJson<T>(path: string): Promise<T> {
   const response = await get(path);
 
-  expect(response.ok).toBe(true);
+  expect(response.ok).toBeTruthy();
 
   return (await response.json()) as T;
 }
@@ -68,7 +68,7 @@ describe("Supabase filters", () => {
       const body = (await response.json()) as ErrorBody;
 
       expect(response.status).toBe(400);
-      expect(body).toEqual({
+      expect(body).toStrictEqual({
         code: "PGRST100",
         details: expect.any(String),
         hint: null,
@@ -169,7 +169,10 @@ describe("Supabase filters", () => {
           expect(((await response.json()) as ErrorBody).code).toBe(code);
         }
 
-        expect(current).toEqual({ id: video?.id, visible: video?.visible });
+        expect(current).toStrictEqual({
+          id: video?.id,
+          visible: video?.visible,
+        });
         expect(termsAfter).toHaveLength(termsBefore.length);
       }
     );
@@ -209,10 +212,10 @@ describe("Supabase filters", () => {
         "videos?select=id&visible=is.false"
       );
 
-      expect(ids(visible)).toEqual(
+      expect(ids(visible)).toStrictEqual(
         ids(videos.filter((video) => video.visible))
       );
-      expect(ids(hidden)).toEqual(
+      expect(ids(hidden)).toStrictEqual(
         ids(videos.filter((video) => !video.visible))
       );
     });
@@ -223,7 +226,7 @@ describe("Supabase filters", () => {
         `videos?select=id&id=not.eq.${video?.id}`
       );
 
-      expect(ids(rows)).toEqual(
+      expect(ids(rows)).toStrictEqual(
         ids(videos.filter(({ id }) => id !== video?.id))
       );
     });
@@ -233,7 +236,7 @@ describe("Supabase filters", () => {
         "talents?select=id,deleted_at&deleted_at=not.lt.1970-01-01T00:00:00Z"
       );
 
-      expect(ids(rows)).toEqual(
+      expect(ids(rows)).toStrictEqual(
         ids(talents.filter(({ deleted_at }) => deleted_at !== null))
       );
     });
@@ -243,7 +246,7 @@ describe("Supabase filters", () => {
         "talents?select=id&deleted_at=isdistinct.null"
       );
 
-      expect(ids(rows)).toEqual(
+      expect(ids(rows)).toStrictEqual(
         ids(talents.filter(({ deleted_at }) => deleted_at !== null))
       );
     });
@@ -261,7 +264,7 @@ describe("Supabase filters", () => {
       );
 
       expect(liked.map(({ id }) => id)).toContain(talent?.id);
-      expect(matched.map(({ id }) => id)).toEqual([talent?.id]);
+      expect(matched.map(({ id }) => id)).toStrictEqual([talent?.id]);
     });
   });
 
@@ -284,7 +287,7 @@ describe("Supabase filters", () => {
         `videos?select=id&id=eq.${id.toUpperCase()}`
       );
 
-      expect(ids(rows)).toEqual([id]);
+      expect(ids(rows)).toStrictEqual([id]);
     });
 
     it("leaves out the IDs in upper case with neq", async () => {
@@ -293,7 +296,9 @@ describe("Supabase filters", () => {
         `videos?select=id&id=neq.${id.toUpperCase()}`
       );
 
-      expect(ids(rows)).toEqual(ids(videos.filter((row) => row.id !== id)));
+      expect(ids(rows)).toStrictEqual(
+        ids(videos.filter((row) => row.id !== id))
+      );
     });
 
     it("matches the IDs in upper case with in", async () => {
@@ -302,7 +307,7 @@ describe("Supabase filters", () => {
         `videos?select=id&id=in.(${id.toUpperCase()},00000000-0000-0000-0000-000000000000)`
       );
 
-      expect(ids(rows)).toEqual([id]);
+      expect(ids(rows)).toStrictEqual([id]);
     });
 
     it("treats the IDs in upper case as the same with isdistinct", async () => {
@@ -311,7 +316,9 @@ describe("Supabase filters", () => {
         `videos?select=id&id=isdistinct.${id.toUpperCase()}`
       );
 
-      expect(ids(rows)).toEqual(ids(videos.filter((row) => row.id !== id)));
+      expect(ids(rows)).toStrictEqual(
+        ids(videos.filter((row) => row.id !== id))
+      );
     });
 
     /** The ID of a video on YouTube, from the `video_id` of its row. */
@@ -332,7 +339,7 @@ describe("Supabase filters", () => {
         `youtube_videos?select=video_id&video_id=eq.${id.toUpperCase()}`
       );
 
-      expect(rows).toEqual([{ video_id: id }]);
+      expect(rows).toStrictEqual([{ video_id: id }]);
     });
 
     it("matches the IDs in upper case in a logic tree and an embedded resource", async () => {
@@ -344,8 +351,8 @@ describe("Supabase filters", () => {
         `youtube_videos?select=video:videos!inner(id)&video.id=eq.${id.toUpperCase()}`
       );
 
-      expect(ids(inTree)).toEqual([id]);
-      expect(embedded).toEqual([{ video: { id } }]);
+      expect(ids(inTree)).toStrictEqual([id]);
+      expect(embedded).toStrictEqual([{ video: { id } }]);
     });
 
     it("updates the row of an ID in upper case", async () => {
@@ -363,7 +370,7 @@ describe("Supabase filters", () => {
       );
 
       expect(response.status).toBe(200);
-      await expect(response.json()).resolves.toEqual([{ id, visible }]);
+      await expect(response.json()).resolves.toStrictEqual([{ id, visible }]);
     });
 
     it("matches the IDs in upper case in the rows of a database function", async () => {
@@ -377,14 +384,16 @@ describe("Supabase filters", () => {
           }
         );
 
-        expect(response.ok).toBe(true);
+        expect(response.ok).toBeTruthy();
 
         return ids((await response.json()) as { id: string }[]);
       };
       const id = (await search("limit=1000")).find(hasLetters);
 
       expect(id).toBeDefined();
-      await expect(search(`id=eq.${id?.toUpperCase()}`)).resolves.toEqual([id]);
+      await expect(search(`id=eq.${id?.toUpperCase()}`)).resolves.toStrictEqual(
+        [id]
+      );
     });
 
     it("still compares the text columns with case", async () => {
@@ -401,7 +410,7 @@ describe("Supabase filters", () => {
         `youtube_videos?select=id&youtube_video_id=eq.${youtubeVideoId?.toUpperCase()}`
       );
 
-      expect(rows).toEqual([]);
+      expect(rows).toStrictEqual([]);
     });
   });
 
@@ -418,7 +427,7 @@ describe("Supabase filters", () => {
       const firstReadings = rows.map(({ readings }) => readings[0] ?? "");
 
       expect(rows.length).toBeGreaterThan(1);
-      expect(firstReadings).toEqual(firstReadings.toSorted());
+      expect(firstReadings).toStrictEqual(firstReadings.toSorted());
     });
 
     it("rejects a long invalid JSON path quickly", async () => {
@@ -450,7 +459,7 @@ describe("Supabase filters", () => {
         `videos?select=id&or=(id.eq.${first?.id},id.eq.${second?.id})`
       );
 
-      expect(ids(rows)).toEqual([first?.id, second?.id].sort());
+      expect(ids(rows)).toStrictEqual([first?.id, second?.id].sort());
     });
 
     it("combines or with the other filters with AND", async () => {
@@ -459,7 +468,7 @@ describe("Supabase filters", () => {
         `videos?select=id&or=(id.eq.${first?.id},id.eq.${second?.id})&id=neq.${second?.id}`
       );
 
-      expect(ids(rows)).toEqual([first?.id]);
+      expect(ids(rows)).toStrictEqual([first?.id]);
     });
 
     it("narrows down to the rows that existed at a time, like the stats snapshot", async () => {
@@ -477,7 +486,7 @@ describe("Supabase filters", () => {
       expect(deleted).toBeDefined();
       expect(ids(rows)).toContain(deleted?.id);
       expect(ids(after)).not.toContain(deleted?.id);
-      expect(ids(after)).toEqual(
+      expect(ids(after)).toStrictEqual(
         ids(
           talents.filter(
             ({ deleted_at }) =>
@@ -497,8 +506,8 @@ describe("Supabase filters", () => {
         `videos?select=id&not.or=(id.eq.${first?.id},id.eq.${second?.id})`
       );
 
-      expect(ids(nested)).toEqual([first?.id, second?.id].sort());
-      expect(ids(negated)).toEqual(
+      expect(ids(nested)).toStrictEqual([first?.id, second?.id].sort());
+      expect(ids(negated)).toStrictEqual(
         ids(videos.filter(({ id }) => id !== first?.id && id !== second?.id))
       );
     });
@@ -509,7 +518,9 @@ describe("Supabase filters", () => {
         `videos?select=id&or=(id.in.(${first?.id},${second?.id}),id.eq."${third?.id}")`
       );
 
-      expect(ids(rows)).toEqual([first?.id, second?.id, third?.id].sort());
+      expect(ids(rows)).toStrictEqual(
+        [first?.id, second?.id, third?.id].sort()
+      );
     });
   });
 
@@ -530,7 +541,7 @@ describe("Supabase filters", () => {
 
       expect(expected.length).toBeGreaterThan(0);
       expect(expected.length).toBeLessThan(videos.length);
-      expect(ids(rows)).toEqual(ids(expected));
+      expect(ids(rows)).toStrictEqual(ids(expected));
 
       for (const row of rows) {
         expect(row.talents.id).not.toBe(talentId);
@@ -542,7 +553,7 @@ describe("Supabase filters", () => {
         "videos?select=id,thumbnail_id,talents!inner(deleted_at)&deleted_at=is.null&talents.deleted_at=not.is.null"
       );
 
-      expect(ids(rows)).toEqual(
+      expect(ids(rows)).toStrictEqual(
         ids(
           videos.filter(
             ({ deleted_at, talent_id }) =>
@@ -557,7 +568,7 @@ describe("Supabase filters", () => {
         "videos?select=id,talent:talents!inner(id)&talent.deleted_at=is.null"
       );
 
-      expect(ids(rows)).toEqual(
+      expect(ids(rows)).toStrictEqual(
         ids(
           videos.filter(({ talent_id }) => !deletedTalentIds().has(talent_id))
         )
@@ -571,7 +582,7 @@ describe("Supabase filters", () => {
         "videos?select=id,talent_id,talents(deleted_at)&talents.deleted_at=not.is.null"
       );
 
-      expect(ids(rows)).toEqual(ids(videos));
+      expect(ids(rows)).toStrictEqual(ids(videos));
 
       for (const row of rows) {
         expect(row.talents === null).toBe(
@@ -594,7 +605,7 @@ describe("Supabase filters", () => {
       );
 
       for (const row of rows) {
-        expect(row.youtube_channels).toEqual(
+        expect(row.youtube_channels).toStrictEqual(
           row.id === talent?.id ? [{ id: channel?.id }] : []
         );
       }

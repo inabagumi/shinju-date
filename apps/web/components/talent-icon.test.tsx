@@ -20,7 +20,7 @@ function createYouTubeChannel(
   };
 }
 
-describe("TalentIcon", () => {
+describe(TalentIcon, () => {
   it("should show the icon as a decoration", () => {
     const { container } = render(
       <TalentIcon

@@ -6,7 +6,7 @@ function getPath(path: string): string | undefined {
   return getLegacySearchRedirectPath(new URL(path, "https://shinju.date"));
 }
 
-describe("getLegacySearchRedirectPath", () => {
+describe(getLegacySearchRedirectPath, () => {
   it("redirects a query to the search results", () => {
     expect(getPath("/search?q=歌枠")).toBe(
       `/videos/${encodeURIComponent("歌枠")}`

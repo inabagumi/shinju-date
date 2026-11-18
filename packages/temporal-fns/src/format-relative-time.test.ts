@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { formatRelativeTime } from "./format-relative-time.js";
 
-describe("formatRelativeTime", () => {
+describe(formatRelativeTime, () => {
   // Use a fixed reference time for consistent testing
   const referenceTime = Temporal.Instant.from("2024-01-15T12:00:00Z");
 

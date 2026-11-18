@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
+import type { InViewHookResponse } from "react-intersection-observer";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fetchVideos } from "@/lib/data/videos";
@@ -8,18 +9,24 @@ import type { Video } from "@/lib/data/videos";
 import { createVideoItem } from "@/test/factories";
 
 import SearchResults from "./search-results";
+import type { VideoCardSkeleton } from "./video-card";
 
-vi.mock("@/lib/data/videos", () => ({
-  fetchVideos: vi.fn(() => new Promise(() => {})),
+vi.mock(import("@/lib/data/videos"), () => ({
+  fetchVideos: vi.fn<typeof fetchVideos>(() => new Promise(() => {})),
 }));
 
-vi.mock("react-intersection-observer", () => ({
-  useInView: () => ({ inView: false, ref: () => {} }),
+vi.mock(import("react-intersection-observer"), () => ({
+  useInView: () =>
+    ({
+      inView: false,
+      ref: () => {},
+    }) as Partial<InViewHookResponse> as InViewHookResponse,
 }));
 
-vi.mock("./video-card", () => ({
+vi.mock(import("./video-card"), () => ({
   default: ({ value }: { value: Video }) => <article>{value.title}</article>,
-  VideoCardSkeleton: () => null,
+  // Renders nothing
+  VideoCardSkeleton: vi.fn<typeof VideoCardSkeleton>(),
 }));
 
 function renderWithQueryClient(ui: ReactNode) {
@@ -30,7 +37,7 @@ function renderWithQueryClient(ui: ReactNode) {
   render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 }
 
-describe("SearchResults", () => {
+describe(SearchResults, () => {
   beforeEach(() => {
     // Asia/Tokyo: 2026-11-14 21:00
     vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(
@@ -98,7 +105,7 @@ describe("SearchResults", () => {
           .getAllByRole("article")
           .map((card) => card.textContent),
       }))
-    ).toEqual([
+    ).toStrictEqual([
       { heading: "明日", titles: ["video-a"] },
       { heading: "今日", titles: ["video-b", "video-c"] },
       { heading: "昨日", titles: ["video-d"] },

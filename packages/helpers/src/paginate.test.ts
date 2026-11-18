@@ -4,36 +4,39 @@ import { paginate } from "./paginate.js";
 import type { Page } from "./paginate.js";
 
 function pages<T>(...list: Page<T>[]) {
-  const fetchPage = vi.fn(async (cursor: string | undefined) => {
-    const index = cursor === undefined ? 0 : Number(cursor);
-    const page = list[index];
+  const fetchPage = vi.fn<(cursor: string | undefined) => Promise<Page<T>>>(
+    async (cursor) => {
+      const index = cursor === undefined ? 0 : Number(cursor);
+      const page = list[index];
 
-    if (!page) {
-      throw new Error(`Unexpected cursor: ${cursor}`);
+      if (!page) {
+        throw new Error(`Unexpected cursor: ${cursor}`);
+      }
+
+      return page;
     }
-
-    return page;
-  });
+  );
 
   return fetchPage;
 }
 
-describe("paginate", () => {
+describe(paginate, () => {
   it("fetches only the first page when it has no next page", async () => {
     const fetchPage = pages({ items: [1, 2], next: null });
 
-    await expect(Array.fromAsync(paginate(fetchPage))).resolves.toEqual([1, 2]);
-    expect(fetchPage).toHaveBeenCalledOnce();
-    expect(fetchPage).toHaveBeenCalledWith(undefined);
+    await expect(Array.fromAsync(paginate(fetchPage))).resolves.toStrictEqual([
+      1, 2,
+    ]);
+    expect(fetchPage).toHaveBeenCalledExactlyOnceWith(undefined);
   });
 
   it("treats an undefined or empty position as the last page", async () => {
     for (const next of [undefined, ""]) {
       const fetchPage = pages({ items: ["a"], next });
 
-      await expect(Array.fromAsync(paginate(fetchPage))).resolves.toEqual([
-        "a",
-      ]);
+      await expect(Array.fromAsync(paginate(fetchPage))).resolves.toStrictEqual(
+        ["a"]
+      );
       expect(fetchPage).toHaveBeenCalledOnce();
     }
   });
@@ -45,10 +48,10 @@ describe("paginate", () => {
       { items: [3], next: null }
     );
 
-    await expect(Array.fromAsync(paginate(fetchPage))).resolves.toEqual([
+    await expect(Array.fromAsync(paginate(fetchPage))).resolves.toStrictEqual([
       1, 2, 3,
     ]);
-    expect(fetchPage.mock.calls).toEqual([[undefined], ["1"], ["2"]]);
+    expect(fetchPage.mock.calls).toStrictEqual([[undefined], ["1"], ["2"]]);
   });
 
   it("yields the earlier pages and then throws the error of a page", async () => {
@@ -65,7 +68,7 @@ describe("paginate", () => {
         seen.push(item);
       }
     }).rejects.toBe(error);
-    expect(seen).toEqual([1, 2]);
+    expect(seen).toStrictEqual([1, 2]);
     expect(fetchPage).toHaveBeenCalledTimes(2);
   });
 

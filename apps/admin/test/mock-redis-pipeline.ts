@@ -1,8 +1,15 @@
+import type { Redis } from "@upstash/redis";
+import { vi } from "vitest";
+
 const PIPELINE_COMMANDS = ["get", "hgetall", "scard", "zrange"] as const;
 
 type PipelineCommand = (typeof PIPELINE_COMMANDS)[number];
 
-type CommandMock = (...args: unknown[]) => unknown;
+type Pipeline = ReturnType<Redis["pipeline"]>;
+
+type PipelineCommandMocks = Partial<
+  Record<PipelineCommand, (...args: never[]) => unknown>
+>;
 
 /**
  * Create a stand-in for `redis.pipeline()` of `@upstash/redis`.
@@ -12,11 +19,9 @@ type CommandMock = (...args: unknown[]) => unknown;
  * command with `mockResolvedValueOnce()` and the like. Like the real
  * pipeline, `exec()` rejects when any command fails.
  */
-export function createMockPipeline(
-  client: Partial<Record<PipelineCommand, CommandMock>>
-) {
+export function createMockPipeline(client: PipelineCommandMocks): Pipeline {
   const queued: (() => unknown)[] = [];
-  const pipeline: Record<string, unknown> = {
+  const pipeline: Partial<Record<PipelineCommand | "exec", unknown>> = {
     exec: () => Promise.all(queued.map((run) => run())),
   };
 
@@ -28,11 +33,29 @@ export function createMockPipeline(
         throw new Error(`${command} is not mocked`);
       }
 
-      queued.push(() => run(...args));
+      queued.push(() => Reflect.apply(run, client, args));
 
       return pipeline;
     };
   }
 
-  return pipeline;
+  // Only has the commands above and `exec()`
+  return pipeline as Partial<Pipeline> as Pipeline;
+}
+
+/**
+ * Create a stand-in for the `Redis` client of `@upstash/redis` with only the
+ * given (mocked) commands, and a mocked `pipeline()` that runs them through
+ * `createMockPipeline()`. Calling any other command fails.
+ */
+export function createMockRedisClient(
+  commands: Partial<Record<keyof Redis, (...args: never[]) => unknown>>
+): Redis {
+  const client: Partial<Record<keyof Redis, unknown>> = {
+    ...commands,
+    pipeline: vi.fn<Redis["pipeline"]>(() => createMockPipeline(commands)),
+  };
+
+  // Only has the given commands and `pipeline()`
+  return client as Partial<Redis> as Redis;
 }

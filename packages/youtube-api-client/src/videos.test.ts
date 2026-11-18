@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { RequestScheduler } from "./types.js";
 import { getVideoIds, isFilteredYouTubeVideo } from "./videos.js";
 
-describe("isFilteredYouTubeVideo", () => {
+describe(isFilteredYouTubeVideo, () => {
   const video = {
     contentDetails: {},
     id: "dQw4w9WgXcQ",
@@ -12,7 +12,7 @@ describe("isFilteredYouTubeVideo", () => {
   } satisfies youtube.Schema$Video;
 
   it("accepts a video with an ID and a publication time", () => {
-    expect(isFilteredYouTubeVideo(video)).toBe(true);
+    expect(isFilteredYouTubeVideo(video)).toBeTruthy();
   });
 
   it("rejects a video without an ID", () => {
@@ -21,18 +21,18 @@ describe("isFilteredYouTubeVideo", () => {
         contentDetails: video.contentDetails,
         snippet: video.snippet,
       })
-    ).toBe(false);
-    expect(isFilteredYouTubeVideo({ ...video, id: null })).toBe(false);
+    ).toBeFalsy();
+    expect(isFilteredYouTubeVideo({ ...video, id: null })).toBeFalsy();
   });
 
   it("rejects a video without a publication time", () => {
-    expect(isFilteredYouTubeVideo({ ...video, snippet: {} })).toBe(false);
+    expect(isFilteredYouTubeVideo({ ...video, snippet: {} })).toBeFalsy();
     expect(
       isFilteredYouTubeVideo({
         contentDetails: video.contentDetails,
         id: video.id,
       })
-    ).toBe(false);
+    ).toBeFalsy();
   });
 });
 
@@ -40,7 +40,11 @@ describe("lookups by ID", () => {
   function createClient() {
     let running = 0;
     let peak = 0;
-    const list = vi.fn(async ({ id = [] }: { id?: string[] }) => {
+    const list = vi.fn<
+      (params: {
+        id?: string[];
+      }) => Promise<{ data: youtube.Schema$VideoListResponse }>
+    >(async ({ id = [] }) => {
       running++;
       peak = Math.max(peak, running);
       await new Promise((resolve) => setTimeout(resolve, 5));
@@ -71,8 +75,10 @@ describe("lookups by ID", () => {
   it("requests the IDs in batches, one after another by default", async () => {
     const { client, list, peak } = createClient();
 
-    await expect(collect(getVideoIds({ client, ids }))).resolves.toEqual(ids);
-    expect(list.mock.calls.map(([{ id }]) => id)).toEqual([
+    await expect(collect(getVideoIds({ client, ids }))).resolves.toStrictEqual(
+      ids
+    );
+    expect(list.mock.calls.map(([{ id }]) => id)).toStrictEqual([
       ids.slice(0, 50),
       ids.slice(50, 100),
       ids.slice(100),
@@ -91,7 +97,7 @@ describe("lookups by ID", () => {
 
     await expect(
       collect(getVideoIds({ client, ids, schedule }))
-    ).resolves.toEqual(ids);
+    ).resolves.toStrictEqual(ids);
     expect(scheduled).toBe(3);
     expect(list).toHaveBeenCalledTimes(3);
     expect(peak()).toBe(3);
@@ -100,9 +106,9 @@ describe("lookups by ID", () => {
   it("makes no request without IDs", async () => {
     const { client, list } = createClient();
 
-    await expect(collect(getVideoIds({ client, ids: [] }))).resolves.toEqual(
-      []
-    );
+    await expect(
+      collect(getVideoIds({ client, ids: [] }))
+    ).resolves.toStrictEqual([]);
     expect(list).not.toHaveBeenCalled();
   });
 });

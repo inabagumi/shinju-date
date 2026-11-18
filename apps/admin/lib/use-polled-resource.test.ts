@@ -33,7 +33,7 @@ function renderPolledResource(
   );
 }
 
-describe("usePolledResource", () => {
+describe(usePolledResource, () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -95,7 +95,7 @@ describe("usePolledResource", () => {
 
     await act(() => vi.advanceTimersByTimeAsync(INTERVAL_MS));
 
-    expect(result.current.data).toEqual(createProgress({ added: 5 }));
+    expect(result.current.data).toStrictEqual(createProgress({ added: 5 }));
 
     await act(() => vi.advanceTimersByTimeAsync(INTERVAL_MS * 3));
 
@@ -112,12 +112,12 @@ describe("usePolledResource", () => {
 
     await act(() => result.current.reload());
 
-    expect(result.current.data.active).toBe(true);
+    expect(result.current.data.active).toBeTruthy();
 
     await act(() => vi.advanceTimersByTimeAsync(INTERVAL_MS));
 
     expect(fetcher).toHaveBeenCalledTimes(2);
-    expect(result.current.data).toEqual(createProgress({ added: 4 }));
+    expect(result.current.data).toStrictEqual(createProgress({ added: 4 }));
   });
 
   it("stops fetching when it is unmounted", async () => {

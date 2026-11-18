@@ -9,7 +9,7 @@ import {
 } from "./broadcasts.js";
 import type { TwitchVideo } from "./types.js";
 
-describe("getTwitchVideoStatus", () => {
+describe(getTwitchVideoStatus, () => {
   it("treats archives and highlights as ended broadcasts", () => {
     expect(getTwitchVideoStatus("archive")).toBe("ENDED");
     expect(getTwitchVideoStatus("highlight")).toBe("ENDED");
@@ -21,7 +21,7 @@ describe("getTwitchVideoStatus", () => {
   });
 });
 
-describe("getArchivedStreamId", () => {
+describe(getArchivedStreamId, () => {
   it("returns the stream ID of an archive", () => {
     expect(
       getArchivedStreamId({
@@ -48,8 +48,14 @@ describe("getArchivedStreamId", () => {
 });
 
 describe("broadcast lookups", () => {
-  const getStreamsByUserIds = vi.fn();
-  const getVideosByUser = vi.fn();
+  const getStreamsByUserIds =
+    vi.fn<(userIds: string[]) => Promise<ReturnType<typeof helixStream>[]>>();
+  const getVideosByUser =
+    vi.fn<
+      (
+        ...args: Parameters<ApiClient["videos"]["getVideosByUser"]>
+      ) => Promise<{ data: ReturnType<typeof helixArchive>[] }>
+    >();
   const client = {
     streams: { getStreamsByUserIds },
     videos: { getVideosByUser },

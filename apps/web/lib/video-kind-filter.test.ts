@@ -8,7 +8,7 @@ import {
   parseVideoKindFilter,
 } from "./video-kind-filter";
 
-describe("parseVideoKindFilter", () => {
+describe(parseVideoKindFilter, () => {
   it("should return the given kind", () => {
     expect(parseVideoKindFilter("short")).toBe("short");
     expect(parseVideoKindFilter("standard")).toBe("standard");
@@ -22,18 +22,18 @@ describe("parseVideoKindFilter", () => {
   });
 });
 
-describe("getVideoKinds", () => {
+describe(getVideoKinds, () => {
   it("should not filter for all", () => {
     expect(getVideoKinds("all")).toBeUndefined();
   });
 
   it("should filter by the given kind", () => {
-    expect(getVideoKinds("short")).toEqual(["short"]);
-    expect(getVideoKinds("standard")).toEqual(["standard"]);
+    expect(getVideoKinds("short")).toStrictEqual(["short"]);
+    expect(getVideoKinds("standard")).toStrictEqual(["standard"]);
   });
 });
 
-describe("getVideosPath", () => {
+describe(getVideosPath, () => {
   it("should link to the videos page", () => {
     expect(getVideosPath("", "all")).toBe("/videos");
     expect(getVideosPath("", "short")).toBe("/videos?kind=short");
@@ -62,7 +62,7 @@ describe("getVideosPath", () => {
   });
 });
 
-describe("getVideosCalendarPath", () => {
+describe(getVideosCalendarPath, () => {
   it("should link to the calendar of every video", () => {
     expect(getVideosCalendarPath("all")).toBe("/videos.ics");
     expect(getVideosCalendarPath("all", [])).toBe("/videos.ics");
@@ -79,7 +79,7 @@ describe("getVideosCalendarPath", () => {
   });
 });
 
-describe("getVideoKindName", () => {
+describe(getVideoKindName, () => {
   it("should call all kinds videos", () => {
     expect(getVideoKindName("all")).toBe("動画");
   });

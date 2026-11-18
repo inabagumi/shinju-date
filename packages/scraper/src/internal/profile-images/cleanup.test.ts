@@ -8,7 +8,7 @@ const supabase = setupSupabase();
 
 const now = Temporal.Instant.from("2024-05-01T12:34:56.789Z");
 
-describe("removeUnusedProfileImages", () => {
+describe(removeUnusedProfileImages, () => {
   it("lists icons without an owner that are past the grace period", async () => {
     mockStorage(supabase, "profile-images");
     supabase.respond(() => []);
@@ -62,8 +62,8 @@ describe("removeUnusedProfileImages", () => {
       supabase
         .written("DELETE", "profile_images")
         .map(({ query }) => query["id"])
-    ).toEqual(["eq.image-1", "eq.image-2"]);
-    expect(storage.removed).toEqual([["youtube/UC1/a.webp"]]);
+    ).toStrictEqual(["eq.image-1", "eq.image-2"]);
+    expect(storage.removed).toStrictEqual([["youtube/UC1/a.webp"]]);
   });
 
   it("fails when unused icons cannot be listed", async () => {

@@ -11,9 +11,12 @@ import { describe, expect, it, vi } from "vitest";
 import { ConfirmDialog } from "./confirm-dialog";
 import type { ActionResult, ConfirmDialogProps } from "./confirm-dialog";
 
+type OnConfirm = ConfirmDialogProps["onConfirm"];
+type OnOpenChange = NonNullable<ConfirmDialogProps["onOpenChange"]>;
+
 function renderDialog() {
-  const onConfirm = vi.fn();
-  const onOpenChange = vi.fn();
+  const onConfirm = vi.fn<OnConfirm>();
+  const onOpenChange = vi.fn<OnOpenChange>();
 
   render(
     <ConfirmDialog
@@ -51,7 +54,7 @@ type DialogOverrides = Partial<
 >;
 
 function renderWithTrigger(overrides: DialogOverrides = {}) {
-  const onConfirm = vi.fn(overrides.onConfirm);
+  const onConfirm = vi.fn<OnConfirm>(overrides.onConfirm);
 
   render(
     <ConfirmDialog
@@ -96,7 +99,7 @@ function ControlledConfirmDialog() {
   );
 }
 
-describe("ConfirmDialog", () => {
+describe(ConfirmDialog, () => {
   it("shows the message and the target", () => {
     renderDialog();
 
@@ -139,7 +142,7 @@ describe("ConfirmDialog", () => {
   describe("when onConfirm returns a promise", () => {
     it("disables the buttons while pending and closes on success", async () => {
       const deferred = createDeferred<ActionResult>();
-      const onOpenChange = vi.fn();
+      const onOpenChange = vi.fn<OnOpenChange>();
       renderWithTrigger({ onConfirm: () => deferred.promise, onOpenChange });
 
       fireEvent.click(screen.getByRole("button", { name: "削除" }));
@@ -312,8 +315,8 @@ describe("ConfirmDialog", () => {
         <ConfirmDialog
           confirmLabel="削除"
           description="削除してもよろしいですか？"
-          onConfirm={vi.fn()}
-          onOpenChange={vi.fn()}
+          onConfirm={vi.fn<OnConfirm>()}
+          onOpenChange={vi.fn<OnOpenChange>()}
           open
           size={size}
           title="項目を削除"

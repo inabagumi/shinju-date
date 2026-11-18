@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { formatNumber } from "./format-number.js";
 
-describe("formatNumber", () => {
+describe(formatNumber, () => {
   it("should format numbers with comma separators for ja-JP locale", () => {
     expect(formatNumber(1000)).toBe("1,000");
     expect(formatNumber(1_234_567)).toBe("1,234,567");

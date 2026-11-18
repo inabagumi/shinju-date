@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import PageMain from "./page-main";
 import { MAIN_CONTENT_ID } from "./skip-link";
 
-describe("PageMain", () => {
+describe(PageMain, () => {
   it("should render the main landmark the skip link moves to", () => {
     render(<PageMain>content</PageMain>);
 

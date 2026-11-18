@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import SimpleDocument from "./simple-document";
 import SkipLink, { MAIN_CONTENT_ID } from "./skip-link";
 
-describe("SkipLink", () => {
+describe(SkipLink, () => {
   it("should link to the main content", () => {
     render(<SkipLink />);
 

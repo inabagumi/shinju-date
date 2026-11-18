@@ -21,7 +21,7 @@ describe("Upstash Redis Handlers", () => {
       });
       const data = (await response.json()) as { result: unknown };
 
-      expect(response.ok).toBe(true);
+      expect(response.ok).toBeTruthy();
       expect(data.result).toBe("PONG");
     });
   });
@@ -41,9 +41,9 @@ describe("Upstash Redis Handlers", () => {
       });
       const data = (await response.json()) as { result: unknown };
 
-      expect(response.ok).toBe(true);
+      expect(response.ok).toBeTruthy();
       expect(data.result).toBeDefined();
-      expect(Array.isArray(data.result)).toBe(true);
+      expect(Array.isArray(data.result)).toBeTruthy();
     });
   });
 
@@ -79,11 +79,13 @@ describe("Upstash Redis Handlers", () => {
       expect(pairs.length).toBeGreaterThan(0);
 
       for (const [member, score] of pairs) {
-        expect(member).toEqual(expect.any(String));
-        expect(score).toEqual(expect.any(Number));
+        expect(member).toStrictEqual(expect.any(String));
+        expect(score).toStrictEqual(expect.any(Number));
       }
 
-      expect(scores).toEqual([...scores].sort((a, b) => Number(a) - Number(b)));
+      expect(scores).toStrictEqual(
+        [...scores].sort((a, b) => Number(a) - Number(b))
+      );
     });
 
     it("returns members with scores in descending order with rev", async () => {
@@ -94,8 +96,10 @@ describe("Upstash Redis Handlers", () => {
       const scores = toPairs(result).map(([, score]) => score);
 
       expect(scores.length).toBeGreaterThan(0);
-      expect(scores).toEqual(scores.map(() => expect.any(Number)));
-      expect(scores).toEqual([...scores].sort((a, b) => Number(b) - Number(a)));
+      expect(scores).toStrictEqual(scores.map(() => expect.any(Number)));
+      expect(scores).toStrictEqual(
+        [...scores].sort((a, b) => Number(b) - Number(a))
+      );
     });
 
     it("returns only members without withScores", async () => {
@@ -104,7 +108,9 @@ describe("Upstash Redis Handlers", () => {
       });
       const members = await redis.zrange<string[]>(key, 0, -1);
 
-      expect(members).toEqual(toPairs(withScores).map(([member]) => member));
+      expect(members).toStrictEqual(
+        toPairs(withScores).map(([member]) => member)
+      );
     });
 
     it("applies the options in a pipeline", async () => {
@@ -117,7 +123,7 @@ describe("Upstash Redis Handlers", () => {
         withScores: true,
       });
 
-      expect(result).toEqual(all.slice(0, 2));
+      expect(result).toStrictEqual(all.slice(0, 2));
     });
   });
 
@@ -157,7 +163,7 @@ describe("Upstash Redis Handlers", () => {
       expect(videoScores.size).toBeGreaterThan(0);
 
       for (const id of videoScores.keys()) {
-        expect(visibleVideoIds.has(id)).toBe(true);
+        expect(visibleVideoIds.has(id)).toBeTruthy();
       }
     });
 
@@ -182,10 +188,10 @@ describe("Upstash Redis Handlers", () => {
         expected.set(talentId, (expected.get(talentId) ?? 0) + score);
       }
 
-      expect(talentScores).toEqual(expected);
+      expect(talentScores).toStrictEqual(expected);
 
       for (const id of talentScores.keys()) {
-        expect(talentIds.has(id)).toBe(true);
+        expect(talentIds.has(id)).toBeTruthy();
       }
     });
   });
@@ -209,15 +215,9 @@ describe("Upstash Redis Handlers", () => {
       });
       const data = await response.json();
 
-      expect(response.ok).toBe(true);
-      // More flexible check - data might be an object or array
-      if (Array.isArray(data)) {
-        expect(data).toHaveLength(2);
-        expect(data[0].result).toBe("PONG");
-      } else {
-        // If it's not an array, at least verify it's a valid response
-        expect(data).toBeDefined();
-      }
+      expect(response.ok).toBeTruthy();
+      expect(data).toHaveLength(2);
+      expect(data).toMatchObject([{ result: "PONG" }, {}]);
     });
   });
 
@@ -231,7 +231,7 @@ describe("Upstash Redis Handlers", () => {
       });
       const setData = (await setResponse.json()) as { result: unknown };
 
-      expect(setResponse.ok).toBe(true);
+      expect(setResponse.ok).toBeTruthy();
       expect(setData.result).toBe("OK");
 
       // Test GET
@@ -242,7 +242,7 @@ describe("Upstash Redis Handlers", () => {
       });
       const getData = (await getResponse.json()) as { result: unknown };
 
-      expect(getResponse.ok).toBe(true);
+      expect(getResponse.ok).toBeTruthy();
       expect(getData.result).toBe("test:value");
     });
   });
@@ -259,8 +259,8 @@ describe("Upstash Redis Handlers", () => {
       const first = await redis.multi().incr(key).expire(key, 30).exec();
       const second = await redis.multi().incr(key).expire(key, 30).exec();
 
-      expect(first).toEqual([1, 1]);
-      expect(second).toEqual([2, 1]);
+      expect(first).toStrictEqual([1, 1]);
+      expect(second).toStrictEqual([2, 1]);
     });
 
     it("does not set the expiry of a missing key", async () => {
@@ -290,10 +290,9 @@ describe("Upstash Redis Handlers", () => {
       await expect(
         send(["set", "test:lock", "2", "ex", 60, "nx"])
       ).resolves.toBeNull();
-      await expect(send(["mget", "test:lock", "test:none"])).resolves.toEqual([
-        "1",
-        null,
-      ]);
+      await expect(
+        send(["mget", "test:lock", "test:none"])
+      ).resolves.toStrictEqual(["1", null]);
     });
 
     it("emulates the enqueue script of the backfill queue", async () => {
@@ -346,7 +345,7 @@ describe("Upstash Redis Handlers", () => {
       await expect(requeue("token-2")).resolves.toBe(0);
       await expect(requeue("token-1")).resolves.toBe(1);
       await expect(send(["get", "test:requeue-job"])).resolves.toBe(job);
-      await expect(send(["mget", "test:requeue-lock"])).resolves.toEqual([
+      await expect(send(["mget", "test:requeue-lock"])).resolves.toStrictEqual([
         null,
       ]);
       await expect(send(["rpop", "test:requeue-queue"])).resolves.toBe(
@@ -424,7 +423,7 @@ describe("Upstash Redis Handlers", () => {
       ).resolves.toBe(1);
       await expect(
         send(["mget", "test:save-job", "test:save-outcome", "test:save-lock"])
-      ).resolves.toEqual([job, job, null]);
+      ).resolves.toStrictEqual([job, job, null]);
     });
 
     it("emulates the unlock script of a check of all accounts", async () => {
@@ -462,12 +461,16 @@ describe("Upstash Redis Handlers", () => {
     });
 
     it("works as a FIFO queue with LPUSH and RPOP", async () => {
-      await expect(send(["lpush", "test:queue", "a"])).resolves.toBe(1);
-      await expect(send(["lpush", "test:queue", "b", "c"])).resolves.toBe(3);
-      await expect(send(["rpop", "test:queue"])).resolves.toBe("a");
-      await expect(send(["rpop", "test:queue"])).resolves.toBe("b");
-      await expect(send(["rpop", "test:queue"])).resolves.toBe("c");
-      await expect(send(["rpop", "test:queue"])).resolves.toBeNull();
+      expect([
+        await send(["lpush", "test:queue", "a"]),
+        await send(["lpush", "test:queue", "b", "c"]),
+      ]).toStrictEqual([1, 3]);
+      expect([
+        await send(["rpop", "test:queue"]),
+        await send(["rpop", "test:queue"]),
+        await send(["rpop", "test:queue"]),
+        await send(["rpop", "test:queue"]),
+      ]).toStrictEqual(["a", "b", "c", null]);
     });
   });
 });

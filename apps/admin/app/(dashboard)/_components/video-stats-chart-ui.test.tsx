@@ -1,19 +1,22 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { cloneElement } from "react";
+import { cloneElement, forwardRef } from "react";
 import type { ReactElement } from "react";
+import type { ResponsiveContainerProps } from "recharts";
 import { describe, expect, it, vi } from "vitest";
 
 // jsdom は要素の大きさを測れないので、グラフに大きさを直接渡す
-vi.mock("recharts", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("recharts")>();
+vi.mock(import("recharts"), async (importOriginal) => {
+  const actual = await importOriginal();
 
   return {
     ...actual,
-    ResponsiveContainer: ({
-      children,
-    }: {
-      children: ReactElement<{ height?: number; width?: number }>;
-    }) => cloneElement(children, { height: 320, width: 800 }),
+    ResponsiveContainer: forwardRef<HTMLDivElement, ResponsiveContainerProps>(
+      ({ children }, _ref) =>
+        cloneElement(
+          children as ReactElement<{ height?: number; width?: number }>,
+          { height: 320, width: 800 }
+        )
+    ),
   };
 });
 
@@ -37,11 +40,11 @@ const DATA = [
 ];
 
 describe("VideoStatsChartUI", () => {
-  it("colors each series, legend item and tooltip item with its class", async () => {
+  it("colors each series and legend item with its class", () => {
     render(<VideoStatsChartUI data={DATA} />);
 
     const layers = document.querySelectorAll(".recharts-area");
-    expect([...layers].map((layer) => layer.classList[2])).toEqual([
+    expect([...layers].map((layer) => layer.classList[2])).toStrictEqual([
       "text-success",
       "text-accent",
       "text-warning",
@@ -56,6 +59,10 @@ describe("VideoStatsChartUI", () => {
     expect(screen.getByText("非表示").closest("li")).toHaveClass(
       "text-warning"
     );
+  });
+
+  it("colors each tooltip item with its class", async () => {
+    render(<VideoStatsChartUI data={DATA} />);
 
     const chart = document.querySelector(".recharts-wrapper");
     if (!chart) {
@@ -72,7 +79,7 @@ describe("VideoStatsChartUI", () => {
     const tooltip = document.querySelector(".recharts-tooltip-wrapper");
     expect(tooltip).toHaveTextContent("2026-11-09");
     const items = tooltip?.querySelectorAll("li") ?? [];
-    expect([...items].map((item) => item.textContent)).toEqual([
+    expect([...items].map((item) => item.textContent)).toStrictEqual([
       "公開中 : 12 本",
       "配信予定 : 4 本",
       "非表示 : 3 本",

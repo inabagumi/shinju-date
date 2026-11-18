@@ -1,49 +1,53 @@
+import type * as Sentry from "@sentry/nextjs";
+import type * as WebCache from "@shinju-date/web-cache";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockSupabaseClient = {};
-const acquireLock = vi.fn();
-const releaseLock = vi.fn();
-const mockCascadeVideosFromTalents = vi.fn();
-const mockRevalidateTags = vi.fn();
+import type * as Lock from "@/lib/lock";
+import type { TypedSupabaseClient } from "@/lib/supabase";
 
-vi.mock("@/lib/supabase", () => ({
+import type * as CascadeFromTalents from "./_lib/cascade-from-talents";
+
+const { createAfterMock, createLoggerMock } = await vi.hoisted(
+  () => import("@/test/mocks")
+);
+
+const mockSupabaseClient =
+  {} as Partial<TypedSupabaseClient> as TypedSupabaseClient;
+const acquireLock = vi.fn<typeof Lock.acquireLock>();
+const releaseLock = vi.fn<typeof Lock.releaseLock>();
+const mockCascadeVideosFromTalents =
+  vi.fn<typeof CascadeFromTalents.cascadeVideosFromTalents>();
+const mockRevalidateTags = vi.fn<typeof WebCache.revalidateTags>();
+
+vi.mock(import("@/lib/supabase"), () => ({
   supabaseClient: mockSupabaseClient,
 }));
 
-vi.mock("@/lib/lock", () => ({ acquireLock, releaseLock }));
+vi.mock(import("@/lib/lock"), () => ({ acquireLock, releaseLock }));
 
-vi.mock("./_lib/cascade-from-talents", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("./_lib/cascade-from-talents")>();
+vi.mock(import("./_lib/cascade-from-talents"), async (importOriginal) => {
+  const actual = await importOriginal();
   return {
     ...actual,
     cascadeVideosFromTalents: mockCascadeVideosFromTalents,
   };
 });
 
-vi.mock("@shinju-date/web-cache", () => ({
+vi.mock(import("@shinju-date/web-cache"), () => ({
   revalidateTags: mockRevalidateTags,
 }));
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: {
-    error: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-  },
+vi.mock(import("@shinju-date/logger"), () => ({
+  logger: createLoggerMock(),
 }));
 
-vi.mock("@sentry/nextjs", () => ({
-  captureCheckIn: vi.fn(() => "mock-check-in-id"),
-  captureException: vi.fn(),
-  flush: vi.fn(),
+vi.mock(import("@sentry/nextjs"), () => ({
+  captureCheckIn: vi.fn<typeof Sentry.captureCheckIn>(() => "mock-check-in-id"),
+  captureException: vi.fn<typeof Sentry.captureException>(),
+  flush: vi.fn<typeof Sentry.flush>(),
 }));
 
-vi.mock("next/server", () => ({
-  after: vi.fn((fn: () => void) => {
-    fn();
-  }),
-}));
+vi.mock(import("next/server"), () => ({ after: createAfterMock() }));
 
 describe("POST /videos/cascade-from-talents", () => {
   let POST: (request: Request) => Promise<Response>;
@@ -73,7 +77,7 @@ describe("POST /videos/cascade-from-talents", () => {
     const response = await POST(request);
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({
+    await expect(response.json()).resolves.toStrictEqual({
       restored: 3,
       softDeleted: 5,
     });

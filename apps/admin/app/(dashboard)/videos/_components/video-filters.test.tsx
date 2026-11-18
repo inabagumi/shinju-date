@@ -1,19 +1,26 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { AppRouter } from "@/test/next-navigation";
 
 import { VideoFilters } from "./video-filters";
 
 const mocks = vi.hoisted(() => ({
   pathname: "/videos",
-  push: vi.fn(),
-  replace: vi.fn(),
+  push: vi.fn<AppRouter["push"]>(),
+  replace: vi.fn<AppRouter["replace"]>(),
   searchParams: new URLSearchParams(),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => mocks.pathname,
-  useRouter: () => ({ push: mocks.push, replace: mocks.replace }),
-  useSearchParams: () => mocks.searchParams,
+  useRouter: () =>
+    ({
+      push: mocks.push,
+      replace: mocks.replace,
+    }) as Partial<AppRouter> as AppRouter,
+  useSearchParams: () => mocks.searchParams as ReadonlyURLSearchParams,
 }));
 
 type Rerender = ReturnType<typeof render>["rerender"];
@@ -86,8 +93,7 @@ describe("VideoFilters search", () => {
       vi.advanceTimersByTime(1);
     });
     // Keeps the other filters and goes back to page 1
-    expect(mocks.replace).toHaveBeenCalledOnce();
-    expect(mocks.replace).toHaveBeenCalledWith(
+    expect(mocks.replace).toHaveBeenCalledExactlyOnceWith(
       "/videos?status=LIVE&search=anime"
     );
     expect(mocks.push).not.toHaveBeenCalled();

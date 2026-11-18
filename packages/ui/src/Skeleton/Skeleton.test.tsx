@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { Skeleton } from "./Skeleton";
 
-describe("Skeleton", () => {
+describe(Skeleton, () => {
   it("should render a pulsing block hidden from assistive technology", () => {
     const { container } = render(<Skeleton className="h-4 w-32" />);
     const skeleton = container.firstElementChild;

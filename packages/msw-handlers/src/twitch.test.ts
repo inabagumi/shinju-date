@@ -73,7 +73,7 @@ describe("Twitch Handlers", () => {
         saved.map(({ user }) => `id=${user.twitch_user_id}`).join("&")
       );
 
-      expect(users).toEqual(
+      expect(users).toStrictEqual(
         saved.map(({ user }) =>
           expect.objectContaining({
             display_name: user.name,
@@ -89,7 +89,9 @@ describe("Twitch Handlers", () => {
       const login = saved?.user.twitch_login_name ?? "";
 
       expect(login).not.toBe("");
-      await expect(getUsers(`login=${login.toUpperCase()}`)).resolves.toEqual([
+      await expect(
+        getUsers(`login=${login.toUpperCase()}`)
+      ).resolves.toStrictEqual([
         expect.objectContaining({ id: saved?.user.twitch_user_id }),
       ]);
     });
@@ -127,13 +129,15 @@ describe("Twitch Handlers", () => {
     it("generates a user for any other numeric ID", async () => {
       const users = await getUsers("id=999999999&id=not-a-number");
 
-      expect(users).toEqual([
+      expect(users).toStrictEqual([
         expect.objectContaining({ id: "999999999", login: "user999999999" }),
       ]);
     });
 
     it("finds no user for a login that is not saved", async () => {
-      await expect(getUsers("login=not-a-saved-login")).resolves.toEqual([]);
+      await expect(getUsers("login=not-a-saved-login")).resolves.toStrictEqual(
+        []
+      );
     });
 
     it("rejects a request without IDs or logins", async () => {
@@ -155,7 +159,7 @@ describe("Twitch Handlers", () => {
       expect(response.headers.get("Content-Type")).toBe("image/png");
       expect(response.headers.get("ETag")).toBeTruthy();
       // PNG signature
-      expect([...body.slice(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
+      expect([...body.slice(0, 4)]).toStrictEqual([0x89, 0x50, 0x4e, 0x47]);
     });
 
     it("answers a matching conditional request with 304", async () => {
@@ -229,10 +233,10 @@ describe("Twitch Handlers", () => {
             ["archive", "highlight", "upload"].includes(twitchVideo.type ?? "")
         );
 
-        expect(data.map(({ id }) => id).sort()).toEqual(
+        expect(data.map(({ id }) => id).sort()).toStrictEqual(
           expected.map(({ twitchVideo }) => twitchVideo.twitch_video_id).sort()
         );
-        expect(data.map(({ published_at }) => published_at)).toEqual(
+        expect(data.map(({ published_at }) => published_at)).toStrictEqual(
           data
             .map(({ published_at }) => published_at)
             .toSorted((a, b) => Temporal.Instant.compare(b, a))
@@ -248,7 +252,7 @@ describe("Twitch Handlers", () => {
         `videos?id=${archive?.twitchVideo.twitch_video_id}`
       );
 
-      expect(data).toEqual([
+      expect(data).toStrictEqual([
         expect.objectContaining({
           duration: "2h34m12s",
           id: archive?.twitchVideo.twitch_video_id,
@@ -271,7 +275,7 @@ describe("Twitch Handlers", () => {
         `videos?user_id=${highlight?.user?.twitch_user_id}&type=highlight`
       );
 
-      expect(data.map(({ id }) => id)).toEqual([
+      expect(data.map(({ id }) => id)).toStrictEqual([
         highlight?.twitchVideo.twitch_video_id,
       ]);
     });
@@ -290,8 +294,8 @@ describe("Twitch Handlers", () => {
       );
 
       expect(all.data.length).toBeGreaterThan(1);
-      expect(first.data).toEqual(all.data.slice(0, 1));
-      expect(second.data).toEqual(all.data.slice(1, 2));
+      expect(first.data).toStrictEqual(all.data.slice(0, 1));
+      expect(second.data).toStrictEqual(all.data.slice(1, 2));
     });
 
     it("returns 404 for a lookup by an ID that does not exist, like Helix", async () => {
@@ -326,14 +330,14 @@ describe("Twitch Handlers", () => {
       const offline = await getPage<unknown>(`streams?user_id=${others[0]}`);
 
       expect(live?.twitchVideo.stream_id).toBeTruthy();
-      expect(data).toEqual([
+      expect(data).toStrictEqual([
         expect.objectContaining({
           id: live?.twitchVideo.stream_id,
           type: "live",
           user_id: userId,
         }),
       ]);
-      expect(offline.data).toEqual([]);
+      expect(offline.data).toStrictEqual([]);
     });
 
     it("returns the clips of the Supabase mock and leaves out the missing ones", async () => {
@@ -346,7 +350,7 @@ describe("Twitch Handlers", () => {
         id: string;
       }>(`clips?id=${clip?.twitchVideo.twitch_video_id}&id=MissingClip`);
 
-      expect(data).toEqual([
+      expect(data).toStrictEqual([
         expect.objectContaining({
           broadcaster_id: clip?.user?.twitch_user_id,
           duration: 28,

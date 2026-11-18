@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { getSafeRedirectPath } from "./redirect-path";
 
-describe("getSafeRedirectPath", () => {
+describe(getSafeRedirectPath, () => {
   it.each([
     ["/analytics/click", "/analytics/click"],
     ["/analytics/click?from=2025-11-01", "/analytics/click?from=2025-11-01"],

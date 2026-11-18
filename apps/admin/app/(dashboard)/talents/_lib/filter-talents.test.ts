@@ -41,13 +41,13 @@ function ids(filters: Partial<TalentSearchParams>) {
   );
 }
 
-describe("filterTalents", () => {
+describe(filterTalents, () => {
   it("excludes the deleted talents and sorts by the last update, newest first, by default", () => {
-    expect(ids({})).toEqual(["id-retired", "id-active"]);
+    expect(ids({})).toStrictEqual(["id-retired", "id-active"]);
   });
 
   it("sorts by the last update, oldest first", () => {
-    expect(ids({ sort: "asc", status: "all" })).toEqual([
+    expect(ids({ sort: "asc", status: "all" })).toStrictEqual([
       "id-deleted",
       "id-active",
       "id-retired",
@@ -60,13 +60,13 @@ describe("filterTalents", () => {
     ["deleted", ["id-deleted"]],
     ["all", ["id-retired", "id-active", "id-deleted"]],
   ] as const)("filters by the status %s", (status, expected) => {
-    expect(ids({ status })).toEqual(expected);
+    expect(ids({ status })).toStrictEqual(expected);
   });
 
   it("searches the name and the ID, ignoring the case", () => {
-    expect(ids({ search: "引退" })).toEqual(["id-retired"]);
-    expect(ids({ search: "ID-ACTIVE" })).toEqual(["id-active"]);
-    expect(ids({ search: "none" })).toEqual([]);
+    expect(ids({ search: "引退" })).toStrictEqual(["id-retired"]);
+    expect(ids({ search: "ID-ACTIVE" })).toStrictEqual(["id-active"]);
+    expect(ids({ search: "none" })).toStrictEqual([]);
   });
 
   it("does not change the given list", () => {
@@ -74,6 +74,6 @@ describe("filterTalents", () => {
 
     filterTalents(talents, { ...DEFAULT_FILTERS, status: "all" });
 
-    expect(talents).toEqual(TALENTS);
+    expect(talents).toStrictEqual(TALENTS);
   });
 });

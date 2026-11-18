@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { BackLink } from "./back-link";
 
-describe("BackLink", () => {
+describe(BackLink, () => {
   it("links back to the list with a focus ring", () => {
     render(<BackLink href="/talents">タレント一覧に戻る</BackLink>);
 

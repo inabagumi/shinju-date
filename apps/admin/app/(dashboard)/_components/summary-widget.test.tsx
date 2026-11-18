@@ -2,19 +2,22 @@ import type { SummaryStats, WithTrends } from "@shinju-date/dashboard-stats";
 import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { getHistoricalStats } from "../_lib/get-historical-stats";
+import type { getSummaryStats } from "../_lib/get-summary-stats";
+
 const mocks = vi.hoisted(() => ({
-  getHistoricalStats: vi.fn(),
-  getSummaryStats: vi.fn(),
+  getHistoricalStats: vi.fn<typeof getHistoricalStats>(),
+  getSummaryStats: vi.fn<typeof getSummaryStats>(),
 }));
 
-vi.mock("../_lib/get-historical-stats", () => ({
+vi.mock(import("../_lib/get-historical-stats"), () => ({
   getHistoricalStats: mocks.getHistoricalStats,
 }));
-vi.mock("../_lib/get-summary-stats", () => ({
+vi.mock(import("../_lib/get-summary-stats"), () => ({
   getSummaryStats: mocks.getSummaryStats,
 }));
-vi.mock("./video-stats-chart-ui", () => ({
-  VideoStatsChartUI: () => null,
+vi.mock(import("./video-stats-chart-ui"), () => ({
+  VideoStatsChartUI: () => <></>,
 }));
 
 const { ContentSummaryWidget, VideoSummaryWidget } =
@@ -118,6 +121,6 @@ describe("ContentSummaryWidget", () => {
 
     // The same call without arguments, which `'use cache: private'` of
     // `getSummaryStats` runs once for a display
-    expect(mocks.getSummaryStats.mock.calls).toEqual([[], []]);
+    expect(mocks.getSummaryStats.mock.calls).toStrictEqual([[], []]);
   });
 });

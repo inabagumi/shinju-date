@@ -16,6 +16,8 @@ import {
   vi,
 } from "vitest";
 
+import type { createTermAction, updateTermAction } from "../_actions";
+
 const mocks = vi.hoisted(() => {
   let release: () => void = () => {};
   const sortableInputListLoaded = new Promise<void>((resolve) => {
@@ -23,21 +25,21 @@ const mocks = vi.hoisted(() => {
   });
 
   return {
-    createTermAction: vi.fn(),
+    createTermAction: vi.fn<typeof createTermAction>(),
     releaseSortableInputList: () => release(),
     sortableInputListLoaded,
-    updateTermAction: vi.fn(),
+    updateTermAction: vi.fn<typeof updateTermAction>(),
   };
 });
 
-vi.mock("../_actions", () => ({
+vi.mock(import("../_actions"), () => ({
   createTermAction: mocks.createTermAction,
   updateTermAction: mocks.updateTermAction,
 }));
 
 // モーダルを開いてから dnd-kit を読み込み終えるまでの状態を確かめるため、
 // 読み込みが終わる時点をテストから決められるようにする
-vi.mock("./sortable-input-list", async (importOriginal) => {
+vi.mock(import("./sortable-input-list"), async (importOriginal) => {
   await mocks.sortableInputListLoaded;
 
   return importOriginal();
@@ -133,7 +135,7 @@ describe("TermModal", () => {
   });
 
   describe("while the sortable list is loading", () => {
-    it("keeps what is typed right after opening and submits the current values", async () => {
+    function openEditDialog() {
       render(<TermModal term={term} />);
 
       fireEvent.click(screen.getByRole("button", { name: "編集" }));
@@ -141,23 +143,32 @@ describe("TermModal", () => {
       const dialog = screen.getByRole("dialog", { name: "用語を編集" });
       const termInput = within(dialog).getByDisplayValue("SHINJU");
 
+      return { dialog, termInput };
+    }
+
+    it("shows the current values that cannot be edited yet right after opening", () => {
+      const { dialog, termInput } = openEditDialog();
+
       // フォーカスは最初の入力欄（用語）に移る
       expect(termInput).toHaveFocus();
 
       // 並べ替えの部品を読み込むまでは、同じ位置に操作できない入力欄を出す
-      expect(getReadingInputs(dialog).map((input) => input.value)).toEqual([
-        "しんじゅ",
-      ]);
-      expect(getSynonymInputs(dialog).map((input) => input.value)).toEqual([
-        "真珠",
-        "パール",
-      ]);
+      expect(
+        getReadingInputs(dialog).map((input) => input.value)
+      ).toStrictEqual(["しんじゅ"]);
+      expect(
+        getSynonymInputs(dialog).map((input) => input.value)
+      ).toStrictEqual(["真珠", "パール"]);
       for (const input of [
         ...getReadingInputs(dialog),
         ...getSynonymInputs(dialog),
       ]) {
         expect(input).toBeDisabled();
       }
+    });
+
+    it("keeps what is typed right after opening and submits the current values", async () => {
+      const { dialog, termInput } = openEditDialog();
 
       fireEvent.change(termInput, { target: { value: "SHINJU DATE" } });
 
@@ -171,8 +182,10 @@ describe("TermModal", () => {
       const formData = mocks.updateTermAction.mock.calls[0]?.[1] as FormData;
 
       expect(formData.get("term")).toBe("SHINJU DATE");
-      expect(getSubmittedValues(formData, "readings")).toEqual(["しんじゅ"]);
-      expect(getSubmittedValues(formData, "synonyms")).toEqual([
+      expect(getSubmittedValues(formData, "readings")).toStrictEqual([
+        "しんじゅ",
+      ]);
+      expect(getSubmittedValues(formData, "synonyms")).toStrictEqual([
         "真珠",
         "パール",
       ]);
@@ -250,19 +263,18 @@ describe("TermModal", () => {
         target: { value: "い" },
       });
 
-      expect(getReadingInputs(dialog).map((input) => input.value)).toEqual([
-        "あ",
-        "い",
-      ]);
+      expect(
+        getReadingInputs(dialog).map((input) => input.value)
+      ).toStrictEqual(["あ", "い"]);
 
       const [firstRemoveButton] = within(dialog).getAllByRole("button", {
         name: "削除",
       });
       fireEvent.click(firstRemoveButton as HTMLElement);
 
-      expect(getReadingInputs(dialog).map((input) => input.value)).toEqual([
-        "い",
-      ]);
+      expect(
+        getReadingInputs(dialog).map((input) => input.value)
+      ).toStrictEqual(["い"]);
       // 入力欄が1つのときは削除のボタンを出さない
       expect(
         within(dialog).queryByRole("button", { name: "削除" })
@@ -297,10 +309,9 @@ describe("TermModal", () => {
       }
 
       await waitFor(() => {
-        expect(getSynonymInputs(dialog).map((input) => input.value)).toEqual([
-          "パール",
-          "真珠",
-        ]);
+        expect(
+          getSynonymInputs(dialog).map((input) => input.value)
+        ).toStrictEqual(["パール", "真珠"]);
       });
 
       fireEvent.click(within(dialog).getByRole("button", { name: "更新" }));
@@ -311,7 +322,7 @@ describe("TermModal", () => {
 
       const formData = mocks.updateTermAction.mock.calls[0]?.[1] as FormData;
 
-      expect(getSubmittedValues(formData, "synonyms")).toEqual([
+      expect(getSubmittedValues(formData, "synonyms")).toStrictEqual([
         "パール",
         "真珠",
       ]);

@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("next/navigation", () => ({
-  notFound: vi.fn(() => {
+vi.mock(import("next/navigation"), () => ({
+  notFound: vi.fn<typeof notFound>(() => {
     throw new Error("NEXT_NOT_FOUND");
   }),
 }));
 
-vi.mock("@/lib/data/schedule", () => ({
-  fetchOldestVideoDate: vi.fn(),
-  fetchScheduleToday: vi.fn(),
+vi.mock(import("@/lib/data/schedule"), () => ({
+  fetchOldestVideoDate: vi.fn<typeof fetchOldestVideoDate>(),
+  fetchScheduleToday: vi.fn<typeof fetchScheduleToday>(),
 }));
 
 import { notFound } from "next/navigation";
@@ -21,7 +21,7 @@ function params(date: string) {
   return Promise.resolve({ date });
 }
 
-describe("resolveScheduleWeek", () => {
+describe(resolveScheduleWeek, () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -62,7 +62,7 @@ describe("resolveScheduleWeek", () => {
       await expect(resolveScheduleWeek(params(value))).rejects.toThrow(
         "NEXT_NOT_FOUND"
       );
-      expect(notFound).toHaveBeenCalled();
+      expect(notFound).toHaveBeenCalledWith();
       expect(fetchScheduleToday).not.toHaveBeenCalled();
     }
   );

@@ -10,6 +10,7 @@ import {
 } from "../internal/testing/images.js";
 import { postgresError, setupSupabase } from "../internal/testing/supabase.js";
 import { createSavedVideo, createVideo } from "../internal/testing/youtube.js";
+import type { ErrorReporter } from "../types.js";
 import {
   refreshYouTubeVideos,
   removeUnavailableYouTubeVideos,
@@ -18,7 +19,7 @@ import type { YouTubeFetcher } from "./fetcher.js";
 
 const supabase = setupSupabase();
 const now = Temporal.Instant.from("2024-05-01T12:00:00.500Z");
-const reportError = vi.fn();
+const reportError = vi.fn<ErrorReporter>();
 const createContext = <T>(fetcher: T) =>
   createTestContext({
     fetcher,
@@ -33,7 +34,7 @@ const scheduled = {
   liveStreamingDetails: { scheduledStartTime: "2024-05-01T13:00:00Z" },
 };
 
-describe("refreshYouTubeVideos", () => {
+describe(refreshYouTubeVideos, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -91,7 +92,7 @@ describe("refreshYouTubeVideos", () => {
 
     expect(changed).toBeGreaterThan(0);
     expect(getVideos).toHaveBeenCalledWith(["a", "b"]);
-    expect(supabase.written("PATCH", "videos")).toEqual([
+    expect(supabase.written("PATCH", "videos")).toStrictEqual([
       expect.objectContaining({
         body: {
           published_at: "2024-05-01T11:58:00Z",
@@ -119,7 +120,7 @@ describe("refreshYouTubeVideos", () => {
 
     expect(changed).toBeGreaterThan(0);
     // `soft_delete_videos` deletes the thumbnails with the videos.
-    expect(supabase.written("POST", "rpc/soft_delete_videos")).toEqual([
+    expect(supabase.written("POST", "rpc/soft_delete_videos")).toStrictEqual([
       expect.objectContaining({
         body: {
           p_deleted_at: "2024-05-01T12:00:00Z",
@@ -247,15 +248,17 @@ describe("refreshYouTubeVideos and thumbnails", () => {
       "recent"
     );
 
-    expect(changed).toBe(1);
-    expect(requests).toEqual([{ ifNoneMatch: null, url: IMAGE_URL }]);
-    expect(storage.uploads.map(({ path }) => path)).toEqual([
+    expect({ changed, requests }).toStrictEqual({
+      changed: 1,
+      requests: [{ ifNoneMatch: null, url: IMAGE_URL }],
+    });
+    expect(storage.uploads.map(({ path }) => path)).toStrictEqual([
       expect.stringMatching(/^a\//),
     ]);
     const inserted = supabase.written("POST", "thumbnails")[0]?.body;
 
     expect(inserted).toMatchObject({ etag: '"etag-1"' });
-    expect(supabase.written("PATCH", "videos")).toEqual([
+    expect(supabase.written("PATCH", "videos")).toStrictEqual([
       expect.objectContaining({
         body: {
           thumbnail_id: (inserted as { id: string }).id,
@@ -281,13 +284,19 @@ describe("refreshYouTubeVideos and thumbnails", () => {
 
     const changed = await refreshYouTubeVideos(createContext(fetcher), "live");
 
-    expect(changed).toBe(1);
-    expect(requests).toEqual([{ ifNoneMatch: '"etag-1"', url: IMAGE_URL }]);
-    expect(storage.uploads).toHaveLength(1);
+    expect({
+      changed,
+      requests,
+      uploads: storage.uploads.length,
+    }).toStrictEqual({
+      changed: 1,
+      requests: [{ ifNoneMatch: '"etag-1"', url: IMAGE_URL }],
+      uploads: 1,
+    });
     const inserted = supabase.written("POST", "thumbnails")[0]?.body;
 
     expect(inserted).toMatchObject({ etag: '"etag-2"' });
-    expect(supabase.written("PATCH", "videos")).toEqual([
+    expect(supabase.written("PATCH", "videos")).toStrictEqual([
       expect.objectContaining({
         body: {
           thumbnail_id: (inserted as { id: string }).id,
@@ -295,11 +304,13 @@ describe("refreshYouTubeVideos and thumbnails", () => {
       }),
     ]);
     // The old thumbnail is left for the cleanup of unused thumbnails.
-    expect(supabase.written("POST", "rpc/touch_thumbnail")).toEqual([
+    expect(supabase.written("POST", "rpc/touch_thumbnail")).toStrictEqual([
       expect.objectContaining({ body: { p_thumbnail_id: "thumb-a" } }),
     ]);
-    expect(supabase.written("DELETE", "thumbnails")).toHaveLength(0);
-    expect(storage.removed).toHaveLength(0);
+    expect({
+      deletedThumbnails: supabase.written("DELETE", "thumbnails").length,
+      removedObjects: storage.removed.length,
+    }).toStrictEqual({ deletedThumbnails: 0, removedObjects: 0 });
   });
 
   it("also follows the thumbnail of a live video", async () => {
@@ -348,7 +359,9 @@ describe("refreshYouTubeVideos and thumbnails", () => {
     const changed = await refreshYouTubeVideos(createContext(fetcher), "live");
 
     expect(changed).toBe(0);
-    expect(requests).toEqual([{ ifNoneMatch: '"etag-1"', url: IMAGE_URL }]);
+    expect(requests).toStrictEqual([
+      { ifNoneMatch: '"etag-1"', url: IMAGE_URL },
+    ]);
     expect(storage.uploads).toHaveLength(0);
     expect(supabase.requests).toHaveLength(1);
   });
@@ -453,20 +466,19 @@ describe("refreshYouTubeVideos and thumbnails", () => {
     const changed = await refreshYouTubeVideos(createContext(fetcher), "live");
 
     expect(changed).toBe(1);
-    expect(reportError).toHaveBeenCalledOnce();
-    expect(reportError).toHaveBeenCalledWith(
+    expect(reportError).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
         message: expect.stringContaining("Failed to download an image"),
       }),
       { youtubeVideoId: "a" }
     );
-    expect(supabase.written("PATCH", "videos")).toEqual([
+    expect(supabase.written("PATCH", "videos")).toStrictEqual([
       expect.objectContaining({ query: { id: "eq.video-b" } }),
     ]);
   });
 });
 
-describe("removeUnavailableYouTubeVideos", () => {
+describe(removeUnavailableYouTubeVideos, () => {
   function createPage(from: number, size: number) {
     return Array.from({ length: size }, (_, i) => {
       const n = String(from + i).padStart(4, "0");
@@ -507,10 +519,12 @@ describe("removeUnavailableYouTubeVideos", () => {
       createContext(fetcher)
     );
 
-    expect(changed).toBe(0);
-    expect(cursors).toEqual([undefined, "gt.video-0999", "gt.video-1002"]);
+    expect({ changed, cursors }).toStrictEqual({
+      changed: 0,
+      cursors: [undefined, "gt.video-0999", "gt.video-1002"],
+    });
     expect(findMissingVideoIds).toHaveBeenCalledTimes(2);
-    expect(findMissingVideoIds.mock.calls[1]).toEqual([
+    expect(findMissingVideoIds.mock.calls[1]).toStrictEqual([
       ["yt-1000", "yt-1001", "yt-1002"],
     ]);
     expect(supabase.requests[0]?.query).toMatchObject({

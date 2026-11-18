@@ -10,7 +10,7 @@ const { submitContactForm } = vi.hoisted(() => ({
     >(),
 }));
 
-vi.mock("../_lib/actions", () => ({ submitContactForm }));
+vi.mock(import("../_lib/actions"), () => ({ submitContactForm }));
 
 import { ContactForm } from "./contact-form";
 
@@ -46,6 +46,17 @@ function getMessageTextarea() {
   return screen.getByLabelText(/お問い合わせ内容/) as HTMLTextAreaElement;
 }
 
+/** The values of the fields, with `email` undefined when it is not shown. */
+function getFormValues() {
+  return {
+    email: queryEmailInput()?.value,
+    message: getMessageTextarea().value,
+    name: getNameInput().value,
+    type: getTypeSelect().value,
+    wantsReply: getReplyCheckbox().checked,
+  };
+}
+
 function fillForm() {
   fireEvent.change(getTypeSelect(), { target: { value: "bug" } });
   fireEvent.change(getNameInput(), { target: { value: "山田花子" } });
@@ -64,7 +75,7 @@ async function submit(container: HTMLElement) {
   });
 }
 
-describe("ContactForm", () => {
+describe(ContactForm, () => {
   beforeEach(() => {
     submitContactForm.mockReset();
   });
@@ -78,11 +89,13 @@ describe("ContactForm", () => {
     await submit(container);
 
     expect(screen.getByText("送信中にエラーが発生しました。")).toBeVisible();
-    expect(getTypeSelect().value).toBe("bug");
-    expect(getNameInput().value).toBe("山田花子");
-    expect(getReplyCheckbox().checked).toBe(true);
-    expect(queryEmailInput()?.value).toBe("hanako@example.com");
-    expect(getMessageTextarea().value).toBe("動画が表示されません");
+    expect(getFormValues()).toStrictEqual({
+      email: "hanako@example.com",
+      message: "動画が表示されません",
+      name: "山田花子",
+      type: "bug",
+      wantsReply: true,
+    });
   });
 
   it("keeps the values changed after a failed submission", async () => {
@@ -98,7 +111,7 @@ describe("ContactForm", () => {
     await submit(container);
 
     expect(getTypeSelect().value).toBe("other");
-    expect(getReplyCheckbox().checked).toBe(false);
+    expect(getReplyCheckbox().checked).toBeFalsy();
     expect(queryEmailInput()).toBeNull();
     expect(getMessageTextarea().value).toBe("動画が表示されません");
   });
@@ -117,10 +130,13 @@ describe("ContactForm", () => {
     expect(
       screen.getByText("お問い合わせを受け付けました。ありがとうございます。")
     ).toBeVisible();
-    expect(getTypeSelect().value).toBe("");
-    expect(getNameInput().value).toBe("");
-    expect(getReplyCheckbox().checked).toBe(false);
     expect(queryEmailInput()).toBeNull();
-    expect(getMessageTextarea().value).toBe("");
+    expect(getFormValues()).toStrictEqual({
+      email: undefined,
+      message: "",
+      name: "",
+      type: "",
+      wantsReply: false,
+    });
   });
 });

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { getVideoKind } from "./get-video-kind.js";
 
-describe("getVideoKind", () => {
+describe(getVideoKind, () => {
   describe("short videos", () => {
     it("should classify video as short when duration is exactly 180 seconds", () => {
       const video: youtube.Schema$Video = {

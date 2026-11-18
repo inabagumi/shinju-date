@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { createEntityNameFromMessage } from "./create-entity-name-from-message";
 
-describe("createEntityNameFromMessage", () => {
+describe(createEntityNameFromMessage, () => {
   it("returns a message of up to 40 characters as it is", () => {
     const message = "あ".repeat(40);
 
@@ -25,6 +25,6 @@ describe("createEntityNameFromMessage", () => {
     const name = createEntityNameFromMessage(`${"a".repeat(39)}😀😀`);
 
     expect(name).toBe(`${"a".repeat(39)}😀`);
-    expect(name.isWellFormed()).toBe(true);
+    expect(name.isWellFormed()).toBeTruthy();
   });
 });

@@ -1,20 +1,29 @@
+import type { syncYouTubeChannelIcon } from "@shinju-date/scraper/youtube";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { TypedSupabaseClient } from "@/lib/supabase";
 
 import {
   hasProfileImageChanged,
   syncYouTubeChannelIconSafely,
 } from "./youtube-channel-icon";
 
-vi.mock("@/lib/supabase/admin", () => ({
-  getSupabaseAdminClient: () => ({ kind: "service-role" }),
+vi.mock(import("@/lib/supabase/admin"), () => ({
+  // A stand-in that only tells the service role client apart
+  getSupabaseAdminClient: () =>
+    ({
+      kind: "service-role",
+    }) as Partial<TypedSupabaseClient> as TypedSupabaseClient,
 }));
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: { warn: vi.fn() },
-}));
+vi.mock(import("@shinju-date/logger"), async () => {
+  const { createMockLogger } = await import("@/test/logger");
 
-vi.mock("@shinju-date/scraper/youtube", () => ({
-  syncYouTubeChannelIcon: vi.fn(),
+  return { logger: createMockLogger() };
+});
+
+vi.mock(import("@shinju-date/scraper/youtube"), () => ({
+  syncYouTubeChannelIcon: vi.fn<typeof syncYouTubeChannelIcon>(),
 }));
 
 const channel = {
@@ -31,7 +40,7 @@ const saved = {
   youtube_channel_id: "UCabcdefghijklmnopqrstuv",
 };
 
-describe("syncYouTubeChannelIconSafely", () => {
+describe(syncYouTubeChannelIconSafely, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -74,12 +83,12 @@ describe("syncYouTubeChannelIconSafely", () => {
   });
 });
 
-describe("hasProfileImageChanged", () => {
+describe(hasProfileImageChanged, () => {
   it("is true only when the icon was written", () => {
-    expect(hasProfileImageChanged("created")).toBe(true);
-    expect(hasProfileImageChanged("replaced")).toBe(true);
-    expect(hasProfileImageChanged("removed")).toBe(true);
-    expect(hasProfileImageChanged("unchanged")).toBe(false);
-    expect(hasProfileImageChanged(null)).toBe(false);
+    expect(hasProfileImageChanged("created")).toBeTruthy();
+    expect(hasProfileImageChanged("replaced")).toBeTruthy();
+    expect(hasProfileImageChanged("removed")).toBeTruthy();
+    expect(hasProfileImageChanged("unchanged")).toBeFalsy();
+    expect(hasProfileImageChanged(null)).toBeFalsy();
   });
 });

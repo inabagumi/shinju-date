@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { FormStatus } from "./form-status";
 
-describe("FormStatus", () => {
+describe(FormStatus, () => {
   it("shows the success message as a status", () => {
     render(
       <FormStatus state={{ message: "受け付けました。", success: true }} />

@@ -11,14 +11,14 @@ import {
 const date = (value: string) => Temporal.PlainDate.from(value);
 const today = date("2026-11-14");
 
-describe("formatWeekday", () => {
+describe(formatWeekday, () => {
   it("should name the weekday with a letter", () => {
     expect(formatWeekday(date("2026-11-09"))).toBe("月");
     expect(formatWeekday(date("2026-11-15"))).toBe("日");
   });
 });
 
-describe("formatShortDate", () => {
+describe(formatShortDate, () => {
   it("should write the month, the day and the weekday", () => {
     expect(formatShortDate(date("2026-11-09"))).toBe("11/09（月）");
     expect(formatShortDate(date("2026-11-15"))).toBe("11/15（日）");
@@ -31,7 +31,7 @@ describe("formatShortDate", () => {
   });
 });
 
-describe("formatLongDate", () => {
+describe(formatLongDate, () => {
   it("should write the month and the day", () => {
     expect(formatLongDate(date("2026-11-08"))).toBe("11月8日");
   });
@@ -52,7 +52,7 @@ describe("formatLongDate", () => {
   });
 });
 
-describe("formatRelativeDate", () => {
+describe(formatRelativeDate, () => {
   it("should name today and tomorrow", () => {
     for (const style of ["long", "short"] as const) {
       expect(formatRelativeDate(today, today, { style })).toBe("今日");

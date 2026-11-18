@@ -27,7 +27,7 @@ function renderTable() {
   );
 }
 
-describe("Table", () => {
+describe(Table, () => {
   it("scrolls horizontally inside the bordered container", () => {
     renderTable();
 

@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { analyticsSearchParamsSchema } from "../../../(dashboard)/analytics/_lib/search-params-schema";
 import { exportSearchParamsSchema } from "./schema";
 
-describe("exportSearchParamsSchema", () => {
+describe("exportSearchParamsSchema.safeParse", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(
@@ -15,7 +15,7 @@ describe("exportSearchParamsSchema", () => {
   it("exports the range of from and to", () => {
     expect(
       exportSearchParamsSchema.parse({ from: "2026-11-03", to: "2026-11-10" })
-    ).toEqual({
+    ).toStrictEqual({
       limit: 50,
       range: { end: "2026-11-10", start: "2026-11-03" },
       selectedDate: null,
@@ -29,7 +29,7 @@ describe("exportSearchParamsSchema", () => {
         from: "2026-11-03",
         to: "2026-11-10",
       })
-    ).toEqual({
+    ).toStrictEqual({
       limit: 50,
       range: { end: "2026-11-05", start: "2026-11-05" },
       selectedDate: "2026-11-05",
@@ -37,7 +37,9 @@ describe("exportSearchParamsSchema", () => {
   });
 
   it("exports a single day when only from is given", () => {
-    expect(exportSearchParamsSchema.parse({ from: "2026-11-03" })).toEqual({
+    expect(
+      exportSearchParamsSchema.parse({ from: "2026-11-03" })
+    ).toStrictEqual({
       limit: 50,
       range: { end: "2026-11-03", start: "2026-11-03" },
       selectedDate: "2026-11-03",
@@ -45,7 +47,7 @@ describe("exportSearchParamsSchema", () => {
   });
 
   it("exports a single day when only to is given", () => {
-    expect(exportSearchParamsSchema.parse({ to: "2026-11-03" })).toEqual({
+    expect(exportSearchParamsSchema.parse({ to: "2026-11-03" })).toStrictEqual({
       limit: 50,
       range: { end: "2026-11-03", start: "2026-11-03" },
       selectedDate: "2026-11-03",
@@ -55,7 +57,7 @@ describe("exportSearchParamsSchema", () => {
   it("treats an empty date like a missing one", () => {
     expect(
       exportSearchParamsSchema.parse({ from: "", to: "2026-11-03" })
-    ).toEqual({
+    ).toStrictEqual({
       limit: 50,
       range: { end: "2026-11-03", start: "2026-11-03" },
       selectedDate: "2026-11-03",
@@ -70,7 +72,7 @@ describe("exportSearchParamsSchema", () => {
   });
 
   it("rejects a request without a date", () => {
-    expect(exportSearchParamsSchema.safeParse({}).success).toBe(false);
+    expect(exportSearchParamsSchema.safeParse({}).success).toBeFalsy();
   });
 
   it.each([
@@ -78,7 +80,7 @@ describe("exportSearchParamsSchema", () => {
     ["is before the window", "2026-08-16"],
     ["is not YYYY-MM-DD", "20261110"],
   ])("rejects a date that %s", (_, date) => {
-    expect(exportSearchParamsSchema.safeParse({ date }).success).toBe(false);
+    expect(exportSearchParamsSchema.safeParse({ date }).success).toBeFalsy();
   });
 
   it.each([
@@ -89,7 +91,7 @@ describe("exportSearchParamsSchema", () => {
   ])("rejects %s outside the window instead of ignoring it", (key, params) => {
     const result = exportSearchParamsSchema.safeParse(params);
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBeFalsy();
     expect(result.error?.issues.map((issue) => issue.path)).toContainEqual([
       key,
     ]);
@@ -101,7 +103,7 @@ describe("exportSearchParamsSchema", () => {
       to: "2026-11-03",
     });
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBeFalsy();
     expect(result.error?.issues.map((issue) => issue.message)).toContain(
       "Start date must be before or equal to end date"
     );
@@ -115,7 +117,7 @@ describe("exportSearchParamsSchema", () => {
         from: "2026-08-16",
         to: "2026-11-14",
       }).success
-    ).toBe(false);
+    ).toBeFalsy();
   });
 
   describe("compared with the schema of the analytics pages", () => {

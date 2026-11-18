@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import LiveBadge from "./live-badge";
 
-describe("LiveBadge", () => {
+describe(LiveBadge, () => {
   it("should render the badge", () => {
     render(<LiveBadge />);
 

@@ -1,10 +1,14 @@
+import type * as WebCache from "@shinju-date/web-cache";
+import type { Redis } from "@upstash/redis";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const set = vi.fn();
-const revalidateTags = vi.fn();
+const set = vi.fn<Redis["set"]>();
+const revalidateTags = vi.fn<typeof WebCache.revalidateTags>();
 
-vi.mock("./redis", () => ({ redisClient: { set } }));
-vi.mock("@shinju-date/web-cache", () => ({ revalidateTags }));
+vi.mock(import("./redis"), () => ({
+  redisClient: { set } as Partial<Redis> as Redis,
+}));
+vi.mock(import("@shinju-date/web-cache"), () => ({ revalidateTags }));
 
 const { finishVideoSync } = await import("./video-sync");
 

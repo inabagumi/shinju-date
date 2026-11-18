@@ -1,11 +1,13 @@
 import { HttpResponse, http } from "msw";
 import { describe, expect, it, vi } from "vitest";
 
+import type { Logger } from "./internal/logger.js";
 import { postgresError, setupSupabase } from "./internal/testing/supabase.js";
 import { Scraper } from "./scraper.js";
 import type {
   AddPastVideosResult,
   CrawlContext,
+  ErrorReporter,
   RefreshVideoResult,
   ScraperOptions,
   SyncAccountResult,
@@ -63,7 +65,7 @@ class ExampleScraper extends Scraper {
   }
 }
 
-describe("Scraper", () => {
+describe(Scraper, () => {
   it("hands crawl operations what they need for a run", async () => {
     const now = Temporal.Instant.from("2024-05-01T12:00:00Z");
     const scraper = new ExampleScraper();
@@ -89,7 +91,7 @@ describe("Scraper", () => {
   });
 
   it("passes failures that do not stop a run to onError", async () => {
-    const onError = vi.fn();
+    const onError = vi.fn<ErrorReporter>();
     const scraper = new ExampleScraper({ onError });
 
     await scraper.refreshLiveVideos();
@@ -102,10 +104,10 @@ describe("Scraper", () => {
 
   it("logs such failures when no onError is given", async () => {
     const logger = {
-      debug: vi.fn(),
-      error: vi.fn(),
-      info: vi.fn(),
-      warn: vi.fn(),
+      debug: vi.fn<Logger["debug"]>(),
+      error: vi.fn<Logger["error"]>(),
+      info: vi.fn<Logger["info"]>(),
+      warn: vi.fn<Logger["warn"]>(),
     };
     const scraper = new ExampleScraper({ logger });
 
@@ -121,7 +123,7 @@ describe("Scraper", () => {
   it("works without a logger", async () => {
     const scraper = new ExampleScraper();
 
-    await expect(scraper.refreshLiveVideos()).resolves.toBe(false);
+    await expect(scraper.refreshLiveVideos()).resolves.toBeFalsy();
   });
 });
 
@@ -150,7 +152,7 @@ describe("Scraper#cleanUpImages", () => {
   }
 
   function createScraper() {
-    const onError = vi.fn();
+    const onError = vi.fn<ErrorReporter>();
     const scraper = new ExampleScraper({
       onError,
       supabaseClient: supabase.supabaseClient,
@@ -178,7 +180,7 @@ describe("Scraper#cleanUpImages", () => {
     expect(supabase.written("GET", "profile_images")[0]?.query).toMatchObject({
       created_at: "lt.2024-05-08T11:00:00Z",
     });
-    expect(removed).toEqual({
+    expect(removed).toStrictEqual({
       "profile-images": ["twitch/1/a.webp"],
       thumbnails: ["vod-1/a.jpg"],
     });
@@ -195,14 +197,13 @@ describe("Scraper#cleanUpImages", () => {
 
     await expect(scraper.cleanUpImages(now)).resolves.toBeUndefined();
 
-    expect(onError).toHaveBeenCalledOnce();
-    expect(onError).toHaveBeenCalledWith(
+    expect(onError).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
         message: expect.stringContaining("Failed to list unused thumbnails"),
       }),
       { operation: "removeUnusedThumbnails" }
     );
-    expect(removed).toEqual({ "profile-images": ["twitch/1/a.webp"] });
+    expect(removed).toStrictEqual({ "profile-images": ["twitch/1/a.webp"] });
   });
 
   it("never rejects, even when nothing can be cleaned up", async () => {
@@ -211,7 +212,7 @@ describe("Scraper#cleanUpImages", () => {
 
     await expect(scraper.cleanUpImages(now)).resolves.toBeUndefined();
 
-    expect(onError.mock.calls.map(([, context]) => context)).toEqual([
+    expect(onError.mock.calls.map(([, context]) => context)).toStrictEqual([
       { operation: "removeUnusedThumbnails" },
       { operation: "removeUnusedProfileImages" },
     ]);

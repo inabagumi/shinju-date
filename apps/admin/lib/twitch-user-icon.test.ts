@@ -1,17 +1,26 @@
+import type { syncTwitchUserIcon } from "@shinju-date/scraper/twitch";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { TypedSupabaseClient } from "@/lib/supabase";
 
 import { syncTwitchUserIconSafely } from "./twitch-user-icon";
 
-vi.mock("@/lib/supabase/admin", () => ({
-  getSupabaseAdminClient: () => ({ kind: "service-role" }),
+vi.mock(import("@/lib/supabase/admin"), () => ({
+  // A stand-in that only tells the service role client apart
+  getSupabaseAdminClient: () =>
+    ({
+      kind: "service-role",
+    }) as Partial<TypedSupabaseClient> as TypedSupabaseClient,
 }));
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: { warn: vi.fn() },
-}));
+vi.mock(import("@shinju-date/logger"), async () => {
+  const { createMockLogger } = await import("@/test/logger");
 
-vi.mock("@shinju-date/scraper/twitch", () => ({
-  syncTwitchUserIcon: vi.fn(),
+  return { logger: createMockLogger() };
+});
+
+vi.mock(import("@shinju-date/scraper/twitch"), () => ({
+  syncTwitchUserIcon: vi.fn<typeof syncTwitchUserIcon>(),
 }));
 
 const user = {
@@ -24,7 +33,7 @@ const saved = {
   twitch_user_id: "141981764",
 };
 
-describe("syncTwitchUserIconSafely", () => {
+describe(syncTwitchUserIconSafely, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

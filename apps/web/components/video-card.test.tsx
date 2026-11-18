@@ -73,7 +73,7 @@ function getCreator() {
   return screen.getByTestId("video-creator");
 }
 
-describe("VideoCard", () => {
+describe(VideoCard, () => {
   it("should show the icon and name of the YouTube channel", () => {
     render(
       <VideoCard
@@ -320,38 +320,45 @@ describe("VideoCard", () => {
     expect(badge).toHaveClass("top-0", "left-0", "bg-live");
   });
 
-  it.each([
-    ["grid", true],
-    ["row", true],
-    ["short", false],
-  ] as const)(
-    "should show the short badge on the %s variant: %s",
-    (variant, expected) => {
-      const video = createYouTubeVideo();
-      const { rerender } = render(
-        <VideoCard value={video} variant={variant} />
-      );
+  it.each(["grid", "row", "short"] as const)(
+    "should not show the short badge of a standard video on the %s variant",
+    (variant) => {
+      render(<VideoCard value={createYouTubeVideo()} variant={variant} />);
 
       expect(screen.queryByText("ショート")).not.toBeInTheDocument();
+    }
+  );
 
-      rerender(
+  it.each(["grid", "row"] as const)(
+    "should show the short badge on the %s variant",
+    (variant) => {
+      render(
         <VideoCard
-          value={{ ...video, video_kind: "short" }}
+          value={{ ...createYouTubeVideo(), video_kind: "short" }}
           variant={variant}
         />
       );
 
-      const badge = within(
-        screen.getByTestId("video-card-thumbnail")
-      ).queryByText("ショート");
-
-      if (expected) {
-        expect(badge).toHaveClass("bottom-0", "left-0");
-      } else {
-        expect(badge).not.toBeInTheDocument();
-      }
+      expect(
+        within(screen.getByTestId("video-card-thumbnail")).queryByText(
+          "ショート"
+        )
+      ).toHaveClass("bottom-0", "left-0");
     }
   );
+
+  it("should not show the short badge on the short variant", () => {
+    render(
+      <VideoCard
+        value={{ ...createYouTubeVideo(), video_kind: "short" }}
+        variant="short"
+      />
+    );
+
+    expect(
+      within(screen.getByTestId("video-card-thumbnail")).queryByText("ショート")
+    ).not.toBeInTheDocument();
+  });
 
   it("should label the start time of upcoming videos only when asked", () => {
     const video = { ...createYouTubeVideo(), status: "UPCOMING" as const };
@@ -370,19 +377,20 @@ describe("VideoCard", () => {
     expect(screen.queryByText("予定")).not.toBeInTheDocument();
   });
 
-  it.each([
-    ["Twitch", createTwitchVideo(), true],
-    ["YouTube", createYouTubeVideo(), false],
-  ])("should show the platform badge for %s: %s", (name, video, expected) => {
-    render(<VideoCard value={video} />);
+  it("should show the platform badge for Twitch", () => {
+    render(<VideoCard value={createTwitchVideo()} />);
 
-    const thumbnail = screen.getByTestId("video-card-thumbnail");
+    expect(
+      within(screen.getByTestId("video-card-thumbnail")).getByText("Twitch")
+    ).toHaveClass("top-0", "right-0");
+  });
 
-    if (expected) {
-      expect(within(thumbnail).getByText(name)).toHaveClass("top-0", "right-0");
-    } else {
-      expect(within(thumbnail).queryByText(name)).not.toBeInTheDocument();
-    }
+  it("should not show the platform badge for YouTube", () => {
+    render(<VideoCard value={createYouTubeVideo()} />);
+
+    expect(
+      within(screen.getByTestId("video-card-thumbnail")).queryByText("YouTube")
+    ).not.toBeInTheDocument();
   });
 
   it("should show a focus ring around the whole card", () => {
@@ -491,7 +499,7 @@ describe("VideoCard", () => {
   });
 });
 
-describe("VideoCardSkeleton", () => {
+describe(VideoCardSkeleton, () => {
   it.each([
     ["grid", ["flex-col"], "aspect-video"],
     ["row", ["flex-row", "sm:flex-col"], "w-2/5"],

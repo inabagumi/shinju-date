@@ -40,7 +40,7 @@ function submit() {
   fireEvent.click(screen.getByRole("button", { name: "保存" }));
 }
 
-describe("Form", () => {
+describe(Form, () => {
   it("shows `error` of the state at the top of the form", async () => {
     renderForm(() => ({ error: "保存に失敗しました。" }));
 
@@ -131,7 +131,8 @@ describe("Form after a failed submission", () => {
     );
   }
 
-  it("keeps the select, the checkbox and uncontrolled inputs", async () => {
+  /** Fills the fields and submits them to an action that rejects them. */
+  function fillAndSubmit() {
     const action = vi.fn<
       (currentState: FormState, formData: FormData) => FormState
     >(() => ({ errors: { level: ["レベルが正しくありません。"] } }));
@@ -146,12 +147,24 @@ describe("Form after a failed submission", () => {
     });
     submit();
 
+    return action;
+  }
+
+  it("keeps the select, the checkbox and uncontrolled inputs", async () => {
+    fillAndSubmit();
+
     await expect(screen.findByRole("alert")).resolves.toHaveTextContent(
       "レベルが正しくありません。"
     );
     expect(screen.getByLabelText("レベル")).toHaveValue("alert");
     expect(screen.getByLabelText("有効化")).toBeChecked();
     expect(screen.getByLabelText("メモ")).toHaveValue("メモの内容");
+  });
+
+  it("sends the kept values when submitted again", async () => {
+    const action = fillAndSubmit();
+
+    await screen.findByRole("alert");
 
     // そのまま送り直すと、選んだ内容が送られる
     submit();
@@ -203,7 +216,7 @@ describe("Form after a failed submission", () => {
   });
 });
 
-describe("ErrorMessage", () => {
+describe(ErrorMessage, () => {
   it("shows the error of a field next to the field", async () => {
     renderForm(() => ({
       errors: { email: ["メールアドレスを入力してください。"] },
@@ -221,7 +234,7 @@ describe("ErrorMessage", () => {
   });
 });
 
-describe("Checkbox", () => {
+describe(Checkbox, () => {
   function renderCheckboxForm(
     action: (
       currentState: FormState,
@@ -310,7 +323,7 @@ describe("Checkbox", () => {
   });
 });
 
-describe("SubmitButton", () => {
+describe(SubmitButton, () => {
   it("submits the form by default", () => {
     render(
       <form>
@@ -325,7 +338,7 @@ describe("SubmitButton", () => {
   });
 });
 
-describe("Label", () => {
+describe(Label, () => {
   it("has the default classes", () => {
     render(
       <FormField name="email">

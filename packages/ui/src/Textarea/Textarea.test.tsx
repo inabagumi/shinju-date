@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { Input } from "../Input/Input";
 import { Textarea } from "./Textarea";
 
-describe("Textarea", () => {
+describe(Textarea, () => {
   it("lets the user type multiple lines", async () => {
     const user = userEvent.setup();
 

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { ErrorReporter } from "../../types.js";
 import { BACKFILL_SAVE_CONCURRENCY } from "../constants.js";
 import { YOUTUBE_CHANNELS } from "../database/index.js";
 import { AccountNotFoundError, StalledPaginationError } from "../errors.js";
@@ -11,7 +12,7 @@ import type { PastVideoAdapter, PastVideoPage } from "./add-past-videos.js";
 const supabase = setupSupabase();
 const context = createTestContext({
   fetcher: null,
-  reportError: vi.fn(),
+  reportError: vi.fn<ErrorReporter>(),
   supabaseClient: supabase.supabaseClient,
 });
 
@@ -28,16 +29,14 @@ const account = {
   talentId: "talent-1",
 };
 
+type FakeAdapter = PastVideoAdapter<null, string>;
+
 function createAdapter(page: PastVideoPage<string> | null) {
-  const getPage = vi.fn(async () => page);
-  const saveNew = vi.fn(
-    async (
-      _context: unknown,
-      _account: unknown,
-      listed: readonly string[]
-    ): Promise<number> => listed.length - 1
+  const getPage = vi.fn<FakeAdapter["getPage"]>(async () => page);
+  const saveNew = vi.fn<FakeAdapter["saveNew"]>(
+    async (_context, _account, listed) => listed.length - 1
   );
-  const adapter: PastVideoAdapter<null, string> = {
+  const adapter: FakeAdapter = {
     accountTable: YOUTUBE_CHANNELS,
     getPage,
     saveNew,
@@ -46,7 +45,7 @@ function createAdapter(page: PastVideoPage<string> | null) {
   return { adapter, getPage, saveNew };
 }
 
-describe("addPastVideosWith", () => {
+describe(addPastVideosWith, () => {
   beforeEach(() => {
     supabase.respondWith({ "GET youtube_channels": [channelRow] });
   });
@@ -62,7 +61,7 @@ describe("addPastVideosWith", () => {
         accountId: "channel-row-1",
         cursor: "page-2",
       })
-    ).resolves.toEqual({ added: 2, cursor: "page-3", listed: 3 });
+    ).resolves.toStrictEqual({ added: 2, cursor: "page-3", listed: 3 });
 
     expect(getPage).toHaveBeenCalledWith(context, account, "page-2");
     expect(saveNew).toHaveBeenCalledWith(
@@ -87,7 +86,7 @@ describe("addPastVideosWith", () => {
 
     await expect(
       addPastVideosWith(context, adapter, { accountId: "channel-row-1" })
-    ).resolves.toEqual({ added: 1, cursor: null, listed: 2 });
+    ).resolves.toStrictEqual({ added: 1, cursor: null, listed: 2 });
 
     expect(getPage).toHaveBeenCalledWith(context, account, undefined);
     expect(saveNew).toHaveBeenCalledWith(

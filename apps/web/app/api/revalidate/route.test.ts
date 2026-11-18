@@ -1,30 +1,34 @@
 // @vitest-environment node
 import { CACHE_TAGS } from "@shinju-date/constants";
+import type { logger } from "@shinju-date/logger";
+import type { revalidateTag } from "next/cache";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  revalidateTag: vi.fn(),
+  revalidateTag: vi.fn<typeof revalidateTag>(),
   serverEnv: {
     REVALIDATE_SECRET_TOKEN: undefined as string | undefined,
   },
 }));
 
-vi.mock("next/cache", () => ({
+vi.mock(import("next/cache"), () => ({
   revalidateTag: mocks.revalidateTag,
 }));
 
-vi.mock("@/lib/env", () => ({
-  serverEnv: mocks.serverEnv,
+vi.mock(import("@/lib/env"), () => ({
+  serverEnv: mocks.serverEnv as Partial<ServerEnv> as ServerEnv,
 }));
 
-vi.mock("@shinju-date/logger", () => ({
+vi.mock(import("@shinju-date/logger"), () => ({
   logger: {
-    debug: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
+    debug: vi.fn<typeof logger.debug>(),
+    error: vi.fn<typeof logger.error>(),
+    info: vi.fn<typeof logger.info>(),
+    warn: vi.fn<typeof logger.warn>(),
   },
 }));
+
+import type { ServerEnv } from "@/lib/env";
 
 import { POST } from "./route";
 

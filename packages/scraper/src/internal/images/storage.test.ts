@@ -24,7 +24,7 @@ function storageError(): Response {
   );
 }
 
-describe("storeImage", () => {
+describe(storeImage, () => {
   it("uploads the image to a new path, cached for a year", async () => {
     const storage = mockStorage(supabase, BUCKET);
 
@@ -35,7 +35,7 @@ describe("storeImage", () => {
       path: image.path,
     });
 
-    expect(storage.uploads).toEqual([
+    expect(storage.uploads).toStrictEqual([
       {
         body: Buffer.from([1, 2, 3]),
         contentType: "image/webp",
@@ -83,7 +83,7 @@ describe("storeImage", () => {
   });
 });
 
-describe("removeStoredImages", () => {
+describe(removeStoredImages, () => {
   it("removes the images in one request", async () => {
     const storage = mockStorage(supabase, BUCKET);
 
@@ -92,7 +92,7 @@ describe("removeStoredImages", () => {
       paths: ["a/1.jpg", "b/2.jpg"],
     });
 
-    expect(storage.removed).toEqual([["a/1.jpg", "b/2.jpg"]]);
+    expect(storage.removed).toStrictEqual([["a/1.jpg", "b/2.jpg"]]);
   });
 
   it("throws StorageError when the images cannot be removed", async () => {
@@ -110,7 +110,7 @@ describe("removeStoredImages", () => {
   });
 });
 
-describe("removeImage", () => {
+describe(removeImage, () => {
   it("deletes the row, then the stored image", async () => {
     const storage = mockStorage(supabase, BUCKET);
     supabase.respond(() => []);
@@ -121,11 +121,11 @@ describe("removeImage", () => {
         image,
         table: "thumbnails",
       })
-    ).resolves.toBe(true);
+    ).resolves.toBeTruthy();
     expect(supabase.written("DELETE", "thumbnails")[0]?.query["id"]).toBe(
       "eq.image-1"
     );
-    expect(storage.removed).toEqual([[image.path]]);
+    expect(storage.removed).toStrictEqual([[image.path]]);
   });
 
   it("keeps an image that is still used", async () => {
@@ -140,7 +140,7 @@ describe("removeImage", () => {
         image,
         table: "profile_images",
       })
-    ).resolves.toBe(false);
+    ).resolves.toBeFalsy();
     expect(storage.removed).toHaveLength(0);
   });
 

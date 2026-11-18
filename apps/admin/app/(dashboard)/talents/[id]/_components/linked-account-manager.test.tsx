@@ -10,19 +10,28 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ActionToastProvider } from "@/components/action-toast";
 
+import type {
+  addYouTubeChannelAction,
+  removeYouTubeChannelAction,
+} from "../../_actions/channels";
+import type {
+  addTwitchUserAction,
+  removeTwitchUserAction,
+} from "../../_actions/twitch-users";
+
 const mocks = vi.hoisted(() => ({
-  addTwitchUserAction: vi.fn(),
-  addYouTubeChannelAction: vi.fn(),
-  removeTwitchUserAction: vi.fn(),
-  removeYouTubeChannelAction: vi.fn(),
+  addTwitchUserAction: vi.fn<typeof addTwitchUserAction>(),
+  addYouTubeChannelAction: vi.fn<typeof addYouTubeChannelAction>(),
+  removeTwitchUserAction: vi.fn<typeof removeTwitchUserAction>(),
+  removeYouTubeChannelAction: vi.fn<typeof removeYouTubeChannelAction>(),
 }));
 
-vi.mock("../../_actions/channels", () => ({
+vi.mock(import("../../_actions/channels"), () => ({
   addYouTubeChannelAction: mocks.addYouTubeChannelAction,
   removeYouTubeChannelAction: mocks.removeYouTubeChannelAction,
 }));
 
-vi.mock("../../_actions/twitch-users", () => ({
+vi.mock(import("../../_actions/twitch-users"), () => ({
   addTwitchUserAction: mocks.addTwitchUserAction,
   removeTwitchUserAction: mocks.removeTwitchUserAction,
 }));

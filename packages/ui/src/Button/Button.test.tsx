@@ -17,7 +17,7 @@ const BASE_CLASSES = [
   "disabled:opacity-50",
 ];
 
-describe("Button", () => {
+describe(Button, () => {
   it("renders a primary, medium button by default", () => {
     render(<Button>保存</Button>);
 
@@ -71,7 +71,7 @@ describe("Button", () => {
 
   it("calls onClick when clicked", async () => {
     const user = userEvent.setup();
-    const onClick = vi.fn();
+    const onClick = vi.fn<() => void>();
 
     render(<Button onClick={onClick}>保存</Button>);
 
@@ -82,7 +82,7 @@ describe("Button", () => {
 
   it("does not call onClick while disabled", async () => {
     const user = userEvent.setup();
-    const onClick = vi.fn();
+    const onClick = vi.fn<() => void>();
 
     render(
       <Button disabled onClick={onClick}>

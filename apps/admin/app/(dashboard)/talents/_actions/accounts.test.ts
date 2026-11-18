@@ -16,23 +16,27 @@ import {
 } from "./channels";
 import { addTwitchUserAction, removeTwitchUserAction } from "./twitch-users";
 
-vi.mock("@shinju-date/youtube-api-client", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@shinju-date/youtube-api-client")>()),
-  resolveYouTubeChannel: vi.fn(),
+vi.mock(import("@shinju-date/youtube-api-client"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  resolveYouTubeChannel: vi.fn<typeof resolveYouTubeChannel>(),
 }));
 
-vi.mock("@shinju-date/twitch-api-client", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@shinju-date/twitch-api-client")>()),
-  resolveTwitchUser: vi.fn(),
+vi.mock(import("@shinju-date/twitch-api-client"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  resolveTwitchUser: vi.fn<typeof resolveTwitchUser>(),
 }));
 
 // アイコンの同期は service role を使うため、ここではモックして呼び出し内容だけを確認する
-vi.mock("@/lib/youtube-channel-icon", () => ({
-  syncYouTubeChannelIconSafely: vi.fn().mockResolvedValue("unchanged"),
+vi.mock(import("@/lib/youtube-channel-icon"), () => ({
+  syncYouTubeChannelIconSafely: vi
+    .fn<typeof syncYouTubeChannelIconSafely>()
+    .mockResolvedValue("unchanged"),
 }));
 
-vi.mock("@/lib/twitch-user-icon", () => ({
-  syncTwitchUserIconSafely: vi.fn().mockResolvedValue("unchanged"),
+vi.mock(import("@/lib/twitch-user-icon"), () => ({
+  syncTwitchUserIconSafely: vi
+    .fn<typeof syncTwitchUserIconSafely>()
+    .mockResolvedValue("unchanged"),
 }));
 
 const test = setupActionTest();
@@ -245,7 +249,7 @@ function talentTouches() {
 /** Asserts that the `updated_at` of the talent was moved forward. */
 function expectTalentTouched(): void {
   expect(talentTouches()).toHaveLength(1);
-  expect(talentTouches()[0]?.body).toEqual({ p_talent_id: talentId });
+  expect(talentTouches()[0]?.body).toStrictEqual({ p_talent_id: talentId });
 }
 
 /** Asserts that nothing that follows a change was done. */
@@ -308,11 +312,11 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
       const result = await addValidAccount();
 
-      expect(result).toEqual({ success: true });
-      expect(insertedRows()).toEqual([row]);
+      expect(result).toStrictEqual({ success: true });
+      expect(insertedRows()).toStrictEqual([row]);
       expect(
         supabase.calls("insert", table)[0]?.query["select"]?.split(",").sort()
-      ).toEqual([...accountSelect].sort());
+      ).toStrictEqual([...accountSelect].sort());
       expectTalentTouched();
       test.expectAuditLog(platformCase.linkAuditAction, talentId, auditDetails);
       test.expectRevalidated({
@@ -331,9 +335,9 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
           talent_id: talentId,
         });
 
-        expect(result).toEqual({ success: true });
+        expect(result).toStrictEqual({ success: true });
         expect(platformCase.resolve).toHaveBeenCalledWith(identifier);
-        expect(insertedRows()).toEqual([row]);
+        expect(insertedRows()).toStrictEqual([row]);
       }
     );
 
@@ -356,7 +360,7 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
       const result = await addValidAccount();
 
-      expect(result).toEqual({ success: true });
+      expect(result).toStrictEqual({ success: true });
       expect(platformCase.syncIcon).toHaveBeenCalledWith(platformCase.remote, {
         id: accountId,
         profile_images: null,
@@ -374,7 +378,7 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
       const result = await addValidAccount();
 
-      expect(result).toEqual({ success: true });
+      expect(result).toStrictEqual({ success: true });
       expect(test.logger.error).toHaveBeenCalledWith(
         "タレントの更新日時の更新に失敗しました",
         expect.objectContaining({ talentId })
@@ -385,7 +389,7 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
     it("should return an error when the talent ID is missing", async () => {
       const result = await addAccount({ [field]: validInput });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         errors: { generic: ["タレントIDが指定されていません。"] },
       });
       expect(platformCase.resolve).not.toHaveBeenCalled();
@@ -394,7 +398,9 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
     it("should return an error on the field when the input is empty", async () => {
       const result = await addAccount({ [field]: "", talent_id: talentId });
 
-      expect(result).toEqual({ errors: { [field]: [messages.inputRequired] } });
+      expect(result).toStrictEqual({
+        errors: { [field]: [messages.inputRequired] },
+      });
       expect(platformCase.resolve).not.toHaveBeenCalled();
     });
 
@@ -402,7 +408,9 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
       // どちらのプラットフォームでも、ID、ハンドル、ログイン名として短すぎる
       const result = await addAccount({ [field]: "ab", talent_id: talentId });
 
-      expect(result).toEqual({ errors: { [field]: [messages.inputInvalid] } });
+      expect(result).toStrictEqual({
+        errors: { [field]: [messages.inputInvalid] },
+      });
       expect(platformCase.resolve).not.toHaveBeenCalled();
     });
 
@@ -411,7 +419,9 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
       const result = await addValidAccount();
 
-      expect(result).toEqual({ errors: { [field]: [messages.notFound] } });
+      expect(result).toStrictEqual({
+        errors: { [field]: [messages.notFound] },
+      });
       expect(supabase.requests).toHaveLength(0);
     });
 
@@ -422,7 +432,7 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
       const result = await addValidAccount();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         errors: { generic: [messages.credentialsMissing] },
       });
       expect(test.logger.error).not.toHaveBeenCalled();
@@ -435,7 +445,9 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
       const result = await addValidAccount();
 
-      expect(result).toEqual({ errors: { generic: [messages.apiFailed] } });
+      expect(result).toStrictEqual({
+        errors: { generic: [messages.apiFailed] },
+      });
       expect(test.logger.error).toHaveBeenCalledWith(
         "アカウントを解決する API の呼び出しに失敗しました",
         { error: apiError, platform: platformCase.platform }
@@ -461,7 +473,7 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
         const result = await addValidAccount();
 
-        expect(result).toEqual({ errors: { [field]: [message] } });
+        expect(result).toStrictEqual({ errors: { [field]: [message] } });
         expect(insertedRows()).toHaveLength(0);
         expect(platformCase.syncIcon).not.toHaveBeenCalled();
         expectNothingCompleted();
@@ -480,7 +492,9 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
       const result = await addValidAccount();
 
-      expect(result).toEqual({ errors: { [field]: [messages.alreadyLinked] } });
+      expect(result).toStrictEqual({
+        errors: { [field]: [messages.alreadyLinked] },
+      });
       expect(platformCase.syncIcon).not.toHaveBeenCalled();
       expectNothingCompleted();
     });
@@ -490,10 +504,13 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
       const result = await addValidAccount();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         error: ACTION_FAILED_ERROR,
       });
-      expect(test.logger.error).toHaveBeenCalled();
+      expect(test.logger.error).toHaveBeenCalledWith(
+        "Server Action が失敗しました",
+        expect.any(Object)
+      );
       expect(platformCase.syncIcon).not.toHaveBeenCalled();
       expectNothingCompleted();
     });
@@ -510,7 +527,7 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
       const result = await platformCase.removeAction(accountId, talentId);
 
-      expect(result).toEqual({ success: true });
+      expect(result).toStrictEqual({ success: true });
 
       const [removal] = supabase.calls("delete", table);
 
@@ -535,7 +552,7 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
       const [read] = supabase.calls("select", table);
 
-      expect(read?.query["select"]?.split(",").sort()).toEqual(
+      expect(read?.query["select"]?.split(",").sort()).toStrictEqual(
         [...accountSelect].sort()
       );
       expect(read?.query["id"]).toBe(`eq.${accountId}`);
@@ -548,7 +565,7 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
       const result = await platformCase.removeAction(accountId, talentId);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         error: messages.unlinkNotFound,
         success: false,
       });
@@ -577,7 +594,7 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
           ids.talentId
         );
 
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
           error: "入力が正しくありません。",
           success: false,
         });
@@ -592,11 +609,14 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
       const result = await platformCase.removeAction(accountId, talentId);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         error: ACTION_FAILED_ERROR,
         success: false,
       });
-      expect(test.logger.error).toHaveBeenCalled();
+      expect(test.logger.error).toHaveBeenCalledWith(
+        "Server Action が失敗しました",
+        expect.any(Object)
+      );
       expectNothingCompleted();
     });
   });

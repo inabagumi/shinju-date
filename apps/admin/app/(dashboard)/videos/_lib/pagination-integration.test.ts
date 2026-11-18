@@ -1,14 +1,24 @@
+import type {
+  ReadonlyURLSearchParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { describe, expect, it, vi } from "vitest";
+
+import type { AppRouter } from "@/test/next-navigation";
 
 import { videoSearchParamsSchema } from "./search-params-schema";
 
 // Mock Next.js navigation hooks
-const mockPush = vi.fn();
-const mockUseRouter = vi.fn(() => ({ push: mockPush }));
-const mockUseSearchParams = vi.fn();
-const mockUsePathname = vi.fn(() => "/videos");
+const mockPush = vi.fn<AppRouter["push"]>();
+const mockUseRouter = vi.fn<typeof useRouter>(
+  () => ({ push: mockPush }) as Partial<AppRouter> as AppRouter
+);
+const mockUseSearchParams = vi.fn<typeof useSearchParams>();
+const mockUsePathname = vi.fn<typeof usePathname>(() => "/videos");
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: mockUsePathname,
   useRouter: mockUseRouter,
   useSearchParams: mockUseSearchParams,
@@ -27,25 +37,26 @@ describe("Pagination URL Generation Logic", () => {
       visible: "true",
     });
 
-    mockUseSearchParams.mockReturnValue(currentParams);
+    mockUseSearchParams.mockReturnValue(
+      currentParams as ReadonlyURLSearchParams
+    );
 
     // Simulate creating a URL for page 3
     const newParams = new URLSearchParams(currentParams.toString());
     newParams.set("page", "3");
     const expectedUrl = `/videos?${newParams.toString()}`;
 
-    expect(expectedUrl).toContain("search=test+video");
-    expect(expectedUrl).toContain("talentId=123");
-    expect(expectedUrl).toContain("visible=true");
-    expect(expectedUrl).toContain("deleted=false");
-    expect(expectedUrl).toContain("sortField=published_at");
-    expect(expectedUrl).toContain("sortOrder=asc");
-    expect(expectedUrl).toContain("page=3");
+    // Every parameter is kept in its place, and only the page changes
+    expect(expectedUrl).toBe(
+      "/videos?deleted=false&page=3&search=test+video&sortField=published_at&sortOrder=asc&talentId=123&visible=true"
+    );
   });
 
   it("should work with minimal parameters", () => {
     const currentParams = new URLSearchParams({ page: "1" });
-    mockUseSearchParams.mockReturnValue(currentParams);
+    mockUseSearchParams.mockReturnValue(
+      currentParams as ReadonlyURLSearchParams
+    );
 
     const newParams = new URLSearchParams(currentParams.toString());
     newParams.set("page", "2");
@@ -63,19 +74,19 @@ describe("Pagination URL Generation Logic", () => {
       visible: "false",
     });
 
-    mockUseSearchParams.mockReturnValue(currentParams);
+    mockUseSearchParams.mockReturnValue(
+      currentParams as ReadonlyURLSearchParams
+    );
 
     // Test going to previous page
     const newParams = new URLSearchParams(currentParams.toString());
     newParams.set("page", "4");
     const expectedUrl = `/videos?${newParams.toString()}`;
 
-    expect(expectedUrl).toContain("search=anime+music");
-    expect(expectedUrl).toContain("talentId=456");
-    expect(expectedUrl).toContain("visible=false");
-    expect(expectedUrl).toContain("sortField=updated_at");
-    expect(expectedUrl).toContain("page=4");
-    expect(expectedUrl).not.toContain("page=5");
+    // Every parameter is kept in its place, and only the page changes
+    expect(expectedUrl).toBe(
+      "/videos?page=4&search=anime+music&sortField=updated_at&talentId=456&visible=false"
+    );
   });
 });
 
@@ -94,7 +105,7 @@ describe("Integration: Schema + Pagination Logic", () => {
     // Parse with our schema
     const validated = videoSearchParamsSchema.parse(urlParams);
 
-    expect(validated).toEqual({
+    expect(validated).toStrictEqual({
       page: 3,
       search: "test",
       sortField: "published_at",

@@ -6,7 +6,7 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-describe("RequestQueue", () => {
+describe(RequestQueue, () => {
   it("shares its limit across concurrent calls", async () => {
     const queue = new RequestQueue(2);
     let running = 0;
@@ -39,7 +39,7 @@ describe("RequestQueue", () => {
       return value;
     });
 
-    expect(results).toEqual([
+    expect(results).toStrictEqual([
       { status: "fulfilled", value: 1 },
       { reason: error, status: "rejected" },
     ]);

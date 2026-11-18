@@ -5,8 +5,9 @@ import { TOTAL_DISPLAY_COUNT } from "./constants";
 import { getCombinedRecommendationQueries } from "./get-combined-queries";
 import { getDisplayRecommendationQueries } from "./get-display-queries";
 
-vi.mock("./get-combined-queries", () => ({
-  getCombinedRecommendationQueries: vi.fn(),
+vi.mock(import("./get-combined-queries"), () => ({
+  getCombinedRecommendationQueries:
+    vi.fn<typeof getCombinedRecommendationQueries>(),
 }));
 
 function createQueries(count: number): string[] {
@@ -17,7 +18,7 @@ function getRank(query: string): number {
   return Number.parseInt(query.replace("query", ""), 10);
 }
 
-describe("getDisplayRecommendationQueries", () => {
+describe(getDisplayRecommendationQueries, () => {
   beforeEach(() => {
     vi.mocked(getCombinedRecommendationQueries).mockReset();
   });
@@ -35,7 +36,7 @@ describe("getDisplayRecommendationQueries", () => {
 
     const result = await getDisplayRecommendationQueries();
 
-    expect(result).toEqual([]);
+    expect(result).toStrictEqual([]);
   });
 
   it("should return all queries when there are 4 or fewer", async () => {
@@ -44,7 +45,7 @@ describe("getDisplayRecommendationQueries", () => {
 
     const result = await getDisplayRecommendationQueries();
 
-    expect(result).toEqual(mockQueries);
+    expect(result).toStrictEqual(mockQueries);
   });
 
   it("should return exactly 4 queries when there are 4 available", async () => {
@@ -53,7 +54,7 @@ describe("getDisplayRecommendationQueries", () => {
 
     const result = await getDisplayRecommendationQueries();
 
-    expect(result).toEqual(mockQueries);
+    expect(result).toStrictEqual(mockQueries);
   });
 
   it("should include top 2 champion queries when there are many queries", async () => {
@@ -96,7 +97,7 @@ describe("getDisplayRecommendationQueries", () => {
 
     // random() close to 1 leaves the pool (3rd to 20th) in order
     vi.spyOn(Math, "random").mockReturnValue(0.999999);
-    await expect(getDisplayRecommendationQueries()).resolves.toEqual([
+    await expect(getDisplayRecommendationQueries()).resolves.toStrictEqual([
       "query1",
       "query2",
       "query3",
@@ -106,7 +107,7 @@ describe("getDisplayRecommendationQueries", () => {
     // The first swap exchanges the last item of the pool (20th) with the
     // first (3rd), and the rest leave the pool as is
     vi.spyOn(Math, "random").mockReturnValueOnce(0).mockReturnValue(0.999999);
-    await expect(getDisplayRecommendationQueries()).resolves.toEqual([
+    await expect(getDisplayRecommendationQueries()).resolves.toStrictEqual([
       "query1",
       "query2",
       "query20",

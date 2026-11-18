@@ -16,16 +16,17 @@ import {
   updateTalentAction,
 } from "./index";
 
-vi.mock("@shinju-date/youtube-api-client", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@shinju-date/youtube-api-client")>()),
-  resolveYouTubeChannel: vi.fn(),
+vi.mock(import("@shinju-date/youtube-api-client"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  resolveYouTubeChannel: vi.fn<typeof resolveYouTubeChannel>(),
 }));
 
 // アイコンの同期は service role を使うため、ここではモックして呼び出し内容だけを確認する
-vi.mock("@/lib/youtube-channel-icon", () => ({
-  hasProfileImageChanged: (result: string | null) =>
-    result !== null && result !== "unchanged",
-  syncYouTubeChannelIconSafely: vi.fn().mockResolvedValue("unchanged"),
+vi.mock(import("@/lib/youtube-channel-icon"), async (importOriginal) => ({
+  hasProfileImageChanged: (await importOriginal()).hasProfileImageChanged,
+  syncYouTubeChannelIconSafely: vi
+    .fn<typeof syncYouTubeChannelIconSafely>()
+    .mockResolvedValue("unchanged"),
 }));
 
 const test = setupActionTest();
@@ -67,7 +68,7 @@ function mockTalentUpdate(name = "Updated Talent") {
   supabase.on("update", "talents", { name });
 }
 
-describe("updateTalentAction", () => {
+describe("updateTalentAction()", () => {
   it("should successfully update talent", async () => {
     mockTalentUpdate();
 
@@ -78,8 +79,8 @@ describe("updateTalentAction", () => {
 
     const result = await updateTalentAction({}, formData);
 
-    expect(result).toEqual({ success: true });
-    expect(talentUpdates()[0]?.body).toEqual({
+    expect(result).toStrictEqual({ success: true });
+    expect(talentUpdates()[0]?.body).toStrictEqual({
       name: "Updated Talent",
       reading: null,
       theme_color: "#FF5733",
@@ -103,7 +104,7 @@ describe("updateTalentAction", () => {
 
     const result = await updateTalentAction({}, formData);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       errors: {
         generic: [
           "指定されたタレントが見つかりません。既に削除されているか、存在しないIDが指定されています。",
@@ -128,7 +129,7 @@ describe("updateTalentAction", () => {
 
     const result = await updateTalentAction({}, formData);
 
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(talentUpdates()).toHaveLength(1);
     test.expectAuditLog("CHANNEL_UPDATE", seedTalentId, {
       entityName: "Updated Talent",
@@ -143,7 +144,7 @@ describe("updateTalentAction", () => {
     const result = await updateTalentAction({}, formData);
 
     // 隠しフィールドのエラーは、画面に出るよう項目に結び付けない
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       errors: { generic: ["有効なIDではありません。"] },
     });
     expect(talentUpdates()).toHaveLength(0);
@@ -180,8 +181,8 @@ describe("updateTalentAction", () => {
 
     const result = await updateTalentAction({}, formData);
 
-    expect(result).toEqual({ success: true });
-    expect(talentUpdates()[0]?.body).toEqual({
+    expect(result).toStrictEqual({ success: true });
+    expect(talentUpdates()[0]?.body).toStrictEqual({
       name: "Updated Talent",
       reading: null,
       theme_color: null,
@@ -199,8 +200,8 @@ describe("updateTalentAction", () => {
 
     const result = await updateTalentAction({}, formData);
 
-    expect(result).toEqual({ success: true });
-    expect(talentUpdates()[0]?.body).toEqual({
+    expect(result).toStrictEqual({ success: true });
+    expect(talentUpdates()[0]?.body).toStrictEqual({
       name: "Updated Talent",
       reading: "しんじゅー",
       theme_color: null,
@@ -236,8 +237,8 @@ describe("updateTalentAction", () => {
 
     const result = await updateTalentAction({}, formData);
 
-    expect(result).toEqual({ success: true });
-    expect(talentUpdates()[0]?.body).toEqual(
+    expect(result).toStrictEqual({ success: true });
+    expect(talentUpdates()[0]?.body).toStrictEqual(
       expect.objectContaining({ reading: null })
     );
   });
@@ -256,7 +257,7 @@ describe("updateTalentAction", () => {
 
     const result = await updateTalentAction({}, formData);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       errors: {
         reading: ["読み仮名はひらがなと長音符（ー）で入力してください。"],
       },
@@ -274,7 +275,7 @@ describe("updateTalentAction", () => {
     const result = await updateTalentAction({}, formData);
 
     // 予期しないエラーの文は画面に出さない
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR });
+    expect(result).toStrictEqual({ error: ACTION_FAILED_ERROR });
     expect(test.logger.error).toHaveBeenCalledWith(
       "Server Action が失敗しました",
       { action: "updateTalentAction", error: DATABASE_ERROR }
@@ -348,9 +349,9 @@ describe.each(lifecycleActionCases)("$name", (testCase) => {
 
     const result = await testCase.action(TALENT_ID);
 
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(talentUpdates()).toHaveLength(1);
-    expect(talentUpdates()[0]?.body).toEqual(testCase.expectedUpdate);
+    expect(talentUpdates()[0]?.body).toStrictEqual(testCase.expectedUpdate);
     expect(talentUpdates()[0]?.query["select"]).toBe("name");
     test.expectAuditLog(testCase.auditAction, TALENT_ID, {
       entityName: "Test Talent",
@@ -382,7 +383,7 @@ describe.each(lifecycleActionCases)("$name", (testCase) => {
         : ["deleted_at", "not.is.null"]
     );
 
-    expect(filters).toEqual(expect.arrayContaining(expectedFilters));
+    expect(filters).toStrictEqual(expect.arrayContaining(expectedFilters));
     expect(filters).toHaveLength(expectedFilters.length);
   });
 
@@ -392,7 +393,7 @@ describe.each(lifecycleActionCases)("$name", (testCase) => {
 
     const result = await testCase.action(TALENT_ID);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: testCase.notFoundError,
       success: false,
     });
@@ -413,7 +414,7 @@ describe.each(lifecycleActionCases)("$name", (testCase) => {
 
     const result = await testCase.action(id as string);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: "入力が正しくありません。",
       success: false,
     });
@@ -428,7 +429,7 @@ describe.each(lifecycleActionCases)("$name", (testCase) => {
     const result = await testCase.action(TALENT_ID);
 
     // 予期しないエラーの文は画面に出さない
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: ACTION_FAILED_ERROR,
       success: false,
     });
@@ -441,7 +442,7 @@ describe.each(lifecycleActionCases)("$name", (testCase) => {
   });
 });
 
-describe("createTalentAction", () => {
+describe("createTalentAction()", () => {
   it("should successfully create talent", async () => {
     supabase.on(
       "insert",
@@ -454,8 +455,8 @@ describe("createTalentAction", () => {
 
     const result = await createTalentAction({}, formData);
 
-    expect(result).toEqual({ success: true });
-    expect(supabase.calls("insert", "talents")[0]?.body).toEqual({
+    expect(result).toStrictEqual({ success: true });
+    expect(supabase.calls("insert", "talents")[0]?.body).toStrictEqual({
       name: "New Talent",
       reading: null,
     });
@@ -498,13 +499,15 @@ describe("createTalentAction", () => {
 
     const result = await createTalentAction({}, formData);
 
-    expect(result).toEqual({ success: true });
-    expect(supabase.calls("insert", "youtube_channels")[0]?.body).toEqual({
-      name: "Example Channel",
-      talent_id: TALENT_ID,
-      youtube_channel_id: youtubeChannel.id,
-      youtube_handle: "@example",
-    });
+    expect(result).toStrictEqual({ success: true });
+    expect(supabase.calls("insert", "youtube_channels")[0]?.body).toStrictEqual(
+      {
+        name: "Example Channel",
+        talent_id: TALENT_ID,
+        youtube_channel_id: youtubeChannel.id,
+        youtube_handle: "@example",
+      }
+    );
     expect(syncYouTubeChannelIconSafely).toHaveBeenCalledWith(youtubeChannel, {
       id: "channel-row-1",
       profile_images: null,
@@ -557,7 +560,7 @@ describe("createTalentAction", () => {
 
       const result = await createTalentAction({}, channelFormData());
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         errors: {
           youtube_channel_id: [
             "YouTubeでチャンネルが見つかりませんでした。入力内容を確認してください。",
@@ -574,7 +577,7 @@ describe("createTalentAction", () => {
 
       const result = await createTalentAction({}, formData);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         errors: {
           youtube_channel_id: [
             "有効なチャンネルID（UC...）、ハンドル（@name）、またはYouTube URLを入力してください。",
@@ -593,7 +596,7 @@ describe("createTalentAction", () => {
 
       const result = await createTalentAction({}, channelFormData());
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         errors: {
           generic: [
             "YouTube APIキーが設定されていません。管理者に連絡してください。",
@@ -616,7 +619,7 @@ describe("createTalentAction", () => {
 
       const result = await createTalentAction({}, channelFormData());
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         errors: {
           youtube_channel_id: [
             "このチャンネルは別のタレントに既に登録されています。",
@@ -657,7 +660,7 @@ describe("createTalentAction", () => {
 
       const result = await createTalentAction({}, channelFormData());
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         errors: {
           youtube_channel_id: [
             "このチャンネルは別のタレントに既に登録されています。",
@@ -681,7 +684,7 @@ describe("createTalentAction", () => {
 
       const result = await createTalentAction({}, channelFormData());
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         errors: {
           youtube_channel_id: [
             "YouTubeチャンネルの登録に失敗しました。しばらくしてから再度お試しください。",
@@ -731,8 +734,8 @@ describe("createTalentAction", () => {
 
     const result = await createTalentAction({}, formData);
 
-    expect(result).toEqual({ success: true });
-    expect(supabase.calls("insert", "talents")[0]?.body).toEqual({
+    expect(result).toStrictEqual({ success: true });
+    expect(supabase.calls("insert", "talents")[0]?.body).toStrictEqual({
       name: "New Talent",
       reading: "がー",
     });
@@ -746,7 +749,7 @@ describe("createTalentAction", () => {
 
     const result = await createTalentAction({}, formData);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       errors: {
         reading: ["読み仮名はひらがなと長音符（ー）で入力してください。"],
       },
@@ -761,7 +764,7 @@ describe("createTalentAction", () => {
 
     const result = await createTalentAction({}, formData);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       errors: {
         name: ["タレント名を入力してください。"],
       },
@@ -777,7 +780,7 @@ describe("createTalentAction", () => {
     const result = await createTalentAction({}, formData);
 
     // 予期しないエラーの文は画面に出さない
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR });
+    expect(result).toStrictEqual({ error: ACTION_FAILED_ERROR });
     expect(test.logger.error).toHaveBeenCalledWith(
       "Server Action が失敗しました",
       { action: "createTalentAction", error: DATABASE_ERROR }

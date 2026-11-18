@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { StatTile } from "./StatTile";
 
-describe("StatTile", () => {
+describe(StatTile, () => {
   it("pairs the label with the value", () => {
     render(<StatTile label="動画の総数" value="12,345" />);
 

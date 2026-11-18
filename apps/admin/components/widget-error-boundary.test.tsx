@@ -1,13 +1,14 @@
+import type { captureException } from "@sentry/nextjs";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { WidgetErrorBoundary } from "./widget-error-boundary";
 
 const mocks = vi.hoisted(() => ({
-  captureException: vi.fn(),
+  captureException: vi.fn<typeof captureException>(),
 }));
 
-vi.mock("@sentry/nextjs", () => ({
+vi.mock(import("@sentry/nextjs"), () => ({
   captureException: mocks.captureException,
 }));
 
@@ -21,7 +22,7 @@ function FlakyWidget() {
   return <p>loaded</p>;
 }
 
-describe("WidgetErrorBoundary", () => {
+describe("<WidgetErrorBoundary>", () => {
   beforeEach(() => {
     shouldThrow = true;
     // React logs errors caught by boundaries; keep the test output quiet.

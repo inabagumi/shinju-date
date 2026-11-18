@@ -24,7 +24,7 @@ const ICON_URL =
 const DEFAULT_ICON_URL =
   "https://static-cdn.jtvnw.net/user-default-pictures-uv/cdd517fe-def4-11e9-948e-784f43822e80-profile_image-300x300.png";
 
-describe("selectTwitchUserIconUrl", () => {
+describe(selectTwitchUserIconUrl, () => {
   it("uses the icon of the user as is", () => {
     expect(selectTwitchUserIconUrl(ICON_URL)).toBe(ICON_URL);
   });
@@ -53,7 +53,7 @@ describe("selectTwitchUserIconUrl", () => {
   });
 });
 
-describe("syncTwitchUserIcon", () => {
+describe(syncTwitchUserIcon, () => {
   const saved: SavedTwitchUserIcon = {
     id: "user-row-1",
     profile_images: null,
@@ -98,14 +98,14 @@ describe("syncTwitchUserIcon", () => {
       })
     ).resolves.toBe("created");
 
-    expect(requests).toEqual([{ ifNoneMatch: null, url: ICON_URL }]);
+    expect(requests).toStrictEqual([{ ifNoneMatch: null, url: ICON_URL }]);
     expect(storage.uploads[0]?.path).toMatch(/^twitch\/1001\/[^/]+\.webp$/);
     expect(supabase.written("POST", "profile_images")[0]?.body).toMatchObject({
       height: 256,
       source_url: ICON_URL,
       width: 256,
     });
-    expect(supabase.written("PATCH", "twitch_users")[0]?.query).toEqual({
+    expect(supabase.written("PATCH", "twitch_users")[0]?.query).toStrictEqual({
       id: "eq.user-row-1",
       select: "id",
     });
@@ -125,7 +125,9 @@ describe("syncTwitchUserIcon", () => {
       })
     ).resolves.toBe("unchanged");
 
-    expect(requests).toEqual([{ ifNoneMatch: '"etag-1"', url: ICON_URL }]);
+    expect(requests).toStrictEqual([
+      { ifNoneMatch: '"etag-1"', url: ICON_URL },
+    ]);
     expect(storage.uploads).toHaveLength(0);
     expect(supabase.requests).toHaveLength(0);
   });
@@ -146,10 +148,12 @@ describe("syncTwitchUserIcon", () => {
     ).resolves.toBe("replaced");
 
     expect(storage.uploads).toHaveLength(1);
-    expect(supabase.written("DELETE", "profile_images")[0]?.query).toEqual({
+    expect(
+      supabase.written("DELETE", "profile_images")[0]?.query
+    ).toStrictEqual({
       id: "eq.image-1",
     });
-    expect(storage.removed).toEqual([["twitch/1001/old.webp"]]);
+    expect(storage.removed).toStrictEqual([["twitch/1001/old.webp"]]);
   });
 
   it("removes the icon of a user who went back to a default one", async () => {
@@ -165,10 +169,10 @@ describe("syncTwitchUserIcon", () => {
       })
     ).resolves.toBe("removed");
 
-    expect(supabase.written("PATCH", "twitch_users")[0]?.body).toEqual({
+    expect(supabase.written("PATCH", "twitch_users")[0]?.body).toStrictEqual({
       profile_image_id: null,
     });
-    expect(storage.removed).toEqual([["twitch/1001/old.webp"]]);
+    expect(storage.removed).toStrictEqual([["twitch/1001/old.webp"]]);
   });
 
   it("writes nothing for a user without an icon", async () => {
@@ -202,7 +206,7 @@ describe("syncTwitchUserIcon", () => {
         supabaseClient: supabase.supabaseClient,
         user: { profile_image_url: ICON_URL },
       })
-    ).rejects.toThrow();
+    ).rejects.toThrow("Failed to download an image (404)");
 
     expect(storage.uploads).toHaveLength(0);
     expect(supabase.requests).toHaveLength(0);

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { FilterBar } from "./FilterBar";
 
-describe("FilterBar", () => {
+describe(FilterBar, () => {
   it("toggles the filters with the button", async () => {
     const user = userEvent.setup();
 

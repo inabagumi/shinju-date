@@ -35,8 +35,15 @@ function withoutRunId({ runId: _runId, ...job }: BackfillJob): BackfillJob {
 }
 
 function createSupabaseClient(error: { message: string } | null = null) {
-  const upsert = vi.fn(async () => ({ error }));
-  const from = vi.fn(() => ({ upsert }));
+  const upsert = vi.fn<
+    (
+      row: ReturnType<typeof toBackfillHistoryRow>,
+      options: { ignoreDuplicates: boolean; onConflict: string }
+    ) => Promise<{ error: { message: string } | null }>
+  >(async () => ({ error }));
+  const from = vi.fn<(table: string) => { upsert: typeof upsert }>(() => ({
+    upsert,
+  }));
 
   return {
     client: { from } as unknown as TypedSupabaseClient,
@@ -45,9 +52,9 @@ function createSupabaseClient(error: { message: string } | null = null) {
   };
 }
 
-describe("toBackfillHistoryRow", () => {
+describe(toBackfillHistoryRow, () => {
   it("converts a finished job, keeping the request time as queued", () => {
-    expect(toBackfillHistoryRow(createJob())).toEqual({
+    expect(toBackfillHistoryRow(createJob())).toStrictEqual({
       account_id: "channel-row-1",
       added: 12,
       error: null,
@@ -73,7 +80,7 @@ describe("toBackfillHistoryRow", () => {
         startedAt: null,
         status: "failed",
       })
-    ).toEqual(
+    ).toStrictEqual(
       expect.objectContaining({
         error: "quota exceeded",
         platform: "twitch",
@@ -105,7 +112,7 @@ describe("toBackfillHistoryRow", () => {
   );
 });
 
-describe("recordBackfillJob", () => {
+describe(recordBackfillJob, () => {
   it("records a request once", async () => {
     const { client, from, upsert } = createSupabaseClient();
 

@@ -9,7 +9,7 @@ import {
 } from "./metric-ratings";
 import type { Ratings } from "./metric-ratings";
 
-describe("rate", () => {
+describe(rate, () => {
   it.each([
     [0, "良好", "success"],
     [29.9, "良好", "success"],
@@ -58,11 +58,11 @@ describe("rate", () => {
   });
 });
 
-describe("describeRatings", () => {
+describe(describeRatings, () => {
   it("describes the exit rate from the best to the worst", () => {
     expect(
       describeRatings(EXIT_RATE_RATINGS, { order: "ascending", unit: "%" })
-    ).toEqual([
+    ).toStrictEqual([
       "30%未満: 良好",
       "30-49%: 普通",
       "50-69%: 注意",
@@ -71,7 +71,9 @@ describe("describeRatings", () => {
   });
 
   it("describes the engagement rate in the order of the table", () => {
-    expect(describeRatings(ENGAGEMENT_RATE_RATINGS, { unit: "%" })).toEqual([
+    expect(
+      describeRatings(ENGAGEMENT_RATE_RATINGS, { unit: "%" })
+    ).toStrictEqual([
       "30%以上: 優秀",
       "20-29%: 良好",
       "10-19%: 平均的",
@@ -85,7 +87,7 @@ describe("describeRatings", () => {
         fractionDigits: 1,
         unit: "回",
       })
-    ).toEqual([
+    ).toStrictEqual([
       "3.0回以上: 高いエンゲージメント",
       "2.0-2.9回: 適度なエンゲージメント",
       "1.5-1.9回: 標準的",
@@ -110,8 +112,13 @@ describe("a changed threshold", () => {
   });
 
   it("moves the boundary in the legend", () => {
-    expect(describeRatings(ratings, { order: "ascending", unit: "%" })).toEqual(
-      ["40%未満: 良好", "40-49%: 普通", "50-69%: 注意", "70%以上: 要改善"]
-    );
+    expect(
+      describeRatings(ratings, { order: "ascending", unit: "%" })
+    ).toStrictEqual([
+      "40%未満: 良好",
+      "40-49%: 普通",
+      "50-69%: 注意",
+      "70%以上: 要改善",
+    ]);
   });
 });

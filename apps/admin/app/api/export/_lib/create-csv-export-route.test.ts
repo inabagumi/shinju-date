@@ -1,18 +1,21 @@
 import { TIME_ZONE } from "@shinju-date/constants";
 import { logger } from "@shinju-date/logger";
 import { NextRequest } from "next/server";
+import type { connection } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createCsvExportRoute } from "./create-csv-export-route";
 
-vi.mock("next/server", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("next/server")>()),
-  connection: vi.fn(async () => {}),
+vi.mock(import("next/server"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  connection: vi.fn<typeof connection>(async () => {}),
 }));
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: { debug: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn() },
-}));
+vi.mock(import("@shinju-date/logger"), async () => {
+  const { createMockLogger } = await import("@/test/logger");
+
+  return { logger: createMockLogger() };
+});
 
 interface Item {
   name: string;
@@ -32,7 +35,7 @@ function request(query: string): NextRequest {
   return new NextRequest(`http://localhost/api/export/test?${query}`);
 }
 
-describe("createCsvExportRoute", () => {
+describe(createCsvExportRoute, () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(
@@ -59,7 +62,7 @@ describe("createCsvExportRoute", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("text/csv;charset=utf-8");
-    expect(Array.from(body.slice(0, 3))).toEqual([0xef, 0xbb, 0xbf]);
+    expect(Array.from(body.slice(0, 3))).toStrictEqual([0xef, 0xbb, 0xbf]);
     expect(new TextDecoder().decode(body)).toBe(
       "順位,名前,回数\n1,あ,10\n2,い,5\n"
     );
@@ -96,7 +99,7 @@ describe("createCsvExportRoute", () => {
     const response = await GET(request(query));
 
     expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toEqual({
+    await expect(response.json()).resolves.toStrictEqual({
       error: "Invalid parameters provided",
     });
     expect(fetchItems).not.toHaveBeenCalled();
@@ -108,7 +111,7 @@ describe("createCsvExportRoute", () => {
     const response = await GET(request("date=2026-11-05"));
 
     expect(response.status).toBe(404);
-    await expect(response.json()).resolves.toEqual({
+    await expect(response.json()).resolves.toStrictEqual({
       error: "No data available for the specified date range",
     });
   });
@@ -120,7 +123,7 @@ describe("createCsvExportRoute", () => {
     const response = await GET(request("date=2026-11-05"));
 
     expect(response.status).toBe(500);
-    await expect(response.json()).resolves.toEqual({
+    await expect(response.json()).resolves.toStrictEqual({
       error: "Failed to generate CSV export",
     });
     expect(logger.error).toHaveBeenCalledWith(

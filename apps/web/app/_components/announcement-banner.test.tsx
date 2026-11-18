@@ -5,15 +5,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { queryKeys } from "@/lib/query-keys";
 
+import type {
+  dismissAnnouncement,
+  getRenderedAnnouncement,
+} from "../_lib/actions";
 import { AnnouncementBanner } from "./announcement-banner";
 import type { RenderedAnnouncement } from "./announcement-message";
 
 const actions = vi.hoisted(() => ({
-  dismissAnnouncement: vi.fn(async () => {}),
-  getRenderedAnnouncement: vi.fn(),
+  dismissAnnouncement: vi.fn<typeof dismissAnnouncement>(async () => {}),
+  getRenderedAnnouncement: vi.fn<typeof getRenderedAnnouncement>(),
 }));
 
-vi.mock("../_lib/actions", () => actions);
+vi.mock(import("../_lib/actions"), () => actions);
 
 function createAnnouncement(message: ReactNode): RenderedAnnouncement {
   return {
@@ -37,7 +41,7 @@ function renderBanner(announcement: RenderedAnnouncement) {
   return { queryClient };
 }
 
-describe("AnnouncementBanner", () => {
+describe(AnnouncementBanner, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

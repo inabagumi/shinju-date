@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { TableSkeleton } from "./table-skeleton";
 
-describe("TableSkeleton", () => {
+describe(TableSkeleton, () => {
   const columns = [
     { header: false, id: "select" },
     { id: "title" },

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { Markdown } from "./markdown";
 
-describe("Markdown", () => {
+describe(Markdown, () => {
   it("opens links in a new tab", () => {
     render(<Markdown>[SHINJU DATE](https://shinju.date/)</Markdown>);
 

@@ -1,22 +1,25 @@
 // @vitest-environment node
+import type { logger } from "@shinju-date/logger";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  trackSearchExitWithoutClick: vi.fn(),
+  trackSearchExitWithoutClick: vi.fn<typeof trackSearchExitWithoutClick>(),
 }));
 
-vi.mock("@/lib/session-analytics", () => ({
+vi.mock(import("@/lib/session-analytics"), () => ({
   trackSearchExitWithoutClick: mocks.trackSearchExitWithoutClick,
 }));
 
-vi.mock("@shinju-date/logger", () => ({
+vi.mock(import("@shinju-date/logger"), () => ({
   logger: {
-    debug: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
+    debug: vi.fn<typeof logger.debug>(),
+    error: vi.fn<typeof logger.error>(),
+    info: vi.fn<typeof logger.info>(),
+    warn: vi.fn<typeof logger.warn>(),
   },
 }));
+
+import type { trackSearchExitWithoutClick } from "@/lib/session-analytics";
 
 import { POST } from "./route";
 

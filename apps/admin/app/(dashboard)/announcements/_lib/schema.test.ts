@@ -15,14 +15,14 @@ const VALID_INPUT = {
   start_at: START_AT,
 };
 
-describe("announcementSchema", () => {
+describe("announcementSchema.safeParse", () => {
   it("trims the message and parses the period into instants", () => {
     const result = announcementSchema.parse({
       ...VALID_INPUT,
       message: "  メンテナンスのお知らせ  ",
     });
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       enabled: false,
       end_at: Temporal.Instant.from(END_AT),
       level: "info",
@@ -37,7 +37,9 @@ describe("announcementSchema", () => {
       start_at: "2026-01-01T09:00:00+09:00",
     });
 
-    expect(result.start_at.equals(Temporal.Instant.from(START_AT))).toBe(true);
+    expect(
+      result.start_at.equals(Temporal.Instant.from(START_AT))
+    ).toBeTruthy();
   });
 
   it.each([
@@ -123,7 +125,7 @@ describe("announcementSchema", () => {
   });
 });
 
-describe("updateAnnouncementSchema", () => {
+describe("updateAnnouncementSchema.safeParse", () => {
   it("adds the ID", () => {
     expect(
       updateAnnouncementSchema.parse({ ...VALID_INPUT, id: "announcement-1" })

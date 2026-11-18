@@ -8,20 +8,27 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ActionToastProvider } from "@/components/action-toast";
+import type { AppRouter } from "@/test/next-navigation";
 
+import type {
+  getVideoBackfillStatusAction,
+  requestVideoBackfillAction,
+} from "../../_actions/backfill";
 import type { VideoBackfillAccount } from "../../_lib/get-video-backfill-status";
 
 const mocks = vi.hoisted(() => ({
-  getVideoBackfillStatusAction: vi.fn(),
-  requestVideoBackfillAction: vi.fn(),
+  getVideoBackfillStatusAction: vi.fn<typeof getVideoBackfillStatusAction>(),
+  requestVideoBackfillAction: vi.fn<typeof requestVideoBackfillAction>(),
   // The same instance on every render, like the router of Next.js.
-  router: { refresh: vi.fn() },
+  router: {
+    refresh: vi.fn<AppRouter["refresh"]>(),
+  } as Partial<AppRouter> as AppRouter,
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   useRouter: () => mocks.router,
 }));
-vi.mock("../../_actions/backfill", () => ({
+vi.mock(import("../../_actions/backfill"), () => ({
   getVideoBackfillStatusAction: mocks.getVideoBackfillStatusAction,
   requestVideoBackfillAction: mocks.requestVideoBackfillAction,
 }));

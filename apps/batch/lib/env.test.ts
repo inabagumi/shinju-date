@@ -41,7 +41,7 @@ function errorOf(callback: () => unknown): Error {
   throw new Error("Expected an error to be thrown.");
 }
 
-describe("parseEnv", () => {
+describe(parseEnv, () => {
   it("returns the variables when every required one is set", () => {
     expect(parseEnv(REQUIRED_ENV)).toMatchObject(REQUIRED_ENV);
   });
@@ -105,9 +105,9 @@ describe("parseEnv", () => {
   });
 
   it("treats an empty CRON_SECRET as unset", () => {
-    expect(parseEnv({ ...REQUIRED_ENV, CRON_SECRET: "" }).CRON_SECRET).toBe(
-      undefined
-    );
+    expect(
+      parseEnv({ ...REQUIRED_ENV, CRON_SECRET: "" }).CRON_SECRET
+    ).toBeUndefined();
     expect(
       parseEnv({ ...REQUIRED_ENV, CRON_SECRET: "secret" }).CRON_SECRET
     ).toBe("secret");
@@ -133,7 +133,7 @@ function readTurboConfig(path: string): TurboConfig {
   return JSON.parse(readFileSync(new URL(path, import.meta.url), "utf-8"));
 }
 
-describe("ENV_NAMES", () => {
+describe("the names in ENV_NAMES", () => {
   it("are all passed to the build by turbo.json", () => {
     const appConfig = readTurboConfig("../turbo.json");
     const rootConfig = readTurboConfig("../../../turbo.json");
@@ -143,6 +143,8 @@ describe("ENV_NAMES", () => {
     ]);
 
     expect(ENV_NAMES).toContain("UPSTASH_REDIS_REST_URL");
-    expect(ENV_NAMES.filter((name) => !passedNames.has(name))).toEqual([]);
+    expect(ENV_NAMES.filter((name) => !passedNames.has(name))).toStrictEqual(
+      []
+    );
   });
 });

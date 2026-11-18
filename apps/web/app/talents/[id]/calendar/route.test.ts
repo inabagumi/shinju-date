@@ -1,4 +1,6 @@
 // @vitest-environment node
+import type { logger } from "@shinju-date/logger";
+import type { cacheTag } from "next/cache";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -38,21 +40,27 @@ const mocks = vi.hoisted(() => {
   return {
     cached,
     cacheEntries,
-    logger: { error: vi.fn() },
+    logger: {
+      debug: vi.fn<typeof logger.debug>(),
+      error: vi.fn<typeof logger.error>(),
+      info: vi.fn<typeof logger.info>(),
+      warn: vi.fn<typeof logger.warn>(),
+    },
   };
 });
 
-vi.mock("next/cache", () => ({
-  cacheLife: vi.fn(),
-  cacheTag: vi.fn(),
+vi.mock(import("next/cache"), () => ({
+  // A name of a profile or an object, which every overload of cacheLife takes
+  cacheLife: vi.fn<(profile: string | object) => void>(),
+  cacheTag: vi.fn<typeof cacheTag>(),
 }));
 
-vi.mock("@shinju-date/logger", () => ({
+vi.mock(import("@shinju-date/logger"), () => ({
   logger: mocks.logger,
 }));
 
-vi.mock("@/lib/data/videos", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/data/videos")>();
+vi.mock(import("@/lib/data/videos"), async (importOriginal) => {
+  const actual = await importOriginal();
 
   return {
     ...actual,
@@ -63,8 +71,8 @@ vi.mock("@/lib/data/videos", async (importOriginal) => {
   };
 });
 
-vi.mock("@/lib/data/talents", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/data/talents")>();
+vi.mock(import("@/lib/data/talents"), async (importOriginal) => {
+  const actual = await importOriginal();
 
   return {
     ...actual,
@@ -123,7 +131,7 @@ describe("GET /talents/[id].ics", () => {
     expect(response.headers.get("Cache-Control")).toBe(
       "public, max-age=300, s-maxage=900, stale-while-revalidate=3600"
     );
-    await expect(eventIds(response)).resolves.toEqual(
+    await expect(eventIds(response)).resolves.toStrictEqual(
       [song.video.id, short.video.id].toSorted()
     );
   });
@@ -133,7 +141,7 @@ describe("GET /talents/[id].ics", () => {
     const [request] = supabaseRequests("videos");
 
     expect(response.status).toBe(200);
-    await expect(eventIds(response)).resolves.toEqual(
+    await expect(eventIds(response)).resolves.toStrictEqual(
       [song.video.id, short.video.id].toSorted()
     );
     expect(request?.url.searchParams.get("talent_id")).toBe(
@@ -165,7 +173,7 @@ describe("GET /talents/[id].ics", () => {
     const response = await get(talent.id);
 
     expect(response.status).toBe(404);
-    expect(supabaseRequests("videos")).toEqual([]);
+    expect(supabaseRequests("videos")).toStrictEqual([]);
   });
 
   it.each(["abc", "not-a-uuid", `${talent.id}x`])(
@@ -174,7 +182,7 @@ describe("GET /talents/[id].ics", () => {
       const response = await get(id);
 
       expect(response.status).toBe(404);
-      expect(supabaseRequests()).toEqual([]);
+      expect(supabaseRequests()).toStrictEqual([]);
     }
   );
 
@@ -186,7 +194,7 @@ describe("GET /talents/[id].ics", () => {
     expect(response.status).toBe(500);
     await expect(response.text()).resolves.not.toContain("relation");
     expect(mocks.logger.error).toHaveBeenCalledOnce();
-    expect(supabaseRequests("videos")).toEqual([]);
+    expect(supabaseRequests("videos")).toStrictEqual([]);
   });
 
   it("answers 500 without the error message when the videos cannot be fetched", async () => {

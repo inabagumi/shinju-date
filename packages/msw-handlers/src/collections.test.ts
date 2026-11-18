@@ -60,7 +60,7 @@ function getTimestamps(dump: Record<string, unknown[]>): string[] {
 
 const NOW = Temporal.Instant.from("2026-11-15T12:34:56.789Z");
 
-describe("seedCollections", () => {
+describe(seedCollections, () => {
   it("seeds the same data for the same now", async () => {
     await seedCollections({ now: NOW });
     const first = dumpCollections();
@@ -68,15 +68,17 @@ describe("seedCollections", () => {
     await seedCollections({ now: NOW });
     const second = dumpCollections();
 
-    expect(second).toEqual(first);
+    expect(second).toStrictEqual(first);
   });
 
   it("seeds every collection", async () => {
     await seedCollections({ now: NOW });
 
-    for (const [name, rows] of Object.entries(dumpCollections())) {
-      expect(rows.length, name).toBeGreaterThan(0);
-    }
+    const empty = Object.entries(dumpCollections())
+      .filter(([, rows]) => rows.length === 0)
+      .map(([name]) => name);
+
+    expect(empty).toStrictEqual([]);
   });
 
   it("seeds data around the given now", async () => {
@@ -85,7 +87,7 @@ describe("seedCollections", () => {
 
     await seedCollections({ now: NOW.add({ hours: 24 * 7 }) });
 
-    expect(dumpCollections()).not.toEqual(first);
+    expect(dumpCollections()).not.toStrictEqual(first);
   });
 
   it("saves the times in seconds, without milliseconds", async () => {

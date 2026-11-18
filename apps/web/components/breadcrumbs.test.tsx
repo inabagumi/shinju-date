@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import Breadcrumbs from "./breadcrumbs";
 
-describe("Breadcrumbs", () => {
+describe(Breadcrumbs, () => {
   it("should link the site name to the top page", () => {
     render(<Breadcrumbs items={[{ name: "利用規約" }]} />);
 

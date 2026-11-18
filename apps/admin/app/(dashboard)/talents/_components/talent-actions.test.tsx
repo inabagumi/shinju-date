@@ -2,28 +2,38 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ActionToastProvider } from "@/components/action-toast";
+import type { AppRouter } from "@/test/next-navigation";
+
+import type {
+  activateTalentAction,
+  deleteTalentAction,
+  restoreTalentAction,
+  retireTalentAction,
+} from "../_actions";
+import type { syncTalentAccountsAction } from "../_actions/sync";
 
 const mocks = vi.hoisted(() => ({
-  activateTalentAction: vi.fn(),
-  deleteTalentAction: vi.fn(),
-  refresh: vi.fn(),
-  restoreTalentAction: vi.fn(),
-  retireTalentAction: vi.fn(),
-  syncTalentAccountsAction: vi.fn(),
+  activateTalentAction: vi.fn<typeof activateTalentAction>(),
+  deleteTalentAction: vi.fn<typeof deleteTalentAction>(),
+  refresh: vi.fn<AppRouter["refresh"]>(),
+  restoreTalentAction: vi.fn<typeof restoreTalentAction>(),
+  retireTalentAction: vi.fn<typeof retireTalentAction>(),
+  syncTalentAccountsAction: vi.fn<typeof syncTalentAccountsAction>(),
 }));
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: mocks.refresh }),
+vi.mock(import("next/navigation"), () => ({
+  useRouter: () =>
+    ({ refresh: mocks.refresh }) as Partial<AppRouter> as AppRouter,
 }));
 
-vi.mock("../_actions", () => ({
+vi.mock(import("../_actions"), () => ({
   activateTalentAction: mocks.activateTalentAction,
   deleteTalentAction: mocks.deleteTalentAction,
   restoreTalentAction: mocks.restoreTalentAction,
   retireTalentAction: mocks.retireTalentAction,
 }));
 
-vi.mock("../_actions/sync", () => ({
+vi.mock(import("../_actions/sync"), () => ({
   syncTalentAccountsAction: mocks.syncTalentAccountsAction,
 }));
 

@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { Input } from "../Input/Input";
 import { Select } from "./Select";
 
-describe("Select", () => {
+describe(Select, () => {
   it("lets the user choose an option", async () => {
     const user = userEvent.setup();
 
@@ -34,11 +34,9 @@ describe("Select", () => {
     const input = screen.getByRole("textbox");
     const select = screen.getByRole("combobox");
 
-    for (const className of input.className.split(" ")) {
-      if (className !== "px-4") {
-        expect(select).toHaveClass(className);
-      }
-    }
+    expect(select).toHaveClass(
+      ...input.className.split(" ").filter((className) => className !== "px-4")
+    );
 
     expect(select).toHaveClass("appearance-none", "pr-10");
   });

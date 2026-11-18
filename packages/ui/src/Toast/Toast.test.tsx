@@ -28,7 +28,7 @@ function getToasts() {
   return within(screen.getByRole("region")).queryAllByRole("listitem");
 }
 
-describe("Toast", () => {
+describe(Toast, () => {
   // jsdom には `hasPointerCapture` がない。トーストは、スワイプの処理のために `pointerup` で呼ぶ
   beforeEach(() => {
     Object.defineProperty(HTMLElement.prototype, "hasPointerCapture", {

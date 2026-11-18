@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { getVideoStatus } from "./get-video-status.js";
 
-describe("getVideoStatus", () => {
+describe(getVideoStatus, () => {
   const currentDateTime = Temporal.Instant.from("2024-01-15T12:00:00Z");
 
   describe("PUBLISHED status", () => {

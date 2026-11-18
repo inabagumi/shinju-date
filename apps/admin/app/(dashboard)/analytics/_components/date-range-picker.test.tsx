@@ -1,8 +1,11 @@
 import { TIME_ZONE } from "@shinju-date/constants";
 import { fireEvent, render, screen } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import DateRangePicker from "./date-range-picker";
+
+type OnChange = ComponentProps<typeof DateRangePicker>["onChange"];
 
 const PRESET_LABELS = ["過去7日間", "過去30日間", "過去90日間", "今月", "先月"];
 
@@ -13,7 +16,7 @@ function getPressedButtons() {
     .map((button) => button.textContent);
 }
 
-describe("DateRangePicker", () => {
+describe(DateRangePicker, () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(
@@ -24,12 +27,12 @@ describe("DateRangePicker", () => {
   it("marks the preset that matches the current period as pressed", () => {
     render(
       <DateRangePicker
-        onChange={vi.fn()}
+        onChange={vi.fn<OnChange>()}
         value={{ endDate: "2026-11-14", startDate: "2026-10-16" }}
       />
     );
 
-    expect(getPressedButtons()).toEqual(["過去30日間"]);
+    expect(getPressedButtons()).toStrictEqual(["過去30日間"]);
     expect(
       screen.getByRole("button", { name: "カスタム期間を選択" })
     ).toHaveAttribute("aria-pressed", "false");
@@ -43,23 +46,23 @@ describe("DateRangePicker", () => {
 
     render(
       <DateRangePicker
-        onChange={vi.fn()}
+        onChange={vi.fn<OnChange>()}
         value={{ endDate: "2026-11-07", startDate: "2026-11-01" }}
       />
     );
 
-    expect(getPressedButtons()).toEqual(["過去7日間", "今月"]);
+    expect(getPressedButtons()).toStrictEqual(["過去7日間", "今月"]);
   });
 
   it("marks the custom period button when no preset matches", () => {
     render(
       <DateRangePicker
-        onChange={vi.fn()}
+        onChange={vi.fn<OnChange>()}
         value={{ endDate: "2026-11-10", startDate: "2026-11-03" }}
       />
     );
 
-    expect(getPressedButtons()).toEqual(["カスタム期間を選択"]);
+    expect(getPressedButtons()).toStrictEqual(["カスタム期間を選択"]);
     for (const label of PRESET_LABELS) {
       expect(screen.getByRole("button", { name: label })).toHaveAttribute(
         "aria-pressed",
@@ -69,7 +72,7 @@ describe("DateRangePicker", () => {
   });
 
   it("applies the range of the clicked preset", () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<OnChange>();
 
     render(
       <DateRangePicker
@@ -89,7 +92,7 @@ describe("DateRangePicker", () => {
   it("starts editing a custom period from the current period", () => {
     render(
       <DateRangePicker
-        onChange={vi.fn()}
+        onChange={vi.fn<OnChange>()}
         value={{ endDate: "2026-11-10", startDate: "2026-11-03" }}
       />
     );
@@ -102,7 +105,7 @@ describe("DateRangePicker", () => {
 
   describe("custom period", () => {
     function applyCustomPeriod(startDate: string, endDate: string) {
-      const onChange = vi.fn();
+      const onChange = vi.fn<OnChange>();
 
       render(
         <DateRangePicker

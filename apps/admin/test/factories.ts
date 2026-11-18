@@ -1,4 +1,5 @@
 import type { Tables } from "@shinju-date/database";
+import type { BackfillJob } from "@shinju-date/video-backfill";
 
 /**
  * Rows of the tables that the Server Actions read, with sensible defaults
@@ -74,6 +75,30 @@ export function createTwitchUser(
     talent_id: "talent-1",
     twitch_login_name: "testuser",
     twitch_user_id: "12345678",
+    ...overrides,
+  };
+}
+
+/** Builds a job of the queue of `@shinju-date/video-backfill`. */
+export function createBackfillJob(
+  overrides: Partial<BackfillJob> = {}
+): BackfillJob {
+  return {
+    accountId: "channel-row-1",
+    added: 0,
+    attempts: 0,
+    cursor: null,
+    error: null,
+    finishedAt: null,
+    id: "youtube:channel-row-1",
+    pages: 0,
+    provider: "youtube",
+    requestedAt: TIMESTAMP,
+    requestedBy: null,
+    startedAt: null,
+    status: "pending",
+    talentId: "talent-1",
+    updatedAt: TIMESTAMP,
     ...overrides,
   };
 }

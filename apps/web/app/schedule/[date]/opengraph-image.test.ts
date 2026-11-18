@@ -1,15 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/data/schedule", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/data/schedule")>()),
-  fetchOldestVideoDate: vi.fn(),
-  fetchScheduleToday: vi.fn(),
+vi.mock(import("@/lib/data/schedule"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  fetchOldestVideoDate: vi.fn<typeof fetchOldestVideoDate>(),
+  fetchScheduleToday: vi.fn<typeof fetchScheduleToday>(),
 }));
 
 // The title is in Japanese, whose fonts `ImageResponse` would fetch
-vi.mock("@/lib/og-image", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/og-image")>()),
-  createOgImage: vi.fn(),
+vi.mock(import("@/lib/og-image"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  createOgImage: vi.fn<typeof createOgImage>(),
 }));
 
 import { fetchOldestVideoDate, fetchScheduleToday } from "@/lib/data/schedule";

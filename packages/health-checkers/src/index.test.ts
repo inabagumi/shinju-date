@@ -1,5 +1,3 @@
-/* oxlint-disable typescript/no-explicit-any -- Testing health check functions with any type for simplicity */
-
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Redis } from "@upstash/redis";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -10,46 +8,55 @@ import {
   createReadinessResponse,
   runHealthChecks,
 } from "./index.js";
+import type { HealthCheckResult } from "./index.js";
+
+/** The part of the Supabase query builder that the health check uses. */
+interface TalentsTable {
+  select: (columns: string) => {
+    limit: (count: number) => Promise<{ error: { message: string } | null }>;
+  };
+}
 
 // Mock Supabase client
-const mockSupabaseClient = {
-  from: vi.fn(),
-} as unknown as SupabaseClient;
+const from = vi.fn<(table: string) => TalentsTable>();
+// `from` returns only the part of the query builder that the check uses, so
+// the client is typed through its keys.
+const mockSupabaseClient = { from } as Partial<
+  Record<keyof SupabaseClient, unknown>
+> as SupabaseClient;
+
+/** Makes the query on the talents table return the error. */
+function respondWithError(error: { message: string } | null): void {
+  from.mockReturnValue({
+    select: () => ({ limit: async () => ({ error }) }),
+  });
+}
 
 // Mock Redis client
-const mockRedisClient = {
-  ping: vi.fn(),
-} as unknown as Redis;
+const ping = vi.fn<Redis["ping"]>();
+const mockRedisClient = { ping } as Partial<Redis> as Redis;
 
-describe("checkSupabaseHealth", () => {
+describe(checkSupabaseHealth, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("should return ok status when database connection is successful", async () => {
-    (mockSupabaseClient.from as any).mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        limit: vi.fn().mockResolvedValue({ error: null }),
-      }),
-    });
+    respondWithError(null);
 
     const result = await checkSupabaseHealth(mockSupabaseClient);
 
-    expect(result).toEqual({ status: "ok" });
-    expect(mockSupabaseClient.from).toHaveBeenCalledWith("talents");
+    expect(result).toStrictEqual({ status: "ok" });
+    expect(from).toHaveBeenCalledWith("talents");
   });
 
   it("should return error status when database query fails", async () => {
     const mockError = { message: "Connection failed" };
-    (mockSupabaseClient.from as any).mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        limit: vi.fn().mockResolvedValue({ error: mockError }),
-      }),
-    });
+    respondWithError(mockError);
 
     const result = await checkSupabaseHealth(mockSupabaseClient);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       details: "Connection failed",
       message: "Database connection failed",
       status: "error",
@@ -57,13 +64,13 @@ describe("checkSupabaseHealth", () => {
   });
 
   it("should return error status when exception is thrown", async () => {
-    (mockSupabaseClient.from as any).mockImplementation(() => {
+    from.mockImplementation(() => {
       throw new Error("Network error");
     });
 
     const result = await checkSupabaseHealth(mockSupabaseClient);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       details: "Network error",
       message: "Database health check failed",
       status: "error",
@@ -71,26 +78,26 @@ describe("checkSupabaseHealth", () => {
   });
 });
 
-describe("checkRedisHealth", () => {
+describe(checkRedisHealth, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("should return ok status when Redis ping is successful", async () => {
-    (mockRedisClient.ping as any).mockResolvedValue("PONG");
+    ping.mockResolvedValue("PONG");
 
     const result = await checkRedisHealth(mockRedisClient);
 
-    expect(result).toEqual({ status: "ok" });
-    expect(mockRedisClient.ping).toHaveBeenCalled();
+    expect(result).toStrictEqual({ status: "ok" });
+    expect(ping).toHaveBeenCalledWith();
   });
 
   it("should return error status when Redis ping returns unexpected value", async () => {
-    (mockRedisClient.ping as any).mockResolvedValue("UNEXPECTED");
+    ping.mockResolvedValue("UNEXPECTED");
 
     const result = await checkRedisHealth(mockRedisClient);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       details: "Expected PONG, got: UNEXPECTED",
       message: "Redis connection failed",
       status: "error",
@@ -98,13 +105,11 @@ describe("checkRedisHealth", () => {
   });
 
   it("should return error status when Redis ping throws exception", async () => {
-    (mockRedisClient.ping as any).mockRejectedValue(
-      new Error("Connection timeout")
-    );
+    ping.mockRejectedValue(new Error("Connection timeout"));
 
     const result = await checkRedisHealth(mockRedisClient);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       details: "Connection timeout",
       message: "Redis health check failed",
       status: "error",
@@ -112,24 +117,30 @@ describe("checkRedisHealth", () => {
   });
 });
 
-describe("runHealthChecks", () => {
+describe(runHealthChecks, () => {
   it("should return ok status when all checks pass", async () => {
     const checks = [
-      vi.fn().mockResolvedValue({ status: "ok" }),
-      vi.fn().mockResolvedValue({ status: "ok" }),
+      vi
+        .fn<() => Promise<HealthCheckResult>>()
+        .mockResolvedValue({ status: "ok" }),
+      vi
+        .fn<() => Promise<HealthCheckResult>>()
+        .mockResolvedValue({ status: "ok" }),
     ];
 
     const result = await runHealthChecks(checks);
 
     expect(result.status).toBe("ok");
     expect(result.results).toHaveLength(2);
-    expect(result.results.every((r) => r.status === "ok")).toBe(true);
+    expect(result.results.every((r) => r.status === "ok")).toBeTruthy();
   });
 
   it("should return error status when one check fails", async () => {
     const checks = [
-      vi.fn().mockResolvedValue({ status: "ok" }),
-      vi.fn().mockResolvedValue({
+      vi
+        .fn<() => Promise<HealthCheckResult>>()
+        .mockResolvedValue({ status: "ok" }),
+      vi.fn<() => Promise<HealthCheckResult>>().mockResolvedValue({
         details: "Error details",
         message: "Check failed",
         status: "error",
@@ -145,26 +156,30 @@ describe("runHealthChecks", () => {
 
   it("should run all checks even if some fail", async () => {
     const checks = [
-      vi.fn().mockResolvedValue({ status: "error" }),
-      vi.fn().mockResolvedValue({ status: "ok" }),
+      vi
+        .fn<() => Promise<HealthCheckResult>>()
+        .mockResolvedValue({ status: "error" }),
+      vi
+        .fn<() => Promise<HealthCheckResult>>()
+        .mockResolvedValue({ status: "ok" }),
     ];
 
     const result = await runHealthChecks(checks);
 
-    expect(checks[0]).toHaveBeenCalled();
-    expect(checks[1]).toHaveBeenCalled();
+    expect(checks[0]).toHaveBeenCalledWith();
+    expect(checks[1]).toHaveBeenCalledWith();
     expect(result.results).toHaveLength(2);
   });
 });
 
-describe("createReadinessResponse", () => {
+describe(createReadinessResponse, () => {
   it("should return 200 response for ok status", async () => {
     const response = createReadinessResponse("ok");
 
     expect(response.status).toBe(200);
 
     const json = await response.json();
-    expect(json).toEqual({ status: "ok" });
+    expect(json).toStrictEqual({ status: "ok" });
   });
 
   it("should return 503 response for error status with results", async () => {
@@ -182,7 +197,7 @@ describe("createReadinessResponse", () => {
     expect(response.status).toBe(503);
 
     const json = await response.json();
-    expect(json).toEqual({
+    expect(json).toStrictEqual({
       checks: results,
       message: "Service not ready",
       status: "error",
@@ -200,7 +215,7 @@ describe("createReadinessResponse", () => {
     expect(response.status).toBe(503);
 
     const json = await response.json();
-    expect(json).toEqual({
+    expect(json).toStrictEqual({
       details: "Custom error details",
       message: "Custom error message",
       status: "error",
@@ -213,7 +228,7 @@ describe("createReadinessResponse", () => {
     expect(response.status).toBe(503);
 
     const json = await response.json();
-    expect(json).toEqual({
+    expect(json).toStrictEqual({
       message: "Health check failed",
       status: "error",
     });

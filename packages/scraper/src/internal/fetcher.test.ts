@@ -6,6 +6,7 @@ import type {
   VideoLookupResult,
 } from "./fetcher-types.js";
 import { Fetcher } from "./fetcher.js";
+import type { Logger } from "./logger.js";
 
 interface Account {
   id: string;
@@ -94,7 +95,7 @@ class ExampleFetcher extends Fetcher<Account, Video> {
   }
 }
 
-describe("Fetcher", () => {
+describe(Fetcher, () => {
   describe("lookups by ID", () => {
     it("passes each ID once and leaves batching to the API client", async () => {
       const fetcher = new ExampleFetcher({
@@ -104,18 +105,18 @@ describe("Fetcher", () => {
 
       const result = await fetcher.getVideos(["v1", "v2", "v1", "v3", "v2"]);
 
-      expect(result.videos.map((video) => video.id)).toEqual([
+      expect(result.videos.map((video) => video.id)).toStrictEqual([
         "v1",
         "v2",
         "v3",
       ]);
-      expect(fetcher.requests).toEqual([["v1", "v2", "v3"]]);
+      expect(fetcher.requests).toStrictEqual([["v1", "v2", "v3"]]);
     });
 
     it("reports the IDs the platform did not return", async () => {
       const fetcher = new ExampleFetcher({ accounts: {}, videoIds: ["v1"] });
 
-      await expect(fetcher.getVideos(["v1", "gone"])).resolves.toEqual({
+      await expect(fetcher.getVideos(["v1", "gone"])).resolves.toStrictEqual({
         missingIds: ["gone"],
         videos: [{ id: "v1", title: "Video v1" }],
       });
@@ -124,8 +125,8 @@ describe("Fetcher", () => {
     it("makes no request without IDs", async () => {
       const fetcher = new ExampleFetcher({ accounts: {}, videoIds: [] });
 
-      await expect(fetcher.getAccounts([])).resolves.toEqual([]);
-      expect(fetcher.requests).toEqual([]);
+      await expect(fetcher.getAccounts([])).resolves.toStrictEqual([]);
+      expect(fetcher.requests).toStrictEqual([]);
     });
   });
 
@@ -139,8 +140,8 @@ describe("Fetcher", () => {
 
       const result = await fetcher.getRecentVideos(["a", "b"]);
 
-      expect(result.failures).toEqual([{ accountId: "a", error }]);
-      expect(result.videos).toEqual([{ id: "v3", title: "Video v3" }]);
+      expect(result.failures).toStrictEqual([{ accountId: "a", error }]);
+      expect(result.videos).toStrictEqual([{ id: "v3", title: "Video v3" }]);
     });
   });
 
@@ -148,10 +149,10 @@ describe("Fetcher", () => {
     it("logs the account and platform of a failed listing", async () => {
       const error = new Error("rate limited");
       const logger = {
-        debug: vi.fn(),
-        error: vi.fn(),
-        info: vi.fn(),
-        warn: vi.fn(),
+        debug: vi.fn<Logger["debug"]>(),
+        error: vi.fn<Logger["error"]>(),
+        info: vi.fn<Logger["info"]>(),
+        warn: vi.fn<Logger["warn"]>(),
       };
 
       const fetcher = new ExampleFetcher(

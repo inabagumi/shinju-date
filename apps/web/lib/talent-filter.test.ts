@@ -11,49 +11,51 @@ const TALENT_B = "7d2e4b1a-3c5f-4e6a-8b9c-0d1e2f3a4b02";
 const TALENT_C = "c3a1b2d4-5e6f-4a7b-8c9d-0e1f2a3b4c03";
 const ACTIVE_TALENT_IDS = [TALENT_C, TALENT_A, TALENT_B];
 
-describe("normalizeTalentIds", () => {
+describe(normalizeTalentIds, () => {
   it("should remove duplicates and sort the IDs", () => {
-    expect(normalizeTalentIds([TALENT_C, TALENT_A, TALENT_C])).toEqual([
+    expect(normalizeTalentIds([TALENT_C, TALENT_A, TALENT_C])).toStrictEqual([
       TALENT_A,
       TALENT_C,
     ]);
   });
 });
 
-describe("hasInvalidTalentId", () => {
+describe(hasInvalidTalentId, () => {
   it("should accept missing values and UUIDs", () => {
-    expect(hasInvalidTalentId(undefined)).toBe(false);
-    expect(hasInvalidTalentId([])).toBe(false);
-    expect(hasInvalidTalentId([TALENT_A, TALENT_B.toUpperCase()])).toBe(false);
+    expect(hasInvalidTalentId(undefined)).toBeFalsy();
+    expect(hasInvalidTalentId([])).toBeFalsy();
+    expect(hasInvalidTalentId([TALENT_A, TALENT_B.toUpperCase()])).toBeFalsy();
   });
 
   it("should find the values that are not UUIDs", () => {
-    expect(hasInvalidTalentId("abc")).toBe(true);
-    expect(hasInvalidTalentId([""])).toBe(true);
-    expect(hasInvalidTalentId([TALENT_A, `${TALENT_B}x`])).toBe(true);
+    expect(hasInvalidTalentId("abc")).toBeTruthy();
+    expect(hasInvalidTalentId([""])).toBeTruthy();
+    expect(hasInvalidTalentId([TALENT_A, `${TALENT_B}x`])).toBeTruthy();
   });
 });
 
-describe("parseTalentIds", () => {
+describe(parseTalentIds, () => {
   it("should return the given talents", () => {
-    expect(parseTalentIds(TALENT_A, ACTIVE_TALENT_IDS)).toEqual([TALENT_A]);
+    expect(parseTalentIds(TALENT_A, ACTIVE_TALENT_IDS)).toStrictEqual([
+      TALENT_A,
+    ]);
     expect(
       parseTalentIds([TALENT_C, TALENT_A, TALENT_C], ACTIVE_TALENT_IDS)
-    ).toEqual([TALENT_A, TALENT_C]);
+    ).toStrictEqual([TALENT_A, TALENT_C]);
   });
 
   it("should accept the IDs in upper case", () => {
-    expect(parseTalentIds(TALENT_B.toUpperCase(), ACTIVE_TALENT_IDS)).toEqual([
-      TALENT_B,
-    ]);
+    expect(
+      parseTalentIds(TALENT_B.toUpperCase(), ACTIVE_TALENT_IDS)
+    ).toStrictEqual([TALENT_B]);
   });
 
   it("should ignore the values that are not UUIDs", () => {
-    expect(parseTalentIds(undefined, ACTIVE_TALENT_IDS)).toEqual([]);
-    expect(parseTalentIds("", ACTIVE_TALENT_IDS)).toEqual([]);
+    expect(parseTalentIds(undefined, ACTIVE_TALENT_IDS)).toStrictEqual([]);
+    expect(parseTalentIds("", ACTIVE_TALENT_IDS)).toStrictEqual([]);
     expect(
       parseTalentIds(["abc", `${TALENT_A}x`, TALENT_B], ACTIVE_TALENT_IDS)
-    ).toEqual([TALENT_B]);
+    ).toStrictEqual([TALENT_B]);
   });
 
   it("should ignore the IDs of talents that are not active", () => {
@@ -62,12 +64,12 @@ describe("parseTalentIds", () => {
         ["00000000-0000-4000-8000-000000000000", TALENT_A],
         ACTIVE_TALENT_IDS
       )
-    ).toEqual([TALENT_A]);
+    ).toStrictEqual([TALENT_A]);
   });
 
   it("should keep every UUID without the active talents", () => {
     expect(
       parseTalentIds([TALENT_C, "abc", "00000000-0000-4000-8000-000000000000"])
-    ).toEqual(["00000000-0000-4000-8000-000000000000", TALENT_C]);
+    ).toStrictEqual(["00000000-0000-4000-8000-000000000000", TALENT_C]);
   });
 });

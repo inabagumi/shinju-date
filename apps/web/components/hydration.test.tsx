@@ -2,30 +2,37 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { hydrateRoot } from "react-dom/client";
-import type { Root } from "react-dom/client";
+import type { HydrationOptions, Root } from "react-dom/client";
 import { renderToString } from "react-dom/server";
+import type { InViewHookResponse } from "react-intersection-observer";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import Timeline from "@/app/_components/timeline";
 import ScheduleDayHeader from "@/app/schedule/_components/schedule-day-header";
-import type { Video } from "@/lib/data/videos";
+import type { fetchVideos, Video } from "@/lib/data/videos";
 import { createVideoItem } from "@/test/factories";
 
 import FormattedTime from "./formatted-time";
 import SearchResults from "./search-results";
 import { TimerProvider } from "./timer";
+import type { VideoCardSkeleton } from "./video-card";
 
-vi.mock("@/lib/data/videos", () => ({
-  fetchVideos: vi.fn(() => new Promise(() => {})),
+vi.mock(import("@/lib/data/videos"), () => ({
+  fetchVideos: vi.fn<typeof fetchVideos>(() => new Promise(() => {})),
 }));
 
-vi.mock("react-intersection-observer", () => ({
-  useInView: () => ({ inView: false, ref: () => {} }),
+vi.mock(import("react-intersection-observer"), () => ({
+  useInView: () =>
+    ({
+      inView: false,
+      ref: () => {},
+    }) as Partial<InViewHookResponse> as InViewHookResponse,
 }));
 
-vi.mock("./video-card", () => ({
+vi.mock(import("./video-card"), () => ({
   default: ({ value }: { value: Video }) => <article>{value.title}</article>,
-  VideoCardSkeleton: () => null,
+  // Renders nothing
+  VideoCardSkeleton: vi.fn<typeof VideoCardSkeleton>(),
 }));
 
 /** The server renders a minute before the date changes in Japan */
@@ -70,7 +77,8 @@ async function renderOnServerAndHydrate(children: ReactNode) {
 
   mockNow(BROWSER_NOW);
 
-  const onRecoverableError = vi.fn();
+  const onRecoverableError =
+    vi.fn<NonNullable<HydrationOptions["onRecoverableError"]>>();
   const consoleError = vi.spyOn(console, "error");
   const serverHtml = container.innerHTML;
 

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { SearchModalRecommendedQueries } from "./search-modal-recommended-queries";
 
-describe("SearchModalRecommendedQueries", () => {
+describe(SearchModalRecommendedQueries, () => {
   it("should render the heading and a skeleton while loading", () => {
     render(<SearchModalRecommendedQueries queries={null} />);
 
@@ -23,7 +23,7 @@ describe("SearchModalRecommendedQueries", () => {
   });
 
   it("should render the heading and the queries when loaded", () => {
-    const onClickLink = vi.fn();
+    const onClickLink = vi.fn<() => void>();
 
     render(
       <SearchModalRecommendedQueries

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { escapeSearchString } from "./escape-search";
 
-describe("escapeSearchString", () => {
+describe(escapeSearchString, () => {
   it("escapes % character", () => {
     expect(escapeSearchString("test%")).toBe("test\\%");
   });

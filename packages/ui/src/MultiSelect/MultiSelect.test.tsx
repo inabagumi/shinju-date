@@ -3,8 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import { MultiSelect } from "./MultiSelect";
+import type { MultiSelectProps } from "./MultiSelect";
 
-describe("MultiSelect", () => {
+describe(MultiSelect, () => {
   const defaultOptions = [
     { label: "Option 1", value: "1" },
     { label: "Option 2", value: "2" },
@@ -14,7 +15,7 @@ describe("MultiSelect", () => {
   it("should render with placeholder when no values selected", () => {
     render(
       <MultiSelect
-        onChange={vi.fn()}
+        onChange={vi.fn<MultiSelectProps["onChange"]>()}
         options={defaultOptions}
         placeholder="Select items"
         value={[]}
@@ -27,7 +28,7 @@ describe("MultiSelect", () => {
   it("should display single selected item label", () => {
     render(
       <MultiSelect
-        onChange={vi.fn()}
+        onChange={vi.fn<MultiSelectProps["onChange"]>()}
         options={defaultOptions}
         placeholder="Select items"
         value={["1"]}
@@ -40,7 +41,7 @@ describe("MultiSelect", () => {
   it("should display count when multiple items selected", () => {
     render(
       <MultiSelect
-        onChange={vi.fn()}
+        onChange={vi.fn<MultiSelectProps["onChange"]>()}
         options={defaultOptions}
         placeholder="Select items"
         value={["1", "2"]}
@@ -55,7 +56,7 @@ describe("MultiSelect", () => {
 
     render(
       <MultiSelect
-        onChange={vi.fn()}
+        onChange={vi.fn<MultiSelectProps["onChange"]>()}
         options={defaultOptions}
         placeholder="Select items"
         value={[]}
@@ -73,7 +74,7 @@ describe("MultiSelect", () => {
 
   it("should call onChange when item is selected", async () => {
     const user = userEvent.setup();
-    const handleChange = vi.fn();
+    const handleChange = vi.fn<MultiSelectProps["onChange"]>();
 
     render(
       <MultiSelect
@@ -96,7 +97,7 @@ describe("MultiSelect", () => {
 
   it("should toggle selection when clicking already selected item", async () => {
     const user = userEvent.setup();
-    const handleChange = vi.fn();
+    const handleChange = vi.fn<MultiSelectProps["onChange"]>();
 
     render(
       <MultiSelect
@@ -121,7 +122,7 @@ describe("MultiSelect", () => {
 
   it('should select all items when "すべて選択" is clicked', async () => {
     const user = userEvent.setup();
-    const handleChange = vi.fn();
+    const handleChange = vi.fn<MultiSelectProps["onChange"]>();
 
     render(
       <MultiSelect
@@ -140,7 +141,7 @@ describe("MultiSelect", () => {
 
   it('should select all items when "すべて選択" is clicked while some are selected', async () => {
     const user = userEvent.setup();
-    const handleChange = vi.fn();
+    const handleChange = vi.fn<MultiSelectProps["onChange"]>();
 
     render(
       <MultiSelect
@@ -159,7 +160,7 @@ describe("MultiSelect", () => {
 
   it('should deselect all items when "すべて選択" is clicked while all are selected', async () => {
     const user = userEvent.setup();
-    const handleChange = vi.fn();
+    const handleChange = vi.fn<MultiSelectProps["onChange"]>();
 
     render(
       <MultiSelect
@@ -187,7 +188,7 @@ describe("MultiSelect", () => {
 
       render(
         <MultiSelect
-          onChange={vi.fn()}
+          onChange={vi.fn<MultiSelectProps["onChange"]>()}
           options={defaultOptions}
           placeholder="Select items"
           value={value}
@@ -206,7 +207,7 @@ describe("MultiSelect", () => {
     render(
       <MultiSelect
         label="表示状態"
-        onChange={vi.fn()}
+        onChange={vi.fn<MultiSelectProps["onChange"]>()}
         options={defaultOptions}
         placeholder="Select items"
         value={["1", "2"]}
@@ -219,8 +220,8 @@ describe("MultiSelect", () => {
 
   it("should not share checkbox ids between MultiSelects with the same option values", async () => {
     const user = userEvent.setup();
-    const handleFirstChange = vi.fn();
-    const handleSecondChange = vi.fn();
+    const handleFirstChange = vi.fn<MultiSelectProps["onChange"]>();
+    const handleSecondChange = vi.fn<MultiSelectProps["onChange"]>();
     const options = [
       { label: "公開", value: "true" },
       { label: "非公開", value: "false" },
@@ -268,7 +269,7 @@ describe("MultiSelect", () => {
     render(
       <MultiSelect
         className="custom-class"
-        onChange={vi.fn()}
+        onChange={vi.fn<MultiSelectProps["onChange"]>()}
         options={defaultOptions}
         placeholder="Select items"
         value={[]}

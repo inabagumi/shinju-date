@@ -2,13 +2,22 @@ import type { Tables } from "@shinju-date/database";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type {
+  markFeatureRequestAsReadAction,
+  updateFeatureRequestMemoAction,
+  updateFeatureRequestStatusAction,
+} from "../../_actions/update-feedback";
+
 const mocks = vi.hoisted(() => ({
-  markFeatureRequestAsReadAction: vi.fn(),
-  updateFeatureRequestMemoAction: vi.fn(),
-  updateFeatureRequestStatusAction: vi.fn(),
+  markFeatureRequestAsReadAction:
+    vi.fn<typeof markFeatureRequestAsReadAction>(),
+  updateFeatureRequestMemoAction:
+    vi.fn<typeof updateFeatureRequestMemoAction>(),
+  updateFeatureRequestStatusAction:
+    vi.fn<typeof updateFeatureRequestStatusAction>(),
 }));
 
-vi.mock("../../_actions/update-feedback", () => ({
+vi.mock(import("../../_actions/update-feedback"), () => ({
   markFeatureRequestAsReadAction: mocks.markFeatureRequestAsReadAction,
   updateFeatureRequestMemoAction: mocks.updateFeatureRequestMemoAction,
   updateFeatureRequestStatusAction: mocks.updateFeatureRequestStatusAction,
@@ -66,7 +75,7 @@ describe("FeatureRequestDetail", () => {
       expect(screen.getByText("検索").tagName).toBe("STRONG");
       expect(
         screen.getAllByRole("listitem").map((item) => item.textContent)
-      ).toEqual(["絞り込み", "並べ替え"]);
+      ).toStrictEqual(["絞り込み", "並べ替え"]);
       expect(screen.getByRole("link", { name: "詳細" })).toHaveAttribute(
         "href",
         "https://example.com/"
@@ -94,7 +103,9 @@ describe("FeatureRequestDetail", () => {
       await expect(
         within(form).findByRole("status")
       ).resolves.toHaveTextContent("更新しました。");
-      expect(submittedValues(mocks.updateFeatureRequestStatusAction)).toEqual({
+      expect(
+        submittedValues(mocks.updateFeatureRequestStatusAction)
+      ).toStrictEqual({
         id: FEEDBACK_ID,
         status: "in_progress",
       });
@@ -139,7 +150,9 @@ describe("FeatureRequestDetail", () => {
       await expect(
         within(form).findByRole("status")
       ).resolves.toHaveTextContent("保存しました。");
-      expect(submittedValues(mocks.updateFeatureRequestMemoAction)).toEqual({
+      expect(
+        submittedValues(mocks.updateFeatureRequestMemoAction)
+      ).toStrictEqual({
         admin_memo: "次の四半期に対応する。",
         id: FEEDBACK_ID,
       });
@@ -187,7 +200,9 @@ describe("FeatureRequestDetail", () => {
         await expect(
           within(form).findByRole("status")
         ).resolves.toHaveTextContent("更新しました。");
-        expect(submittedValues(mocks.markFeatureRequestAsReadAction)).toEqual({
+        expect(
+          submittedValues(mocks.markFeatureRequestAsReadAction)
+        ).toStrictEqual({
           id: FEEDBACK_ID,
           is_read: submitted,
         });

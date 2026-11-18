@@ -50,7 +50,7 @@ function paste(input: HTMLInputElement, text: string) {
   });
 }
 
-describe("SortableInputList", () => {
+describe(SortableInputList, () => {
   const originalGetBoundingClientRect =
     HTMLElement.prototype.getBoundingClientRect;
 
@@ -74,7 +74,7 @@ describe("SortableInputList", () => {
   it("renders one empty input without the remove button by default", () => {
     renderInForm();
 
-    expect(getInputValues()).toEqual([""]);
+    expect(getInputValues()).toStrictEqual([""]);
     expect(
       screen.queryByRole("button", { name: "削除" })
     ).not.toBeInTheDocument();
@@ -83,7 +83,7 @@ describe("SortableInputList", () => {
   it("renders an input for each default value", () => {
     renderInForm(["しんじゅ", "シンジュ"]);
 
-    expect(getInputValues()).toEqual(["しんじゅ", "シンジュ"]);
+    expect(getInputValues()).toStrictEqual(["しんじゅ", "シンジュ"]);
     expect(screen.getAllByRole("button", { name: "削除" })).toHaveLength(2);
   });
 
@@ -92,18 +92,18 @@ describe("SortableInputList", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "読み方を追加" }));
 
-    expect(getInputValues()).toEqual(["しんじゅ", ""]);
+    expect(getInputValues()).toStrictEqual(["しんじゅ", ""]);
 
     fireEvent.change(getInputs()[1] as HTMLInputElement, {
       target: { value: "シンジュ" },
     });
 
-    expect(getInputValues()).toEqual(["しんじゅ", "シンジュ"]);
+    expect(getInputValues()).toStrictEqual(["しんじゅ", "シンジュ"]);
 
     const [firstRemoveButton] = screen.getAllByRole("button", { name: "削除" });
     fireEvent.click(firstRemoveButton as HTMLElement);
 
-    expect(getInputValues()).toEqual(["シンジュ"]);
+    expect(getInputValues()).toStrictEqual(["シンジュ"]);
     // 入力欄が1つのときは削除のボタンを出さない
     expect(
       screen.queryByRole("button", { name: "削除" })
@@ -120,7 +120,7 @@ describe("SortableInputList", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "読み方を追加" }));
 
-    expect(submitted).toBe(false);
+    expect(submitted).toBeFalsy();
   });
 
   describe("pasting", () => {
@@ -133,8 +133,13 @@ describe("SortableInputList", () => {
       );
 
       // 既定の貼り付けを止め、1行目を貼り付けた入力欄に、残りをその後ろに入れる
-      expect(event).toBe(false);
-      expect(getInputValues()).toEqual(["しんじゅ", "シンジュ", "真珠", "い"]);
+      expect(event).toBeFalsy();
+      expect(getInputValues()).toStrictEqual([
+        "しんじゅ",
+        "シンジュ",
+        "真珠",
+        "い",
+      ]);
     });
 
     it("skips blank lines", () => {
@@ -142,7 +147,7 @@ describe("SortableInputList", () => {
 
       paste(getInputs()[0] as HTMLInputElement, "しんじゅ\n\n  \nシンジュ\n");
 
-      expect(getInputValues()).toEqual(["しんじゅ", "シンジュ"]);
+      expect(getInputValues()).toStrictEqual(["しんじゅ", "シンジュ"]);
     });
 
     it("leaves the inputs as they are when every line is blank", () => {
@@ -150,8 +155,8 @@ describe("SortableInputList", () => {
 
       const event = paste(getInputs()[0] as HTMLInputElement, "  \n\n  ");
 
-      expect(event).toBe(false);
-      expect(getInputValues()).toEqual(["しんじゅ"]);
+      expect(event).toBeFalsy();
+      expect(getInputValues()).toStrictEqual(["しんじゅ"]);
     });
 
     it("leaves a single line to the default paste", () => {
@@ -159,8 +164,8 @@ describe("SortableInputList", () => {
 
       const event = paste(getInputs()[0] as HTMLInputElement, "シンジュ");
 
-      expect(event).toBe(true);
-      expect(getInputValues()).toEqual(["しんじゅ"]);
+      expect(event).toBeTruthy();
+      expect(getInputValues()).toStrictEqual(["しんじゅ"]);
     });
   });
 
@@ -186,7 +191,7 @@ describe("SortableInputList", () => {
     }
 
     await waitFor(() => {
-      expect(getInputValues()).toEqual(["シンジュ", "しんじゅ", "真珠"]);
+      expect(getInputValues()).toStrictEqual(["シンジュ", "しんじゅ", "真珠"]);
     });
   });
 
@@ -196,7 +201,7 @@ describe("SortableInputList", () => {
     fireEvent.click(screen.getByRole("button", { name: "読み方を追加" }));
     paste(getInputs()[1] as HTMLInputElement, "シンジュ\n真珠");
 
-    expect(getSubmittedEntries(form)).toEqual([
+    expect(getSubmittedEntries(form)).toStrictEqual([
       ["term", "SHINJU"],
       ["readings[0]", "しんじゅ"],
       ["readings[1]", "シンジュ"],
@@ -207,7 +212,7 @@ describe("SortableInputList", () => {
   it("submits an empty value for the empty input", () => {
     const form = renderInForm();
 
-    expect(getSubmittedEntries(form)).toEqual([
+    expect(getSubmittedEntries(form)).toStrictEqual([
       ["term", "SHINJU"],
       ["readings[0]", ""],
     ]);

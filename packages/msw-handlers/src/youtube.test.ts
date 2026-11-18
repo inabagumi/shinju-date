@@ -93,7 +93,7 @@ describe("YouTube Handlers", () => {
         `channels?id=${channels.map((channel) => channel.youtube_channel_id).join(",")}&part=contentDetails,id,snippet`
       );
 
-      expect(items).toEqual(
+      expect(items).toStrictEqual(
         channels.map((channel) =>
           expect.objectContaining({
             contentDetails: {
@@ -117,7 +117,7 @@ describe("YouTube Handlers", () => {
         `channels?forHandle=${encodeURIComponent(channel?.youtube_handle ?? "")}&part=snippet`
       );
 
-      expect(items.map((item) => item.id)).toEqual([
+      expect(items.map((item) => item.id)).toStrictEqual([
         channel?.youtube_channel_id,
       ]);
     });
@@ -136,7 +136,7 @@ describe("YouTube Handlers", () => {
         "channels?forHandle=@not-a-saved-handle&part=snippet"
       );
 
-      expect(items).toEqual([]);
+      expect(items).toStrictEqual([]);
     });
 
     it("returns the icons of each channel in square sizes", async () => {
@@ -147,7 +147,7 @@ describe("YouTube Handlers", () => {
       );
       const thumbnails = items[0]?.snippet.thumbnails;
 
-      expect(thumbnails?.default).toEqual({
+      expect(thumbnails?.default).toStrictEqual({
         height: 88,
         url: `https://yt3.ggpht.com/mock-${id}=s88-c-k-c0x00ffffff-no-rj`,
         width: 88,
@@ -206,7 +206,7 @@ describe("YouTube Handlers", () => {
       } while (pageToken);
 
       expect(expected.length).toBeGreaterThan(10);
-      expect(videoIds).toEqual(expected);
+      expect(videoIds).toStrictEqual(expected);
     });
 
     it("lists no videos of a generated channel", async () => {
@@ -214,7 +214,7 @@ describe("YouTube Handlers", () => {
         "playlistItems?playlistId=UUaaaaaaaaaaaaaaaaaaaaaa&part=contentDetails"
       );
 
-      expect(items).toEqual([]);
+      expect(items).toStrictEqual([]);
     });
   });
 
@@ -225,7 +225,7 @@ describe("YouTube Handlers", () => {
         `videos?id=${savedVideos.map(({ youtubeVideo }) => youtubeVideo.youtube_video_id).join(",")}&part=contentDetails,liveStreamingDetails,snippet`
       );
 
-      expect(items).toEqual(
+      expect(items).toStrictEqual(
         savedVideos.map(({ video, youtubeVideo }) =>
           expect.objectContaining({
             contentDetails: { duration: video.duration },
@@ -254,7 +254,7 @@ describe("YouTube Handlers", () => {
         );
         const details = items[0]?.liveStreamingDetails;
 
-        expect(Object.keys(details ?? {}).sort()).toEqual(keys);
+        expect(Object.keys(details ?? {}).sort()).toStrictEqual(keys);
         expect(details?.scheduledStartTime).toBe(saved?.video.published_at);
       }
     );
@@ -276,7 +276,7 @@ describe("YouTube Handlers", () => {
         "videos?id=missingVideo&part=snippet"
       );
 
-      expect(items).toEqual([]);
+      expect(items).toStrictEqual([]);
     });
   });
 
@@ -292,7 +292,7 @@ describe("YouTube Handlers", () => {
       expect(response.headers.get("Content-Type")).toBe("image/png");
       expect(response.headers.get("ETag")).toBeTruthy();
       // PNG signature
-      expect([...body.slice(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
+      expect([...body.slice(0, 4)]).toStrictEqual([0x89, 0x50, 0x4e, 0x47]);
     });
 
     it("answers a matching conditional request with 304", async () => {

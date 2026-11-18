@@ -1,32 +1,29 @@
-import type { MultiSelectOption } from "@shinju-date/ui";
+import type { MultiSelectProps } from "@shinju-date/ui";
 import { fireEvent, render, screen, within } from "@testing-library/react";
+import type { useRouter } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Talent } from "@/lib/data/talents";
 
 import VideoFilters from "./video-filters";
 
-const push = vi.hoisted(() => vi.fn());
+type AppRouterInstance = ReturnType<typeof useRouter>;
 
-interface MockMultiSelectProps {
-  onChange: (value: string[]) => void;
-  options: MultiSelectOption[];
-  placeholder: string;
-  value: string[];
-}
+const push = vi.hoisted(() => vi.fn<AppRouterInstance["push"]>());
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push }),
+vi.mock(import("next/navigation"), () => ({
+  useRouter: () =>
+    ({ push }) as Partial<AppRouterInstance> as AppRouterInstance,
 }));
 
-vi.mock("@shinju-date/ui", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@shinju-date/ui")>()),
+vi.mock(import("@shinju-date/ui"), async (importOriginal) => ({
+  ...(await importOriginal()),
   MultiSelect: ({
     onChange,
     options,
     placeholder,
     value,
-  }: MockMultiSelectProps) => (
+  }: MultiSelectProps) => (
     <fieldset>
       <legend>{placeholder}</legend>
       {options.map((option) => (
@@ -56,7 +53,7 @@ const TALENTS: Talent[] = [
 ];
 const [TALENT_A, TALENT_B, TALENT_C] = TALENTS as [Talent, Talent, Talent];
 
-describe("VideoFilters", () => {
+describe(VideoFilters, () => {
   beforeEach(() => {
     push.mockClear();
   });
@@ -77,7 +74,7 @@ describe("VideoFilters", () => {
       within(group)
         .getAllByRole("checkbox")
         .map((checkbox) => checkbox.parentElement?.textContent)
-    ).toEqual(["朝霧ミオ", "白露ネネ", "凪沢ユラ"]);
+    ).toStrictEqual(["朝霧ミオ", "白露ネネ", "凪沢ユラ"]);
     expect(
       screen.queryByRole("list", { name: "選んでいるタレント" })
     ).not.toBeInTheDocument();

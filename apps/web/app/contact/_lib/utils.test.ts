@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import type { ServerEnv } from "@/lib/env";
+
 const { serverEnv } = vi.hoisted(() => ({
   serverEnv: {
     ADMIN_EMAIL: undefined as string | undefined,
@@ -8,7 +10,9 @@ const { serverEnv } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/lib/env", () => ({ serverEnv }));
+vi.mock(import("@/lib/env"), () => ({
+  serverEnv: serverEnv as Partial<ServerEnv> as ServerEnv,
+}));
 
 import { getContactFormConfig, isContactFormEnabled } from "./utils";
 
@@ -21,7 +25,7 @@ function setEnv(values: Partial<typeof serverEnv>): void {
   });
 }
 
-describe("getContactFormConfig", () => {
+describe(getContactFormConfig, () => {
   afterEach(() => {
     serverEnv.ADMIN_EMAIL = undefined;
     serverEnv.FROM_EMAIL = undefined;
@@ -31,12 +35,12 @@ describe("getContactFormConfig", () => {
   it("returns the settings when every variable is set", () => {
     setEnv({});
 
-    expect(getContactFormConfig()).toEqual({
+    expect(getContactFormConfig()).toStrictEqual({
       adminEmail: "contact@example.org",
       fromEmail: "noreply@example.org",
       resendApiKey: "re_test",
     });
-    expect(isContactFormEnabled()).toBe(true);
+    expect(isContactFormEnabled()).toBeTruthy();
   });
 
   it.each(["ADMIN_EMAIL", "FROM_EMAIL", "RESEND_API_KEY"] as const)(
@@ -45,7 +49,7 @@ describe("getContactFormConfig", () => {
       setEnv({ [name]: undefined });
 
       expect(getContactFormConfig()).toBeNull();
-      expect(isContactFormEnabled()).toBe(false);
+      expect(isContactFormEnabled()).toBeFalsy();
     }
   );
 
@@ -53,6 +57,6 @@ describe("getContactFormConfig", () => {
     setEnv({ ADMIN_EMAIL: "admin@example.com" });
 
     expect(getContactFormConfig()).toBeNull();
-    expect(isContactFormEnabled()).toBe(false);
+    expect(isContactFormEnabled()).toBeFalsy();
   });
 });

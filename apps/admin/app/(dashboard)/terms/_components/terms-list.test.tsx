@@ -5,24 +5,36 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { AppRouter } from "@/test/next-navigation";
+
+import type {
+  createTermAction,
+  deleteTermAction,
+  updateTermAction,
+} from "../_actions";
 import { groupTermsByInitial } from "../_lib/group-terms";
 
 const mocks = vi.hoisted(() => ({
-  deleteTermAction: vi.fn(),
+  deleteTermAction: vi.fn<typeof deleteTermAction>(),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => "/terms",
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
-  useSearchParams: () => new URLSearchParams(),
+  useRouter: () =>
+    ({
+      push: vi.fn<AppRouter["push"]>(),
+      replace: vi.fn<AppRouter["replace"]>(),
+    }) as Partial<AppRouter> as AppRouter,
+  useSearchParams: () => new URLSearchParams() as ReadonlyURLSearchParams,
 }));
 
-vi.mock("../_actions", () => ({
-  createTermAction: vi.fn(),
+vi.mock(import("../_actions"), () => ({
+  createTermAction: vi.fn<typeof createTermAction>(),
   deleteTermAction: mocks.deleteTermAction,
-  updateTermAction: vi.fn(),
+  updateTermAction: vi.fn<typeof updateTermAction>(),
 }));
 
 const { TermsList } = await import("./terms-list");
@@ -52,7 +64,7 @@ describe("TermsList", () => {
       within(index)
         .getAllByRole("link")
         .map((link) => [link.textContent, link.getAttribute("href")])
-    ).toEqual([
+    ).toStrictEqual([
       ["A", "#group-A"],
       ["ア", "#group-ア"],
     ]);
@@ -60,6 +72,12 @@ describe("TermsList", () => {
     const groupHeader = screen.getByRole("columnheader", { name: /^ア/ });
     expect(groupHeader).toHaveTextContent("ア1件");
     expect(groupHeader.closest("tr")).toHaveAttribute("id", "group-ア");
+  });
+
+  it("renders the reading and the synonyms of each term", () => {
+    render(
+      <TermsList groups={groupTermsByInitial(TERMS)} search={undefined} />
+    );
 
     const row = screen
       .getAllByRole("row")

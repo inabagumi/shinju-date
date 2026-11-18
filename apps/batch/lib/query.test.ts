@@ -8,9 +8,9 @@ function createRequest(search = ""): Request {
   return new Request(`http://localhost:5000/talents/update${search}`);
 }
 
-describe("parseQuery", () => {
+describe(parseQuery, () => {
   it("returns YouTube when provider is omitted", () => {
-    expect(parseQuery(providerQuerySchema, createRequest())).toEqual({
+    expect(parseQuery(providerQuerySchema, createRequest())).toStrictEqual({
       provider: "youtube",
     });
   });
@@ -18,7 +18,7 @@ describe("parseQuery", () => {
   it("returns the parsed query", () => {
     expect(
       parseQuery(providerQuerySchema, createRequest("?provider=twitch"))
-    ).toEqual({ provider: "twitch" });
+    ).toStrictEqual({ provider: "twitch" });
   });
 
   it("answers 400 naming the invalid parameter", async () => {
@@ -33,7 +33,7 @@ describe("parseQuery", () => {
 
     expect(status).toBe(400);
     expect(headers.get("Cache-Control")).toBe("no-store");
-    await expect((response as Response).json()).resolves.toEqual({
+    await expect((response as Response).json()).resolves.toStrictEqual({
       error: expect.stringMatching(
         /^Invalid query parameters\. provider: .*"youtube".*"twitch"/
       ),

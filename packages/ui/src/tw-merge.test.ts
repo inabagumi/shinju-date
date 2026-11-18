@@ -30,25 +30,25 @@ function extractThemeKeys(namespace: string): string[] {
   return [...new Set(keys)].sort();
 }
 
-describe("twMerge", () => {
+describe("twMerge()", () => {
   it("knows every font size in theme.css", () => {
-    expect([...FONT_SIZES].sort()).toEqual(extractThemeKeys("text"));
+    expect([...FONT_SIZES].sort()).toStrictEqual(extractThemeKeys("text"));
   });
 
   it("knows every container in theme.css", () => {
-    expect([...CONTAINERS].sort()).toEqual(extractThemeKeys("container"));
+    expect([...CONTAINERS].sort()).toStrictEqual(extractThemeKeys("container"));
   });
 
   it("knows every radius in theme.css", () => {
-    expect([...RADII].sort()).toEqual(extractThemeKeys("radius"));
+    expect([...RADII].sort()).toStrictEqual(extractThemeKeys("radius"));
   });
 
   it("knows every shadow in theme.css", () => {
-    expect([...SHADOWS].sort()).toEqual(extractThemeKeys("shadow"));
+    expect([...SHADOWS].sort()).toStrictEqual(extractThemeKeys("shadow"));
   });
 
   it("knows every animation in theme.css", () => {
-    expect([...ANIMATIONS].sort()).toEqual(extractThemeKeys("animate"));
+    expect([...ANIMATIONS].sort()).toStrictEqual(extractThemeKeys("animate"));
   });
 
   it("replaces an animation with another one", () => {
@@ -68,7 +68,7 @@ describe("twMerge", () => {
       .map(([, name]) => name)
       .sort();
 
-    expect([...FOCUS_RINGS].sort()).toEqual(utilities);
+    expect([...FOCUS_RINGS].sort()).toStrictEqual(utilities);
   });
 
   it("replaces a focus ring with another one", () => {

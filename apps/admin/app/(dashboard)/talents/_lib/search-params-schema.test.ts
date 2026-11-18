@@ -2,10 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { talentSearchParamsSchema } from "./search-params-schema";
 
-describe("talentSearchParamsSchema", () => {
+describe("talentSearchParamsSchema.parse", () => {
   it("uses the default values when no parameters are given", () => {
-    expect(talentSearchParamsSchema.parse({})).toEqual({
-      search: undefined,
+    expect(talentSearchParamsSchema.parse({})).toStrictEqual({
       sort: "desc",
       status: "not_deleted",
     });
@@ -18,19 +17,19 @@ describe("talentSearchParamsSchema", () => {
         sort: "asc",
         status: "retired",
       })
-    ).toEqual({ search: "ななし", sort: "asc", status: "retired" });
+    ).toStrictEqual({ search: "ななし", sort: "asc", status: "retired" });
   });
 
   it("uses the default values for invalid values", () => {
     expect(
       talentSearchParamsSchema.parse({ sort: "random", status: "unknown" })
-    ).toEqual({ search: undefined, sort: "desc", status: "not_deleted" });
+    ).toStrictEqual({ sort: "desc", status: "not_deleted" });
   });
 
   it("treats a blank search as no search and trims the search", () => {
-    expect(talentSearchParamsSchema.parse({ search: "   " }).search).toBe(
-      undefined
-    );
+    expect(
+      talentSearchParamsSchema.parse({ search: "   " }).search
+    ).toBeUndefined();
     expect(talentSearchParamsSchema.parse({ search: " abc " }).search).toBe(
       "abc"
     );
@@ -43,6 +42,6 @@ describe("talentSearchParamsSchema", () => {
         sort: ["asc", "desc"],
         status: ["deleted", "all"],
       })
-    ).toEqual({ search: "a", sort: "asc", status: "deleted" });
+    ).toStrictEqual({ search: "a", sort: "asc", status: "deleted" });
   });
 });

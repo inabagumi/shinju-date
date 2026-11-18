@@ -3,10 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { AsyncPanelBody } from "./async-panel-body";
 
-describe("AsyncPanelBody", () => {
+describe(AsyncPanelBody, () => {
   it("renders only the content while nothing failed", () => {
     render(
-      <AsyncPanelBody error={null} onRetry={vi.fn()}>
+      <AsyncPanelBody error={null} onRetry={vi.fn<() => Promise<void>>()}>
         <p>進捗</p>
       </AsyncPanelBody>
     );
@@ -18,7 +18,10 @@ describe("AsyncPanelBody", () => {
 
   it("tells why the reload failed above the content it still has", () => {
     render(
-      <AsyncPanelBody error="Redis に接続できません" onRetry={vi.fn()}>
+      <AsyncPanelBody
+        error="Redis に接続できません"
+        onRetry={vi.fn<() => Promise<void>>()}
+      >
         <p>進捗</p>
       </AsyncPanelBody>
     );
@@ -31,7 +34,7 @@ describe("AsyncPanelBody", () => {
 
   it("retries, keeping the button busy until the reload ends", async () => {
     let finish: () => void = () => {};
-    const onRetry = vi.fn(
+    const onRetry = vi.fn<() => Promise<void>>(
       () =>
         new Promise<void>((resolve) => {
           finish = resolve;

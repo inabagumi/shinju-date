@@ -60,11 +60,11 @@ const terms: TermRow[] = [
 
 const supabaseClient = createFakeSupabaseClient({ talents, terms, videos });
 
-describe("countSummaryStats", () => {
+describe(countSummaryStats, () => {
   it("counts the rows as they are now without asOf", async () => {
     const stats = await countSummaryStats(supabaseClient);
 
-    expect(stats).toEqual({
+    expect(stats).toStrictEqual({
       deletedVideos: 2,
       hiddenVideos: 1,
       scheduledVideos: 1,
@@ -80,7 +80,7 @@ describe("countSummaryStats", () => {
   it("counts the rows as they were at asOf", async () => {
     const stats = await countSummaryStats(supabaseClient, { asOf });
 
-    expect(stats).toEqual({
+    expect(stats).toStrictEqual({
       deletedVideos: 1,
       hiddenVideos: 1,
       scheduledVideos: 1,
@@ -116,7 +116,7 @@ describe("countSummaryStats", () => {
     };
     const client = createFakeSupabaseClient(rows);
 
-    await expect(countSummaryStats(client, { asOf })).resolves.toEqual(
+    await expect(countSummaryStats(client, { asOf })).resolves.toStrictEqual(
       await countSummaryStats(client)
     );
   });
@@ -124,7 +124,7 @@ describe("countSummaryStats", () => {
   it("counts empty tables as 0", async () => {
     const stats = await countSummaryStats(createFakeSupabaseClient({}));
 
-    expect(Object.values(stats)).toEqual([0, 0, 0, 0, 0, 0, 0]);
+    expect(Object.values(stats)).toStrictEqual([0, 0, 0, 0, 0, 0, 0]);
   });
 
   it("throws with the name of the count that failed", async () => {

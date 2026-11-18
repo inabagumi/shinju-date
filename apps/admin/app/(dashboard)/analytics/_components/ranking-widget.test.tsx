@@ -16,8 +16,8 @@ const rows: Row[] = [
 
 const dateRange = { endDate: "2026-11-14", startDate: "2026-11-08" };
 
-describe("RankingWidget", () => {
-  it("renders the header, the export link and the ranked rows", () => {
+describe(RankingWidget, () => {
+  function renderTalentRanking() {
     render(
       <RankingWidget
         dateRange={dateRange}
@@ -34,6 +34,10 @@ describe("RankingWidget", () => {
         valueHeading="クリック数"
       />
     );
+  }
+
+  it("renders the header and the export link", () => {
+    renderTalentRanking();
 
     expect(
       screen.getByRole("heading", { name: /人気タレントランキング/ })
@@ -47,6 +51,10 @@ describe("RankingWidget", () => {
     expect(
       screen.getByRole("columnheader", { name: "クリック数" })
     ).toBeInTheDocument();
+  });
+
+  it("renders the ranked rows", () => {
+    renderTalentRanking();
 
     const [, firstRow, secondRow] = screen.getAllByRole("row");
     expect(

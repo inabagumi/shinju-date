@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { FormSubmitButton } from "./form-submit-button";
 
-describe("FormSubmitButton", () => {
+describe(FormSubmitButton, () => {
   it("is enabled before the form is submitted", () => {
     render(
       <form>

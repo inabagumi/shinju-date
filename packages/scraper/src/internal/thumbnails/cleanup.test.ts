@@ -26,7 +26,7 @@ function deletedIds(): (string | undefined)[] {
     .map(({ query }) => query["id"]);
 }
 
-describe("removeUnusedThumbnails", () => {
+describe(removeUnusedThumbnails, () => {
   it("lists the oldest thumbnails no video uses that are past the grace period", async () => {
     mockStorage(supabase, "thumbnails");
     supabase.respond(() => []);
@@ -63,8 +63,8 @@ describe("removeUnusedThumbnails", () => {
     await expect(
       removeUnusedThumbnails(supabase.supabaseClient, { now, olderThan })
     ).resolves.toBe(2);
-    expect(deletedIds()).toEqual(["in.(thumb-1,thumb-2)"]);
-    expect(removed).toEqual([["vod-1/a.jpg", "vod-2/a.jpg"]]);
+    expect(deletedIds()).toStrictEqual(["in.(thumb-1,thumb-2)"]);
+    expect(removed).toStrictEqual([["vod-1/a.jpg", "vod-2/a.jpg"]]);
   });
 
   it("deletes in batches", async () => {
@@ -85,7 +85,7 @@ describe("removeUnusedThumbnails", () => {
       removeUnusedThumbnails(supabase.supabaseClient, { now, olderThan })
     ).resolves.toBe(150);
     expect(deletedIds()).toHaveLength(2);
-    expect(removed.map((paths) => paths.length)).toEqual([100, 50]);
+    expect(removed.map((paths) => paths.length)).toStrictEqual([100, 50]);
   });
 
   it("keeps thumbnails that a video uses again and deletes the rest", async () => {
@@ -101,12 +101,12 @@ describe("removeUnusedThumbnails", () => {
     await expect(
       removeUnusedThumbnails(supabase.supabaseClient, { now, olderThan })
     ).resolves.toBe(1);
-    expect(deletedIds()).toEqual([
+    expect(deletedIds()).toStrictEqual([
       "in.(thumb-1,thumb-2)",
       "eq.thumb-1",
       "eq.thumb-2",
     ]);
-    expect(removed).toEqual([["vod-1/a.jpg"]]);
+    expect(removed).toStrictEqual([["vod-1/a.jpg"]]);
   });
 
   it("does not count thumbnails that are already gone", async () => {
@@ -119,7 +119,7 @@ describe("removeUnusedThumbnails", () => {
     await expect(
       removeUnusedThumbnails(supabase.supabaseClient, { now, olderThan })
     ).resolves.toBe(1);
-    expect(removed).toEqual([["vod-2/a.jpg"]]);
+    expect(removed).toStrictEqual([["vod-2/a.jpg"]]);
   });
 
   it("still counts thumbnails whose images cannot be removed", async () => {
@@ -156,6 +156,6 @@ describe("removeUnusedThumbnails", () => {
     await expect(
       removeUnusedThumbnails(supabase.supabaseClient, { now, olderThan })
     ).rejects.toThrow("Failed to delete unused thumbnails");
-    expect(removed).toEqual([]);
+    expect(removed).toStrictEqual([]);
   });
 });

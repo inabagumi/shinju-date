@@ -24,7 +24,7 @@ describe.each(implementations)("with %s Temporal", (_name, TemporalImpl) => {
     "2026-03-26T01:22:03+09:00[Asia/Tokyo]"
   );
 
-  describe("formatDate", () => {
+  describe(formatDate, () => {
     it("should format the date with zero-padded month and day", () => {
       expect(formatDate(timestamp)).toBe("2026/03/26");
     });
@@ -40,7 +40,7 @@ describe.each(implementations)("with %s Temporal", (_name, TemporalImpl) => {
     });
   });
 
-  describe("formatTime", () => {
+  describe(formatTime, () => {
     it("should format the time with a zero-padded hour", () => {
       expect(formatTime(timestamp)).toBe("01:22");
     });
@@ -60,7 +60,7 @@ describe.each(implementations)("with %s Temporal", (_name, TemporalImpl) => {
     });
   });
 
-  describe("formatDateTime", () => {
+  describe(formatDateTime, () => {
     it("should format the date and time", () => {
       expect(formatDateTime(timestamp)).toBe("2026/03/26 01:22");
     });
@@ -74,7 +74,7 @@ describe.each(implementations)("with %s Temporal", (_name, TemporalImpl) => {
   });
 });
 
-describe("formatDateTimeFromISO", () => {
+describe(formatDateTimeFromISO, () => {
   it("should format an ISO 8601 string in the given time zone", () => {
     expect(
       formatDateTimeFromISO("2026-03-25T16:22:03Z", { timeZone: "Asia/Tokyo" })

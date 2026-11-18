@@ -18,7 +18,7 @@ const BASE_CLASSES = [
   "disabled:opacity-50",
 ];
 
-describe("Input", () => {
+describe(Input, () => {
   it("renders a text field the user can type in", async () => {
     const user = userEvent.setup();
 

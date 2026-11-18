@@ -11,9 +11,9 @@ const saved: VideoFields = {
   video_kind: "standard",
 };
 
-describe("diffVideoFields", () => {
+describe(diffVideoFields, () => {
   it("returns nothing when no field changed", () => {
-    expect(diffVideoFields(saved, { ...saved })).toEqual({});
+    expect(diffVideoFields(saved, { ...saved })).toStrictEqual({});
   });
 
   it.each<[keyof VideoFields, VideoFields[keyof VideoFields]]>([
@@ -23,7 +23,7 @@ describe("diffVideoFields", () => {
     ["title", "Renamed"],
     ["video_kind", "short"],
   ])("returns %s with its next value when it changed", (key, value) => {
-    expect(diffVideoFields(saved, { ...saved, [key]: value })).toEqual({
+    expect(diffVideoFields(saved, { ...saved, [key]: value })).toStrictEqual({
       [key]: value,
     });
   });
@@ -31,7 +31,7 @@ describe("diffVideoFields", () => {
   it("returns every field that changed, and only those", () => {
     expect(
       diffVideoFields(saved, { ...saved, duration: "PT2H", title: "Renamed" })
-    ).toEqual({ duration: "PT2H", title: "Renamed" });
+    ).toStrictEqual({ duration: "PT2H", title: "Renamed" });
   });
 
   it("treats the same instant written differently as unchanged", () => {
@@ -40,7 +40,7 @@ describe("diffVideoFields", () => {
         ...saved,
         published_at: "2024-05-01T09:00:00Z",
       })
-    ).toEqual({});
+    ).toStrictEqual({});
   });
 
   it("ignores differences finer than the seconds the database keeps", () => {
@@ -49,7 +49,7 @@ describe("diffVideoFields", () => {
         ...saved,
         published_at: "2024-05-01T09:00:00.999Z",
       })
-    ).toEqual({});
+    ).toStrictEqual({});
   });
 
   it("skips fields that are missing on either side", () => {
@@ -57,16 +57,16 @@ describe("diffVideoFields", () => {
 
     expect(
       diffVideoFields(withoutKind, { ...saved, video_kind: "short" })
-    ).toEqual({});
-    expect(diffVideoFields(saved, { title: saved.title })).toEqual({});
+    ).toStrictEqual({});
+    expect(diffVideoFields(saved, { title: saved.title })).toStrictEqual({});
   });
 });
 
-describe("compareVideoFields", () => {
+describe(compareVideoFields, () => {
   it("lists the fields that changed, with their value on each side", () => {
     expect(
       compareVideoFields(saved, { ...saved, duration: "PT2H", status: "LIVE" })
-    ).toEqual({
+    ).toStrictEqual({
       after: { duration: "PT2H", status: "LIVE" },
       before: { duration: "PT1H", status: "ENDED" },
     });
@@ -78,6 +78,6 @@ describe("compareVideoFields", () => {
         ...saved,
         published_at: "2024-05-01T09:00:00Z",
       })
-    ).toEqual({ after: {}, before: {} });
+    ).toStrictEqual({ after: {}, before: {} });
   });
 });

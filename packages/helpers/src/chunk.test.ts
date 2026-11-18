@@ -2,21 +2,21 @@ import { describe, expect, it } from "vitest";
 
 import { chunk } from "./chunk.js";
 
-describe("chunk", () => {
+describe(chunk, () => {
   it("returns no chunks for an empty array", () => {
-    expect(chunk([], 3)).toEqual([]);
+    expect(chunk([], 3)).toStrictEqual([]);
   });
 
   it("returns one chunk when the items fill it exactly", () => {
-    expect(chunk([1, 2, 3], 3)).toEqual([[1, 2, 3]]);
+    expect(chunk([1, 2, 3], 3)).toStrictEqual([[1, 2, 3]]);
   });
 
   it("returns one chunk when the items are fewer than the size", () => {
-    expect(chunk([1, 2], 3)).toEqual([[1, 2]]);
+    expect(chunk([1, 2], 3)).toStrictEqual([[1, 2]]);
   });
 
   it("puts what is left over into the last chunk", () => {
-    expect(chunk([1, 2, 3, 4, 5, 6, 7], 3)).toEqual([
+    expect(chunk([1, 2, 3, 4, 5, 6, 7], 3)).toStrictEqual([
       [1, 2, 3],
       [4, 5, 6],
       [7],
@@ -24,7 +24,7 @@ describe("chunk", () => {
   });
 
   it("splits into full chunks when the length is a multiple of the size", () => {
-    expect(chunk([1, 2, 3, 4], 2)).toEqual([
+    expect(chunk([1, 2, 3, 4], 2)).toStrictEqual([
       [1, 2],
       [3, 4],
     ]);
@@ -35,7 +35,7 @@ describe("chunk", () => {
 
     chunk(items, 2);
 
-    expect(items).toEqual([1, 2, 3]);
+    expect(items).toStrictEqual([1, 2, 3]);
   });
 
   it.each([0, -1, 1.5, Number.NaN])("throws for a size of %s", (size) => {

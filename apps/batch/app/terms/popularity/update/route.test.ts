@@ -1,58 +1,66 @@
+import type * as Sentry from "@sentry/nextjs";
+import type { Redis } from "@upstash/redis";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { ServerEnv } from "@/lib/env";
+import type * as Lock from "@/lib/lock";
+import type { TypedSupabaseClient } from "@/lib/supabase";
+
+import type * as UpdateTermPopularity from "./_lib/update-term-popularity";
+
+const { createAfterMock, createLoggerMock } = await vi.hoisted(
+  () => import("@/test/mocks")
+);
 
 // Mock dependencies
 const mockSupabaseClient = {
-  from: vi.fn(),
-};
+  from: vi.fn<TypedSupabaseClient["from"]>(),
+} as Partial<TypedSupabaseClient> as TypedSupabaseClient;
 
 const mockRedisClient = {
-  zrange: vi.fn(),
-};
+  zrange: vi.fn<Redis["zrange"]>(),
+} as Partial<Redis> as Redis;
 
-const acquireLock = vi.fn();
-const releaseLock = vi.fn();
+const acquireLock = vi.fn<typeof Lock.acquireLock>();
+const releaseLock = vi.fn<typeof Lock.releaseLock>();
 
-const mockUpdateTermPopularity = vi.fn();
+const mockUpdateTermPopularity =
+  vi.fn<typeof UpdateTermPopularity.updateTermPopularity>();
 
-const mockServerEnv: { CRON_SECRET: string | undefined } = {
+const mockServerEnv: ServerEnv = {
   CRON_SECRET: undefined,
-};
+} as Partial<ServerEnv> as ServerEnv;
 
 // Mock modules
-vi.mock("@/lib/supabase", () => ({
+vi.mock(import("@/lib/supabase"), () => ({
   supabaseClient: mockSupabaseClient,
 }));
 
-vi.mock("@/lib/redis", () => ({
+vi.mock(import("@/lib/redis"), () => ({
   redisClient: mockRedisClient,
 }));
 
-vi.mock("@/lib/env", () => ({
+vi.mock(import("@/lib/env"), () => ({
   serverEnv: mockServerEnv,
 }));
 
-vi.mock("@/lib/lock", () => ({ acquireLock, releaseLock }));
+vi.mock(import("@/lib/lock"), () => ({ acquireLock, releaseLock }));
 
-vi.mock("./_lib/update-term-popularity", () => ({
+vi.mock(import("./_lib/update-term-popularity"), () => ({
   updateTermPopularity: mockUpdateTermPopularity,
 }));
 
-vi.mock("@sentry/nextjs", () => ({
-  captureCheckIn: vi.fn(() => "mock-check-in-id"),
-  captureException: vi.fn(),
-  flush: vi.fn(),
+vi.mock(import("@sentry/nextjs"), () => ({
+  captureCheckIn: vi.fn<typeof Sentry.captureCheckIn>(() => "mock-check-in-id"),
+  captureException: vi.fn<typeof Sentry.captureException>(),
+  flush: vi.fn<typeof Sentry.flush>(),
 }));
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
+vi.mock(import("@shinju-date/logger"), () => ({
+  logger: createLoggerMock(),
 }));
 
-vi.mock("next/server", () => ({
-  after: vi.fn((fn: () => void) => {
-    // Execute the function immediately in tests
-    fn();
-  }),
-}));
+vi.mock(import("next/server"), () => ({ after: createAfterMock() }));
 
 describe("POST /terms/popularity/update", () => {
   let POST: (request: Request) => Promise<Response>;
@@ -92,7 +100,7 @@ describe("POST /terms/popularity/update", () => {
     // Verify
     expect(response.status).toBe(200);
     const data = await response.json();
-    expect(data).toEqual({
+    expect(data).toStrictEqual({
       notFound: 5,
       total: 100,
       updated: 95,

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { isFilteredYouTubeChannel } from "./channels.js";
 
-describe("isFilteredYouTubeChannel", () => {
+describe(isFilteredYouTubeChannel, () => {
   const channel = {
     contentDetails: { relatedPlaylists: { uploads: "UU12345" } },
     id: "UC12345",
@@ -11,7 +11,7 @@ describe("isFilteredYouTubeChannel", () => {
   } satisfies youtube.Schema$Channel;
 
   it("accepts a channel with an ID, an uploads playlist and a title", () => {
-    expect(isFilteredYouTubeChannel(channel)).toBe(true);
+    expect(isFilteredYouTubeChannel(channel)).toBeTruthy();
   });
 
   it("accepts a channel without a custom URL", () => {
@@ -20,7 +20,7 @@ describe("isFilteredYouTubeChannel", () => {
         ...channel,
         snippet: { title: "Test Channel" },
       })
-    ).toBe(true);
+    ).toBeTruthy();
   });
 
   it("rejects a channel without an ID", () => {
@@ -29,8 +29,8 @@ describe("isFilteredYouTubeChannel", () => {
         contentDetails: channel.contentDetails,
         snippet: channel.snippet,
       })
-    ).toBe(false);
-    expect(isFilteredYouTubeChannel({ ...channel, id: null })).toBe(false);
+    ).toBeFalsy();
+    expect(isFilteredYouTubeChannel({ ...channel, id: null })).toBeFalsy();
   });
 
   it("rejects a channel without an uploads playlist", () => {
@@ -39,19 +39,19 @@ describe("isFilteredYouTubeChannel", () => {
         ...channel,
         contentDetails: { relatedPlaylists: {} },
       })
-    ).toBe(false);
+    ).toBeFalsy();
     expect(
       isFilteredYouTubeChannel({ id: channel.id, snippet: channel.snippet })
-    ).toBe(false);
+    ).toBeFalsy();
   });
 
   it("rejects a channel without a title", () => {
-    expect(isFilteredYouTubeChannel({ ...channel, snippet: {} })).toBe(false);
+    expect(isFilteredYouTubeChannel({ ...channel, snippet: {} })).toBeFalsy();
     expect(
       isFilteredYouTubeChannel({
         contentDetails: channel.contentDetails,
         id: channel.id,
       })
-    ).toBe(false);
+    ).toBeFalsy();
   });
 });

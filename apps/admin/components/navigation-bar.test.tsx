@@ -1,20 +1,22 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { unstable_rethrow } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { signOutAction } from "@/app/login/_actions/sign-out";
 import { ActionToastProvider } from "@/components/action-toast";
 
 const mocks = vi.hoisted(() => ({
   pathname: "/videos",
-  signOutAction: vi.fn(),
+  signOutAction: vi.fn<typeof signOutAction>(),
 }));
 
-vi.mock("next/navigation", () => ({
-  unstable_rethrow: vi.fn(),
+vi.mock(import("next/navigation"), () => ({
+  unstable_rethrow: vi.fn<typeof unstable_rethrow>(),
   usePathname: () => mocks.pathname,
 }));
 
-vi.mock("@/app/login/_actions/sign-out", () => ({
+vi.mock(import("@/app/login/_actions/sign-out"), () => ({
   signOutAction: mocks.signOutAction,
 }));
 

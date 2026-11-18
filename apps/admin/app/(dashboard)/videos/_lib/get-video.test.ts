@@ -1,35 +1,50 @@
 import { describe, expect, it, vi } from "vitest";
 
+import type {
+  createSupabaseServerClient,
+  TypedSupabaseClient,
+} from "@/lib/supabase";
 import { INVALID_TEXT_REPRESENTATION_ERROR_CODE } from "@/lib/supabase/query";
 import { postgresError, setupSupabase } from "@/test/supabase";
 
 import getVideo from "./get-video";
 
 const mocks = vi.hoisted(() => ({
-  createSupabaseServerClient: vi.fn(),
+  createSupabaseServerClient: vi.fn<() => Promise<TypedSupabaseClient>>(),
 }));
 
-vi.mock("next/cache", () => ({
-  cacheLife: vi.fn(),
+vi.mock(import("next/cache"), () => ({
+  cacheLife: vi.fn<() => void>(),
 }));
-vi.mock("@/lib/supabase", () => ({
-  createSupabaseServerClient: mocks.createSupabaseServerClient,
-}));
-
-vi.mock("@/lib/redis", () => ({
-  getRedisClient: () => ({ zscore: vi.fn().mockResolvedValue(2) }),
+vi.mock(import("@/lib/supabase"), () => ({
+  // Always resolves to the client of the default database
+  createSupabaseServerClient:
+    mocks.createSupabaseServerClient as typeof createSupabaseServerClient,
 }));
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: { debug: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn() },
-}));
+vi.mock(import("@/lib/redis"), async () => {
+  const { createMockRedisClient } = await import("@/test/mock-redis-pipeline");
+  const redisClient = createMockRedisClient({
+    zscore: vi
+      .fn<(key: string, member: string) => Promise<number | null>>()
+      .mockResolvedValue(2),
+  });
+
+  return { getRedisClient: () => redisClient };
+});
+
+vi.mock(import("@shinju-date/logger"), async () => {
+  const { createMockLogger } = await import("@/test/logger");
+
+  return { logger: createMockLogger() };
+});
 
 const supabase = setupSupabase();
 mocks.createSupabaseServerClient.mockResolvedValue(supabase.client);
 
 const VIDEO_ID = "123e4567-e89b-12d3-a456-426614174000";
 
-describe("getVideo", () => {
+describe(getVideo, () => {
   it("should return the video with its clicks", async () => {
     supabase.on("select", "videos", { id: VIDEO_ID, title: "Test Video" });
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { EmptyState } from "./EmptyState";
 
-describe("EmptyState", () => {
+describe(EmptyState, () => {
   it("renders only the title by default", () => {
     const { container } = render(<EmptyState title="データがありません" />);
 

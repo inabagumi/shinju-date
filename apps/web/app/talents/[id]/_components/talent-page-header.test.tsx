@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { TalentStreamStatus } from "@/lib/data/talents";
 import { createTalentDetail } from "@/test/factories";
 
-vi.mock("@/lib/data/talents", () => ({}));
+vi.mock(import("@/lib/data/talents"), () => ({}));
 
 import { TalentPageHeader } from "./talent-page-header";
 
@@ -32,7 +32,7 @@ const TALENT = createTalentDetail({
   ],
 });
 
-describe("TalentPageHeader", () => {
+describe(TalentPageHeader, () => {
   it("should show the icon and the name as the page heading", () => {
     const { container } = render(<TalentPageHeader talent={TALENT} />);
 
@@ -171,6 +171,11 @@ describe("TalentPageHeader with the stream status", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: "朝霧ミオ" })
     ).not.toContainElement(nextStream);
+  });
+
+  it("should not show the live status before the next stream", () => {
+    render(<TalentPageHeader streamStatus={upcoming} talent={TALENT} />);
+
     expect(screen.queryByText("配信中")).not.toBeInTheDocument();
     expect(screen.getByTestId("talent-icon")).not.toHaveClass("ring-live");
   });

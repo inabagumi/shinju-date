@@ -58,7 +58,7 @@ function getItem() {
   return screen.getByTestId("schedule-item");
 }
 
-describe("ScheduleItem", () => {
+describe(ScheduleItem, () => {
   it("should show the start, the talent and the title", () => {
     render(<ScheduleItem value={VIDEO} />);
 
@@ -323,7 +323,7 @@ describe("ScheduleItem (on a wide screen)", () => {
   });
 });
 
-describe("getTitleLines", () => {
+describe(getTitleLines, () => {
   afterEach(() => {
     vi.doUnmock("../_lib/layout");
     vi.resetModules();
@@ -342,10 +342,12 @@ describe("getTitleLines", () => {
 
   it("should follow the height of an hour in the layout", async () => {
     vi.resetModules();
-    vi.doMock("../_lib/layout", async (importOriginal) => ({
-      ...(await importOriginal<typeof import("../_lib/layout")>()),
-      HOUR_HEIGHT_REM: 8,
-    }));
+    vi.doMock(import("../_lib/layout"), async (importOriginal) => {
+      const actual = await importOriginal();
+
+      // The type of `HOUR_HEIGHT_REM` is the literal `4` of its declaration
+      return { ...actual, HOUR_HEIGHT_REM: 8 as number } as typeof actual;
+    });
     const { getTitleLines: getTitleLinesOfTallerHours } =
       await import("./schedule-item");
 

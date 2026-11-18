@@ -36,7 +36,7 @@ const thumbnails = {
   },
 };
 
-describe("selectYouTubeChannelIconUrl", () => {
+describe(selectYouTubeChannelIconUrl, () => {
   it("picks the smallest square icon that is large enough", () => {
     expect(selectYouTubeChannelIconUrl(thumbnails)).toBe(thumbnails.high.url);
     expect(
@@ -101,7 +101,7 @@ describe("selectYouTubeChannelIconUrl", () => {
   });
 });
 
-describe("syncYouTubeChannelIcon", () => {
+describe(syncYouTubeChannelIcon, () => {
   const saved: SavedYouTubeChannelIcon = {
     id: "channel-row-1",
     profile_images: null,
@@ -136,14 +136,18 @@ describe("syncYouTubeChannelIcon", () => {
       })
     ).resolves.toBe("created");
 
-    expect(requests).toEqual([{ ifNoneMatch: null, url: thumbnails.high.url }]);
+    expect(requests).toStrictEqual([
+      { ifNoneMatch: null, url: thumbnails.high.url },
+    ]);
     expect(storage.uploads[0]?.path).toMatch(/^youtube\/UCaaa\/[^/]+\.webp$/);
     expect(supabase.written("POST", "profile_images")[0]?.body).toMatchObject({
       height: 256,
       source_url: thumbnails.high.url,
       width: 256,
     });
-    expect(supabase.written("PATCH", "youtube_channels")[0]?.query).toEqual({
+    expect(
+      supabase.written("PATCH", "youtube_channels")[0]?.query
+    ).toStrictEqual({
       id: "eq.channel-row-1",
       select: "id",
     });
@@ -171,7 +175,7 @@ describe("syncYouTubeChannelIcon", () => {
       })
     ).resolves.toBe("unchanged");
 
-    expect(requests).toEqual([
+    expect(requests).toStrictEqual([
       { ifNoneMatch: '"etag-1"', url: thumbnails.high.url },
     ]);
     expect(storage.uploads).toHaveLength(0);
@@ -201,10 +205,12 @@ describe("syncYouTubeChannelIcon", () => {
     ).resolves.toBe("replaced");
 
     expect(storage.uploads).toHaveLength(1);
-    expect(supabase.written("DELETE", "profile_images")[0]?.query).toEqual({
+    expect(
+      supabase.written("DELETE", "profile_images")[0]?.query
+    ).toStrictEqual({
       id: "eq.image-1",
     });
-    expect(storage.removed).toEqual([["youtube/UCaaa/old.webp"]]);
+    expect(storage.removed).toStrictEqual([["youtube/UCaaa/old.webp"]]);
   });
 
   it("throws StorageError when the icon cannot be uploaded", async () => {

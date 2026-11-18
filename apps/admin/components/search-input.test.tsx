@@ -1,19 +1,26 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { AppRouter } from "@/test/next-navigation";
 
 import { SearchInput } from "./search-input";
 
 const mocks = vi.hoisted(() => ({
   pathname: "/talents",
-  push: vi.fn(),
-  replace: vi.fn(),
+  push: vi.fn<AppRouter["push"]>(),
+  replace: vi.fn<AppRouter["replace"]>(),
   searchParams: new URLSearchParams(),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => mocks.pathname,
-  useRouter: () => ({ push: mocks.push, replace: mocks.replace }),
-  useSearchParams: () => mocks.searchParams,
+  useRouter: () =>
+    ({
+      push: mocks.push,
+      replace: mocks.replace,
+    }) as Partial<AppRouter> as AppRouter,
+  useSearchParams: () => mocks.searchParams as ReadonlyURLSearchParams,
 }));
 
 function getInput() {
@@ -29,7 +36,7 @@ function navigate(
   rerender(<SearchInput aria-label="検索" />);
 }
 
-describe("SearchInput", () => {
+describe(SearchInput, () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
@@ -64,8 +71,7 @@ describe("SearchInput", () => {
     act(() => {
       vi.advanceTimersByTime(1);
     });
-    expect(mocks.replace).toHaveBeenCalledOnce();
-    expect(mocks.replace).toHaveBeenCalledWith(
+    expect(mocks.replace).toHaveBeenCalledExactlyOnceWith(
       "/talents?status=all&search=abc"
     );
     expect(mocks.push).not.toHaveBeenCalled();

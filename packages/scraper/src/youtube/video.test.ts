@@ -13,9 +13,9 @@ const upload = {
   snippet: { publishedAt: "2024-04-30T10:00:00Z", title: "Title" },
 };
 
-describe("toVideoFields", () => {
+describe(toVideoFields, () => {
   it("maps a regular upload", () => {
-    expect(toVideoFields(createVideo(upload), now)).toEqual({
+    expect(toVideoFields(createVideo(upload), now)).toStrictEqual({
       duration: "PT1H",
       published_at: "2024-04-30T10:00:00Z",
       status: "PUBLISHED",
@@ -69,7 +69,7 @@ describe("the changes of a saved video", () => {
   ) => diffVideoFields(savedFields, toVideoFields(video, at));
 
   it("are empty when nothing changed", () => {
-    expect(getChanges(saved, createVideo(upload), now)).toEqual({});
+    expect(getChanges(saved, createVideo(upload), now)).toStrictEqual({});
   });
 
   it("ignores how the database formats the same instant", () => {
@@ -79,7 +79,7 @@ describe("the changes of a saved video", () => {
         createVideo(upload),
         now
       )
-    ).toEqual({});
+    ).toStrictEqual({});
   });
 
   it("hold only the columns that changed", () => {
@@ -88,7 +88,7 @@ describe("the changes of a saved video", () => {
       snippet: { publishedAt: "2024-04-30T10:00:00Z", title: "New title" },
     });
 
-    expect(getChanges(saved, video, now)).toEqual({ title: "New title" });
+    expect(getChanges(saved, video, now)).toStrictEqual({ title: "New title" });
   });
 
   it("follows a stream from scheduled to ended", () => {
@@ -112,7 +112,7 @@ describe("the changes of a saved video", () => {
 
     expect(
       getChanges(upcoming, ended, Temporal.Instant.from("2024-05-01T16:00:00Z"))
-    ).toEqual({
+    ).toStrictEqual({
       duration: "PT2H",
       published_at: "2024-05-01T13:05:00Z",
       status: "ENDED",
@@ -125,14 +125,14 @@ describe("the changes of a saved video", () => {
       contentDetails: { duration: "PT30S" },
     });
 
-    expect(getChanges(saved, video, now)).toEqual({
+    expect(getChanges(saved, video, now)).toStrictEqual({
       duration: "PT30S",
       video_kind: "short",
     });
   });
 });
 
-describe("getThumbnailSource", () => {
+describe(getThumbnailSource, () => {
   const high = { height: 360, url: "https://i.ytimg.test/hq.jpg", width: 480 };
   const maxres = {
     height: 720,
@@ -149,7 +149,7 @@ describe("getThumbnailSource", () => {
       },
     });
 
-    expect(getThumbnailSource(video)).toEqual(maxres);
+    expect(getThumbnailSource(video)).toStrictEqual(maxres);
   });
 
   it("falls back to smaller thumbnails", () => {
@@ -158,7 +158,7 @@ describe("getThumbnailSource", () => {
       snippet: { publishedAt: "2024-04-30T10:00:00Z", thumbnails: { high } },
     });
 
-    expect(getThumbnailSource(video)).toEqual(high);
+    expect(getThumbnailSource(video)).toStrictEqual(high);
   });
 
   it("returns null when YouTube offers no usable thumbnail", () => {

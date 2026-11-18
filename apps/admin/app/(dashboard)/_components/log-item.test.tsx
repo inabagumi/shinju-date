@@ -19,8 +19,8 @@ function videoSyncLog(details: Log["details"]): Log {
   };
 }
 
-describe("LogItem", () => {
-  it("shows the video title and the synced changes", () => {
+describe(LogItem, () => {
+  function renderSyncWithChanges() {
     render(
       <LogItem
         log={videoSyncLog({
@@ -32,6 +32,10 @@ describe("LogItem", () => {
         })}
       />
     );
+  }
+
+  it("shows the video title and the synced title change", () => {
+    renderSyncWithChanges();
 
     expect(screen.getByRole("link", { name: "New Title" })).toHaveAttribute(
       "href",
@@ -39,6 +43,11 @@ describe("LogItem", () => {
     );
     expect(screen.getByText("title:")).toBeInTheDocument();
     expect(screen.getByText("Old Title")).toBeInTheDocument();
+  });
+
+  it("shows the synced duration change", () => {
+    renderSyncWithChanges();
+
     expect(screen.getByText("duration:")).toBeInTheDocument();
     expect(screen.getByText("PT3H")).toBeInTheDocument();
     expect(screen.getByText("PT1H")).toBeInTheDocument();

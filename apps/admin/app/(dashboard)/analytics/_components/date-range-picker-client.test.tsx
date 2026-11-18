@@ -1,20 +1,24 @@
 import { TIME_ZONE } from "@shinju-date/constants";
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { AppRouter } from "@/test/next-navigation";
 
 import type { AnalyticsSearchParams } from "../_lib/search-params-schema";
 import { DateRangePickerClient } from "./date-range-picker-client";
 
 const mocks = vi.hoisted(() => ({
-  replace: vi.fn(),
+  replace: vi.fn<AppRouter["replace"]>(),
   searchParams: new URLSearchParams(),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => "/analytics/click",
-  useRouter: () => ({ replace: mocks.replace }),
-  useSearchParams: () => mocks.searchParams,
+  useRouter: () =>
+    ({ replace: mocks.replace }) as Partial<AppRouter> as AppRouter,
+  useSearchParams: () => mocks.searchParams as ReadonlyURLSearchParams,
 }));
 
 const DATE_RANGE = { endDate: "2026-11-14", startDate: "2026-11-08" };
@@ -38,7 +42,7 @@ async function renderPicker({
   });
 }
 
-describe("DateRangePickerClient", () => {
+describe(DateRangePickerClient, () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.clearAllMocks();

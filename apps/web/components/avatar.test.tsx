@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 
 const IMAGE = { blur_data_url: "data:image/png;base64,AAAA", id: "icon" };
 
-describe("Avatar", () => {
+describe(Avatar, () => {
   it("should show the image as a decoration by default", () => {
     const { container } = render(
       <Avatar data-testid="avatar" size={20}>

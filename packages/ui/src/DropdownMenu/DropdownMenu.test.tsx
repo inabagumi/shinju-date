@@ -11,8 +11,8 @@ import {
 } from "./DropdownMenu";
 
 function renderMenu({
-  onEdit = vi.fn(),
-  onDelete = vi.fn(),
+  onEdit = vi.fn<() => void>(),
+  onDelete = vi.fn<() => void>(),
 }: {
   onEdit?: () => void;
   onDelete?: () => void;
@@ -40,7 +40,7 @@ function renderMenu({
   return { onDelete, onEdit };
 }
 
-describe("DropdownMenu", () => {
+describe("<DropdownMenu>", () => {
   it("opens with the trigger", async () => {
     const user = userEvent.setup();
 
@@ -48,8 +48,10 @@ describe("DropdownMenu", () => {
 
     const trigger = screen.getByRole("button", { name: "操作" });
 
-    expect(trigger).toHaveAttribute("aria-haspopup", "menu");
-    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect({
+      expanded: trigger.getAttribute("aria-expanded"),
+      haspopup: trigger.getAttribute("aria-haspopup"),
+    }).toStrictEqual({ expanded: "false", haspopup: "menu" });
     expect(trigger).toHaveClass("rounded-control", "focus-ring");
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 

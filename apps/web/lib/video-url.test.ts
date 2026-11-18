@@ -33,7 +33,7 @@ function createTwitchVideo(
   };
 }
 
-describe("getVideoUrl", () => {
+describe(getVideoUrl, () => {
   it("links a YouTube video to its watch page", () => {
     expect(getVideoUrl(createYouTubeVideo())).toBe(
       "https://www.youtube.com/watch?v=YT_video1abc"
@@ -105,16 +105,16 @@ describe("getVideoUrl", () => {
   });
 });
 
-describe("hasPlatformSource", () => {
+describe(hasPlatformSource, () => {
   it("is true for a video that can be linked to", () => {
-    expect(hasPlatformSource(createYouTubeVideo())).toBe(true);
-    expect(hasPlatformSource(createTwitchVideo())).toBe(true);
+    expect(hasPlatformSource(createYouTubeVideo())).toBeTruthy();
+    expect(hasPlatformSource(createTwitchVideo())).toBeTruthy();
   });
 
   it("is false for a video that cannot be linked to", () => {
-    expect(hasPlatformSource(createYouTubeVideo({ youtube_video: null }))).toBe(
-      false
-    );
+    expect(
+      hasPlatformSource(createYouTubeVideo({ youtube_video: null }))
+    ).toBeFalsy();
     expect(
       hasPlatformSource(
         createTwitchVideo({
@@ -123,6 +123,6 @@ describe("hasPlatformSource", () => {
           type: null,
         })
       )
-    ).toBe(false);
+    ).toBeFalsy();
   });
 });

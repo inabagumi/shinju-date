@@ -7,27 +7,29 @@ import {
   isFilteredYouTubePlaylistItem,
 } from "./playlist-items.js";
 
-describe("isFilteredYouTubePlaylistItem", () => {
+describe(isFilteredYouTubePlaylistItem, () => {
   it("accepts a playlist item with a video ID", () => {
     expect(
       isFilteredYouTubePlaylistItem({
         contentDetails: { videoId: "dQw4w9WgXcQ" },
       })
-    ).toBe(true);
+    ).toBeTruthy();
   });
 
   it("rejects a playlist item without a video ID", () => {
-    expect(isFilteredYouTubePlaylistItem({ contentDetails: {} })).toBe(false);
+    expect(isFilteredYouTubePlaylistItem({ contentDetails: {} })).toBeFalsy();
     expect(
       isFilteredYouTubePlaylistItem({ contentDetails: { videoId: null } })
-    ).toBe(false);
-    expect(isFilteredYouTubePlaylistItem({})).toBe(false);
+    ).toBeFalsy();
+    expect(isFilteredYouTubePlaylistItem({})).toBeFalsy();
   });
 });
 
-describe("getPlaylistItemsPage", () => {
+describe(getPlaylistItemsPage, () => {
   function createClient(data: youtube.Schema$PlaylistItemListResponse) {
-    const list = vi.fn(async () => ({ data }));
+    const list = vi.fn<
+      () => Promise<{ data: youtube.Schema$PlaylistItemListResponse }>
+    >(async () => ({ data }));
 
     return {
       client: { playlistItems: { list } } as unknown as youtube.Youtube,
@@ -57,10 +59,9 @@ describe("getPlaylistItemsPage", () => {
       part: ["contentDetails"],
       playlistId: "UUxxx",
     });
-    expect(page.items.map((item) => item.contentDetails.videoId)).toEqual([
-      "a",
-      "b",
-    ]);
+    expect(page.items.map((item) => item.contentDetails.videoId)).toStrictEqual(
+      ["a", "b"]
+    );
     expect(page.nextPageToken).toBe("next");
   });
 
@@ -69,7 +70,7 @@ describe("getPlaylistItemsPage", () => {
 
     await expect(
       getPlaylistItemsPage({ client, playlistID: "UUxxx" })
-    ).resolves.toEqual({ items: [], nextPageToken: null });
+    ).resolves.toStrictEqual({ items: [], nextPageToken: null });
   });
 
   it("reports the last page", async () => {
@@ -77,16 +78,20 @@ describe("getPlaylistItemsPage", () => {
 
     await expect(
       getPlaylistItemsPage({ client, playlistID: "UUxxx" })
-    ).resolves.toEqual({ items: [], nextPageToken: null });
+    ).resolves.toStrictEqual({ items: [], nextPageToken: null });
     expect(list).toHaveBeenCalledWith(
       expect.not.objectContaining({ pageToken: expect.anything() })
     );
   });
 });
 
-describe("getPlaylistItems", () => {
+describe(getPlaylistItems, () => {
   function createClient(pages: youtube.Schema$PlaylistItemListResponse[]) {
-    const list = vi.fn(async ({ pageToken }: { pageToken?: string }) => {
+    const list = vi.fn<
+      (params: {
+        pageToken?: string;
+      }) => Promise<{ data: youtube.Schema$PlaylistItemListResponse }>
+    >(async ({ pageToken }) => {
       const data = pages[pageToken === undefined ? 0 : Number(pageToken)];
 
       if (!data) {
@@ -111,9 +116,10 @@ describe("getPlaylistItems", () => {
       getPlaylistItems({ client, playlistID: "UUxxx" })
     );
 
-    expect(items.map((item) => item.contentDetails.videoId)).toEqual(["a"]);
-    expect(list).toHaveBeenCalledOnce();
-    expect(list).toHaveBeenCalledWith({
+    expect(items.map((item) => item.contentDetails.videoId)).toStrictEqual([
+      "a",
+    ]);
+    expect(list).toHaveBeenCalledExactlyOnceWith({
       maxResults: 20,
       part: ["contentDetails"],
       playlistId: "UUxxx",
@@ -134,12 +140,12 @@ describe("getPlaylistItems", () => {
       getPlaylistItems({ all: true, client, playlistID: "UUxxx" })
     );
 
-    expect(items.map((item) => item.contentDetails.videoId)).toEqual([
+    expect(items.map((item) => item.contentDetails.videoId)).toStrictEqual([
       "a",
       "b",
       "c",
     ]);
-    expect(list.mock.calls).toEqual([
+    expect(list.mock.calls).toStrictEqual([
       [{ maxResults: 50, part: ["contentDetails"], playlistId: "UUxxx" }],
       [
         {
@@ -170,7 +176,9 @@ describe("getPlaylistItems", () => {
       getPlaylistItems({ all: true, client, playlistID: "UUxxx" })
     );
 
-    expect(items.map((item) => item.contentDetails.videoId)).toEqual(["a"]);
+    expect(items.map((item) => item.contentDetails.videoId)).toStrictEqual([
+      "a",
+    ]);
     expect(list).toHaveBeenCalledTimes(2);
   });
 });

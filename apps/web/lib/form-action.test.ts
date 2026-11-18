@@ -6,12 +6,15 @@ import {
   UNEXPECTED_ERROR,
   withBotCheck,
 } from "./form-action";
+import type { FormActionHandler } from "./form-action";
 
-vi.mock("botid/server", () => ({
-  checkBotId: vi.fn(),
+vi.mock(import("botid/server"), () => ({
+  checkBotId: vi.fn<typeof checkBotId>(),
 }));
 
 const FIELDS = ["message"] as const;
+
+type Handler = FormActionHandler<(typeof FIELDS)[number]>;
 
 function createFormData(values: Record<string, string>): FormData {
   const formData = new FormData();
@@ -23,7 +26,7 @@ function createFormData(values: Record<string, string>): FormData {
   return formData;
 }
 
-describe("withBotCheck", () => {
+describe(withBotCheck, () => {
   beforeEach(() => {
     vi.mocked(checkBotId).mockResolvedValue({
       bypassed: false,
@@ -38,7 +41,7 @@ describe("withBotCheck", () => {
   });
 
   it("passes the form data and the submitted values to the action", async () => {
-    const handler = vi.fn().mockResolvedValue({ success: true });
+    const handler = vi.fn<Handler>().mockResolvedValue({ success: true });
     const action = withBotCheck(handler, {
       errorLogMessage: "Test error:",
       fields: FIELDS,
@@ -47,7 +50,7 @@ describe("withBotCheck", () => {
 
     const result = await action(null, formData);
 
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(handler).toHaveBeenCalledWith(formData, { message: "こんにちは" });
   });
 
@@ -58,7 +61,7 @@ describe("withBotCheck", () => {
       isHuman: false,
       isVerifiedBot: false,
     });
-    const handler = vi.fn();
+    const handler = vi.fn<Handler>();
     const action = withBotCheck(handler, {
       errorLogMessage: "Test error:",
       fields: FIELDS,
@@ -66,7 +69,7 @@ describe("withBotCheck", () => {
 
     const result = await action(null, createFormData({ message: "spam" }));
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: BOT_DETECTED_ERROR,
       success: false,
       values: { message: "spam" },
@@ -79,7 +82,7 @@ describe("withBotCheck", () => {
       .spyOn(console, "error")
       .mockImplementation(() => {});
     const error = new Error("network error");
-    const action = withBotCheck(vi.fn().mockRejectedValue(error), {
+    const action = withBotCheck(vi.fn<Handler>().mockRejectedValue(error), {
       errorLogMessage: "Test error:",
       fields: FIELDS,
     });
@@ -89,7 +92,7 @@ describe("withBotCheck", () => {
       createFormData({ message: "こんにちは" })
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: UNEXPECTED_ERROR,
       success: false,
       values: { message: "こんにちは" },
@@ -100,7 +103,7 @@ describe("withBotCheck", () => {
   it("treats a failed bot check as an unexpected error", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.mocked(checkBotId).mockRejectedValue(new Error("botid failed"));
-    const handler = vi.fn();
+    const handler = vi.fn<Handler>();
     const action = withBotCheck(handler, {
       errorLogMessage: "Test error:",
       fields: FIELDS,
@@ -111,7 +114,7 @@ describe("withBotCheck", () => {
       createFormData({ message: "こんにちは" })
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: UNEXPECTED_ERROR,
       success: false,
       values: { message: "こんにちは" },

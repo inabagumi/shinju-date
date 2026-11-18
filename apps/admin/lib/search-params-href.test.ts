@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { toURLSearchParams } from "./search-params-href";
 
-describe("toURLSearchParams", () => {
+describe(toURLSearchParams, () => {
   it("converts the page parameters to URLSearchParams", () => {
     expect(
       toURLSearchParams({

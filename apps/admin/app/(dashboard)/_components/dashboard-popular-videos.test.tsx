@@ -1,17 +1,22 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { PopularVideo } from "@/lib/analytics/get-popular-videos";
+import type {
+  getPopularVideos,
+  PopularVideo,
+} from "@/lib/analytics/get-popular-videos";
+
+import type { getToday } from "../_lib/get-today";
 
 const mocks = vi.hoisted(() => ({
-  getPopularVideos: vi.fn(),
-  getToday: vi.fn(),
+  getPopularVideos: vi.fn<typeof getPopularVideos>(),
+  getToday: vi.fn<typeof getToday>(),
 }));
 
-vi.mock("../_lib/get-today", () => ({
+vi.mock(import("../_lib/get-today"), () => ({
   getToday: mocks.getToday,
 }));
-vi.mock("@/lib/analytics/get-popular-videos", () => ({
+vi.mock(import("@/lib/analytics/get-popular-videos"), () => ({
   getPopularVideos: mocks.getPopularVideos,
 }));
 

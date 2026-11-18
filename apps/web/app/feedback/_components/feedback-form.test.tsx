@@ -10,7 +10,7 @@ const { submitFeedback } = vi.hoisted(() => ({
     >(),
 }));
 
-vi.mock("../_lib/actions", () => ({ submitFeedback }));
+vi.mock(import("../_lib/actions"), () => ({ submitFeedback }));
 
 import { FeedbackForm } from "./feedback-form";
 
@@ -26,7 +26,7 @@ async function submitMessage(container: HTMLElement, message: string) {
   });
 }
 
-describe("FeedbackForm", () => {
+describe(FeedbackForm, () => {
   beforeEach(() => {
     submitFeedback.mockReset();
   });

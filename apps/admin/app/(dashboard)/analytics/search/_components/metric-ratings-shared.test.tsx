@@ -1,46 +1,62 @@
 import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type {
+  getRepeatSearchRate,
+  getSearchEngagementRate,
+  getSearchExitRates,
+} from "@/lib/analytics/get-search-quality-metrics";
+
 import type { AnalyticsSearchParams } from "../../_lib/search-params-schema";
+import type { Rating, Ratings } from "../_lib/metric-ratings";
 
 /**
  * 評価の表のしきい値を1つずつ変えて、3つのウィジェットの判定と凡例の両方が、
  * 表に合わせて変わることを確かめる
  */
 const mocks = vi.hoisted(() => ({
-  getRepeatSearchRate: vi.fn(),
-  getSearchEngagementRate: vi.fn(),
-  getSearchExitRates: vi.fn(),
+  getRepeatSearchRate: vi.fn<typeof getRepeatSearchRate>(),
+  getSearchEngagementRate: vi.fn<typeof getSearchEngagementRate>(),
+  getSearchExitRates: vi.fn<typeof getSearchExitRates>(),
 }));
 
-vi.mock("@/lib/analytics/get-search-quality-metrics", () => ({
+vi.mock(import("@/lib/analytics/get-search-quality-metrics"), () => ({
   getRepeatSearchRate: mocks.getRepeatSearchRate,
   getSearchEngagementRate: mocks.getSearchEngagementRate,
   getSearchExitRates: mocks.getSearchExitRates,
 }));
 
-vi.mock("../_lib/metric-ratings", async (importOriginal) => {
-  const original =
-    await importOriginal<typeof import("../_lib/metric-ratings")>();
+vi.mock(import("../_lib/metric-ratings"), async (importOriginal) => {
+  const original = await importOriginal();
 
-  const withMin = <R extends { min: number }>(
-    ratings: readonly R[],
+  // The type of each table has the values themselves, so the changed table
+  // is cast back to the type of the original one
+  const withMin = (
+    ratings: Ratings,
     from: number,
     to: number
-  ) =>
+  ): readonly Rating[] =>
     ratings.map((rating) =>
       rating.min === from ? { ...rating, min: to } : rating
     );
 
   return {
     ...original,
-    ENGAGEMENT_RATE_RATINGS: withMin(original.ENGAGEMENT_RATE_RATINGS, 20, 25),
-    EXIT_RATE_RATINGS: withMin(original.EXIT_RATE_RATINGS, 30, 40),
+    ENGAGEMENT_RATE_RATINGS: withMin(
+      original.ENGAGEMENT_RATE_RATINGS,
+      20,
+      25
+    ) as typeof original.ENGAGEMENT_RATE_RATINGS,
+    EXIT_RATE_RATINGS: withMin(
+      original.EXIT_RATE_RATINGS,
+      30,
+      40
+    ) as typeof original.EXIT_RATE_RATINGS,
     REPEAT_SEARCH_RATE_RATINGS: withMin(
       original.REPEAT_SEARCH_RATE_RATINGS,
       1.5,
       1.2
-    ),
+    ) as typeof original.REPEAT_SEARCH_RATE_RATINGS,
   };
 });
 

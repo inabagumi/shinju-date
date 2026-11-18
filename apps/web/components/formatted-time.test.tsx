@@ -7,7 +7,7 @@ const dateTime = Temporal.ZonedDateTime.from(
   "2026-03-26T01:22:03+09:00[Asia/Tokyo]"
 );
 
-describe("FormattedTime", () => {
+describe(FormattedTime, () => {
   beforeEach(() => {
     vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(
       Temporal.ZonedDateTime.from("2026-11-14T12:00:00+09:00[Asia/Tokyo]")

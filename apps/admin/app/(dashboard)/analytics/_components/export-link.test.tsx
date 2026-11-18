@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { buildExportHref, ExportLink } from "./export-link";
 
-describe("buildExportHref", () => {
+describe(buildExportHref, () => {
   it("exports the whole date range when no date is selected", () => {
     expect(
       buildExportHref({
@@ -35,7 +35,7 @@ describe("buildExportHref", () => {
   });
 });
 
-describe("ExportLink", () => {
+describe(ExportLink, () => {
   it("renders a single link to the CSV download", () => {
     render(
       <ExportLink

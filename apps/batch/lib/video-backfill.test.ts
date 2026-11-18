@@ -1,3 +1,4 @@
+import type * as Sentry from "@sentry/nextjs";
 import { REDIS_KEYS } from "@shinju-date/constants";
 import { AccountNotFoundError } from "@shinju-date/scraper";
 import type { Scraper } from "@shinju-date/scraper";
@@ -10,11 +11,17 @@ import { FakeRedis } from "@shinju-date/video-backfill/testing";
 import type { Redis } from "@upstash/redis";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const captureException = vi.fn();
-const logger = { error: vi.fn(), info: vi.fn(), warn: vi.fn() };
+import type { WorkOffBackfillQueueOptions } from "./video-backfill";
 
-vi.mock("@sentry/nextjs", () => ({ captureException }));
-vi.mock("@shinju-date/logger", () => ({ logger }));
+const { createLoggerMock } = await vi.hoisted(() => import("@/test/mocks"));
+
+type OnFinish = NonNullable<WorkOffBackfillQueueOptions["onFinish"]>;
+
+const captureException = vi.fn<typeof Sentry.captureException>();
+const logger = createLoggerMock();
+
+vi.mock(import("@sentry/nextjs"), () => ({ captureException }));
+vi.mock(import("@shinju-date/logger"), () => ({ logger }));
 
 const { BACKFILL_SENTRY_TAG, workOffBackfillQueue } =
   await import("./video-backfill");
@@ -62,7 +69,7 @@ function claimOf(fields: Partial<BackfillJob>) {
  * so that the batch is tested with the policy of the queue.
  */
 async function createQueue(jobs: BackfillJob[]) {
-  const redis = new FakeRedis() as unknown as Redis;
+  const redis = new FakeRedis() as Partial<Redis> as Redis;
 
   for (const job of jobs) {
     await redis.set(`${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${job.id}`, job);
@@ -94,7 +101,9 @@ function createScraper() {
 
   return {
     addPastVideos,
-    getScraper: vi.fn(() => ({ addPastVideos }) as unknown as Scraper),
+    getScraper: vi.fn<WorkOffBackfillQueueOptions["getScraper"]>(
+      () => ({ addPastVideos }) as Partial<Scraper> as Scraper
+    ),
   };
 }
 
@@ -105,30 +114,34 @@ describe("workOffBackfillQueue", () => {
     vi.clearAllMocks();
   });
 
-  it("reads every page of a job and completes it", async () => {
-    const { getJob, getQueued, queue, spies } = await createQueue([
-      createJob(),
-    ]);
-    const { addPastVideos, getScraper } = createScraper();
+  /** Works off a queue of one job whose videos fill two pages. */
+  async function readTwoPages() {
+    const queued = await createQueue([createJob()]);
+    const scraper = createScraper();
 
-    addPastVideos
+    scraper.addPastVideos
       .mockResolvedValueOnce({ added: 3, cursor: "page-2", listed: 50 })
       .mockResolvedValueOnce({ added: 1, cursor: null, listed: 10 });
 
-    await expect(
-      workOffBackfillQueue({ deadline: farFuture, getScraper, queue })
-    ).resolves.toEqual({ added: 4, jobs: 1 });
+    const result = await workOffBackfillQueue({
+      deadline: farFuture,
+      getScraper: scraper.getScraper,
+      queue: queued.queue,
+    });
 
+    return { ...queued, ...scraper, result };
+  }
+
+  it("reads every page of a job", async () => {
+    const { addPastVideos, getScraper, result, spies } = await readTwoPages();
+
+    expect(result).toStrictEqual({ added: 4, jobs: 1 });
     expect(getScraper).toHaveBeenCalledWith("youtube");
-    expect(addPastVideos).toHaveBeenNthCalledWith(
-      1,
-      expect.objectContaining({ accountId: "channel-row-1", cursor: null })
-    );
-    expect(addPastVideos).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({ cursor: "page-2" })
-    );
-    expect(spies.recordPage.mock.calls).toEqual([
+    expect(addPastVideos.mock.calls).toStrictEqual([
+      [expect.objectContaining({ accountId: "channel-row-1", cursor: null })],
+      [expect.objectContaining({ cursor: "page-2" })],
+    ]);
+    expect(spies.recordPage.mock.calls).toStrictEqual([
       [
         claimOf({ added: 0, cursor: null, pages: 0 }),
         { added: 3, done: false, nextCursor: "page-2" },
@@ -138,6 +151,11 @@ describe("workOffBackfillQueue", () => {
         { added: 1, done: true, nextCursor: null },
       ],
     ]);
+  });
+
+  it("completes a job after its last page", async () => {
+    const { getJob, getQueued, spies } = await readTwoPages();
+
     expect(spies.requeue).not.toHaveBeenCalled();
     await expect(getJob(youtubeId)).resolves.toMatchObject({
       added: 4,
@@ -145,7 +163,7 @@ describe("workOffBackfillQueue", () => {
       pages: 2,
       status: "done",
     });
-    await expect(getQueued()).resolves.toEqual([]);
+    await expect(getQueued()).resolves.toStrictEqual([]);
   });
 
   it("puts a job back with its cursor when the time is up", async () => {
@@ -171,7 +189,7 @@ describe("workOffBackfillQueue", () => {
         getScraper,
         queue,
       })
-    ).resolves.toEqual({ added: 2, jobs: 1 });
+    ).resolves.toStrictEqual({ added: 2, jobs: 1 });
 
     expect(addPastVideos).toHaveBeenCalledOnce();
     expect(spies.requeue).toHaveBeenCalledWith(
@@ -183,7 +201,7 @@ describe("workOffBackfillQueue", () => {
       pages: 3,
       status: "pending",
     });
-    await expect(getQueued()).resolves.toEqual([youtubeId]);
+    await expect(getQueued()).resolves.toStrictEqual([youtubeId]);
   });
 
   it("stops when a page cannot be recorded", async () => {
@@ -210,7 +228,7 @@ describe("workOffBackfillQueue", () => {
 
     await expect(
       workOffBackfillQueue({ deadline: farFuture, getScraper, queue })
-    ).resolves.toEqual({ added: 0, jobs: 2 });
+    ).resolves.toStrictEqual({ added: 0, jobs: 2 });
 
     expect(getScraper).toHaveBeenCalledWith("twitch");
     // The failed job came around again and was left for the next run.
@@ -220,7 +238,7 @@ describe("workOffBackfillQueue", () => {
       error: "quota exceeded",
       status: "pending",
     });
-    await expect(getQueued()).resolves.toEqual([youtubeId]);
+    await expect(getQueued()).resolves.toStrictEqual([youtubeId]);
   });
 
   it("gives a job up after repeated failures", async () => {
@@ -239,7 +257,7 @@ describe("workOffBackfillQueue", () => {
       error: "quota exceeded",
       status: "failed",
     });
-    await expect(getQueued()).resolves.toEqual([]);
+    await expect(getQueued()).resolves.toStrictEqual([]);
   });
 
   it("retries a job that failed fewer times than allowed", async () => {
@@ -286,7 +304,7 @@ describe("workOffBackfillQueue", () => {
 
     await expect(
       workOffBackfillQueue({ deadline: farFuture, getScraper, queue })
-    ).resolves.toEqual({ added: 0, jobs: 0 });
+    ).resolves.toStrictEqual({ added: 0, jobs: 0 });
 
     expect(spies.claim).toHaveBeenCalledOnce();
     expect(getScraper).not.toHaveBeenCalled();
@@ -295,7 +313,7 @@ describe("workOffBackfillQueue", () => {
   it("reports the jobs that finish with how they finished", async () => {
     const { queue } = await createQueue([createJob(), createTwitchJob()]);
     const { addPastVideos, getScraper } = createScraper();
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<OnFinish>();
 
     addPastVideos
       .mockResolvedValueOnce({ added: 2, cursor: null, listed: 2 })
@@ -308,7 +326,7 @@ describe("workOffBackfillQueue", () => {
       queue,
     });
 
-    expect(onFinish.mock.calls).toEqual([
+    expect(onFinish.mock.calls).toStrictEqual([
       [
         expect.objectContaining({
           added: 2,
@@ -330,7 +348,7 @@ describe("workOffBackfillQueue", () => {
   it("does not report jobs that are put back to continue later", async () => {
     const { queue } = await createQueue([createJob()]);
     const { addPastVideos, getScraper } = createScraper();
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<OnFinish>();
 
     addPastVideos.mockRejectedValue(new Error("quota exceeded"));
 
@@ -348,7 +366,7 @@ describe("workOffBackfillQueue", () => {
     const { queue } = await createQueue([createJob(), createTwitchJob()]);
     const { addPastVideos, getScraper } = createScraper();
     const onFinish = vi
-      .fn()
+      .fn<OnFinish>()
       .mockRejectedValueOnce(new Error("database unavailable"));
 
     addPastVideos.mockResolvedValue({ added: 1, cursor: null, listed: 1 });
@@ -360,7 +378,7 @@ describe("workOffBackfillQueue", () => {
         onFinish,
         queue,
       })
-    ).resolves.toEqual({ added: 2, jobs: 2 });
+    ).resolves.toStrictEqual({ added: 2, jobs: 2 });
 
     expect(onFinish).toHaveBeenCalledTimes(2);
     expect(captureException).toHaveBeenCalledWith(
@@ -380,7 +398,7 @@ describe("workOffBackfillQueue", () => {
 
     await workOffBackfillQueue({ deadline: farFuture, getScraper, queue });
 
-    expect(captureException.mock.calls).toEqual([
+    expect(captureException.mock.calls).toStrictEqual([
       [
         new Error("quota exceeded"),
         expect.objectContaining({
@@ -433,19 +451,20 @@ describe("workOffBackfillQueue", () => {
 
     await expect(
       workOffBackfillQueue({ deadline: farFuture, getScraper, queue })
-    ).resolves.toEqual({ added: 4, jobs: 2 });
+    ).resolves.toStrictEqual({ added: 4, jobs: 2 });
 
     // The first job was not read further nor put back.
     expect(addPastVideos).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({ accountId: "twitch-row-1" })
     );
-    await expect(getJob(youtubeId)).resolves.toMatchObject({
-      cursor: null,
-      status: "running",
-    });
-    await expect(getJob(twitchId)).resolves.toMatchObject({ status: "done" });
-    await expect(getQueued()).resolves.toEqual([]);
+    await expect(
+      Promise.all([getJob(youtubeId), getJob(twitchId)])
+    ).resolves.toMatchObject([
+      { cursor: null, status: "running" },
+      { status: "done" },
+    ]);
+    await expect(getQueued()).resolves.toStrictEqual([]);
     expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining("ロック"),
       expect.objectContaining({ jobId: youtubeId })
@@ -476,7 +495,7 @@ describe("workOffBackfillQueue", () => {
       createTwitchJob(),
     ]);
     const { addPastVideos, getScraper } = createScraper();
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<OnFinish>();
 
     addPastVideos
       .mockImplementationOnce(async () => {

@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { featureRequests } from "@shinju-date/msw-handlers";
+import type { checkBotId } from "botid/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -8,8 +9,13 @@ import {
   setupSupabase,
 } from "@/test/supabase";
 
-vi.mock("botid/server", () => ({
-  checkBotId: vi.fn().mockResolvedValue({ isBot: false }),
+vi.mock(import("botid/server"), () => ({
+  checkBotId: vi.fn<typeof checkBotId>().mockResolvedValue({
+    bypassed: false,
+    isBot: false,
+    isHuman: true,
+    isVerifiedBot: false,
+  }),
 }));
 
 import { submitFeedback } from "./actions";
@@ -31,7 +37,7 @@ function storedMessages(): string[] {
   return featureRequests.findMany().map(({ message }) => message);
 }
 
-describe("submitFeedback", () => {
+describe("submitFeedback()", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
@@ -44,12 +50,12 @@ describe("submitFeedback", () => {
     async (_, message) => {
       const result = await submitFeedback(null, createFormData({ message }));
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         fieldErrors: { message: "機能要望を入力してください" },
         success: false,
         values: { message },
       });
-      expect(storedMessages()).toEqual([]);
+      expect(storedMessages()).toStrictEqual([]);
     }
   );
 
@@ -57,7 +63,7 @@ describe("submitFeedback", () => {
     const result = await submitFeedback(null, new FormData());
 
     expect(result.fieldErrors?.message).toBe("機能要望を入力してください");
-    expect(storedMessages()).toEqual([]);
+    expect(storedMessages()).toStrictEqual([]);
   });
 
   it("stores the trimmed message as a new request", async () => {
@@ -66,9 +72,9 @@ describe("submitFeedback", () => {
       createFormData({ message: "  検索機能がほしい  " })
     );
 
-    expect(result.success).toBe(true);
+    expect(result.success).toBeTruthy();
     expect(result.values).toBeUndefined();
-    expect(featureRequests.findMany()).toEqual([
+    expect(featureRequests.findMany()).toStrictEqual([
       expect.objectContaining({
         is_read: false,
         message: "検索機能がほしい",
@@ -86,10 +92,10 @@ describe("submitFeedback", () => {
       createFormData({ message: "  検索機能がほしい  " })
     );
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBeFalsy();
     expect(result.error).toBeDefined();
-    expect(result.values).toEqual({ message: "  検索機能がほしい  " });
-    expect(storedMessages()).toEqual([]);
+    expect(result.values).toStrictEqual({ message: "  検索機能がほしい  " });
+    expect(storedMessages()).toStrictEqual([]);
   });
 
   it("returns the submitted message when the request cannot be sent", async () => {
@@ -101,7 +107,7 @@ describe("submitFeedback", () => {
       createFormData({ message: "検索機能がほしい" })
     );
 
-    expect(result.success).toBe(false);
-    expect(result.values).toEqual({ message: "検索機能がほしい" });
+    expect(result.success).toBeFalsy();
+    expect(result.values).toStrictEqual({ message: "検索機能がほしい" });
   });
 });

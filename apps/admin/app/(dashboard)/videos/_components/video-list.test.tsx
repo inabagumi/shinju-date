@@ -19,10 +19,10 @@ import type { Video } from "../_lib/get-videos";
 import type { VideoSort } from "../_lib/video-sort";
 import VideoList from "./video-list";
 
-vi.mock("../_actions", () => ({
-  restoreAction: vi.fn(),
-  softDeleteAction: vi.fn(),
-  toggleVisibilityAction: vi.fn(),
+vi.mock(import("../_actions"), () => ({
+  restoreAction: vi.fn<typeof restoreAction>(),
+  softDeleteAction: vi.fn<typeof softDeleteAction>(),
+  toggleVisibilityAction: vi.fn<typeof toggleVisibilityAction>(),
 }));
 
 interface WrapperProps {
@@ -71,7 +71,7 @@ function createVideo(overrides: Partial<Video> = {}): Video {
   };
 }
 
-describe("VideoList", () => {
+describe(VideoList, () => {
   it("renders the talent name", () => {
     render(<TestVideoList videos={[createVideo()]} />, {
       wrapper: ActionToastProvider,
@@ -220,21 +220,37 @@ describe("VideoList", () => {
       vi.mocked(restoreAction).mockResolvedValue({ success: true });
     });
 
-    it("drops the selection that is no longer in the list", async () => {
+    function selectAcrossLists() {
       const { rerender } = render(<TestVideoList videos={[videoA, videoB]} />, {
         wrapper: Wrapper,
       });
       select("Video A");
       select("Video B");
+
+      return {
+        moveToNextList() {
+          rerender(<TestVideoList videos={[videoC]} />);
+        },
+      };
+    }
+
+    it("drops the selection that is no longer in the list", () => {
+      const { moveToNextList } = selectAcrossLists();
       expect(screen.getByText("2 件選択中")).toBeInTheDocument();
 
-      rerender(<TestVideoList videos={[videoC]} />);
+      moveToNextList();
       expect(
         screen.getByText("動画を選択すると、まとめて操作できます。")
       ).toBeInTheDocument();
 
       select("Video C");
       expect(screen.getByText("1 件選択中")).toBeInTheDocument();
+    });
+
+    it("acts only on the videos selected in the current list", async () => {
+      const { moveToNextList } = selectAcrossLists();
+      moveToNextList();
+      select("Video C");
 
       fireEvent.click(screen.getByRole("button", { name: "削除" }));
       const dialog = screen.getByRole("dialog");

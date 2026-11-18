@@ -3,14 +3,15 @@ import type { SummaryStats } from "@shinju-date/dashboard-stats";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getRedisClient } from "@/lib/redis";
+import { createMockRedisClient } from "@/test/mock-redis-pipeline";
 
 import { getHistoricalStats } from "./get-historical-stats";
 
-vi.mock("next/cache", () => ({
-  cacheLife: vi.fn(),
+vi.mock(import("next/cache"), () => ({
+  cacheLife: vi.fn<() => void>(),
 }));
-vi.mock("@/lib/redis", () => ({
-  getRedisClient: vi.fn(),
+vi.mock(import("@/lib/redis"), () => ({
+  getRedisClient: vi.fn<typeof getRedisClient>(),
 }));
 
 function snapshot(totalVideos: number): SummaryStats {
@@ -27,17 +28,17 @@ function snapshot(totalVideos: number): SummaryStats {
 
 /** Keep the snapshots of the given days (`YYYYMMDD`) in Redis. */
 function mockSnapshots(snapshots: Record<string, unknown>) {
-  const get = vi.fn(
-    async (key: string) =>
+  const get = vi.fn<(key: string) => Promise<unknown>>(
+    async (key) =>
       snapshots[key.slice(REDIS_KEYS.SUMMARY_STATS_PREFIX.length)] ?? null
   );
 
-  vi.mocked(getRedisClient).mockReturnValue({ get } as never);
+  vi.mocked(getRedisClient).mockReturnValue(createMockRedisClient({ get }));
 
   return get;
 }
 
-describe("getHistoricalStats", () => {
+describe(getHistoricalStats, () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -58,12 +59,12 @@ describe("getHistoricalStats", () => {
 
     const result = await getHistoricalStats(3);
 
-    expect(get.mock.calls.map(([key]) => key)).toEqual([
+    expect(get.mock.calls.map(([key]) => key)).toStrictEqual([
       `${REDIS_KEYS.SUMMARY_STATS_PREFIX}20251111`,
       `${REDIS_KEYS.SUMMARY_STATS_PREFIX}20251112`,
       `${REDIS_KEYS.SUMMARY_STATS_PREFIX}20251113`,
     ]);
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       { date: "11/11", ...snapshot(29) },
       { date: "11/12", ...snapshot(31) },
     ]);
@@ -78,7 +79,7 @@ describe("getHistoricalStats", () => {
       "20251112": snapshot(31),
     });
 
-    await expect(getHistoricalStats()).resolves.toEqual([
+    await expect(getHistoricalStats()).resolves.toStrictEqual([
       { date: "11/12", ...snapshot(31) },
     ]);
   });
@@ -86,6 +87,6 @@ describe("getHistoricalStats", () => {
   it("returns nothing while there is no snapshot", async () => {
     mockSnapshots({});
 
-    await expect(getHistoricalStats()).resolves.toEqual([]);
+    await expect(getHistoricalStats()).resolves.toStrictEqual([]);
   });
 });

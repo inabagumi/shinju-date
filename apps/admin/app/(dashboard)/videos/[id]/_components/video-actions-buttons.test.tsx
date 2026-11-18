@@ -8,20 +8,21 @@ import {
   softDeleteAction,
   toggleVisibilityAction,
 } from "../../_actions";
+import type { syncVideoAction } from "../../_actions/sync";
 import {
   VideoActionsButtons,
   VideoActionsProvider,
   VideoDeleteButton,
 } from "./video-actions-buttons";
 
-vi.mock("../../_actions", () => ({
-  restoreAction: vi.fn(),
-  softDeleteAction: vi.fn(),
-  toggleVisibilityAction: vi.fn(),
+vi.mock(import("../../_actions"), () => ({
+  restoreAction: vi.fn<typeof restoreAction>(),
+  softDeleteAction: vi.fn<typeof softDeleteAction>(),
+  toggleVisibilityAction: vi.fn<typeof toggleVisibilityAction>(),
 }));
 
-vi.mock("../../_actions/sync", () => ({
-  syncVideoAction: vi.fn(),
+vi.mock(import("../../_actions/sync"), () => ({
+  syncVideoAction: vi.fn<typeof syncVideoAction>(),
 }));
 
 const VIDEO_ID = "00000000-0000-4000-8000-000000000001";
@@ -53,7 +54,7 @@ function renderActions({
   );
 }
 
-describe("VideoActionsProvider", () => {
+describe(VideoActionsProvider, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

@@ -1,12 +1,19 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { ActionResult } from "@/lib/action";
+
+import type {
+  disableMaintenanceModeAction,
+  enableMaintenanceModeAction,
+} from "../_actions/maintenance-mode";
+
 const mocks = vi.hoisted(() => ({
-  disableMaintenanceModeAction: vi.fn(),
-  enableMaintenanceModeAction: vi.fn(),
+  disableMaintenanceModeAction: vi.fn<typeof disableMaintenanceModeAction>(),
+  enableMaintenanceModeAction: vi.fn<typeof enableMaintenanceModeAction>(),
 }));
 
-vi.mock("../_actions/maintenance-mode", () => ({
+vi.mock(import("../_actions/maintenance-mode"), () => ({
   disableMaintenanceModeAction: mocks.disableMaintenanceModeAction,
   enableMaintenanceModeAction: mocks.enableMaintenanceModeAction,
 }));
@@ -80,7 +87,10 @@ describe("MaintenanceModeWidget", () => {
   });
 
   it("shows the error in the dialog when the action fails", async () => {
-    mocks.enableMaintenanceModeAction.mockResolvedValue({ success: false });
+    // Not in the type of the result, but handled in case it has no error
+    mocks.enableMaintenanceModeAction.mockResolvedValue({
+      success: false,
+    } as ActionResult);
     render(<MaintenanceModeWidget initialStatus={false} />);
 
     toggle();

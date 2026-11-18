@@ -1,6 +1,7 @@
 // @vitest-environment node
 
 import { REDIS_KEYS } from "@shinju-date/constants";
+import type { Redis } from "@upstash/redis";
 import {
   getRedirectUrl,
   getRewrittenUrl,
@@ -12,8 +13,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const redisGet = vi.fn<(key: string) => Promise<unknown>>();
 
-vi.mock("@/lib/redis", () => ({
-  getRedisClient: () => ({ get: redisGet }),
+vi.mock(import("@/lib/redis"), () => ({
+  getRedisClient: () => ({ get: redisGet }) as Partial<Redis> as Redis,
 }));
 
 const BASE_URL = "https://shinju.date";
@@ -57,7 +58,7 @@ describe("config.matcher", () => {
     "/icons",
     "/monitoring-page",
   ])("runs for the page %s", async (path) => {
-    await expect(doesMatch(path)).resolves.toBe(true);
+    await expect(doesMatch(path)).resolves.toBeTruthy();
   });
 
   it.each([
@@ -81,7 +82,7 @@ describe("config.matcher", () => {
     "/monitoring?o=1&p=2",
     "/hero.png",
   ])("does not run for %s", async (path) => {
-    await expect(doesMatch(path)).resolves.toBe(false);
+    await expect(doesMatch(path)).resolves.toBeFalsy();
   });
 });
 
@@ -115,7 +116,7 @@ describe("proxy", () => {
   });
 
   it("passes the request when Redis cannot be read", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.spyOn(console, "error").mockReturnValue(undefined);
     redisGet.mockRejectedValue(new Error("unavailable"));
     const { proxy } = await importProxy();
 

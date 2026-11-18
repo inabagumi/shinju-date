@@ -28,7 +28,7 @@ const youtubeVideo = {
   values: { youtube_channel_id: "channel-row-1", youtube_video_id: "yt-1" },
 };
 
-describe("insertVideo", () => {
+describe(insertVideo, () => {
   it("inserts the video and its platform row with one function call", async () => {
     supabase.respondWith({
       "POST rpc/insert_video": () => HttpResponse.json("video-1"),
@@ -41,10 +41,10 @@ describe("insertVideo", () => {
     );
 
     expect(videoId).toBe("video-1");
-    expect(supabase.requests.map((r) => `${r.method} ${r.table}`)).toEqual([
-      "POST rpc/insert_video",
-    ]);
-    expect(supabase.requests[0]?.body).toEqual({
+    expect(
+      supabase.requests.map((r) => `${r.method} ${r.table}`)
+    ).toStrictEqual(["POST rpc/insert_video"]);
+    expect(supabase.requests[0]?.body).toStrictEqual({
       p_platform: "youtube",
       p_platform_video: {
         youtube_channel_id: "channel-row-1",
@@ -71,7 +71,7 @@ describe("insertVideo", () => {
       }
     );
 
-    expect(supabase.insertedVideos()).toEqual([
+    expect(supabase.insertedVideos()).toStrictEqual([
       {
         platform: "twitch",
         platformVideo: {
@@ -111,11 +111,11 @@ describe("insertVideo", () => {
     // The function inserts nothing when it fails, so nothing is undone.
     expect(
       supabase.requests.every(({ table }) => table === "rpc/insert_video")
-    ).toBe(true);
+    ).toBeTruthy();
   });
 });
 
-describe("softDeleteUnavailableVideos", () => {
+describe(softDeleteUnavailableVideos, () => {
   const now = Temporal.Instant.from("2024-05-01T12:34:56.789Z");
 
   it("soft-deletes the videos as unavailable with one function call", async () => {
@@ -127,10 +127,10 @@ describe("softDeleteUnavailableVideos", () => {
     );
 
     expect(deletedCount).toBe(2);
-    expect(supabase.requests.map((r) => `${r.method} ${r.table}`)).toEqual([
-      "POST rpc/soft_delete_videos",
-    ]);
-    expect(supabase.requests[0]?.body).toEqual({
+    expect(
+      supabase.requests.map((r) => `${r.method} ${r.table}`)
+    ).toStrictEqual(["POST rpc/soft_delete_videos"]);
+    expect(supabase.requests[0]?.body).toStrictEqual({
       p_deleted_at: "2024-05-01T12:34:56Z",
       p_reason: "unavailable",
       p_video_ids: ["video-1", "video-2"],
@@ -163,7 +163,7 @@ describe("softDeleteUnavailableVideos", () => {
         .map(
           ({ body }) => (body as { p_video_ids: string[] }).p_video_ids.length
         )
-    ).toEqual([1000, 1000, 500]);
+    ).toStrictEqual([1000, 1000, 500]);
   });
 
   it("throws a DatabaseError when the function fails", async () => {
@@ -189,7 +189,7 @@ describe("softDeleteUnavailableVideos", () => {
   });
 });
 
-describe("findSavedYouTubeVideoIds", () => {
+describe(findSavedYouTubeVideoIds, () => {
   it("returns the IDs that are saved", async () => {
     supabase.respond(() => [{ youtube_video_id: "yt-1" }]);
 
@@ -198,7 +198,7 @@ describe("findSavedYouTubeVideoIds", () => {
       "yt-2",
     ]);
 
-    expect([...savedIds]).toEqual(["yt-1"]);
+    expect([...savedIds]).toStrictEqual(["yt-1"]);
     expect(supabase.requests[0]?.query["youtube_video_id"]).toBe(
       "in.(yt-1,yt-2)"
     );

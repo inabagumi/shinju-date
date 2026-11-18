@@ -233,14 +233,14 @@ const cases: [title: string, talentName: string, expected: ParsedVideoTitle][] =
     ],
   ];
 
-describe("parseVideoTitle", () => {
+describe(parseVideoTitle, () => {
   it.each(cases)("should parse %s", (title, talentName, expected) => {
     expect(
       parseVideoTitle(title, {
         creditKeywords: [TALENT_AFFILIATION_NAME],
         creditNames: [talentName],
       })
-    ).toEqual(expected);
+    ).toStrictEqual(expected);
   });
 
   it("should keep the credits in the labels without the options", () => {
@@ -248,7 +248,7 @@ describe("parseVideoTitle", () => {
       parseVideoTitle(
         "【雀魂】指示厨が泡吹いて倒れない麻雀【柚原いづみ / ななしいんく】"
       )
-    ).toEqual({
+    ).toStrictEqual({
       hashtags: [],
       labels: ["雀魂", "柚原いづみ / ななしいんく"],
       text: "指示厨が泡吹いて倒れない麻雀",
@@ -272,11 +272,11 @@ describe("parseVideoTitle", () => {
         creditKeywords: [TALENT_AFFILIATION_NAME],
         creditNames: ["柚原いづみ"],
       })
-    ).toEqual(expected);
+    ).toStrictEqual(expected);
   });
 
   it("should not treat `#` after a letter as a hashtag", () => {
-    expect(parseVideoTitle("C# で作るゲーム C#")).toEqual({
+    expect(parseVideoTitle("C# で作るゲーム C#")).toStrictEqual({
       hashtags: [],
       labels: [],
       text: "C# で作るゲーム C#",
@@ -284,20 +284,20 @@ describe("parseVideoTitle", () => {
   });
 });
 
-describe("getVideoTitleParts", () => {
+describe(getVideoTitleParts, () => {
   it("should put the first label and up to three hashtags in the tags", () => {
     expect(
       getVideoTitleParts(
         "【Minecraft】【雑談】夜の肝試し #マイクラ肝試し2026 #a #b #c"
       )
-    ).toEqual({
+    ).toStrictEqual({
       tags: "Minecraft #マイクラ肝試し2026 #a #b",
       text: "夜の肝試し",
     });
   });
 
   it("should leave the tags empty without labels and hashtags", () => {
-    expect(getVideoTitleParts("今日も歌います")).toEqual({
+    expect(getVideoTitleParts("今日も歌います")).toStrictEqual({
       tags: "",
       text: "今日も歌います",
     });
@@ -309,11 +309,13 @@ describe("getVideoTitleParts", () => {
         `【歌枠】今日も歌います【朝霧ミオ / ${TALENT_AFFILIATION_NAME}】`,
         "朝霧ミオ"
       )
-    ).toEqual({ tags: "歌枠", text: "今日も歌います" });
+    ).toStrictEqual({ tags: "歌枠", text: "今日も歌います" });
   });
 
   it("should keep the name of a talent without the talent", () => {
-    expect(getVideoTitleParts("【朝霧ミオ】今日も歌います", null)).toEqual({
+    expect(
+      getVideoTitleParts("【朝霧ミオ】今日も歌います", null)
+    ).toStrictEqual({
       tags: "朝霧ミオ",
       text: "今日も歌います",
     });

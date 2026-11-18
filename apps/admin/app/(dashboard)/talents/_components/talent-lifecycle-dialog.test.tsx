@@ -9,14 +9,23 @@ import {
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { ActionResult } from "@/lib/action";
+
+import type {
+  activateTalentAction,
+  deleteTalentAction,
+  restoreTalentAction,
+  retireTalentAction,
+} from "../_actions";
+
 const mocks = vi.hoisted(() => ({
-  activateTalentAction: vi.fn(),
-  deleteTalentAction: vi.fn(),
-  restoreTalentAction: vi.fn(),
-  retireTalentAction: vi.fn(),
+  activateTalentAction: vi.fn<typeof activateTalentAction>(),
+  deleteTalentAction: vi.fn<typeof deleteTalentAction>(),
+  restoreTalentAction: vi.fn<typeof restoreTalentAction>(),
+  retireTalentAction: vi.fn<typeof retireTalentAction>(),
 }));
 
-vi.mock("../_actions", () => mocks);
+vi.mock(import("../_actions"), () => mocks);
 
 const { TalentLifecycleDialog } = await import("./talent-lifecycle-dialog");
 
@@ -61,7 +70,7 @@ const operations = [
 
 function renderDialog(
   operation: (typeof operations)[number]["operation"],
-  onSuccess = vi.fn()
+  onSuccess = vi.fn<(text: string) => void>()
 ) {
   render(
     <TalentLifecycleDialog
@@ -118,8 +127,7 @@ describe("TalentLifecycleDialog", () => {
       await waitFor(() => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
       });
-      expect(config.action).toHaveBeenCalledOnce();
-      expect(config.action).toHaveBeenCalledWith("talent-1");
+      expect(config.action).toHaveBeenCalledExactlyOnceWith("talent-1");
       expect(onSuccess).toHaveBeenCalledWith(config.successText);
     });
   });
@@ -141,7 +149,7 @@ describe("TalentLifecycleDialog", () => {
   });
 
   it("disables the buttons while the action is running", async () => {
-    let resolve: (value: { success: boolean }) => void = () => {};
+    let resolve: (value: ActionResult) => void = () => {};
     mocks.deleteTalentAction.mockReturnValue(
       new Promise((r) => {
         resolve = r;

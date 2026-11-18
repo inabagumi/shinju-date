@@ -11,12 +11,17 @@ import {
   createPlaylistItem,
   YOUTUBE_TALENTS,
 } from "../internal/testing/youtube.js";
+import type * as Thumbnails from "../internal/thumbnails/index.js";
+import type { ErrorReporter } from "../types.js";
 import { YouTubeScraper } from "./scraper.js";
 
-vi.mock("../internal/thumbnails/index.js", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../internal/thumbnails/index.js")>()),
-  createThumbnail: vi.fn(async () => ({ id: "thumb-1", path: "x/y.jpg" })),
-  removeThumbnail: vi.fn(),
+vi.mock(import("../internal/thumbnails/index.js"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  createThumbnail: vi.fn<typeof Thumbnails.createThumbnail>(async () => ({
+    id: "thumb-1",
+    path: "x/y.jpg",
+  })),
+  removeThumbnail: vi.fn<typeof Thumbnails.removeThumbnail>(),
 }));
 
 const supabase = setupSupabase();
@@ -27,6 +32,9 @@ interface ListParams {
   part?: string[];
   playlistId?: string;
 }
+
+/** A `list` method of the YouTube Data API that returns the response. */
+type ListMethod<T> = (params: ListParams) => Promise<{ data: T }>;
 
 interface FakeYouTube {
   /** Channel ID → title */
@@ -52,70 +60,79 @@ function createClient({
   uploads = {},
   videos = {},
 }: FakeYouTube) {
-  const videosList = vi.fn(async ({ id = [], part = [] }: ListParams) => ({
-    data: {
-      items: id
-        .filter((value) => value in videos)
-        .map((value) =>
-          part.includes("snippet")
-            ? {
-                contentDetails: { duration: "PT10M" },
-                id: value,
-                snippet: {
-                  publishedAt: "2024-05-01T10:00:00Z",
-                  title: `Video ${value}`,
-                },
-                ...videos[value],
-              }
-            : { id: value }
-        ),
-    },
-  }));
+  const videosList = vi.fn<ListMethod<youtube.Schema$VideoListResponse>>(
+    async ({ id = [], part = [] }: ListParams) => ({
+      data: {
+        items: id
+          .filter((value) => value in videos)
+          .map((value) =>
+            part.includes("snippet")
+              ? {
+                  contentDetails: { duration: "PT10M" },
+                  id: value,
+                  snippet: {
+                    publishedAt: "2024-05-01T10:00:00Z",
+                    title: `Video ${value}`,
+                  },
+                  ...videos[value],
+                }
+              : { id: value }
+          ),
+      },
+    })
+  );
 
   const client = {
     channels: {
-      list: vi.fn(async ({ id = [] }: ListParams) => ({
-        data: {
-          items: id
-            .filter((value) => value in channels)
-            .map((value) => ({
-              contentDetails: {
-                relatedPlaylists: { uploads: `UU${value.slice(2)}` },
-              },
-              id: value,
-              snippet: { customUrl: "@handle", title: channels[value] },
-            })),
-        },
-      })),
+      list: vi.fn<ListMethod<youtube.Schema$ChannelListResponse>>(
+        async ({ id = [] }: ListParams) => ({
+          data: {
+            items: id
+              .filter((value) => value in channels)
+              .map((value) => ({
+                contentDetails: {
+                  relatedPlaylists: { uploads: `UU${value.slice(2)}` },
+                },
+                id: value,
+                snippet: {
+                  customUrl: "@handle",
+                  title: channels[value] ?? null,
+                },
+              })),
+          },
+        })
+      ),
     },
     playlistItems: {
-      list: vi.fn(async ({ pageToken = "", playlistId }: ListParams) => {
-        const channelId = `UC${playlistId?.slice(2)}`;
-        const page = uploadPages[`${channelId}:${pageToken}`];
+      list: vi.fn<ListMethod<youtube.Schema$PlaylistItemListResponse>>(
+        async ({ pageToken = "", playlistId }: ListParams) => {
+          const channelId = `UC${playlistId?.slice(2)}`;
+          const page = uploadPages[`${channelId}:${pageToken}`];
 
-        if (page) {
+          if (page) {
+            return {
+              data: {
+                items: page.videoIds.map((videoId) =>
+                  createPlaylistItem(videoId)
+                ),
+                nextPageToken: page.nextPageToken ?? null,
+              },
+            };
+          }
+
+          const result = uploads[channelId] ?? [];
+
+          if (result instanceof Error) {
+            throw result;
+          }
+
           return {
             data: {
-              items: page.videoIds.map((videoId) =>
-                createPlaylistItem(videoId)
-              ),
-              nextPageToken: page.nextPageToken,
+              items: result.map((videoId) => createPlaylistItem(videoId)),
             },
           };
         }
-
-        const result = uploads[channelId] ?? [];
-
-        if (result instanceof Error) {
-          throw result;
-        }
-
-        return {
-          data: {
-            items: result.map((videoId) => createPlaylistItem(videoId)),
-          },
-        };
-      }),
+      ),
     },
     videos: { list: videosList },
   } as unknown as youtube.Youtube;
@@ -123,8 +140,8 @@ function createClient({
   return { client, playlistItemsList: client.playlistItems.list, videosList };
 }
 
-describe("YouTubeScraper", () => {
-  const onError = vi.fn();
+describe(YouTubeScraper, () => {
+  const onError = vi.fn<ErrorReporter>();
 
   function createScraper(fake: FakeYouTube) {
     const { client, playlistItemsList, videosList } = createClient(fake);
@@ -169,13 +186,12 @@ describe("YouTubeScraper", () => {
         videos: { "new-1": {}, "old-1": {} },
       });
 
-      await expect(scraper.addNewVideos(TEST_NOW)).resolves.toBe(true);
+      await expect(scraper.addNewVideos(TEST_NOW)).resolves.toBeTruthy();
 
-      expect(videosList).toHaveBeenCalledOnce();
-      expect(videosList).toHaveBeenCalledWith(
+      expect(videosList).toHaveBeenCalledExactlyOnceWith(
         expect.objectContaining({ id: ["new-1"] })
       );
-      expect(supabase.insertedVideos()).toEqual([
+      expect(supabase.insertedVideos()).toStrictEqual([
         {
           platform: "youtube",
           platformVideo: {
@@ -208,7 +224,7 @@ describe("YouTubeScraper", () => {
         uploads: { UCaaa: ["old-1"] },
       });
 
-      await expect(scraper.addNewVideos(TEST_NOW)).resolves.toBe(false);
+      await expect(scraper.addNewVideos(TEST_NOW)).resolves.toBeFalsy();
       expect(videosList).not.toHaveBeenCalled();
     });
 
@@ -221,7 +237,7 @@ describe("YouTubeScraper", () => {
         videos: { "b-1": {} },
       });
 
-      await expect(scraper.addNewVideos(TEST_NOW)).resolves.toBe(true);
+      await expect(scraper.addNewVideos(TEST_NOW)).resolves.toBeTruthy();
       expect(onError).toHaveBeenCalledWith(error, {
         youtubeChannelId: "UCaaa",
       });
@@ -238,7 +254,7 @@ describe("YouTubeScraper", () => {
         },
       });
 
-      await expect(scraper.addNewVideos(TEST_NOW)).resolves.toBe(false);
+      await expect(scraper.addNewVideos(TEST_NOW)).resolves.toBeFalsy();
       expect(onError).not.toHaveBeenCalled();
     });
 
@@ -288,7 +304,7 @@ describe("YouTubeScraper", () => {
         },
       });
 
-      await expect(scraper.refreshLiveVideos(TEST_NOW)).resolves.toBe(true);
+      await expect(scraper.refreshLiveVideos(TEST_NOW)).resolves.toBeTruthy();
 
       expect(supabase.requests[0]?.query["status"]).toBe("in.(UPCOMING,LIVE)");
       expect(supabase.written("PATCH", "videos")[0]).toMatchObject({
@@ -310,7 +326,7 @@ describe("YouTubeScraper", () => {
       });
       const { scraper } = createScraper({});
 
-      await expect(scraper.refreshLiveVideos(TEST_NOW)).resolves.toBe(true);
+      await expect(scraper.refreshLiveVideos(TEST_NOW)).resolves.toBeTruthy();
 
       expect(
         supabase.written("POST", "rpc/soft_delete_videos")[0]?.body
@@ -321,7 +337,7 @@ describe("YouTubeScraper", () => {
       supabase.respond(() => []);
       const { scraper, videosList } = createScraper({});
 
-      await expect(scraper.refreshLiveVideos(TEST_NOW)).resolves.toBe(false);
+      await expect(scraper.refreshLiveVideos(TEST_NOW)).resolves.toBeFalsy();
       expect(videosList).not.toHaveBeenCalled();
     });
   });
@@ -331,7 +347,7 @@ describe("YouTubeScraper", () => {
       supabase.respond(() => []);
       const { scraper } = createScraper({});
 
-      await expect(scraper.refreshRecentVideos(TEST_NOW)).resolves.toBe(false);
+      await expect(scraper.refreshRecentVideos(TEST_NOW)).resolves.toBeFalsy();
 
       expect(supabase.requests[0]?.query).toMatchObject({
         limit: "100",
@@ -370,7 +386,9 @@ describe("YouTubeScraper", () => {
       supabase.respond(({ method }) => (method === "GET" ? [savedVideo] : []));
       const { scraper, videosList } = createScraper({ videos: onAir });
 
-      await expect(scraper.refreshVideo("video-1", TEST_NOW)).resolves.toEqual({
+      await expect(
+        scraper.refreshVideo("video-1", TEST_NOW)
+      ).resolves.toStrictEqual({
         after: {
           published_at: "2024-05-01T11:59:00Z",
           status: "LIVE",
@@ -393,7 +411,7 @@ describe("YouTubeScraper", () => {
       expect(videosList).toHaveBeenCalledWith(
         expect.objectContaining({ id: ["yt-1"] })
       );
-      expect(supabase.written("PATCH", "videos")).toEqual([
+      expect(supabase.written("PATCH", "videos")).toStrictEqual([
         expect.objectContaining({
           body: {
             published_at: "2024-05-01T11:59:00Z",
@@ -420,7 +438,7 @@ describe("YouTubeScraper", () => {
       );
 
       expect(single).toHaveLength(1);
-      expect(supabase.written("PATCH", "videos")).toEqual(single);
+      expect(supabase.written("PATCH", "videos")).toStrictEqual(single);
     });
 
     it("updates the kind of a video", async () => {
@@ -440,7 +458,9 @@ describe("YouTubeScraper", () => {
         videos: { "yt-1": { contentDetails: { duration: "PT1M" } } },
       });
 
-      await expect(scraper.refreshVideo("video-1", TEST_NOW)).resolves.toEqual({
+      await expect(
+        scraper.refreshVideo("video-1", TEST_NOW)
+      ).resolves.toStrictEqual({
         after: { duration: "PT1M", video_kind: "short" },
         before: { duration: "PT10M", video_kind: "standard" },
         status: "updated",
@@ -481,13 +501,15 @@ describe("YouTubeScraper", () => {
         },
       });
 
-      await expect(scraper.refreshVideo("video-1", TEST_NOW)).resolves.toEqual({
+      await expect(
+        scraper.refreshVideo("video-1", TEST_NOW)
+      ).resolves.toStrictEqual({
         after: {},
         before: {},
         status: "updated",
         title: "Video yt-1",
       });
-      expect(supabase.written("PATCH", "videos")).toEqual([
+      expect(supabase.written("PATCH", "videos")).toStrictEqual([
         expect.objectContaining({
           body: { thumbnail_id: "thumb-1" },
           query: { id: "eq.video-1" },
@@ -510,11 +532,13 @@ describe("YouTubeScraper", () => {
       );
       const { scraper } = createScraper({ videos: { "yt-1": {} } });
 
-      await expect(scraper.refreshVideo("video-1", TEST_NOW)).resolves.toEqual({
+      await expect(
+        scraper.refreshVideo("video-1", TEST_NOW)
+      ).resolves.toStrictEqual({
         status: "unchanged",
         title: "Video yt-1",
       });
-      expect(supabase.written("PATCH", "videos")).toEqual([]);
+      expect(supabase.written("PATCH", "videos")).toStrictEqual([]);
     });
 
     it("soft-deletes a video YouTube no longer returns, like the scheduled refresh", async () => {
@@ -527,7 +551,9 @@ describe("YouTubeScraper", () => {
       });
       const { scraper } = createScraper({});
 
-      await expect(scraper.refreshVideo("video-1", TEST_NOW)).resolves.toEqual({
+      await expect(
+        scraper.refreshVideo("video-1", TEST_NOW)
+      ).resolves.toStrictEqual({
         status: "unavailable",
       });
       const single = supabase.requests.filter(({ method }) => method !== "GET");
@@ -535,7 +561,7 @@ describe("YouTubeScraper", () => {
       supabase.requests.length = 0;
       await createScraper({}).scraper.refreshLiveVideos(TEST_NOW);
 
-      expect(single).toEqual([
+      expect(single).toStrictEqual([
         expect.objectContaining({
           body: expect.objectContaining({
             p_reason: "unavailable",
@@ -546,14 +572,14 @@ describe("YouTubeScraper", () => {
       ]);
       expect(
         supabase.requests.filter(({ method }) => method !== "GET")
-      ).toEqual(single);
+      ).toStrictEqual(single);
     });
 
     it("reports a video that is not saved, or not a YouTube video", async () => {
       supabase.respond(() => []);
       const { scraper, videosList } = createScraper({ videos: { "yt-1": {} } });
 
-      await expect(scraper.refreshVideo("video-404")).resolves.toEqual({
+      await expect(scraper.refreshVideo("video-404")).resolves.toStrictEqual({
         status: "not-found",
       });
       expect(videosList).not.toHaveBeenCalled();
@@ -584,9 +610,9 @@ describe("YouTubeScraper", () => {
       });
       const { scraper, videosList } = createScraper({ videos: { "yt-1": {} } });
 
-      await expect(scraper.removeUnavailableVideos(TEST_NOW)).resolves.toBe(
-        true
-      );
+      await expect(
+        scraper.removeUnavailableVideos(TEST_NOW)
+      ).resolves.toBeTruthy();
 
       expect(videosList).toHaveBeenCalledWith(
         expect.objectContaining({ part: ["id"] })
@@ -618,7 +644,7 @@ describe("YouTubeScraper", () => {
       );
       const { scraper } = createScraper({ channels: { UCaaa: "Alice" } });
 
-      await expect(scraper.syncAccounts()).resolves.toBe(true);
+      await expect(scraper.syncAccounts()).resolves.toBeTruthy();
 
       expect(supabase.written("PATCH", "youtube_channels")[0]).toMatchObject({
         body: { name: "Alice", youtube_handle: "@handle" },
@@ -648,7 +674,9 @@ describe("YouTubeScraper", () => {
       );
       const { scraper } = createScraper({ channels: { UCaaa: "Alice" } });
 
-      await expect(scraper.syncTalentAccounts("talent-1")).resolves.toEqual([
+      await expect(
+        scraper.syncTalentAccounts("talent-1")
+      ).resolves.toStrictEqual([
         {
           accountId: "channel-row-1",
           changes: { after: { name: "Alice" }, before: { name: "Old name" } },
@@ -705,7 +733,7 @@ describe("YouTubeScraper", () => {
 
       await expect(
         scraper.addPastVideos({ accountId: "channel-row-1", now: TEST_NOW })
-      ).resolves.toEqual({ added: 1, cursor: "page-2", listed: 2 });
+      ).resolves.toStrictEqual({ added: 1, cursor: "page-2", listed: 2 });
 
       expect(playlistItemsList).toHaveBeenCalledWith(
         expect.objectContaining({ maxResults: 50, playlistId: "UUaaa" })
@@ -721,7 +749,7 @@ describe("YouTubeScraper", () => {
       });
       expect(
         supabase.insertedVideos().map(({ platformVideo }) => platformVideo)
-      ).toEqual([
+      ).toStrictEqual([
         {
           youtube_channel_id: "channel-row-1",
           youtube_video_id: "old",
@@ -740,7 +768,7 @@ describe("YouTubeScraper", () => {
 
       await expect(
         scraper.addPastVideos({ accountId: "channel-row-1", cursor: "page-2" })
-      ).resolves.toEqual({ added: 0, cursor: null, listed: 0 });
+      ).resolves.toStrictEqual({ added: 0, cursor: null, listed: 0 });
 
       expect(playlistItemsList).toHaveBeenCalledWith(
         expect.objectContaining({ pageToken: "page-2" })

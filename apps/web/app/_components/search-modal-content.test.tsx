@@ -6,6 +6,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
+import type { ReadonlyURLSearchParams, useRouter } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Talent } from "@/lib/data/talents";
@@ -27,7 +28,7 @@ const MYOSOTIS: Talent = {
 
 const navigation = vi.hoisted(() => ({
   pathname: "/",
-  push: vi.fn(),
+  push: vi.fn<ReturnType<typeof useRouter>["push"]>(),
   searchParams: new URLSearchParams(),
 }));
 
@@ -37,13 +38,16 @@ const actions = vi.hoisted(() => ({
   fetchSuggestions: vi.fn<(query: string) => Promise<{ term: string }[]>>(),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => navigation.pathname,
-  useRouter: () => ({ push: navigation.push }),
-  useSearchParams: () => navigation.searchParams,
+  useRouter: () =>
+    ({ push: navigation.push }) as Partial<
+      ReturnType<typeof useRouter>
+    > as ReturnType<typeof useRouter>,
+  useSearchParams: () => navigation.searchParams as ReadonlyURLSearchParams,
 }));
 
-vi.mock("@/app/_lib/actions", () => actions);
+vi.mock(import("@/app/_lib/actions"), () => actions);
 
 function getInput() {
   return screen.getByRole("searchbox");
@@ -64,7 +68,7 @@ function createQueryClient() {
 }
 
 async function renderContent(queryClient = createQueryClient()) {
-  const onClose = vi.fn();
+  const onClose = vi.fn<() => void>();
 
   const { unmount } = render(
     <QueryClientProvider client={queryClient}>
@@ -92,7 +96,7 @@ function submit() {
   fireEvent.submit(getInput().closest("form") as HTMLFormElement);
 }
 
-describe("SearchModalContent", () => {
+describe(SearchModalContent, () => {
   beforeEach(() => {
     navigation.pathname = "/";
     navigation.push.mockReset();
@@ -127,7 +131,7 @@ describe("SearchModalContent", () => {
 
     render(
       <QueryClientProvider client={createQueryClient()}>
-        <SearchModalContent onClose={vi.fn()} />
+        <SearchModalContent onClose={vi.fn<() => void>()} />
       </QueryClientProvider>
     );
 
@@ -181,7 +185,7 @@ describe("SearchModalContent", () => {
       within(section)
         .getAllByRole("button")
         .map((button) => button.textContent)
-    ).toEqual(["朝霧ミオ", "ミオソティス"]);
+    ).toStrictEqual(["朝霧ミオ", "ミオソティス"]);
 
     const suggestion = await screen.findByRole("link", { name: "ミオ" });
     expect(
@@ -205,7 +209,7 @@ describe("SearchModalContent", () => {
       within(getTalentSection())
         .getAllByRole("button")
         .map((button) => button.textContent)
-    ).toEqual(["ミオソティス"]);
+    ).toStrictEqual(["ミオソティス"]);
   });
 
   it("should search the keyword within the selected talents", async () => {
@@ -343,7 +347,7 @@ describe("SearchModalContent", () => {
       within(await screen.findByRole("list", { name: "選んでいるタレント" }))
         .getAllByRole("listitem")
         .map((item) => item.textContent)
-    ).toEqual(["朝霧ミオ", "凪沢ユラ"]);
+    ).toStrictEqual(["朝霧ミオ", "凪沢ユラ"]);
 
     submit();
 

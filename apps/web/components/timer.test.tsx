@@ -10,7 +10,7 @@ function Now() {
 
 const INITIAL_NOW = "2026-11-14T12:00:00+09:00[Asia/Tokyo]";
 
-describe("useNow", () => {
+describe(useNow, () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(

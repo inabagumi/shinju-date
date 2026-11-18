@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/data/talents", () => ({
-  fetchActiveTalents: vi.fn(),
+vi.mock(import("@/lib/data/talents"), () => ({
+  fetchActiveTalents: vi.fn<typeof fetchActiveTalents>(),
 }));
 
 import { fetchActiveTalents } from "@/lib/data/talents";
@@ -13,7 +13,7 @@ const TALENT_IDS = [
   "00000000-0000-4000-8000-000000000002",
 ];
 
-describe("sitemap", () => {
+describe(sitemap, () => {
   beforeEach(() => {
     vi.mocked(fetchActiveTalents).mockResolvedValue([
       { id: TALENT_IDS[0] as string, name: "朝霧ミオ" },
@@ -33,7 +33,9 @@ describe("sitemap", () => {
     const urls = (await sitemap()).map((item) => new URL(item.url).pathname);
 
     expect(urls).toContain("/schedule");
-    expect(urls.filter((url) => url.startsWith("/schedule/"))).toEqual([]);
+    expect(urls.filter((url) => url.startsWith("/schedule/"))).toStrictEqual(
+      []
+    );
   });
 
   it("should list only the talents fetchActiveTalents returns", async () => {
@@ -41,6 +43,6 @@ describe("sitemap", () => {
 
     const urls = (await sitemap()).map((item) => new URL(item.url).pathname);
 
-    expect(urls.filter((url) => url.startsWith("/talents/"))).toEqual([]);
+    expect(urls.filter((url) => url.startsWith("/talents/"))).toStrictEqual([]);
   });
 });

@@ -207,7 +207,7 @@ const FOREGROUND_PAIRS = [
 
 describe("semantic colors", () => {
   it("defines every semantic color for light mode", () => {
-    expect([...lightDeclarations.keys()].sort()).toEqual(
+    expect([...lightDeclarations.keys()].sort()).toStrictEqual(
       [...SEMANTIC_COLOR_NAMES].sort()
     );
   });

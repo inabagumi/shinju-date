@@ -4,7 +4,7 @@ import { termSchema, updateTermSchema } from "./schema";
 
 const ID = "80000000-0000-0000-0000-000000000001";
 
-describe("termSchema", () => {
+describe("termSchema.parse", () => {
   it("trims the term, readings and synonyms", () => {
     expect(
       termSchema.parse({
@@ -12,7 +12,7 @@ describe("termSchema", () => {
         synonyms: ["  生放送 ", "ライブ"],
         term: "  配信  ",
       })
-    ).toEqual({
+    ).toStrictEqual({
       readings: ["はいしん"],
       synonyms: ["生放送", "ライブ"],
       term: "配信",
@@ -26,11 +26,11 @@ describe("termSchema", () => {
         synonyms: ["　", ""],
         term: "配信",
       })
-    ).toEqual({ readings: ["はいしん"], synonyms: [], term: "配信" });
+    ).toStrictEqual({ readings: ["はいしん"], synonyms: [], term: "配信" });
   });
 
   it("defaults the readings and synonyms to empty arrays", () => {
-    expect(termSchema.parse({ term: "配信" })).toEqual({
+    expect(termSchema.parse({ term: "配信" })).toStrictEqual({
       readings: [],
       synonyms: [],
       term: "配信",
@@ -40,16 +40,16 @@ describe("termSchema", () => {
   it.each([[""], ["   "], [undefined]])("requires the term for %j", (term) => {
     const result = termSchema.safeParse({ term });
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBeFalsy();
     expect(
       result.error?.issues.map(({ message, path }) => [path.join("."), message])
-    ).toEqual([["term", "用語を入力してください。"]]);
+    ).toStrictEqual([["term", "用語を入力してください。"]]);
   });
 });
 
-describe("updateTermSchema", () => {
+describe("updateTermSchema.parse", () => {
   it("accepts a UUID as the ID", () => {
-    expect(updateTermSchema.parse({ id: ID, term: "配信" })).toEqual({
+    expect(updateTermSchema.parse({ id: ID, term: "配信" })).toStrictEqual({
       id: ID,
       readings: [],
       synonyms: [],
@@ -60,9 +60,9 @@ describe("updateTermSchema", () => {
   it.each([[""], ["not-a-uuid"], [undefined]])("rejects %j as the ID", (id) => {
     const result = updateTermSchema.safeParse({ id, term: "配信" });
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBeFalsy();
     expect(
       result.error?.issues.map(({ message, path }) => [path.join("."), message])
-    ).toEqual([["id", "有効なIDではありません。"]]);
+    ).toStrictEqual([["id", "有効なIDではありません。"]]);
   });
 });

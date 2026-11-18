@@ -6,7 +6,7 @@ import { collectAnalyticsSummary } from "./index.js";
 
 const dateKey = "20251113";
 
-describe("collectAnalyticsSummary", () => {
+describe(collectAnalyticsSummary, () => {
   it("collects the searches, clicks and popular keywords", async () => {
     const redis = new FakeRedis();
     await redis.set(`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${dateKey}`, 150);
@@ -27,7 +27,7 @@ describe("collectAnalyticsSummary", () => {
 
     await expect(
       collectAnalyticsSummary(redis.asRedis(), dateKey)
-    ).resolves.toEqual({
+    ).resolves.toStrictEqual({
       recentClicks: 45,
       recentSearches: 150,
       totalPopularKeywords: 3,
@@ -37,7 +37,7 @@ describe("collectAnalyticsSummary", () => {
   it("counts a day without records as 0", async () => {
     await expect(
       collectAnalyticsSummary(new FakeRedis().asRedis(), dateKey)
-    ).resolves.toEqual({
+    ).resolves.toStrictEqual({
       recentClicks: 0,
       recentSearches: 0,
       totalPopularKeywords: 0,

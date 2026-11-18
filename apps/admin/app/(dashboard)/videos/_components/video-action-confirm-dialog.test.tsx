@@ -1,15 +1,16 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+import type { VideoActionDialogProps } from "../_lib/use-video-action";
 import { VideoActionConfirmDialog } from "./video-action-confirm-dialog";
 
-describe("VideoActionConfirmDialog", () => {
+describe(VideoActionConfirmDialog, () => {
   const firstMockVideo = { id: "1", title: "Test Video 1" };
   const mockVideos = [firstMockVideo, { id: "2", title: "Test Video 2" }];
 
   it("renders delete dialog with warning for single video", () => {
-    const onConfirm = vi.fn();
-    const onOpenChange = vi.fn();
+    const onConfirm = vi.fn<VideoActionDialogProps["onConfirm"]>();
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     render(
       <VideoActionConfirmDialog
@@ -29,8 +30,10 @@ describe("VideoActionConfirmDialog", () => {
   });
 
   it("shows keyword confirmation for all delete operations", () => {
-    const onConfirm = vi.fn().mockResolvedValue(undefined);
-    const onOpenChange = vi.fn();
+    const onConfirm = vi
+      .fn<VideoActionDialogProps["onConfirm"]>()
+      .mockResolvedValue(undefined);
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     render(
       <VideoActionConfirmDialog
@@ -52,8 +55,8 @@ describe("VideoActionConfirmDialog", () => {
   });
 
   it("requires keyword confirmation for all delete operations", () => {
-    const onConfirm = vi.fn();
-    const onOpenChange = vi.fn();
+    const onConfirm = vi.fn<VideoActionDialogProps["onConfirm"]>();
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     const { rerender } = render(
       <VideoActionConfirmDialog
@@ -87,8 +90,8 @@ describe("VideoActionConfirmDialog", () => {
   });
 
   it("renders restore dialog", () => {
-    const onConfirm = vi.fn();
-    const onOpenChange = vi.fn();
+    const onConfirm = vi.fn<VideoActionDialogProps["onConfirm"]>();
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     render(
       <VideoActionConfirmDialog
@@ -105,8 +108,8 @@ describe("VideoActionConfirmDialog", () => {
   });
 
   it("renders toggle visibility dialog", () => {
-    const onConfirm = vi.fn();
-    const onOpenChange = vi.fn();
+    const onConfirm = vi.fn<VideoActionDialogProps["onConfirm"]>();
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     render(
       <VideoActionConfirmDialog
@@ -125,8 +128,8 @@ describe("VideoActionConfirmDialog", () => {
   });
 
   it("displays all videos in the list", () => {
-    const onConfirm = vi.fn();
-    const onOpenChange = vi.fn();
+    const onConfirm = vi.fn<VideoActionDialogProps["onConfirm"]>();
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     render(
       <VideoActionConfirmDialog
@@ -144,8 +147,8 @@ describe("VideoActionConfirmDialog", () => {
   });
 
   it("renders different button text based on action", () => {
-    const onConfirm = vi.fn();
-    const onOpenChange = vi.fn();
+    const onConfirm = vi.fn<VideoActionDialogProps["onConfirm"]>();
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     const { rerender } = render(
       <VideoActionConfirmDialog
@@ -191,8 +194,10 @@ describe("VideoActionConfirmDialog", () => {
   });
 
   it("runs delete only after DELETE is entered", async () => {
-    const onConfirm = vi.fn().mockResolvedValue(undefined);
-    const onOpenChange = vi.fn();
+    const onConfirm = vi
+      .fn<VideoActionDialogProps["onConfirm"]>()
+      .mockResolvedValue(undefined);
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     render(
       <VideoActionConfirmDialog
@@ -224,8 +229,10 @@ describe("VideoActionConfirmDialog", () => {
   });
 
   it("does not require a keyword to restore or toggle", () => {
-    const onConfirm = vi.fn().mockResolvedValue(undefined);
-    const onOpenChange = vi.fn();
+    const onConfirm = vi
+      .fn<VideoActionDialogProps["onConfirm"]>()
+      .mockResolvedValue(undefined);
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     render(
       <VideoActionConfirmDialog

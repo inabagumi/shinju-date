@@ -39,7 +39,7 @@ function createTwitchUser(
   };
 }
 
-describe("findFirstNonBlank", () => {
+describe(findFirstNonBlank, () => {
   it("should return the first value that is not blank, trimmed", () => {
     expect(findFirstNonBlank(null, undefined, " ", " name ", "other")).toBe(
       "name"
@@ -52,7 +52,7 @@ describe("findFirstNonBlank", () => {
   });
 });
 
-describe("getTalentLinks", () => {
+describe(getTalentLinks, () => {
   it("should link to each channel and the calendar", () => {
     expect(
       getTalentLinks(
@@ -61,7 +61,7 @@ describe("getTalentLinks", () => {
           youtube_channels: [createYouTubeChannel()],
         })
       )
-    ).toEqual([
+    ).toStrictEqual([
       {
         external: true,
         href: "https://www.youtube.com/channel/UCmain",
@@ -107,7 +107,7 @@ describe("getTalentLinks", () => {
       })
     );
 
-    expect(links.map((link) => link.label)).toEqual([
+    expect(links.map((link) => link.label)).toStrictEqual([
       "YouTube チャンネル（メインチャンネル）",
       "YouTube チャンネル（@sub）",
       "YouTube チャンネル（UCthird）",
@@ -127,7 +127,7 @@ describe("getTalentLinks", () => {
       })
     );
 
-    expect(links).toEqual([
+    expect(links).toStrictEqual([
       {
         external: true,
         href: "https://www.twitch.tv/login2",
@@ -142,7 +142,7 @@ describe("getTalentLinks", () => {
   });
 });
 
-describe("getTalentPath", () => {
+describe(getTalentPath, () => {
   it("should add the kind of videos except for all", () => {
     expect(getTalentPath(TALENT_ID, "all")).toBe(`/talents/${TALENT_ID}`);
     expect(getTalentPath(TALENT_ID, "short")).toBe(

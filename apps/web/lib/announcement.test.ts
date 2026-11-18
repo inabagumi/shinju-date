@@ -20,7 +20,7 @@ function createAnnouncement(
 
 const NOW = Temporal.Instant.from("2026-11-17T03:00:00Z");
 
-describe("selectCurrentAnnouncement", () => {
+describe(selectCurrentAnnouncement, () => {
   it("returns null when there are no announcements", () => {
     expect(selectCurrentAnnouncement([], NOW)).toBeNull();
   });

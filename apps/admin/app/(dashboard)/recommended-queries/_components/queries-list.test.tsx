@@ -1,20 +1,28 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ActionToastProvider } from "@/components/action-toast";
+import type { AppRouter } from "@/test/next-navigation";
+
+import type { addQueryAction, deleteQueryAction } from "../_actions";
 
 const mocks = vi.hoisted(() => ({
-  addQueryAction: vi.fn(),
-  deleteQueryAction: vi.fn(),
+  addQueryAction: vi.fn<typeof addQueryAction>(),
+  deleteQueryAction: vi.fn<typeof deleteQueryAction>(),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => "/recommended-queries",
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
-  useSearchParams: () => new URLSearchParams(),
+  useRouter: () =>
+    ({
+      push: vi.fn<AppRouter["push"]>(),
+      replace: vi.fn<AppRouter["replace"]>(),
+    }) as Partial<AppRouter> as AppRouter,
+  useSearchParams: () => new URLSearchParams() as ReadonlyURLSearchParams,
 }));
 
-vi.mock("../_actions", () => ({
+vi.mock(import("../_actions"), () => ({
   addQueryAction: mocks.addQueryAction,
   deleteQueryAction: mocks.deleteQueryAction,
 }));

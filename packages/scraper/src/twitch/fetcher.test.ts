@@ -6,6 +6,7 @@ import type {
 } from "@shinju-date/twitch-api-client";
 import { describe, expect, it, vi } from "vitest";
 
+import type { Logger } from "../internal/logger.js";
 import {
   createClip,
   createStream,
@@ -17,12 +18,19 @@ import type { TwitchApi } from "./types.js";
 
 function createClient(overrides: Partial<TwitchApi> = {}): TwitchApi {
   return {
-    getClips: vi.fn(() => fromArray<TwitchClip>([])),
-    getStreamsByUserIds: vi.fn(() => fromArray<TwitchStream>([])),
-    getUsers: vi.fn(() => fromArray<TwitchUser>([])),
-    getVideos: vi.fn(() => fromArray<TwitchVideo>([])),
-    getVideosByUser: vi.fn(() => fromArray<TwitchVideo>([])),
-    getVideosByUserPage: vi.fn(async () => ({ cursor: null, videos: [] })),
+    getClips: vi.fn<TwitchApi["getClips"]>(() => fromArray<TwitchClip>([])),
+    getStreamsByUserIds: vi.fn<TwitchApi["getStreamsByUserIds"]>(() =>
+      fromArray<TwitchStream>([])
+    ),
+    getUsers: vi.fn<TwitchApi["getUsers"]>(() => fromArray<TwitchUser>([])),
+    getVideos: vi.fn<TwitchApi["getVideos"]>(() => fromArray<TwitchVideo>([])),
+    getVideosByUser: vi.fn<TwitchApi["getVideosByUser"]>(() =>
+      fromArray<TwitchVideo>([])
+    ),
+    getVideosByUserPage: vi.fn<TwitchApi["getVideosByUserPage"]>(async () => ({
+      cursor: null,
+      videos: [],
+    })),
     ...overrides,
   };
 }
@@ -33,7 +41,7 @@ async function* fromArray<T>(items: T[]): AsyncGenerator<T, void, undefined> {
   }
 }
 
-describe("TwitchFetcher", () => {
+describe(TwitchFetcher, () => {
   it("identifies its platform", () => {
     expect(new TwitchFetcher({ client: createClient() }).provider).toBe(
       "twitch"
@@ -42,20 +50,24 @@ describe("TwitchFetcher", () => {
 
   describe("getAccounts", () => {
     it("returns the users Helix knows about", async () => {
-      const getUsers = vi.fn(({ ids }: { ids: string[] }) =>
-        fromArray(ids.filter((id) => id !== "gone").map((id) => createUser(id)))
+      const getUsers = vi.fn<TwitchApi["getUsers"]>(
+        ({ ids }: { ids: string[] }) =>
+          fromArray(
+            ids.filter((id) => id !== "gone").map((id) => createUser(id))
+          )
       );
       const fetcher = new TwitchFetcher({ client: createClient({ getUsers }) });
 
       const users = await fetcher.getAccounts(["1", "gone", "2"]);
 
-      expect(users.map((value) => value.id)).toEqual(["1", "2"]);
+      expect(users.map((value) => value.id)).toStrictEqual(["1", "2"]);
     });
 
     it("passes each ID once and leaves batching to the client", async () => {
       const ids = Array.from({ length: 150 }, (_, i) => `${i}`);
-      const getUsers = vi.fn(({ ids }: { ids: string[] }) =>
-        fromArray(ids.map((id) => createUser(id)))
+      const getUsers = vi.fn<TwitchApi["getUsers"]>(
+        ({ ids }: { ids: string[] }) =>
+          fromArray(ids.map((id) => createUser(id)))
       );
       const fetcher = new TwitchFetcher({ client: createClient({ getUsers }) });
 
@@ -72,14 +84,14 @@ describe("TwitchFetcher", () => {
       const client = createClient();
       const fetcher = new TwitchFetcher({ client });
 
-      await expect(fetcher.getAccounts([])).resolves.toEqual([]);
+      await expect(fetcher.getAccounts([])).resolves.toStrictEqual([]);
       expect(client.getUsers).not.toHaveBeenCalled();
     });
   });
 
   describe("getLiveStreams", () => {
     it("returns the streams that are live", async () => {
-      const getStreamsByUserIds = vi.fn(() =>
+      const getStreamsByUserIds = vi.fn<TwitchApi["getStreamsByUserIds"]>(() =>
         fromArray([createStream({ id: "s1" })])
       );
       const fetcher = new TwitchFetcher({
@@ -88,7 +100,7 @@ describe("TwitchFetcher", () => {
 
       const streams = await fetcher.getLiveStreams(["user-1", "user-2"]);
 
-      expect(streams.map((value) => value.id)).toEqual(["s1"]);
+      expect(streams.map((value) => value.id)).toStrictEqual(["s1"]);
       expect(getStreamsByUserIds).toHaveBeenCalledWith({
         schedule: expect.any(Function),
         userIds: ["user-1", "user-2"],
@@ -98,8 +110,9 @@ describe("TwitchFetcher", () => {
 
   describe("getRecentVideos", () => {
     it("lists archives of every broadcaster by default", async () => {
-      const getVideosByUser = vi.fn(({ userId }: { userId: string }) =>
-        fromArray([createVideo({ id: `${userId}-v1`, user_id: userId })])
+      const getVideosByUser = vi.fn<TwitchApi["getVideosByUser"]>(
+        ({ userId }: { userId: string }) =>
+          fromArray([createVideo({ id: `${userId}-v1`, user_id: userId })])
       );
       const fetcher = new TwitchFetcher({
         client: createClient({ getVideosByUser }),
@@ -107,8 +120,8 @@ describe("TwitchFetcher", () => {
 
       const result = await fetcher.getRecentVideos(["user-1", "user-2"]);
 
-      expect(result.failures).toEqual([]);
-      expect(result.videos.map((value) => value.id)).toEqual([
+      expect(result.failures).toStrictEqual([]);
+      expect(result.videos.map((value) => value.id)).toStrictEqual([
         "user-1-v1",
         "user-2-v1",
       ]);
@@ -120,7 +133,9 @@ describe("TwitchFetcher", () => {
     });
 
     it("passes the requested type and limit", async () => {
-      const getVideosByUser = vi.fn(() => fromArray<TwitchVideo>([]));
+      const getVideosByUser = vi.fn<TwitchApi["getVideosByUser"]>(() =>
+        fromArray<TwitchVideo>([])
+      );
       const fetcher = new TwitchFetcher({
         client: createClient({ getVideosByUser }),
       });
@@ -136,18 +151,20 @@ describe("TwitchFetcher", () => {
 
     it("keeps going when one broadcaster fails", async () => {
       const error = new Error("helix unavailable");
-      const getVideosByUser = vi.fn(({ userId }: { userId: string }) => {
-        if (userId === "user-1") {
-          throw error;
-        }
+      const getVideosByUser = vi.fn<TwitchApi["getVideosByUser"]>(
+        ({ userId }: { userId: string }) => {
+          if (userId === "user-1") {
+            throw error;
+          }
 
-        return fromArray([createVideo({ id: "v2", user_id: userId })]);
-      });
+          return fromArray([createVideo({ id: "v2", user_id: userId })]);
+        }
+      );
       const logger = {
-        debug: vi.fn(),
-        error: vi.fn(),
-        info: vi.fn(),
-        warn: vi.fn(),
+        debug: vi.fn<Logger["debug"]>(),
+        error: vi.fn<Logger["error"]>(),
+        info: vi.fn<Logger["info"]>(),
+        warn: vi.fn<Logger["warn"]>(),
       };
       const fetcher = new TwitchFetcher({
         client: createClient({ getVideosByUser }),
@@ -156,21 +173,23 @@ describe("TwitchFetcher", () => {
 
       const result = await fetcher.getRecentVideos(["user-1", "user-2"]);
 
-      expect(result.videos.map((value) => value.id)).toEqual(["v2"]);
-      expect(result.failures).toEqual([{ accountId: "user-1", error }]);
+      expect(result.videos.map((value) => value.id)).toStrictEqual(["v2"]);
+      expect(result.failures).toStrictEqual([{ accountId: "user-1", error }]);
       expect(logger.error).toHaveBeenCalledOnce();
     });
 
     it("never runs more requests than the concurrency limit", async () => {
       let running = 0;
       let peak = 0;
-      const getVideosByUser = vi.fn(async function* () {
-        running++;
-        peak = Math.max(peak, running);
-        await new Promise((resolve) => setTimeout(resolve, 5));
-        running--;
-        yield* [] as TwitchVideo[];
-      });
+      const getVideosByUser = vi.fn<TwitchApi["getVideosByUser"]>(
+        async function* () {
+          running++;
+          peak = Math.max(peak, running);
+          await new Promise((resolve) => setTimeout(resolve, 5));
+          running--;
+          yield* [] as TwitchVideo[];
+        }
+      );
       const fetcher = new TwitchFetcher({
         client: createClient({ getVideosByUser }),
         concurrency: 2,
@@ -184,10 +203,11 @@ describe("TwitchFetcher", () => {
 
   describe("getVideos", () => {
     it("returns found videos and the IDs Helix omitted", async () => {
-      const getVideos = vi.fn(({ ids }: { ids: string[] }) =>
-        fromArray(
-          ids.filter((id) => id !== "gone").map((id) => createVideo({ id }))
-        )
+      const getVideos = vi.fn<TwitchApi["getVideos"]>(
+        ({ ids }: { ids: string[] }) =>
+          fromArray(
+            ids.filter((id) => id !== "gone").map((id) => createVideo({ id }))
+          )
       );
       const fetcher = new TwitchFetcher({
         client: createClient({ getVideos }),
@@ -195,15 +215,18 @@ describe("TwitchFetcher", () => {
 
       const result = await fetcher.getVideos(["v1", "gone", "v2"]);
 
-      expect(result.videos.map((value) => value.id)).toEqual(["v1", "v2"]);
-      expect(result.missingIds).toEqual(["gone"]);
+      expect(result.videos.map((value) => value.id)).toStrictEqual([
+        "v1",
+        "v2",
+      ]);
+      expect(result.missingIds).toStrictEqual(["gone"]);
     });
 
     it("makes each request within the concurrency limit", async () => {
       let running = 0;
       let peak = 0;
       // Like the Helix client: every batch at once, each through `schedule`.
-      const getVideos = vi.fn(async function* ({
+      const getVideos = vi.fn<TwitchApi["getVideos"]>(async function* ({
         ids,
         schedule = (request) => request(),
       }: Parameters<TwitchApi["getVideos"]>[0]) {
@@ -234,7 +257,7 @@ describe("TwitchFetcher", () => {
     });
 
     it("rejects when a request fails", async () => {
-      const getVideos = vi.fn(() => {
+      const getVideos = vi.fn<TwitchApi["getVideos"]>(() => {
         throw new Error("boom");
       });
       const fetcher = new TwitchFetcher({
@@ -247,17 +270,18 @@ describe("TwitchFetcher", () => {
 
   describe("getClips", () => {
     it("returns found clips and the IDs Helix omitted", async () => {
-      const getClips = vi.fn(({ ids }: { ids: string[] }) =>
-        fromArray(
-          ids.filter((id) => id !== "gone").map((id) => createClip({ id }))
-        )
+      const getClips = vi.fn<TwitchApi["getClips"]>(
+        ({ ids }: { ids: string[] }) =>
+          fromArray(
+            ids.filter((id) => id !== "gone").map((id) => createClip({ id }))
+          )
       );
       const fetcher = new TwitchFetcher({ client: createClient({ getClips }) });
 
       const result = await fetcher.getClips(["c1", "gone"]);
 
-      expect(result.clips.map((value) => value.id)).toEqual(["c1"]);
-      expect(result.missingIds).toEqual(["gone"]);
+      expect(result.clips.map((value) => value.id)).toStrictEqual(["c1"]);
+      expect(result.missingIds).toStrictEqual(["gone"]);
     });
   });
 });

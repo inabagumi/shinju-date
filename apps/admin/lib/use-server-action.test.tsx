@@ -59,12 +59,14 @@ function ComponentOutsideProvider() {
   return null;
 }
 
-describe("useServerAction", () => {
+describe(useServerAction, () => {
   it("passes the arguments to the action and shows the success text", async () => {
-    const action = vi.fn(async (_id: string, _value: number) => ({
+    const action = vi.fn<
+      (id: string, value: number) => Promise<ServerActionResult>
+    >(async () => ({
       success: true,
     }));
-    const onSuccess = vi.fn();
+    const onSuccess = vi.fn<(result: ServerActionResult) => void>();
     const { result } = renderServerAction(action, {
       onSuccess,
       successText: "表示状態を更新しました。",
@@ -76,7 +78,7 @@ describe("useServerAction", () => {
     });
 
     expect(action).toHaveBeenCalledWith("video-1", 2);
-    expect(returned).toEqual({ success: true });
+    expect(returned).toStrictEqual({ success: true });
     expect(onSuccess).toHaveBeenCalledWith({ success: true });
     await expect(
       screen.findByText("表示状態を更新しました。")
@@ -84,7 +86,9 @@ describe("useServerAction", () => {
   });
 
   it("builds the success text from the result", async () => {
-    const action = vi.fn(async () => ({
+    const action = vi.fn<
+      () => Promise<ServerActionResult & { message: string }>
+    >(async () => ({
       message: "チャンネル情報は既に最新です。",
       success: true,
     }));
@@ -102,7 +106,9 @@ describe("useServerAction", () => {
   });
 
   it("shows no toast on success without successText", async () => {
-    const action = vi.fn(async () => ({ success: true }));
+    const action = vi.fn<() => Promise<ServerActionResult>>(async () => ({
+      success: true,
+    }));
     const { result } = renderServerAction(action);
 
     await act(async () => {
@@ -114,11 +120,11 @@ describe("useServerAction", () => {
   });
 
   it("shows the returned error on failure without calling onSuccess", async () => {
-    const action = vi.fn(async () => ({
+    const action = vi.fn<() => Promise<ServerActionResult>>(async () => ({
       error: "指定されたタレントが見つかりません。",
       success: false,
     }));
-    const onSuccess = vi.fn();
+    const onSuccess = vi.fn<(result: ServerActionResult) => void>();
     const { result } = renderServerAction(action, {
       onSuccess,
       successText: "削除しました。",
@@ -136,7 +142,9 @@ describe("useServerAction", () => {
   });
 
   it("shows errorText when the failure has no error", async () => {
-    const action = vi.fn(async () => ({ success: false }));
+    const action = vi.fn<() => Promise<ServerActionResult>>(async () => ({
+      success: false,
+    }));
     const { result } = renderServerAction(action, {
       errorText: "同期に失敗しました。",
     });
@@ -151,7 +159,7 @@ describe("useServerAction", () => {
   });
 
   it("shows a warning toast for each warning", async () => {
-    const action = vi.fn(async () => ({
+    const action = vi.fn<() => Promise<ServerActionResult>>(async () => ({
       success: true,
       warnings: ["1件は更新できませんでした。", "監査ログを残せませんでした。"],
     }));
@@ -174,10 +182,10 @@ describe("useServerAction", () => {
   });
 
   it("shows the fallback error when the action throws", async () => {
-    const action = vi.fn(async () => {
+    const action = vi.fn<() => Promise<ServerActionResult>>(async () => {
       throw new Error("connection reset");
     });
-    const onSuccess = vi.fn();
+    const onSuccess = vi.fn<(result: ServerActionResult) => void>();
     const { result } = renderServerAction<[], ServerActionResult>(action, {
       onSuccess,
       successText: "更新しました。",
@@ -198,10 +206,12 @@ describe("useServerAction", () => {
 
   it("is pending while the action runs", async () => {
     const deferred = createDeferred<ServerActionResult>();
-    const action = vi.fn(() => deferred.promise);
+    const action = vi.fn<() => Promise<ServerActionResult>>(
+      () => deferred.promise
+    );
     const { result } = renderServerAction(action);
 
-    expect(result.current.isPending).toBe(false);
+    expect(result.current.isPending).toBeFalsy();
 
     let pending: Promise<unknown> = Promise.resolve();
     act(() => {
@@ -209,7 +219,7 @@ describe("useServerAction", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.isPending).toBe(true);
+      expect(result.current.isPending).toBeTruthy();
     });
 
     await act(async () => {
@@ -217,7 +227,7 @@ describe("useServerAction", () => {
       await pending;
     });
 
-    expect(result.current.isPending).toBe(false);
+    expect(result.current.isPending).toBeFalsy();
   });
 
   it("throws when used outside ActionToastProvider", () => {

@@ -24,14 +24,14 @@ function createCounts(
   return counts;
 }
 
-describe("countStreamsByWeekdayAndHour", () => {
+describe(countStreamsByWeekdayAndHour, () => {
   it("returns 7 rows of 24 zeros for no streams", () => {
     const counts = countStreamsByWeekdayAndHour([]);
 
     expect(counts).toHaveLength(7);
 
     for (const row of counts) {
-      expect(row).toEqual(Array.from({ length: 24 }, () => 0));
+      expect(row).toStrictEqual(Array.from({ length: 24 }, () => 0));
     }
   });
 
@@ -72,9 +72,9 @@ describe("countStreamsByWeekdayAndHour", () => {
   });
 });
 
-describe("summarizeStreamTendency", () => {
+describe(summarizeStreamTendency, () => {
   it("returns no busiest day or hour for no streams", () => {
-    expect(summarizeStreamTendency(createCounts())).toEqual({
+    expect(summarizeStreamTendency(createCounts())).toStrictEqual({
       busiestHour: null,
       busiestWeekday: null,
       max: 0,
@@ -93,7 +93,7 @@ describe("summarizeStreamTendency", () => {
           [0, 21, 1],
         ])
       )
-    ).toEqual({
+    ).toStrictEqual({
       busiestHour: 21,
       busiestWeekday: 5,
       max: 4,
@@ -125,7 +125,7 @@ describe("summarizeStreamTendency", () => {
       "2026-11-13T13:00:00Z",
     ]);
 
-    expect(summarizeStreamTendency(counts)).toEqual({
+    expect(summarizeStreamTendency(counts)).toStrictEqual({
       busiestHour: 21,
       busiestWeekday: 5,
       max: 2,
@@ -134,20 +134,16 @@ describe("summarizeStreamTendency", () => {
   });
 });
 
-describe("getStreamCountLevel", () => {
+describe(getStreamCountLevel, () => {
   it("returns 0 for no streams", () => {
     expect(getStreamCountLevel(0, 0)).toBe(0);
     expect(getStreamCountLevel(0, 8)).toBe(0);
   });
 
   it("splits the counts into 4 levels by the busiest cell", () => {
-    expect(getStreamCountLevel(1, 8)).toBe(1);
-    expect(getStreamCountLevel(2, 8)).toBe(1);
-    expect(getStreamCountLevel(3, 8)).toBe(2);
-    expect(getStreamCountLevel(4, 8)).toBe(2);
-    expect(getStreamCountLevel(6, 8)).toBe(3);
-    expect(getStreamCountLevel(7, 8)).toBe(4);
-    expect(getStreamCountLevel(8, 8)).toBe(4);
+    expect(
+      [1, 2, 3, 4, 6, 7, 8].map((count) => getStreamCountLevel(count, 8))
+    ).toStrictEqual([1, 1, 2, 2, 3, 4, 4]);
   });
 
   it("returns the darkest level for every stream when the busiest is 1", () => {

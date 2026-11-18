@@ -3,17 +3,20 @@ import type { AnalyticsSummary } from "@shinju-date/dashboard-stats";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getRedisClient } from "@/lib/redis";
+import { createMockRedisClient } from "@/test/mock-redis-pipeline";
 
 import { getAnalyticsSummary } from "./get-analytics-summary";
 
-vi.mock("next/cache", () => ({
-  cacheLife: vi.fn(),
+vi.mock(import("next/cache"), () => ({
+  cacheLife: vi.fn<() => void>(),
 }));
-vi.mock("@shinju-date/logger", () => ({
-  logger: { error: vi.fn(), warn: vi.fn() },
-}));
-vi.mock("@/lib/redis", () => ({
-  getRedisClient: vi.fn(),
+vi.mock(import("@shinju-date/logger"), async () => {
+  const { createMockLogger } = await import("@/test/logger");
+
+  return { logger: createMockLogger() };
+});
+vi.mock(import("@/lib/redis"), () => ({
+  getRedisClient: vi.fn<typeof getRedisClient>(),
 }));
 
 interface FakeRedisData {
@@ -44,23 +47,25 @@ function mockRedis({
     ),
   };
   const redisClient = {
-    get: vi.fn(async (key: string) => values[key] ?? null),
-    zcard: vi.fn(async (key: string) =>
+    get: vi.fn<(key: string) => Promise<unknown>>(
+      async (key) => values[key] ?? null
+    ),
+    zcard: vi.fn<(key: string) => Promise<number>>(async (key) =>
       key === REDIS_KEYS.SEARCH_POPULAR_ALL_TIME ? popularKeywords : 0
     ),
-    zrange: vi.fn(async (key: string) =>
+    zrange: vi.fn<(key: string) => Promise<unknown[]>>(async (key) =>
       key === `${REDIS_KEYS.CLICK_VIDEO_PREFIX}20251113`
         ? Object.entries(clicks).flat()
         : []
     ),
   };
 
-  vi.mocked(getRedisClient).mockReturnValue(redisClient as never);
+  vi.mocked(getRedisClient).mockReturnValue(createMockRedisClient(redisClient));
 
   return redisClient;
 }
 
-describe("getAnalyticsSummary", () => {
+describe(getAnalyticsSummary, () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -100,7 +105,7 @@ describe("getAnalyticsSummary", () => {
       },
     });
 
-    await expect(getAnalyticsSummary()).resolves.toEqual({
+    await expect(getAnalyticsSummary()).resolves.toStrictEqual({
       recentClicks: { current: 7, dayChange: 2, weekChange: -3 },
       recentSearches: { current: 30, dayChange: -15, weekChange: 10 },
       totalPopularKeywords: { current: 12, dayChange: 0, weekChange: 4 },
@@ -110,7 +115,7 @@ describe("getAnalyticsSummary", () => {
   it("has no changes on a day without the snapshots to compare with", async () => {
     mockRedis({ searches: 30 });
 
-    await expect(getAnalyticsSummary()).resolves.toEqual({
+    await expect(getAnalyticsSummary()).resolves.toStrictEqual({
       recentClicks: { current: 0, dayChange: null, weekChange: null },
       recentSearches: { current: 30, dayChange: null, weekChange: null },
       totalPopularKeywords: { current: 0, dayChange: null, weekChange: null },
@@ -122,7 +127,7 @@ describe("getAnalyticsSummary", () => {
 
     redisClient.get.mockRejectedValue(new Error("connection refused"));
 
-    await expect(getAnalyticsSummary()).resolves.toEqual({
+    await expect(getAnalyticsSummary()).resolves.toStrictEqual({
       recentClicks: { current: 0, dayChange: null, weekChange: null },
       recentSearches: { current: 0, dayChange: null, weekChange: null },
       totalPopularKeywords: { current: 0, dayChange: null, weekChange: null },

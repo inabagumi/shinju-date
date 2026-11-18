@@ -1,27 +1,33 @@
 import { REDIS_KEYS } from "@shinju-date/constants";
+import type { Pipeline, Redis } from "@upstash/redis";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { logSearchQuery } from "./search-analytics";
+import type { trackSearchSession } from "./session-analytics";
 
 const multi = {
-  exec: vi.fn(),
-  expire: vi.fn(),
-  incr: vi.fn(),
-  sadd: vi.fn(),
-  zincrby: vi.fn(),
+  // One of the overloads of `exec`, which is generic
+  exec: vi.fn<() => Promise<unknown[]>>(),
+  expire: vi.fn<Pipeline["expire"]>(),
+  incr: vi.fn<Pipeline["incr"]>(),
+  sadd: vi.fn<Pipeline["sadd"]>(),
+  zincrby: vi.fn<Pipeline["zincrby"]>(),
 };
 
-vi.mock("./redis", () => ({
-  getRedisClient: () => ({ multi: () => multi }),
+vi.mock(import("./redis"), () => ({
+  getRedisClient: () =>
+    ({
+      multi: () => multi as Partial<Pipeline> as Pipeline,
+    }) as Partial<Redis> as Redis,
 }));
 
-vi.mock("./session-analytics", () => ({
-  trackSearchSession: vi.fn(),
+vi.mock(import("./session-analytics"), () => ({
+  trackSearchSession: vi.fn<typeof trackSearchSession>(),
 }));
 
 const DAY_SECONDS = 24 * 60 * 60;
 
-describe("logSearchQuery", () => {
+describe(logSearchQuery, () => {
   beforeEach(() => {
     // 2025-10-14T12:00:00+09:00 (Tuesday in Asia/Tokyo)
     vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockImplementation((timeZone) =>
@@ -39,7 +45,7 @@ describe("logSearchQuery", () => {
   it("counts the normalized query for the day, the week and the whole period", async () => {
     await logSearchQuery("  Singing 歌枠 ", 3);
 
-    expect(multi.zincrby.mock.calls).toEqual([
+    expect(multi.zincrby.mock.calls).toStrictEqual([
       [`${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}20251014`, 1, "singing 歌枠"],
       [`${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}20251013`, 1, "singing 歌枠"],
       [REDIS_KEYS.SEARCH_POPULAR_ALL_TIME, 1, "singing 歌枠"],
@@ -50,7 +56,7 @@ describe("logSearchQuery", () => {
   it("increments the daily search volume", async () => {
     await logSearchQuery("歌枠", 3);
 
-    expect(multi.incr.mock.calls).toEqual([
+    expect(multi.incr.mock.calls).toStrictEqual([
       [`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}20251014`],
     ]);
   });
@@ -59,7 +65,7 @@ describe("logSearchQuery", () => {
     await logSearchQuery("歌枠", 0);
 
     expect(multi.expire).toHaveBeenCalledTimes(3);
-    expect(multi.expire.mock.calls).toEqual(
+    expect(multi.expire.mock.calls).toStrictEqual(
       expect.arrayContaining([
         [`${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}20251014`, 90 * DAY_SECONDS],
         [
@@ -74,7 +80,7 @@ describe("logSearchQuery", () => {
   it("records a query without results", async () => {
     await logSearchQuery("歌枠", 0);
 
-    expect(multi.sadd.mock.calls).toEqual([
+    expect(multi.sadd.mock.calls).toStrictEqual([
       [REDIS_KEYS.SEARCH_ZERO_RESULTS, "歌枠"],
     ]);
   });

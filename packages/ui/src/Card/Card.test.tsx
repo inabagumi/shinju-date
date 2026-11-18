@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { Card, CardContent, CardHeader } from "./Card";
 
-describe("Card", () => {
+describe(Card, () => {
   it("renders the header and the content inside the card", () => {
     render(
       <Card data-testid="card">
@@ -20,7 +20,7 @@ describe("Card", () => {
     const header = screen.getByTestId("header");
     const content = screen.getByTestId("content");
 
-    expect(Array.from(card.children)).toEqual([header, content]);
+    expect(Array.from(card.children)).toStrictEqual([header, content]);
     expect(header).toContainElement(
       screen.getByRole("heading", { name: "今週の配信" })
     );
@@ -51,23 +51,24 @@ describe("Card", () => {
     expect(screen.getByTestId("content")).toHaveClass("p-6");
   });
 
-  it("lets className win over the default classes", () => {
-    render(
-      <Card className="bg-surface" data-testid="card">
-        <CardHeader className="pb-2" data-testid="header" />
-        <CardContent className="p-4" data-testid="content" />
-      </Card>
-    );
+  it.each([
+    { kept: ["bg-surface"], overridden: "bg-muted", testId: "card" },
+    { kept: ["p-6", "pb-2"], overridden: "pb-0", testId: "header" },
+    { kept: ["p-4"], overridden: "p-6", testId: "content" },
+  ])(
+    "lets className win over the default classes of the $testId",
+    ({ kept, overridden, testId }) => {
+      render(
+        <Card className="bg-surface" data-testid="card">
+          <CardHeader className="pb-2" data-testid="header" />
+          <CardContent className="p-4" data-testid="content" />
+        </Card>
+      );
 
-    const card = screen.getByTestId("card");
-    const header = screen.getByTestId("header");
-    const content = screen.getByTestId("content");
+      const element = screen.getByTestId(testId);
 
-    expect(card).toHaveClass("bg-surface");
-    expect(card).not.toHaveClass("bg-muted");
-    expect(header).toHaveClass("p-6", "pb-2");
-    expect(header).not.toHaveClass("pb-0");
-    expect(content).toHaveClass("p-4");
-    expect(content).not.toHaveClass("p-6");
-  });
+      expect(element).toHaveClass(...kept);
+      expect(element).not.toHaveClass(overridden);
+    }
+  );
 });

@@ -1,18 +1,23 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type {
+  fetchTalentList,
+  fetchTalentStreamStatusesSafe,
+} from "@/lib/data/talents";
+
 const fetchers = vi.hoisted(() => ({
-  fetchTalentList: vi.fn(),
-  fetchTalentStreamStatusesSafe: vi.fn(),
+  fetchTalentList: vi.fn<typeof fetchTalentList>(),
+  fetchTalentStreamStatusesSafe: vi.fn<typeof fetchTalentStreamStatusesSafe>(),
 }));
 
-vi.mock("@/lib/data/talents", () => fetchers);
+vi.mock(import("@/lib/data/talents"), () => fetchers);
 
 import { TalentListGrid } from "./talent-list-sections";
 
 const TALENT_ID = "00000000-0000-4000-8000-000000000001";
 
-describe("TalentListGrid", () => {
+describe(TalentListGrid, () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
