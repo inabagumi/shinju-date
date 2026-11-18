@@ -1,5 +1,4 @@
 import type { TablesUpdate } from '@shinju-date/database'
-import { toDBString } from '@shinju-date/temporal-fns'
 import {
   getArchivedStreamId,
   TWITCH_API_MAX_RESULTS,
@@ -182,14 +181,8 @@ async function endBroadcast(
   /** The archive of the broadcast, when Twitch already lists it. */
   archive: TwitchVideo | undefined,
 ): Promise<void> {
-  const { now, supabaseClient } = context
-  const timestamp = toDBString(now)
-
   if (!archive) {
-    await updateVideo(supabaseClient, saved.id, {
-      status: 'ENDED',
-      updated_at: timestamp,
-    })
+    await updateVideo(context.supabaseClient, saved.id, { status: 'ENDED' })
     return
   }
 
@@ -283,7 +276,7 @@ async function findArchiveOfBroadcast(
 export async function syncTwitchLive(
   context: CrawlContext<TwitchFetcher>,
 ): Promise<number> {
-  const { fetcher, logger, now, reportError, supabaseClient } = context
+  const { fetcher, logger, reportError, supabaseClient } = context
   const [users, savedLiveVideos] = await Promise.all([
     getActiveAccounts(supabaseClient, TWITCH_USERS),
     getSavedLiveVideos(supabaseClient),
@@ -341,10 +334,7 @@ export async function syncTwitchLive(
     plan.refreshed,
     WRITE_CONCURRENCY,
     async ({ saved, values }) => {
-      await updateVideo(supabaseClient, saved.id, {
-        ...values,
-        updated_at: toDBString(now),
-      })
+      await updateVideo(supabaseClient, saved.id, values)
 
       return true
     },
@@ -403,7 +393,7 @@ export async function refreshTwitchBroadcast(
   context: CrawlContext<TwitchFetcher>,
   saved: SavedLiveVideo,
 ): Promise<void> {
-  const { fetcher, now, supabaseClient } = context
+  const { fetcher, supabaseClient } = context
   const liveStreams = saved.twitchUserId
     ? await fetcher.getLiveStreams([saved.twitchUserId])
     : []
@@ -420,10 +410,7 @@ export async function refreshTwitchBroadcast(
       : undefined
 
   for (const { values } of plan.refreshed) {
-    await updateVideo(supabaseClient, saved.id, {
-      ...values,
-      updated_at: toDBString(now),
-    })
+    await updateVideo(supabaseClient, saved.id, values)
   }
 
   if (hasEnded) {

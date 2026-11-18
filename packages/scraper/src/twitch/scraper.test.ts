@@ -311,7 +311,6 @@ describe('TwitchScraper', () => {
 
       expect(supabase.written('PATCH', 'videos')[0]?.body).toEqual({
         duration: 'PT2H',
-        updated_at: '2024-05-01T12:00:00Z',
       })
     })
   })
@@ -362,7 +361,6 @@ describe('TwitchScraper', () => {
           body: {
             duration: 'PT2H',
             title: 'Renamed archive',
-            updated_at: '2024-05-01T12:00:00Z',
           },
           table: 'videos',
         }),
@@ -468,7 +466,7 @@ describe('TwitchScraper', () => {
       ])
       expect(supabase.written('PATCH', 'videos')).toEqual([
         expect.objectContaining({
-          body: { title: 'Live now', updated_at: '2024-05-01T12:00:00Z' },
+          body: { title: 'Live now' },
         }),
       ])
       expect(supabase.insertedVideos()).toEqual([])
@@ -510,7 +508,7 @@ describe('TwitchScraper', () => {
 
       expect(single.map(({ table }) => table)).toEqual([
         'twitch_videos',
-        'thumbnails',
+        'rpc/touch_thumbnail',
         'videos',
       ])
       expect(writes()).toEqual(single)

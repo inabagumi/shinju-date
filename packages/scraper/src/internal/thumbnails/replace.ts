@@ -1,5 +1,4 @@
 import type { TablesUpdate } from '@shinju-date/database'
-import { toDBString } from '@shinju-date/temporal-fns'
 import type { TypedSupabaseClient, WriteContext } from '../../types.js'
 import { updateVideo } from '../database/videos.js'
 import { DatabaseError } from '../errors.js'
@@ -19,18 +18,18 @@ export interface ReplaceThumbnailOptions {
 }
 
 /**
- * Marks a thumbnail as unused from `updatedAt` on, so that the cleanup of
- * unused thumbnails keeps it for its grace period from then.
+ * Marks a thumbnail as unused from now on, so that the cleanup of unused
+ * thumbnails keeps it for its grace period from then. `touch_thumbnail` only
+ * runs the trigger of the table, which sets `updated_at` to the current time
+ * of the database.
  */
 async function touchThumbnail(
   supabaseClient: TypedSupabaseClient,
   thumbnailId: string,
-  updatedAt: string,
 ): Promise<void> {
-  const { error } = await supabaseClient
-    .from('thumbnails')
-    .update({ updated_at: updatedAt })
-    .eq('id', thumbnailId)
+  const { error } = await supabaseClient.rpc('touch_thumbnail', {
+    p_thumbnail_id: thumbnailId,
+  })
 
   if (error) {
     throw new DatabaseError('Failed to update a replaced thumbnail', error)
@@ -42,12 +41,13 @@ async function touchThumbnail(
  *
  * The thumbnail the video used before is left in place: pages the public site
  * cached before the update still show its image, so it is only removed later
- * by `removeUnusedThumbnails`. Its `updated_at` is set to the time of the run,
- * from which that cleanup counts its grace period.
+ * by `removeUnusedThumbnails`. Its `updated_at` is moved to the current time
+ * of the database, from which that cleanup counts its grace period.
  *
  * When no new thumbnail is stored, only `fields` are updated (nothing is
- * written when they are empty) and the video keeps its thumbnail. Every
- * update also sets `updated_at` to the time of the run.
+ * written when they are empty) and the video keeps its thumbnail. The
+ * triggers set `updated_at` of every updated row to the current time of the
+ * database.
  *
  * @returns The new thumbnail, or `null` when none was stored.
  * @throws When the video (or the previous thumbnail) cannot be updated. The
@@ -57,16 +57,12 @@ export async function replaceThumbnail(
   context: WriteContext,
   { create, fields, previousThumbnailId, videoId }: ReplaceThumbnailOptions,
 ): Promise<Thumbnail | null> {
-  const { now, supabaseClient } = context
-  const updatedAt = toDBString(now)
+  const { supabaseClient } = context
   const thumbnail = await create()
 
   if (!thumbnail) {
     if (Object.keys(fields).length > 0) {
-      await updateVideo(supabaseClient, videoId, {
-        ...fields,
-        updated_at: updatedAt,
-      })
+      await updateVideo(supabaseClient, videoId, fields)
     }
 
     return null
@@ -76,13 +72,12 @@ export async function replaceThumbnail(
     // Before the video: should this fail, nothing has changed yet, and should
     // the video fail, the previous thumbnail is merely kept a little longer.
     if (previousThumbnailId && previousThumbnailId !== thumbnail.id) {
-      await touchThumbnail(supabaseClient, previousThumbnailId, updatedAt)
+      await touchThumbnail(supabaseClient, previousThumbnailId)
     }
 
     await updateVideo(supabaseClient, videoId, {
       ...fields,
       thumbnail_id: thumbnail.id,
-      updated_at: updatedAt,
     })
   } catch (error) {
     await removeThumbnail(context, thumbnail)

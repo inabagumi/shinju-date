@@ -258,7 +258,7 @@ describe('syncTwitchLive', () => {
 
     expect(changed).toBeGreaterThan(0)
     expect(supabase.written('PATCH', 'videos')[0]).toMatchObject({
-      body: { title: 'New title', updated_at: '2024-05-01T12:00:00Z' },
+      body: { title: 'New title' },
       query: { id: 'eq.video-1' },
     })
   })
@@ -275,7 +275,6 @@ describe('syncTwitchLive', () => {
     })
     expect(supabase.written('PATCH', 'videos')[0]?.body).toEqual({
       status: 'ENDED',
-      updated_at: '2024-05-01T12:00:00Z',
     })
     expect(supabase.written('PATCH', 'twitch_videos')).toHaveLength(0)
   })
@@ -301,15 +300,11 @@ describe('syncTwitchLive', () => {
       status: 'ENDED',
       thumbnail_id: 'thumb-new',
       title: 'Archive',
-      updated_at: '2024-05-01T12:00:00Z',
     })
     // Cached pages may still show the preview, so the cleanup removes it
-    // later, counting from the time it was replaced.
-    expect(supabase.written('PATCH', 'thumbnails')).toEqual([
-      expect.objectContaining({
-        body: { updated_at: '2024-05-01T12:00:00Z' },
-        query: { id: 'eq.thumb-live' },
-      }),
+    // later, counting from the time it was replaced (`touch_thumbnail`).
+    expect(supabase.written('POST', 'rpc/touch_thumbnail')).toEqual([
+      expect.objectContaining({ body: { p_thumbnail_id: 'thumb-live' } }),
     ])
     expect(deletedThumbnailIds()).toEqual([])
     expect(removedImages).toEqual([])
