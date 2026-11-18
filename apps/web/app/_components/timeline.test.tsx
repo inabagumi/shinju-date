@@ -2,16 +2,13 @@ import { render, screen, within } from '@testing-library/react'
 import { renderToString } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import type { Video } from '@/lib/fetchers'
+import { createVideoItem } from '@/test/factories'
 import Timeline from './timeline'
 
 vi.mock('@/components/video-card', () => ({
   default: ({ value }: { value: Video }) => <article>{value.title}</article>,
   VideoCardSkeleton: () => null,
 }))
-
-function createVideo(id: string, publishedAt: string): Video {
-  return { id, published_at: publishedAt, title: id } as Video
-}
 
 function getGroup(name: RegExp | string) {
   return screen.getByRole('region', { name })
@@ -40,11 +37,23 @@ describe('Timeline', () => {
         referenceDate="2026-11-14"
         videos={[
           // Asia/Tokyo: 2026-11-16 20:00
-          createVideo('video-c', '2026-11-16T11:00:00Z'),
+          createVideoItem({
+            id: 'video-c',
+            published_at: '2026-11-16T11:00:00Z',
+            title: 'video-c',
+          }),
           // Asia/Tokyo: 2026-11-14 20:00
-          createVideo('video-a', '2026-11-14T11:00:00Z'),
+          createVideoItem({
+            id: 'video-a',
+            published_at: '2026-11-14T11:00:00Z',
+            title: 'video-a',
+          }),
           // Asia/Tokyo: 2026-11-15 20:00
-          createVideo('video-b', '2026-11-15T11:00:00Z'),
+          createVideoItem({
+            id: 'video-b',
+            published_at: '2026-11-15T11:00:00Z',
+            title: 'video-b',
+          }),
         ]}
       />,
     )
@@ -70,13 +79,29 @@ describe('Timeline', () => {
         referenceDate="2026-11-14"
         videos={[
           // Asia/Tokyo: 2026-11-15 00:30 (next day in JST)
-          createVideo('video-d', '2026-11-14T15:30:00Z'),
+          createVideoItem({
+            id: 'video-d',
+            published_at: '2026-11-14T15:30:00Z',
+            title: 'video-d',
+          }),
           // Asia/Tokyo: 2026-11-14 21:00
-          createVideo('video-c', '2026-11-14T12:00:00Z'),
+          createVideoItem({
+            id: 'video-c',
+            published_at: '2026-11-14T12:00:00Z',
+            title: 'video-c',
+          }),
           // Asia/Tokyo: 2026-11-14 18:00
-          createVideo('video-a', '2026-11-14T09:00:00Z'),
+          createVideoItem({
+            id: 'video-a',
+            published_at: '2026-11-14T09:00:00Z',
+            title: 'video-a',
+          }),
           // Asia/Tokyo: 2026-11-14 19:00
-          createVideo('video-b', '2026-11-14T10:00:00Z'),
+          createVideoItem({
+            id: 'video-b',
+            published_at: '2026-11-14T10:00:00Z',
+            title: 'video-b',
+          }),
         ]}
       />,
     )
@@ -94,7 +119,13 @@ describe('Timeline', () => {
     render(
       <Timeline
         referenceDate="2026-11-14"
-        videos={[createVideo('video-a', '2026-11-16T11:00:00Z')]}
+        videos={[
+          createVideoItem({
+            id: 'video-a',
+            published_at: '2026-11-16T11:00:00Z',
+            title: 'video-a',
+          }),
+        ]}
       />,
     )
 
@@ -116,7 +147,13 @@ describe('Timeline', () => {
     render(
       <Timeline
         referenceDate="2026-11-14"
-        videos={[createVideo('video-a', '2026-11-14T11:00:00Z')]}
+        videos={[
+          createVideoItem({
+            id: 'video-a',
+            published_at: '2026-11-14T11:00:00Z',
+            title: 'video-a',
+          }),
+        ]}
       />,
     )
 
@@ -137,7 +174,13 @@ describe('Timeline', () => {
     const html = renderToString(
       <Timeline
         referenceDate="2026-11-14"
-        videos={[createVideo('video-a', '2026-11-14T11:00:00Z')]}
+        videos={[
+          createVideoItem({
+            id: 'video-a',
+            published_at: '2026-11-14T11:00:00Z',
+            title: 'video-a',
+          }),
+        ]}
       />,
     )
 
@@ -153,8 +196,16 @@ describe('Timeline', () => {
       <Timeline
         referenceDate="2026-11-14"
         videos={[
-          createVideo('video-a', '2026-11-14T11:00:00Z'),
-          createVideo('video-b', '2026-11-15T11:00:00Z'),
+          createVideoItem({
+            id: 'video-a',
+            published_at: '2026-11-14T11:00:00Z',
+            title: 'video-a',
+          }),
+          createVideoItem({
+            id: 'video-b',
+            published_at: '2026-11-15T11:00:00Z',
+            title: 'video-b',
+          }),
         ]}
       />,
     )

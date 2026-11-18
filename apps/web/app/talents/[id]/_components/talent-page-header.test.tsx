@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, test, vi } from 'vitest'
-import type { TalentDetail, TalentStreamStatus } from '@/lib/fetchers'
+import type { TalentStreamStatus } from '@/lib/fetchers'
+import { createTalentDetail } from '@/test/factories'
 
 vi.mock('@/lib/fetchers', () => ({}))
 
@@ -8,34 +9,31 @@ import { TalentPageHeader } from './talent-page-header'
 
 const TALENT_ID = '00000000-0000-4000-8000-000000000001'
 
-function createTalent(overrides: Partial<TalentDetail> = {}): TalentDetail {
-  return {
-    id: TALENT_ID,
-    name: '朝霧ミオ',
-    theme_color: null,
-    twitch_users: [
-      {
-        name: '朝霧ミオ',
-        profile_image: null,
-        twitch_login_name: 'uruha',
-        twitch_user_id: '100',
-      },
-    ],
-    youtube_channels: [
-      {
-        name: '朝霧ミオ',
-        profile_image: { blur_data_url: '', id: 'icon-1' },
-        youtube_channel_id: 'UCuruha',
-        youtube_handle: '@uruha',
-      },
-    ],
-    ...overrides,
-  }
-}
+const TALENT = createTalentDetail({
+  id: TALENT_ID,
+  name: '朝霧ミオ',
+  theme_color: null,
+  twitch_users: [
+    {
+      name: '朝霧ミオ',
+      profile_image: null,
+      twitch_login_name: 'uruha',
+      twitch_user_id: '100',
+    },
+  ],
+  youtube_channels: [
+    {
+      name: '朝霧ミオ',
+      profile_image: { blur_data_url: '', id: 'icon-1' },
+      youtube_channel_id: 'UCuruha',
+      youtube_handle: '@uruha',
+    },
+  ],
+})
 
 describe('TalentPageHeader', () => {
   test('should show the icon and the name as the page heading', () => {
-    const { container } = render(<TalentPageHeader talent={createTalent()} />)
+    const { container } = render(<TalentPageHeader talent={TALENT} />)
 
     expect(
       screen.getByRole('heading', { level: 1, name: '朝霧ミオ' }),
@@ -50,7 +48,7 @@ describe('TalentPageHeader', () => {
   })
 
   test('should link back to the list of talents', () => {
-    render(<TalentPageHeader talent={createTalent()} />)
+    render(<TalentPageHeader talent={TALENT} />)
 
     const breadcrumbs = screen.getByRole('navigation', {
       name: 'パンくずリスト',
@@ -65,7 +63,7 @@ describe('TalentPageHeader', () => {
   })
 
   test('should open the channels in a new tab', () => {
-    render(<TalentPageHeader talent={createTalent()} />)
+    render(<TalentPageHeader talent={TALENT} />)
 
     const youtubeLink = screen.getByRole('link', { name: 'YouTube チャンネル' })
     const twitchLink = screen.getByRole('link', { name: 'Twitch チャンネル' })
@@ -83,7 +81,7 @@ describe('TalentPageHeader', () => {
   })
 
   test('should link to the calendar in the same tab', () => {
-    render(<TalentPageHeader talent={createTalent()} />)
+    render(<TalentPageHeader talent={TALENT} />)
 
     const calendarLink = screen.getByRole('link', { name: 'カレンダーに登録' })
 
@@ -94,7 +92,11 @@ describe('TalentPageHeader', () => {
   test('should show the default icon for a talent without icons', () => {
     render(
       <TalentPageHeader
-        talent={createTalent({ twitch_users: [], youtube_channels: [] })}
+        talent={createTalentDetail({
+          ...TALENT,
+          twitch_users: [],
+          youtube_channels: [],
+        })}
       />,
     )
 
@@ -114,7 +116,7 @@ describe('TalentPageHeader with the stream status', () => {
   }
 
   test('should show the ring and the badge while live', () => {
-    render(<TalentPageHeader streamStatus={live} talent={createTalent()} />)
+    render(<TalentPageHeader streamStatus={live} talent={TALENT} />)
 
     const badge = screen.getByText('配信中')
 
@@ -143,7 +145,7 @@ describe('TalentPageHeader with the stream status', () => {
     render(
       <TalentPageHeader
         streamStatus={{ isLive: true, nextStreamAt: '2026-11-16T11:00:00Z' }}
-        talent={createTalent()}
+        talent={TALENT}
       />,
     )
 
@@ -152,7 +154,7 @@ describe('TalentPageHeader with the stream status', () => {
   })
 
   test('should show the start of the next stream in Japan time', () => {
-    render(<TalentPageHeader streamStatus={upcoming} talent={createTalent()} />)
+    render(<TalentPageHeader streamStatus={upcoming} talent={TALENT} />)
 
     const nextStream = screen.getByText(/^次回/)
 
@@ -171,7 +173,7 @@ describe('TalentPageHeader with the stream status', () => {
   })
 
   test('should put the stream status above the links', () => {
-    render(<TalentPageHeader streamStatus={upcoming} talent={createTalent()} />)
+    render(<TalentPageHeader streamStatus={upcoming} talent={TALENT} />)
 
     const line = screen.getByText(/^次回/).closest('p')
     const links = screen.getByRole('navigation', { name: 'リンク' })
@@ -181,7 +183,7 @@ describe('TalentPageHeader with the stream status', () => {
   })
 
   test('should show nothing without a stream', () => {
-    const { container } = render(<TalentPageHeader talent={createTalent()} />)
+    const { container } = render(<TalentPageHeader talent={TALENT} />)
 
     expect(screen.queryByText('配信中')).not.toBeInTheDocument()
     expect(screen.queryByText(/次回/)).not.toBeInTheDocument()

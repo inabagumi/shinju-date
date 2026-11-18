@@ -1,9 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import type {
-  TalentDetail,
-  TalentTwitchUser,
-  TalentYouTubeChannel,
-} from './fetchers'
+import { createTalentDetail } from '@/test/factories'
+import type { TalentTwitchUser, TalentYouTubeChannel } from './fetchers'
 import {
   findFirstNonBlank,
   getTalentCalendarPath,
@@ -37,17 +34,6 @@ function createTwitchUser(
   }
 }
 
-function createTalent(overrides: Partial<TalentDetail> = {}): TalentDetail {
-  return {
-    id: TALENT_ID,
-    name: '朝霧ミオ',
-    theme_color: null,
-    twitch_users: [],
-    youtube_channels: [],
-    ...overrides,
-  }
-}
-
 describe('findFirstNonBlank', () => {
   test('should return the first value that is not blank, trimmed', () => {
     expect(findFirstNonBlank(null, undefined, ' ', ' name ', 'other')).toBe(
@@ -65,7 +51,7 @@ describe('getTalentLinks', () => {
   test('should link to each channel and the calendar', () => {
     expect(
       getTalentLinks(
-        createTalent({
+        createTalentDetail({
           twitch_users: [createTwitchUser()],
           youtube_channels: [createYouTubeChannel()],
         }),
@@ -91,7 +77,7 @@ describe('getTalentLinks', () => {
 
   test('should tell several accounts of the same platform apart', () => {
     const links = getTalentLinks(
-      createTalent({
+      createTalentDetail({
         twitch_users: [
           createTwitchUser(),
           createTwitchUser({
@@ -128,7 +114,7 @@ describe('getTalentLinks', () => {
 
   test('should skip Twitch users without a login', () => {
     const links = getTalentLinks(
-      createTalent({
+      createTalentDetail({
         twitch_users: [
           createTwitchUser({ twitch_login_name: null }),
           createTwitchUser({ twitch_login_name: 'login2' }),

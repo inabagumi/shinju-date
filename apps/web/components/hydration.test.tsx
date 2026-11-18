@@ -7,6 +7,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import Timeline from '@/app/_components/timeline'
 import ScheduleDayHeader from '@/app/schedule/_components/schedule-day-header'
 import type { Video } from '@/lib/fetchers'
+import { createVideoItem } from '@/test/factories'
 import FormattedTime from './formatted-time'
 import SearchResults from './search-results'
 import { TimerProvider } from './timer'
@@ -35,10 +36,6 @@ function mockNow(value: string) {
   vi.spyOn(Temporal.Now, 'zonedDateTimeISO').mockReturnValue(
     Temporal.ZonedDateTime.from(value),
   )
-}
-
-function createVideo(id: string, publishedAt: string): Video {
-  return { id, published_at: publishedAt, title: id } as Video
 }
 
 /** The tree the page renders, as `app/layout.tsx` does */
@@ -100,7 +97,11 @@ describe('hydration across the change of the date', () => {
           prefetchedData={[
             [
               // Asia/Tokyo: 2026-12-31 20:00
-              createVideo('video-a', '2026-12-31T11:00:00Z'),
+              createVideoItem({
+                id: 'video-a',
+                published_at: '2026-12-31T11:00:00Z',
+                title: 'video-a',
+              }),
             ],
           ]}
           referenceDate={REFERENCE_DATE}
@@ -121,7 +122,11 @@ describe('hydration across the change of the date', () => {
           referenceDate={REFERENCE_DATE}
           videos={[
             // Asia/Tokyo: 2027-01-01 20:00
-            createVideo('video-a', '2027-01-01T11:00:00Z'),
+            createVideoItem({
+              id: 'video-a',
+              published_at: '2027-01-01T11:00:00Z',
+              title: 'video-a',
+            }),
           ]}
         />,
       )

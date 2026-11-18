@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { fetchVideos, type Video } from '@/lib/fetchers'
+import { createVideoItem } from '@/test/factories'
 import SearchResults from './search-results'
 
 vi.mock('@/lib/fetchers', () => ({
@@ -17,10 +18,6 @@ vi.mock('./video-card', () => ({
   default: ({ value }: { value: Video }) => <article>{value.title}</article>,
   VideoCardSkeleton: () => null,
 }))
-
-function createVideo(id: string, publishedAt: string): Video {
-  return { id, published_at: publishedAt, title: id } as Video
-}
 
 function renderWithQueryClient(ui: ReactNode) {
   const queryClient = new QueryClient({
@@ -48,17 +45,41 @@ describe('SearchResults', () => {
         prefetchedData={[
           [
             // Asia/Tokyo: 2026-11-15 20:00
-            createVideo('video-a', '2026-11-15T11:00:00Z'),
+            createVideoItem({
+              id: 'video-a',
+              published_at: '2026-11-15T11:00:00Z',
+              title: 'video-a',
+            }),
             // Asia/Tokyo: 2026-11-14 22:00
-            createVideo('video-b', '2026-11-14T13:00:00Z'),
+            createVideoItem({
+              id: 'video-b',
+              published_at: '2026-11-14T13:00:00Z',
+              title: 'video-b',
+            }),
             // Asia/Tokyo: 2026-11-14 00:30
-            createVideo('video-c', '2026-11-13T15:30:00Z'),
+            createVideoItem({
+              id: 'video-c',
+              published_at: '2026-11-13T15:30:00Z',
+              title: 'video-c',
+            }),
             // Asia/Tokyo: 2026-11-13 23:30
-            createVideo('video-d', '2026-11-13T14:30:00Z'),
+            createVideoItem({
+              id: 'video-d',
+              published_at: '2026-11-13T14:30:00Z',
+              title: 'video-d',
+            }),
             // Asia/Tokyo: 2026-11-12 12:00
-            createVideo('video-e', '2026-11-12T03:00:00Z'),
+            createVideoItem({
+              id: 'video-e',
+              published_at: '2026-11-12T03:00:00Z',
+              title: 'video-e',
+            }),
             // Asia/Tokyo: 2025-12-31 12:00
-            createVideo('video-f', '2025-12-31T03:00:00Z'),
+            createVideoItem({
+              id: 'video-f',
+              published_at: '2025-12-31T03:00:00Z',
+              title: 'video-f',
+            }),
           ],
         ]}
         referenceDate="2026-11-14"
@@ -91,7 +112,15 @@ describe('SearchResults', () => {
   test('should keep the date headings below the site header', () => {
     renderWithQueryClient(
       <SearchResults
-        prefetchedData={[[createVideo('video-a', '2026-11-14T11:00:00Z')]]}
+        prefetchedData={[
+          [
+            createVideoItem({
+              id: 'video-a',
+              published_at: '2026-11-14T11:00:00Z',
+              title: 'video-a',
+            }),
+          ],
+        ]}
         referenceDate="2026-11-14"
       />,
     )
