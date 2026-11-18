@@ -1154,12 +1154,12 @@ describe('Supabase Handlers', () => {
       )
     })
 
-    it('should apply the select of search_videos_v3', async () => {
+    it('should apply the select of search_videos_v4', async () => {
       const select =
         'id,talent:talents(id,name),youtube_video:youtube_videos(youtube_video_id,youtube_channel:youtube_channels(name,profile_image:profile_images(id)))'
       const search = async (perpage: number) => {
         const response = await fetch(
-          `https://fake.supabase.test/rest/v1/rpc/search_videos_v3?select=${encodeURIComponent(select)}`,
+          `https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=${encodeURIComponent(select)}`,
           {
             body: JSON.stringify({ perpage, query: '' }),
             headers: { 'Content-Type': 'application/json' },
@@ -1378,7 +1378,7 @@ describe('Supabase Handlers', () => {
       body: Record<string, unknown>,
     ): Promise<VideoRow[]> {
       const response = await fetch(
-        `https://fake.supabase.test/rest/v1/rpc/search_videos_v3?select=${encodeURIComponent(select)}`,
+        `https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=${encodeURIComponent(select)}`,
         {
           body: JSON.stringify({ query: '', ...body }),
           headers: { 'Content-Type': 'application/json' },
@@ -1534,8 +1534,8 @@ describe('Supabase Handlers', () => {
     it('should search only videos of the given talents', async () => {
       const [video] = await searchVideos({ perpage: 1 })
       const data = await searchVideos({
-        channel_ids: [video?.talent.id],
         perpage: 100,
+        talent_ids: [video?.talent.id],
       })
 
       expect(data.length).toBeGreaterThan(0)
@@ -1545,7 +1545,7 @@ describe('Supabase Handlers', () => {
     it('should search only videos whose titles match the query', async () => {
       const searchTitles = async (query: string) => {
         const response = await fetch(
-          'https://fake.supabase.test/rest/v1/rpc/search_videos_v3?select=title',
+          'https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=title',
           {
             body: JSON.stringify({ perpage: 100, query }),
             headers: { 'Content-Type': 'application/json' },
@@ -1576,9 +1576,9 @@ describe('Supabase Handlers', () => {
       expect(await searchTitles('zzzzzzzzqqq')).toEqual([])
     })
 
-    it('should embed Twitch videos in search_videos_v3 without a select', async () => {
+    it('should embed Twitch videos in search_videos_v4 without a select', async () => {
       const response = await fetch(
-        'https://fake.supabase.test/rest/v1/rpc/search_videos_v3',
+        'https://fake.supabase.test/rest/v1/rpc/search_videos_v4',
         {
           body: JSON.stringify({ perpage: 100, query: '' }),
           headers: { 'Content-Type': 'application/json' },
@@ -1597,10 +1597,10 @@ describe('Supabase Handlers', () => {
       })
     })
 
-    it('should search only videos of the given kinds in search_videos_v3', async () => {
+    it('should search only videos of the given kinds in search_videos_v4', async () => {
       const searchKinds = async (videoKinds?: string[]) => {
         const response = await fetch(
-          'https://fake.supabase.test/rest/v1/rpc/search_videos_v3?select=video_kind',
+          'https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=video_kind',
           {
             body: JSON.stringify({
               perpage: 1000,
@@ -1626,7 +1626,7 @@ describe('Supabase Handlers', () => {
       expect(await searchKinds(['standard'])).toEqual(new Set(['standard']))
     })
 
-    it('should count the videos the site shows in count_videos_v1', async () => {
+    it('should count the videos the site shows in count_videos_v2', async () => {
       const post = async (url: string, body: object) => {
         const response = await fetch(url, {
           body: JSON.stringify(body),
@@ -1647,7 +1647,7 @@ describe('Supabase Handlers', () => {
         { query: '', video_kinds: ['short'] },
       ]) {
         const videos = (await post(
-          `https://fake.supabase.test/rest/v1/rpc/search_videos_v3?select=${encodeURIComponent(select)}`,
+          `https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=${encodeURIComponent(select)}`,
           { ...body, perpage: 1000 },
         )) as {
           talent: { deleted_at: string | null } | null
@@ -1665,20 +1665,20 @@ describe('Supabase Handlers', () => {
         expect(shownVideos.length).toBeGreaterThan(0)
         expect(
           await post(
-            'https://fake.supabase.test/rest/v1/rpc/count_videos_v1',
+            'https://fake.supabase.test/rest/v1/rpc/count_videos_v2',
             body,
           ),
         ).toBe(shownVideos.length)
       }
     })
 
-    it('should leave out the videos the site does not show before the page size in search_videos_v3', async () => {
+    it('should leave out the videos the site does not show before the page size in search_videos_v4', async () => {
       const restUrl = 'https://fake.supabase.test/rest/v1'
       const select =
         'id,talent:talents(deleted_at),youtube_video:youtube_videos(youtube_video_id),twitch_video:twitch_videos(twitch_video_id)'
       const search = async (perpage: number) => {
         const response = await fetch(
-          `${restUrl}/rpc/search_videos_v3?select=id`,
+          `${restUrl}/rpc/search_videos_v4?select=id`,
           {
             body: JSON.stringify({ perpage, query: '' }),
             headers: { 'Content-Type': 'application/json' },

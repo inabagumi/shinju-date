@@ -360,7 +360,7 @@ describe('Supabase filters', () => {
     it('matches the IDs in upper case in the rows of a database function', async () => {
       const search = async (filter: string) => {
         const response = await fetch(
-          `${REST_URL}/rpc/search_videos_v3?select=id&${filter}`,
+          `${REST_URL}/rpc/search_videos_v4?select=id&${filter}`,
           {
             body: JSON.stringify({ perpage: 1000, query: '' }),
             headers: { 'Content-Type': 'application/json' },

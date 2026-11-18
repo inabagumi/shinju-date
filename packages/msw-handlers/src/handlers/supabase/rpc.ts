@@ -61,7 +61,7 @@ async function getMockAuditLogs({
 }
 
 interface SearchVideosParams {
-  channel_ids?: string[]
+  talent_ids?: string[]
   perpage?: number
   query?: string
   until?: string
@@ -69,7 +69,7 @@ interface SearchVideosParams {
 }
 
 /**
- * The shape this mock returns from `search_videos_v3` when no select is
+ * The shape this mock returns from `search_videos_v4` when no select is
  * given, with the resources of both platforms embedded.
  */
 const DEFAULT_SEARCH_VIDEOS_SELECT = [
@@ -134,7 +134,7 @@ async function expandMockQuery(query: string): Promise<string[]> {
  * query or one of its synonyms and that were published before `until`.
  */
 async function filterMockVideos({
-  channel_ids: channelIds = [],
+  talent_ids: talentIds = [],
   query = '',
   until,
   video_kinds: videoKinds,
@@ -151,7 +151,7 @@ async function filterMockVideos({
           keywords.some((keyword) =>
             normalizeSearchText(video.title).includes(keyword),
           )) &&
-        (channelIds.length === 0 || channelIds.includes(video.talent_id)) &&
+        (talentIds.length === 0 || talentIds.includes(video.talent_id)) &&
         (!videoKinds || videoKinds.includes(video.video_kind)) &&
         (!until || Temporal.Instant.compare(video.published_at, until) < 0),
     )
@@ -216,7 +216,7 @@ function pageMockVideos<T extends { published_at: string }>(
 }
 
 /**
- * Mirrors `search_videos_v3`: the videos of `filterShownMockVideos`, newest
+ * Mirrors `search_videos_v4`: the videos of `filterShownMockVideos`, newest
  * first. The videos the site does not show are left out before the page size
  * is applied.
  */
@@ -227,7 +227,7 @@ async function searchShownMockVideos({
   return pageMockVideos(await filterShownMockVideos(params), perpage)
 }
 
-/** Mirrors `count_videos_v1`: the number of the videos the site shows. */
+/** Mirrors `count_videos_v2`: the number of the videos the site shows. */
 async function countMockVideos(params: SearchVideosParams) {
   return (await filterShownMockVideos(params)).length
 }
@@ -487,7 +487,7 @@ export const rpcHandlers = [
     return HttpResponse.json(await suggestMockTerms(body))
   }),
 
-  rest.post(`${REST_URL}/rpc/search_videos_v3`, async ({ request }) => {
+  rest.post(`${REST_URL}/rpc/search_videos_v4`, async ({ request }) => {
     const body = (await request.json()) as SearchVideosParams
     const url = new URL(request.url)
     // `.rpc(...).select(...)` embeds resources and takes filters like a
@@ -538,7 +538,7 @@ export const rpcHandlers = [
     return HttpResponse.json(await restoreMockVideos(body))
   }),
 
-  rest.post(`${REST_URL}/rpc/count_videos_v1`, async ({ request }) => {
+  rest.post(`${REST_URL}/rpc/count_videos_v2`, async ({ request }) => {
     const body = (await request.json()) as SearchVideosParams
 
     return HttpResponse.json(await countMockVideos(body))

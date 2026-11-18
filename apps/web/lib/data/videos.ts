@@ -125,10 +125,10 @@ export const fetchVideos = async ({
   const videoKinds = getVideoKinds(kind)
   const videos = unwrap(
     await supabaseClient
-      .rpc('search_videos_v3', {
-        channel_ids: talentIds,
+      .rpc('search_videos_v4', {
         perpage: SEARCH_RESULT_COUNT,
         query,
+        talent_ids: talentIds,
         until: baseTime.toJSON(),
         ...(videoKinds ? { video_kinds: videoKinds } : {}),
       })
@@ -164,9 +164,9 @@ export const countVideos = async ({
   const videoKinds = getVideoKinds(kind)
 
   return unwrap(
-    await supabaseClient.rpc('count_videos_v1', {
-      channel_ids: talentIds,
+    await supabaseClient.rpc('count_videos_v2', {
       query,
+      talent_ids: talentIds,
       until: baseTime.toJSON(),
       ...(videoKinds ? { video_kinds: videoKinds } : {}),
     }),
