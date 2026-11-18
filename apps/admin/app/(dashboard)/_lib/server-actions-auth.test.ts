@@ -21,18 +21,6 @@ const { supabase } = test
 const APP_ROOT = fileURLToPath(new URL('../../../', import.meta.url))
 
 /**
- * `_actions/` の外にある、`'use server'` で始まるファイル（`apps/admin` から
- * のパス）。アクションを `_actions/` に移したら、この一覧から消す。
- */
-const FILES_OUTSIDE_ACTIONS = [
-  // 認証が前提のアクション。下の `import.meta.glob()` で、このテストの対象にする（#7010 で移す）
-  'app/(dashboard)/_lib/maintenance-mode-actions.ts',
-  // ログインの前後に呼ぶため、認証を確かめないアクション（#7010 で移す）
-  'app/login/_lib/actions.ts',
-  'lib/actions/sign-out.ts',
-]
-
-/**
  * `eager: true` にすると、Vite がモジュールの先頭に `import` を足し、
  * `@/test/action-harness` の `vi.mock()` より先にアクションを読み込んでしまう。
  * そのため、モックを登録したあとで読み込む。
@@ -40,7 +28,6 @@ const FILES_OUTSIDE_ACTIONS = [
 const actionModules = import.meta.glob<Record<string, unknown>>([
   '../**/_actions/*.ts',
   '!../**/_actions/*.test.ts',
-  './maintenance-mode-actions.ts',
 ])
 
 const actions: [string, (...args: unknown[]) => Promise<unknown>][] = []
@@ -120,6 +107,6 @@ describe('files that start with "use server"', () => {
         ),
     )
 
-    expect(files.sort()).toEqual([...FILES_OUTSIDE_ACTIONS].sort())
+    expect(files).toEqual([])
   })
 })

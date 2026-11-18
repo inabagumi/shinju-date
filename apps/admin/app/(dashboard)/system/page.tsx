@@ -3,13 +3,13 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/widget-error-boundary'
 import {
-  MaintenanceModePanel,
-  MaintenanceModePanelSkeleton,
-} from '../_components/maintenance-mode-panel'
-import {
   RecentActivity,
   RecentActivitySkeleton,
 } from '../_components/recent-activity'
+import {
+  MaintenanceModePanel,
+  MaintenanceModePanelSkeleton,
+} from './_components/maintenance-mode-panel'
 import {
   VideoBackfillHistoryPanel,
   VideoBackfillHistoryPanelSkeleton,

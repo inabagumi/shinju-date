@@ -12,7 +12,10 @@ import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Panel, PanelSkeleton } from '@/components/panel'
 import { formatDateTimeFromISO } from '@/lib/format'
 import { useBackfillRequest } from '@/lib/use-backfill-request'
-import { usePolledResource } from '@/lib/use-polled-resource'
+import {
+  type PolledResourceFailure,
+  usePolledResource,
+} from '@/lib/use-polled-resource'
 import {
   getVideoBackfillHistoryAction,
   retryFailedVideoBackfillJobsAction,
@@ -33,6 +36,19 @@ const TITLE = '過去動画の取り込みの履歴'
 const DESCRIPTION =
   '終了した過去動画の取り込みの結果です。最後の取り込みが失敗したアカウントは、まとめて再試行できます。'
 
+/** 履歴を取り直す。アクションの `data` を、`usePolledResource` が受け取る形にする */
+async function fetchVideoBackfillHistory(): Promise<
+  VideoBackfillHistory | PolledResourceFailure
+> {
+  const result = await getVideoBackfillHistoryAction()
+
+  if (!result.success) {
+    return result
+  }
+
+  return result.data ?? { success: false }
+}
+
 const SCOPE_LABELS: Record<VideoBackfillHistoryEntry['scope'], string> = {
   all: '全タレントのチェックで依頼',
   single: '個別に依頼',
@@ -51,7 +67,7 @@ export function VideoBackfillHistoryPanel({
   initialData,
 }: VideoBackfillHistoryPanelProps) {
   const { data, error, reload } = usePolledResource({
-    fetcher: getVideoBackfillHistoryAction,
+    fetcher: fetchVideoBackfillHistory,
     initialData,
     intervalMs: POLL_INTERVAL_MS,
     isActive: ({ failures }) => failures.some((failure) => failure.active),

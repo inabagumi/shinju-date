@@ -132,7 +132,7 @@ describe('getVideoBackfillHistoryAction', () => {
     const result = await getVideoBackfillHistoryAction()
 
     expect(result.success).toBe(true)
-    expect(result).toHaveProperty('entries', [
+    expect(result).toHaveProperty('data.entries', [
       {
         accountId: 'channel-row-1',
         added: 12,
@@ -166,7 +166,7 @@ describe('getVideoBackfillHistoryAction', () => {
       'twitch:twitch-row-1',
       'youtube:channel-row-2',
     ])
-    expect(result).toHaveProperty('failures', [
+    expect(result).toHaveProperty('data.failures', [
       {
         accountId: 'twitch-row-1',
         active: true,
@@ -192,12 +192,12 @@ describe('getVideoBackfillHistoryAction', () => {
     const result = await getVideoBackfillHistoryAction()
 
     expect(result).toMatchObject({
-      failures: [{ active: false }, { active: false }],
+      data: { failures: [{ active: false }, { active: false }] },
       success: true,
     })
   })
 
-  it('reports a history that cannot be loaded', async () => {
+  it('hides the message of a history that cannot be loaded', async () => {
     // supabase-js returns a PostgREST error as a plain object, so throw an
     // `Error` from the client to reach the message.
     const from = supabase.client.from.bind(supabase.client)
@@ -213,7 +213,7 @@ describe('getVideoBackfillHistoryAction', () => {
     onTestFinished(() => spy.mockRestore())
 
     await expect(getVideoBackfillHistoryAction()).resolves.toEqual({
-      error: 'permission denied',
+      error: '処理に失敗しました。時間をおいて、もう一度お試しください。',
       success: false,
     })
   })
@@ -239,7 +239,9 @@ describe('retryFailedVideoBackfillJobsAction', () => {
 
   it('queues every account whose latest job failed and records who asked', async () => {
     await expect(retryFailedVideoBackfillJobsAction()).resolves.toEqual({
-      message: '失敗した過去動画の取り込みを2件キューに追加しました。',
+      data: {
+        message: '失敗した過去動画の取り込みを2件キューに追加しました。',
+      },
       success: true,
     })
 
@@ -283,8 +285,10 @@ describe('retryFailedVideoBackfillJobsAction', () => {
     })
 
     await expect(retryFailedVideoBackfillJobsAction()).resolves.toEqual({
-      message:
-        '失敗した過去動画の取り込みを1件キューに追加しました（再試行中の1件は除く）。',
+      data: {
+        message:
+          '失敗した過去動画の取り込みを1件キューに追加しました（再試行中の1件は除く）。',
+      },
       success: true,
     })
   })
@@ -303,11 +307,25 @@ describe('retryFailedVideoBackfillJobsAction', () => {
     mocks.enqueue.mockRejectedValueOnce(new Error('redis unavailable'))
 
     await expect(retryFailedVideoBackfillJobsAction()).resolves.toEqual({
-      error:
-        '失敗した過去動画の取り込みを1件キューに追加しました（1件は追加できませんでした: redis unavailable）。',
-      success: false,
+      data: {
+        message: '失敗した過去動画の取り込みを1件キューに追加しました。',
+      },
+      success: true,
+      warnings: [
+        '失敗した過去動画の取り込みのうち、1件はキューに追加できませんでした。',
+      ],
     })
     expect(test.createAuditLog).toHaveBeenCalledOnce()
+  })
+
+  it('reports a failure without an audit log when nothing was queued', async () => {
+    mocks.enqueue.mockRejectedValue(new Error('redis unavailable'))
+
+    await expect(retryFailedVideoBackfillJobsAction()).resolves.toEqual({
+      error: '失敗した過去動画の取り込みをキューに追加できませんでした。',
+      success: false,
+    })
+    expect(test.createAuditLog).not.toHaveBeenCalled()
   })
 
   it('does nothing when no job failed', async () => {

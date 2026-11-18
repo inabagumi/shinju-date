@@ -90,7 +90,9 @@ describe('requestVideoBackfillRunAction', () => {
 
   it('queues the accounts of active talents and records who asked', async () => {
     await expect(requestVideoBackfillRunAction()).resolves.toEqual({
-      message: '全タレントの取得漏れチェックを2件キューに追加しました。',
+      data: {
+        message: '全タレントの取得漏れチェックを2件キューに追加しました。',
+      },
       success: true,
     })
 
@@ -164,9 +166,12 @@ describe('requestVideoBackfillRunAction', () => {
     })
 
     await expect(requestVideoBackfillRunAction()).resolves.toEqual({
-      error:
-        '全タレントの取得漏れチェックを2件キューに追加しました（実行中の3件は除く、1件は追加できませんでした: redis unavailable）。',
-      success: false,
+      data: {
+        message:
+          '全タレントの取得漏れチェックを2件キューに追加しました（実行中の3件は除く）。',
+      },
+      success: true,
+      warnings: ['取得漏れチェックのうち、1件はキューに追加できませんでした。'],
     })
     expect(test.createAuditLog).toHaveBeenCalledWith(
       supabase.client,
@@ -184,8 +189,7 @@ describe('requestVideoBackfillRunAction', () => {
     })
 
     await expect(requestVideoBackfillRunAction()).resolves.toEqual({
-      error:
-        '取得漏れチェックをキューに追加できませんでした（redis unavailable）。',
+      error: '取得漏れチェックをキューに追加できませんでした。',
       success: false,
     })
     expect(test.createAuditLog).not.toHaveBeenCalled()
@@ -201,7 +205,7 @@ describe('requestVideoBackfillRunAction', () => {
     expect(mocks.start).not.toHaveBeenCalled()
   })
 
-  it('reports a database error', async () => {
+  it('hides the message of an unexpected error', async () => {
     // supabase-js returns a PostgREST error as a plain object, so throw an
     // `Error` from the client to reach the message.
     vi.spyOn(supabase.client, 'from').mockImplementationOnce(() => {
@@ -209,7 +213,7 @@ describe('requestVideoBackfillRunAction', () => {
     })
 
     await expect(requestVideoBackfillRunAction()).resolves.toEqual({
-      error: 'database unavailable',
+      error: '処理に失敗しました。時間をおいて、もう一度お試しください。',
       success: false,
     })
     expect(mocks.start).not.toHaveBeenCalled()
@@ -225,9 +229,12 @@ describe('getVideoBackfillRunAction', () => {
     mocks.getLatest.mockResolvedValue(null)
 
     await expect(getVideoBackfillRunAction()).resolves.toEqual({
-      run: null,
+      data: {
+        run: null,
+        success: true,
+        targets: { twitch: 1, youtube: 1 },
+      },
       success: true,
-      targets: { twitch: 1, youtube: 1 },
     })
   })
 
@@ -273,16 +280,19 @@ describe('getVideoBackfillRunAction', () => {
     const result = await getVideoBackfillRunAction()
 
     expect(result).toMatchObject({
-      run: {
-        active: true,
-        added: 5,
-        counts: { done: 1, running: 2 },
-        id: runId,
-        requestedAt: '2026-11-14T00:00:00Z',
-        skipped: 1,
+      data: {
+        run: {
+          active: true,
+          added: 5,
+          counts: { done: 1, running: 2 },
+          id: runId,
+          requestedAt: '2026-11-14T00:00:00Z',
+          skipped: 1,
+        },
       },
+      success: true,
     })
-    expect(result).toHaveProperty('run.accounts', [
+    expect(result).toHaveProperty('data.run.accounts', [
       expect.objectContaining({
         accountId: 'channel-row-1',
         added: 5,

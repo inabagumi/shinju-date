@@ -10,7 +10,7 @@ import Form, {
 import { LogoIcon } from '@/components/logo-icon'
 import { Panel } from '@/components/panel'
 import { getSafeRedirectPath, REDIRECT_PARAM } from '@/lib/redirect-path'
-import { signIn } from './_lib/actions'
+import { signInAction } from './_actions/sign-in'
 
 export const metadata: Metadata = {
   title: 'ログイン',
@@ -45,7 +45,7 @@ export default function Login({ searchParams }: PageProps<'/login'>) {
         </hgroup>
 
         <Panel>
-          <Form action={signIn} className="grid gap-6">
+          <Form action={signInAction} className="grid gap-6">
             <Suspense fallback={null}>
               <RedirectPathInput searchParams={searchParams} />
             </Suspense>
