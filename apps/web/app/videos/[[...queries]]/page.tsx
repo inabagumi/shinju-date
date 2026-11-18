@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, ResolvingMetadata } from 'next'
 import { Suspense } from 'react'
 import { SearchResultsSkeleton } from '@/components/search-results'
 import { createPageMetadata } from '@/lib/metadata'
@@ -17,13 +17,14 @@ import {
   VideosPageResults,
 } from './_components/videos-page-sections'
 
-export async function generateMetadata({
-  params,
-  searchParams,
-}: PageProps<'/videos/[[...queries]]'>): Promise<Metadata> {
-  const [{ queries }, searchParamValues] = await Promise.all([
+export async function generateMetadata(
+  { params, searchParams }: PageProps<'/videos/[[...queries]]'>,
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  const [{ queries }, searchParamValues, parentMetadata] = await Promise.all([
     params,
     searchParams,
+    parent,
   ])
   const query = parseQueries(queries)
   const talentIds = await getSelectedTalentIds(
@@ -45,6 +46,15 @@ export async function generateMetadata({
       types: {
         'text/calendar': !query ? getVideosCalendarPath(kind, talentIds) : null,
       },
+    },
+    openGraph: {
+      ...metadata.openGraph,
+      // `app/videos/opengraph-image.tsx`. A catch-all segment cannot have an
+      // image file, and `openGraph` of this segment replaces that of the
+      // parent segment, so its image is taken over here.
+      ...(parentMetadata.openGraph?.images && {
+        images: parentMetadata.openGraph.images,
+      }),
     },
   }
 }

@@ -41,10 +41,6 @@ export async function generateMetadata({
         'text/calendar': getTalentCalendarPath(talent.id),
       },
     },
-    twitter: {
-      ...metadata.twitter,
-      card: 'summary_large_image',
-    },
   }
 }
 

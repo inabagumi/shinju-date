@@ -36,15 +36,25 @@ export interface PageMetadata extends Metadata {
     siteName?: string
     title: string
     type: PageType
+    url: string
   }
   twitter: {
+    card: 'summary_large_image'
     title: string
   }
 }
 
 /**
  * The metadata every page has in common: the title, the canonical URL, and
- * the titles for Open Graph and X.
+ * the titles and the URL for Open Graph and X.
+ *
+ * Next.js does not make `og:url` from the canonical URL, so it is set to the
+ * same path.
+ *
+ * The image is the `opengraph-image` file in the segment of each page, which
+ * Next.js uses only when `openGraph` of the segment has no `images`, so they
+ * are never set here. Next.js gives X the image of Open Graph, but not the
+ * large card, which is set here.
  *
  * The root layout adds the site name to `title`, but not to the titles for
  * sharing. Open Graph has `og:site_name` for it, and X has nothing, so the
@@ -70,10 +80,12 @@ export function createPageMetadata({
       ...(hasSiteName && { siteName: SITE_NAME }),
       title,
       type,
+      url: path,
     },
     ...(index !== undefined && { robots: { index } }),
     title: hasSiteName ? title : { absolute: absoluteTitle },
     twitter: {
+      card: 'summary_large_image',
       title: hasSiteName ? `${title} - ${SITE_NAME}` : title,
     },
   }

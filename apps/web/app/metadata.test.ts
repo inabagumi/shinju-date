@@ -1,3 +1,4 @@
+import type { Metadata, ResolvingMetadata } from 'next'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { SITE_DESCRIPTION, SITE_TAGLINE } from '@/lib/site'
 
@@ -16,27 +17,56 @@ vi.mock('@/lib/data/talents', async (importOriginal) => ({
 import { fetchOldestVideoDate, fetchScheduleToday } from '@/lib/data/schedule'
 import { fetchActiveTalents, fetchTalent } from '@/lib/data/talents'
 import { metadata as aboutMetadata } from './about/layout'
+import { alt as aboutImageAlt } from './about/opengraph-image'
+import { alt as contactImageAlt } from './contact/opengraph-image'
 import { metadata as contactMetadata } from './contact/page'
+import { alt as feedbackImageAlt } from './feedback/opengraph-image'
 import { metadata as feedbackMetadata } from './feedback/page'
 import { metadata as homeMetadata } from './page'
 import { metadata as privacyMetadata } from './privacy/layout'
+import { alt as privacyImageAlt } from './privacy/opengraph-image'
 import { generateMetadata as generateScheduleWeekMetadata } from './schedule/[date]/page'
+import { alt as scheduleImageAlt } from './schedule/opengraph-image'
 import { metadata as scheduleMetadata } from './schedule/page'
 import { generateMetadata as generateTalentMetadata } from './talents/[id]/page'
+import { alt as talentsImageAlt } from './talents/opengraph-image'
 import { metadata as talentsMetadata } from './talents/page'
 import { metadata as termsMetadata } from './terms/layout'
+import { alt as termsImageAlt } from './terms/opengraph-image'
 import { generateMetadata as generateVideosMetadata } from './videos/[[...queries]]/page'
+import { alt as videosImageAlt } from './videos/opengraph-image'
 
 const TALENT_ID = '00000000-0000-4000-8000-000000000001'
+
+/** The image of `app/videos/opengraph-image.tsx`, as Next.js resolves it */
+const VIDEOS_IMAGES = [
+  {
+    alt: '動画一覧',
+    height: 630,
+    type: 'image/png',
+    url: new URL('https://shinju-date.test/videos/opengraph-image?0123456789'),
+    width: 1200,
+  },
+]
 
 function generateVideosPageMetadata(
   queries: string[] | undefined,
   searchParams: Record<string, string | string[]> = {},
+  /** The images of the parent segment, which `null` leaves out */
+  parentImages: typeof VIDEOS_IMAGES | null = VIDEOS_IMAGES,
 ) {
-  return generateVideosMetadata({
-    params: Promise.resolve(queries ? { queries } : {}),
-    searchParams: Promise.resolve(searchParams),
-  })
+  // Only `openGraph.images` of the parent segment is read
+  const parentMetadata = parentImages
+    ? { openGraph: { images: parentImages } }
+    : {}
+
+  return generateVideosMetadata(
+    {
+      params: Promise.resolve(queries ? { queries } : {}),
+      searchParams: Promise.resolve(searchParams),
+    },
+    Promise.resolve(parentMetadata as unknown as Awaited<ResolvingMetadata>),
+  )
 }
 
 /**
@@ -120,9 +150,11 @@ describe('metadata of the pages', () => {
         siteName: 'SHINJU DATE',
         title,
         type,
+        url: path,
       },
       title,
       twitter: {
+        card: 'summary_large_image',
         title: `${title} - SHINJU DATE`,
       },
     })
@@ -142,12 +174,14 @@ describe('metadata of the pages', () => {
         siteName: 'SHINJU DATE',
         title: '2026年11月8日〜11月14日の配信スケジュール',
         type: 'article',
+        url: '/schedule/2026-11-08',
       },
       robots: {
         index: false,
       },
       title: '2026年11月8日〜11月14日の配信スケジュール',
       twitter: {
+        card: 'summary_large_image',
         title: '2026年11月8日〜11月14日の配信スケジュール - SHINJU DATE',
       },
     })
@@ -174,6 +208,7 @@ describe('metadata of the pages', () => {
         siteName: 'SHINJU DATE',
         title: '朝霧ミオ',
         type: 'profile',
+        url: `/talents/${TALENT_ID}`,
       },
       title: '朝霧ミオ',
       twitter: {
@@ -196,15 +231,18 @@ describe('metadata of the pages', () => {
         },
       },
       openGraph: {
+        images: VIDEOS_IMAGES,
         siteName: 'SHINJU DATE',
         title: '動画一覧',
         type: 'article',
+        url: '/videos',
       },
       robots: {
         index: true,
       },
       title: '動画一覧',
       twitter: {
+        card: 'summary_large_image',
         title: '動画一覧 - SHINJU DATE',
       },
     })
@@ -221,15 +259,18 @@ describe('metadata of the pages', () => {
         },
       },
       openGraph: {
+        images: VIDEOS_IMAGES,
         siteName: 'SHINJU DATE',
         title: '『マイクラ』の検索結果',
         type: 'article',
+        url: `/videos/${encodeURIComponent('マイクラ')}`,
       },
       robots: {
         index: false,
       },
       title: '『マイクラ』の検索結果',
       twitter: {
+        card: 'summary_large_image',
         title: '『マイクラ』の検索結果 - SHINJU DATE',
       },
     })
@@ -262,9 +303,11 @@ describe('metadata of the pages', () => {
         siteName: 'SHINJU DATE',
         title: 'お問い合わせ',
         type: 'website',
+        url: '/contact',
       },
       title: 'お問い合わせ',
       twitter: {
+        card: 'summary_large_image',
         title: 'お問い合わせ - SHINJU DATE',
       },
     })
@@ -283,11 +326,43 @@ describe('metadata of the pages', () => {
         siteName: 'SHINJU DATE',
         title: '機能要望',
         type: 'website',
+        url: '/feedback',
       },
       title: '機能要望',
       twitter: {
+        card: 'summary_large_image',
         title: '機能要望 - SHINJU DATE',
       },
     })
+  })
+
+  test('list of videos without the image of the parent segment', async () => {
+    const metadata = await generateVideosPageMetadata(undefined, {}, null)
+
+    expect(metadata.openGraph).not.toHaveProperty('images')
+  })
+})
+
+/**
+ * The images in `opengraph-image.tsx` of the pages show the titles, which are
+ * also their `alt`.
+ */
+describe('Open Graph images of the pages', () => {
+  test.each<[string, string, Metadata]>([
+    ['about', aboutImageAlt, aboutMetadata],
+    ['contact', contactImageAlt, contactMetadata],
+    ['feedback', feedbackImageAlt, feedbackMetadata],
+    ['privacy policy', privacyImageAlt, privacyMetadata],
+    ['schedule', scheduleImageAlt, scheduleMetadata],
+    ['list of talents', talentsImageAlt, talentsMetadata],
+    ['terms of use', termsImageAlt, termsMetadata],
+  ])('the image of the %s page has its title', (_, alt, metadata) => {
+    expect(alt).toBe(metadata.openGraph?.title)
+  })
+
+  test('the image of the list of videos has its title', async () => {
+    const metadata = await generateVideosPageMetadata(undefined)
+
+    expect(videosImageAlt).toBe(metadata.openGraph?.title)
   })
 })
