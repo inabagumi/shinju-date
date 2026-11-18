@@ -2,7 +2,7 @@ import { HttpResponse, http } from 'msw'
 import sharp from 'sharp'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { StorageError } from '../errors.js'
-import { serveImage } from '../testing/profile-images.js'
+import { serveImage } from '../testing/images.js'
 import { postgresError, setupSupabase } from '../testing/supabase.js'
 import { createThumbnail, removeThumbnail } from './thumbnail.js'
 

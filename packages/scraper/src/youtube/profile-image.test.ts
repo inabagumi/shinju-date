@@ -6,7 +6,7 @@ import {
   createImage,
   mockStorage,
   serveImage,
-} from '../internal/testing/profile-images.js'
+} from '../internal/testing/images.js'
 import { setupSupabase } from '../internal/testing/supabase.js'
 import {
   type SavedYouTubeChannelIcon,
@@ -123,7 +123,7 @@ describe('syncYouTubeChannelIcon', () => {
 
   it('stores the icon of a channel that has none yet', async () => {
     const requests = serveImage(supabase, thumbnails.high.url, { body: image })
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithChannel()
 
     await expect(
@@ -150,7 +150,7 @@ describe('syncYouTubeChannelIcon', () => {
 
   it('asks YouTube whether a saved icon changed', async () => {
     const requests = serveImage(supabase, thumbnails.high.url, { body: image })
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithChannel()
 
     await expect(
@@ -179,7 +179,7 @@ describe('syncYouTubeChannelIcon', () => {
 
   it('replaces the icon when YouTube serves it from a new URL', async () => {
     serveImage(supabase, thumbnails.high.url, { body: image })
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithChannel()
 
     await expect(
@@ -243,7 +243,7 @@ describe('syncYouTubeChannelIcon', () => {
       body: Buffer.from('<html></html>'),
       contentType: 'text/html',
     })
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     respondWithChannel()
 
     await expect(

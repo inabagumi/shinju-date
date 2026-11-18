@@ -2,7 +2,7 @@ import { HttpResponse, http } from 'msw'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../internal/testing/context.js'
 import { createFakeFetcher } from '../internal/testing/fetcher.js'
-import { createImage, serveImage } from '../internal/testing/profile-images.js'
+import { createImage, serveImage } from '../internal/testing/images.js'
 import { postgresError, setupSupabase } from '../internal/testing/supabase.js'
 import { createSavedVideo, createVideo } from '../internal/testing/youtube.js'
 import {

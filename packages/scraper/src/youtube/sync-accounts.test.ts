@@ -5,7 +5,7 @@ import {
   createImage,
   mockStorage,
   serveImage,
-} from '../internal/testing/profile-images.js'
+} from '../internal/testing/images.js'
 import {
   postgresError,
   type SupabaseRoutes,
@@ -197,7 +197,7 @@ describe('syncYouTubeChannels', () => {
 
     it('stores the icon of a channel that has none yet', async () => {
       serveImage(supabase, ICON_URL, { body: image })
-      const storage = mockStorage(supabase)
+      const storage = mockStorage(supabase, 'profile-images')
       supabase.respondWith(routes)
       const { fetcher } = createFakeFetcher<YouTubeFetcher>({
         accounts: [
@@ -230,7 +230,7 @@ describe('syncYouTubeChannels', () => {
 
     it('leaves an icon alone when YouTube serves the same one', async () => {
       const requests = serveImage(supabase, ICON_URL, { body: image })
-      const storage = mockStorage(supabase)
+      const storage = mockStorage(supabase, 'profile-images')
       supabase.respondWith({
         ...routes,
         'GET talents': [
@@ -273,7 +273,7 @@ describe('syncYouTubeChannels', () => {
         body: Buffer.from('not found'),
         contentType: 'text/plain',
       })
-      mockStorage(supabase)
+      mockStorage(supabase, 'profile-images')
       supabase.respondWith(routes)
       const { fetcher } = createFakeFetcher<YouTubeFetcher>({
         accounts: [
@@ -302,7 +302,7 @@ describe('syncYouTubeChannels', () => {
 
     it('still syncs the icon when the name cannot be updated', async () => {
       serveImage(supabase, ICON_URL, { body: image })
-      const storage = mockStorage(supabase)
+      const storage = mockStorage(supabase, 'profile-images')
       supabase.respondWith({
         ...routes,
         'PATCH youtube_channels': ({ body }) =>
@@ -514,7 +514,7 @@ describe('syncYouTubeChannelsOfTalent', () => {
 
   it('reports an icon that changed although the name did not', async () => {
     serveImage(supabase, ICON_URL, { body: await createImage(800, 800) })
-    mockStorage(supabase)
+    mockStorage(supabase, 'profile-images')
     supabase.respondWith(talentRoutes)
     const { fetcher } = createFakeFetcher<YouTubeFetcher>({
       accounts: [createChannel('UCbbb', { thumbnails, title: 'Bob' })],
@@ -536,7 +536,7 @@ describe('syncYouTubeChannelsOfTalent', () => {
 
   it('still syncs the icon of a channel whose name cannot be updated', async () => {
     serveImage(supabase, ICON_URL, { body: await createImage(800, 800) })
-    const storage = mockStorage(supabase)
+    const storage = mockStorage(supabase, 'profile-images')
     supabase.respondWith({
       ...talentRoutes,
       'PATCH youtube_channels': ({ body }) =>

@@ -4,8 +4,7 @@ import type { setupSupabase } from './supabase.js'
 
 type MockSupabase = ReturnType<typeof setupSupabase>
 
-const STORAGE_URL =
-  'https://fake.supabase.test/storage/v1/object/profile-images'
+const STORAGE_URL = 'https://fake.supabase.test/storage/v1/object'
 
 /** Creates a solid-colour JPEG of the given size. */
 export function createImage(width: number, height: number): Promise<Buffer> {
@@ -81,14 +80,18 @@ export interface StorageCalls {
   uploads: { body: Buffer; contentType: string | null; path: string }[]
 }
 
-/** Records uploads to and removals from the profile-images bucket. */
-export function mockStorage(supabase: MockSupabase): StorageCalls {
+/** Records uploads to and removals from a storage bucket. */
+export function mockStorage(
+  supabase: MockSupabase,
+  bucket: string,
+): StorageCalls {
+  const bucketUrl = `${STORAGE_URL}/${bucket}`
   const calls: StorageCalls = { removed: [], uploads: [] }
 
   supabase.server.use(
-    http.post(`${STORAGE_URL}/*`, async ({ request }) => {
+    http.post(`${bucketUrl}/*`, async ({ request }) => {
       const path = new URL(request.url).pathname.replace(
-        '/storage/v1/object/profile-images/',
+        `/storage/v1/object/${bucket}/`,
         '',
       )
 
@@ -98,9 +101,9 @@ export function mockStorage(supabase: MockSupabase): StorageCalls {
         path,
       })
 
-      return HttpResponse.json({ Key: `profile-images/${path}` })
+      return HttpResponse.json({ Key: `${bucket}/${path}` })
     }),
-    http.delete(STORAGE_URL, async ({ request }) => {
+    http.delete(bucketUrl, async ({ request }) => {
       const { prefixes } = (await request.json()) as { prefixes: string[] }
 
       calls.removed.push(prefixes)
