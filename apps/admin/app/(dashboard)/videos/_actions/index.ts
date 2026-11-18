@@ -6,9 +6,15 @@ import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
-import { ActionError, type ActionResult, adminAction } from '@/lib/action'
+import {
+  ActionError,
+  type ActionResult,
+  adminAction,
+  parseActionInput,
+} from '@/lib/action'
 import { createAuditLogs } from '@/lib/audit-log'
 import type { AuthenticatedContext } from '@/lib/auth'
+import { videoIdsSchema } from '../_lib/schema'
 
 /** まとめて操作する動画の、読み取った行 */
 type BulkVideo = Pick<Tables<'videos'>, 'id' | 'title' | 'visible'>
@@ -49,6 +55,7 @@ interface BulkVideoUpdateResult {
 }
 
 interface BulkVideoActionOptions {
+  /** 選ばれた動画の ID。ブラウザから届いた値なので、`videoIdsSchema` で検証する */
   ids: string[]
   /** 動画を更新し、実際に更新された動画を返す */
   update: (context: BulkVideoUpdateContext) => Promise<BulkVideoUpdateResult>
@@ -66,15 +73,12 @@ async function runBulkVideoAction(
   { auditAction, ids, update }: BulkVideoActionOptions,
 ): Promise<ActionResult<BulkVideoActionData>> {
   const { supabaseClient } = context
-
-  if (!ids || ids.length === 0) {
-    throw new ActionError('動画が選択されていません。')
-  }
+  const videoIds = parseActionInput(videoIdsSchema, ids)
 
   const { data: videos, error: fetchError } = await supabaseClient
     .from('videos')
     .select('id, title, visible')
-    .in('id', ids)
+    .in('id', videoIds)
 
   if (fetchError) {
     throw fetchError

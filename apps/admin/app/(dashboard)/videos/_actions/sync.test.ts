@@ -180,4 +180,21 @@ describe('syncVideoAction', () => {
     test.expectNoAuditLog()
     test.expectNotRevalidated()
   })
+
+  it.each([
+    ['an id that is not a UUID', 'video-1'],
+    ['an empty id', ''],
+    ['a value that is not a string', ['30000000-0000-0000-0000-000000000101']],
+  ])('returns an error without syncing anything for %s', async (_, id) => {
+    const result = await syncVideoAction(id as string)
+
+    expect(result).toEqual({
+      error: '入力が正しくありません。',
+      success: false,
+    })
+    expect(supabase.requests).toHaveLength(0)
+    expect(scraper.refreshVideo).not.toHaveBeenCalled()
+    test.expectNoAuditLog()
+    test.expectNotRevalidated()
+  })
 })

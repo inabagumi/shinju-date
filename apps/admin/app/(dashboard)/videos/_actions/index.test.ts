@@ -19,6 +19,9 @@ const ACTION_FAILED_ERROR =
   '処理に失敗しました。時間をおいて、もう一度お試しください。'
 const { supabase } = test
 
+/** 引数の検証に失敗したときの文（`@/lib/schemas` の `INVALID_INPUT_ERROR_MESSAGE`） */
+const INVALID_INPUT_ERROR = '入力が正しくありません。'
+
 vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
   Temporal.Instant.from('2024-11-24T17:00:00Z'),
 )
@@ -29,19 +32,10 @@ function allVideoIds(request: SupabaseRequest) {
 }
 
 describe('restoreAction', () => {
-  it('should return error when ids array is empty', async () => {
-    const result = await restoreAction([])
-
-    expect(result).toEqual({
-      error: '動画が選択されていません。',
-      success: false,
-    })
-  })
-
   it('should return error when videos are not found', async () => {
     supabase.on('select', 'videos', [])
 
-    const result = await restoreAction(['video-id-1'])
+    const result = await restoreAction(['30000000-0000-0000-0000-000000000001'])
 
     expect(result).toEqual({
       error: '動画が見つかりませんでした。',
@@ -51,12 +45,21 @@ describe('restoreAction', () => {
 
   it('should restore the videos whatever the reason with one function call', async () => {
     supabase.on('select', 'videos', [
-      createVideo({ id: 'video-id-1', title: 'Test Video 1' }),
-      createVideo({ id: 'video-id-2', title: 'Test Video 2' }),
+      createVideo({
+        id: '30000000-0000-0000-0000-000000000001',
+        title: 'Test Video 1',
+      }),
+      createVideo({
+        id: '30000000-0000-0000-0000-000000000002',
+        title: 'Test Video 2',
+      }),
     ])
     supabase.on('rpc', 'restore_videos', allVideoIds)
 
-    const result = await restoreAction(['video-id-1', 'video-id-2'])
+    const result = await restoreAction([
+      '30000000-0000-0000-0000-000000000001',
+      '30000000-0000-0000-0000-000000000002',
+    ])
 
     expect(result).toEqual({
       data: { skippedCount: 0, updatedCount: 2 },
@@ -66,7 +69,14 @@ describe('restoreAction', () => {
     // is updated directly.
     expect(
       supabase.calls('rpc', 'restore_videos').map(({ body }) => body),
-    ).toEqual([{ p_video_ids: ['video-id-1', 'video-id-2'] }])
+    ).toEqual([
+      {
+        p_video_ids: [
+          '30000000-0000-0000-0000-000000000001',
+          '30000000-0000-0000-0000-000000000002',
+        ],
+      },
+    ])
     expect(supabase.calls('update', 'videos')).toHaveLength(0)
     expect(supabase.calls('update', 'thumbnails')).toHaveLength(0)
     // Both videos are recorded with one call
@@ -74,28 +84,43 @@ describe('restoreAction', () => {
       {
         action: 'VIDEO_RESTORE',
         details: { entityName: 'Test Video 1' },
-        targetRecordId: 'video-id-1',
+        targetRecordId: '30000000-0000-0000-0000-000000000001',
       },
       {
         action: 'VIDEO_RESTORE',
         details: { entityName: 'Test Video 2' },
-        targetRecordId: 'video-id-2',
+        targetRecordId: '30000000-0000-0000-0000-000000000002',
       },
     ])
     test.expectRevalidated({
-      paths: ['/videos', '/videos/video-id-1', '/videos/video-id-2'],
+      paths: [
+        '/videos',
+        '/videos/30000000-0000-0000-0000-000000000001',
+        '/videos/30000000-0000-0000-0000-000000000002',
+      ],
       tags: [['videos']],
     })
   })
 
   it('should count the videos that were not deleted as skipped', async () => {
     supabase.on('select', 'videos', [
-      createVideo({ id: 'video-id-1', title: 'Deleted Video' }),
-      createVideo({ id: 'video-id-2', title: 'Active Video' }),
+      createVideo({
+        id: '30000000-0000-0000-0000-000000000001',
+        title: 'Deleted Video',
+      }),
+      createVideo({
+        id: '30000000-0000-0000-0000-000000000002',
+        title: 'Active Video',
+      }),
     ])
-    supabase.on('rpc', 'restore_videos', ['video-id-1'])
+    supabase.on('rpc', 'restore_videos', [
+      '30000000-0000-0000-0000-000000000001',
+    ])
 
-    const result = await restoreAction(['video-id-1', 'video-id-2'])
+    const result = await restoreAction([
+      '30000000-0000-0000-0000-000000000001',
+      '30000000-0000-0000-0000-000000000002',
+    ])
 
     expect(result).toEqual({
       data: { skippedCount: 1, updatedCount: 1 },
@@ -105,24 +130,26 @@ describe('restoreAction', () => {
       {
         action: 'VIDEO_RESTORE',
         details: { entityName: 'Deleted Video' },
-        targetRecordId: 'video-id-1',
+        targetRecordId: '30000000-0000-0000-0000-000000000001',
       },
     ])
     test.expectRevalidated({
-      paths: ['/videos', '/videos/video-id-1'],
+      paths: ['/videos', '/videos/30000000-0000-0000-0000-000000000001'],
       tags: [['videos']],
     })
   })
 
   it('should return error when the function fails', async () => {
-    supabase.on('select', 'videos', [createVideo({ id: 'video-id-1' })])
+    supabase.on('select', 'videos', [
+      createVideo({ id: '30000000-0000-0000-0000-000000000001' }),
+    ])
     supabase.on(
       'rpc',
       'restore_videos',
       postgresError('XX000', 'Database error'),
     )
 
-    const result = await restoreAction(['video-id-1'])
+    const result = await restoreAction(['30000000-0000-0000-0000-000000000001'])
 
     expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false })
     expect(test.logger.error).toHaveBeenCalled()
@@ -132,7 +159,7 @@ describe('restoreAction', () => {
   it('should handle fetch error', async () => {
     supabase.on('select', 'videos', postgresError('XX000', 'Fetch error'))
 
-    const result = await restoreAction(['video-id-1'])
+    const result = await restoreAction(['30000000-0000-0000-0000-000000000001'])
 
     expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false })
   })
@@ -141,12 +168,21 @@ describe('restoreAction', () => {
 describe('softDeleteAction', () => {
   it('should withdraw the videos with one function call and record their audit logs with one call', async () => {
     supabase.on('select', 'videos', [
-      createVideo({ id: 'video-id-1', title: 'Video 1' }),
-      createVideo({ id: 'video-id-2', title: 'Video 2' }),
+      createVideo({
+        id: '30000000-0000-0000-0000-000000000001',
+        title: 'Video 1',
+      }),
+      createVideo({
+        id: '30000000-0000-0000-0000-000000000002',
+        title: 'Video 2',
+      }),
     ])
     supabase.on('rpc', 'soft_delete_videos', allVideoIds)
 
-    const result = await softDeleteAction(['video-id-1', 'video-id-2'])
+    const result = await softDeleteAction([
+      '30000000-0000-0000-0000-000000000001',
+      '30000000-0000-0000-0000-000000000002',
+    ])
 
     expect(result).toEqual({
       data: { skippedCount: 0, updatedCount: 2 },
@@ -160,7 +196,10 @@ describe('softDeleteAction', () => {
       {
         p_deleted_at: '2024-11-24T17:00:00Z',
         p_reason: 'withdrawn',
-        p_video_ids: ['video-id-1', 'video-id-2'],
+        p_video_ids: [
+          '30000000-0000-0000-0000-000000000001',
+          '30000000-0000-0000-0000-000000000002',
+        ],
       },
     ])
     expect(supabase.calls('update', 'videos')).toHaveLength(0)
@@ -169,34 +208,46 @@ describe('softDeleteAction', () => {
       {
         action: 'VIDEO_DELETE',
         details: { entityName: 'Video 1' },
-        targetRecordId: 'video-id-1',
+        targetRecordId: '30000000-0000-0000-0000-000000000001',
       },
       {
         action: 'VIDEO_DELETE',
         details: { entityName: 'Video 2' },
-        targetRecordId: 'video-id-2',
+        targetRecordId: '30000000-0000-0000-0000-000000000002',
       },
     ])
     test.expectRevalidated({
-      paths: ['/videos', '/videos/video-id-1', '/videos/video-id-2'],
+      paths: [
+        '/videos',
+        '/videos/30000000-0000-0000-0000-000000000001',
+        '/videos/30000000-0000-0000-0000-000000000002',
+      ],
       tags: [['videos']],
     })
   })
 
   it('should count the videos that were already deleted as skipped', async () => {
     supabase.on('select', 'videos', [
-      createVideo({ id: 'video-id-1', title: 'Active Video' }),
+      createVideo({
+        id: '30000000-0000-0000-0000-000000000001',
+        title: 'Active Video',
+      }),
       createVideo({
         deleted_at: '2024-11-01T00:00:00Z',
         deleted_reason: 'talent_deleted',
-        id: 'video-id-2',
+        id: '30000000-0000-0000-0000-000000000002',
         title: 'Deleted Video',
       }),
     ])
     // The function leaves the deleted video (and its reason) untouched.
-    supabase.on('rpc', 'soft_delete_videos', ['video-id-1'])
+    supabase.on('rpc', 'soft_delete_videos', [
+      '30000000-0000-0000-0000-000000000001',
+    ])
 
-    const result = await softDeleteAction(['video-id-1', 'video-id-2'])
+    const result = await softDeleteAction([
+      '30000000-0000-0000-0000-000000000001',
+      '30000000-0000-0000-0000-000000000002',
+    ])
 
     expect(result).toEqual({
       data: { skippedCount: 1, updatedCount: 1 },
@@ -206,20 +257,24 @@ describe('softDeleteAction', () => {
       {
         action: 'VIDEO_DELETE',
         details: { entityName: 'Active Video' },
-        targetRecordId: 'video-id-1',
+        targetRecordId: '30000000-0000-0000-0000-000000000001',
       },
     ])
     test.expectRevalidated({
-      paths: ['/videos', '/videos/video-id-1'],
+      paths: ['/videos', '/videos/30000000-0000-0000-0000-000000000001'],
       tags: [['videos']],
     })
   })
 
   it('should not record audit logs or revalidate when every video was already deleted', async () => {
-    supabase.on('select', 'videos', [createVideo({ id: 'video-id-1' })])
+    supabase.on('select', 'videos', [
+      createVideo({ id: '30000000-0000-0000-0000-000000000001' }),
+    ])
     supabase.on('rpc', 'soft_delete_videos', [])
 
-    const result = await softDeleteAction(['video-id-1'])
+    const result = await softDeleteAction([
+      '30000000-0000-0000-0000-000000000001',
+    ])
 
     expect(result).toEqual({
       data: { skippedCount: 1, updatedCount: 0 },
@@ -230,14 +285,18 @@ describe('softDeleteAction', () => {
   })
 
   it('should not record audit logs when the function fails', async () => {
-    supabase.on('select', 'videos', [createVideo({ id: 'video-id-1' })])
+    supabase.on('select', 'videos', [
+      createVideo({ id: '30000000-0000-0000-0000-000000000001' }),
+    ])
     supabase.on(
       'rpc',
       'soft_delete_videos',
       postgresError('XX000', 'Database error'),
     )
 
-    const result = await softDeleteAction(['video-id-1'])
+    const result = await softDeleteAction([
+      '30000000-0000-0000-0000-000000000001',
+    ])
 
     expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false })
     test.expectNoAuditLog()
@@ -246,9 +305,21 @@ describe('softDeleteAction', () => {
 
 describe('toggleVisibilityAction', () => {
   const videos = [
-    createVideo({ id: 'video-id-1', title: 'Hidden Video', visible: false }),
-    createVideo({ id: 'video-id-2', title: 'Visible Video 1', visible: true }),
-    createVideo({ id: 'video-id-3', title: 'Visible Video 2', visible: true }),
+    createVideo({
+      id: '30000000-0000-0000-0000-000000000001',
+      title: 'Hidden Video',
+      visible: false,
+    }),
+    createVideo({
+      id: '30000000-0000-0000-0000-000000000002',
+      title: 'Visible Video 1',
+      visible: true,
+    }),
+    createVideo({
+      id: '30000000-0000-0000-0000-000000000003',
+      title: 'Visible Video 2',
+      visible: true,
+    }),
   ]
   const ids = videos.map((video) => video.id)
 
@@ -280,15 +351,6 @@ describe('toggleVisibilityAction', () => {
       .map(({ id, title }) => ({ id, title }))
   }
 
-  it('should return error when ids array is empty', async () => {
-    const result = await toggleVisibilityAction([])
-
-    expect(result).toEqual({
-      error: '動画が選択されていません。',
-      success: false,
-    })
-  })
-
   it('should update videos in one query per target visibility', async () => {
     supabase.on('select', 'videos', videos)
     supabase.on('update', 'videos', (request: SupabaseRequest) =>
@@ -310,12 +372,12 @@ describe('toggleVisibilityAction', () => {
     ).toEqual([
       {
         body: { updated_at: '2024-11-24T17:00:00Z', visible: true },
-        id: 'in.(video-id-1)',
+        id: 'in.(30000000-0000-0000-0000-000000000001)',
         visible: 'eq.false',
       },
       {
         body: { updated_at: '2024-11-24T17:00:00Z', visible: false },
-        id: 'in.(video-id-2,video-id-3)',
+        id: 'in.(30000000-0000-0000-0000-000000000002,30000000-0000-0000-0000-000000000003)',
         visible: 'eq.true',
       },
     ])
@@ -350,22 +412,28 @@ describe('toggleVisibilityAction', () => {
       {
         action: 'VIDEO_VISIBILITY_TOGGLE',
         details: { entityName: 'Visible Video 1' },
-        targetRecordId: 'video-id-2',
+        targetRecordId: '30000000-0000-0000-0000-000000000002',
       },
       {
         action: 'VIDEO_VISIBILITY_TOGGLE',
         details: { entityName: 'Visible Video 2' },
-        targetRecordId: 'video-id-3',
+        targetRecordId: '30000000-0000-0000-0000-000000000003',
       },
     ])
     test.expectRevalidated({
-      paths: ['/videos', '/videos/video-id-2', '/videos/video-id-3'],
+      paths: [
+        '/videos',
+        '/videos/30000000-0000-0000-0000-000000000002',
+        '/videos/30000000-0000-0000-0000-000000000003',
+      ],
       tags: [['videos']],
     })
-    expect(test.revalidatePath).not.toHaveBeenCalledWith('/videos/video-id-1')
+    expect(test.revalidatePath).not.toHaveBeenCalledWith(
+      '/videos/30000000-0000-0000-0000-000000000001',
+    )
     expect(test.logger.error).toHaveBeenCalledWith(
       '動画の表示切替に失敗しました',
-      expect.objectContaining({ ids: 'video-id-1' }),
+      expect.objectContaining({ ids: '30000000-0000-0000-0000-000000000001' }),
     )
   })
 
@@ -374,7 +442,9 @@ describe('toggleVisibilityAction', () => {
     supabase.on('update', 'videos', (request: SupabaseRequest) =>
       request.query['visible'] === 'eq.true'
         ? postgresError('XX000', 'Database error')
-        : updatedRows(request, { changedIds: ['video-id-1'] }),
+        : updatedRows(request, {
+            changedIds: ['30000000-0000-0000-0000-000000000001'],
+          }),
     )
 
     const result = await toggleVisibilityAction(ids)
@@ -390,7 +460,9 @@ describe('toggleVisibilityAction', () => {
   it('should skip videos changed by another operation after reading', async () => {
     supabase.on('select', 'videos', videos)
     supabase.on('update', 'videos', (request: SupabaseRequest) =>
-      updatedRows(request, { changedIds: ['video-id-2'] }),
+      updatedRows(request, {
+        changedIds: ['30000000-0000-0000-0000-000000000002'],
+      }),
     )
 
     const result = await toggleVisibilityAction(ids)
@@ -403,13 +475,47 @@ describe('toggleVisibilityAction', () => {
       {
         action: 'VIDEO_VISIBILITY_TOGGLE',
         details: { entityName: 'Hidden Video' },
-        targetRecordId: 'video-id-1',
+        targetRecordId: '30000000-0000-0000-0000-000000000001',
       },
       {
         action: 'VIDEO_VISIBILITY_TOGGLE',
         details: { entityName: 'Visible Video 2' },
-        targetRecordId: 'video-id-3',
+        targetRecordId: '30000000-0000-0000-0000-000000000003',
       },
     ])
+  })
+})
+
+describe.each([
+  ['restoreAction', restoreAction],
+  ['softDeleteAction', softDeleteAction],
+  ['toggleVisibilityAction', toggleVisibilityAction],
+])('%s with invalid ids', (_, action) => {
+  it.each([
+    ['an empty list', []],
+    ['an id that is not a UUID', ['video-1']],
+    [
+      'more than 100 ids',
+      Array.from(
+        { length: 101 },
+        (_, index) =>
+          `30000000-0000-0000-0000-${String(index).padStart(12, '0')}`,
+      ),
+    ],
+    [
+      'a duplicate id',
+      [
+        '30000000-0000-0000-0000-000000000001',
+        '30000000-0000-0000-0000-000000000001',
+      ],
+    ],
+    ['a value that is not a list', '30000000-0000-0000-0000-000000000001'],
+  ])('should return error without updating anything for %s', async (_, ids) => {
+    const result = await action(ids as string[])
+
+    expect(result).toEqual({ error: INVALID_INPUT_ERROR, success: false })
+    expect(supabase.requests).toHaveLength(0)
+    test.expectNoAuditLog()
+    test.expectNotRevalidated()
   })
 })
