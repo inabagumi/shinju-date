@@ -1,5 +1,5 @@
 locals {
-  # すべてのプロジェクトに設定する環境変数。キーはリソースのアドレスの一部になる
+  # すべてのプロジェクトに設定する環境変数
   common_environment_variables = {
     enable_experimental_corepack = {
       key    = "ENABLE_EXPERIMENTAL_COREPACK"
@@ -22,7 +22,6 @@ locals {
       target    = ["production"]
       value     = var.upstash_redis_rest_token
     }
-    # development を含む環境変数は sensitive = true にできない（Vercel の制約）
     upstash_redis_rest_token_dev = {
       key    = "UPSTASH_REDIS_REST_TOKEN"
       target = ["preview", "development"]
@@ -41,7 +40,6 @@ locals {
     }
   }
 
-  # プロジェクトごとの違い。キーはリソースのアドレスの一部になる
   projects = {
     web = {
       name                      = "shinju-date"
@@ -59,8 +57,7 @@ locals {
     admin = {
       name           = "shinju-date-admin"
       root_directory = "apps/admin"
-      # standard_legacy は 0.6 vCPU（standard は 1 vCPU）。resource_config を
-      # 足したとき（#4624）から管理画面だけこの値で、理由は記録されていない
+      # 管理画面は低いスペックで足りるため、ほかより小さい 0.6 vCPU にする
       function_default_cpu_type = "standard_legacy"
       function_default_timeout  = 30
       environment_variables     = {}
@@ -77,7 +74,6 @@ locals {
           target    = ["production", "preview"]
           value     = var.google_api_key
         }
-        # development を含む環境変数は sensitive = true にできない（Vercel の制約）
         google_api_key_development = {
           key    = "GOOGLE_API_KEY"
           target = ["development"]
@@ -92,64 +88,21 @@ locals {
       }
     }
   }
-
-  # プロジェクトと環境変数の組み合わせ。キーは「<プロジェクト>/<環境変数>」
-  environment_variables = merge([
-    for project_key, project in local.projects : {
-      for name, variable in merge(local.common_environment_variables, project.environment_variables) :
-      "${project_key}/${name}" => merge(variable, { project = project_key })
-    }
-  ]...)
 }
 
-resource "vercel_project" "this" {
+module "project" {
+  source   = "./modules/vercel-project"
   for_each = local.projects
 
-  enable_affected_projects_deployments = true
-  framework                            = "nextjs"
-  git_repository = {
-    production_branch = "main"
-    repo              = "inabagumi/shinju-date"
-    type              = "github"
-  }
-  name                         = each.value.name
-  node_version                 = "26.x"
-  prioritise_production_builds = true
-  root_directory               = each.value.root_directory
-  resource_config = {
-    function_default_regions  = ["hnd1"]
-    function_default_cpu_type = each.value.function_default_cpu_type
-    function_default_timeout  = each.value.function_default_timeout
-  }
-  team_id = var.vercel_team_id
-  vercel_authentication = {
-    deployment_type = "standard_protection"
-  }
+  environment_variables     = merge(local.common_environment_variables, each.value.environment_variables)
+  function_default_cpu_type = each.value.function_default_cpu_type
+  function_default_timeout  = each.value.function_default_timeout
+  name                      = each.value.name
+  root_directory            = each.value.root_directory
+  team_id                   = var.vercel_team_id
 }
 
 resource "random_password" "cron_secret" {
   length  = 16
   special = false
-}
-
-resource "vercel_project_environment_variable" "this" {
-  for_each = local.environment_variables
-
-  key        = each.value.key
-  sensitive  = try(each.value.sensitive, false)
-  project_id = vercel_project.this[each.value.project].id
-  target     = each.value.target
-  team_id    = vercel_project.this[each.value.project].team_id
-  value      = each.value.value
-}
-
-resource "vercel_project_deployment_retention" "this" {
-  for_each = vercel_project.this
-
-  expiration_canceled   = "1m"
-  expiration_errored    = "1m"
-  expiration_preview    = "1m"
-  expiration_production = "1m"
-  project_id            = each.value.id
-  team_id               = each.value.team_id
 }
