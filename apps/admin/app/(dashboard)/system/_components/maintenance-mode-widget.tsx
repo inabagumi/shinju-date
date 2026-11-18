@@ -6,9 +6,9 @@ import { type ActionResult, ConfirmDialog } from '@/components/confirm-dialog'
 import { Panel } from '@/components/panel'
 import ToggleSwitch from '@/components/toggle-switch'
 import {
-  disableMaintenanceMode,
-  enableMaintenanceMode,
-} from '../_lib/maintenance-mode-actions'
+  disableMaintenanceModeAction,
+  enableMaintenanceModeAction,
+} from '../_actions/maintenance-mode'
 
 interface MaintenanceModeWidgetProps {
   initialStatus: boolean
@@ -18,7 +18,7 @@ type MaintenanceModeOperation = 'enable' | 'disable'
 
 const MAINTENANCE_MODE_OPERATIONS = {
   disable: {
-    action: disableMaintenanceMode,
+    action: disableMaintenanceModeAction,
     confirmLabel: '無効にする',
     confirmVariant: 'primary',
     description: '一般ユーザーのアクセスとバッチ処理が再開されます。',
@@ -26,7 +26,7 @@ const MAINTENANCE_MODE_OPERATIONS = {
     title: 'メンテナンスモードを無効にしますか？',
   },
   enable: {
-    action: enableMaintenanceMode,
+    action: enableMaintenanceModeAction,
     confirmLabel: '有効にする',
     confirmVariant: 'danger',
     description:

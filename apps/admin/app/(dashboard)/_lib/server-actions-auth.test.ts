@@ -25,8 +25,6 @@ const APP_ROOT = fileURLToPath(new URL('../../../', import.meta.url))
  * のパス）。アクションを `_actions/` に移したら、この一覧から消す。
  */
 const FILES_OUTSIDE_ACTIONS = [
-  // 認証が前提のアクション。下の `import.meta.glob()` で、このテストの対象にする（#7010 で移す）
-  'app/(dashboard)/_lib/maintenance-mode-actions.ts',
   // ログインの前後に呼ぶため、認証を確かめないアクション（#7010 で移す）
   'app/login/_lib/actions.ts',
   'lib/actions/sign-out.ts',
@@ -40,7 +38,6 @@ const FILES_OUTSIDE_ACTIONS = [
 const actionModules = import.meta.glob<Record<string, unknown>>([
   '../**/_actions/*.ts',
   '!../**/_actions/*.test.ts',
-  './maintenance-mode-actions.ts',
 ])
 
 const actions: [string, (...args: unknown[]) => Promise<unknown>][] = []

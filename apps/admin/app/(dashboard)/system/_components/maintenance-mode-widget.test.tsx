@@ -2,13 +2,13 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
-  disableMaintenanceMode: vi.fn(),
-  enableMaintenanceMode: vi.fn(),
+  disableMaintenanceModeAction: vi.fn(),
+  enableMaintenanceModeAction: vi.fn(),
 }))
 
-vi.mock('../_lib/maintenance-mode-actions', () => ({
-  disableMaintenanceMode: mocks.disableMaintenanceMode,
-  enableMaintenanceMode: mocks.enableMaintenanceMode,
+vi.mock('../_actions/maintenance-mode', () => ({
+  disableMaintenanceModeAction: mocks.disableMaintenanceModeAction,
+  enableMaintenanceModeAction: mocks.enableMaintenanceModeAction,
 }))
 
 const { MaintenanceModeWidget } = await import('./maintenance-mode-widget')
@@ -31,12 +31,12 @@ describe('MaintenanceModeWidget', () => {
 
     const dialog = screen.getByRole('dialog')
     expect(dialog).toHaveTextContent('メンテナンスモードを有効にしますか？')
-    expect(mocks.enableMaintenanceMode).not.toHaveBeenCalled()
+    expect(mocks.enableMaintenanceModeAction).not.toHaveBeenCalled()
     expect(screen.getByText('OFF')).toBeInTheDocument()
   })
 
   it('enables maintenance mode after confirmation', async () => {
-    mocks.enableMaintenanceMode.mockResolvedValue({ success: true })
+    mocks.enableMaintenanceModeAction.mockResolvedValue({ success: true })
     render(<MaintenanceModeWidget initialStatus={false} />)
 
     toggle()
@@ -45,12 +45,12 @@ describe('MaintenanceModeWidget', () => {
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
-    expect(mocks.enableMaintenanceMode).toHaveBeenCalledTimes(1)
+    expect(mocks.enableMaintenanceModeAction).toHaveBeenCalledTimes(1)
     expect(screen.getByText('ON')).toBeInTheDocument()
   })
 
   it('disables maintenance mode after confirmation', async () => {
-    mocks.disableMaintenanceMode.mockResolvedValue({ success: true })
+    mocks.disableMaintenanceModeAction.mockResolvedValue({ success: true })
     render(<MaintenanceModeWidget initialStatus={true} />)
 
     toggle()
@@ -62,7 +62,7 @@ describe('MaintenanceModeWidget', () => {
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
-    expect(mocks.disableMaintenanceMode).toHaveBeenCalledTimes(1)
+    expect(mocks.disableMaintenanceModeAction).toHaveBeenCalledTimes(1)
     expect(screen.getByText('OFF')).toBeInTheDocument()
   })
 
@@ -75,12 +75,12 @@ describe('MaintenanceModeWidget', () => {
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
-    expect(mocks.enableMaintenanceMode).not.toHaveBeenCalled()
+    expect(mocks.enableMaintenanceModeAction).not.toHaveBeenCalled()
     expect(screen.getByText('OFF')).toBeInTheDocument()
   })
 
   it('shows the error in the dialog when the action fails', async () => {
-    mocks.enableMaintenanceMode.mockResolvedValue({ success: false })
+    mocks.enableMaintenanceModeAction.mockResolvedValue({ success: false })
     render(<MaintenanceModeWidget initialStatus={false} />)
 
     toggle()
