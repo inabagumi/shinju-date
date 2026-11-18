@@ -11,10 +11,7 @@ import { createAuditLogs } from '@/lib/audit-log'
 import type { AuthenticatedContext } from '@/lib/auth'
 
 /** まとめて操作する動画の、読み取った行 */
-type BulkVideo = Pick<
-  Tables<'videos'>,
-  'id' | 'thumbnail_id' | 'title' | 'visible'
->
+type BulkVideo = Pick<Tables<'videos'>, 'id' | 'title' | 'visible'>
 
 /** 更新された動画（監査ログと再検証に使う） */
 type UpdatedVideo = Pick<Tables<'videos'>, 'id' | 'title'>
@@ -23,6 +20,11 @@ type UpdatedVideo = Pick<Tables<'videos'>, 'id' | 'title'>
 export interface BulkVideoActionData {
   /** 更新された動画の件数 */
   updatedCount: number
+  /**
+   * 選ばれた動画のうち、すでに目的の状態だったので更新しなかった動画の件数
+   * （削除なら削除済みの動画、復元なら削除されていない動画）
+   */
+  skippedCount: number
 }
 
 interface BulkVideoUpdateContext extends AuthenticatedContext {
@@ -32,13 +34,24 @@ interface BulkVideoUpdateContext extends AuthenticatedContext {
   now: string
 }
 
+/** `update` の戻り値 */
+interface BulkVideoUpdateResult {
+  /**
+   * 実際に更新された動画。一部だけ更新できたときは、更新できたぶんだけを
+   * 返す（監査ログと再検証は、この動画だけに行う）
+   */
+  updatedVideos: UpdatedVideo[]
+  /**
+   * すでに目的の状態だったので、更新しなかった動画の件数。失敗には数えない
+   * （省略時は 0）
+   */
+  skippedCount?: number
+}
+
 interface BulkVideoActionOptions {
   ids: string[]
-  /**
-   * 動画を更新し、実際に更新された動画を返す。一部だけ更新できたときは、
-   * 更新できたぶんだけを返す（監査ログと再検証は、返した動画だけに行う）
-   */
-  update: (context: BulkVideoUpdateContext) => Promise<UpdatedVideo[]>
+  /** 動画を更新し、実際に更新された動画を返す */
+  update: (context: BulkVideoUpdateContext) => Promise<BulkVideoUpdateResult>
   /** 監査ログに記録するアクション（詳細には動画のタイトルを記録する） */
   auditAction: 'VIDEO_DELETE' | 'VIDEO_RESTORE' | 'VIDEO_VISIBILITY_TOGGLE'
 }
@@ -60,7 +73,7 @@ async function runBulkVideoAction(
 
   const { data: videos, error: fetchError } = await supabaseClient
     .from('videos')
-    .select('id, thumbnail_id, title, visible')
+    .select('id, title, visible')
     .in('id', ids)
 
   if (fetchError) {
@@ -71,7 +84,7 @@ async function runBulkVideoAction(
     throw new ActionError('動画が見つかりませんでした。')
   }
 
-  const updatedVideos = await update({
+  const { skippedCount = 0, updatedVideos } = await update({
     ...context,
     now: toDBString(Temporal.Now.instant()),
     videos,
@@ -96,7 +109,7 @@ async function runBulkVideoAction(
     await revalidateTags([CACHE_TAGS.VIDEOS])
   }
 
-  const failedCount = videos.length - updatedVideos.length
+  const failedCount = videos.length - updatedVideos.length - skippedCount
 
   if (failedCount > 0) {
     throw new ActionError(
@@ -104,13 +117,29 @@ async function runBulkVideoAction(
     )
   }
 
-  return { data: { updatedCount: updatedVideos.length }, success: true }
+  return {
+    data: { skippedCount, updatedCount: updatedVideos.length },
+    success: true,
+  }
 }
 
-function thumbnailIdsOf(videos: readonly BulkVideo[]): string[] {
-  return videos
-    .map((video) => video.thumbnail_id)
-    .filter((id): id is string => id !== null)
+/**
+ * 関数（`soft_delete_videos` / `restore_videos`）が返した、実際に更新された
+ * 動画の ID から、更新された動画と、更新しなかった動画の件数を作る。
+ * 関数は、すでに目的の状態の動画を更新しないので、返されなかった動画は
+ * 失敗ではなく、更新しなかったものとして数える
+ */
+function toBulkVideoUpdateResult(
+  videos: readonly BulkVideo[],
+  updatedIds: readonly string[],
+): BulkVideoUpdateResult {
+  const ids = new Set(updatedIds)
+  const updatedVideos = videos.filter((video) => ids.has(video.id))
+
+  return {
+    skippedCount: videos.length - updatedVideos.length,
+    updatedVideos,
+  }
 }
 
 export const toggleVisibilityAction = adminAction(
@@ -159,7 +188,7 @@ export const toggleVisibilityAction = adminAction(
           throw new ActionError('動画の表示状態を更新できませんでした。')
         }
 
-        return updatedVideos
+        return { updatedVideos }
       },
     }),
 )
@@ -171,37 +200,23 @@ export const softDeleteAction = adminAction(
       auditAction: 'VIDEO_DELETE',
       ids,
       update: async ({ now, supabaseClient, videos }) => {
-        // Soft delete videos (intentionally withdrawn — not restored with talent)
-        const { error: videoError } = await supabaseClient
-          .from('videos')
-          .update({
-            deleted_at: now,
-            deleted_reason: 'withdrawn',
-            updated_at: now,
-          })
-          .in(
-            'id',
-            videos.map(({ id }) => id),
-          )
+        // 動画とサムネイルを1つのトランザクションで削除する。すでに別の理由
+        // （unavailable、talent_deleted）で削除されている動画は、理由と日時を
+        // 変えない（withdrawn に変わると、タレントの復活で戻らなくなる）
+        const { data: deletedIds, error } = await supabaseClient.rpc(
+          'soft_delete_videos',
+          {
+            p_deleted_at: now,
+            p_reason: 'withdrawn',
+            p_video_ids: videos.map(({ id }) => id),
+          },
+        )
 
-        if (videoError) {
-          throw videoError
+        if (error) {
+          throw error
         }
 
-        const thumbnailIds = thumbnailIdsOf(videos)
-
-        if (thumbnailIds.length > 0) {
-          const { error: thumbnailError } = await supabaseClient
-            .from('thumbnails')
-            .update({ deleted_at: now, updated_at: now })
-            .in('id', thumbnailIds)
-
-          if (thumbnailError) {
-            throw thumbnailError
-          }
-        }
-
-        return videos
+        return toBulkVideoUpdateResult(videos, deletedIds)
       },
     }),
 )
@@ -212,39 +227,19 @@ export const restoreAction = adminAction(
     runBulkVideoAction(context, {
       auditAction: 'VIDEO_RESTORE',
       ids,
-      update: async ({ now, supabaseClient, videos }) => {
-        const thumbnailIds = thumbnailIdsOf(videos)
+      update: async ({ supabaseClient, videos }) => {
+        // 管理者は、理由を問わずに復元できる。動画とサムネイルを1つの
+        // トランザクションで復元する
+        const { data: restoredIds, error } = await supabaseClient.rpc(
+          'restore_videos',
+          { p_video_ids: videos.map(({ id }) => id) },
+        )
 
-        // Restore videos and thumbnails in parallel
-        const results = await Promise.all([
-          supabaseClient
-            .from('videos')
-            .update({
-              deleted_at: null,
-              deleted_reason: null,
-              updated_at: now,
-            })
-            .in(
-              'id',
-              videos.map(({ id }) => id),
-            ),
-          ...(thumbnailIds.length > 0
-            ? [
-                supabaseClient
-                  .from('thumbnails')
-                  .update({ deleted_at: null, updated_at: now })
-                  .in('id', thumbnailIds),
-              ]
-            : []),
-        ])
-
-        for (const { error } of results) {
-          if (error) {
-            throw error
-          }
+        if (error) {
+          throw error
         }
 
-        return videos
+        return toBulkVideoUpdateResult(videos, restoredIds)
       },
     }),
 )

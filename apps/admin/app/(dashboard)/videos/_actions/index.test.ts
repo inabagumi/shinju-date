@@ -23,6 +23,11 @@ vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
   Temporal.Instant.from('2024-11-24T17:00:00Z'),
 )
 
+/** PostgREST と同じく、関数に渡された動画の ID をすべて返す（すべて更新できた） */
+function allVideoIds(request: SupabaseRequest) {
+  return (request.body as { p_video_ids: string[] }).p_video_ids
+}
+
 describe('restoreAction', () => {
   it('should return error when ids array is empty', async () => {
     const result = await restoreAction([])
@@ -44,65 +49,26 @@ describe('restoreAction', () => {
     })
   })
 
-  it('should successfully restore single video without thumbnail', async () => {
+  it('should restore the videos whatever the reason with one function call', async () => {
     supabase.on('select', 'videos', [
-      createVideo({
-        id: 'video-id-1',
-        thumbnail_id: null,
-        title: 'Test Video',
-      }),
+      createVideo({ id: 'video-id-1', title: 'Test Video 1' }),
+      createVideo({ id: 'video-id-2', title: 'Test Video 2' }),
     ])
-
-    const result = await restoreAction(['video-id-1'])
-
-    expect(result).toEqual({ data: { updatedCount: 1 }, success: true })
-    test.expectAuditLogs([
-      {
-        action: 'VIDEO_RESTORE',
-        details: { entityName: 'Test Video' },
-        targetRecordId: 'video-id-1',
-      },
-    ])
-    test.expectRevalidated({
-      paths: ['/videos', '/videos/video-id-1'],
-      tags: [['videos']],
-    })
-  })
-
-  it('should successfully restore video with thumbnail', async () => {
-    supabase.on('select', 'videos', [
-      createVideo({
-        id: 'video-id-1',
-        thumbnail_id: 'thumb-id-1',
-        title: 'Test Video',
-      }),
-    ])
-
-    const result = await restoreAction(['video-id-1'])
-
-    expect(result).toEqual({ data: { updatedCount: 1 }, success: true })
-    // Once for the select, once for the video update and once for the
-    // thumbnail update
-    expect(supabase.requests).toHaveLength(3)
-  })
-
-  it('should successfully restore multiple videos', async () => {
-    supabase.on('select', 'videos', [
-      createVideo({
-        id: 'video-id-1',
-        thumbnail_id: 'thumb-id-1',
-        title: 'Test Video 1',
-      }),
-      createVideo({
-        id: 'video-id-2',
-        thumbnail_id: null,
-        title: 'Test Video 2',
-      }),
-    ])
+    supabase.on('rpc', 'restore_videos', allVideoIds)
 
     const result = await restoreAction(['video-id-1', 'video-id-2'])
 
-    expect(result).toEqual({ data: { updatedCount: 2 }, success: true })
+    expect(result).toEqual({
+      data: { skippedCount: 0, updatedCount: 2 },
+      success: true,
+    })
+    // The function restores the thumbnails with the videos, so neither table
+    // is updated directly.
+    expect(
+      supabase.calls('rpc', 'restore_videos').map(({ body }) => body),
+    ).toEqual([{ p_video_ids: ['video-id-1', 'video-id-2'] }])
+    expect(supabase.calls('update', 'videos')).toHaveLength(0)
+    expect(supabase.calls('update', 'thumbnails')).toHaveLength(0)
     // Both videos are recorded with one call
     test.expectAuditLogs([
       {
@@ -116,41 +82,51 @@ describe('restoreAction', () => {
         targetRecordId: 'video-id-2',
       },
     ])
+    test.expectRevalidated({
+      paths: ['/videos', '/videos/video-id-1', '/videos/video-id-2'],
+      tags: [['videos']],
+    })
   })
 
-  it('should return error when video update fails', async () => {
+  it('should count the videos that were not deleted as skipped', async () => {
     supabase.on('select', 'videos', [
-      createVideo({
-        id: 'video-id-1',
-        thumbnail_id: null,
-        title: 'Test Video',
-      }),
+      createVideo({ id: 'video-id-1', title: 'Deleted Video' }),
+      createVideo({ id: 'video-id-2', title: 'Active Video' }),
     ])
-    supabase.on('update', 'videos', postgresError('XX000', 'Database error'))
+    supabase.on('rpc', 'restore_videos', ['video-id-1'])
 
-    const result = await restoreAction(['video-id-1'])
+    const result = await restoreAction(['video-id-1', 'video-id-2'])
 
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false })
-    expect(test.logger.error).toHaveBeenCalled()
+    expect(result).toEqual({
+      data: { skippedCount: 1, updatedCount: 1 },
+      success: true,
+    })
+    test.expectAuditLogs([
+      {
+        action: 'VIDEO_RESTORE',
+        details: { entityName: 'Deleted Video' },
+        targetRecordId: 'video-id-1',
+      },
+    ])
+    test.expectRevalidated({
+      paths: ['/videos', '/videos/video-id-1'],
+      tags: [['videos']],
+    })
   })
 
-  it('should return error when thumbnail update fails', async () => {
-    supabase.on('select', 'videos', [
-      createVideo({
-        id: 'video-id-1',
-        thumbnail_id: 'thumb-id-1',
-        title: 'Test Video',
-      }),
-    ])
+  it('should return error when the function fails', async () => {
+    supabase.on('select', 'videos', [createVideo({ id: 'video-id-1' })])
     supabase.on(
-      'update',
-      'thumbnails',
-      postgresError('XX000', 'Thumbnail update failed'),
+      'rpc',
+      'restore_videos',
+      postgresError('XX000', 'Database error'),
     )
 
     const result = await restoreAction(['video-id-1'])
 
     expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false })
+    expect(test.logger.error).toHaveBeenCalled()
+    test.expectNoAuditLog()
   })
 
   it('should handle fetch error', async () => {
@@ -163,15 +139,32 @@ describe('restoreAction', () => {
 })
 
 describe('softDeleteAction', () => {
-  it('should record the audit logs of all videos with one call', async () => {
+  it('should withdraw the videos with one function call and record their audit logs with one call', async () => {
     supabase.on('select', 'videos', [
-      createVideo({ id: 'video-id-1', thumbnail_id: null, title: 'Video 1' }),
-      createVideo({ id: 'video-id-2', thumbnail_id: null, title: 'Video 2' }),
+      createVideo({ id: 'video-id-1', title: 'Video 1' }),
+      createVideo({ id: 'video-id-2', title: 'Video 2' }),
     ])
+    supabase.on('rpc', 'soft_delete_videos', allVideoIds)
 
     const result = await softDeleteAction(['video-id-1', 'video-id-2'])
 
-    expect(result).toEqual({ data: { updatedCount: 2 }, success: true })
+    expect(result).toEqual({
+      data: { skippedCount: 0, updatedCount: 2 },
+      success: true,
+    })
+    // The function deletes the thumbnails with the videos, so neither table
+    // is updated directly.
+    expect(
+      supabase.calls('rpc', 'soft_delete_videos').map(({ body }) => body),
+    ).toEqual([
+      {
+        p_deleted_at: '2024-11-24T17:00:00Z',
+        p_reason: 'withdrawn',
+        p_video_ids: ['video-id-1', 'video-id-2'],
+      },
+    ])
+    expect(supabase.calls('update', 'videos')).toHaveLength(0)
+    expect(supabase.calls('update', 'thumbnails')).toHaveLength(0)
     test.expectAuditLogs([
       {
         action: 'VIDEO_DELETE',
@@ -190,15 +183,63 @@ describe('softDeleteAction', () => {
     })
   })
 
-  it('should not record audit logs when the update fails', async () => {
+  it('should count the videos that were already deleted as skipped', async () => {
     supabase.on('select', 'videos', [
-      createVideo({ id: 'video-id-1', thumbnail_id: null }),
+      createVideo({ id: 'video-id-1', title: 'Active Video' }),
+      createVideo({
+        deleted_at: '2024-11-01T00:00:00Z',
+        deleted_reason: 'talent_deleted',
+        id: 'video-id-2',
+        title: 'Deleted Video',
+      }),
     ])
-    supabase.on('update', 'videos', postgresError('XX000', 'Database error'))
+    // The function leaves the deleted video (and its reason) untouched.
+    supabase.on('rpc', 'soft_delete_videos', ['video-id-1'])
+
+    const result = await softDeleteAction(['video-id-1', 'video-id-2'])
+
+    expect(result).toEqual({
+      data: { skippedCount: 1, updatedCount: 1 },
+      success: true,
+    })
+    test.expectAuditLogs([
+      {
+        action: 'VIDEO_DELETE',
+        details: { entityName: 'Active Video' },
+        targetRecordId: 'video-id-1',
+      },
+    ])
+    test.expectRevalidated({
+      paths: ['/videos', '/videos/video-id-1'],
+      tags: [['videos']],
+    })
+  })
+
+  it('should not record audit logs or revalidate when every video was already deleted', async () => {
+    supabase.on('select', 'videos', [createVideo({ id: 'video-id-1' })])
+    supabase.on('rpc', 'soft_delete_videos', [])
 
     const result = await softDeleteAction(['video-id-1'])
 
-    expect(result.success).toBe(false)
+    expect(result).toEqual({
+      data: { skippedCount: 1, updatedCount: 0 },
+      success: true,
+    })
+    test.expectNoAuditLog()
+    test.expectNotRevalidated()
+  })
+
+  it('should not record audit logs when the function fails', async () => {
+    supabase.on('select', 'videos', [createVideo({ id: 'video-id-1' })])
+    supabase.on(
+      'rpc',
+      'soft_delete_videos',
+      postgresError('XX000', 'Database error'),
+    )
+
+    const result = await softDeleteAction(['video-id-1'])
+
+    expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false })
     test.expectNoAuditLog()
   })
 })
@@ -256,7 +297,10 @@ describe('toggleVisibilityAction', () => {
 
     const result = await toggleVisibilityAction(ids)
 
-    expect(result).toEqual({ data: { updatedCount: 3 }, success: true })
+    expect(result).toEqual({
+      data: { skippedCount: 0, updatedCount: 3 },
+      success: true,
+    })
     expect(
       supabase.calls('update', 'videos').map(({ body, query }) => ({
         body,
