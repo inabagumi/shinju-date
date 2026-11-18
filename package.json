@@ -32,7 +32,7 @@
     "supabase": "3.2.0",
     "turbo": "2.11.11",
     "typescript": "catalog:",
-    "ultracite": "8.3.0"
+    "ultracite": "8.2.1"
   },
   "devEngines": {
     "packageManager": {

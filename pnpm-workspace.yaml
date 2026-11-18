@@ -49,9 +49,6 @@ catalog:
   vitest: 5.1.0
   zod: 4.6.7
 
-minimumReleaseAgeExclude:
-  - ultracite@8.3.0
-
 permissions:
   tsdown:
     skills: false

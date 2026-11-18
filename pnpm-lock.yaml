@@ -305,8 +305,8 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
       ultracite:
-        specifier: 8.3.0
-        version: 8.3.0(@biomejs/biome@2.6.8)(oxfmt@0.79.0)
+        specifier: 8.2.1
+        version: 8.2.1(@biomejs/biome@2.6.8)(oxfmt@0.79.0)
 
   apps/admin:
     dependencies:
@@ -6226,8 +6226,8 @@ packages:
   ufo@1.6.4:
     resolution: {integrity: sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA==}
 
-  ultracite@8.3.0:
-    resolution: {integrity: sha512-b33aiz4Ho7+J2n7TZGKREU0+WUt4FIYUskHFAfjWMpyQi5dczPueTNE5K9oRoC2vc86PbI2L2TGtEMH4xi0bAA==}
+  ultracite@8.2.1:
+    resolution: {integrity: sha512-+HAwOkdpdNaf6Fr+JEh0YkikJU4vjRO977kMAvtOsk8YWk+VG3rdy7gyFLgbO1Edv+k5hhL/3CKAiEmUlvt3ow==}
     engines: {node: ^22.22.2 || >=24.15.0}
     hasBin: true
     peerDependencies:
@@ -11220,7 +11220,7 @@ snapshots:
 
   ufo@1.6.4: {}
 
-  ultracite@8.3.0(@biomejs/biome@2.6.8)(oxfmt@0.79.0):
+  ultracite@8.2.1(@biomejs/biome@2.6.8)(oxfmt@0.79.0):
     dependencies:
       '@clack/prompts': 1.9.0
       cli-truncate: 6.2.0
