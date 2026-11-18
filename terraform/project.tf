@@ -1,326 +1,108 @@
-resource "vercel_project" "this" {
-  enable_affected_projects_deployments = true
-  framework                            = "nextjs"
-  git_repository = {
-    production_branch = "main"
-    repo              = "inabagumi/shinju-date"
-    type              = "github"
+locals {
+  # すべてのプロジェクトに設定する環境変数
+  common_environment_variables = {
+    enable_experimental_corepack = {
+      key    = "ENABLE_EXPERIMENTAL_COREPACK"
+      target = ["production", "preview"]
+      value  = "1"
+    }
+    turbo_platform_env_disabled = {
+      key    = "TURBO_PLATFORM_ENV_DISABLED"
+      target = ["production", "preview"]
+      value  = "true"
+    }
+    use_bytecode_caching = {
+      key    = "USE_BYTECODE_CACHING"
+      target = ["production"]
+      value  = "1"
+    }
+    upstash_redis_rest_token = {
+      key       = "UPSTASH_REDIS_REST_TOKEN"
+      sensitive = true
+      target    = ["production"]
+      value     = var.upstash_redis_rest_token
+    }
+    upstash_redis_rest_token_dev = {
+      key    = "UPSTASH_REDIS_REST_TOKEN"
+      target = ["preview", "development"]
+      value  = var.upstash_redis_rest_token_dev
+    }
+    upstash_redis_rest_url = {
+      key       = "UPSTASH_REDIS_REST_URL"
+      sensitive = true
+      target    = ["production"]
+      value     = var.upstash_redis_rest_url
+    }
+    upstash_redis_rest_url_dev = {
+      key    = "UPSTASH_REDIS_REST_URL"
+      target = ["preview", "development"]
+      value  = var.upstash_redis_rest_url_dev
+    }
   }
-  name                         = "shinju-date"
-  node_version                 = "26.x"
-  prioritise_production_builds = true
-  root_directory               = "apps/web"
-  resource_config = {
-    function_default_regions  = ["hnd1"]
-    function_default_cpu_type = "standard"
-    function_default_timeout  = 30
-  }
-  team_id = var.vercel_team_id
-  vercel_authentication = {
-    deployment_type = "standard_protection"
-  }
-}
 
-resource "vercel_project_environment_variable" "enable_experimental_corepack" {
-  key        = "ENABLE_EXPERIMENTAL_COREPACK"
-  sensitive  = false
-  project_id = vercel_project.this.id
-  target     = ["production", "preview"]
-  team_id    = vercel_project.this.team_id
-  value      = "1"
-}
-
-resource "vercel_project_environment_variable" "turbo_platform_env_disabled" {
-  key        = "TURBO_PLATFORM_ENV_DISABLED"
-  sensitive  = false
-  project_id = vercel_project.this.id
-  target     = ["production", "preview"]
-  team_id    = vercel_project.this.team_id
-  value      = "true"
-}
-
-resource "vercel_project_environment_variable" "use_bytecode_caching" {
-  key        = "USE_BYTECODE_CACHING"
-  sensitive  = false
-  project_id = vercel_project.this.id
-  target     = ["production"]
-  team_id    = vercel_project.this.team_id
-  value      = "1"
-}
-
-resource "vercel_project_environment_variable" "base_url" {
-  key        = "NEXT_PUBLIC_BASE_URL"
-  sensitive  = false
-  project_id = vercel_project.this.id
-  target     = ["production"]
-  team_id    = vercel_project.this.team_id
-  value      = "https://shinju.date"
-}
-
-resource "vercel_project_environment_variable" "upstash_redis_rest_token" {
-  key        = "UPSTASH_REDIS_REST_TOKEN"
-  sensitive  = true
-  project_id = vercel_project.this.id
-  target     = ["production"]
-  team_id    = vercel_project.this.team_id
-  value      = var.upstash_redis_rest_token
-}
-
-resource "vercel_project_environment_variable" "upstash_redis_rest_token_dev" {
-  key        = "UPSTASH_REDIS_REST_TOKEN"
-  sensitive  = false
-  project_id = vercel_project.this.id
-  target     = ["preview", "development"]
-  team_id    = vercel_project.this.team_id
-  value      = var.upstash_redis_rest_token_dev
-}
-
-resource "vercel_project_environment_variable" "upstash_redis_rest_url" {
-  key        = "UPSTASH_REDIS_REST_URL"
-  sensitive  = true
-  project_id = vercel_project.this.id
-  target     = ["production"]
-  team_id    = vercel_project.this.team_id
-  value      = var.upstash_redis_rest_url
-}
-
-resource "vercel_project_environment_variable" "upstash_redis_rest_url_dev" {
-  key        = "UPSTASH_REDIS_REST_URL"
-  sensitive  = false
-  project_id = vercel_project.this.id
-  target     = ["preview", "development"]
-  team_id    = vercel_project.this.team_id
-  value      = var.upstash_redis_rest_url_dev
-}
-
-resource "vercel_project_deployment_retention" "this" {
-  expiration_canceled   = "1m"
-  expiration_errored    = "1m"
-  expiration_preview    = "1m"
-  expiration_production = "1m"
-  project_id            = vercel_project.this.id
-  team_id               = vercel_project.this.team_id
-}
-
-resource "vercel_project" "admin" {
-  enable_affected_projects_deployments = true
-  framework                            = "nextjs"
-  git_repository = {
-    production_branch = "main"
-    repo              = "inabagumi/shinju-date"
-    type              = "github"
-  }
-  name                         = "shinju-date-admin"
-  node_version                 = "26.x"
-  prioritise_production_builds = true
-  root_directory               = "apps/admin"
-  resource_config = {
-    function_default_regions  = ["hnd1"]
-    function_default_cpu_type = "standard_legacy"
-    function_default_timeout  = 30
-  }
-  team_id = var.vercel_team_id
-  vercel_authentication = {
-    deployment_type = "standard_protection"
+  projects = {
+    web = {
+      name                      = "shinju-date"
+      root_directory            = "apps/web"
+      function_default_cpu_type = "standard"
+      function_default_timeout  = 30
+      environment_variables = {
+        base_url = {
+          key    = "NEXT_PUBLIC_BASE_URL"
+          target = ["production"]
+          value  = "https://${local.domain}"
+        }
+      }
+    }
+    admin = {
+      name           = "shinju-date-admin"
+      root_directory = "apps/admin"
+      # 管理画面は低いスペックで足りるため、ほかより小さい 0.6 vCPU にする
+      function_default_cpu_type = "standard_legacy"
+      function_default_timeout  = 30
+      environment_variables     = {}
+    }
+    batch = {
+      name                      = "shinju-date-batch"
+      root_directory            = "apps/batch"
+      function_default_cpu_type = "standard"
+      function_default_timeout  = 120
+      environment_variables = {
+        google_api_key = {
+          key       = "GOOGLE_API_KEY"
+          sensitive = true
+          target    = ["production", "preview"]
+          value     = var.google_api_key
+        }
+        google_api_key_development = {
+          key    = "GOOGLE_API_KEY"
+          target = ["development"]
+          value  = var.google_api_key
+        }
+        cron_secret = {
+          key       = "CRON_SECRET"
+          sensitive = true
+          target    = ["production"]
+          value     = random_password.cron_secret.result
+        }
+      }
+    }
   }
 }
 
-resource "vercel_project_environment_variable" "admin_enable_experimental_corepack" {
-  key        = "ENABLE_EXPERIMENTAL_COREPACK"
-  sensitive  = false
-  project_id = vercel_project.admin.id
-  target     = ["production", "preview"]
-  team_id    = vercel_project.admin.team_id
-  value      = "1"
-}
+module "project" {
+  source   = "./modules/vercel-project"
+  for_each = local.projects
 
-resource "vercel_project_environment_variable" "admin_turbo_platform_env_disabled" {
-  key        = "TURBO_PLATFORM_ENV_DISABLED"
-  sensitive  = false
-  project_id = vercel_project.admin.id
-  target     = ["production", "preview"]
-  team_id    = vercel_project.admin.team_id
-  value      = "true"
-}
-
-resource "vercel_project_environment_variable" "admin_use_bytecode_caching" {
-  key        = "USE_BYTECODE_CACHING"
-  sensitive  = false
-  project_id = vercel_project.admin.id
-  target     = ["production"]
-  team_id    = vercel_project.admin.team_id
-  value      = "1"
-}
-
-resource "vercel_project_environment_variable" "admin_upstash_redis_rest_token" {
-  key        = "UPSTASH_REDIS_REST_TOKEN"
-  sensitive  = true
-  project_id = vercel_project.admin.id
-  target     = ["production"]
-  team_id    = vercel_project.admin.team_id
-  value      = var.upstash_redis_rest_token
-}
-
-resource "vercel_project_environment_variable" "admin_upstash_redis_rest_token_dev" {
-  key        = "UPSTASH_REDIS_REST_TOKEN"
-  sensitive  = false
-  project_id = vercel_project.admin.id
-  target     = ["preview", "development"]
-  team_id    = vercel_project.admin.team_id
-  value      = var.upstash_redis_rest_token_dev
-}
-
-resource "vercel_project_environment_variable" "admin_upstash_redis_rest_url" {
-  key        = "UPSTASH_REDIS_REST_URL"
-  sensitive  = true
-  project_id = vercel_project.admin.id
-  target     = ["production"]
-  team_id    = vercel_project.admin.team_id
-  value      = var.upstash_redis_rest_url
-}
-
-resource "vercel_project_environment_variable" "admin_upstash_redis_rest_url_dev" {
-  key        = "UPSTASH_REDIS_REST_URL"
-  sensitive  = false
-  project_id = vercel_project.admin.id
-  target     = ["preview", "development"]
-  team_id    = vercel_project.admin.team_id
-  value      = var.upstash_redis_rest_url_dev
-}
-
-resource "vercel_project_deployment_retention" "admin" {
-  expiration_canceled   = "1m"
-  expiration_errored    = "1m"
-  expiration_preview    = "1m"
-  expiration_production = "1m"
-  project_id            = vercel_project.admin.id
-  team_id               = vercel_project.admin.team_id
-}
-
-resource "vercel_project" "batch" {
-  enable_affected_projects_deployments = true
-  framework                            = "nextjs"
-  git_repository = {
-    production_branch = "main"
-    repo              = "inabagumi/shinju-date"
-    type              = "github"
-  }
-  name                         = "shinju-date-batch"
-  node_version                 = "26.x"
-  prioritise_production_builds = true
-  root_directory               = "apps/batch"
-  resource_config = {
-    function_default_regions  = ["hnd1"]
-    function_default_cpu_type = "standard"
-    function_default_timeout  = 120
-  }
-  team_id = var.vercel_team_id
-  vercel_authentication = {
-    deployment_type = "standard_protection"
-  }
+  environment_variables     = merge(local.common_environment_variables, each.value.environment_variables)
+  function_default_cpu_type = each.value.function_default_cpu_type
+  function_default_timeout  = each.value.function_default_timeout
+  name                      = each.value.name
+  root_directory            = each.value.root_directory
+  team_id                   = var.vercel_team_id
 }
 
 resource "random_password" "cron_secret" {
   length  = 16
   special = false
-}
-
-resource "vercel_project_environment_variable" "batch_enable_experimental_corepack" {
-  key        = "ENABLE_EXPERIMENTAL_COREPACK"
-  sensitive  = false
-  project_id = vercel_project.batch.id
-  target     = ["production", "preview"]
-  team_id    = vercel_project.batch.team_id
-  value      = "1"
-}
-
-resource "vercel_project_environment_variable" "batch_turbo_platform_env_disabled" {
-  key        = "TURBO_PLATFORM_ENV_DISABLED"
-  sensitive  = false
-  project_id = vercel_project.batch.id
-  target     = ["production", "preview"]
-  team_id    = vercel_project.batch.team_id
-  value      = "true"
-}
-
-resource "vercel_project_environment_variable" "batch_use_bytecode_caching" {
-  key        = "USE_BYTECODE_CACHING"
-  sensitive  = false
-  project_id = vercel_project.batch.id
-  target     = ["production"]
-  team_id    = vercel_project.batch.team_id
-  value      = "1"
-}
-
-resource "vercel_project_environment_variable" "batch_google_api_key" {
-  key        = "GOOGLE_API_KEY"
-  sensitive  = true
-  project_id = vercel_project.batch.id
-  target     = ["production", "preview"]
-  team_id    = vercel_project.batch.team_id
-  value      = var.google_api_key
-}
-
-# development must use sensitive = false (Vercel provider requirement)
-resource "vercel_project_environment_variable" "batch_google_api_key_development" {
-  key        = "GOOGLE_API_KEY"
-  sensitive  = false
-  project_id = vercel_project.batch.id
-  target     = ["development"]
-  team_id    = vercel_project.batch.team_id
-  value      = var.google_api_key
-}
-
-resource "vercel_project_environment_variable" "batch_upstash_redis_rest_token" {
-  key        = "UPSTASH_REDIS_REST_TOKEN"
-  sensitive  = true
-  project_id = vercel_project.batch.id
-  target     = ["production"]
-  team_id    = vercel_project.batch.team_id
-  value      = var.upstash_redis_rest_token
-}
-
-resource "vercel_project_environment_variable" "batch_upstash_redis_rest_token_dev" {
-  key        = "UPSTASH_REDIS_REST_TOKEN"
-  sensitive  = false
-  project_id = vercel_project.batch.id
-  target     = ["preview", "development"]
-  team_id    = vercel_project.batch.team_id
-  value      = var.upstash_redis_rest_token_dev
-}
-
-resource "vercel_project_environment_variable" "batch_upstash_redis_rest_url" {
-  key        = "UPSTASH_REDIS_REST_URL"
-  sensitive  = true
-  project_id = vercel_project.batch.id
-  target     = ["production"]
-  team_id    = vercel_project.batch.team_id
-  value      = var.upstash_redis_rest_url
-}
-
-resource "vercel_project_environment_variable" "batch_upstash_redis_rest_url_dev" {
-  key        = "UPSTASH_REDIS_REST_URL"
-  sensitive  = false
-  project_id = vercel_project.batch.id
-  target     = ["preview", "development"]
-  team_id    = vercel_project.batch.team_id
-  value      = var.upstash_redis_rest_url_dev
-}
-
-resource "vercel_project_environment_variable" "batch_cron_secret" {
-  key        = "CRON_SECRET"
-  sensitive  = true
-  project_id = vercel_project.batch.id
-  target     = ["production"]
-  team_id    = vercel_project.batch.team_id
-  value      = random_password.cron_secret.result
-}
-
-resource "vercel_project_deployment_retention" "batch" {
-  expiration_canceled   = "1m"
-  expiration_errored    = "1m"
-  expiration_preview    = "1m"
-  expiration_production = "1m"
-  project_id            = vercel_project.batch.id
-  team_id               = vercel_project.batch.team_id
 }
