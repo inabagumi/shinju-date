@@ -1,30 +1,17 @@
 // @vitest-environment node
 
+import { HttpResponse, http } from 'msw'
 import sharp from 'sharp'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { SITE_THEME_COLOR } from '@/lib/site'
-
-const mocks = vi.hoisted(() => {
-  const query = {
-    eq: vi.fn(),
-    maybeSingle: vi.fn(),
-    select: vi.fn(),
-  }
-  const bucket = { download: vi.fn() }
-  const adminClient = { storage: { from: vi.fn(() => bucket) } }
-
-  return {
-    adminClient,
-    bucket,
-    publicClient: { from: vi.fn(() => query) },
-    query,
-  }
-})
-
-vi.mock('@/lib/supabase', () => ({
-  getSupabaseAdminClient: vi.fn(() => mocks.adminClient),
-  supabaseClient: mocks.publicClient,
-}))
+import { createProfileImage } from '@/test/factories'
+import {
+  failSupabase,
+  seedSupabase,
+  setupSupabase,
+  supabaseRequests,
+  supabaseServer,
+} from '@/test/supabase'
 
 vi.mock('@shinju-date/logger', () => ({
   logger: { warn: vi.fn() },
@@ -32,7 +19,13 @@ vi.mock('@shinju-date/logger', () => ({
 
 import { fetchTalentIconDataURL, getTalentThemeColor } from './og-image'
 
-const PROFILE_IMAGE = { blur_data_url: '', id: 'icon-1' }
+setupSupabase()
+
+const ICON = createProfileImage({ path: 'youtube/UC1/a.webp' })
+
+/** The URL the icons are downloaded from with the service role */
+const DOWNLOAD_URL =
+  'https://fake.supabase.test/storage/v1/object/profile-images/*'
 
 describe('getTalentThemeColor', () => {
   test('should use the theme color of the talent', () => {
@@ -64,15 +57,12 @@ describe('getTalentThemeColor', () => {
 })
 
 describe('fetchTalentIconDataURL', () => {
-  beforeEach(() => {
+  const profileImage = { blur_data_url: ICON.blur_data_url, id: ICON.id }
+
+  beforeEach(async () => {
     vi.clearAllMocks()
 
-    mocks.query.select.mockReturnValue(mocks.query)
-    mocks.query.eq.mockReturnValue(mocks.query)
-    mocks.query.maybeSingle.mockResolvedValue({
-      data: { path: 'youtube/UC1/a.webp' },
-      error: null,
-    })
+    await seedSupabase({ profileImages: [ICON] })
   })
 
   test('should convert the icon to a PNG of the given size', async () => {
@@ -86,22 +76,28 @@ describe('fetchTalentIconDataURL', () => {
     })
       .webp()
       .toBuffer()
+    const downloads: string[] = []
 
-    mocks.bucket.download.mockResolvedValue({
-      data: new Blob([new Uint8Array(webp)], { type: 'image/webp' }),
-      error: null,
-    })
+    supabaseServer.use(
+      http.get(DOWNLOAD_URL, ({ request }) => {
+        downloads.push(new URL(request.url).pathname)
 
-    const dataURL = await fetchTalentIconDataURL(PROFILE_IMAGE, 320)
+        return new HttpResponse(new Uint8Array(webp), {
+          headers: { 'Content-Type': 'image/webp' },
+        })
+      }),
+    )
+
+    const dataURL = await fetchTalentIconDataURL(profileImage, 320)
 
     expect(dataURL).toMatch(/^data:image\/png;base64,/)
-    // The lookup goes through the public client, so RLS applies.
-    expect(mocks.publicClient.from).toHaveBeenCalledWith('profile_images')
-    expect(mocks.query.eq).toHaveBeenCalledWith('id', 'icon-1')
-    expect(mocks.adminClient.storage.from).toHaveBeenCalledWith(
-      'profile-images',
-    )
-    expect(mocks.bucket.download).toHaveBeenCalledWith('youtube/UC1/a.webp')
+    // The lookup is sent with the public key, so RLS applies
+    expect(supabaseRequests('profile_images').map(({ role }) => role)).toEqual([
+      'anon',
+    ])
+    expect(downloads).toEqual([
+      '/storage/v1/object/profile-images/youtube/UC1/a.webp',
+    ])
 
     const png = Buffer.from(
       (dataURL ?? '').replace('data:image/png;base64,', ''),
@@ -118,41 +114,44 @@ describe('fetchTalentIconDataURL', () => {
   test('should return null for a talent without an icon', async () => {
     await expect(fetchTalentIconDataURL(null, 320)).resolves.toBeNull()
 
-    expect(mocks.publicClient.from).not.toHaveBeenCalled()
+    expect(supabaseRequests()).toEqual([])
   })
 
-  test('should return null for an icon that may not be used', async () => {
-    mocks.query.maybeSingle.mockResolvedValue({ data: null, error: null })
+  // RLS hides the icons that are not in use from the public key
+  test('should return null for an icon that cannot be read', async () => {
+    await seedSupabase()
 
-    await expect(fetchTalentIconDataURL(PROFILE_IMAGE, 320)).resolves.toBeNull()
-
-    expect(mocks.bucket.download).not.toHaveBeenCalled()
+    await expect(fetchTalentIconDataURL(profileImage, 320)).resolves.toBeNull()
   })
 
   test('should return null when the lookup fails', async () => {
-    mocks.query.maybeSingle.mockResolvedValue({
-      data: null,
-      error: { message: 'failed' },
-    })
+    failSupabase('profile_images', 'failed')
 
-    await expect(fetchTalentIconDataURL(PROFILE_IMAGE, 320)).resolves.toBeNull()
+    await expect(fetchTalentIconDataURL(profileImage, 320)).resolves.toBeNull()
   })
 
   test('should return null when the download fails', async () => {
-    mocks.bucket.download.mockResolvedValue({
-      data: null,
-      error: new Error('Object not found'),
-    })
+    supabaseServer.use(
+      http.get(DOWNLOAD_URL, () =>
+        HttpResponse.json(
+          {
+            error: 'not_found',
+            message: 'Object not found',
+            statusCode: '404',
+          },
+          { status: 400 },
+        ),
+      ),
+    )
 
-    await expect(fetchTalentIconDataURL(PROFILE_IMAGE, 320)).resolves.toBeNull()
+    await expect(fetchTalentIconDataURL(profileImage, 320)).resolves.toBeNull()
   })
 
   test('should return null for an icon that cannot be converted', async () => {
-    mocks.bucket.download.mockResolvedValue({
-      data: new Blob(['not an image']),
-      error: null,
-    })
+    supabaseServer.use(
+      http.get(DOWNLOAD_URL, () => new HttpResponse('not an image')),
+    )
 
-    await expect(fetchTalentIconDataURL(PROFILE_IMAGE, 320)).resolves.toBeNull()
+    await expect(fetchTalentIconDataURL(profileImage, 320)).resolves.toBeNull()
   })
 })

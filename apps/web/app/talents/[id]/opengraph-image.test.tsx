@@ -1,50 +1,34 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import type { TalentDetail } from '@/lib/fetchers'
+import {
+  createProfileImage,
+  createTalent,
+  createYouTubeChannel,
+} from '@/test/factories'
+import { seedSupabase, setupSupabase, supabaseRequests } from '@/test/supabase'
 
-const mocks = vi.hoisted(() => ({
-  fetchTalent: vi.fn(),
-  fetchTalentIconDataURL: vi.fn(),
-}))
-
-vi.mock('@/lib/fetchers', () => ({
-  fetchTalent: mocks.fetchTalent,
-}))
-
-vi.mock('./_lib/og-image', async (importOriginal) => ({
-  ...(await importOriginal<object>()),
-  fetchTalentIconDataURL: mocks.fetchTalentIconDataURL,
-}))
-
-vi.mock('@/lib/supabase', () => ({
-  getSupabaseAdminClient: vi.fn(),
-  supabaseClient: {},
+// Vitest does not run `'use cache'`, so `fetchTalent` queries every time
+vi.mock('next/cache', () => ({
+  cacheLife: vi.fn(),
+  cacheTag: vi.fn(),
 }))
 
 import Image, { contentType, size } from './opengraph-image'
 
-const TALENT_ID = '00000000-0000-4000-8000-000000000001'
+setupSupabase()
 
 // The name is in ASCII, so that no fonts are fetched for it in the tests
-function createTalent(overrides: Partial<TalentDetail> = {}): TalentDetail {
-  return {
-    id: TALENT_ID,
-    name: 'Mio Asagiri',
-    theme_color: '#FF6B9D',
-    twitch_users: [],
-    youtube_channels: [
-      {
-        name: 'Mio Asagiri',
-        profile_image: { blur_data_url: '', id: 'icon-1' },
-        youtube_channel_id: 'UC1',
-        youtube_handle: '@mio',
-      },
-    ],
-    ...overrides,
-  }
-}
+const TALENT = createTalent({ name: 'Mio Asagiri', theme_color: '#FF6B9D' })
+const ICON = createProfileImage({ path: 'youtube/UC1/a.webp' })
+const CHANNEL = createYouTubeChannel({
+  name: 'Mio Asagiri',
+  profile_image_id: ICON.id,
+  talent_id: TALENT.id,
+  youtube_channel_id: 'UC1',
+  youtube_handle: '@mio',
+})
 
-function render(id = TALENT_ID): Promise<Response> {
+function render(id = TALENT.id): Promise<Response> {
   return Image({ params: Promise.resolve({ id }) })
 }
 
@@ -57,19 +41,18 @@ function getPNGSize(buffer: ArrayBuffer) {
 
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
 
-// A 1x1 PNG
-const ICON_DATA_URL =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=='
-
 describe('opengraph-image of a talent', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
 
-    mocks.fetchTalent.mockResolvedValue(createTalent())
-    mocks.fetchTalentIconDataURL.mockResolvedValue(ICON_DATA_URL)
+    await seedSupabase({
+      profileImages: [ICON],
+      talents: [TALENT],
+      youtubeChannels: [CHANNEL],
+    })
   })
 
-  test('should be a 1200x630 PNG', async () => {
+  test('should be a 1200x630 PNG with the icon of the talent', async () => {
     const response = await render()
 
     expect(contentType).toBe('image/png')
@@ -81,11 +64,12 @@ describe('opengraph-image of a talent', () => {
 
     expect([...new Uint8Array(body.slice(0, 8))]).toEqual(PNG_SIGNATURE)
     expect(getPNGSize(body)).toEqual({ height: 630, width: 1200 })
-    expect(mocks.fetchTalent).toHaveBeenCalledWith(TALENT_ID)
-    expect(mocks.fetchTalentIconDataURL).toHaveBeenCalledWith(
-      { blur_data_url: '', id: 'icon-1' },
-      320,
-    )
+    // The icon of the channel is looked up to be drawn
+    expect(
+      supabaseRequests('profile_images').map(({ url }) =>
+        url.searchParams.get('id'),
+      ),
+    ).toEqual([`eq.${ICON.id}`])
   })
 
   test('should not be cached as immutable', async () => {
@@ -97,10 +81,7 @@ describe('opengraph-image of a talent', () => {
   })
 
   test('should be generated without a theme color or an icon', async () => {
-    mocks.fetchTalent.mockResolvedValue(
-      createTalent({ theme_color: null, youtube_channels: [] }),
-    )
-    mocks.fetchTalentIconDataURL.mockResolvedValue(null)
+    await seedSupabase({ talents: [{ ...TALENT, theme_color: null }] })
 
     const response = await render()
 
@@ -109,15 +90,16 @@ describe('opengraph-image of a talent', () => {
       height: 630,
       width: 1200,
     })
-    expect(mocks.fetchTalentIconDataURL).toHaveBeenCalledWith(null, 320)
+    expect(supabaseRequests('profile_images')).toEqual([])
   })
 
-  test('should be not found for talents that are not shown', async () => {
-    mocks.fetchTalent.mockResolvedValue(null)
-
-    await expect(render('not-a-uuid')).rejects.toMatchObject({
+  test.each([
+    ['an ID that is not a UUID', 'not-a-uuid'],
+    ['a talent that does not exist', crypto.randomUUID()],
+  ])('should be not found for %s', async (_, id) => {
+    await expect(render(id)).rejects.toMatchObject({
       digest: 'NEXT_HTTP_ERROR_FALLBACK;404',
     })
-    expect(mocks.fetchTalentIconDataURL).not.toHaveBeenCalled()
+    expect(supabaseRequests('profile_images')).toEqual([])
   })
 })

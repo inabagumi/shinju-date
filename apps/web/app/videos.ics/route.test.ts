@@ -1,25 +1,25 @@
 // @vitest-environment node
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  createTalent,
+  createVideo,
+  createVideoOnYouTube,
+  createYouTubeChannel,
+} from '@/test/factories'
+import {
+  failSupabase,
+  seedSupabase,
+  setupSupabase,
+  supabaseRequests,
+  videoSeed,
+} from '@/test/supabase'
 
-const mocks = vi.hoisted(() => {
-  const query = {
-    eq: vi.fn(),
-    in: vi.fn(),
-    limit: vi.fn(),
-    lt: vi.fn(),
-    order: vi.fn(),
-    select: vi.fn(),
-  }
-
-  return {
-    // Entries of the `'use cache'` functions, keyed by their arguments
-    cacheEntries: new Map<string, unknown>(),
-    client: { from: vi.fn(() => query) },
-    logger: { error: vi.fn() },
-    query,
-  }
-})
+const mocks = vi.hoisted(() => ({
+  // Entries of the `'use cache'` functions, keyed by their arguments
+  cacheEntries: new Map<string, unknown>(),
+  logger: { error: vi.fn() },
+}))
 
 vi.mock('next/cache', () => ({
   cacheLife: vi.fn(),
@@ -28,10 +28,6 @@ vi.mock('next/cache', () => ({
 
 vi.mock('@shinju-date/logger', () => ({
   logger: mocks.logger,
-}))
-
-vi.mock('@/lib/supabase', () => ({
-  supabaseClient: mocks.client,
 }))
 
 // Vitest does not run `'use cache'`, so serve the second call with the same
@@ -57,27 +53,42 @@ vi.mock('@/lib/fetchers', async (importOriginal) => {
 
 import { GET } from './route'
 
-const TALENT_A = '0f6b7c84-1a1e-4b4e-9d3a-5c7a0c1e2f01'
-const TALENT_B = '7d2e4b1a-3c5f-4e6a-8b9c-0d1e2f3a4b02'
+setupSupabase()
 
-const VIDEO = {
-  duration: 'PT1H',
-  id: 'video-1',
-  platform: 'youtube',
-  published_at: '2026-11-15T12:00:00Z',
-  status: 'ENDED',
-  talent: { name: '朝霧ミオ' },
-  title: '歌枠',
-  twitch_video: null,
-  youtube_video: { youtube_video_id: 'abc123' },
-}
+const talentA = createTalent({ name: '朝霧ミオ' })
+const talentB = createTalent({ name: '風花リツ' })
+const channelA = createYouTubeChannel({ talent_id: talentA.id })
+const channelB = createYouTubeChannel({ talent_id: talentB.id })
+
+const songA = createVideoOnYouTube(channelA, { title: '歌枠' })
+const shortA = createVideoOnYouTube(channelA, {
+  title: 'ショート',
+  video_kind: 'short',
+})
+const songB = createVideoOnYouTube(channelB, { title: '歌ってみた' })
+const shortB = createVideoOnYouTube(channelB, {
+  title: 'ショート動画',
+  video_kind: 'short',
+})
 
 function get(search = ''): Promise<Response> {
   return GET(new NextRequest(`https://shinju.date/videos.ics${search}`))
 }
 
+/** The IDs of the videos of the events of a calendar, in its order */
+async function eventIds(response: Response): Promise<string[]> {
+  return [...(await response.text()).matchAll(/^UID:(.+)@shinju\.date/gm)].map(
+    ([, id]) => id ?? '',
+  )
+}
+
+/** The IDs of the events of the given videos, in any order */
+function videoIds(...rows: { video: { id: string } }[]): string[] {
+  return rows.map(({ video }) => video.id)
+}
+
 describe('GET /videos.ics', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
     mocks.cacheEntries.clear()
     vi.spyOn(Temporal.Now, 'zonedDateTimeISO').mockImplementation((timeZone) =>
@@ -86,11 +97,11 @@ describe('GET /videos.ics', () => {
       ),
     )
 
-    for (const method of ['eq', 'in', 'lt', 'order', 'select'] as const) {
-      mocks.query[method].mockReturnValue(mocks.query)
-    }
-
-    mocks.query.limit.mockResolvedValue({ data: [VIDEO], error: null })
+    await seedSupabase({
+      talents: [talentA, talentB],
+      youtubeChannels: [channelA, channelB],
+      ...videoSeed([songA, shortA, songB, shortB]),
+    })
   })
 
   it('returns the latest videos of every talent without parameters', async () => {
@@ -104,127 +115,121 @@ describe('GET /videos.ics', () => {
       'public, max-age=300, s-maxage=900, stale-while-revalidate=3600',
     )
 
-    const body = await response.text()
+    const body = await response.clone().text()
 
     expect(body).toContain('SUMMARY:歌枠')
-    expect(body).toContain('UID:video-1@shinju.date')
-    expect(mocks.client.from).toHaveBeenCalledWith('videos')
-    expect(mocks.query.lt).toHaveBeenCalledWith(
-      'published_at',
-      '2026-11-22T03:00:00Z',
+    expect((await eventIds(response)).toSorted()).toEqual(
+      videoIds(songA, shortA, songB, shortB).toSorted(),
     )
-    expect(mocks.query.order).toHaveBeenCalledWith('published_at', {
-      ascending: false,
-    })
-    expect(mocks.query.limit).toHaveBeenCalledWith(100)
-    expect(mocks.query.in).not.toHaveBeenCalled()
-    expect(mocks.query.eq).not.toHaveBeenCalled()
   })
 
   it('returns the videos of the given talent', async () => {
-    const response = await get(`?talent=${TALENT_A}`)
+    const response = await get(`?talent=${talentA.id}`)
 
     expect(response.status).toBe(200)
-    expect(mocks.query.in).toHaveBeenCalledWith('talent_id', [TALENT_A])
+    expect((await eventIds(response)).toSorted()).toEqual(
+      videoIds(songA, shortA).toSorted(),
+    )
   })
 
   it('returns the videos of any of the given talents', async () => {
-    await get(
-      `?talent=${TALENT_B}&talent=${TALENT_A.toUpperCase()}&talent=${TALENT_B}`,
+    const otherTalent = createTalent()
+    const otherChannel = createYouTubeChannel({ talent_id: otherTalent.id })
+    const otherVideo = createVideoOnYouTube(otherChannel)
+
+    await seedSupabase({
+      talents: [talentA, talentB, otherTalent],
+      youtubeChannels: [channelA, channelB, otherChannel],
+      ...videoSeed([songA, songB, otherVideo]),
+    })
+
+    const response = await get(
+      `?talent=${talentB.id}&talent=${talentA.id.toUpperCase()}&talent=${talentB.id}`,
     )
 
-    expect(mocks.query.in).toHaveBeenCalledWith('talent_id', [
-      TALENT_A,
-      TALENT_B,
-    ])
+    expect((await eventIds(response)).toSorted()).toEqual(
+      videoIds(songA, songB).toSorted(),
+    )
   })
 
   it('does not query Supabase again for the same conditions', async () => {
-    await get(`?kind=short&talent=${TALENT_B}&talent=${TALENT_A}`)
+    await get(`?kind=short&talent=${talentB.id}&talent=${talentA.id}`)
     const response = await get(
-      `?talent=${TALENT_A.toUpperCase()}&talent=${TALENT_B}&kind=short&talent=${TALENT_A}`,
+      `?talent=${talentA.id.toUpperCase()}&talent=${talentB.id}&kind=short&talent=${talentA.id}`,
     )
 
     expect(response.status).toBe(200)
-    expect(await response.text()).toContain('UID:video-1@shinju.date')
-    expect(mocks.client.from).toHaveBeenCalledOnce()
-    expect(mocks.query.limit).toHaveBeenCalledOnce()
+    expect((await eventIds(response)).toSorted()).toEqual(
+      videoIds(shortA, shortB).toSorted(),
+    )
+    expect(supabaseRequests('videos')).toHaveLength(1)
   })
 
   it('queries Supabase again for other conditions', async () => {
-    await get(`?talent=${TALENT_A}`)
-    await get(`?talent=${TALENT_B}`)
+    await get(`?talent=${talentA.id}`)
+    await get(`?talent=${talentB.id}`)
 
-    expect(mocks.client.from).toHaveBeenCalledTimes(2)
+    expect(supabaseRequests('videos')).toHaveLength(2)
   })
 
   it('leaves out the videos without a platform source', async () => {
-    mocks.query.limit.mockResolvedValue({
-      data: [
-        VIDEO,
-        { ...VIDEO, id: 'video-2', twitch_video: null, youtube_video: null },
-      ],
-      error: null,
+    const withoutSource = createVideo({ talent_id: talentA.id })
+
+    await seedSupabase({
+      talents: [talentA],
+      youtubeChannels: [channelA],
+      ...videoSeed([songA, withoutSource]),
     })
 
-    const body = await (await get()).text()
-
-    expect(body).toContain('UID:video-1@shinju.date')
-    expect(body).not.toContain('UID:video-2@shinju.date')
+    expect(await eventIds(await get())).toEqual(videoIds(songA))
   })
 
-  it.each(['standard', 'short'])(
-    'returns only the videos of kind=%s',
-    async (kind) => {
-      await get(`?kind=${kind}`)
+  it.each([
+    ['standard', [songA, songB]],
+    ['short', [shortA, shortB]],
+  ])('returns only the videos of kind=%s', async (kind, expected) => {
+    const response = await get(`?kind=${kind}`)
 
-      expect(mocks.query.eq).toHaveBeenCalledWith('video_kind', kind)
-      expect(mocks.query.in).not.toHaveBeenCalled()
-    },
-  )
+    expect((await eventIds(response)).toSorted()).toEqual(
+      videoIds(...expected).toSorted(),
+    )
+  })
 
   it('treats an unknown kind as no kind', async () => {
-    await get('?kind=live')
+    const response = await get('?kind=live')
 
-    expect(mocks.query.eq).not.toHaveBeenCalled()
+    expect(await eventIds(response)).toHaveLength(4)
   })
 
   it('combines the talents and the kind', async () => {
-    await get(`?kind=short&talent=${TALENT_A}`)
+    const response = await get(`?kind=short&talent=${talentA.id}`)
 
-    expect(mocks.query.in).toHaveBeenCalledWith('talent_id', [TALENT_A])
-    expect(mocks.query.eq).toHaveBeenCalledWith('video_kind', 'short')
+    expect(await eventIds(response)).toEqual(videoIds(shortA))
   })
 
   it('returns a calendar without events when nothing matches', async () => {
-    mocks.query.limit.mockResolvedValue({ data: [], error: null })
-
-    const response = await get(`?talent=${TALENT_A}`)
+    // The unknown talent still narrows the calendar instead of falling back
+    const response = await get(`?talent=${createTalent().id}`)
     const body = await response.text()
 
     expect(response.status).toBe(200)
     expect(body).toContain('BEGIN:VCALENDAR')
     expect(body).not.toContain('BEGIN:VEVENT')
-    // The unknown talent still narrows the calendar instead of falling back
-    expect(mocks.query.in).toHaveBeenCalledWith('talent_id', [TALENT_A])
   })
 
   it.each([
     '?talent=abc',
     '?talent=',
-    `?talent=${TALENT_A}&talent=${TALENT_B}x`,
+    `?talent=${talentA.id}&talent=${talentB.id}x`,
   ])('answers 400 for talents that are not UUIDs (%s)', async (search) => {
     const response = await get(search)
 
     expect(response.status).toBe(400)
-    expect(mocks.client.from).not.toHaveBeenCalled()
+    expect(supabaseRequests()).toEqual([])
   })
 
   it('answers 500 when the videos cannot be fetched', async () => {
-    mocks.query.limit.mockResolvedValue({
-      data: null,
-      error: { message: 'relation "videos" does not exist' },
-    })
+    failSupabase('videos', 'relation "videos" does not exist')
 
     const response = await get()
 
