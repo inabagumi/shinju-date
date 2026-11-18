@@ -53,21 +53,20 @@ interface QueryResult {
  *   the error.
  * @throws {DatabaseError} When `result` has an error.
  */
-export function throwIfError<Result extends QueryResult>(
+export const throwIfError = <Result extends QueryResult>(
   result: Result,
   operation: string
-): Extract<Result, { error: null }>["data"] {
+): Extract<Result, { error: null }>["data"] => {
   if (result.error) {
     throw new DatabaseError(operation, result.error);
   }
 
   // The type of `data` is not narrowed by checking `error` of a generic.
   return result.data as Extract<Result, { error: null }>["data"];
-}
+};
 
-export function isForeignKeyViolation(error: PostgrestErrorLike): boolean {
-  return error.code === FOREIGN_KEY_VIOLATION;
-}
+export const isForeignKeyViolation = (error: PostgrestErrorLike): boolean =>
+  error.code === FOREIGN_KEY_VIOLATION;
 
 /**
  * The account to read does not exist, or belongs to a talent that was deleted.

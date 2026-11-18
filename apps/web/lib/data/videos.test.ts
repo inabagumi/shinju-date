@@ -40,9 +40,8 @@ vi.mock(import("next/cache"), () => ({
 setupSupabase();
 
 /** The IDs of the given rows or results, to compare them in order */
-function ids(rows: readonly { id: string }[]): string[] {
-  return rows.map((row) => row.id);
-}
+const ids = (rows: readonly { id: string }[]): string[] =>
+  rows.map((row) => row.id);
 
 const talent = createTalent({ name: "朝霧ミオ" });
 const otherTalent = createTalent({ name: "風花リツ" });
@@ -54,16 +53,15 @@ const twitchUser = createTwitchUser({
 });
 
 /** Put the talents, their accounts and the given videos in the database */
-function seedVideos(
+const seedVideos = (
   rows: Parameters<typeof videoSeed>[0]
-): ReturnType<typeof seedSupabase> {
-  return seedSupabase({
+): ReturnType<typeof seedSupabase> =>
+  seedSupabase({
     talents: [talent, otherTalent],
     twitchUsers: [twitchUser],
     youtubeChannels: [channel, otherChannel],
     ...videoSeed(rows),
   });
-}
 
 describe("lib/data/videos", () => {
   beforeEach(() => {

@@ -71,15 +71,15 @@ export class BackfillTransitionError extends Error {
 }
 
 /** Tells whether an operation may move a job that has the given status. */
-export function canTransition(
+export const canTransition = (
   operation: BackfillJobOperation,
   status: BackfillJobStatus
-): boolean {
+): boolean => {
   const { from }: { from: readonly BackfillJobStatus[] } =
     BACKFILL_JOB_TRANSITIONS[operation];
 
   return from.includes(status);
-}
+};
 
 /**
  * Moves a job by an operation.
@@ -87,16 +87,16 @@ export function canTransition(
  * @throws {BackfillTransitionError} When the operation does not move a job
  *   that has its status.
  */
-export function transition<T extends BackfillJob>(
+export const transition = <T extends BackfillJob>(
   job: T,
   operation: BackfillJobOperation
-): T {
+): T => {
   if (!canTransition(operation, job.status)) {
     throw new BackfillTransitionError(job.id, operation, job.status);
   }
 
   return { ...job, status: BACKFILL_JOB_TRANSITIONS[operation].to };
-}
+};
 
 /**
  * Tells whether a job is queued or being read, and how it is shown to
@@ -104,10 +104,10 @@ export function transition<T extends BackfillJob>(
  * {@link BACKFILL_PENDING_TIMEOUT_SECONDS}, and a `running` one is being
  * read while its worker holds the lock; otherwise it is `interrupted`.
  */
-export function getJobActivity(
+export const getJobActivity = (
   job: Pick<BackfillJob, "status" | "updatedAt">,
   { locked, now = Temporal.Now.instant() }: GetJobActivityOptions
-): BackfillJobActivity {
+): BackfillJobActivity => {
   let active: boolean;
 
   switch (job.status) {
@@ -131,7 +131,7 @@ export function getJobActivity(
   }
 
   return { active, status: active ? job.status : "interrupted" };
-}
+};
 
 /**
  * The job that a request queues, given the job for the account as it is
@@ -140,11 +140,11 @@ export function getJobActivity(
  *
  * @throws {BackfillTransitionError} When the job cannot be requested again.
  */
-export function createRequestedJob(
+export const createRequestedJob = (
   { accountId, provider, requestedBy, runId, talentId }: BackfillRequest,
   current: BackfillJob | null,
   now: Temporal.Instant
-): BackfillJob {
+): BackfillJob => {
   if (current) {
     transition(current, "enqueue");
   }
@@ -170,7 +170,7 @@ export function createRequestedJob(
     talentId,
     updatedAt: timestamp,
   };
-}
+};
 
 /**
  * Moves a job by an operation of a worker, at a time: as
@@ -180,42 +180,38 @@ export function createRequestedJob(
  * @throws {BackfillTransitionError} When the operation does not move a job
  *   that has its status.
  */
-export function moveJob(
+export const moveJob = (
   job: BackfillJob,
   operation: Exclude<BackfillJobOperation, "claim" | "enqueue">,
   now: Temporal.Instant
-): BackfillJob {
+): BackfillJob => {
   const timestamp = now.toString();
   const moved = { ...transition(job, operation), updatedAt: timestamp };
 
   return operation === "complete" || operation === "fail"
     ? { ...moved, finishedAt: timestamp }
     : moved;
-}
+};
 
 /**
  * A job with a page that was read: its videos and the page added to the
  * progress, the cursor moved on and the failures cleared.
  */
-export function withPage(
+export const withPage = (
   job: BackfillJob,
   { added, nextCursor }: BackfillPage
-): BackfillJob {
-  return {
-    ...job,
-    added: job.added + added,
-    attempts: 0,
-    cursor: nextCursor,
-    error: null,
-    pages: job.pages + 1,
-  };
-}
+): BackfillJob => ({
+  ...job,
+  added: job.added + added,
+  attempts: 0,
+  cursor: nextCursor,
+  error: null,
+  pages: job.pages + 1,
+});
 
 /** A job with a page that could not be read: the attempt and its error. */
-export function withFailure(job: BackfillJob, error: unknown): BackfillJob {
-  return {
-    ...job,
-    attempts: job.attempts + 1,
-    error: error instanceof Error ? error.message : String(error),
-  };
-}
+export const withFailure = (job: BackfillJob, error: unknown): BackfillJob => ({
+  ...job,
+  attempts: job.attempts + 1,
+  error: error instanceof Error ? error.message : String(error),
+});

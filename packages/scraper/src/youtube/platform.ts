@@ -16,9 +16,9 @@ export type YouTubePlatformAdapter = PlatformAdapter<
  * Describes YouTube to the operations shared by the platforms, reading the
  * platform through `fetcher`.
  */
-export function createYouTubePlatform(
+export const createYouTubePlatform = (
   fetcher: YouTubeFetcher
-): YouTubePlatformAdapter {
+): YouTubePlatformAdapter => {
   const getPlatformVideoId = (saved: SavedYouTubeVideo) =>
     saved.youtube_video.youtube_video_id;
 
@@ -41,7 +41,7 @@ export function createYouTubePlatform(
     savedVideoColumns: SAVED_YOUTUBE_VIDEO_COLUMNS,
     toFields: toVideoFields,
   };
-}
+};
 
 /** Describes YouTube to the saving of new videos. */
 export const YOUTUBE_NEW_VIDEOS: NewVideoAdapter<YouTubeVideo> = {

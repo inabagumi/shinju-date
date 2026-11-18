@@ -21,7 +21,7 @@ const runNow: RequestScheduler = (request) => request();
  * request accepts, and yields what each batch returned in the order of the
  * batches. `request` makes its Helix requests through `run`.
  */
-export async function* requestInBatches<T>(
+export const requestInBatches = async function* requestInBatches<T>(
   ids: readonly string[],
   schedule: RequestScheduler | undefined,
   request: (ids: string[], run: RequestScheduler) => Promise<readonly T[]>
@@ -43,7 +43,7 @@ export async function* requestInBatches<T>(
   for (const items of results) {
     yield* items;
   }
-}
+};
 
 /**
  * Looks up resources by ID, treating a Helix 404 as "these IDs are gone".
@@ -53,10 +53,10 @@ export async function* requestInBatches<T>(
  * half and retried so the IDs that still exist are returned and only the
  * missing ones are dropped.
  */
-export async function lookupByIds<T>(
+export const lookupByIds = async <T>(
   ids: string[],
   lookup: (ids: string[]) => Promise<T[]>
-): Promise<T[]> {
+): Promise<T[]> => {
   if (ids.length === 0) {
     return [];
   }
@@ -79,4 +79,4 @@ export async function lookupByIds<T>(
       ...(await lookupByIds(ids.slice(middle), lookup)),
     ];
   }
-}
+};

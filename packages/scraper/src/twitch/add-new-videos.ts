@@ -43,12 +43,12 @@ export interface PlanNewVideosOptions {
  * archive can show up while its stream is still live. Such an archive must not
  * end the broadcast: `liveStream` is set on the action so the row stays LIVE.
  */
-export function planNewVideos({
+export const planNewVideos = ({
   liveStreams,
   savedByStreamId,
   savedByVideoId,
   videos,
-}: PlanNewVideosOptions): NewVideoAction[] {
+}: PlanNewVideosOptions): NewVideoAction[] => {
   const liveStreamById = new Map(
     liveStreams.map((stream) => [stream.id, stream])
   );
@@ -99,7 +99,7 @@ export function planNewVideos({
   }
 
   return actions;
-}
+};
 
 /**
  * Carries out one planned action. Failures are thrown, so callers decide
@@ -107,11 +107,11 @@ export function planNewVideos({
  *
  * @returns Whether the action changed what the public site shows.
  */
-export async function applyNewVideoAction(
+export const applyNewVideoAction = async (
   context: WriteContext,
   action: NewVideoAction,
   userByTwitchId: ReadonlyMap<string, TalentAccount>
-): Promise<boolean> {
+): Promise<boolean> => {
   const { liveStream, video } = action;
 
   if (action.kind === "insert") {
@@ -144,7 +144,7 @@ export async function applyNewVideoAction(
   return attachArchive(context, action.saved, video, {
     stillLive: liveStream !== undefined,
   });
-}
+};
 
 /**
  * Adds videos (archives and uploads) that appeared on the Twitch accounts of
@@ -156,9 +156,9 @@ export async function applyNewVideoAction(
  *
  * @returns The number of videos added or attached.
  */
-export async function addNewTwitchVideos(
+export const addNewTwitchVideos = async (
   context: CrawlContext<TwitchFetcher>
-): Promise<number> {
+): Promise<number> => {
   const { fetcher, reportError, supabaseClient } = context;
   const users = await getActiveAccounts(supabaseClient, TWITCH_USERS);
 
@@ -186,7 +186,7 @@ export async function addNewTwitchVideos(
     users,
     videos: [...archives.videos, ...uploads.videos],
   });
-}
+};
 
 export interface SaveNewTwitchVideosOptions {
   /** Videos saved at once (default: `WRITE_CONCURRENCY`). */
@@ -206,7 +206,7 @@ export interface SaveNewTwitchVideosOptions {
  *
  * @returns The number of videos added or attached.
  */
-export async function saveNewTwitchVideos(
+export const saveNewTwitchVideos = async (
   context: WriteContext,
   {
     concurrency = WRITE_CONCURRENCY,
@@ -214,7 +214,7 @@ export async function saveNewTwitchVideos(
     users,
     videos,
   }: SaveNewTwitchVideosOptions
-): Promise<number> {
+): Promise<number> => {
   const { logger, reportError, supabaseClient } = context;
 
   if (videos.length === 0) {
@@ -262,4 +262,4 @@ export async function saveNewTwitchVideos(
     },
     (error, action) => reportError(error, { twitchVideoId: action.video.id })
   );
-}
+};

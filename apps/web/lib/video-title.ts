@@ -40,20 +40,16 @@ const EXCLUDED_HASHTAGS: ReadonlySet<string> = new Set([
   "新人vtuber",
 ]);
 
-function isNumber(name: string): boolean {
-  return /^\p{N}+$/u.test(name);
-}
+const isNumber = (name: string): boolean => /^\p{N}+$/u.test(name);
 
-function toHashtagKey(name: string): string {
-  return name.normalize("NFKC").toLowerCase();
-}
+const toHashtagKey = (name: string): string =>
+  name.normalize("NFKC").toLowerCase();
 
-function toCreditKey(value: string): string {
-  return value
+const toCreditKey = (value: string): string =>
+  value
     .normalize("NFKC")
     .toLowerCase()
     .replaceAll(/[\s・]/g, "");
-}
 
 /**
  * 動画のタイトルを、本文・ラベル（【】と〖〗の中身）・末尾のハッシュタグに
@@ -68,10 +64,10 @@ function toCreditKey(value: string): string {
  * - 本文が空になったときは、先頭のラベルを本文にする。ラベルもなければ、元の
  *   タイトルを本文にする
  */
-export function parseVideoTitle(
+export const parseVideoTitle = (
   title: string,
   { creditKeywords = [], creditNames = [] }: ParseVideoTitleOptions = {}
-): ParsedVideoTitle {
+): ParsedVideoTitle => {
   const keywords = creditKeywords.map(toCreditKey).filter(Boolean);
   const names = new Set(
     [...creditKeywords, ...creditNames].map(toCreditKey).filter(Boolean)
@@ -191,7 +187,7 @@ export function parseVideoTitle(
     labels: [],
     text: title.replaceAll(SPACES, " ").trim(),
   };
-}
+};
 
 /** ラベルとハッシュタグの行に出すハッシュタグの数 */
 const MAX_HASHTAGS = 3;
@@ -211,10 +207,10 @@ export interface VideoTitleParts {
  *
  * 【】の中の出演者の表記（所属の名前を含む部分と、タレントの名前）は出さない。
  */
-export function getVideoTitleParts(
+export const getVideoTitleParts = (
   title: string,
   talentName?: string | null | undefined
-): VideoTitleParts {
+): VideoTitleParts => {
   const { hashtags, labels, text } = parseVideoTitle(title, {
     creditKeywords: [TALENT_AFFILIATION_NAME],
     creditNames: talentName ? [talentName] : [],
@@ -225,4 +221,4 @@ export function getVideoTitleParts(
   ].join(" ");
 
   return { tags, text };
-}
+};

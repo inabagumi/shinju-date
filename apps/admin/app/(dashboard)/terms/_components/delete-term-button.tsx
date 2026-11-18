@@ -13,19 +13,17 @@ interface DeleteTermButtonProps {
 }
 
 /** 用語の一覧の、行ごとの削除のボタン。確認のダイアログを開いてから削除する */
-export function DeleteTermButton({ id, term }: DeleteTermButtonProps) {
-  return (
-    <ConfirmDialog
-      confirmLabel="削除"
-      confirmVariant="danger"
-      description={`本当に「${term}」を削除しますか？この操作は取り消せません。`}
-      onConfirm={() => deleteTermAction(id)}
-      title="用語を削除"
-      trigger={
-        <Button size="sm" variant="danger">
-          削除
-        </Button>
-      }
-    />
-  );
-}
+export const DeleteTermButton = ({ id, term }: DeleteTermButtonProps) => (
+  <ConfirmDialog
+    confirmLabel="削除"
+    confirmVariant="danger"
+    description={`本当に「${term}」を削除しますか？この操作は取り消せません。`}
+    onConfirm={() => deleteTermAction(id)}
+    title="用語を削除"
+    trigger={
+      <Button size="sm" variant="danger">
+        削除
+      </Button>
+    }
+  />
+);

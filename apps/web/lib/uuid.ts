@@ -7,6 +7,4 @@ const UUID_PATTERN =
  * Comparing a `uuid` column with any other value fails with an error instead
  * of matching no rows, so check IDs taken from URLs before querying them.
  */
-export function isUUID(value: string): boolean {
-  return UUID_PATTERN.test(value);
-}
+export const isUUID = (value: string): boolean => UUID_PATTERN.test(value);

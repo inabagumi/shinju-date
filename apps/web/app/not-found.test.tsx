@@ -11,20 +11,19 @@ vi.mock(import("next/navigation"), () => ({
   usePathname: () => "/missing-page",
 }));
 
-function SearchModalState() {
+const SearchModalState = () => {
   const { isOpen } = useSearchModal();
 
   return <output>{isOpen ? "open" : "closed"}</output>;
-}
+};
 
-function renderNotFound() {
-  return render(
+const renderNotFound = () =>
+  render(
     <SearchModalProvider>
       <NotFound />
       <SearchModalState />
     </SearchModalProvider>
   );
-}
 
 describe(NotFound, () => {
   it("should render the heading in Japanese", () => {

@@ -5,18 +5,17 @@ import type { BackfillJob } from "@shinju-date/video-backfill";
 
 import type { TypedSupabaseClient } from "./supabase";
 
-function toTimestamp(value: string): string {
-  return toDBString(Temporal.Instant.from(value));
-}
+const toTimestamp = (value: string): string =>
+  toDBString(Temporal.Instant.from(value));
 
 /**
  * Converts a finished job into a row of `video_backfill_jobs`.
  *
  * @throws {TypeError} When the job has not finished.
  */
-export function toBackfillHistoryRow(
+export const toBackfillHistoryRow = (
   job: BackfillJob
-): TablesInsert<"video_backfill_jobs"> {
+): TablesInsert<"video_backfill_jobs"> => {
   if ((job.status !== "done" && job.status !== "failed") || !job.finishedAt) {
     throw new TypeError(`Backfill job ${job.id} has not finished.`);
   }
@@ -39,17 +38,17 @@ export function toBackfillHistoryRow(
     status: job.status,
     talent_id: job.talentId,
   };
-}
+};
 
 /**
  * Records a finished job in the history (`video_backfill_jobs`), which
  * outlives the job in Redis. Recording the same request twice is a no-op, so
  * this can be retried.
  */
-export async function recordBackfillJob(
+export const recordBackfillJob = async (
   supabaseClient: TypedSupabaseClient,
   job: BackfillJob
-): Promise<void> {
+): Promise<void> => {
   throwIfError(
     await supabaseClient
       .from("video_backfill_jobs")
@@ -59,4 +58,4 @@ export async function recordBackfillJob(
       }),
     "Failed to record a backfill job"
   );
-}
+};

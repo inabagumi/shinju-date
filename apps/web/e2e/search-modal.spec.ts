@@ -13,26 +13,23 @@ const SUGGESTED_TERM = "歌枠";
 // development server, which compiles the page on demand
 const NAVIGATION_TIMEOUT = 15_000;
 
-function getSearchDialog(page: Page) {
-  return page.getByRole("dialog", { name: "検索" });
-}
+const getSearchDialog = (page: Page) =>
+  page.getByRole("dialog", { name: "検索" });
 
-function getSearchInput(page: Page) {
-  return getSearchDialog(page).getByRole("searchbox");
-}
+const getSearchInput = (page: Page) =>
+  getSearchDialog(page).getByRole("searchbox");
 
-function getSuggestionLink(page: Page, name: string) {
-  return getSearchDialog(page).getByRole("link", { exact: true, name });
-}
+const getSuggestionLink = (page: Page, name: string) =>
+  getSearchDialog(page).getByRole("link", { exact: true, name });
 
-async function openSearchModal(page: Page) {
+const openSearchModal = async (page: Page) => {
   await page.getByRole("button", { name: "検索" }).click();
 
   const searchInput = getSearchInput(page);
   await expect(searchInput).toBeVisible();
 
   return searchInput;
-}
+};
 
 test.describe("Search Modal - Opening and Closing", () => {
   test("should open search modal when clicking search button", async ({
@@ -313,17 +310,15 @@ test.describe("Search Modal - Stability Tests", () => {
 });
 
 test.describe("Search Modal - Talent", () => {
-  function getChipList(page: Page) {
-    return getSearchDialog(page).getByRole("list", {
+  const getChipList = (page: Page) =>
+    getSearchDialog(page).getByRole("list", {
       name: "選んでいるタレント",
     });
-  }
 
-  function getTalentOption(page: Page, name: string) {
-    return page
+  const getTalentOption = (page: Page, name: string) =>
+    page
       .getByRole("region", { name: "タレント" })
       .getByRole("button", { name });
-  }
 
   test("should search a keyword within the selected talent", async ({
     page,

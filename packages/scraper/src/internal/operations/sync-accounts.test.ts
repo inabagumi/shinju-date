@@ -43,16 +43,16 @@ const savedAccounts: FakeSaved[] = [
 ];
 
 /** A database holding `savedAccounts`, both owned by `talent-1`. */
-function respondWithSavedAccounts() {
+const respondWithSavedAccounts = () => {
   supabase.respondWith({
     "GET talents": [{ id: "talent-1", youtube_channels: savedAccounts }],
   });
-}
+};
 
 type FakeAdapter = AccountAdapter<FakeAccount, FakeSaved, FakeFields>;
 
 /** A platform that returns `accounts` and writes nothing for real. */
-function createAdapter(accounts: FakeAccount[]) {
+const createAdapter = (accounts: FakeAccount[]) => {
   const adapter = {
     accountTable: YOUTUBE_CHANNELS,
     getAccounts: vi.fn<FakeAdapter["getAccounts"]>(async (ids) =>
@@ -73,7 +73,7 @@ function createAdapter(accounts: FakeAccount[]) {
   } satisfies FakeAdapter;
 
   return adapter;
-}
+};
 
 describe("account sync", () => {
   beforeEach(() => {

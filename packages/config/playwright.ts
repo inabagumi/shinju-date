@@ -54,12 +54,12 @@ const fakeServiceEnv = {
  * })
  * ```
  */
-export function definePlaywrightConfig({
+export const definePlaywrightConfig = ({
   env = {},
   port,
   readyPath = "/",
   ...overrides
-}: PlaywrightConfigOptions): PlaywrightTestConfig {
+}: PlaywrightConfigOptions): PlaywrightTestConfig => {
   const isCI = !!process.env["CI"];
   const baseURL = `http://localhost:${port}`;
 
@@ -97,4 +97,4 @@ export function definePlaywrightConfig({
       url: new URL(readyPath, baseURL).toString(),
     },
   });
-}
+};

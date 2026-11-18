@@ -23,7 +23,7 @@ interface BannerTone {
  * お知らせの種類ごとの見た目。地はどれも `bg-surface` にそろえ、種類は
  * 左端の線と見出しの色（情報は `accent`、注意は `warning`、警告は `danger`）で示す。
  */
-function getBannerTone(level: string): BannerTone {
+const getBannerTone = (level: string): BannerTone => {
   switch (level) {
     case "warning": {
       return {
@@ -50,7 +50,7 @@ function getBannerTone(level: string): BannerTone {
       };
     }
   }
-}
+};
 
 const ICON_BUTTON_CLASS_NAME =
   "cursor-pointer rounded-control p-1 text-muted hover:bg-muted hover:text-foreground focus-ring";
@@ -66,11 +66,11 @@ const ICON_BUTTON_CLASS_NAME =
  * The message is rendered on the server (see `announcement-message.tsx`), so
  * this component never receives the Markdown source.
  */
-export function AnnouncementBanner({
+export const AnnouncementBanner = ({
   announcement: initialAnnouncement,
 }: {
   announcement: RenderedAnnouncement;
-}) {
+}) => {
   const [isVisible, setIsVisible] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -214,4 +214,4 @@ export function AnnouncementBanner({
       </div>
     </div>
   );
-}
+};

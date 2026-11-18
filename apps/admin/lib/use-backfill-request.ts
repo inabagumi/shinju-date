@@ -16,10 +16,10 @@ interface BackfillRequestResult extends ServerActionResult {
  * 返す関数は、取り直しが終わると解決する（`ConfirmDialog` の `onConfirm` に渡すと、
  * それまでダイアログが実行中の表示になる）
  */
-export function useBackfillRequest<TArgs extends unknown[]>(
+export const useBackfillRequest = <TArgs extends unknown[]>(
   action: (...args: TArgs) => Promise<BackfillRequestResult>,
   reload: () => Promise<void>
-): (...args: TArgs) => Promise<void> {
+): ((...args: TArgs) => Promise<void>) => {
   const { run } = useServerAction(action, {
     errorText: "キューへの追加に失敗しました。",
     successText: (result) => result.data?.message ?? "キューに追加しました。",
@@ -29,4 +29,4 @@ export function useBackfillRequest<TArgs extends unknown[]>(
     await run(...args);
     await reload();
   };
-}
+};

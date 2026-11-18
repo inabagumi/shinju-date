@@ -10,14 +10,14 @@ interface FormatDateOptions {
  * The output does not depend on the Temporal implementation, so it can be
  * used safely in components rendered on both the server and the client.
  */
-export function formatDate(
+export const formatDate = (
   timestamp: Temporal.ZonedDateTime | Temporal.PlainDate,
   options: FormatDateOptions = {}
-): string {
+): string => {
   const { includeYear = true } = options;
   const monthAndDay = `${padNumber(timestamp.month)}/${padNumber(timestamp.day)}`;
 
   return includeYear
     ? `${timestamp.year.toString(10)}/${monthAndDay}`
     : monthAndDay;
-}
+};

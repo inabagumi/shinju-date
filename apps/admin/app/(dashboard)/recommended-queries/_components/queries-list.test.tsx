@@ -29,8 +29,8 @@ vi.mock(import("../_actions"), () => ({
 
 const { QueriesList } = await import("./queries-list");
 
-function renderList() {
-  return render(
+const renderList = () =>
+  render(
     <QueriesList
       autoQueries={[]}
       autoTotal={0}
@@ -40,7 +40,6 @@ function renderList() {
     />,
     { wrapper: ActionToastProvider }
   );
-}
 
 describe("QueriesList", () => {
   beforeEach(() => {

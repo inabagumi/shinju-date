@@ -16,9 +16,9 @@ import { dailyKeys, parseScoredMembers } from "./redis";
  * @returns The rate in percent, or `null` when there is no session to
  * measure it against (or it could not be calculated)
  */
-export async function getSearchEngagementRate({
+export const getSearchEngagementRate = async ({
   range,
-}: PeriodQuery): Promise<number | null> {
+}: PeriodQuery): Promise<number | null> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -60,19 +60,19 @@ export async function getSearchEngagementRate({
     logger.error("検索利用率の計算に失敗しました", { error });
     return null;
   }
-}
+};
 
 /**
  * Calculate search exit rates by keyword for a single date or date range
  * @param query.range - The date range (both ends inclusive). Pass the same date as `start` and `end` for a single date
  * @param query.limit - Maximum number of keywords to return (`DEFAULT_RANKING_LIMIT` by default)
  */
-export async function getSearchExitRates({
+export const getSearchExitRates = async ({
   limit = DEFAULT_RANKING_LIMIT,
   range,
 }: RankingQuery): Promise<
   { keyword: string; exitRate: number; searchCount: number }[]
-> {
+> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -165,7 +165,7 @@ export async function getSearchExitRates({
     logger.error("検索離脱率の計算に失敗しました", { error });
     return [];
   }
-}
+};
 
 /**
  * Calculate repeat search rate (average searches per session) for a single date or date range
@@ -173,9 +173,9 @@ export async function getSearchExitRates({
  * @returns The average number of searches per session, or `null` when there
  * is no search session to measure it against (or it could not be calculated)
  */
-export async function getRepeatSearchRate({
+export const getRepeatSearchRate = async ({
   range,
-}: PeriodQuery): Promise<number | null> {
+}: PeriodQuery): Promise<number | null> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -222,4 +222,4 @@ export async function getRepeatSearchRate({
     logger.error("リピート検索率の計算に失敗しました", { error });
     return null;
   }
-}
+};

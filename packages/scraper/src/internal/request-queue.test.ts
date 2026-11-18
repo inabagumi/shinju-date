@@ -2,9 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { RequestQueue } from "./request-queue.js";
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+const delay = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 describe(RequestQueue, () => {
   it("shares its limit across concurrent calls", async () => {

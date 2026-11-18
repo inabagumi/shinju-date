@@ -2,7 +2,7 @@ import { registerServer } from "@shinju-date/instrumentation/server";
 
 export { onRequestError } from "@shinju-date/instrumentation/server";
 
-export async function register() {
+export const register = async () => {
   // Checks the environment variables on start, so that a missing one stops
   // the server with its name instead of failing the first request that needs
   // it.
@@ -13,4 +13,4 @@ export async function register() {
     profileSessionSampleRate: 0.333,
     tracesSampleRate: 0.333,
   });
-}
+};

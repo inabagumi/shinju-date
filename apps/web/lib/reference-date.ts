@@ -5,8 +5,8 @@ import { fetchCurrentTime } from "@/lib/data/videos";
  * of “today” that the server renders with and the browser hydrates with
  * (`useToday`).
  */
-export async function getReferenceDate(): Promise<string> {
+export const getReferenceDate = async (): Promise<string> => {
   const now = Temporal.ZonedDateTime.from(await fetchCurrentTime());
 
   return now.toPlainDate().toString();
-}
+};

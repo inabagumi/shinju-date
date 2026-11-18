@@ -15,11 +15,11 @@ interface TabNavigationProps {
 /**
  * Client component for tab navigation that updates URL with tab parameter
  */
-export function TabNavigation({
+export const TabNavigation = ({
   searchParams,
   tabs,
   defaultTab,
-}: TabNavigationProps) {
+}: TabNavigationProps) => {
   const updateSearchParams = useUpdateSearchParams();
   const { tab } = use(searchParams);
 
@@ -54,26 +54,24 @@ export function TabNavigation({
       </div>
     </div>
   );
-}
+};
 
 interface TabNavigationSkeletonProps {
   tabs: TabNavigationProps["tabs"];
 }
 
 /** 読み込み中の `TabNavigation`。タブの名前を、選ばれていない状態で並べる */
-export function TabNavigationSkeleton({ tabs }: TabNavigationSkeletonProps) {
-  return (
-    <div aria-hidden="true" className="border-b border-border">
-      <div className="-mb-px flex gap-6">
-        {tabs.map((tab) => (
-          <span
-            className="border-b-2 border-transparent px-1 py-2 text-meta font-semibold whitespace-nowrap text-muted"
-            key={tab.id}
-          >
-            {tab.label}
-          </span>
-        ))}
-      </div>
+export const TabNavigationSkeleton = ({ tabs }: TabNavigationSkeletonProps) => (
+  <div aria-hidden="true" className="border-b border-border">
+    <div className="-mb-px flex gap-6">
+      {tabs.map((tab) => (
+        <span
+          className="border-b-2 border-transparent px-1 py-2 text-meta font-semibold whitespace-nowrap text-muted"
+          key={tab.id}
+        >
+          {tab.label}
+        </span>
+      ))}
     </div>
-  );
-}
+  </div>
+);

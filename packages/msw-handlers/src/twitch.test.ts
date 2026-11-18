@@ -18,12 +18,12 @@ interface UsersResponse {
   }[];
 }
 
-async function getUsers(query: string): Promise<UsersResponse["data"]> {
+const getUsers = async (query: string): Promise<UsersResponse["data"]> => {
   const response = await fetch(`https://api.twitch.tv/helix/users?${query}`);
   const { data } = (await response.json()) as UsersResponse;
 
   return data;
-}
+};
 
 describe("Twitch Handlers", () => {
   beforeAll(() => {
@@ -51,7 +51,7 @@ describe("Twitch Handlers", () => {
 
   describe("users", () => {
     /** The Twitch users of the Supabase mock, with their icons. */
-    async function getSavedUsers() {
+    const getSavedUsers = async () => {
       await ensureCollectionsSeeded();
 
       const images = profileImages.findMany();
@@ -62,7 +62,7 @@ describe("Twitch Handlers", () => {
         ),
         user,
       }));
-    }
+    };
 
     it("returns the users of the Supabase mock by ID", async () => {
       const saved = await getSavedUsers();
@@ -189,16 +189,16 @@ describe("Twitch Handlers", () => {
       user_id: string;
     }
 
-    async function getPage<Item>(path: string): Promise<HelixPage<Item>> {
+    const getPage = async <Item>(path: string): Promise<HelixPage<Item>> => {
       const response = await fetch(`${HELIX_URL}/${path}`);
 
       expect(response.status).toBe(200);
 
       return (await response.json()) as HelixPage<Item>;
-    }
+    };
 
     /** The Twitch videos of the Supabase mock, with their users. */
-    async function getSavedVideos() {
+    const getSavedVideos = async () => {
       await ensureCollectionsSeeded();
 
       const users = new Map(
@@ -213,7 +213,7 @@ describe("Twitch Handlers", () => {
         user: users.get(twitchVideo.twitch_user_id),
         video: savedVideos.get(twitchVideo.video_id),
       }));
-    }
+    };
 
     it("lists the archives, highlights and uploads of a user from the Supabase mock, newest first", async () => {
       const saved = await getSavedVideos();

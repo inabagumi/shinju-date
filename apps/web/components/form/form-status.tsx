@@ -8,7 +8,7 @@ interface FormStatusProps {
  * Show the result of a form submission: the success message as a status, or
  * the error as an alert. Renders nothing when there is neither.
  */
-export function FormStatus({ state }: FormStatusProps) {
+export const FormStatus = ({ state }: FormStatusProps) => {
   if (state?.success && state.message) {
     return (
       <div
@@ -32,4 +32,4 @@ export function FormStatus({ state }: FormStatusProps) {
   }
 
   return null;
-}
+};

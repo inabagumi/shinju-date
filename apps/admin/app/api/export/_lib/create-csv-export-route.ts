@@ -34,13 +34,14 @@ export interface CsvExportDefinition<T> {
  * - The CSV has a BOM for Excel, and the filename ends with the date
  *   (`YYYY-MM-DD` for a single day, `YYYY-MM-DD_YYYY-MM-DD` for a range)
  */
-export function createCsvExportRoute<T>({
-  fetch,
-  filenamePrefix,
-  header,
-  toRow,
-}: CsvExportDefinition<T>): (request: NextRequest) => Promise<Response> {
-  return async (request) => {
+export const createCsvExportRoute =
+  <T>({
+    fetch,
+    filenamePrefix,
+    header,
+    toRow,
+  }: CsvExportDefinition<T>): ((request: NextRequest) => Promise<Response>) =>
+  async (request) => {
     // Call connection() before accessing searchParams to mark as dynamic
     await connection();
 
@@ -91,4 +92,3 @@ export function createCsvExportRoute<T>({
       });
     }
   };
-}

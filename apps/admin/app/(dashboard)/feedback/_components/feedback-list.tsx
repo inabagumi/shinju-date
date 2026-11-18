@@ -55,11 +55,11 @@ const statusColors: Record<
  * 機能要望の一覧。表と行はサーバーで描き、絞り込みのセレクトだけをクライアントの
  * 部品に任せる
  */
-export function FeatureRequestList({
+export const FeatureRequestList = ({
   featureRequests,
   readFilter,
   statusFilter,
-}: FeatureRequestListProps) {
+}: FeatureRequestListProps) => {
   const activeCount =
     (statusFilter === undefined ? 0 : 1) + (readFilter === undefined ? 0 : 1);
 
@@ -153,32 +153,30 @@ export function FeatureRequestList({
       )}
     </div>
   );
-}
+};
 
 /** 読み込み中の `FeatureRequestList`。2つの絞り込みと、3列の表を並べる */
-export function FeatureRequestListSkeleton() {
-  return (
-    <TableSkeleton
-      columns={[
-        { cell: <Skeleton className="h-5 w-16" />, id: "status" },
-        {
-          cell: (
-            <div className="w-full max-w-text min-w-64 space-y-1">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-            </div>
-          ),
-          className: "w-full",
-          id: "message",
-        },
-        { align: "end", cell: <Skeleton className="h-4 w-32" />, id: "date" },
-      ]}
-      filterBar={
-        <FilterBarSkeleton className="mb-4">
-          <FieldSkeleton className="md:w-48" />
-          <FieldSkeleton className="md:w-48" />
-        </FilterBarSkeleton>
-      }
-    />
-  );
-}
+export const FeatureRequestListSkeleton = () => (
+  <TableSkeleton
+    columns={[
+      { cell: <Skeleton className="h-5 w-16" />, id: "status" },
+      {
+        cell: (
+          <div className="w-full max-w-text min-w-64 space-y-1">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+        ),
+        className: "w-full",
+        id: "message",
+      },
+      { align: "end", cell: <Skeleton className="h-4 w-32" />, id: "date" },
+    ]}
+    filterBar={
+      <FilterBarSkeleton className="mb-4">
+        <FieldSkeleton className="md:w-48" />
+        <FieldSkeleton className="md:w-48" />
+      </FilterBarSkeleton>
+    }
+  />
+);

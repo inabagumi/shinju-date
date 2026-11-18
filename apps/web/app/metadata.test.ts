@@ -51,12 +51,12 @@ const VIDEOS_IMAGES = [
   },
 ];
 
-function generateVideosPageMetadata(
+const generateVideosPageMetadata = (
   queries: string[] | undefined,
   searchParams: Record<string, string | string[]> = {},
   /** The images of the parent segment, which `null` leaves out */
   parentImages: typeof VIDEOS_IMAGES | null = VIDEOS_IMAGES
-) {
+) => {
   // Only `openGraph.images` of the parent segment is read
   const parentMetadata = parentImages
     ? { openGraph: { images: parentImages } }
@@ -69,7 +69,7 @@ function generateVideosPageMetadata(
     },
     Promise.resolve(parentMetadata as unknown as Awaited<ResolvingMetadata>)
   );
-}
+};
 
 /**
  * The metadata of every page, written out in full. The pages build it with

@@ -28,11 +28,9 @@ const NOT_FOUND_ERROR_CODES: ReadonlySet<string> = new Set([
  * Whether the error means that the requested row does not exist: no row
  * matched, or the ID could not be a row's ID at all.
  */
-export function isNotFoundError(
+export const isNotFoundError = (
   error: Pick<PostgrestError, "code"> | null | undefined
-): boolean {
-  return error != null && NOT_FOUND_ERROR_CODES.has(error.code);
-}
+): boolean => error != null && NOT_FOUND_ERROR_CODES.has(error.code);
 
 /** A failed Supabase query, named by the operation that ran it. */
 export class QueryError extends Error {
@@ -64,7 +62,7 @@ export interface CountQueryResult {
   error: PostgrestError | null;
 }
 
-function fail(operation: string, error: PostgrestError): never {
+const fail = (operation: string, error: PostgrestError): never => {
   const queryError = new QueryError(operation, error);
 
   logger.error("データの取得に失敗しました", {
@@ -74,7 +72,7 @@ function fail(operation: string, error: PostgrestError): never {
   });
 
   throw queryError;
-}
+};
 
 /**
  * Returns the data of a Supabase response, or throws a `QueryError` named
@@ -83,40 +81,40 @@ function fail(operation: string, error: PostgrestError): never {
  * A response with an empty body (e.g. a 404 without one) has neither `data`
  * nor `error`, so callers that read a list should fall back to `[]`.
  */
-export function unwrap<T>(result: QueryResult<T>, operation: string): T {
+export const unwrap = <T>(result: QueryResult<T>, operation: string): T => {
   if (result.error) {
     fail(operation, result.error);
   }
 
   return result.data as T;
-}
+};
 
 /**
  * Like `unwrap()`, but returns `null` when the requested row does not exist
  * (see `isNotFoundError()`).
  */
-export function unwrapOrNull<T>(
+export const unwrapOrNull = <T>(
   result: QueryResult<T>,
   operation: string
-): T | null {
+): T | null => {
   if (isNotFoundError(result.error)) {
     return null;
   }
 
   return unwrap(result, operation);
-}
+};
 
 /**
  * Returns the `count` of a Supabase response (`0` when it has none), or
  * throws a `QueryError` named `operation` when the query failed.
  */
-export function unwrapCount(
+export const unwrapCount = (
   result: CountQueryResult,
   operation: string
-): number {
+): number => {
   if (result.error) {
     fail(operation, result.error);
   }
 
   return result.count ?? 0;
-}
+};

@@ -17,12 +17,11 @@ const BUCKET = "images";
 const BUCKET_URL = `https://fake.supabase.test/storage/v1/object/${BUCKET}`;
 const image = { id: "image-1", path: "a/b.webp" };
 
-function storageError(): Response {
-  return HttpResponse.json(
+const storageError = (): Response =>
+  HttpResponse.json(
     { error: "Internal", message: "storage is down", statusCode: "500" },
     { status: 500 }
   );
-}
 
 describe(storeImage, () => {
   it("uploads the image to a new path, cached for a year", async () => {

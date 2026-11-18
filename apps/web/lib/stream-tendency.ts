@@ -29,7 +29,7 @@ export interface StreamTendencySummary {
  *
  * 1日の区切りは 0:00 で、深夜 1:00 に始まった配信はその日付の1時台に数える。
  */
-export function countStreamsByWeekdayAndHour(starts: string[]): number[][] {
+export const countStreamsByWeekdayAndHour = (starts: string[]): number[][] => {
   const counts = Array.from({ length: WEEKDAY_COUNT }, () =>
     Array.from({ length: HOUR_COUNT }, () => 0)
   );
@@ -44,13 +44,13 @@ export function countStreamsByWeekdayAndHour(starts: string[]): number[][] {
   }
 
   return counts;
-}
+};
 
 /**
  * いちばん大きい値の位置。同じ値のときは前のもの（月曜に近い曜日、早い時間）
  * を選ぶ。すべて 0 のときは `null`。
  */
-function indexOfMax(values: number[]): number | null {
+const indexOfMax = (values: number[]): number | null => {
   let index: number | null = null;
   let max = 0;
 
@@ -62,15 +62,15 @@ function indexOfMax(values: number[]): number | null {
   }
 
   return index;
-}
+};
 
 /**
  * `countStreamsByWeekdayAndHour` の回数から、合計、いちばん多い曜日（行の
  * 合計）、いちばん多い時間（列の合計）、いちばん多いセルの回数を求める。
  */
-export function summarizeStreamTendency(
+export const summarizeStreamTendency = (
   counts: number[][]
-): StreamTendencySummary {
+): StreamTendencySummary => {
   const weekdayTotals = counts.map((row) =>
     row.reduce((sum, count) => sum + count, 0)
   );
@@ -84,13 +84,13 @@ export function summarizeStreamTendency(
     max: Math.max(0, ...counts.flat()),
     total: weekdayTotals.reduce((sum, count) => sum + count, 0),
   };
-}
+};
 
 /**
  * セルの濃淡の段階。0回は `0`、それ以外は `max` に対する割合で
  * `1`〜`STREAM_COUNT_LEVELS` にする。
  */
-export function getStreamCountLevel(count: number, max: number): number {
+export const getStreamCountLevel = (count: number, max: number): number => {
   if (count <= 0 || max <= 0) {
     return 0;
   }
@@ -99,4 +99,4 @@ export function getStreamCountLevel(count: number, max: number): number {
     STREAM_COUNT_LEVELS,
     Math.ceil((count / max) * STREAM_COUNT_LEVELS)
   );
-}
+};

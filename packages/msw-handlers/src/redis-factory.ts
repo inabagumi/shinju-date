@@ -53,13 +53,13 @@ const SEARCH_KEYWORDS = [
  * @param options The videos to use and the last day
  * @returns Map of Redis keys to their values
  */
-export function createRedisDataFactory(
+export const createRedisDataFactory = (
   dateCount: number,
   {
     today = Temporal.Now.plainDateISO(TIME_ZONE),
     videos,
   }: RedisDataFactoryOptions
-): Map<string, SortedSetItem[] | Set<string>> {
+): Map<string, SortedSetItem[] | Set<string>> => {
   const store = new Map<string, SortedSetItem[] | Set<string>>();
 
   for (let i = 0; i < dateCount; i++) {
@@ -100,4 +100,4 @@ export function createRedisDataFactory(
   }
 
   return store;
-}
+};

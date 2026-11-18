@@ -23,9 +23,9 @@ export interface BackfillAccounts {
  * earlier backfills; the targets of a check are the accounts of active
  * talents.
  */
-export async function getBackfillAccounts(
+export const getBackfillAccounts = async (
   supabaseClient: TypedSupabaseClient
-): Promise<BackfillAccounts> {
+): Promise<BackfillAccounts> => {
   const data = unwrap(
     await supabaseClient
       .from("talents")
@@ -68,4 +68,4 @@ export async function getBackfillAccounts(
   }
 
   return { all, targets };
-}
+};

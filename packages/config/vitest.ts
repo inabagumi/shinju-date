@@ -17,14 +17,12 @@ const defaults = {
  * `@vitejs/plugin-react` and a DOM from jsdom. A function, so that each
  * configuration gets its own instance of the plugin.
  */
-function reactDefaults(): ViteUserConfig {
-  return {
-    plugins: [react()],
-    test: {
-      environment: "jsdom",
-    },
-  };
-}
+const reactDefaults = (): ViteUserConfig => ({
+  plugins: [react()],
+  test: {
+    environment: "jsdom",
+  },
+});
 
 /**
  * Returns the Vitest configuration for code that runs on Node.
@@ -40,11 +38,9 @@ function reactDefaults(): ViteUserConfig {
  * export default defineVitestConfig()
  * ```
  */
-export function defineVitestConfig(
+export const defineVitestConfig = (
   overrides: ViteUserConfig = {}
-): ViteUserConfig {
-  return mergeConfig(defaults, overrides);
-}
+): ViteUserConfig => mergeConfig(defaults, overrides);
 
 /**
  * Returns the Vitest configuration for React components, which run in jsdom.

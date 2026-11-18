@@ -114,10 +114,10 @@ describe(formatRelativeDate, () => {
 const LEGACY_WEEKDAYS = ["月", "火", "水", "木", "金", "土", "日"];
 
 /** `formatTimelineDate` of `app/_components/timeline.tsx` (the home page) */
-function legacyFormatTimelineDate(
+const legacyFormatTimelineDate = (
   value: Temporal.PlainDate,
   base: Temporal.PlainDate
-): string {
+): string => {
   const days = base.until(value, { largestUnit: "day" }).days;
 
   if (days === 0) {
@@ -133,18 +133,17 @@ function legacyFormatTimelineDate(
   });
 
   return `${monthAndDay}（${LEGACY_WEEKDAYS[value.dayOfWeek - 1]}）`;
-}
+};
 
 /** `formatScheduleDay` of `lib/schedule.ts` (the schedule) */
-function legacyFormatScheduleDay(value: Temporal.PlainDate): string {
-  return `${formatDate(value, { includeYear: false })}（${LEGACY_WEEKDAYS[value.dayOfWeek - 1]}）`;
-}
+const legacyFormatScheduleDay = (value: Temporal.PlainDate): string =>
+  `${formatDate(value, { includeYear: false })}（${LEGACY_WEEKDAYS[value.dayOfWeek - 1]}）`;
 
 /** `formatDateHeading` of `lib/date-heading.ts` (the search results) */
-function legacyFormatDateHeading(
+const legacyFormatDateHeading = (
   value: Temporal.PlainDate,
   base: Temporal.PlainDate
-): string {
+): string => {
   const days = base.until(value, { largestUnit: "day" }).days;
 
   if (days === 0) {
@@ -162,21 +161,23 @@ function legacyFormatDateHeading(
   const monthDay = `${value.month}月${value.day}日（${LEGACY_WEEKDAYS[value.dayOfWeek - 1]}）`;
 
   return value.year === base.year ? monthDay : `${value.year}年${monthDay}`;
-}
+};
 
 /** `formatMonthDay` of `lib/schedule.ts` (the range of a week) */
-function legacyFormatMonthDay(value: Temporal.PlainDate, withWeekday: boolean) {
+const legacyFormatMonthDay = (
+  value: Temporal.PlainDate,
+  withWeekday: boolean
+) => {
   const monthDay = `${value.month}月${value.day}日`;
 
   return withWeekday
     ? `${monthDay}（${LEGACY_WEEKDAYS[value.dayOfWeek - 1]}）`
     : monthDay;
-}
+};
 
 /** Every day from `start` for `days` days */
-function eachDay(start: Temporal.PlainDate, days: number) {
-  return Array.from({ length: days }, (_, index) => start.add({ days: index }));
-}
+const eachDay = (start: Temporal.PlainDate, days: number) =>
+  Array.from({ length: days }, (_, index) => start.add({ days: index }));
 
 describe("the same text as the replaced functions", () => {
   // Some days around the new year and a leap day, against every date in the

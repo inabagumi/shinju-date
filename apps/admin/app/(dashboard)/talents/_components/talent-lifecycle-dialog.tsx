@@ -108,12 +108,12 @@ export type TalentLifecycleDialogProps =
  * 一覧と詳細で共通に使う。実行中の表示と失敗の表示は `ConfirmDialog` が受け持ち、
  * 成功したら閉じる（ページの再取得は、アクションの `revalidatePath` に任せる）。
  */
-export function TalentLifecycleDialog({
+export const TalentLifecycleDialog = ({
   onSuccess,
   operation,
   talent,
   ...dialogProps
-}: TalentLifecycleDialogProps) {
+}: TalentLifecycleDialogProps) => {
   const config = TALENT_LIFECYCLE_OPERATIONS[operation];
 
   const handleConfirm = async () => {
@@ -137,4 +137,4 @@ export function TalentLifecycleDialog({
       title={config.title}
     />
   );
-}
+};

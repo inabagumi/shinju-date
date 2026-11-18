@@ -10,13 +10,13 @@ import {
   DropdownMenuTrigger,
 } from "./DropdownMenu";
 
-function renderMenu({
+const renderMenu = ({
   onEdit = vi.fn<() => void>(),
   onDelete = vi.fn<() => void>(),
 }: {
   onEdit?: () => void;
   onDelete?: () => void;
-} = {}) {
+} = {}) => {
   render(
     <>
       <button type="button">メニューの外</button>
@@ -38,7 +38,7 @@ function renderMenu({
   );
 
   return { onDelete, onEdit };
-}
+};
 
 describe("<DropdownMenu>", () => {
   it("opens with the trigger", async () => {

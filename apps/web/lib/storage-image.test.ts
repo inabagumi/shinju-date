@@ -19,10 +19,12 @@ type CreateSignedUrl = (
   expiresIn: number
 ) => Promise<SignedUrlResult>;
 
-function createClient(signed: SignedUrlResult): {
+const createClient = (
+  signed: SignedUrlResult
+): {
   createSignedUrl: Mock<CreateSignedUrl>;
   options: ServeStorageImageOptions;
-} {
+} => {
   const createSignedUrl = vi.fn<CreateSignedUrl>().mockResolvedValue(signed);
   const supabaseClient = {
     storage: {
@@ -40,16 +42,15 @@ function createClient(signed: SignedUrlResult): {
       supabaseClient,
     },
   };
-}
+};
 
 /** `fetch` that answers the object of the signed URL */
-function mockFetchOfImage(): Mock<typeof fetch> {
-  return vi.fn<typeof fetch>().mockResolvedValue(
+const mockFetchOfImage = (): Mock<typeof fetch> =>
+  vi.fn<typeof fetch>().mockResolvedValue(
     new Response("webp", {
       headers: { "Content-Length": "4", "Content-Type": "image/webp" },
     })
   );
-}
 
 const request = new Request("https://shinju.date/images/profile-images/1", {
   headers: { Accept: "image/webp", Cookie: "session=secret" },

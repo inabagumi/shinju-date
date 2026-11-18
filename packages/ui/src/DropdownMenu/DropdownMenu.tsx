@@ -18,26 +18,24 @@ export interface DropdownMenuTriggerProps extends ComponentPropsWithRef<
  * `asChild` で子の要素をボタンにするときは、既定の見た目を付けず、子の要素の
  * 見た目をそのまま使う。
  */
-export function DropdownMenuTrigger({
+export const DropdownMenuTrigger = ({
   asChild = false,
   className,
   ...props
-}: DropdownMenuTriggerProps) {
-  return (
-    <DropdownMenuPrimitive.Trigger
-      asChild={asChild}
-      className={
-        asChild
-          ? className
-          : twMerge(
-              "rounded-control p-1 text-muted focus-ring transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50",
-              className
-            )
-      }
-      {...props}
-    />
-  );
-}
+}: DropdownMenuTriggerProps) => (
+  <DropdownMenuPrimitive.Trigger
+    asChild={asChild}
+    className={
+      asChild
+        ? className
+        : twMerge(
+            "rounded-control p-1 text-muted focus-ring transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50",
+            className
+          )
+    }
+    {...props}
+  />
+);
 
 export interface DropdownMenuContentProps extends ComponentPropsWithRef<
   typeof DropdownMenuPrimitive.Content
@@ -48,28 +46,26 @@ export interface DropdownMenuContentProps extends ComponentPropsWithRef<
  * 枠で切れない。既定ではボタンの右端にそろえる（`align="end"`）。開閉の動きは
  * `MultiSelect` のポップオーバーと同じで、開いたボタンの側から広がる。
  */
-export function DropdownMenuContent({
+export const DropdownMenuContent = ({
   align = "end",
   className,
   collisionPadding = 8,
   sideOffset = 4,
   ...props
-}: DropdownMenuContentProps) {
-  return (
-    <DropdownMenuPrimitive.Portal>
-      <DropdownMenuPrimitive.Content
-        align={align}
-        className={twMerge(
-          "z-50 min-w-40 origin-(--radix-dropdown-menu-content-transform-origin) rounded-container border border-border bg-surface p-1 text-foreground shadow-overlay motion-safe:data-[state=closed]:animate-scale-out motion-safe:data-[state=open]:animate-scale-in",
-          className
-        )}
-        collisionPadding={collisionPadding}
-        sideOffset={sideOffset}
-        {...props}
-      />
-    </DropdownMenuPrimitive.Portal>
-  );
-}
+}: DropdownMenuContentProps) => (
+  <DropdownMenuPrimitive.Portal>
+    <DropdownMenuPrimitive.Content
+      align={align}
+      className={twMerge(
+        "z-50 min-w-40 origin-(--radix-dropdown-menu-content-transform-origin) rounded-container border border-border bg-surface p-1 text-foreground shadow-overlay motion-safe:data-[state=closed]:animate-scale-out motion-safe:data-[state=open]:animate-scale-in",
+        className
+      )}
+      collisionPadding={collisionPadding}
+      sideOffset={sideOffset}
+      {...props}
+    />
+  </DropdownMenuPrimitive.Portal>
+);
 
 const itemVariantClassNames = {
   danger: "text-danger data-highlighted:bg-danger/10",
@@ -87,36 +83,32 @@ export interface DropdownMenuItemProps extends ComponentPropsWithRef<
  * メニューの項目。選ぶと `onSelect` が呼ばれ、メニューが閉じる。
  * リンクにするときは `asChild` で `<a>` などを子に渡す。
  */
-export function DropdownMenuItem({
+export const DropdownMenuItem = ({
   className,
   variant = "default",
   ...props
-}: DropdownMenuItemProps) {
-  return (
-    <DropdownMenuPrimitive.Item
-      className={twMerge(
-        "flex w-full items-center gap-2 rounded-control px-3 py-2 text-left text-meta leading-5 whitespace-nowrap transition-colors outline-none select-none data-disabled:pointer-events-none data-disabled:opacity-50",
-        itemVariantClassNames[variant],
-        className
-      )}
-      {...props}
-    />
-  );
-}
+}: DropdownMenuItemProps) => (
+  <DropdownMenuPrimitive.Item
+    className={twMerge(
+      "flex w-full items-center gap-2 rounded-control px-3 py-2 text-left text-meta leading-5 whitespace-nowrap transition-colors outline-none select-none data-disabled:pointer-events-none data-disabled:opacity-50",
+      itemVariantClassNames[variant],
+      className
+    )}
+    {...props}
+  />
+);
 
 export interface DropdownMenuSeparatorProps extends ComponentPropsWithRef<
   typeof DropdownMenuPrimitive.Separator
 > {}
 
 /** 項目のまとまりを分ける線 */
-export function DropdownMenuSeparator({
+export const DropdownMenuSeparator = ({
   className,
   ...props
-}: DropdownMenuSeparatorProps) {
-  return (
-    <DropdownMenuPrimitive.Separator
-      className={twMerge("my-1 h-px bg-border", className)}
-      {...props}
-    />
-  );
-}
+}: DropdownMenuSeparatorProps) => (
+  <DropdownMenuPrimitive.Separator
+    className={twMerge("my-1 h-px bg-border", className)}
+    {...props}
+  />
+);

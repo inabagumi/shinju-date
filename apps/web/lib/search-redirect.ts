@@ -18,7 +18,7 @@ const LEGACY_QUERY_SEARCH_PARAM = "q";
  * 複数の `q` は空白でつないで1つの検索語にする。種別とタレントの絞り込みは
  * そのまま引き継ぐ。
  */
-export function getLegacySearchRedirectPath(url: URL): string | undefined {
+export const getLegacySearchRedirectPath = (url: URL): string | undefined => {
   const { pathname, searchParams } = url;
 
   if (!LEGACY_SEARCH_PATHNAMES.includes(pathname)) {
@@ -43,4 +43,4 @@ export function getLegacySearchRedirectPath(url: URL): string | undefined {
     ),
     searchParams.getAll(TALENT_SEARCH_PARAM)
   );
-}
+};

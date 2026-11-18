@@ -21,14 +21,11 @@ const RETIRED_TALENT_ID = "00000000-0000-4000-8000-000000000005";
 const DELETED_TALENT_ID = "00000000-0000-4000-8000-000000000006";
 const MISSING_TALENT_ID = "00000000-0000-4000-8000-0000000000ff";
 
-function getHeader(page: Page) {
-  return page.getByRole("main").locator("header");
-}
+const getHeader = (page: Page) => page.getByRole("main").locator("header");
 
-function getVideoCards(page: Page) {
+const getVideoCards = (page: Page) =>
   // Video cards are external links that contain the video title heading
-  return page.locator('main a[target="_blank"]:has(h3)');
-}
+  page.locator('main a[target="_blank"]:has(h3)');
 
 test.describe("Talent page", () => {
   test("should show the icon, the name and the links of a talent", async ({
@@ -305,9 +302,10 @@ test.describe("Talent page", () => {
 });
 
 /** The width and height in the IHDR chunk of a PNG */
-function getPNGSize(body: Buffer) {
-  return { height: body.readUInt32BE(20), width: body.readUInt32BE(16) };
-}
+const getPNGSize = (body: Buffer) => ({
+  height: body.readUInt32BE(20),
+  width: body.readUInt32BE(16),
+});
 
 test.describe("Open Graph image of the talent page", () => {
   for (const [description, talent] of [

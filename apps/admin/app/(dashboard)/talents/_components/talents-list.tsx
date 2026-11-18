@@ -53,28 +53,28 @@ const FILTER_OPTIONS: { value: TalentStatusFilter; label: string }[] = [
  * 最終更新日時の並べ替えのリンク先。向きを反対にし、ほかのパラメータ（絞り込み）は
  * 引き継ぐ。既定の向きのときは、パラメータを付けない
  */
-function getSortHref(
+const getSortHref = (
   searchParams: URLSearchParams | string,
   sortOrder: TalentSortOrder
-): string {
+): string => {
   const nextOrder = sortOrder === "desc" ? "asc" : "desc";
 
   return buildSearchParamsHref("/talents", searchParams, {
     sort: nextOrder === DEFAULT_TALENT_LIST_FILTERS.sort ? null : nextOrder,
   });
-}
+};
 
 /**
  * タレントの一覧。表と行はサーバーで描き、検索ボックス、状態のセレクト、追加の
  * モーダル、行ごとの操作のメニューだけをクライアントの部品に任せる
  */
-export function TalentsList({
+export const TalentsList = ({
   search,
   searchParams,
   sortOrder,
   statusFilter,
   talents,
-}: TalentsListProps) {
+}: TalentsListProps) => {
   const isStatusFiltered = statusFilter !== DEFAULT_TALENT_LIST_FILTERS.status;
   const isFiltered = search !== undefined || isStatusFiltered;
   const activeFilterCount =
@@ -201,42 +201,40 @@ export function TalentsList({
       )}
     </div>
   );
-}
+};
 
 /** 読み込み中の `TalentsList`。絞り込みと追加のボタン、5列の表を並べる */
-export function TalentsListSkeleton() {
-  return (
-    <TableSkeleton
-      columns={[
-        {
-          cell: (
-            <div className="min-w-48 space-y-1">
-              <Skeleton className="h-5 w-32" />
-              <Skeleton className="h-4 w-48" />
-            </div>
-          ),
-          id: "name",
-        },
-        { cell: <Skeleton className="h-5 w-16" />, id: "status" },
-        { cell: <Skeleton className="h-4 w-36" />, id: "created_at" },
-        { cell: <Skeleton className="h-4 w-36" />, id: "updated_at" },
-        {
-          align: "end",
-          cell: <Skeleton className="size-7" />,
-          className: "w-12",
-          header: false,
-          id: "actions",
-        },
-      ]}
-      filterBar={
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <FilterBarSkeleton className="min-w-0 grow">
-            <Skeleton className="h-10 w-full md:max-w-sm" />
-            <Skeleton className="h-10 md:w-48" />
-          </FilterBarSkeleton>
-          <Skeleton className="h-9 w-44" />
-        </div>
-      }
-    />
-  );
-}
+export const TalentsListSkeleton = () => (
+  <TableSkeleton
+    columns={[
+      {
+        cell: (
+          <div className="min-w-48 space-y-1">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+        ),
+        id: "name",
+      },
+      { cell: <Skeleton className="h-5 w-16" />, id: "status" },
+      { cell: <Skeleton className="h-4 w-36" />, id: "created_at" },
+      { cell: <Skeleton className="h-4 w-36" />, id: "updated_at" },
+      {
+        align: "end",
+        cell: <Skeleton className="size-7" />,
+        className: "w-12",
+        header: false,
+        id: "actions",
+      },
+    ]}
+    filterBar={
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <FilterBarSkeleton className="min-w-0 grow">
+          <Skeleton className="h-10 w-full md:max-w-sm" />
+          <Skeleton className="h-10 md:w-48" />
+        </FilterBarSkeleton>
+        <Skeleton className="h-9 w-44" />
+      </div>
+    }
+  />
+);

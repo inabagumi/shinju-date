@@ -8,7 +8,7 @@ import {
   zodErrorToFormState,
 } from "./form";
 
-function createFormData(entries: [string, string][]): FormData {
+const createFormData = (entries: [string, string][]): FormData => {
   const formData = new FormData();
 
   for (const [key, value] of entries) {
@@ -16,7 +16,7 @@ function createFormData(entries: [string, string][]): FormData {
   }
 
   return formData;
-}
+};
 
 describe(parseFormData, () => {
   const schema = z.object({

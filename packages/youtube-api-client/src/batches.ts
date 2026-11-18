@@ -18,7 +18,7 @@ export interface BatchOptions {
  * one request accepts, and yields what each batch returned in the order of
  * the batches.
  */
-export async function* requestInBatches<T>(
+export const requestInBatches = async function* requestInBatches<T>(
   ids: readonly string[],
   schedule: RequestScheduler | undefined,
   request: (ids: string[]) => Promise<readonly T[]>
@@ -40,4 +40,4 @@ export async function* requestInBatches<T>(
   for (const items of results) {
     yield* items;
   }
-}
+};

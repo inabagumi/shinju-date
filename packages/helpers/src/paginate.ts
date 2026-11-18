@@ -23,7 +23,7 @@ export interface Page<T> {
  * @param fetchPage - Fetches one page. Called with `undefined` for the first
  *   page, then with the `next` of the previous page.
  */
-export async function* paginate<T>(
+export const paginate = async function* paginate<T>(
   fetchPage: (cursor: string | undefined) => Promise<Page<T>>
 ): AsyncGenerator<T, void, undefined> {
   let cursor: string | undefined;
@@ -35,4 +35,4 @@ export async function* paginate<T>(
 
     cursor = next ?? undefined;
   } while (cursor);
-}
+};

@@ -32,7 +32,7 @@ const SAMPLE_FILES = [
  * @param {string} name - Variable name
  * @returns {string | undefined} The value without surrounding quotes
  */
-function readVariable(file, name) {
+const readVariable = (file, name) => {
   const content = readFileSync(join(root, file), "utf-8");
 
   for (const line of content.split("\n")) {
@@ -44,7 +44,7 @@ function readVariable(file, name) {
   }
 
   return undefined;
-}
+};
 
 const expected = readVariable(SECRETS_FILE, "SRH_TOKEN");
 

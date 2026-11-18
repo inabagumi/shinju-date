@@ -17,11 +17,11 @@ export const maxDuration = 120;
  * - `recent`: the newest finished videos
  * - `all`: availability of every video
  */
-function checkVideos(
+const checkVideos = (
   scraper: Scraper,
   mode: VideosCheckMode,
   now: Temporal.Instant
-): Promise<boolean> {
+): Promise<boolean> => {
   switch (mode) {
     case "all": {
       return scraper.removeUnavailableVideos(now);
@@ -33,9 +33,9 @@ function checkVideos(
       return scraper.refreshLiveVideos(now);
     }
   }
-}
+};
 
-export async function POST(request: NextRequest): Promise<Response> {
+export const POST = async (request: NextRequest): Promise<Response> => {
   const query = parseQuery(querySchema, request);
 
   if (query instanceof Response) {
@@ -50,6 +50,6 @@ export async function POST(request: NextRequest): Promise<Response> {
 
     await finishVideoSync({ changed, now, signal: request.signal });
   });
-}
+};
 
 export const GET = POST;

@@ -28,7 +28,7 @@ export interface MultiSelectProps extends Omit<
   maxHeight?: string;
 }
 
-export function MultiSelect({
+export const MultiSelect = ({
   options,
   value,
   onChange,
@@ -37,7 +37,7 @@ export function MultiSelect({
   maxHeight = "300px",
   className,
   ...props
-}: MultiSelectProps) {
+}: MultiSelectProps) => {
   // 同じ値の選択肢を持つ MultiSelect が並んでも、チェックボックスの id が重ならないようにする
   const idPrefix = useId();
   const selectAllId = `${idPrefix}-select-all`;
@@ -153,4 +153,4 @@ export function MultiSelect({
       </Popover.Portal>
     </Popover.Root>
   );
-}
+};

@@ -9,9 +9,8 @@ const TOTAL_RETRY_DELAY_MS = 31_000;
 
 const fetchMock = vi.fn<typeof fetch>();
 
-function respond(status: number, body = `status ${status}`): Response {
-  return new Response(status === 304 ? null : body, { status });
-}
+const respond = (status: number, body = `status ${status}`): Response =>
+  new Response(status === 304 ? null : body, { status });
 
 describe(retryableFetch, () => {
   beforeEach(() => {

@@ -63,7 +63,7 @@ export interface SupabaseRequest {
 
 const requests: SupabaseRequest[] = [];
 
-function roleOf(key: string | null): SupabaseRequest["role"] {
+const roleOf = (key: string | null): SupabaseRequest["role"] => {
   switch (key) {
     case process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]: {
       return "anon";
@@ -75,7 +75,7 @@ function roleOf(key: string | null): SupabaseRequest["role"] {
       return null;
     }
   }
-}
+};
 
 server.events.on("request:start", ({ request }) => {
   const url = new URL(request.url);
@@ -95,7 +95,7 @@ server.events.on("request:start", ({ request }) => {
  * before each test, and a request to a host that is not mocked fails the test,
  * so nothing can reach the network by accident.
  */
-export function setupSupabase(): void {
+export const setupSupabase = (): void => {
   beforeAll(() => {
     server.listen({ onUnhandledFrame: "error" });
   });
@@ -113,7 +113,7 @@ export function setupSupabase(): void {
   afterAll(() => {
     server.close();
   });
-}
+};
 
 /** The rows to put in the mock database, by table */
 export interface SupabaseSeed {
@@ -129,23 +129,23 @@ export interface SupabaseSeed {
   youtubeVideos?: readonly Tables<"youtube_videos">[];
 }
 
-async function replace<Row>(
+const replace = async <Row>(
   collection: { clear(): void; create(values: Row): Promise<unknown> },
   rows: readonly Row[] = []
-): Promise<void> {
+): Promise<void> => {
   collection.clear();
 
   // One by one, so the mock returns them in this order without `order`
   for (const row of rows) {
     await collection.create(row);
   }
-}
+};
 
 /**
  * Replace the rows of the mock database with the given ones. The tables that
  * are not given are emptied.
  */
-export async function seedSupabase(seed: SupabaseSeed = {}): Promise<void> {
+export const seedSupabase = async (seed: SupabaseSeed = {}): Promise<void> => {
   await replace(announcements, seed.announcements);
   await replace(featureRequests, seed.featureRequests);
   await replace(profileImages, seed.profileImages);
@@ -158,36 +158,34 @@ export async function seedSupabase(seed: SupabaseSeed = {}): Promise<void> {
   await replace(youtubeVideos, seed.youtubeVideos);
   await replace(terms);
   await replace(videoBackfillJobs);
-}
+};
 
 /**
  * The rows of `seedSupabase()` for videos made with `createVideoOnYouTube`,
  * `createVideoOnTwitch` or `createVideo` (a video without a YouTube or Twitch
  * video).
  */
-export function videoSeed(
+export const videoSeed = (
   rows: readonly (Tables<"videos"> | VideoOnTwitch | VideoOnYouTube)[]
-): Pick<SupabaseSeed, "twitchVideos" | "videos" | "youtubeVideos"> {
-  return {
-    twitchVideos: rows.flatMap((row) =>
-      "twitchVideo" in row ? [row.twitchVideo] : []
-    ),
-    videos: rows.map((row) => ("video" in row ? row.video : row)),
-    youtubeVideos: rows.flatMap((row) =>
-      "youtubeVideo" in row ? [row.youtubeVideo] : []
-    ),
-  };
-}
+): Pick<SupabaseSeed, "twitchVideos" | "videos" | "youtubeVideos"> => ({
+  twitchVideos: rows.flatMap((row) =>
+    "twitchVideo" in row ? [row.twitchVideo] : []
+  ),
+  videos: rows.map((row) => ("video" in row ? row.video : row)),
+  youtubeVideos: rows.flatMap((row) =>
+    "youtubeVideo" in row ? [row.youtubeVideo] : []
+  ),
+});
 
 /**
  * Make the requests to a table (or `rpc/<name>`) fail with an error of
  * PostgreSQL, until the end of the test. The status is 400, which is not
  * retried.
  */
-export function failSupabase(
+export const failSupabase = (
   table: string,
   message = `relation "public.${table}" does not exist`
-): void {
+): void => {
   server.use(
     http.all(`${REST_URL}/${table}`, () =>
       HttpResponse.json(
@@ -196,22 +194,21 @@ export function failSupabase(
       )
     )
   );
-}
+};
 
 /**
  * Make the requests to a table (or `rpc/<name>`) fail on the network, until
  * the end of the test. Only for writes, as reads are retried.
  */
-export function disconnectSupabase(table: string): void {
+export const disconnectSupabase = (table: string): void => {
   server.use(http.all(`${REST_URL}/${table}`, () => HttpResponse.error()));
-}
+};
 
 /** The requests to PostgREST sent in the current test, to a table if given */
-export function supabaseRequests(table?: string): SupabaseRequest[] {
-  return table === undefined
+export const supabaseRequests = (table?: string): SupabaseRequest[] =>
+  table === undefined
     ? [...requests]
     : requests.filter((request) => request.table === table);
-}
 
 /** The mock server, to add handlers for a test with `use()` */
 export { server as supabaseServer };

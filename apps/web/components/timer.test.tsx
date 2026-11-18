@@ -4,9 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { TimerProvider, useNow } from "./timer";
 
-function Now() {
-  return <p>{useNow().toString({ timeZoneName: "never" })}</p>;
-}
+const Now = () => <p>{useNow().toString({ timeZoneName: "never" })}</p>;
 
 const INITIAL_NOW = "2026-11-14T12:00:00+09:00[Asia/Tokyo]";
 

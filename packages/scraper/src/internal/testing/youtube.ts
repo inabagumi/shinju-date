@@ -16,31 +16,27 @@ export const YOUTUBE_TALENTS = [
 ];
 
 /** Builds the channel `id` for tests, with `snippet` if given. */
-export function createChannel(
+export const createChannel = (
   id = "UCaaa",
   snippet: YouTubeChannel["snippet"] = { title: `Channel ${id}` }
-): YouTubeChannel {
-  return {
-    contentDetails: { relatedPlaylists: { uploads: `UU${id.slice(2)}` } },
-    id,
-    snippet,
-  };
-}
+): YouTubeChannel => ({
+  contentDetails: { relatedPlaylists: { uploads: `UU${id.slice(2)}` } },
+  id,
+  snippet,
+});
 
 /** Builds an item of an uploads playlist for tests. */
-export function createPlaylistItem(
+export const createPlaylistItem = (
   videoId = "yt-1"
-): FilteredYouTubePlaylistItem {
-  return { contentDetails: { videoId } };
-}
+): FilteredYouTubePlaylistItem => ({ contentDetails: { videoId } });
 
 /**
  * Builds a video resource for tests. Defaults to a regular upload whose title
  * and thumbnail are named after its ID.
  */
-export function createVideo(
+export const createVideo = (
   overrides: Partial<YouTubeVideo> = {}
-): YouTubeVideo {
+): YouTubeVideo => {
   const id = overrides.id ?? "yt-1";
 
   return {
@@ -59,7 +55,7 @@ export function createVideo(
     },
     ...overrides,
   };
-}
+};
 
 /**
  * Builds a saved row of the YouTube video `youtubeVideoId`. Defaults to a
@@ -67,10 +63,10 @@ export function createVideo(
  * `liveStreamingDetails` of a scheduled stream. Its thumbnail follows
  * `thumbnail_id` and has no ETag, so it is never downloaded again.
  */
-export function createSavedVideo(
+export const createSavedVideo = (
   youtubeVideoId = "yt-1",
   overrides: Partial<SavedYouTubeVideo> = {}
-): SavedYouTubeVideo {
+): SavedYouTubeVideo => {
   const thumbnailId =
     overrides.thumbnail_id === undefined
       ? `thumb-${youtubeVideoId}`
@@ -90,4 +86,4 @@ export function createSavedVideo(
     youtube_video: { youtube_video_id: youtubeVideoId },
     ...overrides,
   };
-}
+};

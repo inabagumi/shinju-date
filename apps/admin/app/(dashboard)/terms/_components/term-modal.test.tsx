@@ -54,31 +54,24 @@ const term = {
   term: "SHINJU",
 };
 
-function getReadingInputs(dialog: HTMLElement) {
-  return within(dialog).getAllByPlaceholderText<HTMLInputElement>(
-    "読み方を入力"
-  );
-}
+const getReadingInputs = (dialog: HTMLElement) =>
+  within(dialog).getAllByPlaceholderText<HTMLInputElement>("読み方を入力");
 
-function getSynonymInputs(dialog: HTMLElement) {
-  return within(dialog).getAllByPlaceholderText<HTMLInputElement>(
-    "類義語を入力"
-  );
-}
+const getSynonymInputs = (dialog: HTMLElement) =>
+  within(dialog).getAllByPlaceholderText<HTMLInputElement>("類義語を入力");
 
-function getSubmittedValues(formData: FormData, name: string) {
-  return [...formData.entries()]
+const getSubmittedValues = (formData: FormData, name: string) =>
+  [...formData.entries()]
     .filter(([key]) => key.startsWith(`${name}[`))
     .map(([, value]) => value);
-}
 
-async function waitForSortableInputList(dialog: HTMLElement) {
+const waitForSortableInputList = async (dialog: HTMLElement) => {
   await waitFor(() => {
     expect(
       within(dialog).getByRole("button", { name: "読み方を追加" })
     ).toBeEnabled();
   });
-}
+};
 
 describe("TermModal", () => {
   beforeEach(() => {
@@ -135,7 +128,7 @@ describe("TermModal", () => {
   });
 
   describe("while the sortable list is loading", () => {
-    function openEditDialog() {
+    const openEditDialog = () => {
       render(<TermModal term={term} />);
 
       fireEvent.click(screen.getByRole("button", { name: "編集" }));
@@ -144,7 +137,7 @@ describe("TermModal", () => {
       const termInput = within(dialog).getByDisplayValue("SHINJU");
 
       return { dialog, termInput };
-    }
+    };
 
     it("shows the current values that cannot be edited yet right after opening", () => {
       const { dialog, termInput } = openEditDialog();

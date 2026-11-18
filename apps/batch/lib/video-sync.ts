@@ -22,11 +22,11 @@ export interface FinishVideoSyncOptions {
  * changed and records when videos were last synced (shown in the admin
  * dashboard, shared by every provider).
  */
-export async function finishVideoSync({
+export const finishVideoSync = async ({
   changed,
   now,
   signal,
-}: FinishVideoSyncOptions): Promise<void> {
+}: FinishVideoSyncOptions): Promise<void> => {
   if (changed) {
     await revalidateTags([CACHE_TAGS.VIDEOS], { signal });
   }
@@ -34,4 +34,4 @@ export async function finishVideoSync({
   await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, toDBString(now), {
     ex: LAST_VIDEO_SYNC_TTL_SECONDS,
   });
-}
+};

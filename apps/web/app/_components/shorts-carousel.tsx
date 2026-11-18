@@ -13,17 +13,15 @@ const SLIDE_CLASS_NAME =
 const NAVIGATION_BUTTON_CLASS_NAME =
   "rounded-full border border-border bg-surface p-2 text-foreground shadow-overlay transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50";
 
-export function ShortsCarouselSkeleton() {
-  return (
-    <div className="flex gap-4 overflow-hidden md:gap-6">
-      {Array.from({ length: 4 }, (_, index) => (
-        <div className={SLIDE_CLASS_NAME} key={index}>
-          <VideoCardSkeleton variant="short" />
-        </div>
-      ))}
-    </div>
-  );
-}
+export const ShortsCarouselSkeleton = () => (
+  <div className="flex gap-4 overflow-hidden md:gap-6">
+    {Array.from({ length: 4 }, (_, index) => (
+      <div className={SLIDE_CLASS_NAME} key={index}>
+        <VideoCardSkeleton variant="short" />
+      </div>
+    ))}
+  </div>
+);
 
 export default function ShortsCarousel({ videos }: { videos: Video[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({

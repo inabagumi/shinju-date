@@ -22,7 +22,7 @@ import type { FormDialogProps } from "./form-dialog";
 type Action = FormDialogProps["action"];
 type OnSuccess = NonNullable<FormDialogProps["onSuccess"]>;
 
-function createDeferred<T>() {
+const createDeferred = <T,>() => {
   let resolve!: (value: T) => void;
   let reject!: (reason?: unknown) => void;
   const promise = new Promise<T>((res, rej) => {
@@ -31,7 +31,7 @@ function createDeferred<T>() {
   });
 
   return { promise, reject, resolve };
-}
+};
 
 interface ErrorCatcherProps {
   children: ReactNode;
@@ -62,12 +62,12 @@ class ErrorCatcher extends Component<ErrorCatcherProps, ErrorCatcherState> {
   }
 }
 
-function renderDialog(
+const renderDialog = (
   action: Action,
   overrides: Partial<
     Pick<FormDialogProps, "description" | "onSuccess" | "size">
   > = {}
-) {
+) => {
   const actionMock = vi.fn<Action>(action);
 
   render(
@@ -87,23 +87,22 @@ function renderDialog(
   );
 
   return { action: actionMock };
-}
+};
 
-function openDialog() {
+const openDialog = () => {
   fireEvent.click(screen.getByRole("button", { name: "開く" }));
 
   return screen.getByRole("dialog", { name: "用語を追加" });
-}
+};
 
-function getTermInput(dialog: HTMLElement) {
-  return within(dialog).getByRole<HTMLInputElement>("textbox", {
+const getTermInput = (dialog: HTMLElement) =>
+  within(dialog).getByRole<HTMLInputElement>("textbox", {
     name: "用語",
   });
-}
 
-function submit(dialog: HTMLElement) {
+const submit = (dialog: HTMLElement) => {
   fireEvent.click(within(dialog).getByRole("button", { name: "追加" }));
-}
+};
 
 describe(FormDialog, () => {
   it("opens with the trigger and shows the title and the fields", () => {
@@ -198,7 +197,7 @@ describe(FormDialog, () => {
   });
 
   /** Submits a dialog whose action returns `state`. */
-  function submitReturning(state: FormState) {
+  const submitReturning = (state: FormState) => {
     const onSuccess = vi.fn<OnSuccess>();
     const { action } = renderDialog(() => state, { onSuccess });
 
@@ -207,7 +206,7 @@ describe(FormDialog, () => {
     submit(dialog);
 
     return { action, dialog, onSuccess };
-  }
+  };
 
   it.each<[string, FormState, string]>([
     [
@@ -251,7 +250,7 @@ describe(FormDialog, () => {
     expect(onSuccess).not.toHaveBeenCalled();
   });
 
-  function renderFailingDialog() {
+  const renderFailingDialog = () => {
     renderDialog(() => ({
       error: "用語の追加に失敗しました。",
       errors: { term: ["用語が長すぎます。"] },
@@ -263,7 +262,7 @@ describe(FormDialog, () => {
     submit(dialog);
 
     return dialog;
-  }
+  };
 
   it("shows the errors and keeps the typed value after a failure", async () => {
     const dialog = renderFailingDialog();
@@ -313,7 +312,7 @@ describe(FormDialog, () => {
     expect(within(reopened).queryByRole("alert")).not.toBeInTheDocument();
   });
 
-  function renderThrowingOnce() {
+  const renderThrowingOnce = () => {
     const onSuccess = vi.fn<OnSuccess>();
     const { action } = renderDialog(
       vi
@@ -329,7 +328,7 @@ describe(FormDialog, () => {
     submit(dialog);
 
     return { action, dialog, onSuccess };
-  }
+  };
 
   it("shows a fallback error and keeps the fields when the action throws", async () => {
     const { dialog, onSuccess } = renderThrowingOnce();

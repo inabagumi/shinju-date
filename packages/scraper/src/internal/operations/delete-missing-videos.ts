@@ -11,7 +11,7 @@ import type { PlatformAdapter, SavedVideoBase } from "../platform.js";
  *   platform video ID is in `ids` are deleted.
  * @returns The number of videos deleted.
  */
-export async function deleteMissingVideos<
+export const deleteMissingVideos = async <
   TVideo,
   TSaved extends SavedVideoBase,
 >(
@@ -19,7 +19,7 @@ export async function deleteMissingVideos<
   adapter: PlatformAdapter<TVideo, TSaved>,
   ids: readonly string[],
   savedVideos: readonly TSaved[]
-): Promise<number> {
+): Promise<number> => {
   const savedById = new Map(
     savedVideos.map((saved) => [adapter.getPlatformVideoId(saved), saved])
   );
@@ -43,4 +43,4 @@ export async function deleteMissingVideos<
   });
 
   return deletedCount;
-}
+};

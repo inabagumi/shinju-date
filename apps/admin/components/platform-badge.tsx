@@ -19,7 +19,7 @@ interface PlatformBadgeProps {
   className?: string;
 }
 
-export function PlatformBadge({ platform, className }: PlatformBadgeProps) {
+export const PlatformBadge = ({ platform, className }: PlatformBadgeProps) => {
   const text = PLATFORM_LABELS[platform] ?? platform;
 
   return (
@@ -30,4 +30,4 @@ export function PlatformBadge({ platform, className }: PlatformBadgeProps) {
       {text}
     </Badge>
   );
-}
+};

@@ -14,7 +14,7 @@
  * // "This is a very long message that exceeds the maxim..."
  * ```
  */
-export function createTitleFromMessage(message: string): string {
+export const createTitleFromMessage = (message: string): string => {
   // Remove empty lines and normalize whitespace
   const cleaned = message.replaceAll(/\s+/g, " ").trim();
 
@@ -24,4 +24,4 @@ export function createTitleFromMessage(message: string): string {
     return cleaned;
   }
   return `${cleaned.substring(0, maxLength)}...`;
-}
+};

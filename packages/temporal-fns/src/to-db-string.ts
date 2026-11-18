@@ -5,9 +5,9 @@
  * @param date - The Temporal.ZonedDateTime or Temporal.Instant object.
  * @returns An ISO 8601 string in UTC, truncated to the second (e.g., "2025-11-02T03:30:00Z").
  */
-export function toDBString(
+export const toDBString = (
   date: Temporal.Instant | Temporal.ZonedDateTime
-): string {
+): string => {
   const instant =
     date instanceof Temporal.ZonedDateTime ? date.toInstant() : date;
 
@@ -15,4 +15,4 @@ export function toDBString(
     roundingMode: "floor",
     smallestUnit: "second",
   });
-}
+};

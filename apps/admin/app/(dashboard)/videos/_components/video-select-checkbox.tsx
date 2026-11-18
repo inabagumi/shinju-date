@@ -9,7 +9,10 @@ interface VideoSelectCheckboxProps {
 }
 
 /** 1件の動画を選択するチェックボックス */
-export function VideoSelectCheckbox({ id, title }: VideoSelectCheckboxProps) {
+export const VideoSelectCheckbox = ({
+  id,
+  title,
+}: VideoSelectCheckboxProps) => {
   const { selectedIds, setSelected } = useVideoSelection();
 
   return (
@@ -21,10 +24,10 @@ export function VideoSelectCheckbox({ id, title }: VideoSelectCheckboxProps) {
       type="checkbox"
     />
   );
-}
+};
 
 /** 表示中の動画を、すべて選択するチェックボックス */
-export function VideoSelectAllCheckbox() {
+export const VideoSelectAllCheckbox = () => {
   const { selectedIds, setAllSelected, videoIds } = useVideoSelection();
   const allSelected =
     videoIds.length > 0 && videoIds.every((id) => selectedIds.includes(id));
@@ -38,4 +41,4 @@ export function VideoSelectAllCheckbox() {
       type="checkbox"
     />
   );
-}
+};

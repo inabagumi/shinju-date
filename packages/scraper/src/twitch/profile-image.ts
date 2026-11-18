@@ -25,9 +25,9 @@ const DEFAULT_PICTURE_DIRECTORY_PREFIX = "user-default-pictures";
  *   not HTTPS, or one of Twitch's default icons. The app shows its own
  *   default icon then.
  */
-export function selectTwitchUserIconUrl(
+export const selectTwitchUserIconUrl = (
   profileImageUrl: string | null | undefined
-): string | null {
+): string | null => {
   const value = profileImageUrl?.trim();
 
   if (!value || !URL.canParse(value)) {
@@ -45,7 +45,7 @@ export function selectTwitchUserIconUrl(
   }
 
   return value;
-}
+};
 
 /**
  * A row of `twitch_users` with its icon, selected with
@@ -80,13 +80,13 @@ export interface SyncTwitchUserIconOptions {
  * @throws When the icon cannot be downloaded, stored or assigned. The user
  *   keeps its current icon then.
  */
-export function syncTwitchUserIcon({
+export const syncTwitchUserIcon = ({
   now = Temporal.Now.instant(),
   saved,
   supabaseClient,
   user,
-}: SyncTwitchUserIconOptions): Promise<ProfileImageSyncResult> {
-  return syncProfileImage({
+}: SyncTwitchUserIconOptions): Promise<ProfileImageSyncResult> =>
+  syncProfileImage({
     now,
     owner: {
       id: saved.id,
@@ -97,4 +97,3 @@ export function syncTwitchUserIcon({
     sourceUrl: selectTwitchUserIconUrl(user.profile_image_url),
     supabaseClient,
   });
-}

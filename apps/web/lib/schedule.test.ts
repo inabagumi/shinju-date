@@ -13,9 +13,7 @@ import {
 } from "./schedule";
 import type { ScheduleLayout } from "./schedule";
 
-function date(value: string) {
-  return Temporal.PlainDate.from(value);
-}
+const date = (value: string) => Temporal.PlainDate.from(value);
 
 describe(parseScheduleDate, () => {
   it("should read a date in YYYY-MM-DD", () => {
@@ -208,12 +206,12 @@ describe(getLengthMinutes, () => {
 
 describe(layoutDay, () => {
   // 21:00 on 9 November 2026 in Japan
-  function video(
+  const video = (
     id: string,
     time: string,
     duration = "P0D",
     status = "UPCOMING"
-  ) {
+  ) => {
     const [hour = 0, minute = 0] = time.split(":").map(Number);
     const publishedAt = Temporal.ZonedDateTime.from({
       day: 9,
@@ -227,16 +225,15 @@ describe(layoutDay, () => {
       .toString();
 
     return { duration, id, published_at: publishedAt, status };
-  }
+  };
 
-  function summarize(layouts: ScheduleLayout<ReturnType<typeof video>>[]) {
-    return Object.fromEntries(
+  const summarize = (layouts: ScheduleLayout<ReturnType<typeof video>>[]) =>
+    Object.fromEntries(
       layouts.map(({ column, columns, item, length, start }) => [
         item.id,
         { column, columns, length, start },
       ])
     );
-  }
 
   it("should place a video at its start with its length", () => {
     expect(

@@ -16,9 +16,8 @@ const PAGE_DIRS = globSync("**/page.{mdx,tsx}", { cwd: APP_DIR }).map((path) =>
  * cannot have an image file, so its page takes over that of the parent
  * segment (`app/videos/[[...queries]]/page.tsx`).
  */
-function getImageDir(dir: string): string {
-  return /^\[\[?\.\.\./.test(dir.split("/").at(-1) ?? "") ? dirname(dir) : dir;
-}
+const getImageDir = (dir: string): string =>
+  /^\[\[?\.\.\./.test(dir.split("/").at(-1) ?? "") ? dirname(dir) : dir;
 
 /**
  * Next.js merges the metadata of the segments shallowly, so `openGraph` of a

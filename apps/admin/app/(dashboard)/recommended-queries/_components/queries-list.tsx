@@ -35,164 +35,160 @@ interface QueriesListProps {
  * おすすめクエリの一覧。表と行はサーバーで描き、追加のフォーム、検索ボックス、
  * 行ごとの削除のボタンだけをクライアントの部品に任せる
  */
-export function QueriesList({
+export const QueriesList = ({
   manualQueries,
   manualTotal,
   autoQueries,
   autoTotal,
   search,
-}: QueriesListProps) {
-  return (
-    <div className="space-y-8">
-      <div className="space-y-4">
-        <AddQueryForm />
+}: QueriesListProps) => (
+  <div className="space-y-8">
+    <div className="space-y-4">
+      <AddQueryForm />
 
-        {/* Search */}
-        <SearchInput
-          aria-label="クエリを検索"
-          className="sm:max-w-md"
-          placeholder="クエリを検索..."
+      {/* Search */}
+      <SearchInput
+        aria-label="クエリを検索"
+        className="sm:max-w-md"
+        placeholder="クエリを検索..."
+      />
+    </div>
+
+    {/* Manual Queries List */}
+    <section className="space-y-3">
+      <h2 className="text-heading font-bold">
+        手動追加クエリ
+        <span className="ml-2 text-meta font-normal text-muted tabular-nums">
+          {manualTotal}件
+        </span>
+      </h2>
+      {manualQueries.length === 0 ? (
+        <EmptyState
+          className="rounded-container border border-border bg-surface"
+          title={
+            search
+              ? "検索結果がありません。"
+              : "手動追加されたおすすめクエリがありません。"
+          }
         />
-      </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>クエリ</TableHead>
+              <TableHead className="w-24 text-right">操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {manualQueries.map((query) => (
+              <TableRow key={query}>
+                <TableCell className="whitespace-normal">{query}</TableCell>
+                <TableCell className="text-right">
+                  <DeleteQueryButton query={query} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </section>
 
-      {/* Manual Queries List */}
-      <section className="space-y-3">
+    {/* Auto Queries List */}
+    <section className="space-y-3">
+      <div className="space-y-1">
         <h2 className="text-heading font-bold">
-          手動追加クエリ
+          自動選出クエリ
           <span className="ml-2 text-meta font-normal text-muted tabular-nums">
-            {manualTotal}件
+            {autoTotal}件
           </span>
         </h2>
-        {manualQueries.length === 0 ? (
-          <EmptyState
-            className="rounded-container border border-border bg-surface"
-            title={
-              search
-                ? "検索結果がありません。"
-                : "手動追加されたおすすめクエリがありません。"
-            }
-          />
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>クエリ</TableHead>
-                <TableHead className="w-24 text-right">操作</TableHead>
+        <p className="max-w-text text-meta text-muted">
+          {AUTO_QUERIES_DESCRIPTION}
+        </p>
+      </div>
+      {autoQueries.length === 0 ? (
+        <EmptyState
+          className="rounded-container border border-border bg-surface"
+          title={
+            search
+              ? "検索結果がありません。"
+              : "自動選出されたおすすめクエリがありません。"
+          }
+        />
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>クエリ</TableHead>
+              <TableHead className="w-32 text-right">スコア</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {autoQueries.map(({ query, score }) => (
+              <TableRow key={query}>
+                <TableCell className="whitespace-normal">{query}</TableCell>
+                <TableCell className="text-right text-muted tabular-nums">
+                  {score.toFixed(2)}
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {manualQueries.map((query) => (
-                <TableRow key={query}>
-                  <TableCell className="whitespace-normal">{query}</TableCell>
-                  <TableCell className="text-right">
-                    <DeleteQueryButton query={query} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </section>
-
-      {/* Auto Queries List */}
-      <section className="space-y-3">
-        <div className="space-y-1">
-          <h2 className="text-heading font-bold">
-            自動選出クエリ
-            <span className="ml-2 text-meta font-normal text-muted tabular-nums">
-              {autoTotal}件
-            </span>
-          </h2>
-          <p className="max-w-text text-meta text-muted">
-            {AUTO_QUERIES_DESCRIPTION}
-          </p>
-        </div>
-        {autoQueries.length === 0 ? (
-          <EmptyState
-            className="rounded-container border border-border bg-surface"
-            title={
-              search
-                ? "検索結果がありません。"
-                : "自動選出されたおすすめクエリがありません。"
-            }
-          />
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>クエリ</TableHead>
-                <TableHead className="w-32 text-right">スコア</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {autoQueries.map(({ query, score }) => (
-                <TableRow key={query}>
-                  <TableCell className="whitespace-normal">{query}</TableCell>
-                  <TableCell className="text-right text-muted tabular-nums">
-                    {score.toFixed(2)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </section>
-    </div>
-  );
-}
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </section>
+  </div>
+);
 
 /**
  * 読み込み中の `QueriesList`。追加のフォームと検索欄、手動追加と自動選出の2つの表
  * （それぞれ2列）を並べる
  */
-export function QueriesListSkeleton() {
-  return (
-    <div aria-hidden="true" className="space-y-8">
-      <div className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <div className="flex-1 space-y-2 sm:max-w-md">
-            <Skeleton className="h-5 w-40" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-          <Skeleton className="h-9 w-16" />
+export const QueriesListSkeleton = () => (
+  <div aria-hidden="true" className="space-y-8">
+    <div className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <div className="flex-1 space-y-2 sm:max-w-md">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-10 w-full" />
         </div>
-        <Skeleton className="h-10 w-full sm:max-w-md" />
+        <Skeleton className="h-9 w-16" />
       </div>
-
-      <section className="space-y-3">
-        <h2 className="text-heading font-bold">手動追加クエリ</h2>
-        <TableSkeleton
-          columns={[
-            { cell: <Skeleton className="h-4 w-48" />, id: "query" },
-            {
-              align: "end",
-              cell: <Skeleton className="h-7 w-14" />,
-              className: "w-24",
-              id: "actions",
-            },
-          ]}
-        />
-      </section>
-
-      <section className="space-y-3">
-        <div className="space-y-1">
-          <h2 className="text-heading font-bold">自動選出クエリ</h2>
-          <p className="max-w-text text-meta text-muted">
-            {AUTO_QUERIES_DESCRIPTION}
-          </p>
-        </div>
-        <TableSkeleton
-          columns={[
-            { cell: <Skeleton className="h-4 w-48" />, id: "query" },
-            {
-              align: "end",
-              cell: <Skeleton className="h-4 w-10" />,
-              className: "w-32",
-              id: "score",
-            },
-          ]}
-        />
-      </section>
+      <Skeleton className="h-10 w-full sm:max-w-md" />
     </div>
-  );
-}
+
+    <section className="space-y-3">
+      <h2 className="text-heading font-bold">手動追加クエリ</h2>
+      <TableSkeleton
+        columns={[
+          { cell: <Skeleton className="h-4 w-48" />, id: "query" },
+          {
+            align: "end",
+            cell: <Skeleton className="h-7 w-14" />,
+            className: "w-24",
+            id: "actions",
+          },
+        ]}
+      />
+    </section>
+
+    <section className="space-y-3">
+      <div className="space-y-1">
+        <h2 className="text-heading font-bold">自動選出クエリ</h2>
+        <p className="max-w-text text-meta text-muted">
+          {AUTO_QUERIES_DESCRIPTION}
+        </p>
+      </div>
+      <TableSkeleton
+        columns={[
+          { cell: <Skeleton className="h-4 w-48" />, id: "query" },
+          {
+            align: "end",
+            cell: <Skeleton className="h-4 w-10" />,
+            className: "w-32",
+            id: "score",
+          },
+        ]}
+      />
+    </section>
+  </div>
+);

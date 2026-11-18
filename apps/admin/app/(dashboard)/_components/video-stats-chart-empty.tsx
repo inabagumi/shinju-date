@@ -6,13 +6,11 @@ import { ChartColumn } from "lucide-react";
  * been recorded yet. It explains when the data becomes available instead of
  * leaving a chart-sized blank area.
  */
-export function VideoStatsChartEmpty() {
-  return (
-    <EmptyState
-      className="rounded-container border border-dashed border-border"
-      description="動画数は毎日0時過ぎに前日分を集計します。集計が済むと、ここに推移が表示されます。"
-      icon={<ChartColumn />}
-      title="まだ集計されたデータがありません"
-    />
-  );
-}
+export const VideoStatsChartEmpty = () => (
+  <EmptyState
+    className="rounded-container border border-dashed border-border"
+    description="動画数は毎日0時過ぎに前日分を集計します。集計が済むと、ここに推移が表示されます。"
+    icon={<ChartColumn />}
+    title="まだ集計されたデータがありません"
+  />
+);

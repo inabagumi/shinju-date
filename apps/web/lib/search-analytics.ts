@@ -17,10 +17,10 @@ import { trackSearchSession } from "./session-analytics";
 /**
  * Log a search query to Redis for analytics
  */
-export async function logSearchQuery(
+export const logSearchQuery = async (
   query: string,
   resultCount: number
-): Promise<void> {
+): Promise<void> => {
   if (!query || query.trim().length === 0) {
     return;
   }
@@ -77,4 +77,4 @@ export async function logSearchQuery(
     // Log error but don't throw - we don't want analytics to break search
     logger.error("Redisへの検索クエリのログ記録に失敗しました", { error });
   }
-}
+};

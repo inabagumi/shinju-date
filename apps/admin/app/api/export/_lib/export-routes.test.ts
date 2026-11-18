@@ -39,10 +39,10 @@ vi.mock(import("@/lib/analytics/get-search-quality-metrics"), () => ({
 
 const BOM = [0xef, 0xbb, 0xbf];
 
-async function exportCsv(
+const exportCsv = async (
   handler: (request: NextRequest) => Promise<Response>,
   query: string
-) {
+) => {
   const response = await handler(
     new NextRequest(`http://localhost/api/export/any?${query}`)
   );
@@ -55,7 +55,7 @@ async function exportCsv(
     status: response.status,
     text: new TextDecoder().decode(body),
   };
-}
+};
 
 describe("CSV export routes", () => {
   beforeEach(() => {

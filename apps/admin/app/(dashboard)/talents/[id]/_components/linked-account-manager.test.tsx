@@ -120,11 +120,8 @@ const definitions: Definition[] = [
 describe.each(definitions)("LinkedAccountManager ($name)", (definition) => {
   const removeLabel = `${definition.account}を削除`;
 
-  function renderManager() {
-    return render(
-      <ActionToastProvider>{definition.element}</ActionToastProvider>
-    );
-  }
+  const renderManager = () =>
+    render(<ActionToastProvider>{definition.element}</ActionToastProvider>);
 
   beforeEach(() => {
     vi.clearAllMocks();

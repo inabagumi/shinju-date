@@ -18,9 +18,9 @@ export interface DailySearchVolume {
  * Get daily search volume for a date range
  * @param query.range - The date range (both ends inclusive)
  */
-export async function getSearchVolume({
+export const getSearchVolume = async ({
   range,
-}: PeriodQuery): Promise<DailySearchVolume[]> {
+}: PeriodQuery): Promise<DailySearchVolume[]> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -57,4 +57,4 @@ export async function getSearchVolume({
     });
     return [];
   }
-}
+};

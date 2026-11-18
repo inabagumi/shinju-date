@@ -3,7 +3,7 @@
  * @param duration - Temporal.Duration object
  * @returns Formatted duration string (H:MM:SS or M:SS)
  */
-export function formatDuration(duration: Temporal.Duration): string {
+export const formatDuration = (duration: Temporal.Duration): string => {
   // Balance the units so that e.g. `PT90M` becomes 1:30:00 and days are
   // folded into hours (`P1DT2H3M4S` becomes 26:03:04)
   const balanced = duration.round({ largestUnit: "hours" });
@@ -16,4 +16,4 @@ export function formatDuration(duration: Temporal.Duration): string {
   }
 
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-}
+};

@@ -16,7 +16,7 @@ const FIELDS = ["message"] as const;
 
 type Handler = FormActionHandler<(typeof FIELDS)[number]>;
 
-function createFormData(values: Record<string, string>): FormData {
+const createFormData = (values: Record<string, string>): FormData => {
   const formData = new FormData();
 
   for (const [key, value] of Object.entries(values)) {
@@ -24,7 +24,7 @@ function createFormData(values: Record<string, string>): FormData {
   }
 
   return formData;
-}
+};
 
 describe(withBotCheck, () => {
   beforeEach(() => {

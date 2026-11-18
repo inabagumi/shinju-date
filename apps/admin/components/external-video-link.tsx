@@ -28,8 +28,8 @@ export interface ExternalVideo {
 /**
  * 動画を YouTube や Twitch で開く URL。作れない動画（ID がない）は `null`。
  */
-export function getExternalVideoUrl(video: ExternalVideo): string | null {
-  return getVideoExternalUrl({
+export const getExternalVideoUrl = (video: ExternalVideo): string | null =>
+  getVideoExternalUrl({
     platform: video.platform,
     status: video.status,
     twitchLoginName: video.twitch_video?.twitch_user?.twitch_login_name,
@@ -37,7 +37,6 @@ export function getExternalVideoUrl(video: ExternalVideo): string | null {
     twitchVideoType: video.twitch_video?.type,
     youtubeVideoId: video.youtube_video?.youtube_video_id,
   });
-}
 
 interface ExternalVideoLinkProps extends Omit<
   ComponentPropsWithoutRef<"a">,
@@ -50,11 +49,11 @@ interface ExternalVideoLinkProps extends Omit<
  * 動画を YouTube や Twitch の新しいタブで開くリンク。URL を作れない動画
  * （ID がない）は、リンクにせず中身だけを描く。
  */
-export function ExternalVideoLink({
+export const ExternalVideoLink = ({
   children,
   video,
   ...props
-}: ExternalVideoLinkProps) {
+}: ExternalVideoLinkProps) => {
   const href = getExternalVideoUrl(video);
 
   if (!href) {
@@ -66,4 +65,4 @@ export function ExternalVideoLink({
       {children}
     </a>
   );
-}
+};

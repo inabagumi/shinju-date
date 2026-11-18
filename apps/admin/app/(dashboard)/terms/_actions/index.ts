@@ -12,10 +12,10 @@ import { termSchema, updateTermSchema } from "../_lib/schema";
 
 const ID_REQUIRED_ERROR = "IDが指定されていません。";
 
-async function revalidateTerms(): Promise<void> {
+const revalidateTerms = async (): Promise<void> => {
   revalidatePath("/terms");
   await revalidateTags([CACHE_TAGS.VIDEOS]);
-}
+};
 
 export const createTermAction = adminFormAction(
   "createTermAction",

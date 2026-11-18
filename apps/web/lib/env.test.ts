@@ -14,13 +14,12 @@ const REQUIRED_ENV = {
   UPSTASH_REDIS_REST_URL: "https://upstash.test",
 } as const satisfies EnvSource;
 
-function without(...names: (keyof typeof REQUIRED_ENV)[]): EnvSource {
-  return Object.fromEntries(
+const without = (...names: (keyof typeof REQUIRED_ENV)[]): EnvSource =>
+  Object.fromEntries(
     Object.entries(REQUIRED_ENV).filter(
       ([name]) => !names.includes(name as keyof typeof REQUIRED_ENV)
     )
   );
-}
 
 describe(parseEnv, () => {
   it("returns the variables when every required one is set", () => {
@@ -130,9 +129,8 @@ interface TurboConfig {
   tasks?: Record<string, { env?: string[] }>;
 }
 
-function readTurboConfig(path: string): TurboConfig {
-  return JSON.parse(readFileSync(new URL(path, import.meta.url), "utf-8"));
-}
+const readTurboConfig = (path: string): TurboConfig =>
+  JSON.parse(readFileSync(new URL(path, import.meta.url), "utf-8"));
 
 describe("the names in ENV_NAMES", () => {
   it("are all passed to the build by turbo.json", () => {

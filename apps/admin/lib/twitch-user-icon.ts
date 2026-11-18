@@ -18,10 +18,10 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
  *
  * @returns 同期結果。失敗した場合は `null`
  */
-export async function syncTwitchUserIconSafely(
+export const syncTwitchUserIconSafely = async (
   user: SyncTwitchUserIconOptions["user"],
   saved: SavedTwitchUserIcon
-): Promise<ProfileImageSyncResult | null> {
+): Promise<ProfileImageSyncResult | null> => {
   try {
     return await syncTwitchUserIcon({
       saved,
@@ -38,4 +38,4 @@ export async function syncTwitchUserIconSafely(
 
     return null;
   }
-}
+};

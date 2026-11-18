@@ -18,13 +18,12 @@ import type { YouTubeFetcher } from "./fetcher.js";
  *
  * @returns The number of channels updated.
  */
-export async function syncYouTubeChannels(
+export const syncYouTubeChannels = async (
   context: CrawlContext<YouTubeFetcher>
-): Promise<number> {
-  return countUpdatedAccounts(
+): Promise<number> =>
+  countUpdatedAccounts(
     await syncAccountsWith(context, createYouTubeAccounts(context.fetcher))
   );
-}
 
 /**
  * Brings the name, handle and icon of the YouTube channels of one talent in
@@ -37,11 +36,10 @@ export async function syncYouTubeChannels(
  *   has none or was deleted.
  * @throws When the channels cannot be loaded or YouTube cannot be read.
  */
-export function syncYouTubeChannelsOfTalent(
+export const syncYouTubeChannelsOfTalent = (
   context: CrawlContext<YouTubeFetcher>,
   talentId: string
-): Promise<SyncAccountResult<YouTubeChannelFields>[]> {
-  return syncAccountsWith(context, createYouTubeAccounts(context.fetcher), {
+): Promise<SyncAccountResult<YouTubeChannelFields>[]> =>
+  syncAccountsWith(context, createYouTubeAccounts(context.fetcher), {
     talentId,
   });
-}

@@ -1,6 +1,6 @@
-export function min(
+export const min = (
   ...values: Temporal.ZonedDateTime[]
-): Temporal.ZonedDateTime {
+): Temporal.ZonedDateTime => {
   if (!values[0]) {
     throw new TypeError("At least one argument is required.");
   }
@@ -14,4 +14,4 @@ export function min(
   }
 
   return result;
-}
+};

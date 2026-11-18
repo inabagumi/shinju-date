@@ -20,7 +20,7 @@ vi.mock(import("../talents/_lib/get-talents"), () => ({
 const { default: VideosPage } = await import("./page");
 
 /** ページの Suspense の中の部品を、すべて実行する */
-async function renderPage(searchParams: Record<string, string>) {
+const renderPage = async (searchParams: Record<string, string>) => {
   const children = findAllSuspenseChildren(
     VideosPage({
       params: Promise.resolve({}),
@@ -29,7 +29,7 @@ async function renderPage(searchParams: Record<string, string>) {
   );
 
   return Promise.all(children.map((child) => runServerComponent(child)));
-}
+};
 
 describe("VideosPage", () => {
   beforeEach(() => {

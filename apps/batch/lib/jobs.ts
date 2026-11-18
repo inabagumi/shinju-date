@@ -180,20 +180,17 @@ export const IMAGES_CLEANUP_JOB: CronJob = {
   schedule: "44 19 * * *",
 };
 
-export function getTalentsUpdateJob(provider: Enums<"platform_type">): CronJob {
-  return TALENTS_UPDATE_JOBS[provider];
-}
+export const getTalentsUpdateJob = (
+  provider: Enums<"platform_type">
+): CronJob => TALENTS_UPDATE_JOBS[provider];
 
-export function getVideosUpdateJob(provider: Enums<"platform_type">): CronJob {
-  return VIDEOS_UPDATE_JOBS[provider];
-}
+export const getVideosUpdateJob = (provider: Enums<"platform_type">): CronJob =>
+  VIDEOS_UPDATE_JOBS[provider];
 
-export function getVideosCheckJob(
+export const getVideosCheckJob = (
   provider: Enums<"platform_type">,
   mode: VideosCheckMode
-): CronJob {
-  return VIDEOS_CHECK_JOBS[provider][mode];
-}
+): CronJob => VIDEOS_CHECK_JOBS[provider][mode];
 
 /** Every job, for consistency checks against `vercel.json`. */
 export const JOBS: readonly CronJob[] = [

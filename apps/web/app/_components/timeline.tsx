@@ -25,26 +25,28 @@ interface TimelineGroupProps {
  * どの画面幅でも「日付 → 所属するカード」の順に並ぶため、
  * 1件のみのグループでも見出しとカードが離れない。
  */
-function TimelineGroup({ children, heading, labelledBy }: TimelineGroupProps) {
-  return (
-    <section
-      aria-labelledby={labelledBy}
-      className="relative border-l-2 border-border pb-2 pl-5 sm:pl-8"
-      data-testid="timeline-group"
-    >
-      <span
-        aria-hidden="true"
-        className="absolute top-1.5 -left-1.75 size-3 rounded-full bg-accent ring-4 ring-background"
-      />
+const TimelineGroup = ({
+  children,
+  heading,
+  labelledBy,
+}: TimelineGroupProps) => (
+  <section
+    aria-labelledby={labelledBy}
+    className="relative border-l-2 border-border pb-2 pl-5 sm:pl-8"
+    data-testid="timeline-group"
+  >
+    <span
+      aria-hidden="true"
+      className="absolute top-1.5 -left-1.75 size-3 rounded-full bg-accent ring-4 ring-background"
+    />
 
-      <header className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        {heading}
-      </header>
+    <header className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+      {heading}
+    </header>
 
-      {children}
-    </section>
-  );
-}
+    {children}
+  </section>
+);
 
 const ITEM_CLASS_NAME = "flex gap-3 sm:block";
 const TIME_CLASS_NAME =
@@ -54,7 +56,7 @@ const TIME_CLASS_NAME =
  * 640px 未満では横型のカードの左に開始時刻を大きく置き、
  * カードの補助情報からは日時を外す。640px 以上では縦型のカードだけを並べる。
  */
-function TimelineItem({ value }: { value: Video }) {
+const TimelineItem = ({ value }: { value: Video }) => {
   const publishedAt = useMemo(
     () =>
       Temporal.Instant.from(value.published_at).toZonedDateTimeISO(TIME_ZONE),
@@ -74,7 +76,7 @@ function TimelineItem({ value }: { value: Video }) {
       />
     </div>
   );
-}
+};
 
 interface TimelineSectionProps {
   dateTime: string;
@@ -82,11 +84,11 @@ interface TimelineSectionProps {
   today: Temporal.PlainDate;
 }
 
-function TimelineSection({
+const TimelineSection = ({
   dateTime: rawDateTime,
   items,
   today,
-}: TimelineSectionProps) {
+}: TimelineSectionProps) => {
   const headingId = useId();
   const dateTime = useMemo(
     () => Temporal.PlainDate.from(rawDateTime),
@@ -114,33 +116,31 @@ function TimelineSection({
       </div>
     </TimelineGroup>
   );
-}
+};
 
-export function TimelineSkeleton() {
-  return (
-    <div className="space-y-10">
-      <TimelineGroup
-        heading={
-          <span className="inline-block h-6 w-24 animate-pulse rounded-control bg-muted" />
-        }
-      >
-        <div className={VIDEO_CARD_LIST_CLASS_NAMES.row}>
-          {Array.from({ length: 2 }, (_, index) => (
-            <div aria-hidden="true" className={ITEM_CLASS_NAME} key={index}>
-              <span
-                className={twMerge(
-                  TIME_CLASS_NAME,
-                  "h-6 animate-pulse rounded-control bg-muted"
-                )}
-              />
-              <VideoCardSkeleton className="min-w-0 flex-1" variant="row" />
-            </div>
-          ))}
-        </div>
-      </TimelineGroup>
-    </div>
-  );
-}
+export const TimelineSkeleton = () => (
+  <div className="space-y-10">
+    <TimelineGroup
+      heading={
+        <span className="inline-block h-6 w-24 animate-pulse rounded-control bg-muted" />
+      }
+    >
+      <div className={VIDEO_CARD_LIST_CLASS_NAMES.row}>
+        {Array.from({ length: 2 }, (_, index) => (
+          <div aria-hidden="true" className={ITEM_CLASS_NAME} key={index}>
+            <span
+              className={twMerge(
+                TIME_CLASS_NAME,
+                "h-6 animate-pulse rounded-control bg-muted"
+              )}
+            />
+            <VideoCardSkeleton className="min-w-0 flex-1" variant="row" />
+          </div>
+        ))}
+      </div>
+    </TimelineGroup>
+  </div>
+);
 
 /**
  * 配信予定を日付ごとにまとめ、各日の中は開始時刻の順に並べる。

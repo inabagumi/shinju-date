@@ -23,11 +23,11 @@ interface WidgetErrorFallbackProps extends WidgetErrorBoundaryProps {
  * Takes the place of a widget whose data could not be loaded. The heading
  * stays, so that admins can tell which widget failed.
  */
-export function WidgetErrorFallback({
+export const WidgetErrorFallback = ({
   error,
   retry,
   title,
-}: WidgetErrorFallbackProps) {
+}: WidgetErrorFallbackProps) => {
   useEffect(() => {
     Sentry.captureException(error);
   }, [error]);
@@ -45,14 +45,12 @@ export function WidgetErrorFallback({
       </div>
     </Panel>
   );
-}
+};
 
-function renderFallback(
+const renderFallback = (
   props: WidgetErrorBoundaryProps,
   { error, retry }: ErrorInfo
-) {
-  return <WidgetErrorFallback {...props} error={error} retry={retry} />;
-}
+) => <WidgetErrorFallback {...props} error={error} retry={retry} />;
 
 /**
  * Keeps an error thrown by one widget inside that widget, so that the rest

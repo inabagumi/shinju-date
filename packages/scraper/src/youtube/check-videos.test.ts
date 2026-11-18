@@ -479,8 +479,8 @@ describe("refreshYouTubeVideos and thumbnails", () => {
 });
 
 describe(removeUnavailableYouTubeVideos, () => {
-  function createPage(from: number, size: number) {
-    return Array.from({ length: size }, (_, i) => {
+  const createPage = (from: number, size: number) =>
+    Array.from({ length: size }, (_, i) => {
       const n = String(from + i).padStart(4, "0");
 
       return {
@@ -489,7 +489,6 @@ describe(removeUnavailableYouTubeVideos, () => {
         youtube_video: { youtube_video_id: `yt-${n}` },
       };
     });
-  }
 
   it("walks every video page by page, continuing after the last ID", async () => {
     const cursors: (string | undefined)[] = [];

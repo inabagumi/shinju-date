@@ -18,10 +18,10 @@ interface GroupVideosByDateOptions {
  * The dates and the videos of each date are in the order of the start, or in
  * the given order with `sort: false`.
  */
-export function groupVideosByDate<T extends DatedVideo>(
+export const groupVideosByDate = <T extends DatedVideo>(
   videos: readonly T[],
   { sort = true }: GroupVideosByDateOptions = {}
-): Map<string, T[]> {
+): Map<string, T[]> => {
   const sortedVideos = sort
     ? videos.toSorted((videoA, videoB) =>
         Temporal.Instant.compare(
@@ -37,4 +37,4 @@ export function groupVideosByDate<T extends DatedVideo>(
       .toPlainDate()
       .toString()
   );
-}
+};

@@ -12,7 +12,7 @@ interface MobileMenuProps {
  * Disclosure-style menu that exposes the primary navigation on narrow
  * viewports where the inline header links are hidden.
  */
-export function MobileMenu({ children }: MobileMenuProps) {
+export const MobileMenu = ({ children }: MobileMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -99,4 +99,4 @@ export function MobileMenu({ children }: MobileMenuProps) {
       </div>
     </div>
   );
-}
+};

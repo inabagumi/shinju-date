@@ -38,31 +38,29 @@ export interface StatTileProps extends Omit<
  * 統計のタイル。ラベル・値・前日比を縦に並べる。地は `bg-surface` と `border` で、
  * 色は前日比の増減など意味があるときだけ使う。
  */
-export function StatTile({
+export const StatTile = ({
   change,
   changeTone,
   className,
   label,
   value,
   ...props
-}: StatTileProps) {
-  return (
-    <div
-      className={twMerge(
-        "rounded-container border border-border bg-surface p-4",
-        className
+}: StatTileProps) => (
+  <div
+    className={twMerge(
+      "rounded-container border border-border bg-surface p-4",
+      className
+    )}
+    {...props}
+  >
+    <dl className="flex flex-col gap-1">
+      <dt className="text-meta text-muted">{label}</dt>
+      <dd className="text-title font-bold text-foreground tabular-nums">
+        {value}
+      </dd>
+      {change !== undefined && change !== null && (
+        <dd className={changeVariants({ tone: changeTone })}>{change}</dd>
       )}
-      {...props}
-    >
-      <dl className="flex flex-col gap-1">
-        <dt className="text-meta text-muted">{label}</dt>
-        <dd className="text-title font-bold text-foreground tabular-nums">
-          {value}
-        </dd>
-        {change !== undefined && change !== null && (
-          <dd className={changeVariants({ tone: changeTone })}>{change}</dd>
-        )}
-      </dl>
-    </div>
-  );
-}
+    </dl>
+  </div>
+);

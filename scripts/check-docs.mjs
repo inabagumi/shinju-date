@@ -46,7 +46,7 @@ const anchorCache = new Map();
  *
  * @param {string[]} pathspecs - Pathspecs to limit the files
  */
-function listFiles(pathspecs = []) {
+const listFiles = (pathspecs = []) => {
   const output = execFileSync(
     "git",
     [
@@ -63,7 +63,7 @@ function listFiles(pathspecs = []) {
   );
 
   return output.split("\0").filter(Boolean);
-}
+};
 
 /** Files and their parent directories, relative to the repository root */
 const knownPaths = new Set([""]);
@@ -76,16 +76,15 @@ for (const file of listFiles()) {
   }
 }
 
-function listMarkdownFiles() {
-  return listFiles(["*.md"]).filter(
+const listMarkdownFiles = () =>
+  listFiles(["*.md"]).filter(
     (file) => !IGNORED_FILES.some((pattern) => pattern.test(file))
   );
-}
 
 /**
  * @param {string} pattern - Path that contains `*`
  */
-function globToRegExp(pattern) {
+const globToRegExp = (pattern) => {
   const source = pattern
     .split(/(\*\*\/|\*\*|\*)/)
     .map((part) => {
@@ -106,12 +105,12 @@ function globToRegExp(pattern) {
     .join("");
 
   return new RegExp(`^${source}$`);
-}
+};
 
 /**
  * @param {string} path - Absolute path, which may contain `*`
  */
-function pathExists(path) {
+const pathExists = (path) => {
   const relativePath = relative(root, path).split("\\").join("/");
 
   if (relativePath.startsWith("..")) {
@@ -125,19 +124,19 @@ function pathExists(path) {
   }
 
   return knownPaths.has(relativePath);
-}
+};
 
 /**
  * @param {string} value - Part of a URL
  */
-function decode(value) {
+const decode = (value) => {
   try {
     return decodeURIComponent(value);
   } catch {
     // Keep the value as it is when it is not a valid URI component
     return value;
   }
-}
+};
 
 /**
  * Blank out fenced code blocks, keeping the line numbers.
@@ -145,7 +144,7 @@ function decode(value) {
  * @param {string[]} lines - Lines of a Markdown file
  * @returns {string[]} Lines with the fenced code blocks replaced by ''
  */
-function blankFences(lines) {
+const blankFences = (lines) => {
   const result = [];
   let fence = null;
 
@@ -175,18 +174,17 @@ function blankFences(lines) {
   }
 
   return result;
-}
+};
 
 /**
  * Replace inline code with spaces, keeping the offsets and the line breaks.
  *
  * @param {string} text - Markdown text
  */
-function blankInlineCode(text) {
-  return text.replaceAll(INLINE_CODE_PATTERN, (match) =>
+const blankInlineCode = (text) =>
+  text.replaceAll(INLINE_CODE_PATTERN, (match) =>
     match.replaceAll(/[^\n]/g, " ")
   );
-}
 
 /**
  * Read the destination of an inline link, which may contain balanced
@@ -196,7 +194,7 @@ function blankInlineCode(text) {
  * @param {number} start - Index just after `](`
  * @returns {string | null} Destination, or null when it is not a link
  */
-function readDestination(text, start) {
+const readDestination = (text, start) => {
   let index = start;
 
   while (index < text.length && /\s/.test(text[index])) {
@@ -236,7 +234,7 @@ function readDestination(text, start) {
   }
 
   return destination === "" ? null : destination;
-}
+};
 
 /**
  * Find the destinations of the links in Markdown text without code.
@@ -245,7 +243,7 @@ function readDestination(text, start) {
  * @returns {Array<{ index: number, target: string }>} Destinations and the
  *   indexes where their links start
  */
-function findLinks(text) {
+const findLinks = (text) => {
   const links = [];
 
   for (const match of text.matchAll(/\]\(/g)) {
@@ -261,14 +259,14 @@ function findLinks(text) {
   }
 
   return links;
-}
+};
 
 /**
  * Make the anchor GitHub gives a heading.
  *
  * @param {string} heading - Text of a heading
  */
-function slugify(heading) {
+const slugify = (heading) => {
   let text = heading.replaceAll(/!?\[([^\]]*)\]\([^)]*\)/g, "$1");
   let previous;
 
@@ -300,12 +298,12 @@ function slugify(heading) {
     .toLowerCase()
     .replaceAll(/[^\p{L}\p{M}\p{N}\p{Pc}\- ]/gu, "")
     .replaceAll(" ", "-");
-}
+};
 
 /**
  * @param {string} path - Absolute path of a Markdown file
  */
-function getAnchors(path) {
+const getAnchors = (path) => {
   const cached = anchorCache.get(path);
 
   if (cached) {
@@ -360,13 +358,13 @@ function getAnchors(path) {
   anchorCache.set(path, anchors);
 
   return anchors;
-}
+};
 
 /**
  * @param {string} code - Content of inline code
  * @returns {string | null} Path to check, or null when it is not a path
  */
-function extractPath(code) {
+const extractPath = (code) => {
   const text = code.trim();
 
   if (!PATH_PREFIXES.some((prefix) => text.startsWith(prefix))) {
@@ -380,12 +378,12 @@ function extractPath(code) {
 
   // Strip a line number (`apps/web/proxy.ts:12`) and an anchor
   return text.replace(/:\d+(?:-\d+)?$/, "").replace(/#.*$/, "");
-}
+};
 
 /**
  * @param {string} file - Markdown file relative to the repository root
  */
-function checkFile(file) {
+const checkFile = (file) => {
   const errors = [];
   const filePath = join(root, file);
   const baseDir = dirname(filePath);
@@ -445,7 +443,7 @@ function checkFile(file) {
   }
 
   return errors.toSorted((a, b) => a.line - b.line);
-}
+};
 
 const files = listMarkdownFiles();
 let errorCount = 0;

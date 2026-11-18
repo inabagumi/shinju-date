@@ -11,7 +11,7 @@ import { supabaseClient } from "./supabase";
  * Creates the scraper of a platform, wired to this app's database, logger
  * and error tracking.
  */
-export function createScraper(provider: Enums<"platform_type">): Scraper {
+export const createScraper = (provider: Enums<"platform_type">): Scraper => {
   const options: ScraperOptions = {
     logger,
     // Failures of single accounts or videos do not fail the run, so they are
@@ -25,4 +25,4 @@ export function createScraper(provider: Enums<"platform_type">): Scraper {
   return provider === "twitch"
     ? new TwitchScraper(options)
     : new YouTubeScraper(options);
-}
+};

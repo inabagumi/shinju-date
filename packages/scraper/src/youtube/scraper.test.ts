@@ -54,12 +54,12 @@ interface FakeYouTube {
  * Stands in for the YouTube Data API: the scraper is exercised through its
  * public operations with only YouTube and the database replaced.
  */
-function createClient({
+const createClient = ({
   channels = {},
   uploadPages = {},
   uploads = {},
   videos = {},
-}: FakeYouTube) {
+}: FakeYouTube) => {
   const videosList = vi.fn<ListMethod<youtube.Schema$VideoListResponse>>(
     async ({ id = [], part = [] }: ListParams) => ({
       data: {
@@ -138,12 +138,12 @@ function createClient({
   } as unknown as youtube.Youtube;
 
   return { client, playlistItemsList: client.playlistItems.list, videosList };
-}
+};
 
 describe(YouTubeScraper, () => {
   const onError = vi.fn<ErrorReporter>();
 
-  function createScraper(fake: FakeYouTube) {
+  const createScraper = (fake: FakeYouTube) => {
     const { client, playlistItemsList, videosList } = createClient(fake);
 
     return {
@@ -155,7 +155,7 @@ describe(YouTubeScraper, () => {
       }),
       videosList,
     };
-  }
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();

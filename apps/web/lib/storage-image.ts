@@ -6,15 +6,14 @@ import { NextResponse } from "next/server";
 
 const SIGNED_URL_EXPIRES_IN = 60 * 10; // 10 minutes
 
-function createFallbackResponse(): NextResponse {
-  return new NextResponse(DUMMY_THUMBNAIL_PNG, {
+const createFallbackResponse = (): NextResponse =>
+  new NextResponse(DUMMY_THUMBNAIL_PNG, {
     headers: {
       "Accept-Ranges": "none",
       "Cache-Control": `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
       "Content-Type": "image/png",
     },
   });
-}
 
 export interface ServeStorageImageOptions {
   bucket: string;
@@ -30,10 +29,10 @@ export interface ServeStorageImageOptions {
  * the object cannot be fetched, a transparent 1x1 PNG is returned instead so
  * pages never show a broken image.
  */
-export async function serveStorageImage(
+export const serveStorageImage = async (
   request: Request,
   { bucket, path, supabaseClient }: ServeStorageImageOptions
-): Promise<Response> {
+): Promise<Response> => {
   const { data, error: signedUrlError } = await supabaseClient.storage
     .from(bucket)
     .createSignedUrl(path, SIGNED_URL_EXPIRES_IN);
@@ -76,4 +75,4 @@ export async function serveStorageImage(
     // If fetch throws an error (e.g., network error), return a dummy image
     return createFallbackResponse();
   }
-}
+};

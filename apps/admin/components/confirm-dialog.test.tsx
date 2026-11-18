@@ -14,7 +14,7 @@ import type { ActionResult, ConfirmDialogProps } from "./confirm-dialog";
 type OnConfirm = ConfirmDialogProps["onConfirm"];
 type OnOpenChange = NonNullable<ConfirmDialogProps["onOpenChange"]>;
 
-function renderDialog() {
+const renderDialog = () => {
   const onConfirm = vi.fn<OnConfirm>();
   const onOpenChange = vi.fn<OnOpenChange>();
 
@@ -33,9 +33,9 @@ function renderDialog() {
   );
 
   return { onConfirm, onOpenChange };
-}
+};
 
-function createDeferred<T>() {
+const createDeferred = <T,>() => {
   let resolve!: (value: T) => void;
   let reject!: (reason?: unknown) => void;
   const promise = new Promise<T>((res, rej) => {
@@ -44,7 +44,7 @@ function createDeferred<T>() {
   });
 
   return { promise, reject, resolve };
-}
+};
 
 type DialogOverrides = Partial<
   Pick<
@@ -53,7 +53,7 @@ type DialogOverrides = Partial<
   >
 >;
 
-function renderWithTrigger(overrides: DialogOverrides = {}) {
+const renderWithTrigger = (overrides: DialogOverrides = {}) => {
   const onConfirm = vi.fn<OnConfirm>(overrides.onConfirm);
 
   render(
@@ -77,9 +77,9 @@ function renderWithTrigger(overrides: DialogOverrides = {}) {
   openDialog();
 
   return { onConfirm, openDialog };
-}
+};
 
-function ControlledConfirmDialog() {
+const ControlledConfirmDialog = () => {
   const [open, setOpen] = useState(true);
 
   return (
@@ -97,7 +97,7 @@ function ControlledConfirmDialog() {
       />
     </>
   );
-}
+};
 
 describe(ConfirmDialog, () => {
   it("shows the message and the target", () => {
@@ -310,7 +310,7 @@ describe(ConfirmDialog, () => {
   });
 
   describe("size", () => {
-    function renderWithSize(size?: ConfirmDialogProps["size"]) {
+    const renderWithSize = (size?: ConfirmDialogProps["size"]) => {
       render(
         <ConfirmDialog
           confirmLabel="削除"
@@ -324,7 +324,7 @@ describe(ConfirmDialog, () => {
       );
 
       return screen.getByRole("dialog");
-    }
+    };
 
     it("uses the default width when omitted", () => {
       const dialog = renderWithSize();

@@ -8,29 +8,28 @@ import type {
 
 import { getTalentProfileImage } from "./talent-profile-image";
 
-function createProfileImage(id: string): ProfileImage {
-  return { blur_data_url: "data:image/png;base64,AAAA", id };
-}
+const createProfileImage = (id: string): ProfileImage => ({
+  blur_data_url: "data:image/png;base64,AAAA",
+  id,
+});
 
-function createYouTubeChannel(
+const createYouTubeChannel = (
   profileImage: ProfileImage | null
-): TalentYouTubeChannel {
-  return {
-    name: "YouTube",
-    profile_image: profileImage,
-    youtube_channel_id: "UC1",
-    youtube_handle: "@youtube",
-  };
-}
+): TalentYouTubeChannel => ({
+  name: "YouTube",
+  profile_image: profileImage,
+  youtube_channel_id: "UC1",
+  youtube_handle: "@youtube",
+});
 
-function createTwitchUser(profileImage: ProfileImage | null): TalentTwitchUser {
-  return {
-    name: "Twitch",
-    profile_image: profileImage,
-    twitch_login_name: "twitch",
-    twitch_user_id: "1",
-  };
-}
+const createTwitchUser = (
+  profileImage: ProfileImage | null
+): TalentTwitchUser => ({
+  name: "Twitch",
+  profile_image: profileImage,
+  twitch_login_name: "twitch",
+  twitch_user_id: "1",
+});
 
 describe(getTalentProfileImage, () => {
   it("should prefer the icon of a YouTube channel", () => {

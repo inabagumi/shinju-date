@@ -10,7 +10,7 @@ interface Props {
 }
 
 /** 最も検索されたキーワードのランキング */
-export async function PopularKeywordsWidget({ searchParams }: Props) {
+export const PopularKeywordsWidget = async ({ searchParams }: Props) => {
   const { dateRange, selectedDate } = await searchParams;
   const range = resolvePeriod({ dateRange, selectedDate });
   const keywords = await getPopularKeywords({ limit: 20, range });
@@ -34,4 +34,4 @@ export async function PopularKeywordsWidget({ searchParams }: Props) {
       valueHeading="検索回数"
     />
   );
-}
+};

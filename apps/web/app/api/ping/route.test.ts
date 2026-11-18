@@ -87,23 +87,22 @@ const otherVideo = createVideoOnTwitch(
 );
 
 /** Saves the talents, their accounts and the given videos. */
-function seed(
+const seed = (
   videos: readonly (VideoOnTwitch | VideoOnYouTube)[],
   twitchUsers = [fooBar, fooxbar, noLogin]
-): Promise<void> {
-  return seedSupabase({
+): Promise<void> =>
+  seedSupabase({
     talents: [talentA, talentB],
     twitchUsers,
     youtubeChannels: [channel],
     ...videoSeed(videos),
   });
-}
 
 /** The videos saved before each test. */
 const SAVED_VIDEOS = [youtubeVideo, vod, clip, otherVideo];
 
-function ping(url: string): Promise<Response> {
-  return POST(
+const ping = (url: string): Promise<Response> =>
+  POST(
     new Request("https://shinju.date/api/ping", {
       body: "PING",
       headers: {
@@ -116,14 +115,12 @@ function ping(url: string): Promise<Response> {
       method: "POST",
     })
   );
-}
 
 /** The ID of the video whose click was counted, if any. */
-function countedVideoId(): unknown {
-  return mocks.pipeline.zincrby.mock.calls.find(([key]) =>
+const countedVideoId = (): unknown =>
+  mocks.pipeline.zincrby.mock.calls.find(([key]) =>
     String(key).startsWith(REDIS_KEYS.CLICK_VIDEO_PREFIX)
   )?.[2];
-}
 
 describe("POST /api/ping", () => {
   beforeEach(async () => {

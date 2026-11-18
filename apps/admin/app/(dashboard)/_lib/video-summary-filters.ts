@@ -39,7 +39,7 @@ export const VIDEO_SUMMARY_FILTERS = {
  * Build the URL of the video list filtered by the condition. `status` repeats
  * the parameter for each value, which the video list reads as multiple values.
  */
-export function getVideoListHref(filter: VideoSummaryFilter): string {
+export const getVideoListHref = (filter: VideoSummaryFilter): string => {
   const searchParams = new URLSearchParams();
 
   searchParams.append("deleted", String(filter.deleted));
@@ -53,4 +53,4 @@ export function getVideoListHref(filter: VideoSummaryFilter): string {
   }
 
   return `/videos?${searchParams.toString()}`;
-}
+};

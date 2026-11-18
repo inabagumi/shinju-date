@@ -22,7 +22,7 @@ import { submitFeedback } from "./actions";
 
 setupSupabase();
 
-function createFormData(values: Record<string, string>): FormData {
+const createFormData = (values: Record<string, string>): FormData => {
   const formData = new FormData();
 
   for (const [key, value] of Object.entries(values)) {
@@ -30,12 +30,11 @@ function createFormData(values: Record<string, string>): FormData {
   }
 
   return formData;
-}
+};
 
 /** The messages of the feature requests in the mock database */
-function storedMessages(): string[] {
-  return featureRequests.findMany().map(({ message }) => message);
-}
+const storedMessages = (): string[] =>
+  featureRequests.findMany().map(({ message }) => message);
 
 describe("submitFeedback()", () => {
   beforeEach(() => {

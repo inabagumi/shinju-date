@@ -25,15 +25,11 @@ const POPULAR_VIDEO_SELECT = `
   )
 `;
 
-function selectPopularVideos(
+const selectPopularVideos = (
   supabaseClient: TypedSupabaseClient,
   videoIds: string[]
-) {
-  return supabaseClient
-    .from("videos")
-    .select(POPULAR_VIDEO_SELECT)
-    .in("id", videoIds);
-}
+) =>
+  supabaseClient.from("videos").select(POPULAR_VIDEO_SELECT).in("id", videoIds);
 
 type PopularVideoRow = QueryData<
   ReturnType<typeof selectPopularVideos>
@@ -43,10 +39,10 @@ export interface PopularVideo extends PopularVideoRow {
   clicks: number;
 }
 
-export async function getPopularVideos({
+export const getPopularVideos = async ({
   limit = DEFAULT_RANKING_LIMIT,
   range,
-}: RankingQuery): Promise<PopularVideo[]> {
+}: RankingQuery): Promise<PopularVideo[]> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -87,4 +83,4 @@ export async function getPopularVideos({
       return { ...video, clicks };
     })
     .filter(isNonNullable);
-}
+};

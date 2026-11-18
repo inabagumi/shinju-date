@@ -52,43 +52,41 @@ const { VolumeChart } = await import("./volume-chart");
 
 const DATE_RANGE = { endDate: "2026-11-09", startDate: "2026-11-08" };
 
-function createSearchParams(
+const createSearchParams = (
   selectedDate: string | null = null
-): Promise<AnalyticsSearchParams> {
-  return Promise.resolve({ dateRange: DATE_RANGE, selectedDate, tab: null });
-}
+): Promise<AnalyticsSearchParams> =>
+  Promise.resolve({ dateRange: DATE_RANGE, selectedDate, tab: null });
 
-function getChart(): HTMLElement {
+const getChart = (): HTMLElement => {
   const chart = document.querySelector<HTMLElement>(".recharts-wrapper");
   if (!chart) {
     throw new Error("The chart is not rendered");
   }
   return chart;
-}
+};
 
 /** Recharts はマウスのイベントを次のフレームで処理する */
-function waitForAnimationFrame(): Promise<void> {
-  return act(
+const waitForAnimationFrame = (): Promise<void> =>
+  act(
     () =>
       new Promise<void>((resolve) => {
         requestAnimationFrame(() => resolve());
       })
   );
-}
 
 /**
  * グラフの右半分（2日のうちの2日目）にマウスを乗せる
  */
-async function hoverSecondDay(): Promise<void> {
+const hoverSecondDay = async (): Promise<void> => {
   fireEvent.mouseMove(getChart(), { clientX: 700, clientY: 100 });
   await waitForAnimationFrame();
-}
+};
 
-async function clickSecondDay(): Promise<void> {
+const clickSecondDay = async (): Promise<void> => {
   await hoverSecondDay();
   fireEvent.click(getChart(), { clientX: 700, clientY: 100 });
   await waitForAnimationFrame();
-}
+};
 
 describe("VolumeChart", () => {
   beforeEach(() => {

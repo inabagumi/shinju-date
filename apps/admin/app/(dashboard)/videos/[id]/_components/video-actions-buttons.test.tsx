@@ -32,10 +32,10 @@ interface VideoOverrides {
   visible?: boolean;
 }
 
-function renderActions({
+const renderActions = ({
   deleted_at = null,
   visible = true,
-}: VideoOverrides = {}) {
+}: VideoOverrides = {}) => {
   const video = {
     deleted_at,
     id: VIDEO_ID,
@@ -52,7 +52,7 @@ function renderActions({
       </VideoActionsProvider>
     </ActionToastProvider>
   );
-}
+};
 
 describe(VideoActionsProvider, () => {
   beforeEach(() => {

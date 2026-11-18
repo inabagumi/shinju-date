@@ -34,8 +34,8 @@ const COLLECTIONS = {
 };
 
 /** The rows of every collection, as plain JSON. */
-function dumpCollections(): Record<string, unknown[]> {
-  return JSON.parse(
+const dumpCollections = (): Record<string, unknown[]> =>
+  JSON.parse(
     JSON.stringify(
       Object.fromEntries(
         Object.entries(COLLECTIONS).map(([name, collection]) => [
@@ -45,18 +45,16 @@ function dumpCollections(): Record<string, unknown[]> {
       )
     )
   );
-}
 
 /** The values of every row that look like a time (an ISO 8601 string). */
-function getTimestamps(dump: Record<string, unknown[]>): string[] {
-  return Object.values(dump)
+const getTimestamps = (dump: Record<string, unknown[]>): string[] =>
+  Object.values(dump)
     .flat()
     .flatMap((row) => Object.values(row as Record<string, unknown>))
     .filter(
       (value): value is string =>
         typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)
     );
-}
 
 const NOW = Temporal.Instant.from("2026-11-15T12:34:56.789Z");
 

@@ -12,7 +12,7 @@ const STORAGE_DELETE_URL =
   "https://fake.supabase.test/storage/v1/object/thumbnails";
 const created = { id: "thumb-new", path: "vod-1/new.jpg" };
 
-function setup() {
+const setup = () => {
   const reportError = vi.fn<ErrorReporter>();
   const removedPaths: unknown[] = [];
   supabase.server.use(
@@ -32,13 +32,12 @@ function setup() {
     removedPaths,
     reportError,
   };
-}
+};
 
-function deletedThumbnailIds(): (string | undefined)[] {
-  return supabase
+const deletedThumbnailIds = (): (string | undefined)[] =>
+  supabase
     .written("DELETE", "thumbnails")
     .map((request) => request.query["id"]);
-}
 
 describe(replaceThumbnail, () => {
   it("points the video at the new thumbnail and leaves the previous one for the cleanup", async () => {

@@ -7,8 +7,8 @@ const ICONS = [
   { id: "large", size: 512 },
 ] as const;
 
-export function generateImageMetadata() {
-  return ICONS.map(({ id, size }) => ({
+export const generateImageMetadata = () =>
+  ICONS.map(({ id, size }) => ({
     contentType: "image/png",
     id,
     size: {
@@ -16,7 +16,6 @@ export function generateImageMetadata() {
       width: size,
     },
   }));
-}
 
 export default async function Icon({ id }: { id: Promise<string | number> }) {
   const iconId = await id;

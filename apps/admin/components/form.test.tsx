@@ -13,16 +13,16 @@ import Form, {
 } from "./form";
 import type { FormState } from "./form";
 
-function createDeferred<T>() {
+const createDeferred = <T,>() => {
   let resolve!: (value: T) => void;
   const promise = new Promise<T>((res) => {
     resolve = res;
   });
 
   return { promise, resolve };
-}
+};
 
-function renderForm(action: () => FormState | Promise<FormState>) {
+const renderForm = (action: () => FormState | Promise<FormState>) => {
   render(
     <Form action={action}>
       <FormField name="email">
@@ -34,11 +34,11 @@ function renderForm(action: () => FormState | Promise<FormState>) {
       <SubmitButton>保存</SubmitButton>
     </Form>
   );
-}
+};
 
-function submit() {
+const submit = () => {
   fireEvent.click(screen.getByRole("button", { name: "保存" }));
-}
+};
 
 describe(Form, () => {
   it("shows `error` of the state at the top of the form", async () => {
@@ -96,12 +96,12 @@ describe(Form, () => {
 });
 
 describe("Form after a failed submission", () => {
-  function renderFieldsForm(
+  const renderFieldsForm = (
     action: (
       currentState: FormState,
       formData: FormData
     ) => FormState | Promise<FormState>
-  ) {
+  ) => {
     render(
       <Form action={action}>
         <FormField name="level">
@@ -129,10 +129,10 @@ describe("Form after a failed submission", () => {
         <SubmitButton>保存</SubmitButton>
       </Form>
     );
-  }
+  };
 
   /** Fills the fields and submits them to an action that rejects them. */
-  function fillAndSubmit() {
+  const fillAndSubmit = () => {
     const action = vi.fn<
       (currentState: FormState, formData: FormData) => FormState
     >(() => ({ errors: { level: ["レベルが正しくありません。"] } }));
@@ -148,7 +148,7 @@ describe("Form after a failed submission", () => {
     submit();
 
     return action;
-  }
+  };
 
   it("keeps the select, the checkbox and uncontrolled inputs", async () => {
     fillAndSubmit();
@@ -235,12 +235,12 @@ describe(ErrorMessage, () => {
 });
 
 describe(Checkbox, () => {
-  function renderCheckboxForm(
+  const renderCheckboxForm = (
     action: (
       currentState: FormState,
       formData: FormData
     ) => FormState | Promise<FormState>
-  ) {
+  ) => {
     render(
       <Form action={action}>
         <FormField name="enabled">
@@ -253,7 +253,7 @@ describe(Checkbox, () => {
         <SubmitButton>保存</SubmitButton>
       </Form>
     );
-  }
+  };
 
   it("is named by the label of the field", () => {
     renderCheckboxForm(() => ({}));

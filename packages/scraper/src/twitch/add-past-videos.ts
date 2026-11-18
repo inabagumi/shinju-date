@@ -62,9 +62,8 @@ const TWITCH_PAST_VIDEOS: PastVideoAdapter<TwitchFetcher, TwitchVideo> = {
  * @throws {StalledPaginationError} When Twitch returns the requested cursor
  *   as the next one.
  */
-export function addPastTwitchVideos(
+export const addPastTwitchVideos = (
   context: CrawlContext<TwitchFetcher>,
   options: Pick<AddPastVideosOptions, "accountId" | "cursor">
-): Promise<AddPastVideosResult> {
-  return addPastVideosWith(context, TWITCH_PAST_VIDEOS, options);
-}
+): Promise<AddPastVideosResult> =>
+  addPastVideosWith(context, TWITCH_PAST_VIDEOS, options);

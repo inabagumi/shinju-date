@@ -4,9 +4,8 @@ import { z } from "zod";
 import { providerQuerySchema } from "./provider";
 import { parseQuery } from "./query";
 
-function createRequest(search = ""): Request {
-  return new Request(`http://localhost:5000/talents/update${search}`);
-}
+const createRequest = (search = ""): Request =>
+  new Request(`http://localhost:5000/talents/update${search}`);
 
 describe(parseQuery, () => {
   it("returns YouTube when provider is omitted", () => {

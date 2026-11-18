@@ -16,14 +16,14 @@ vi.mock(import("@/lib/env"), () => ({
 
 import { getContactFormConfig, isContactFormEnabled } from "./utils";
 
-function setEnv(values: Partial<typeof serverEnv>): void {
+const setEnv = (values: Partial<typeof serverEnv>): void => {
   Object.assign(serverEnv, {
     ADMIN_EMAIL: "contact@example.org",
     FROM_EMAIL: "noreply@example.org",
     RESEND_API_KEY: "re_test",
     ...values,
   });
-}
+};
 
 describe(getContactFormConfig, () => {
   afterEach(() => {

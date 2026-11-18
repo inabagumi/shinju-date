@@ -19,7 +19,7 @@ const themeCSS = readFileSync(
   "utf-8"
 );
 
-function extractThemeKeys(namespace: string): string[] {
+const extractThemeKeys = (namespace: string): string[] => {
   const keys = [
     ...themeCSS.matchAll(new RegExp(`--${namespace}-([\\w-]+):`, "g")),
   ].flatMap(([, key]) =>
@@ -28,7 +28,7 @@ function extractThemeKeys(namespace: string): string[] {
   );
 
   return [...new Set(keys)].sort();
-}
+};
 
 describe("twMerge()", () => {
   it("knows every font size in theme.css", () => {

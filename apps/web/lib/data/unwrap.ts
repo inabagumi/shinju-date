@@ -27,10 +27,10 @@ type QueryResult<T> = { data: T; error: null } | { error: PostgrestError };
  * Return the data of the result of a query, or throw a `DataFetchError` named
  * after `operation` when the query failed.
  */
-export function unwrap<T>(result: QueryResult<T>, operation: string): T {
+export const unwrap = <T>(result: QueryResult<T>, operation: string): T => {
   if (result.error) {
     throw new DataFetchError(operation, result.error);
   }
 
   return result.data;
-}
+};

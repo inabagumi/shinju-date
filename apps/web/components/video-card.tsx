@@ -49,9 +49,9 @@ const BADGE_CLASS_NAME =
  */
 const TAGS_CLASS_NAME = "truncate min-h-[1lh] text-caption text-muted";
 
-function getThumbnailURL(
+const getThumbnailURL = (
   video: Video
-): [src: string, blurDataURL: string] | null {
+): [src: string, blurDataURL: string] | null => {
   if (!video.thumbnail) {
     return null;
   }
@@ -60,14 +60,14 @@ function getThumbnailURL(
     `/images/thumbnails/${video.thumbnail.id}`,
     video.thumbnail.blur_data_url,
   ];
-}
+};
 
 interface ThumbnailProps {
   sizes: string;
   video: Video;
 }
 
-function Thumbnail({ sizes, video }: ThumbnailProps) {
+const Thumbnail = ({ sizes, video }: ThumbnailProps) => {
   const thumbnailData = getThumbnailURL(video);
 
   if (!thumbnailData) {
@@ -92,52 +92,50 @@ function Thumbnail({ sizes, video }: ThumbnailProps) {
       src={publicURL}
     />
   );
-}
+};
 
 interface VideoCardSkeletonProps {
   className?: string | undefined;
   variant?: VideoCardVariant;
 }
 
-export function VideoCardSkeleton({
+export const VideoCardSkeleton = ({
   className,
   variant = "grid",
-}: VideoCardSkeletonProps) {
-  return (
+}: VideoCardSkeletonProps) => (
+  <div
+    aria-hidden="true"
+    className={twMerge("flex gap-3", LAYOUT_CLASS_NAMES[variant], className)}
+    data-testid="video-card-skeleton"
+  >
     <div
-      aria-hidden="true"
-      className={twMerge("flex gap-3", LAYOUT_CLASS_NAMES[variant], className)}
-      data-testid="video-card-skeleton"
-    >
-      <div
-        className={twMerge(
-          "animate-pulse rounded-container bg-muted",
-          THUMBNAIL_CLASS_NAMES[variant]
-        )}
-      />
+      className={twMerge(
+        "animate-pulse rounded-container bg-muted",
+        THUMBNAIL_CLASS_NAMES[variant]
+      )}
+    />
 
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        {/* ラベルとハッシュタグの1行ぶんの高さ */}
-        {variant !== "short" && (
-          <div className="flex min-h-[1lh] items-center text-caption">
-            <span className="h-3 w-1/3 animate-pulse rounded-control bg-muted" />
-          </div>
-        )}
-
-        {/* タイトルの2行ぶんの高さ */}
-        <div className="flex min-h-[2lh] flex-col justify-around text-body leading-normal">
-          <span className="h-4 w-full animate-pulse rounded-control bg-muted" />
-          <span className="h-4 w-2/3 animate-pulse rounded-control bg-muted" />
+    <div className="flex min-w-0 flex-1 flex-col gap-1">
+      {/* ラベルとハッシュタグの1行ぶんの高さ */}
+      {variant !== "short" && (
+        <div className="flex min-h-[1lh] items-center text-caption">
+          <span className="h-3 w-1/3 animate-pulse rounded-control bg-muted" />
         </div>
+      )}
 
-        <div className="flex min-h-[1lh] items-center gap-1.5 text-meta">
-          <VideoCreatorSkeleton />
-          <span className="h-3 w-12 animate-pulse rounded-control bg-muted" />
-        </div>
+      {/* タイトルの2行ぶんの高さ */}
+      <div className="flex min-h-[2lh] flex-col justify-around text-body leading-normal">
+        <span className="h-4 w-full animate-pulse rounded-control bg-muted" />
+        <span className="h-4 w-2/3 animate-pulse rounded-control bg-muted" />
+      </div>
+
+      <div className="flex min-h-[1lh] items-center gap-1.5 text-meta">
+        <VideoCreatorSkeleton />
+        <span className="h-3 w-12 animate-pulse rounded-control bg-muted" />
       </div>
     </div>
-  );
-}
+  </div>
+);
 
 interface VideoCardProps {
   className?: string;

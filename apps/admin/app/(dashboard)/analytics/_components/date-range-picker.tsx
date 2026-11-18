@@ -25,9 +25,8 @@ interface DateRangePickerProps {
   onChange: (range: DateRange) => void;
 }
 
-function isSameRange(a: DateRange, b: DateRange): boolean {
-  return a.startDate === b.startDate && a.endDate === b.endDate;
-}
+const isSameRange = (a: DateRange, b: DateRange): boolean =>
+  a.startDate === b.startDate && a.endDate === b.endDate;
 
 export default function DateRangePicker({
   value,

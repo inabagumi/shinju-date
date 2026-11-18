@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 /**
  * 値が `delay` ミリ秒変わらなくなってから、その値を返す。
  */
-export function useDebouncedValue<T>(value: T, delay: number): T {
+export const useDebouncedValue = <T>(value: T, delay: number): T => {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
@@ -15,4 +15,4 @@ export function useDebouncedValue<T>(value: T, delay: number): T {
   }, [value, delay]);
 
   return debouncedValue;
-}
+};

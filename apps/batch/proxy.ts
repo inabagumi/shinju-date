@@ -4,9 +4,9 @@ import { NextResponse } from "next/server";
 
 import { redisClient } from "@/lib/redis";
 
-export async function proxy(
+export const proxy = async (
   request: NextRequest
-): Promise<ReturnType<NextProxy>> {
+): Promise<ReturnType<NextProxy>> => {
   // Allow health check endpoints during maintenance
   const pathname = request.nextUrl.pathname;
   if (pathname === "/api/healthz" || pathname === "/api/readyz") {
@@ -33,7 +33,7 @@ export async function proxy(
   }
 
   return NextResponse.next();
-}
+};
 
 export const config = {
   matcher: "/:path*",

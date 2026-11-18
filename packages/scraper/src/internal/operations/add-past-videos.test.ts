@@ -31,7 +31,7 @@ const account = {
 
 type FakeAdapter = PastVideoAdapter<null, string>;
 
-function createAdapter(page: PastVideoPage<string> | null) {
+const createAdapter = (page: PastVideoPage<string> | null) => {
   const getPage = vi.fn<FakeAdapter["getPage"]>(async () => page);
   const saveNew = vi.fn<FakeAdapter["saveNew"]>(
     async (_context, _account, listed) => listed.length - 1
@@ -43,7 +43,7 @@ function createAdapter(page: PastVideoPage<string> | null) {
   };
 
   return { adapter, getPage, saveNew };
-}
+};
 
 describe(addPastVideosWith, () => {
   beforeEach(() => {

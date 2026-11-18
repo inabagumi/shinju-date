@@ -13,19 +13,17 @@ const client = {
   users: { getUserById, getUserByName, getUsersByIds, getUsersByNames },
 } as unknown as ApiClient;
 
-function helixUser(id: string, name = `user${id}`) {
-  return {
-    broadcasterType: "",
-    creationDate: new Date("2024-01-01T00:00:00Z"),
-    description: "",
-    displayName: name,
-    id,
-    name,
-    offlinePlaceholderUrl: "",
-    profilePictureUrl: `https://example.com/${id}.png`,
-    type: "",
-  };
-}
+const helixUser = (id: string, name = `user${id}`) => ({
+  broadcasterType: "",
+  creationDate: new Date("2024-01-01T00:00:00Z"),
+  description: "",
+  displayName: name,
+  id,
+  name,
+  offlinePlaceholderUrl: "",
+  profilePictureUrl: `https://example.com/${id}.png`,
+  type: "",
+});
 
 describe("Twitch users API", () => {
   beforeEach(() => {

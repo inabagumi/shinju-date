@@ -99,7 +99,7 @@ export interface SupabaseQuery {
  * Split a list on the commas that are outside parentheses and double quotes,
  * such as the conditions of `or=(a.eq.1,b.in.(2,3))`.
  */
-function splitTopLevel(list: string): string[] {
+const splitTopLevel = (list: string): string[] => {
   const items: string[] = [];
   let current = "";
   let depth = 0;
@@ -128,17 +128,17 @@ function splitTopLevel(list: string): string[] {
   items.push(current);
 
   return items;
-}
+};
 
 /**
  * Parse the value of a condition, such as `not.is.null` or `in.(1,2)`, for
  * `column`. `source` is the whole filter for the error messages.
  */
-function parseCondition(
+const parseCondition = (
   column: string,
   value: string,
   source: string
-): FilterCondition {
+): FilterCondition => {
   let negated = false;
   let rest = value;
 
@@ -193,18 +193,18 @@ function parseCondition(
     operand,
     operator: operator as FilterOperator,
   };
-}
+};
 
 /**
  * Parse the conditions of a logical operator, such as
  * `(deleted_at.is.null,deleted_at.gte.2026-01-01T00:00:00Z)`.
  */
-function parseGroup(
+const parseGroup = (
   kind: "and" | "or",
   negated: boolean,
   value: string,
   source: string
-): FilterGroup {
+): FilterGroup => {
   if (!value.startsWith("(") || !value.endsWith(")")) {
     throw parseError(
       `failed to parse logic tree (${source})`,
@@ -251,14 +251,14 @@ function parseGroup(
   );
 
   return { children, kind, negated };
-}
+};
 
 /**
  * Parse a filter of the query string, such as `deleted_at=is.null`,
  * `talents.deleted_at=not.is.null` (an embedded resource) or
  * `or=(a.eq.1,b.eq.2)`.
  */
-function parseFilter(key: string, value: string): Filter {
+const parseFilter = (key: string, value: string): Filter => {
   const source = `${key}=${value}`;
   const segments = key.split(".");
   const last = segments.at(-1) ?? "";
@@ -274,12 +274,12 @@ function parseFilter(key: string, value: string): Filter {
     expression: parseCondition(last, value, source),
     path: segments.slice(0, -1),
   };
-}
+};
 
 /**
  * Parse Supabase REST API query parameters
  */
-export function parseSupabaseQuery(url: URL): SupabaseQuery {
+export const parseSupabaseQuery = (url: URL): SupabaseQuery => {
   const select = url.searchParams.get("select") || "*";
   const limit = url.searchParams.get("limit");
   const offset = url.searchParams.get("offset");
@@ -297,19 +297,18 @@ export function parseSupabaseQuery(url: URL): SupabaseQuery {
   }
 
   return { filters, limit, offset, onConflict, order, returnCount, select };
-}
+};
 
 /** The value of a column of a row. */
-export function getColumn(row: object, column: string): unknown {
-  return (row as Record<string, unknown>)[column];
-}
+export const getColumn = (row: object, column: string): unknown =>
+  (row as Record<string, unknown>)[column];
 
 /**
  * The value of a column of a row, or of a JSON path in it such as
  * `readings->0` (JSON) or `data->>name` (text), like PostgreSQL: a key or an
  * index that does not exist is `NULL`.
  */
-export function getColumnPath(row: object, path: string): unknown {
+export const getColumnPath = (row: object, path: string): unknown => {
   const [column = "", ...steps] = path.split(/(?=->)/);
   let value = getColumn(row, column);
 
@@ -337,13 +336,16 @@ export function getColumnPath(row: object, path: string): unknown {
   }
 
   return value;
-}
+};
 
 /**
  * Compare a value of a row with the value of a filter: as instants when both
  * are timestamps, as numbers when both are numbers, and as strings otherwise.
  */
-function compareFilterValue(itemValue: unknown, filterValue: string): number {
+const compareFilterValue = (
+  itemValue: unknown,
+  filterValue: string
+): number => {
   if (typeof itemValue === "number" && !Number.isNaN(Number(filterValue))) {
     return itemValue - Number(filterValue);
   }
@@ -358,7 +360,7 @@ function compareFilterValue(itemValue: unknown, filterValue: string): number {
   } catch {
     return itemText < filterValue ? -1 : itemText > filterValue ? 1 : 0;
   }
-}
+};
 
 const COMPARISON_OPERATORS = {
   gt: (result: number) => result > 0,
@@ -371,7 +373,7 @@ const COMPARISON_OPERATORS = {
  * Parse the value of a filter as PostgREST does for `eq`: booleans, `null`
  * and numbers become those values, and anything else stays a string.
  */
-function parseFilterValue(value: string): boolean | number | string | null {
+const parseFilterValue = (value: string): boolean | number | string | null => {
   if (value === "true") {
     return true;
   }
@@ -385,33 +387,29 @@ function parseFilterValue(value: string): boolean | number | string | null {
   }
 
   return Number.isNaN(Number(value)) ? value : Number(value);
-}
+};
 
 /**
  * Whether the value of a column equals the value of a filter. Text columns
  * may hold digits only (e.g. twitch_user_id), so the raw string is accepted
  * as well.
  */
-function matchesValue(value: unknown, text: string): boolean {
-  return value === parseFilterValue(text) || value === text;
-}
+const matchesValue = (value: unknown, text: string): boolean =>
+  value === parseFilterValue(text) || value === text;
 
 /**
  * Whether the value of a `uuid` column equals the value of a filter. The
  * `uuid` type of PostgreSQL does not distinguish upper and lower case, so
  * `id=eq.0F6B7C84-…` matches `0f6b7c84-…`.
  */
-function matchesUuid(value: unknown, text: string): boolean {
-  return (
-    typeof value === "string" && value.toLowerCase() === text.toLowerCase()
-  );
-}
+const matchesUuid = (value: unknown, text: string): boolean =>
+  typeof value === "string" && value.toLowerCase() === text.toLowerCase();
 
 /**
  * Remove the double quotes around a value of a list or a logic tree, such as
  * `"a,b"`, with `\"` and `\\` unescaped. Values without quotes are trimmed.
  */
-function unquote(text: string): string {
+const unquote = (text: string): string => {
   const trimmed = text.trim();
 
   if (!trimmed.startsWith('"') || !trimmed.endsWith('"')) {
@@ -419,36 +417,36 @@ function unquote(text: string): string {
   }
 
   return trimmed.slice(1, -1).replaceAll(/\\(.)/g, "$1");
-}
+};
 
 /**
  * Split the values of a list such as `in.(a,"b,c")` on commas outside double
  * quotes, like PostgREST does. The quotes only keep commas (and spaces) in a
  * value; the value is compared like the others. An empty list has no values.
  */
-function parseListValues(list: string): string[] {
+const parseListValues = (list: string): string[] => {
   if (list.trim() === "") {
     return [];
   }
 
   return splitTopLevel(list).map(unquote);
-}
+};
 
 /**
  * A regular expression for a pattern of `like` and `ilike`, where `*` (or
  * `%`) matches any characters and `_` matches one.
  */
-function likePattern(pattern: string, flags: string): RegExp {
+const likePattern = (pattern: string, flags: string): RegExp => {
   const source = pattern
     .replaceAll(/[.+?^${}()|[\]\\]/g, "\\$&")
     .replaceAll(/[*%]/g, ".*")
     .replaceAll("_", ".");
 
   return new RegExp(`^${source}$`, `s${flags}`);
-}
+};
 
 /** A regular expression for `match` and `imatch`. */
-function toRegExp(pattern: string, flags: string): RegExp {
+const toRegExp = (pattern: string, flags: string): RegExp => {
   try {
     return new RegExp(pattern, flags);
   } catch {
@@ -457,7 +455,7 @@ function toRegExp(pattern: string, flags: string): RegExp {
       message: `invalid regular expression: ${pattern}`,
     });
   }
-}
+};
 
 /**
  * The result of a condition as in SQL: `null` (unknown) when a comparison
@@ -465,11 +463,11 @@ function toRegExp(pattern: string, flags: string): RegExp {
  * a match. `uuidColumns` are the columns of the `uuid` type of the table,
  * whose values `eq`, `neq`, `in` and `isdistinct` compare regardless of case.
  */
-function evaluateCondition(
+const evaluateCondition = (
   row: object,
   { column, operand, operator }: FilterCondition,
   uuidColumns: readonly string[]
-): boolean | null {
+): boolean | null => {
   const value = getColumnPath(row, column) ?? null;
   const matches = uuidColumns.includes(column) ? matchesUuid : matchesValue;
 
@@ -534,21 +532,20 @@ function evaluateCondition(
       );
     }
   }
-}
+};
 
 /** `NOT` of three-valued logic, which keeps unknown as it is. */
-function not(result: boolean | null): boolean | null {
-  return result === null ? null : !result;
-}
+const not = (result: boolean | null): boolean | null =>
+  result === null ? null : !result;
 
 /**
  * The result of an expression for a row, in three-valued logic like SQL.
  */
-function evaluate(
+const evaluate = (
   row: object,
   expression: FilterExpression,
   uuidColumns: readonly string[]
-): boolean | null {
+): boolean | null => {
   if (expression.kind === "condition") {
     const result = evaluateCondition(row, expression, uuidColumns);
 
@@ -567,34 +564,32 @@ function evaluate(
       : !decisive;
 
   return expression.negated ? not(result) : result;
-}
+};
 
 /**
  * Whether a row matches all the given filters, as PostgREST combines them
  * with AND. A filter whose result is unknown (`NULL`) does not match.
  * `uuidColumns` are the columns of the `uuid` type of the table of the row.
  */
-export function matchesFilters(
+export const matchesFilters = (
   row: object,
   filters: readonly Filter[],
   uuidColumns: readonly string[]
-): boolean {
-  return filters.every(
+): boolean =>
+  filters.every(
     ({ expression }) => evaluate(row, expression, uuidColumns) === true
   );
-}
 
 /** The filters of a query that apply to an embedded resource at `path`. */
-export function filtersAt(
+export const filtersAt = (
   filters: readonly Filter[],
   path: readonly string[]
-): Filter[] {
-  return filters.filter(
+): Filter[] =>
+  filters.filter(
     (filter) =>
       filter.path.length === path.length &&
       filter.path.every((segment, index) => segment === path[index])
   );
-}
 
 /**
  * Apply the filters of a query on the rows of the table itself (not on its
@@ -602,23 +597,23 @@ export function filtersAt(
  * filters are returned. The rows that match are what an update or a delete
  * changes. `uuidColumns` are the columns of the `uuid` type of the table.
  */
-export function applySupabaseConditions<Row extends object>(
+export const applySupabaseConditions = <Row extends object>(
   rows: readonly Row[],
   query: SupabaseQuery,
   uuidColumns: readonly string[]
-): Row[] {
+): Row[] => {
   const filters = filtersAt(query.filters, []);
 
   return rows.filter((row) => matchesFilters(row, filters, uuidColumns));
-}
+};
 
 /**
  * Parse the `order` parameter of PostgREST, such as
  * `published_at.asc,id.desc`. Ordering by the columns of an embedded
  * resource, such as `talent(name).asc`, is not supported.
  */
-function parseOrder(order: string) {
-  return order.split(",").map((entry) => {
+const parseOrder = (order: string) =>
+  order.split(",").map((entry) => {
     const [column = "", ...modifiers] = entry.trim().split(".");
 
     if (
@@ -643,7 +638,6 @@ function parseOrder(order: string) {
 
     return { column, descending, nullsFirst };
   });
-}
 
 /**
  * Sort the rows by the `order` parameter of PostgREST, such as
@@ -651,11 +645,11 @@ function parseOrder(order: string) {
  * in descending order unless `nullsfirst` or `nullslast` is given. `getRow`
  * gives the row of the table of each item.
  */
-export function applyOrder<Item>(
+export const applyOrder = <Item>(
   items: readonly Item[],
   order: string | null,
   getRow: (item: Item) => object = (item) => item as object
-): Item[] {
+): Item[] => {
   if (!order) {
     return [...items];
   }
@@ -687,39 +681,38 @@ export function applyOrder<Item>(
 
     return 0;
   });
-}
+};
 
 /** The offset of a query, which is 0 without one. */
-export function getOffset(query: SupabaseQuery): number {
-  return query.offset ? Number.parseInt(query.offset, 10) : 0;
-}
+export const getOffset = (query: SupabaseQuery): number =>
+  query.offset ? Number.parseInt(query.offset, 10) : 0;
 
 /**
  * Apply the offset and limit of a query.
  */
-export function applyPagination<Row>(
+export const applyPagination = <Row>(
   rows: readonly Row[],
   query: SupabaseQuery
-): Row[] {
+): Row[] => {
   // Apply offset before limit to match PostgREST pagination semantics
   const start = getOffset(query);
 
   return query.limit
     ? rows.slice(start, start + Number.parseInt(query.limit, 10))
     : rows.slice(start);
-}
+};
 
 /**
  * The `Content-Range` header of PostgREST, such as `0-2/63`: the range of the
  * returned rows (`*` when there are none) and the number of all the rows
  * that match (`*` when the count is not requested).
  */
-export function formatContentRange(
+export const formatContentRange = (
   offset: number,
   length: number,
   count: number | "*"
-): string {
+): string => {
   const range = length > 0 ? `${offset}-${offset + length - 1}` : "*";
 
   return `${range}/${count}`;
-}
+};

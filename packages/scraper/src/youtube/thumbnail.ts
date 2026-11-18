@@ -27,11 +27,11 @@ const REPLACEABLE_THUMBNAIL_STATUSES: ReadonlySet<Enums<"video_status">> =
  *
  * @returns The stored thumbnail, or `null` when there is none to store.
  */
-export async function createYouTubeThumbnail(
+export const createYouTubeThumbnail = async (
   { now, reportError, supabaseClient }: WriteContext,
   video: YouTubeVideo,
   etag: string | null = null
-): Promise<Thumbnail | null> {
+): Promise<Thumbnail | null> => {
   const source = getThumbnailSource(video);
 
   if (!source) {
@@ -51,7 +51,7 @@ export async function createYouTubeThumbnail(
 
     return null;
   }
-}
+};
 
 /**
  * Keeps the thumbnail of a saved video in line with YouTube:
@@ -66,11 +66,11 @@ export async function createYouTubeThumbnail(
  *
  * @returns Whether the video got a new thumbnail.
  */
-export async function refreshYouTubeThumbnail(
+export const refreshYouTubeThumbnail = async (
   context: WriteContext,
   saved: SavedYouTubeVideo,
   fetched: YouTubeVideo
-): Promise<boolean> {
+): Promise<boolean> => {
   const current = saved.thumbnail;
 
   if (current) {
@@ -91,4 +91,4 @@ export async function refreshYouTubeThumbnail(
   });
 
   return thumbnail !== null;
-}
+};

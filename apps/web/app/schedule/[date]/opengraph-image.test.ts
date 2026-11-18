@@ -18,9 +18,7 @@ import { createOgImage } from "@/lib/og-image";
 import Image from "./opengraph-image";
 import { generateMetadata } from "./page";
 
-function render(date: string) {
-  return Image({ params: Promise.resolve({ date }) });
-}
+const render = (date: string) => Image({ params: Promise.resolve({ date }) });
 
 describe("opengraph-image of the schedule of a week", () => {
   beforeEach(() => {

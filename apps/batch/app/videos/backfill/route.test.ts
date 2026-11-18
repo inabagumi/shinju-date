@@ -66,7 +66,7 @@ vi.mock(import("next/server"), async (importOriginal) => ({
 const { POST, maxDuration } = await import("./route");
 
 /** The options the route passed to `workOffBackfillQueue`. */
-function getQueueOptions(): WorkOffBackfillQueueOptions {
+const getQueueOptions = (): WorkOffBackfillQueueOptions => {
   const options = workOffBackfillQueue.mock.lastCall?.[0];
 
   if (!options) {
@@ -74,13 +74,12 @@ function getQueueOptions(): WorkOffBackfillQueueOptions {
   }
 
   return options;
-}
+};
 
-function createRequest(): NextRequest {
-  return new NextRequest("http://localhost:5000/videos/backfill", {
+const createRequest = (): NextRequest =>
+  new NextRequest("http://localhost:5000/videos/backfill", {
     method: "POST",
   });
-}
 
 describe("POST /videos/backfill", () => {
   beforeEach(() => {

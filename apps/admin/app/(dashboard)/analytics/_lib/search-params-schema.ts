@@ -10,10 +10,10 @@ import {
  * Validate a date range ensuring both dates are selectable, start <= end and
  * the length is within the limit
  */
-function parseDateRange(
+const parseDateRange = (
   startDate: string,
   endDate: string
-): { startDate: string; endDate: string } | null {
+): { startDate: string; endDate: string } | null => {
   const start = parseDate(startDate);
   const end = parseDate(endDate);
 
@@ -22,7 +22,7 @@ function parseDateRange(
   }
 
   return { endDate: end.toString(), startDate: start.toString() };
-}
+};
 
 /**
  * Zod schema for analytics page search parameters

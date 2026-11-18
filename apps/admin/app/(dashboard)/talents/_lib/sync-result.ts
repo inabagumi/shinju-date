@@ -39,17 +39,17 @@ const PLATFORMS = {
 } as const satisfies Record<Platform, Record<string, string>>;
 
 /** どのアカウントも、プラットフォームで見つからなかった（同期できなかった）ときの文 */
-export function accountsNotFoundError(platform: Platform): string {
+export const accountsNotFoundError = (platform: Platform): string => {
   const { account, label } = PLATFORMS[platform];
 
   return `${label}で${account}が見つかりませんでした。${account}IDが正しいか確認してください。`;
-}
+};
 
 /** 1つのプラットフォームだけを同期したときの結果を、画面の文にする。 */
-export function toSyncResult(
+export const toSyncResult = (
   platform: Platform,
   outcome: PlatformSyncOutcome
-): SyncResult {
+): SyncResult => {
   const { account, label, unchanged } = PLATFORMS[platform];
 
   switch (outcome.status) {
@@ -72,7 +72,7 @@ export function toSyncResult(
       return { data: { unchanged: false }, success: true };
     }
   }
-}
+};
 
 /**
  * まとめて同期したときの結果を、プラットフォームごとに1行の文にする。
@@ -83,9 +83,9 @@ export function toSyncResult(
  * - すべてのプラットフォームが失敗したら `success: false` とし、`error` に文を入れる
  * - `unchanged` は、どのプラットフォームも更新されなかったときに `true`
  */
-export function toSyncSummary(
+export const toSyncSummary = (
   outcomes: readonly (readonly [Platform, PlatformSyncOutcome])[]
-): SyncResult {
+): SyncResult => {
   const succeeded: string[] = [];
   const failed: string[] = [];
 
@@ -130,4 +130,4 @@ export function toSyncSummary(
     success: true,
     ...(failed.length > 0 ? { warnings: failed } : {}),
   };
-}
+};

@@ -10,10 +10,10 @@ const videos = [
   { id: "video-3", talent_id: "talent-2" },
 ];
 
-function getSortedSet(
+const getSortedSet = (
   store: ReturnType<typeof createRedisDataFactory>,
   key: string
-): SortedSetItem[] {
+): SortedSetItem[] => {
   const value = store.get(key);
 
   if (!Array.isArray(value)) {
@@ -21,7 +21,7 @@ function getSortedSet(
   }
 
   return value;
-}
+};
 
 describe(createRedisDataFactory, () => {
   it("creates the keys of each day up to today in YYYYMMDD format", () => {

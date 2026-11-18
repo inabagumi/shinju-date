@@ -19,10 +19,10 @@ const ACTION_FAILED_ERROR =
 
 const ID = "80000000-0000-0000-0000-000000000001";
 
-function termForm(
+const termForm = (
   entries: Record<string, string>,
   { readings = [], synonyms = [] }: { readings?: string[]; synonyms?: string[] }
-): FormData {
+): FormData => {
   const formData = new FormData();
 
   for (const [key, value] of Object.entries(entries)) {
@@ -37,7 +37,7 @@ function termForm(
   });
 
   return formData;
-}
+};
 
 describe("createTermAction()", () => {
   it("adds the term with the trimmed, non-empty readings and synonyms", async () => {

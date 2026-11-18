@@ -14,31 +14,30 @@ const RETRYABLE_METHODS = new Set(["GET", "HEAD"]);
  * error. Other responses (such as 400, 404 or 406) do not change when sent
  * again.
  */
-function isRetryableStatus(status: number): boolean {
-  return status === 408 || status === 429 || status >= 500;
-}
+const isRetryableStatus = (status: number): boolean =>
+  status === 408 || status === 429 || status >= 500;
 
 /** The first argument of `fetch`: a URL or a `Request`. */
 type FetchInput = Parameters<typeof fetch>[0];
 
-function getMethod(input: FetchInput, init?: RequestInit): string {
+const getMethod = (input: FetchInput, init?: RequestInit): string => {
   const method =
     init?.method ?? (input instanceof Request ? input.method : "GET");
 
   return method.toUpperCase();
-}
+};
 
-function getSignal(
+const getSignal = (
   input: FetchInput,
   init?: RequestInit
-): AbortSignal | undefined {
+): AbortSignal | undefined => {
   // `signal: null` detaches the request's signal, as in `fetch`.
   if (init?.signal !== undefined) {
     return init.signal ?? undefined;
   }
 
   return input instanceof Request ? input.signal : undefined;
-}
+};
 
 /** Thrown inside the retry loop to retry a response that may change. */
 class RetryableResponseError extends Error {
@@ -48,7 +47,7 @@ class RetryableResponseError extends Error {
   }
 }
 
-async function discardBody(response: Response): Promise<void> {
+const discardBody = async (response: Response): Promise<void> => {
   try {
     // The body is read to reuse the socket.
     // see https://github.com/nodejs/undici/issues/1203#issuecomment-1398191693
@@ -56,7 +55,7 @@ async function discardBody(response: Response): Promise<void> {
   } catch {
     // The response is thrown away anyway.
   }
-}
+};
 
 /**
  * `fetch` that retries failures that may go away when sent again.

@@ -232,14 +232,14 @@ const COLLECTIONS = [
  * Insert rows one by one, so that the collection keeps them in the order of
  * `rows` (the order that the mock returns them in without `order`).
  */
-async function insert<Row>(
+const insert = async <Row>(
   collection: { create(values: Row): Promise<unknown> },
   rows: readonly Row[]
-): Promise<void> {
+): Promise<void> => {
   for (const row of rows) {
     await collection.create(row);
   }
-}
+};
 
 export interface SeedCollectionsOptions {
   /**
@@ -254,9 +254,9 @@ export interface SeedCollectionsOptions {
  * data is made by the scenarios in `src/seeds/` with a fixed seed of faker,
  * so the same `now` always gives the same data.
  */
-export async function seedCollections({
+export const seedCollections = async ({
   now = Temporal.Now.instant(),
-}: SeedCollectionsOptions = {}): Promise<void> {
+}: SeedCollectionsOptions = {}): Promise<void> => {
   const context = createSeedContext(now);
 
   for (const collection of COLLECTIONS) {
@@ -313,7 +313,7 @@ export async function seedCollections({
       videos: youtubeVideoRows,
     })
   );
-}
+};
 
 let seeding: Promise<void> | undefined;
 
@@ -322,8 +322,8 @@ let seeding: Promise<void> | undefined;
  * The Redis mock waits for this as well so that its click data uses the IDs
  * of the seeded videos and talents.
  */
-export function ensureCollectionsSeeded(): Promise<void> {
+export const ensureCollectionsSeeded = (): Promise<void> => {
   seeding ??= seedCollections();
 
   return seeding;
-}
+};

@@ -54,7 +54,7 @@ interface SortLinkProps {
 }
 
 /** 見出しの並べ替えのリンク。今の並べ替えの項目には、向きの矢印を付ける */
-function SortLink({ field, label, sort, searchParams }: SortLinkProps) {
+const SortLink = ({ field, label, sort, searchParams }: SortLinkProps) => {
   const isCurrent = sort.field === field;
   const Icon = isCurrent
     ? sort.order === "asc"
@@ -79,7 +79,7 @@ function SortLink({ field, label, sort, searchParams }: SortLinkProps) {
       />
     </Link>
   );
-}
+};
 
 /**
  * 動画の一覧の表。表、行、サムネイル、バッジ、日時はサーバーで描き、選択と操作
@@ -263,13 +263,11 @@ interface VideoListSkeletonProps {
 }
 
 /** 読み込み中の `VideoList`。一括操作のバーと、同じ列の表を並べる */
-export function VideoListSkeleton({ rows }: VideoListSkeletonProps) {
-  return (
-    <TableSkeleton
-      columns={VIDEO_LIST_SKELETON_COLUMNS}
-      filterBar={<Skeleton className="mb-4 h-14 w-full rounded-container" />}
-      rows={rows}
-      tableClassName="min-w-5xl"
-    />
-  );
-}
+export const VideoListSkeleton = ({ rows }: VideoListSkeletonProps) => (
+  <TableSkeleton
+    columns={VIDEO_LIST_SKELETON_COLUMNS}
+    filterBar={<Skeleton className="mb-4 h-14 w-full rounded-container" />}
+    rows={rows}
+    tableClassName="min-w-5xl"
+  />
+);

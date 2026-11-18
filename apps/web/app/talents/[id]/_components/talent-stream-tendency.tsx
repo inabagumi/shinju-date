@@ -56,7 +56,7 @@ interface StreamTendencyProps {
  * Nothing is rendered with fewer streams than `STREAM_TENDENCY_MIN_STREAMS`,
  * so no space is left for it.
  */
-export function StreamTendency({ counts }: StreamTendencyProps) {
+export const StreamTendency = ({ counts }: StreamTendencyProps) => {
   const { busiestHour, busiestWeekday, max, total } =
     summarizeStreamTendency(counts);
 
@@ -156,7 +156,7 @@ export function StreamTendency({ counts }: StreamTendencyProps) {
       </details>
     </section>
   );
-}
+};
 
 interface TalentStreamTendencyProps {
   params: TalentPageParams;
@@ -167,9 +167,9 @@ interface TalentStreamTendencyProps {
  * the page that must be shown, so nothing is rendered when the streams cannot
  * be fetched.
  */
-export async function TalentStreamTendency({
+export const TalentStreamTendency = async ({
   params,
-}: TalentStreamTendencyProps) {
+}: TalentStreamTendencyProps) => {
   const talent = await getShownTalent(params);
   let starts: string[];
 
@@ -185,4 +185,4 @@ export async function TalentStreamTendency({
   }
 
   return <StreamTendency counts={countStreamsByWeekdayAndHour(starts)} />;
-}
+};

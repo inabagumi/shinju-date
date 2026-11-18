@@ -43,9 +43,11 @@ vi.mock(import("../internal/thumbnails/index.js"), async (importOriginal) => ({
 
 const supabase = setupSupabase();
 
-async function* fromArray<T>(items: readonly T[]): AsyncGenerator<T> {
+const fromArray = async function* fromArray<T>(
+  items: readonly T[]
+): AsyncGenerator<T> {
   yield* items;
-}
+};
 
 interface FakeTwitch {
   archives?: TwitchVideo[];
@@ -64,7 +66,7 @@ interface FakeTwitch {
  * Stands in for Helix: the scraper is exercised through its public operations
  * with only Twitch and the database replaced.
  */
-function createApi({
+const createApi = ({
   archives = [],
   clips = [],
   historyPages = {},
@@ -72,39 +74,37 @@ function createApi({
   uploads = [],
   users = [],
   videos = [],
-}: FakeTwitch): TwitchApi {
-  return {
-    getClips: vi.fn<TwitchApi["getClips"]>(({ ids }) =>
-      fromArray(clips.filter((clip) => ids.includes(clip.id)))
-    ),
-    getStreamsByUserIds: vi.fn<TwitchApi["getStreamsByUserIds"]>(() =>
-      fromArray(liveStreams)
-    ),
-    getUsers: vi.fn<TwitchApi["getUsers"]>(({ ids }) =>
-      fromArray(users.filter((user) => ids.includes(user.id)))
-    ),
-    getVideos: vi.fn<TwitchApi["getVideos"]>(({ ids }) =>
-      fromArray(videos.filter((video) => ids.includes(video.id)))
-    ),
-    getVideosByUser: vi.fn<TwitchApi["getVideosByUser"]>(({ type }) =>
-      fromArray(type === "upload" ? uploads : archives)
-    ),
-    getVideosByUserPage: vi.fn<TwitchApi["getVideosByUserPage"]>(
-      async ({ after }) =>
-        historyPages[after ?? ""] ?? { cursor: null, videos: [] }
-    ),
-  };
-}
+}: FakeTwitch): TwitchApi => ({
+  getClips: vi.fn<TwitchApi["getClips"]>(({ ids }) =>
+    fromArray(clips.filter((clip) => ids.includes(clip.id)))
+  ),
+  getStreamsByUserIds: vi.fn<TwitchApi["getStreamsByUserIds"]>(() =>
+    fromArray(liveStreams)
+  ),
+  getUsers: vi.fn<TwitchApi["getUsers"]>(({ ids }) =>
+    fromArray(users.filter((user) => ids.includes(user.id)))
+  ),
+  getVideos: vi.fn<TwitchApi["getVideos"]>(({ ids }) =>
+    fromArray(videos.filter((video) => ids.includes(video.id)))
+  ),
+  getVideosByUser: vi.fn<TwitchApi["getVideosByUser"]>(({ type }) =>
+    fromArray(type === "upload" ? uploads : archives)
+  ),
+  getVideosByUserPage: vi.fn<TwitchApi["getVideosByUserPage"]>(
+    async ({ after }) =>
+      historyPages[after ?? ""] ?? { cursor: null, videos: [] }
+  ),
+});
 
 /**
  * Answers like a database holding one saved video: reads return the row as it
  * is after the writes made so far. Requests named in `failing` (e.g.
  * `PATCH twitch_videos`) fail instead.
  */
-function respondWithSavedVideo(
+const respondWithSavedVideo = (
   initial: SavedTwitchVideo,
   { failing = [] }: { failing?: string[] } = {}
-) {
+) => {
   let row = structuredClone(initial);
 
   supabase.respond((request) => {
@@ -157,17 +157,15 @@ function respondWithSavedVideo(
       }
     }
   });
-}
+};
 
 /** The writes made so far, without the reads. */
-function writes() {
-  return supabase.requests.filter(({ method }) => method !== "GET");
-}
+const writes = () => supabase.requests.filter(({ method }) => method !== "GET");
 
 describe(TwitchScraper, () => {
   const onError = vi.fn<ErrorReporter>();
 
-  function createScraper(fake: FakeTwitch) {
+  const createScraper = (fake: FakeTwitch) => {
     const client = createApi(fake);
 
     return {
@@ -178,7 +176,7 @@ describe(TwitchScraper, () => {
         supabaseClient: supabase.supabaseClient,
       }),
     };
-  }
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();

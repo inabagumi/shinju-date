@@ -26,22 +26,21 @@ const { SearchEngagementRateWidget } =
   await import("./search-engagement-rate-widget");
 const { SearchExitRateWidget } = await import("./search-exit-rate-widget");
 
-function createSearchParams(): Promise<AnalyticsSearchParams> {
-  return Promise.resolve({
+const createSearchParams = (): Promise<AnalyticsSearchParams> =>
+  Promise.resolve({
     dateRange: { endDate: "2026-11-14", startDate: "2026-11-08" },
     selectedDate: null,
     tab: null,
   });
-}
 
 /** 見出しに続く凡例の文を、表示の順に返す */
-function getLegend(title: string): string[] {
+const getLegend = (title: string): string[] => {
   const list = screen.getByText(title).closest("dl");
 
   return Array.from(list?.querySelectorAll("dd") ?? [], (item) =>
     (item.textContent ?? "").trim()
   );
-}
+};
 
 describe("SearchExitRateWidget", () => {
   beforeEach(() => {

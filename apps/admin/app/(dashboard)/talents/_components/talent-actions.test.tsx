@@ -48,22 +48,21 @@ const activeTalent: TalentActionsTalent = {
   status: "active",
 };
 
-function renderActions(talent: TalentActionsTalent = activeTalent) {
-  return render(
+const renderActions = (talent: TalentActionsTalent = activeTalent) =>
+  render(
     <ActionToastProvider>
       <TalentActions talent={talent} />
     </ActionToastProvider>
   );
-}
 
 // メニューはポインターを押したときかキーで開くため、Enter で開く
-function openMenuItem(name: string) {
+const openMenuItem = (name: string) => {
   fireEvent.keyDown(
     screen.getByRole("button", { name: "「テストタレント」の操作" }),
     { key: "Enter" }
   );
   fireEvent.click(screen.getByRole("menuitem", { name }));
-}
+};
 
 describe("TalentActions", () => {
   beforeEach(() => {

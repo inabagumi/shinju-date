@@ -55,7 +55,7 @@ const current: SummaryStats = {
 };
 
 /** Read the conditions of a count of the videos back from its request. */
-function readVideoFilter({ query }: SupabaseRequest): VideoSummaryFilter {
+const readVideoFilter = ({ query }: SupabaseRequest): VideoSummaryFilter => {
   const { deleted_at: deletedAt, status, visible } = query;
 
   if (deletedAt !== "is.null" && deletedAt !== "not.is.null") {
@@ -75,13 +75,13 @@ function readVideoFilter({ query }: SupabaseRequest): VideoSummaryFilter {
       : {}),
     ...(visible ? { visible: visible === "eq.true" } : {}),
   };
-}
+};
 
 /**
  * Answer the counts of the videos by the tile whose link lists the same
  * videos. A count with conditions that no tile links to fails the test.
  */
-function answerVideoCount(request: SupabaseRequest): Response {
+const answerVideoCount = (request: SupabaseRequest): Response => {
   const filter = readVideoFilter(request);
   const tile = (Object.keys(VIDEO_SUMMARY_FILTERS) as VideoSummaryTile[]).find(
     (key) => isDeepStrictEqual(VIDEO_SUMMARY_FILTERS[key], filter)
@@ -92,10 +92,10 @@ function answerVideoCount(request: SupabaseRequest): Response {
   }
 
   return withCount([], current[tile]);
-}
+};
 
 /** Keep the snapshots of the given days (`YYYYMMDD`) in Redis. */
-function mockSnapshots(snapshots: Record<string, unknown> = {}) {
+const mockSnapshots = (snapshots: Record<string, unknown> = {}) => {
   const get = vi.fn<(key: string) => Promise<unknown>>(
     async (key) =>
       snapshots[key.slice(REDIS_KEYS.SUMMARY_STATS_PREFIX.length)] ?? null
@@ -104,7 +104,7 @@ function mockSnapshots(snapshots: Record<string, unknown> = {}) {
   vi.mocked(getRedisClient).mockReturnValue(createMockRedisClient({ get }));
 
   return get;
-}
+};
 
 describe(getSummaryStats, () => {
   beforeEach(() => {

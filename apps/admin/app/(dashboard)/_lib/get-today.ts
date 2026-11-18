@@ -7,10 +7,10 @@ import { cacheLife } from "next/cache";
  * プリレンダリングの中で現在の時刻を読むとエラーになるため、キャッシュの中で
  * 読む
  */
-export async function getToday(): Promise<string> {
+export const getToday = async (): Promise<string> => {
   "use cache: private";
 
   cacheLife("minutes");
 
   return Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate().toString();
-}
+};

@@ -16,7 +16,7 @@ export interface ContactFormConfig {
  * The settings for sending the contact form, or `null` when a submission
  * could not be delivered.
  */
-export function getContactFormConfig(): ContactFormConfig | null {
+export const getContactFormConfig = (): ContactFormConfig | null => {
   const { ADMIN_EMAIL, FROM_EMAIL, RESEND_API_KEY } = serverEnv;
 
   if (
@@ -33,13 +33,12 @@ export function getContactFormConfig(): ContactFormConfig | null {
     fromEmail: FROM_EMAIL,
     resendApiKey: RESEND_API_KEY,
   };
-}
+};
 
 /**
  * Whether the contact form can send email. The links to the form and the
  * form itself follow this, as does the action through
  * `getContactFormConfig()`, so the form is shown only when it can be sent.
  */
-export function isContactFormEnabled(): boolean {
-  return getContactFormConfig() !== null;
-}
+export const isContactFormEnabled = (): boolean =>
+  getContactFormConfig() !== null;

@@ -38,9 +38,8 @@ const YOUTUBE_PAST_VIDEOS: PastVideoAdapter<YouTubeFetcher, string> = {
  * @throws {StalledPaginationError} When YouTube returns the requested cursor
  *   as the next one.
  */
-export function addPastYouTubeVideos(
+export const addPastYouTubeVideos = (
   context: CrawlContext<YouTubeFetcher>,
   options: Pick<AddPastVideosOptions, "accountId" | "cursor">
-): Promise<AddPastVideosResult> {
-  return addPastVideosWith(context, YOUTUBE_PAST_VIDEOS, options);
-}
+): Promise<AddPastVideosResult> =>
+  addPastVideosWith(context, YOUTUBE_PAST_VIDEOS, options);

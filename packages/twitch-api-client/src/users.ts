@@ -14,7 +14,7 @@ interface GetUsersOptions extends ClientOptions, BatchOptions {
 /**
  * Gets Twitch users by ID and/or login.
  */
-export async function* getUsers({
+export const getUsers = async function* getUsers({
   client = getTwitchApiClient(),
   ids = [],
   logins = [],
@@ -35,33 +35,33 @@ export async function* getUsers({
   )) {
     yield mapUser(user);
   }
-}
+};
 
-export async function getUserById(
+export const getUserById = async (
   id: string,
   { client = getTwitchApiClient() }: ClientOptions = {}
-): Promise<TwitchUser | null> {
+): Promise<TwitchUser | null> => {
   const user = await client.users.getUserById(id);
   return user ? mapUser(user) : null;
-}
+};
 
-async function getUserByLogin(
+const getUserByLogin = async (
   login: string,
   { client = getTwitchApiClient() }: ClientOptions = {}
-): Promise<TwitchUser | null> {
+): Promise<TwitchUser | null> => {
   const user = await client.users.getUserByName(login.toLowerCase());
   return user ? mapUser(user) : null;
-}
+};
 
 /**
  * Resolves a parsed identifier to a Twitch user via Helix.
  */
-export async function resolveTwitchUser(
+export const resolveTwitchUser = async (
   identifier: TwitchUserIdentifier,
   options: ClientOptions = {}
-): Promise<TwitchUser | null> {
+): Promise<TwitchUser | null> => {
   if (identifier.kind === "id") {
     return getUserById(identifier.id, options);
   }
   return getUserByLogin(identifier.login, options);
-}
+};

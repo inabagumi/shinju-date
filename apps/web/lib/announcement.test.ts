@@ -4,19 +4,17 @@ import type { Announcement } from "@/lib/data/announcements";
 
 import { selectCurrentAnnouncement } from "./announcement";
 
-function createAnnouncement(
+const createAnnouncement = (
   id: string,
   startAt: string,
   endAt: string
-): Announcement {
-  return {
-    end_at: endAt,
-    id,
-    level: "info",
-    message: `お知らせ ${id}`,
-    start_at: startAt,
-  };
-}
+): Announcement => ({
+  end_at: endAt,
+  id,
+  level: "info",
+  message: `お知らせ ${id}`,
+  start_at: startAt,
+});
 
 const NOW = Temporal.Instant.from("2026-11-17T03:00:00Z");
 

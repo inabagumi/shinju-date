@@ -10,7 +10,7 @@
  * @example
  * chunk([1, 2, 3, 4, 5], 2) // [[1, 2], [3, 4], [5]]
  */
-export function chunk<T>(items: readonly T[], size: number): T[][] {
+export const chunk = <T>(items: readonly T[], size: number): T[][] => {
   if (!Number.isInteger(size) || size < 1) {
     throw new RangeError("Chunk size must be a positive integer");
   }
@@ -22,4 +22,4 @@ export function chunk<T>(items: readonly T[], size: number): T[][] {
   }
 
   return chunks;
-}
+};

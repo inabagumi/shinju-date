@@ -42,14 +42,14 @@ const BROWSER_NOW = "2027-01-01T00:01:00+09:00[Asia/Tokyo]";
 /** The date the server renders with (`getReferenceDate`) */
 const REFERENCE_DATE = "2026-12-31";
 
-function mockNow(value: string) {
+const mockNow = (value: string) => {
   vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(
     Temporal.ZonedDateTime.from(value)
   );
-}
+};
 
 /** The tree the page renders, as `app/layout.tsx` does */
-function Page({ children }: { children: ReactNode }) {
+const Page = ({ children }: { children: ReactNode }) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false, staleTime: Infinity } },
   });
@@ -59,7 +59,7 @@ function Page({ children }: { children: ReactNode }) {
       <TimerProvider initialNow={SERVER_NOW}>{children}</TimerProvider>
     </QueryClientProvider>
   );
-}
+};
 
 let root: Root | undefined;
 
@@ -67,7 +67,7 @@ let root: Root | undefined;
  * Render the tree on the server at `SERVER_NOW`, then hydrate it in the
  * browser at `BROWSER_NOW`. Returns the errors the hydration reported.
  */
-async function renderOnServerAndHydrate(children: ReactNode) {
+const renderOnServerAndHydrate = async (children: ReactNode) => {
   mockNow(SERVER_NOW);
 
   const container = document.createElement("div");
@@ -89,7 +89,7 @@ async function renderOnServerAndHydrate(children: ReactNode) {
   });
 
   return { consoleError, onRecoverableError, serverHtml };
-}
+};
 
 describe("hydration across the change of the date", () => {
   afterEach(() => {

@@ -14,9 +14,7 @@ import {
 } from "./check-private-urls.mjs";
 
 /** @param {string} text */
-function urls(text) {
-  return findPrivateUrls(text).map(({ url }) => url);
-}
+const urls = (text) => findPrivateUrls(text).map(({ url }) => url);
 
 describe(findPrivateUrls, () => {
   it("finds a session URL in a commit trailer", () => {

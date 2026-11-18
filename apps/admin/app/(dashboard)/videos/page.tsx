@@ -18,15 +18,15 @@ export const metadata: Metadata = {
   title: "動画管理",
 };
 
-async function VideoFiltersData() {
+const VideoFiltersData = async () => {
   const talents = await getTalents();
 
   return <VideoFilters talents={talents} />;
-}
+};
 
-async function VideoTableData({
+const VideoTableData = async ({
   searchParams,
-}: Pick<PageProps<"/videos">, "searchParams">) {
+}: Pick<PageProps<"/videos">, "searchParams">) => {
   const [{ currentPage, sort, totalPages, videos }, query] = await Promise.all([
     getVideosForPage(searchParams),
     searchParams,
@@ -44,17 +44,17 @@ async function VideoTableData({
       )}
     </>
   );
-}
+};
 
-async function VideoCountData({
+const VideoCountData = async ({
   searchParams,
-}: Pick<PageProps<"/videos">, "searchParams">) {
+}: Pick<PageProps<"/videos">, "searchParams">) => {
   const { total } = await getVideosForPage(searchParams);
 
   return (
     <span className="tabular-nums">全 {formatNumber(total)} 件の動画</span>
   );
-}
+};
 
 export default function VideosPage({ searchParams }: PageProps<"/videos">) {
   return (

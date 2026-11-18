@@ -24,14 +24,10 @@ import { GET } from "./route";
 
 setupSupabase();
 
-function get(id: string): Promise<Response> {
-  return GET(
-    new NextRequest(`https://shinju.date/images/profile-images/${id}`),
-    {
-      params: Promise.resolve({ id }),
-    }
-  );
-}
+const get = (id: string): Promise<Response> =>
+  GET(new NextRequest(`https://shinju.date/images/profile-images/${id}`), {
+    params: Promise.resolve({ id }),
+  });
 
 describe("GET /images/profile-images/[id]", () => {
   beforeEach(() => {

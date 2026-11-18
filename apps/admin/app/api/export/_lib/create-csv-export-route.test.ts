@@ -31,9 +31,8 @@ const GET = createCsvExportRoute({
   toRow: (item, index) => [index + 1, item.name, item.count],
 });
 
-function request(query: string): NextRequest {
-  return new NextRequest(`http://localhost/api/export/test?${query}`);
-}
+const request = (query: string): NextRequest =>
+  new NextRequest(`http://localhost/api/export/test?${query}`);
 
 describe(createCsvExportRoute, () => {
   beforeEach(() => {

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { paginate } from "./paginate.js";
 import type { Page } from "./paginate.js";
 
-function pages<T>(...list: Page<T>[]) {
+const pages = <T>(...list: Page<T>[]) => {
   const fetchPage = vi.fn<(cursor: string | undefined) => Promise<Page<T>>>(
     async (cursor) => {
       const index = cursor === undefined ? 0 : Number(cursor);
@@ -18,7 +18,7 @@ function pages<T>(...list: Page<T>[]) {
   );
 
   return fetchPage;
-}
+};
 
 describe(paginate, () => {
   it("fetches only the first page when it has no next page", async () => {

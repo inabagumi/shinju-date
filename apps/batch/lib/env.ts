@@ -15,36 +15,29 @@ import { z } from "zod";
  * An unset variable and an empty one (`KEY=` in a `.env` file) are both
  * treated as unset.
  */
-function variable<T extends z.ZodType>(schema: T) {
-  return z.preprocess((value) => (value === "" ? undefined : value), schema);
-}
+const variable = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((value) => (value === "" ? undefined : value), schema);
 
-function requiredString() {
-  return variable(z.string({ error: "is not set" }));
-}
+const requiredString = () => variable(z.string({ error: "is not set" }));
 
-function requiredURL() {
-  return variable(
+const requiredURL = () =>
+  variable(
     z.url({
       error: (issue) =>
         issue.input === undefined ? "is not set" : "is not a valid URL",
     })
   );
-}
 
-function optionalString() {
-  return variable(z.string().optional());
-}
+const optionalString = () => variable(z.string().optional());
 
 /** `true` only when the variable is `true`. */
-function flag() {
-  return variable(
+const flag = () =>
+  variable(
     z
       .string()
       .optional()
       .transform((value) => value === "true")
   );
-}
 
 /**
  * The keys of the YouTube and Twitch APIs, read by `@shinju-date/scraper` and
@@ -102,7 +95,7 @@ export type ServerEnv = z.output<typeof serverEnvSchema>;
 /** The variables read from `process.env`, by name. */
 export type EnvSource = Readonly<Record<string, string | undefined>>;
 
-function toEnvError(issues: readonly z.core.$ZodIssue[]): Error {
+const toEnvError = (issues: readonly z.core.$ZodIssue[]): Error => {
   const details = issues.map(
     (issue) => `  - ${issue.path.join(".")}: ${issue.message}`
   );
@@ -110,14 +103,14 @@ function toEnvError(issues: readonly z.core.$ZodIssue[]): Error {
   return new Error(
     ["Missing or invalid environment variables:", ...details].join("\n")
   );
-}
+};
 
 /**
  * Checks every variable of the server at once.
  *
  * @throws {Error} When a variable is missing or invalid, listing every one.
  */
-export function parseEnv(source: EnvSource): ServerEnv {
+export const parseEnv = (source: EnvSource): ServerEnv => {
   const result = serverEnvSchema.safeParse(source);
 
   if (!result.success) {
@@ -125,7 +118,7 @@ export function parseEnv(source: EnvSource): ServerEnv {
   }
 
   return result.data;
-}
+};
 
 /** The variables of the server. The batch app has no pages for the browser. */
 export const serverEnv: ServerEnv = parseEnv(process.env);

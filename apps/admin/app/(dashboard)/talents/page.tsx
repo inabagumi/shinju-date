@@ -13,9 +13,9 @@ export const metadata: Metadata = {
   title: "タレント管理",
 };
 
-async function TalentsListData({
+const TalentsListData = async ({
   searchParams,
-}: Pick<PageProps<"/talents">, "searchParams">) {
+}: Pick<PageProps<"/talents">, "searchParams">) => {
   const [talents, rawParams] = await Promise.all([getTalents(), searchParams]);
   const filters = talentSearchParamsSchema.parse(rawParams);
 
@@ -28,7 +28,7 @@ async function TalentsListData({
       talents={filterTalents(talents, filters)}
     />
   );
-}
+};
 
 export default function TalentsPage({ searchParams }: PageProps<"/talents">) {
   return (

@@ -63,12 +63,12 @@ export interface PlanLiveSyncOptions {
  * Compares what is on air on Twitch with the rows shown as LIVE and decides
  * which broadcasts started, which rows need a refresh and which ones ended.
  */
-export function planLiveSync({
+export const planLiveSync = ({
   activeTwitchUserIds,
   liveStreams,
   savedByStreamId,
   savedLiveVideos,
-}: PlanLiveSyncOptions): LiveSyncPlan {
+}: PlanLiveSyncOptions): LiveSyncPlan => {
   const savedByStream = new Map<string, SavedTwitchVideo>();
 
   for (const saved of [...savedLiveVideos, ...savedByStreamId]) {
@@ -125,12 +125,11 @@ export function planLiveSync({
   }
 
   return plan;
-}
+};
 
 /** Selects saved rows together with the Helix ID of their broadcaster. */
-export function selectSavedLiveVideos(supabaseClient: TypedSupabaseClient) {
-  return supabaseClient.from("videos").select(SAVED_LIVE_VIDEO_COLUMNS);
-}
+export const selectSavedLiveVideos = (supabaseClient: TypedSupabaseClient) =>
+  supabaseClient.from("videos").select(SAVED_LIVE_VIDEO_COLUMNS);
 
 type SavedLiveVideoRow = QueryData<
   ReturnType<typeof selectSavedLiveVideos>
@@ -139,16 +138,14 @@ type SavedLiveVideoRow = QueryData<
 /**
  * Flattens a row read with {@link selectSavedLiveVideos}.
  */
-export function toSavedLiveVideo({
+export const toSavedLiveVideo = ({
   twitch_video: { twitch_user, ...twitchVideo },
   ...video
-}: SavedLiveVideoRow): SavedLiveVideo {
-  return {
-    ...video,
-    twitch_video: twitchVideo,
-    twitchUserId: twitch_user?.twitch_user_id ?? null,
-  };
-}
+}: SavedLiveVideoRow): SavedLiveVideo => ({
+  ...video,
+  twitch_video: twitchVideo,
+  twitchUserId: twitch_user?.twitch_user_id ?? null,
+});
 
 /**
  * Loads every Twitch row shown as LIVE.
@@ -156,9 +153,9 @@ export function toSavedLiveVideo({
  * Talent status is deliberately ignored: a broadcast that was on air when its
  * talent retired still has to be ended, or it would stay LIVE forever.
  */
-async function getSavedLiveVideos(
+const getSavedLiveVideos = async (
   supabaseClient: TypedSupabaseClient
-): Promise<SavedLiveVideo[]> {
+): Promise<SavedLiveVideo[]> => {
   const { data, error } = await selectSavedLiveVideos(supabaseClient)
     .eq("platform", "twitch")
     .eq("status", "LIVE")
@@ -169,36 +166,36 @@ async function getSavedLiveVideos(
   }
 
   return data.map(toSavedLiveVideo);
-}
+};
 
 /**
  * Marks a broadcast as ended. When its archive is known the row takes over
  * the archive's details; otherwise it keeps standing in for the broadcast
  * until the archive is discovered (never, if VODs are disabled).
  */
-async function endBroadcast(
+const endBroadcast = async (
   context: WriteContext,
   saved: SavedLiveVideo,
   /** The archive of the broadcast, when Twitch already lists it. */
   archive: TwitchVideo | undefined
-): Promise<void> {
+): Promise<void> => {
   if (!archive) {
     await updateVideo(context.supabaseClient, saved.id, { status: "ENDED" });
     return;
   }
 
   await attachArchive(context, saved, archive, { stillLive: false });
-}
+};
 
 /**
  * Looks up the archives of broadcasts that just ended, keyed by stream ID.
  * A failed lookup only delays taking over the archive's details, so failures
  * are reported and the broadcasts are ended regardless.
  */
-async function getArchivesOfEndedBroadcasts(
+const getArchivesOfEndedBroadcasts = async (
   { fetcher, reportError }: CrawlContext<TwitchFetcher>,
   ended: readonly SavedLiveVideo[]
-): Promise<Map<string, TwitchVideo>> {
+): Promise<Map<string, TwitchVideo>> => {
   const twitchUserIds = ended
     .map((saved) => saved.twitchUserId)
     .filter((id) => id !== null);
@@ -216,11 +213,11 @@ async function getArchivesOfEndedBroadcasts(
   }
 
   return toArchiveByStreamId(videos);
-}
+};
 
-function toArchiveByStreamId(
+const toArchiveByStreamId = (
   videos: readonly TwitchVideo[]
-): Map<string, TwitchVideo> {
+): Map<string, TwitchVideo> => {
   const archiveByStreamId = new Map<string, TwitchVideo>();
 
   for (const video of videos) {
@@ -232,7 +229,7 @@ function toArchiveByStreamId(
   }
 
   return archiveByStreamId;
-}
+};
 
 /**
  * Looks up the archive of one broadcast among the newest archives of its
@@ -240,10 +237,10 @@ function toArchiveByStreamId(
  * {@link getArchivesOfEndedBroadcasts}, a failed lookup rejects: it concerns a
  * single broadcast, which may have ended long ago.
  */
-async function findArchiveOfBroadcast(
+const findArchiveOfBroadcast = async (
   fetcher: TwitchFetcher,
   saved: SavedLiveVideo
-): Promise<TwitchVideo | undefined> {
+): Promise<TwitchVideo | undefined> => {
   const streamId = saved.twitch_video.stream_id;
 
   if (!streamId || !saved.twitchUserId) {
@@ -261,7 +258,7 @@ async function findArchiveOfBroadcast(
   }
 
   return toArchiveByStreamId(videos).get(streamId);
-}
+};
 
 /**
  * Keeps the LIVE state of Twitch broadcasts in sync:
@@ -274,9 +271,9 @@ async function findArchiveOfBroadcast(
  *
  * @returns The number of broadcasts started, refreshed or ended.
  */
-export async function syncTwitchLive(
+export const syncTwitchLive = async (
   context: CrawlContext<TwitchFetcher>
-): Promise<number> {
+): Promise<number> => {
   const { fetcher, logger, reportError, supabaseClient } = context;
   const [users, savedLiveVideos] = await Promise.all([
     getActiveAccounts(supabaseClient, TWITCH_USERS),
@@ -375,7 +372,7 @@ export async function syncTwitchLive(
   }
 
   return changedCount;
-}
+};
 
 /**
  * Brings one saved broadcast in line with Twitch, the same way the scheduled
@@ -390,10 +387,10 @@ export async function syncTwitchLive(
  *
  * No row is ever added for other broadcasts.
  */
-export async function refreshTwitchBroadcast(
+export const refreshTwitchBroadcast = async (
   context: CrawlContext<TwitchFetcher>,
   saved: SavedLiveVideo
-): Promise<void> {
+): Promise<void> => {
   const { fetcher, supabaseClient } = context;
   const liveStreams = saved.twitchUserId
     ? await fetcher.getLiveStreams([saved.twitchUserId])
@@ -438,4 +435,4 @@ export async function refreshTwitchBroadcast(
       await applyNewVideoAction(context, action, new Map());
     }
   }
-}
+};

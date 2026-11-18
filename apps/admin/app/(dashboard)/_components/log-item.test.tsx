@@ -6,21 +6,19 @@ import { LogItem } from "./log-item";
 
 const videoId = "30000000-0000-0000-0000-000000000101";
 
-function videoSyncLog(details: Log["details"]): Log {
-  return {
-    action: "VIDEO_SYNC",
-    created_at: "2024-11-24T17:00:00Z",
-    details,
-    id: "50000000-0000-0000-0000-000000000001",
-    target_record_id: videoId,
-    target_table: "videos",
-    user_email: "admin@example.com",
-    user_id: "60000000-0000-0000-0000-000000000001",
-  };
-}
+const videoSyncLog = (details: Log["details"]): Log => ({
+  action: "VIDEO_SYNC",
+  created_at: "2024-11-24T17:00:00Z",
+  details,
+  id: "50000000-0000-0000-0000-000000000001",
+  target_record_id: videoId,
+  target_table: "videos",
+  user_email: "admin@example.com",
+  user_id: "60000000-0000-0000-0000-000000000001",
+});
 
 describe(LogItem, () => {
-  function renderSyncWithChanges() {
+  const renderSyncWithChanges = () => {
     render(
       <LogItem
         log={videoSyncLog({
@@ -32,7 +30,7 @@ describe(LogItem, () => {
         })}
       />
     );
-  }
+  };
 
   it("shows the video title and the synced title change", () => {
     renderSyncWithChanges();

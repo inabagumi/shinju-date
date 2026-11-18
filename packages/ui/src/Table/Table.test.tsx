@@ -10,8 +10,8 @@ import {
   TableRow,
 } from "./Table";
 
-function renderTable() {
-  return render(
+const renderTable = () =>
+  render(
     <Table className="table-fixed">
       <TableHeader>
         <TableRow>
@@ -25,7 +25,6 @@ function renderTable() {
       </TableBody>
     </Table>
   );
-}
 
 describe(Table, () => {
   it("scrolls horizontally inside the bordered container", () => {

@@ -54,25 +54,22 @@ const BLANK_LINE_PATTERN = /\n[ \t]*\r?\n/;
  */
 
 /** @param {string} fileName */
-function getScriptKind(fileName) {
+const getScriptKind = (fileName) => {
   if (/\.[cm]?tsx?$/.test(fileName)) {
     return fileName.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   }
 
   return fileName.endsWith("x") ? ts.ScriptKind.JSX : ts.ScriptKind.JS;
-}
+};
 
 /** @param {ts.Statement} statement */
-function isCacheDirective(statement) {
-  return (
-    ts.isExpressionStatement(statement) &&
-    ts.isStringLiteral(statement.expression) &&
-    statement.expression.text.startsWith("use cache")
-  );
-}
+const isCacheDirective = (statement) =>
+  ts.isExpressionStatement(statement) &&
+  ts.isStringLiteral(statement.expression) &&
+  statement.expression.text.startsWith("use cache");
 
 /** @param {ts.Statement} statement */
-function isCacheFunctionCall(statement) {
+const isCacheFunctionCall = (statement) => {
   if (!ts.isExpressionStatement(statement)) {
     return false;
   }
@@ -84,7 +81,7 @@ function isCacheFunctionCall(statement) {
     ts.isIdentifier(expression.expression) &&
     CACHE_FUNCTIONS.has(expression.expression.text)
   );
-}
+};
 
 /**
  * Find the directives and the runs of cache function calls that are not
@@ -94,7 +91,7 @@ function isCacheFunctionCall(statement) {
  * @param {string} fileName - Used to choose the parser (TS, TSX, JS or JSX)
  * @returns {Problem[]}
  */
-export function findMissingBlankLines(sourceText, fileName) {
+export const findMissingBlankLines = (sourceText, fileName) => {
   const sourceFile = ts.createSourceFile(
     fileName,
     sourceText,
@@ -111,7 +108,7 @@ export function findMissingBlankLines(sourceText, fileName) {
    * @param {ts.Statement} next
    * @param {string} message
    */
-  function requireBlankLine(statement, next, message) {
+  const requireBlankLine = (statement, next, message) => {
     const between = sourceText.slice(statement.end, next.getStart(sourceFile));
 
     if (BLANK_LINE_PATTERN.test(between)) {
@@ -123,10 +120,10 @@ export function findMissingBlankLines(sourceText, fileName) {
     );
 
     problems.push({ column: character + 1, line: line + 1, message });
-  }
+  };
 
   /** @param {readonly ts.Statement[]} statements */
-  function checkStatements(statements) {
+  const checkStatements = (statements) => {
     for (const [index, statement] of statements.entries()) {
       const next = statements[index + 1];
 
@@ -148,10 +145,10 @@ export function findMissingBlankLines(sourceText, fileName) {
         );
       }
     }
-  }
+  };
 
   /** @param {ts.Node} node */
-  function visit(node) {
+  const visit = (node) => {
     if (
       ts.isSourceFile(node) ||
       ts.isBlock(node) ||
@@ -162,15 +159,15 @@ export function findMissingBlankLines(sourceText, fileName) {
     }
 
     ts.forEachChild(node, visit);
-  }
+  };
 
   visit(sourceFile);
 
   return problems;
-}
+};
 
 /** List the files Git tracks and the new files that are not ignored. */
-function listSourceFiles() {
+const listSourceFiles = () => {
   const output = execFileSync(
     "git",
     [
@@ -190,9 +187,9 @@ function listSourceFiles() {
     .split("\0")
     .filter(Boolean)
     .filter((file) => !IGNORED_FILES.some((pattern) => pattern.test(file)));
-}
+};
 
-function main() {
+const main = () => {
   const args = process.argv.slice(2);
   const files = args.length > 0 ? args : listSourceFiles();
   let count = 0;
@@ -233,7 +230,7 @@ function main() {
     );
     process.exitCode = 1;
   }
-}
+};
 
 if (process.argv[1] && resolve(process.argv[1]) === import.meta.filename) {
   main();

@@ -16,11 +16,11 @@ export interface VideoFieldChanges {
   before: Partial<VideoFields>;
 }
 
-function isSameValue<K extends keyof VideoFields>(
+const isSameValue = <K extends keyof VideoFields>(
   key: K,
   a: VideoFields[K],
   b: VideoFields[K]
-): boolean {
+): boolean => {
   // The database and the platforms format the same instant differently, and
   // the database keeps whole seconds only (see `toDBString`).
   if (key === "published_at") {
@@ -31,15 +31,15 @@ function isSameValue<K extends keyof VideoFields>(
   }
 
   return a === b;
-}
+};
 
-function setValue<K extends keyof VideoFields>(
+const setValue = <K extends keyof VideoFields>(
   target: Partial<VideoFields>,
   key: K,
   value: VideoFields[K]
-): void {
+): void => {
   target[key] = value;
-}
+};
 
 /**
  * Compares a saved video with its next state.
@@ -50,10 +50,10 @@ function setValue<K extends keyof VideoFields>(
  * @returns The fields that changed, with their value in `next`. Empty when the
  *   saved video is up to date.
  */
-export function diffVideoFields(
+export const diffVideoFields = (
   saved: Partial<VideoFields>,
   next: Partial<VideoFields>
-): Partial<VideoFields> {
+): Partial<VideoFields> => {
   const changes: Partial<VideoFields> = {};
 
   for (const key of VIDEO_FIELD_KEYS) {
@@ -70,16 +70,16 @@ export function diffVideoFields(
   }
 
   return changes;
-}
+};
 
 /**
  * {@link diffVideoFields} with the saved value of each changed field as well,
  * as `Scraper#refreshVideo` reports them.
  */
-export function compareVideoFields(
+export const compareVideoFields = (
   saved: Partial<VideoFields>,
   next: Partial<VideoFields>
-): VideoFieldChanges {
+): VideoFieldChanges => {
   const after = diffVideoFields(saved, next);
   const before: Partial<VideoFields> = {};
 
@@ -92,4 +92,4 @@ export function compareVideoFields(
   }
 
   return { after, before };
-}
+};

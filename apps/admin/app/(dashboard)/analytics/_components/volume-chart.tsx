@@ -60,17 +60,16 @@ interface VolumeChartProps {
   searchParams: Promise<AnalyticsSearchParams>;
 }
 
-function sumBy(data: VolumeChartDatum[], key: string): number {
-  return data.reduce((sum, day) => {
+const sumBy = (data: VolumeChartDatum[], key: string): number =>
+  data.reduce((sum, day) => {
     const value = day[key];
     return sum + (typeof value === "number" ? value : 0);
   }, 0);
-}
 
 /**
  * 日ごとの件数（クリック数・検索数）の合計とグラフを表示する
  */
-export async function VolumeChart({ kind, searchParams }: VolumeChartProps) {
+export const VolumeChart = async ({ kind, searchParams }: VolumeChartProps) => {
   const definition: VolumeChartKindDefinition = VOLUME_CHART_KINDS[kind];
   const { dateRange, selectedDate } = await searchParams;
 
@@ -98,14 +97,12 @@ export async function VolumeChart({ kind, searchParams }: VolumeChartProps) {
       )}
     </>
   );
-}
+};
 
 /** 読み込み中の `VolumeChart`。合計のタイルと、グラフ（`VolumeChartUI`）と同じ高さの枠を並べる */
-export function VolumeChartSkeleton() {
-  return (
-    <div aria-hidden="true">
-      <StatTileSkeleton className="mb-4 sm:max-w-xs" />
-      <Skeleton className="h-64 w-full rounded-container" />
-    </div>
-  );
-}
+export const VolumeChartSkeleton = () => (
+  <div aria-hidden="true">
+    <StatTileSkeleton className="mb-4 sm:max-w-xs" />
+    <Skeleton className="h-64 w-full rounded-container" />
+  </div>
+);

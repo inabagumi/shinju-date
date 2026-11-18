@@ -41,7 +41,7 @@ interface GetVideosByUserPageOptions extends ClientOptions {
  * Gets Twitch videos (VOD / highlight / upload) by ID.
  * IDs that no longer exist are omitted.
  */
-export async function* getVideos({
+export const getVideos = async function* getVideos({
   client = getTwitchApiClient(),
   ids,
   schedule,
@@ -56,13 +56,13 @@ export async function* getVideos({
       yield mapped;
     }
   }
-}
+};
 
 /**
  * Gets videos for a broadcaster, newest first (for batch discovery).
  * Returns the first page by default; pass `all: true` to drain all pages.
  */
-export async function* getVideosByUser({
+export const getVideosByUser = async function* getVideosByUser({
   all = false,
   client = getTwitchApiClient(),
   limit = all ? TWITCH_API_MAX_RESULTS : 20,
@@ -93,7 +93,7 @@ export async function* getVideosByUser({
 
     return { items: videos, next: cursor };
   });
-}
+};
 
 /**
  * Gets one page of a broadcaster's videos, newest first.
@@ -101,13 +101,13 @@ export async function* getVideosByUser({
  * Unlike {@link getVideosByUser} with `all`, the caller keeps the cursor, so a
  * long history can be walked across several runs.
  */
-export async function getVideosByUserPage({
+export const getVideosByUserPage = async ({
   after,
   client = getTwitchApiClient(),
   limit = TWITCH_API_MAX_RESULTS,
   type = "archive",
   userId,
-}: GetVideosByUserPageOptions): Promise<TwitchVideoPage> {
+}: GetVideosByUserPageOptions): Promise<TwitchVideoPage> => {
   const { cursor, data } = await client.videos.getVideosByUser(userId, {
     limit,
     type,
@@ -123,4 +123,4 @@ export async function getVideosByUserPage({
       return mapped ? [mapped] : [];
     }),
   };
-}
+};

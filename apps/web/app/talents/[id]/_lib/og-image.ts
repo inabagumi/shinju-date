@@ -11,11 +11,9 @@ import { parseThemeColor } from "@/lib/theme-color";
  * the talent, or the site's when it is not set or is not a `#rrggbb` color.
  * Theme colors are entered by hand, so they are checked before they are drawn.
  */
-export function getTalentThemeColor(
+export const getTalentThemeColor = (
   themeColor: string | null | undefined
-): string {
-  return parseThemeColor(themeColor) ?? SITE_THEME_COLOR;
-}
+): string => parseThemeColor(themeColor) ?? SITE_THEME_COLOR;
 
 /**
  * The icon of a talent as a data URL of a `size`×`size` PNG.
@@ -25,10 +23,10 @@ export function getTalentThemeColor(
  * talent without an icon, and when the icon cannot be fetched or converted,
  * which only logs the error so the image is still generated.
  */
-export async function fetchTalentIconDataURL(
+export const fetchTalentIconDataURL = async (
   profileImage: ProfileImage | null,
   size: number
-): Promise<string | null> {
+): Promise<string | null> => {
   if (!profileImage) {
     return null;
   }
@@ -76,4 +74,4 @@ export async function fetchTalentIconDataURL(
 
     return null;
   }
-}
+};

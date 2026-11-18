@@ -12,9 +12,8 @@ if redis.call('GET', KEYS[1]) == ARGV[1] then
 end
 return 0`;
 
-function getLockKey(identifier: string): string {
-  return `${REDIS_KEYS.CRON_LOCK_PREFIX}${identifier}`;
-}
+const getLockKey = (identifier: string): string =>
+  `${REDIS_KEYS.CRON_LOCK_PREFIX}${identifier}`;
 
 /**
  * Takes the lock of `identifier` for `ttlSeconds` (`SET NX EX`).
@@ -22,10 +21,10 @@ function getLockKey(identifier: string): string {
  * Returns the random value the lock holds, which `releaseLock` needs, or
  * `null` when another run holds the lock.
  */
-export async function acquireLock(
+export const acquireLock = async (
   identifier: string,
   ttlSeconds: number
-): Promise<string | null> {
+): Promise<string | null> => {
   const value = crypto.randomUUID();
   const result = await redisClient.set(getLockKey(identifier), value, {
     ex: ttlSeconds,
@@ -33,7 +32,7 @@ export async function acquireLock(
   });
 
   return result === "OK" ? value : null;
-}
+};
 
 /**
  * Releases the lock of `identifier` if it still holds `value`. The lock may
@@ -43,10 +42,10 @@ export async function acquireLock(
  *
  * Returns whether the lock was released.
  */
-export async function releaseLock(
+export const releaseLock = async (
   identifier: string,
   value: string
-): Promise<boolean> {
+): Promise<boolean> => {
   const deleted = await redisClient.eval<[string], number>(
     RELEASE_LOCK_SCRIPT,
     [getLockKey(identifier)],
@@ -54,4 +53,4 @@ export async function releaseLock(
   );
 
   return deleted === 1;
-}
+};

@@ -16,17 +16,11 @@ const always = () => true;
  * what the check looks at.
  * @param {[string, string][]} conditions
  */
-function entry(...conditions) {
-  return Object.fromEntries(conditions);
-}
+const entry = (...conditions) => Object.fromEntries(conditions);
 
 /** @param {string} name */
-function typesAndDefault(name) {
-  return entry(
-    ["types", `./dist/${name}.d.ts`],
-    ["default", `./dist/${name}.js`]
-  );
-}
+const typesAndDefault = (name) =>
+  entry(["types", `./dist/${name}.d.ts`], ["default", `./dist/${name}.js`]);
 
 describe(findExportsProblems, () => {
   it("accepts entries with `types` and `default`", () => {

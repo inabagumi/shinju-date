@@ -18,10 +18,10 @@ export interface UpdateSearchParamsOptions extends SearchParamsHrefOptions {
  * 現在のページのパスとパラメータから、パラメータを書き換えた URL を作る関数を返す。
  * `Link` の `href` に使う。
  */
-export function useSearchParamsHref(): (
+export const useSearchParamsHref = (): ((
   updates: SearchParamUpdates,
   options?: SearchParamsHrefOptions
-) => string {
+) => string) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -35,7 +35,7 @@ export function useSearchParamsHref(): (
       ),
     [pathname, searchParams]
   );
-}
+};
 
 /**
  * 現在のページの URL のパラメータを書き換えて移動する関数を返す。
@@ -48,10 +48,10 @@ export function useSearchParamsHref(): (
  * update({ status: ['LIVE', 'ENDED'] }) // 同じ名前の複数の値にする
  * update({ search: null }) // パラメータを消す
  */
-export function useUpdateSearchParams(): (
+export const useUpdateSearchParams = (): ((
   updates: SearchParamUpdates,
   options?: UpdateSearchParamsOptions
-) => void {
+) => void) => {
   const router = useRouter();
   const createHref = useSearchParamsHref();
 
@@ -67,4 +67,4 @@ export function useUpdateSearchParams(): (
     },
     [createHref, router]
   );
-}
+};

@@ -70,7 +70,10 @@ export const REPEAT_SEARCH_RATE_RATINGS = [
  * 値に当たる行を返す。
  * どの行の `min` にも届かない値は、最後の行（いちばん下の段）に当たる
  */
-export function rate<T extends Ratings>(value: number, ratings: T): T[number] {
+export const rate = <T extends Ratings>(
+  value: number,
+  ratings: T
+): T[number] => {
   let lowest: T[number] = ratings[0];
 
   for (const rating of ratings) {
@@ -82,7 +85,7 @@ export function rate<T extends Ratings>(value: number, ratings: T): T[number] {
   }
 
   return lowest;
-}
+};
 
 export interface DescribeRatingsOptions {
   /** しきい値を表示するときの、小数の桁数。既定は 0（整数） */
@@ -97,10 +100,10 @@ export interface DescribeRatingsOptions {
  * 凡例の文（「30%未満: 良好」「30-49%: 普通」「70%以上: 要改善」など）の配列を作る。
  * 範囲の上端は、1つ上の段の下限から、表示する桁の最小の刻みを引いた値になる
  */
-export function describeRatings(
+export const describeRatings = (
   ratings: Ratings,
   { fractionDigits = 0, order = "descending", unit }: DescribeRatingsOptions
-): string[] {
+): string[] => {
   const step = 10 ** -fractionDigits;
   const format = (value: number) => value.toFixed(fractionDigits);
 
@@ -119,4 +122,4 @@ export function describeRatings(
   });
 
   return order === "ascending" ? descriptions.reverse() : descriptions;
-}
+};

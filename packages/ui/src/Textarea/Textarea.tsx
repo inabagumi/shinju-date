@@ -10,20 +10,18 @@ export type TextareaProps = ComponentPropsWithRef<"textarea"> &
 /**
  * 複数行の入力欄。`Input` と同じ余白・枠・角丸・フォーカス表示にする。
  */
-export function Textarea({
+export const Textarea = ({
   className,
   inputSize,
   variant,
   ...props
-}: TextareaProps) {
-  return (
-    <textarea
-      className={twMerge(
-        inputVariants({ inputSize, variant }),
-        "block",
-        className
-      )}
-      {...props}
-    />
-  );
-}
+}: TextareaProps) => (
+  <textarea
+    className={twMerge(
+      inputVariants({ inputSize, variant }),
+      "block",
+      className
+    )}
+    {...props}
+  />
+);

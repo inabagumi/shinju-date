@@ -11,12 +11,12 @@ interface ListOptionProps extends ComponentPropsWithRef<"button"> {
  * An option in a list of the search, such as a suggested keyword or a
  * talent to narrow the search to
  */
-export function ListOption({
+export const ListOption = ({
   asChild = false,
   className,
   type = "button",
   ...props
-}: ListOptionProps) {
+}: ListOptionProps) => {
   const Comp = asChild ? Slot : "button";
 
   return (
@@ -29,18 +29,16 @@ export function ListOption({
       {...props}
     />
   );
-}
+};
 
 /** The icon in front of the text of `ListOption`. Pass the icon as the child */
-export function ListOptionIcon({
+export const ListOptionIcon = ({
   className,
   ...props
-}: ComponentPropsWithRef<typeof Slot>) {
-  return (
-    <Slot
-      aria-hidden="true"
-      className={twMerge("size-4 shrink-0 text-muted", className)}
-      {...props}
-    />
-  );
-}
+}: ComponentPropsWithRef<typeof Slot>) => (
+  <Slot
+    aria-hidden="true"
+    className={twMerge("size-4 shrink-0 text-muted", className)}
+    {...props}
+  />
+);

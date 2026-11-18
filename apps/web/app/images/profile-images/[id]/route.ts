@@ -11,10 +11,10 @@ import { getSupabaseAdminClient, supabaseClient } from "@/lib/supabase";
  * deleted talents) are answered with 404, so callers should show the default
  * icon when a channel or user has no `profile_image_id`.
  */
-export async function GET(
+export const GET = async (
   request: NextRequest,
   ctx: RouteContext<"/images/profile-images/[id]">
-) {
+) => {
   const { id } = await ctx.params;
   // Looked up with the public key, so RLS decides which icons may be served.
   // Only signing the URL needs the service role.
@@ -35,4 +35,4 @@ export async function GET(
     path: profileImage.path,
     supabaseClient: getSupabaseAdminClient(),
   });
-}
+};

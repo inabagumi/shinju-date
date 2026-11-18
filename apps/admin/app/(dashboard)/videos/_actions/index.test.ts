@@ -30,9 +30,8 @@ vi.spyOn(Temporal.Now, "instant").mockReturnValue(
 );
 
 /** PostgREST と同じく、関数に渡された動画の ID をすべて返す（すべて更新できた） */
-function allVideoIds(request: SupabaseRequest) {
-  return (request.body as { p_video_ids: string[] }).p_video_ids;
-}
+const allVideoIds = (request: SupabaseRequest) =>
+  (request.body as { p_video_ids: string[] }).p_video_ids;
 
 describe("restoreAction()", () => {
   it("should return error when videos are not found", async () => {
@@ -353,10 +352,10 @@ describe("toggleVisibilityAction()", () => {
    * PostgREST と同じく、`id=in.(...)` と `visible=eq.*` の両方に合う行を
    * 更新したものとして返す。
    */
-  function updatedRows(
+  const updatedRows = (
     request: SupabaseRequest,
     { changedIds = [] }: UpdateOptions = {}
-  ) {
+  ) => {
     const targetIds = (request.query["id"] ?? "")
       .replaceAll(/^in\.\(|\)$/g, "")
       .split(",");
@@ -370,7 +369,7 @@ describe("toggleVisibilityAction()", () => {
           video.visible === currentVisible
       )
       .map(({ id, title }) => ({ id, title }));
-  }
+  };
 
   it("should update videos in one query per target visibility", async () => {
     supabase.on("select", "videos", videos);

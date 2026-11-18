@@ -11,9 +11,8 @@ import { formatDate } from "@shinju-date/temporal-fns";
 export const WEEKDAYS = ["月", "火", "水", "木", "金", "土", "日"] as const;
 
 /** 日付の曜日の1文字の名前（「月」など） */
-export function formatWeekday(date: Temporal.PlainDate): string {
-  return WEEKDAYS[date.dayOfWeek - 1] as string;
-}
+export const formatWeekday = (date: Temporal.PlainDate): string =>
+  WEEKDAYS[date.dayOfWeek - 1] as string;
 
 interface FormatShortDateOptions {
   /** 年を付ける（「2026/11/09（月）」） */
@@ -21,12 +20,11 @@ interface FormatShortDateOptions {
 }
 
 /** 「11/09（月）」の形の日付。`year` が真なら「2026/11/09（月）」にする */
-export function formatShortDate(
+export const formatShortDate = (
   date: Temporal.PlainDate,
   { year = false }: FormatShortDateOptions = {}
-): string {
-  return `${formatDate(date, { includeYear: year })}（${formatWeekday(date)}）`;
-}
+): string =>
+  `${formatDate(date, { includeYear: year })}（${formatWeekday(date)}）`;
 
 interface FormatLongDateOptions {
   /** 曜日を付ける（「11月9日（月）」） */
@@ -36,17 +34,17 @@ interface FormatLongDateOptions {
 }
 
 /** 「11月9日」の形の日付。曜日と年は、オプションで付ける */
-export function formatLongDate(
+export const formatLongDate = (
   date: Temporal.PlainDate,
   { weekday = false, year = false }: FormatLongDateOptions = {}
-): string {
+): string => {
   const monthDay = `${date.month}月${date.day}日`;
   const withWeekday = weekday
     ? `${monthDay}（${formatWeekday(date)}）`
     : monthDay;
 
   return year ? `${date.year}年${withWeekday}` : withWeekday;
-}
+};
 
 interface FormatRelativeDateOptions {
   /**
@@ -64,11 +62,11 @@ interface FormatRelativeDateOptions {
  * その言葉にし、それ以外は `style` の形の日付にする。`today` と年が違う日付には
  * 年も付ける。
  */
-export function formatRelativeDate(
+export const formatRelativeDate = (
   date: Temporal.PlainDate,
   today: Temporal.PlainDate,
   { style, yesterday = false }: FormatRelativeDateOptions
-): string {
+): string => {
   const days = today.until(date, { largestUnit: "day" }).days;
 
   if (days === 0) {
@@ -88,4 +86,4 @@ export function formatRelativeDate(
   return style === "short"
     ? formatShortDate(date, { year })
     : formatLongDate(date, { weekday: true, year });
-}
+};

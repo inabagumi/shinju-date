@@ -23,10 +23,10 @@ vi.mock(import("next/navigation"), () => ({
 
 const DATE_RANGE = { endDate: "2026-11-14", startDate: "2026-11-08" };
 
-async function renderPicker({
+const renderPicker = async ({
   selectedDate = null,
   tab = null,
-}: Partial<Pick<AnalyticsSearchParams, "selectedDate" | "tab">> = {}) {
+}: Partial<Pick<AnalyticsSearchParams, "selectedDate" | "tab">> = {}) => {
   const searchParams = Promise.resolve({
     dateRange: DATE_RANGE,
     selectedDate,
@@ -40,7 +40,7 @@ async function renderPicker({
       </Suspense>
     );
   });
-}
+};
 
 describe(DateRangePickerClient, () => {
   beforeEach(() => {

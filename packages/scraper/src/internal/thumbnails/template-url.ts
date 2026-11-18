@@ -6,14 +6,13 @@ export const DEFAULT_THUMBNAIL_HEIGHT = 720;
  * Resolves Twitch (and similar) thumbnail template URLs that use
  * `%{width}x%{height}` or `{width}x{height}` placeholders.
  */
-export function resolveThumbnailTemplateUrl(
+export const resolveThumbnailTemplateUrl = (
   url: string,
   width = DEFAULT_THUMBNAIL_WIDTH,
   height = DEFAULT_THUMBNAIL_HEIGHT
-): string {
-  return url
+): string =>
+  url
     .replaceAll("%{width}", String(width))
     .replaceAll("%{height}", String(height))
     .replaceAll("{width}", String(width))
     .replaceAll("{height}", String(height));
-}

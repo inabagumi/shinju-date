@@ -34,9 +34,9 @@ interface VideosPageOptions {
 /**
  * 検索パラメーターのタレントの ID のうち、活動中のタレントに一致するもの。
  */
-export async function getSelectedTalentIds(
+export const getSelectedTalentIds = async (
   value: string | string[] | undefined
-): Promise<string[]> {
+): Promise<string[]> => {
   if (!value || value.length === 0) {
     return [];
   }
@@ -47,12 +47,12 @@ export async function getSelectedTalentIds(
     value,
     talents.map((talent) => talent.id)
   );
-}
+};
 
-async function getVideosPageOptions({
+const getVideosPageOptions = async ({
   params,
   searchParams,
-}: PageProps<"/videos/[[...queries]]">): Promise<VideosPageOptions> {
+}: PageProps<"/videos/[[...queries]]">): Promise<VideosPageOptions> => {
   const [{ queries }, searchParamValues] = await Promise.all([
     params,
     searchParams,
@@ -65,42 +65,38 @@ async function getVideosPageOptions({
       searchParamValues[TALENT_SEARCH_PARAM]
     ),
   };
-}
+};
 
-async function ResultCount({ kind, query, talentIds }: VideosPageOptions) {
+const ResultCount = async ({ kind, query, talentIds }: VideosPageOptions) => {
   const count = await countVideos({ kind, query, talentIds });
 
   return <p className="tabular-nums">{formatNumber(count)}件</p>;
-}
+};
 
-function ResultCountSkeleton() {
-  return (
-    <div
-      aria-hidden="true"
-      className="h-[1lh] w-16 animate-pulse rounded-control bg-muted"
-    />
-  );
-}
+const ResultCountSkeleton = () => (
+  <div
+    aria-hidden="true"
+    className="h-[1lh] w-16 animate-pulse rounded-control bg-muted"
+  />
+);
 
-export function VideosPageHeadingSkeleton() {
-  return (
-    <>
-      <PageHeaderSkeleton />
-      <VideoFiltersSkeleton />
-    </>
-  );
-}
+export const VideosPageHeadingSkeleton = () => (
+  <>
+    <PageHeaderSkeleton />
+    <VideoFiltersSkeleton />
+  </>
+);
 
 interface VideosPageFiltersProps extends VideosPageOptions {
   talents: Talent[];
 }
 
-function VideosPageFilters({
+const VideosPageFilters = ({
   kind,
   query,
   talentIds,
   talents,
-}: VideosPageFiltersProps) {
+}: VideosPageFiltersProps) => {
   const selectedTalents = talents.filter((talent) =>
     talentIds.includes(talent.id)
   );
@@ -113,11 +109,11 @@ function VideosPageFilters({
       talents={talents}
     />
   );
-}
+};
 
-export async function VideosPageHeading(
+export const VideosPageHeading = async (
   props: PageProps<"/videos/[[...queries]]">
-) {
+) => {
   const [options, talents] = await Promise.all([
     getVideosPageOptions(props),
     fetchActiveTalents(),
@@ -145,14 +141,14 @@ export async function VideosPageHeading(
       <VideosPageFilters {...options} talents={talents} />
     </>
   );
-}
+};
 
 /** 1件もないときの案内 */
-async function getNoResultsProps({
+const getNoResultsProps = async ({
   kind,
   query,
   talentIds,
-}: VideosPageOptions): Promise<ComponentProps<typeof NoResults>> {
+}: VideosPageOptions): Promise<ComponentProps<typeof NoResults>> => {
   if (talentIds.length > 0) {
     return {
       clearFiltersHref: getVideosPath(query, kind),
@@ -171,11 +167,11 @@ async function getNoResultsProps({
     message: `『${query}』に一致する${kindName}は見つかりませんでした。`,
     recommendedQueries: await getDisplayRecommendationQueries(),
   };
-}
+};
 
-export async function VideosPageResults(
+export const VideosPageResults = async (
   props: PageProps<"/videos/[[...queries]]">
-) {
+) => {
   const options = await getVideosPageOptions(props);
   const { kind, query, talentIds } = options;
   const [videos, referenceDate] = await Promise.all([
@@ -209,4 +205,4 @@ export async function VideosPageResults(
       )}
     </>
   );
-}
+};

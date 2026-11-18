@@ -39,7 +39,7 @@ const jobId = getBackfillJobId("youtube", "channel-row-1");
 const lockKey = `${REDIS_KEYS.VIDEO_BACKFILL_LOCK_PREFIX}${jobId}`;
 
 /** Claims the next job, failing the test when there is none. */
-async function claimJob(queue: BackfillQueue, at: Temporal.Instant) {
+const claimJob = async (queue: BackfillQueue, at: Temporal.Instant) => {
   const claim = await queue.claim(at);
 
   if (!claim) {
@@ -47,48 +47,46 @@ async function claimJob(queue: BackfillQueue, at: Temporal.Instant) {
   }
 
   return claim;
-}
+};
 
 /**
  * The claim to keep writing with after a write, failing the test when the
  * lock was lost.
  */
-function next(
+const next = (
   { token }: BackfillClaim,
   result: BackfillWriteResult
-): BackfillClaim {
+): BackfillClaim => {
   if (result.status !== "saved") {
     throw new Error("Expected the write to be saved");
   }
 
   return { job: result.job, token };
-}
+};
 
 /** A page that is not the last one. */
-function page(added: number, nextCursor: string) {
-  return { added, done: false, nextCursor };
-}
+const page = (added: number, nextCursor: string) => ({
+  added,
+  done: false,
+  nextCursor,
+});
 
 /** The last page of a history. */
-function lastPage(added = 0) {
-  return { added, done: true, nextCursor: null };
-}
+const lastPage = (added = 0) => ({ added, done: true, nextCursor: null });
 
 /** The claim with changes made to its job. */
-function withChanges(
+const withChanges = (
   { job, token }: BackfillClaim,
   changes: Partial<BackfillJob>
-): BackfillClaim {
-  return { job: { ...job, ...changes }, token };
-}
+): BackfillClaim => ({ job: { ...job, ...changes }, token });
 
 describeOnEachRedis((createClient) => {
   describe(BackfillQueue, () => {
     const getScopedRedis = useScopedRedis(createClient);
 
-    function createQueue(
+    const createQueue = (
       options?: ConstructorParameters<typeof BackfillQueue>[1]
-    ) {
+    ) => {
       const scoped = getScopedRedis();
 
       return {
@@ -96,7 +94,7 @@ describeOnEachRedis((createClient) => {
         redis: scoped.redis,
         scoped,
       };
-    }
+    };
 
     it("queues a job and keeps it for a week", async () => {
       const { queue, redis } = createQueue();
@@ -692,7 +690,7 @@ describeOnEachRedis((createClient) => {
        * Claims the job with a worker whose lease then runs out, after which
        * the job is requested again and another worker claims it.
        */
-      async function claimTwice() {
+      const claimTwice = async () => {
         const { queue, redis } = createQueue();
 
         await queue.enqueue(request, now);
@@ -702,7 +700,7 @@ describeOnEachRedis((createClient) => {
         const current = await claimJob(queue, later(11));
 
         return { current, queue, redis, stale };
-      }
+      };
 
       it.each<{
         name: string;

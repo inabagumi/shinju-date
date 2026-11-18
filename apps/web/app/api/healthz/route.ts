@@ -1,3 +1,2 @@
-export async function GET(): Promise<Response> {
-  return Response.json({ status: "ok" });
-}
+export const GET = async (): Promise<Response> =>
+  Response.json({ status: "ok" });

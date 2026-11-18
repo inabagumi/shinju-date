@@ -9,12 +9,11 @@ type OnChange = ComponentProps<typeof DateRangePicker>["onChange"];
 
 const PRESET_LABELS = ["過去7日間", "過去30日間", "過去90日間", "今月", "先月"];
 
-function getPressedButtons() {
-  return screen
+const getPressedButtons = () =>
+  screen
     .getAllByRole("button")
     .filter((button) => button.getAttribute("aria-pressed") === "true")
     .map((button) => button.textContent);
-}
 
 describe(DateRangePicker, () => {
   beforeEach(() => {
@@ -104,7 +103,7 @@ describe(DateRangePicker, () => {
   });
 
   describe("custom period", () => {
-    function applyCustomPeriod(startDate: string, endDate: string) {
+    const applyCustomPeriod = (startDate: string, endDate: string) => {
       const onChange = vi.fn<OnChange>();
 
       render(
@@ -126,7 +125,7 @@ describe(DateRangePicker, () => {
       fireEvent.click(screen.getByRole("button", { name: "適用" }));
 
       return onChange;
-    }
+    };
 
     it("applies a period within the window", () => {
       const onChange = applyCustomPeriod("2026-08-17", "2026-11-14");

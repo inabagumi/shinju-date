@@ -14,20 +14,18 @@ vi.mock(import("@/lib/redis"), () => ({
   getRedisClient: vi.fn<typeof getRedisClient>(),
 }));
 
-function snapshot(totalVideos: number): SummaryStats {
-  return {
-    deletedVideos: 2,
-    hiddenVideos: 1,
-    scheduledVideos: 5,
-    totalTalents: 12,
-    totalTerms: 40,
-    totalVideos,
-    visibleVideos: totalVideos - 6,
-  };
-}
+const snapshot = (totalVideos: number): SummaryStats => ({
+  deletedVideos: 2,
+  hiddenVideos: 1,
+  scheduledVideos: 5,
+  totalTalents: 12,
+  totalTerms: 40,
+  totalVideos,
+  visibleVideos: totalVideos - 6,
+});
 
 /** Keep the snapshots of the given days (`YYYYMMDD`) in Redis. */
-function mockSnapshots(snapshots: Record<string, unknown>) {
+const mockSnapshots = (snapshots: Record<string, unknown>) => {
   const get = vi.fn<(key: string) => Promise<unknown>>(
     async (key) =>
       snapshots[key.slice(REDIS_KEYS.SUMMARY_STATS_PREFIX.length)] ?? null
@@ -36,7 +34,7 @@ function mockSnapshots(snapshots: Record<string, unknown>) {
   vi.mocked(getRedisClient).mockReturnValue(createMockRedisClient({ get }));
 
   return get;
-}
+};
 
 describe(getHistoricalStats, () => {
   beforeEach(() => {

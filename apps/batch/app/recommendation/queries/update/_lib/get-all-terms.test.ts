@@ -14,11 +14,11 @@ interface Row {
  * in ascending order of `id`, up to `limit(...)` (and at most `maxRows`, like
  * PostgREST).
  */
-function createMockSupabase(rows: Row[], { maxRows = 1000 } = {}) {
+const createMockSupabase = (rows: Row[], { maxRows = 1000 } = {}) => {
   const sorted = [...rows].sort((a, b) => (a.id < b.id ? -1 : 1));
   const requests: { cursor: string | undefined; limit: number }[] = [];
 
-  function createBuilder() {
+  const createBuilder = () => {
     let cursor: string | undefined;
     let limit = Number.POSITIVE_INFINITY;
 
@@ -49,21 +49,20 @@ function createMockSupabase(rows: Row[], { maxRows = 1000 } = {}) {
     };
 
     return builder;
-  }
+  };
 
   const from =
     vi.fn<(table: string) => ReturnType<typeof createBuilder>>(createBuilder);
 
   return { client: { from }, requests };
-}
+};
 
-function createRows(count: number): Row[] {
-  return Array.from({ length: count }, (_, i) => ({
+const createRows = (count: number): Row[] =>
+  Array.from({ length: count }, (_, i) => ({
     id: `00000000-0000-0000-0000-${String(i).padStart(12, "0")}`,
     synonyms: [`synonym-${i}`],
     term: `term-${i}`,
   }));
-}
 
 describe(getAllTerms, () => {
   it("should read every term when there are more than 1,000", async () => {

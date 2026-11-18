@@ -18,9 +18,8 @@ vi.mock(import("@shinju-date/logger"), async () => {
   return { logger: createMockLogger() };
 });
 
-function postgrestError(code: string, message = "Query failed") {
-  return { code, details: "", hint: "", message } as PostgrestError;
-}
+const postgrestError = (code: string, message = "Query failed") =>
+  ({ code, details: "", hint: "", message }) as PostgrestError;
 
 const noRows = postgrestError(NO_ROWS_ERROR_CODE, "The result contains 0 rows");
 const invalidId = postgrestError(

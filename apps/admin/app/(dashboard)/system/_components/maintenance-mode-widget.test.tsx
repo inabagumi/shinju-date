@@ -20,11 +20,11 @@ vi.mock(import("../_actions/maintenance-mode"), () => ({
 
 const { MaintenanceModeWidget } = await import("./maintenance-mode-widget");
 
-function toggle() {
+const toggle = () => {
   fireEvent.click(
     screen.getByRole("switch", { name: "メンテナンスモード切り替え" })
   );
-}
+};
 
 describe("MaintenanceModeWidget", () => {
   beforeEach(() => {

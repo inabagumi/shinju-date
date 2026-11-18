@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const store = new Map<string, { count: number; ttl: number | null }>();
 
-function multi() {
+const multi = () => {
   const commands: (() => number)[] = [];
   const transaction = {
     exec: async () => commands.map((command) => command()),
@@ -27,7 +27,7 @@ function multi() {
     },
   };
   return transaction;
-}
+};
 
 vi.mock(import("./redis"), () => ({
   redisClient: { multi } as Partial<Redis> as Redis,
@@ -35,11 +35,11 @@ vi.mock(import("./redis"), () => ({
 
 const { limitOncePerWindow, videosBackfill } = await import("./ratelimit");
 
-function setNow(isoString: string) {
+const setNow = (isoString: string) => {
   vi.spyOn(Temporal.Now, "instant").mockReturnValue(
     Temporal.Instant.from(isoString)
   );
-}
+};
 
 describe("limitOncePerWindow", () => {
   beforeEach(() => {

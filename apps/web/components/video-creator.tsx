@@ -49,11 +49,11 @@ interface VideoCreatorSkeletonProps {
   className?: string;
 }
 
-export function VideoCreatorSkeleton({ className }: VideoCreatorSkeletonProps) {
-  return (
-    <span className={twMerge("flex items-center gap-1.5", className)}>
-      <span className="inline-block size-5 shrink-0 animate-pulse rounded-full bg-muted" />
-      <span className="inline-block h-3 w-20 animate-pulse rounded-control bg-muted" />
-    </span>
-  );
-}
+export const VideoCreatorSkeleton = ({
+  className,
+}: VideoCreatorSkeletonProps) => (
+  <span className={twMerge("flex items-center gap-1.5", className)}>
+    <span className="inline-block size-5 shrink-0 animate-pulse rounded-full bg-muted" />
+    <span className="inline-block h-3 w-20 animate-pulse rounded-control bg-muted" />
+  </span>
+);

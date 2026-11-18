@@ -5,7 +5,7 @@ import { shuffle } from "./shuffle";
 /**
  * Small seeded PRNG (mulberry32) so the distribution test is deterministic.
  */
-function createRandom(seed: number): () => number {
+const createRandom = (seed: number): (() => number) => {
   let state = seed >>> 0;
 
   return () => {
@@ -15,7 +15,7 @@ function createRandom(seed: number): () => number {
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4_294_967_296;
   };
-}
+};
 
 describe(shuffle, () => {
   it("returns an empty array for an empty input", () => {

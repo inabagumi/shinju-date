@@ -14,15 +14,13 @@ vi.mock(import("@/components/video-card"), () => ({
   VideoCardSkeleton: vi.fn<typeof VideoCardSkeleton>(),
 }));
 
-function getGroup(name: RegExp | string) {
-  return screen.getByRole("region", { name });
-}
+const getGroup = (name: RegExp | string) =>
+  screen.getByRole("region", { name });
 
-function getCardTitles(group: HTMLElement) {
-  return within(group)
+const getCardTitles = (group: HTMLElement) =>
+  within(group)
     .getAllByRole("article")
     .map((card) => card.textContent);
-}
 
 describe(Timeline, () => {
   beforeEach(() => {

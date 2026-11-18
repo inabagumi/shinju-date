@@ -36,11 +36,11 @@ export interface SyncProfileImageOptions {
  *
  * @throws When the owner cannot be updated or no longer exists.
  */
-async function assignProfileImage(
+const assignProfileImage = async (
   supabaseClient: TypedSupabaseClient,
   owner: ProfileImageOwner,
   profileImageId: string | null
-): Promise<void> {
+): Promise<void> => {
   const values = { profile_image_id: profileImageId };
   const { data, error } =
     owner.platform === "youtube"
@@ -64,22 +64,22 @@ async function assignProfileImage(
       `The ${owner.platform} account to assign a profile image to was not found: ${owner.id}`
     );
   }
-}
+};
 
 /**
  * Discards an icon its owner no longer uses. Best effort: an icon left behind
  * is unused and is picked up by `removeUnusedProfileImages` later.
  */
-async function discardProfileImage(
+const discardProfileImage = async (
   supabaseClient: TypedSupabaseClient,
   image: StoredProfileImage
-): Promise<void> {
+): Promise<void> => {
   try {
     await removeProfileImage(supabaseClient, image);
   } catch {
     // Ignored on purpose, see above.
   }
-}
+};
 
 /**
  * Brings the icon of a YouTube channel or Twitch user in line with its
@@ -93,13 +93,13 @@ async function discardProfileImage(
  * @throws When the icon cannot be downloaded, stored or assigned. The owner
  *   keeps its current icon then, and nothing new is left behind.
  */
-export async function syncProfileImage({
+export const syncProfileImage = async ({
   now,
   owner,
   saved,
   sourceUrl,
   supabaseClient,
-}: SyncProfileImageOptions): Promise<ProfileImageSyncResult> {
+}: SyncProfileImageOptions): Promise<ProfileImageSyncResult> => {
   if (!sourceUrl) {
     if (!saved) {
       return "unchanged";
@@ -139,4 +139,4 @@ export async function syncProfileImage({
   await discardProfileImage(supabaseClient, saved);
 
   return "replaced";
-}
+};

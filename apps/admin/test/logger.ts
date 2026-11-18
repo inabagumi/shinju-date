@@ -28,11 +28,9 @@ export interface MockLogger {
  * });
  * ```
  */
-export function createMockLogger(): MockLogger {
-  return {
-    debug: vi.fn<Logger["debug"]>(),
-    error: vi.fn<Logger["error"]>(),
-    info: vi.fn<Logger["info"]>(),
-    warn: vi.fn<Logger["warn"]>(),
-  };
-}
+export const createMockLogger = (): MockLogger => ({
+  debug: vi.fn<Logger["debug"]>(),
+  error: vi.fn<Logger["error"]>(),
+  info: vi.fn<Logger["info"]>(),
+  warn: vi.fn<Logger["warn"]>(),
+});

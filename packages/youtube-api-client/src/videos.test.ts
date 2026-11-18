@@ -37,7 +37,7 @@ describe(isFilteredYouTubeVideo, () => {
 });
 
 describe("lookups by ID", () => {
-  function createClient() {
+  const createClient = () => {
     let running = 0;
     let peak = 0;
     const list = vi.fn<
@@ -58,9 +58,9 @@ describe("lookups by ID", () => {
       list,
       peak: () => peak,
     };
-  }
+  };
 
-  async function collect<T>(iterable: AsyncIterable<T>): Promise<T[]> {
+  const collect = async <T>(iterable: AsyncIterable<T>): Promise<T[]> => {
     const items: T[] = [];
 
     for await (const item of iterable) {
@@ -68,7 +68,7 @@ describe("lookups by ID", () => {
     }
 
     return items;
-  }
+  };
 
   const ids = Array.from({ length: 120 }, (_, i) => `v${i}`);
 

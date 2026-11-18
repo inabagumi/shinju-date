@@ -98,15 +98,13 @@ const TALENT_B: Talent = {
 };
 const RETIRED_TALENT_ID = "00000000-0000-4000-8000-000000000000";
 
-function createProps(
+const createProps = (
   queries: string[] | undefined,
   searchParams: Record<string, string | string[] | undefined> = {}
-) {
-  return {
-    params: Promise.resolve(queries ? { queries } : {}),
-    searchParams: Promise.resolve(searchParams),
-  };
-}
+) => ({
+  params: Promise.resolve(queries ? { queries } : {}),
+  searchParams: Promise.resolve(searchParams),
+});
 
 describe("VideosPage", () => {
   beforeEach(() => {
@@ -230,12 +228,10 @@ describe("VideosPage", () => {
 
 describe(generateMetadata, () => {
   // The images of the parent segment are tested in `app/metadata.test.ts`
-  function generatePageMetadata(props: Parameters<typeof generateMetadata>[0]) {
-    return generateMetadata(
-      props,
-      Promise.resolve({} as Awaited<ResolvingMetadata>)
-    );
-  }
+  const generatePageMetadata = (
+    props: Parameters<typeof generateMetadata>[0]
+  ) =>
+    generateMetadata(props, Promise.resolve({} as Awaited<ResolvingMetadata>));
 
   beforeEach(() => {
     vi.clearAllMocks();

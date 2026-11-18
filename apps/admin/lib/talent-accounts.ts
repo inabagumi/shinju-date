@@ -270,17 +270,14 @@ interface AccountTableDefinition {
  * 決まらない。型のないクライアントとして開き、結果の型は呼ぶ側で指定する
  * （名前がデータベースにあることは、`AccountDefinition` の型が確かめる）。
  */
-function accountsTable(
+const accountsTable = (
   supabaseClient: TypedSupabaseClient,
   { table }: AccountTableDefinition
-) {
-  return (supabaseClient as SupabaseClient).from(table);
-}
+) => (supabaseClient as SupabaseClient).from(table);
 
 /** 監査ログに残す列と、結び付いているタレントの名前を読む `select` */
-function accountSelect({ accountColumns }: AccountTableDefinition): string {
-  return `${accountColumns.join(", ")}, talent:talents (name)`;
-}
+const accountSelect = ({ accountColumns }: AccountTableDefinition): string =>
+  `${accountColumns.join(", ")}, talent:talents (name)`;
 
 /**
  * タレントの更新日時を進める（一覧の並びに反映するため）。
@@ -293,10 +290,10 @@ function accountSelect({ accountColumns }: AccountTableDefinition): string {
  *
  * @returns 更新に失敗したときのエラー。成功したときは `null`
  */
-export async function touchTalent(
+export const touchTalent = async (
   supabaseClient: TypedSupabaseClient,
   talentId: string
-): Promise<PostgrestError | null> {
+): Promise<PostgrestError | null> => {
   const { error } = await supabaseClient.rpc("touch_talent", {
     p_talent_id: talentId,
   });
@@ -306,24 +303,24 @@ export async function touchTalent(
   }
 
   return error;
-}
+};
 
-async function revalidateTalent(talentId: string): Promise<void> {
+const revalidateTalent = async (talentId: string): Promise<void> => {
   revalidatePath(`/talents/${talentId}`);
   revalidatePath("/talents");
   await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS]);
-}
+};
 
 /**
  * アカウントがまだ登録されていないことを確かめる。
  * プラットフォーム側の ID は、すべてのタレントを通して一意。
  */
-async function assertNotLinked(
+const assertNotLinked = async (
   definition: AccountTableDefinition,
   supabaseClient: TypedSupabaseClient,
   remoteId: string,
   talentId: string | undefined
-): Promise<void> {
+): Promise<void> => {
   const { data: linked, error } = await accountsTable(
     supabaseClient,
     definition
@@ -344,7 +341,7 @@ async function assertNotLinked(
       { field: definition.field }
     );
   }
-}
+};
 
 /**
  * 入力を解釈し、API でアカウントを解決して、まだ登録されていないことを確かめる。
@@ -357,10 +354,10 @@ async function assertNotLinked(
  *
  * @throws {ActionError} API を呼べない、アカウントが見つからない、登録済み
  */
-export async function resolveAccount<P extends AccountPlatform>(
+export const resolveAccount = async <P extends AccountPlatform>(
   platform: P,
   { input, supabaseClient, talentId }: ResolveAccountOptions
-): Promise<ResolvedAccount<P>> {
+): Promise<ResolvedAccount<P>> => {
   const definition: AccountDefinition<P> = ACCOUNT_DEFINITIONS[platform];
   const { field, messages } = definition;
 
@@ -396,7 +393,7 @@ export async function resolveAccount<P extends AccountPlatform>(
   await assertNotLinked(definition, supabaseClient, remote.id, talentId);
 
   return { platform, remote };
-}
+};
 
 /**
  * タレントにアカウントを結び付ける。
@@ -407,10 +404,10 @@ export async function resolveAccount<P extends AccountPlatform>(
  * @throws {ActionError} 画面に見せてよい理由で結び付けられないとき（`resolveAccount` を参照）。
  * それ以外の失敗（データベースのエラーなど）は、そのままの例外を投げる
  */
-export async function linkAccount<P extends AccountPlatform>(
+export const linkAccount = async <P extends AccountPlatform>(
   platform: P,
   { input, supabaseClient, talentId }: LinkAccountOptions<P>
-): Promise<void> {
+): Promise<void> => {
   if (!talentId) {
     throw new ActionError("タレントIDが指定されていません。");
   }
@@ -443,7 +440,7 @@ export async function linkAccount<P extends AccountPlatform>(
   await touchTalent(supabaseClient, talentId);
   await definition.recordLink(supabaseClient, talentId, account);
   await revalidateTalent(talentId);
-}
+};
 
 /**
  * タレントからアカウントを外す（行を削除する）。
@@ -453,10 +450,10 @@ export async function linkAccount<P extends AccountPlatform>(
  * @throws {ActionError} ID が空のとき、アカウントが見つからないとき。
  * それ以外の失敗（データベースのエラーなど）は、そのままの例外を投げる
  */
-export async function unlinkAccount<P extends AccountPlatform>(
+export const unlinkAccount = async <P extends AccountPlatform>(
   platform: P,
   { accountId, supabaseClient, talentId }: UnlinkAccountOptions
-): Promise<void> {
+): Promise<void> => {
   const definition: AccountDefinition<P> = ACCOUNT_DEFINITIONS[platform];
   const { messages } = definition;
 
@@ -500,4 +497,4 @@ export async function unlinkAccount<P extends AccountPlatform>(
   await touchTalent(supabaseClient, talentId);
   await definition.recordUnlink(supabaseClient, talentId, account);
   await revalidateTalent(talentId);
-}
+};

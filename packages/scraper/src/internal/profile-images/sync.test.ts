@@ -34,11 +34,11 @@ describe(syncProfileImage, () => {
   });
 
   /** A database in which the owner exists and every write succeeds. */
-  function respondWithOwner(): void {
+  const respondWithOwner = (): void => {
     supabase.respond(({ method, table }) =>
       method === "PATCH" && table !== "profile_images" ? [{ id: "owner" }] : []
     );
-  }
+  };
 
   it("does nothing when there is no icon on either side", async () => {
     respondWithOwner();

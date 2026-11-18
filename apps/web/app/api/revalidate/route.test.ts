@@ -32,15 +32,14 @@ import type { ServerEnv } from "@/lib/env";
 
 import { POST } from "./route";
 
-function post(body: string, headers: HeadersInit = {}): Promise<Response> {
-  return POST(
+const post = (body: string, headers: HeadersInit = {}): Promise<Response> =>
+  POST(
     new Request("https://shinju.date/api/revalidate", {
       body,
       headers: { "Content-Type": "application/json", ...headers },
       method: "POST",
     })
   );
-}
 
 describe("POST /api/revalidate", () => {
   beforeEach(() => {

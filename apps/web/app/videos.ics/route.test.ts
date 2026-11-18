@@ -82,21 +82,18 @@ const shortB = createVideoOnYouTube(channelB, {
   video_kind: "short",
 });
 
-function get(search = ""): Promise<Response> {
-  return GET(new NextRequest(`https://shinju.date/videos.ics${search}`));
-}
+const get = (search = ""): Promise<Response> =>
+  GET(new NextRequest(`https://shinju.date/videos.ics${search}`));
 
 /** The IDs of the videos of the events of a calendar, in its order */
-async function eventIds(response: Response): Promise<string[]> {
-  return [...(await response.text()).matchAll(/^UID:(.+)@shinju\.date/gm)].map(
+const eventIds = async (response: Response): Promise<string[]> =>
+  [...(await response.text()).matchAll(/^UID:(.+)@shinju\.date/gm)].map(
     ([, id]) => id ?? ""
   );
-}
 
 /** The IDs of the events of the given videos, in any order */
-function videoIds(...rows: { video: { id: string } }[]): string[] {
-  return rows.map(({ video }) => video.id);
-}
+const videoIds = (...rows: { video: { id: string } }[]): string[] =>
+  rows.map(({ video }) => video.id);
 
 describe("GET /videos.ics", () => {
   beforeEach(async () => {

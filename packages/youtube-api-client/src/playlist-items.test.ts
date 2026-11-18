@@ -26,7 +26,7 @@ describe(isFilteredYouTubePlaylistItem, () => {
 });
 
 describe(getPlaylistItemsPage, () => {
-  function createClient(data: youtube.Schema$PlaylistItemListResponse) {
+  const createClient = (data: youtube.Schema$PlaylistItemListResponse) => {
     const list = vi.fn<
       () => Promise<{ data: youtube.Schema$PlaylistItemListResponse }>
     >(async () => ({ data }));
@@ -35,7 +35,7 @@ describe(getPlaylistItemsPage, () => {
       client: { playlistItems: { list } } as unknown as youtube.Youtube,
       list,
     };
-  }
+  };
 
   it("returns one page with the token of the next", async () => {
     const { client, list } = createClient({
@@ -86,7 +86,7 @@ describe(getPlaylistItemsPage, () => {
 });
 
 describe(getPlaylistItems, () => {
-  function createClient(pages: youtube.Schema$PlaylistItemListResponse[]) {
+  const createClient = (pages: youtube.Schema$PlaylistItemListResponse[]) => {
     const list = vi.fn<
       (params: {
         pageToken?: string;
@@ -105,7 +105,7 @@ describe(getPlaylistItems, () => {
       client: { playlistItems: { list } } as unknown as youtube.Youtube,
       list,
     };
-  }
+  };
 
   it("gets only the first page by default", async () => {
     const { client, list } = createClient([

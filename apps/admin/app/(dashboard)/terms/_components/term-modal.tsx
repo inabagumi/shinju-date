@@ -12,18 +12,16 @@ import { SortableInputListFallback } from "./sortable-input-list-fallback";
 
 // dnd-kit は入力欄を並べ替えるときにしか使わないため、一覧の初期ロードに
 // 含めず、モーダルを開く操作に入ったときに読み込む
-function loadSortableInputList() {
-  return import("./sortable-input-list");
-}
+const loadSortableInputList = () => import("./sortable-input-list");
 
 const SortableInputList = lazy(() =>
   loadSortableInputList().then((mod) => ({ default: mod.SortableInputList }))
 );
 
-function preloadSortableInputList() {
+const preloadSortableInputList = () => {
   // 読み込みに失敗しても、モーダルを開いたときに React.lazy がもう一度読み込む
   loadSortableInputList().catch(() => undefined);
-}
+};
 
 interface Term {
   id: string;
@@ -36,7 +34,7 @@ interface TermModalProps {
   term?: Term;
 }
 
-export function TermModal({ term }: TermModalProps) {
+export const TermModal = ({ term }: TermModalProps) => {
   const isEditing = !!term;
 
   return (
@@ -118,4 +116,4 @@ export function TermModal({ term }: TermModalProps) {
       </FormField>
     </FormDialog>
   );
-}
+};

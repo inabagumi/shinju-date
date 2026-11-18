@@ -15,15 +15,18 @@ interface Progress {
 
 const INTERVAL_MS = 5000;
 
-function createProgress(overrides: Partial<Progress> = {}): Progress {
-  return { active: false, added: 0, success: true, ...overrides };
-}
+const createProgress = (overrides: Partial<Progress> = {}): Progress => ({
+  active: false,
+  added: 0,
+  success: true,
+  ...overrides,
+});
 
-function renderPolledResource(
+const renderPolledResource = (
   initialData: Progress,
   fetcher: () => Promise<Progress | PolledResourceFailure>
-) {
-  return renderHook(() =>
+) =>
+  renderHook(() =>
     usePolledResource({
       fetcher,
       initialData,
@@ -31,7 +34,6 @@ function renderPolledResource(
       isActive: (data) => data.active,
     })
   );
-}
 
 describe(usePolledResource, () => {
   beforeEach(() => {

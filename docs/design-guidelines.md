@@ -300,7 +300,7 @@ const menu = (
 | `StatTileSkeleton`（`apps/admin/components/stat-tile-skeleton.tsx`） | `StatTile` |
 
 ```tsx
-export function TalentsListSkeleton() {
+export const TalentsListSkeleton = () => {
   return (
     <TableSkeleton
       columns={[
@@ -315,7 +315,7 @@ export function TalentsListSkeleton() {
       ]}
     />
   );
-}
+};
 ```
 
 ### 動画カードのタイトル

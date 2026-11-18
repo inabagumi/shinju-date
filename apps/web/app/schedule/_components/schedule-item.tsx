@@ -25,7 +25,7 @@ import {
  * `TalentIcon` に渡すアカウント。動画の YouTube チャンネルか Twitch ユーザーの
  * アイコンを使う。
  */
-function getVideoAccounts(video: ScheduleVideo) {
+const getVideoAccounts = (video: ScheduleVideo) => {
   const youtubeChannel = video.youtube_video?.youtube_channel;
   const twitchUser = video.twitch_video?.twitch_user;
 
@@ -37,7 +37,7 @@ function getVideoAccounts(video: ScheduleVideo) {
       ? [{ profile_image: youtubeChannel.profile_image }]
       : [],
   };
-}
+};
 
 /**
  * 地と見分けられるよう枠を付ける。左の線だけはタレントのテーマカラーにする。
@@ -51,7 +51,7 @@ const ITEM_CLASS_NAME =
  * 1024px 以上で、長さ（分）ぶんの高さの項目に入るタイトルの行数。行の途中で
  * 切れないよう、入りきる行数だけ出す。0 のときはタイトルを出さない
  */
-export function getTitleLines(lengthMinutes: number): number {
+export const getTitleLines = (lengthMinutes: number): number => {
   const hourHeight = HOUR_HEIGHT_REM * ROOT_FONT_SIZE;
   const height = (hourHeight * lengthMinutes) / 60;
 
@@ -59,7 +59,7 @@ export function getTitleLines(lengthMinutes: number): number {
     0,
     Math.floor((height - ITEM_CHROME_HEIGHT) / TITLE_LINE_HEIGHT)
   );
-}
+};
 
 interface ScheduleItemProps {
   /**
@@ -190,16 +190,14 @@ export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
   );
 }
 
-export function ScheduleItemSkeleton() {
-  return (
-    <div
-      aria-hidden="true"
-      className={twMerge(ITEM_CLASS_NAME, "space-y-1.5 border-l-border")}
-      data-testid="schedule-item-skeleton"
-    >
-      <span className="block h-4 w-10 animate-pulse rounded-control bg-muted" />
-      <span className="block h-3 w-20 animate-pulse rounded-control bg-muted" />
-      <span className="block h-4 w-full animate-pulse rounded-control bg-muted" />
-    </div>
-  );
-}
+export const ScheduleItemSkeleton = () => (
+  <div
+    aria-hidden="true"
+    className={twMerge(ITEM_CLASS_NAME, "space-y-1.5 border-l-border")}
+    data-testid="schedule-item-skeleton"
+  >
+    <span className="block h-4 w-10 animate-pulse rounded-control bg-muted" />
+    <span className="block h-3 w-20 animate-pulse rounded-control bg-muted" />
+    <span className="block h-4 w-full animate-pulse rounded-control bg-muted" />
+  </div>
+);

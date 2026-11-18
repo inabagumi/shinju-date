@@ -59,7 +59,7 @@ describe("Upstash Redis Handlers", () => {
       Temporal.Now.plainDateISO(TIME_ZONE).subtract({ days: 1 })
     )}`;
 
-    function toPairs(result: unknown[]): [unknown, unknown][] {
+    const toPairs = (result: unknown[]): [unknown, unknown][] => {
       const pairs: [unknown, unknown][] = [];
 
       for (let i = 0; i < result.length; i += 2) {
@@ -67,7 +67,7 @@ describe("Upstash Redis Handlers", () => {
       }
 
       return pairs;
-    }
+    };
 
     it("returns members with scores in ascending order with withScores", async () => {
       const result = await redis.zrange<unknown[]>(key, 0, -1, {
@@ -137,7 +137,7 @@ describe("Upstash Redis Handlers", () => {
       Temporal.Now.plainDateISO(TIME_ZONE).subtract({ days: 1 })
     );
 
-    async function getScores(key: string): Promise<Map<string, number>> {
+    const getScores = async (key: string): Promise<Map<string, number>> => {
       const result = await redis.zrange<(string | number)[]>(key, 0, -1, {
         withScores: true,
       });
@@ -148,7 +148,7 @@ describe("Upstash Redis Handlers", () => {
       }
 
       return scores;
-    }
+    };
 
     it("uses the IDs of the visible videos of the Supabase mock", async () => {
       const videoScores = await getScores(
@@ -271,7 +271,7 @@ describe("Upstash Redis Handlers", () => {
   });
 
   describe("commands of the backfill queue", () => {
-    async function send(command: unknown[]) {
+    const send = async (command: unknown[]) => {
       const response = await fetch("https://fake.upstash.test/", {
         body: JSON.stringify(command),
         headers: { "Content-Type": "application/json" },
@@ -281,7 +281,7 @@ describe("Upstash Redis Handlers", () => {
       const body = (await response.json()) as { result: unknown };
 
       return body.result;
-    }
+    };
 
     it("sets a key only when it is missing with NX", async () => {
       await expect(

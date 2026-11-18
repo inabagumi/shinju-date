@@ -175,11 +175,8 @@ describe(syncTwitchLive, () => {
 
   let removedImages: unknown[];
 
-  function deletedThumbnailIds(): (string | undefined)[] {
-    return supabase
-      .written("DELETE", "thumbnails")
-      .map(({ query }) => query["id"]);
-  }
+  const deletedThumbnailIds = (): (string | undefined)[] =>
+    supabase.written("DELETE", "thumbnails").map(({ query }) => query["id"]);
 
   beforeEach(() => {
     vi.clearAllMocks();

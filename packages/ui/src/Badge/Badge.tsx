@@ -29,11 +29,6 @@ const badgeVariants = cva(
 export type BadgeProps = ComponentPropsWithRef<"span"> &
   VariantProps<typeof badgeVariants>;
 
-export function Badge({ variant, className, ...props }: BadgeProps) {
-  return (
-    <span
-      className={twMerge(badgeVariants({ variant }), className)}
-      {...props}
-    />
-  );
-}
+export const Badge = ({ variant, className, ...props }: BadgeProps) => (
+  <span className={twMerge(badgeVariants({ variant }), className)} {...props} />
+);

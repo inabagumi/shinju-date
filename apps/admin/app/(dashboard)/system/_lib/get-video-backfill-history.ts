@@ -81,9 +81,9 @@ interface LatestFailure {
  * Loads the accounts whose latest backfill job failed, newest first. Accounts
  * that were deleted, or whose talent was deleted, are left out by the view.
  */
-export async function getLatestFailures(
+export const getLatestFailures = async (
   supabaseClient: TypedSupabaseClient
-): Promise<LatestFailure[]> {
+): Promise<LatestFailure[]> => {
   const { data, error } = await supabaseClient
     .from("video_backfill_latest_jobs")
     .select("account_id, platform, error, finished_at")
@@ -100,32 +100,31 @@ export async function getLatestFailures(
     finishedAt: row.finished_at,
     provider: row.platform,
   }));
-}
+};
 
 /**
  * Pairs the latest failures with the accounts they belong to, dropping the
  * ones whose account cannot be found.
  */
-export function toFailedAccounts(
+export const toFailedAccounts = (
   failures: readonly LatestFailure[],
   accounts: ReadonlyMap<string, BackfillAccount>
-): (LatestFailure & BackfillAccount)[] {
-  return failures.flatMap((failure) => {
+): (LatestFailure & BackfillAccount)[] =>
+  failures.flatMap((failure) => {
     const account = accounts.get(
       getBackfillJobId(failure.provider, failure.accountId)
     );
 
     return account ? [{ ...failure, ...account }] : [];
   });
-}
 
 /**
  * Looks up the emails of the admin users who requested jobs. A user that
  * cannot be looked up is left out, so the history still loads.
  */
-async function getRequesterEmails(
+const getRequesterEmails = async (
   ids: readonly string[]
-): Promise<Map<string, string>> {
+): Promise<Map<string, string>> => {
   const emails = new Map<string, string>();
 
   await Promise.all(
@@ -147,7 +146,7 @@ async function getRequesterEmails(
   );
 
   return emails;
-}
+};
 
 /**
  * 終了した過去動画の取り込み（バックフィル）の履歴と、最後の取り込みが失敗したアカウントを返す。
@@ -160,9 +159,9 @@ async function getRequesterEmails(
  * 再試行中かどうかの判定に今の時刻（`Temporal.Now`）を使うので、Server Component
  * からはキャッシュする `getVideoBackfillHistory` を通して呼ぶ
  */
-export async function readVideoBackfillHistory(
+export const readVideoBackfillHistory = async (
   supabaseClient: TypedSupabaseClient
-): Promise<VideoBackfillHistory> {
+): Promise<VideoBackfillHistory> => {
   const [history, latestFailures, { all }] = await Promise.all([
     supabaseClient
       .from("video_backfill_jobs")
@@ -233,18 +232,19 @@ export async function readVideoBackfillHistory(
     })),
     success: true,
   };
-}
+};
 
 /**
  * 終了した過去動画の取り込みの履歴と、最後の取り込みが失敗したアカウントを返す。
  * 再試行の状況は刻々と変わるので、`seconds` でキャッシュする
  */
-export async function getVideoBackfillHistory(): Promise<VideoBackfillHistory> {
-  "use cache: private";
+export const getVideoBackfillHistory =
+  async (): Promise<VideoBackfillHistory> => {
+    "use cache: private";
 
-  cacheLife("seconds");
+    cacheLife("seconds");
 
-  const supabaseClient = await createSupabaseServerClient();
+    const supabaseClient = await createSupabaseServerClient();
 
-  return readVideoBackfillHistory(supabaseClient);
-}
+    return readVideoBackfillHistory(supabaseClient);
+  };

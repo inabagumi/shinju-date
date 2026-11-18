@@ -38,6 +38,6 @@ const defaults = {
  * })
  * ```
  */
-export function definePackageConfig(options: PackageConfigOptions): UserConfig {
-  return defineConfig({ ...defaults, ...options });
-}
+export const definePackageConfig = (
+  options: PackageConfigOptions
+): UserConfig => defineConfig({ ...defaults, ...options });

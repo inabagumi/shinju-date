@@ -25,9 +25,8 @@ const TWITCH_INPUT_REQUIRED =
   "Twitchのログイン名、ユーザーID、またはURLを入力してください。";
 
 /** 検証のエラーを、項目ごとの文にまとめる */
-function issuesByPath(error: z.ZodError | undefined) {
-  return error?.issues.map(({ message, path }) => [path.join("."), message]);
-}
+const issuesByPath = (error: z.ZodError | undefined) =>
+  error?.issues.map(({ message, path }) => [path.join("."), message]);
 
 describe("talentNameSchema.parse", () => {
   it("should accept a name without the surrounding spaces", () => {

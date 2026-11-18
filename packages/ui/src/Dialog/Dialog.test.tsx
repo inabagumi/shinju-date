@@ -13,8 +13,8 @@ import {
   DialogTrigger,
 } from "./Dialog";
 
-function renderDialog() {
-  return render(
+const renderDialog = () =>
+  render(
     <>
       <button type="button">ダイアログの外</button>
       <Dialog>
@@ -33,7 +33,6 @@ function renderDialog() {
       </Dialog>
     </>
   );
-}
 
 describe("<Dialog>", () => {
   it("opens with the trigger", async () => {

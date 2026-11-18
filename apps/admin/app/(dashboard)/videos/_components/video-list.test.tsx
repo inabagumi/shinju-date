@@ -29,9 +29,9 @@ interface WrapperProps {
   children: ReactNode;
 }
 
-function Wrapper({ children }: WrapperProps) {
-  return <ActionToastProvider>{children}</ActionToastProvider>;
-}
+const Wrapper = ({ children }: WrapperProps) => (
+  <ActionToastProvider>{children}</ActionToastProvider>
+);
 
 const DEFAULT_SORT: VideoSort = { field: "updated_at", order: "desc" };
 
@@ -42,34 +42,32 @@ interface TestVideoListProps {
 }
 
 /** 既定の並べ替えで、絞り込みのない一覧を描く */
-function TestVideoList({
+const TestVideoList = ({
   videos,
   sort = DEFAULT_SORT,
   searchParams = "",
-}: TestVideoListProps) {
-  return <VideoList searchParams={searchParams} sort={sort} videos={videos} />;
-}
+}: TestVideoListProps) => (
+  <VideoList searchParams={searchParams} sort={sort} videos={videos} />
+);
 
-function createVideo(overrides: Partial<Video> = {}): Video {
-  return {
-    clicks: 0,
-    deleted_at: null,
-    duration: "PT1H2M3S",
-    id: "00000000-0000-4000-8000-000000000001",
-    platform: "youtube",
-    published_at: "2025-01-01T00:00:00Z",
-    status: "ENDED",
-    talent: { id: "00000000-0000-4000-8000-000000000002", name: "Talent A" },
-    thumbnail: null,
-    title: "Test Video",
-    twitch_video: null,
-    updated_at: "2025-01-02T00:00:00Z",
-    video_kind: "standard",
-    visible: true,
-    youtube_video: { youtube_video_id: "abcdefghijk" },
-    ...overrides,
-  };
-}
+const createVideo = (overrides: Partial<Video> = {}): Video => ({
+  clicks: 0,
+  deleted_at: null,
+  duration: "PT1H2M3S",
+  id: "00000000-0000-4000-8000-000000000001",
+  platform: "youtube",
+  published_at: "2025-01-01T00:00:00Z",
+  status: "ENDED",
+  talent: { id: "00000000-0000-4000-8000-000000000002", name: "Talent A" },
+  thumbnail: null,
+  title: "Test Video",
+  twitch_video: null,
+  updated_at: "2025-01-02T00:00:00Z",
+  video_kind: "standard",
+  visible: true,
+  youtube_video: { youtube_video_id: "abcdefghijk" },
+  ...overrides,
+});
 
 describe(VideoList, () => {
   it("renders the talent name", () => {
@@ -128,21 +126,21 @@ describe(VideoList, () => {
       vi.clearAllMocks();
     });
 
-    function renderWithToast() {
+    const renderWithToast = () => {
       render(
         <ActionToastProvider>
           <TestVideoList videos={[createVideo()]} />
         </ActionToastProvider>
       );
-    }
+    };
 
-    function toggleSelectedVideos() {
+    const toggleSelectedVideos = () => {
       fireEvent.click(screen.getByLabelText("「Test Video」を選択"));
       fireEvent.click(
         screen.getByRole("button", { name: "表示/非表示を切り替え" })
       );
       fireEvent.click(screen.getByRole("button", { name: "切り替える" }));
-    }
+    };
 
     it("shows a success toast and clears the selection", async () => {
       vi.mocked(toggleVisibilityAction).mockResolvedValue({
@@ -203,16 +201,16 @@ describe(VideoList, () => {
       title: "Deleted Video",
     });
 
-    function select(title: string) {
+    const select = (title: string) => {
       fireEvent.click(screen.getByLabelText(`「${title}」を選択`));
-    }
+    };
 
-    function confirmDelete() {
+    const confirmDelete = () => {
       fireEvent.change(screen.getByLabelText(/「DELETE」と入力してください/), {
         target: { value: "DELETE" },
       });
       fireEvent.click(screen.getByRole("button", { name: "削除する" }));
-    }
+    };
 
     beforeEach(() => {
       vi.clearAllMocks();
@@ -220,7 +218,7 @@ describe(VideoList, () => {
       vi.mocked(restoreAction).mockResolvedValue({ success: true });
     });
 
-    function selectAcrossLists() {
+    const selectAcrossLists = () => {
       const { rerender } = render(<TestVideoList videos={[videoA, videoB]} />, {
         wrapper: Wrapper,
       });
@@ -232,7 +230,7 @@ describe(VideoList, () => {
           rerender(<TestVideoList videos={[videoC]} />);
         },
       };
-    }
+    };
 
     it("drops the selection that is no longer in the list", () => {
       const { moveToNextList } = selectAcrossLists();
@@ -337,9 +335,8 @@ describe(VideoList, () => {
   });
 
   describe("sorting", () => {
-    function getDateHeader() {
-      return screen.getByRole("columnheader", { name: /公開日時/ });
-    }
+    const getDateHeader = () =>
+      screen.getByRole("columnheader", { name: /公開日時/ });
 
     it("links to the reversed order for the current field", () => {
       render(<TestVideoList searchParams="sortOrder=desc" videos={[]} />, {
@@ -386,12 +383,12 @@ describe(VideoList, () => {
     });
 
     // メニューはポインターを押したときかキーで開くため、Enter で開く
-    function openMenu() {
+    const openMenu = () => {
       fireEvent.keyDown(
         screen.getByRole("button", { name: "アクションメニュー" }),
         { key: "Enter" }
       );
-    }
+    };
 
     it("links to the video on the platform", () => {
       render(<TestVideoList videos={[createVideo()]} />, { wrapper: Wrapper });

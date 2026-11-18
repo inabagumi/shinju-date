@@ -39,14 +39,14 @@ interface RpcCall {
  * `rpc()` records the call and resolves with `onRpc()` (by default, every ID
  * passed in, as if the function updated them all).
  */
-function createClientMock(options: {
+const createClientMock = (options: {
   onSelectVideos: () => QueryResult;
   onRpc?: (call: RpcCall) => QueryResult | undefined;
-}) {
+}) => {
   const calls: MockCall[] = [];
   const rpcCalls: RpcCall[] = [];
 
-  function createQuery(table: string) {
+  const createQuery = (table: string) => {
     // Deferred thenable: resolve only when awaited so the chain is recorded
     // first.
     const thenable = {
@@ -78,7 +78,7 @@ function createClientMock(options: {
     });
 
     return thenable;
-  }
+  };
 
   const from =
     vi.fn<(table: string) => ReturnType<typeof createQuery>>(createQuery);
@@ -93,7 +93,7 @@ function createClientMock(options: {
   });
 
   return { calls, client: { from, rpc }, rpcCalls };
-}
+};
 
 describe(cascadeVideosFromTalents, () => {
   beforeEach(() => {

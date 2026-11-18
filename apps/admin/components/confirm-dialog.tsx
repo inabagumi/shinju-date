@@ -100,19 +100,16 @@ export type ConfirmDialogProps =
   | ControlledConfirmDialogProps
   | UncontrolledConfirmDialogProps;
 
-function isPromiseLike<T>(value: unknown): value is PromiseLike<T> {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    typeof (value as PromiseLike<T>).then === "function"
-  );
-}
+const isPromiseLike = <T,>(value: unknown): value is PromiseLike<T> =>
+  typeof value === "object" &&
+  value !== null &&
+  typeof (value as PromiseLike<T>).then === "function";
 
 /**
  * ブラウザ標準の `confirm()` の代わりに使う確認ダイアログ。
  * キャンセルした場合は `onConfirm` を呼ばずに閉じる。
  */
-export function ConfirmDialog({
+export const ConfirmDialog = ({
   open: controlledOpen,
   onOpenChange,
   trigger,
@@ -125,7 +122,7 @@ export function ConfirmDialog({
   requireKeyword,
   size = "md",
   onConfirm,
-}: ConfirmDialogProps) {
+}: ConfirmDialogProps) => {
   const keywordInputId = useId();
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -280,4 +277,4 @@ export function ConfirmDialog({
       </DialogPortal>
     </Dialog>
   );
-}
+};

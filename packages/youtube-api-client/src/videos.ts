@@ -21,21 +21,18 @@ interface GetVideoIdsOptions extends ClientOptions, BatchOptions {
  * `contentDetails` is not checked: the requests ask for that part, so YouTube
  * returns it with every video.
  */
-export function isFilteredYouTubeVideo(
+export const isFilteredYouTubeVideo = (
   video: youtube.Schema$Video
-): video is FilteredYouTubeVideo {
-  return (
-    typeof video.id === "string" &&
-    typeof video.snippet?.publishedAt === "string"
-  );
-}
+): video is FilteredYouTubeVideo =>
+  typeof video.id === "string" &&
+  typeof video.snippet?.publishedAt === "string";
 
 /**
  * Gets YouTube videos by their IDs
  * @param options - The options for getting videos
  * @yields YouTube video objects
  */
-export async function* getVideos({
+export const getVideos = async function* getVideos({
   client = getYouTubeClient(),
   ids,
   schedule,
@@ -51,7 +48,7 @@ export async function* getVideos({
 
     return (items ?? []).filter(isFilteredYouTubeVideo);
   });
-}
+};
 
 /**
  * Gets the IDs of the videos that still exist on YouTube.
@@ -60,7 +57,7 @@ export async function* getVideos({
  * @param options - The options for getting video IDs
  * @yields IDs of the videos YouTube returned
  */
-export async function* getVideoIds({
+export const getVideoIds = async function* getVideoIds({
   client = getYouTubeClient(),
   ids,
   schedule,
@@ -78,4 +75,4 @@ export async function* getVideoIds({
       typeof item.id === "string" ? [item.id] : []
     );
   });
-}
+};

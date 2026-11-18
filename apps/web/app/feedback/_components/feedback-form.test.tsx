@@ -14,17 +14,16 @@ vi.mock(import("../_lib/actions"), () => ({ submitFeedback }));
 
 import { FeedbackForm } from "./feedback-form";
 
-function getMessageTextarea() {
-  return screen.getByLabelText(/機能要望/) as HTMLTextAreaElement;
-}
+const getMessageTextarea = () =>
+  screen.getByLabelText(/機能要望/) as HTMLTextAreaElement;
 
-async function submitMessage(container: HTMLElement, message: string) {
+const submitMessage = async (container: HTMLElement, message: string) => {
   fireEvent.change(getMessageTextarea(), { target: { value: message } });
 
   await act(async () => {
     fireEvent.submit(container.querySelector("form") as HTMLFormElement);
   });
-}
+};
 
 describe(FeedbackForm, () => {
   beforeEach(() => {

@@ -12,7 +12,7 @@ import {
 } from "./jobs";
 
 /** The `maxDuration` the route of `path` exports, read from its source. */
-async function readMaxDuration(path: string): Promise<number | undefined> {
+const readMaxDuration = async (path: string): Promise<number | undefined> => {
   const { pathname } = new URL(path, "http://localhost");
   const source = await readFile(
     new URL(`../app${pathname}/route.ts`, import.meta.url),
@@ -21,16 +21,16 @@ async function readMaxDuration(path: string): Promise<number | undefined> {
   const value = source.match(/^export const maxDuration = (\d+);$/m)?.[1];
 
   return value === undefined ? undefined : Number(value);
-}
+};
 
 /** Compares query strings regardless of parameter order. */
-function normalize(path: string): string {
+const normalize = (path: string): string => {
   const url = new URL(path, "http://localhost");
 
   url.searchParams.sort();
 
   return `${url.pathname}${url.search}`;
-}
+};
 
 describe("jobs", () => {
   it("stay in sync with the schedules in vercel.json", () => {

@@ -13,25 +13,20 @@ const RECENT_VIDEO_TITLE = "奇跡のワンプレイ";
 const VIDEO_URL_PATTERN =
   /^https:\/\/(?:www\.youtube\.com\/watch\?v=|www\.twitch\.tv\/|clips\.twitch\.tv\/)./;
 
-function getSection(page: Page, name: string) {
-  return page.getByRole("main").getByRole("region", { exact: true, name });
-}
+const getSection = (page: Page, name: string) =>
+  page.getByRole("main").getByRole("region", { exact: true, name });
 
 /**
  * Video cards are links that contain the heading of the video title. The
  * locator in `has` is matched inside each link, so it starts from the page.
  */
-function getVideoCards(scope: Locator) {
-  return scope
-    .getByRole("link")
-    .filter({ has: scope.page().getByRole("heading") });
-}
+const getVideoCards = (scope: Locator) =>
+  scope.getByRole("link").filter({ has: scope.page().getByRole("heading") });
 
-function getVideoCard(scope: Locator, title: string) {
-  return scope.getByRole("link").filter({
+const getVideoCard = (scope: Locator, title: string) =>
+  scope.getByRole("link").filter({
     has: scope.page().getByRole("heading", { exact: true, name: title }),
   });
-}
 
 test.describe("Home page", () => {
   test("should show the title and the navigation", async ({ page }) => {

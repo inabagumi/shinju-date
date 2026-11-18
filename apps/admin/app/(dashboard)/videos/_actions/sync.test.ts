@@ -34,13 +34,13 @@ vi.spyOn(Temporal.Now, "instant").mockReturnValue(now);
 
 const videoId = "30000000-0000-0000-0000-000000000101";
 
-function saveVideo(platform: "twitch" | "youtube" = "youtube") {
+const saveVideo = (platform: "twitch" | "youtube" = "youtube") => {
   supabase.on("select", "videos", [{ platform, title: "Saved Title" }]);
-}
+};
 
-function refreshTo(result: RefreshVideoResult) {
+const refreshTo = (result: RefreshVideoResult) => {
   scraper.refreshVideo.mockResolvedValue(result);
-}
+};
 
 const revalidated = {
   paths: [`/videos/${videoId}`, "/videos"],

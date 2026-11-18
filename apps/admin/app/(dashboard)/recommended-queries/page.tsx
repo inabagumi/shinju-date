@@ -11,9 +11,9 @@ export const metadata: Metadata = {
   title: "おすすめクエリ管理",
 };
 
-async function QueriesListData({
+const QueriesListData = async ({
   searchParams,
-}: Pick<PageProps<"/recommended-queries">, "searchParams">) {
+}: Pick<PageProps<"/recommended-queries">, "searchParams">) => {
   const [{ manual, auto }, rawParams] = await Promise.all([
     getRecommendedQueries(),
     searchParams,
@@ -29,7 +29,7 @@ async function QueriesListData({
       search={search}
     />
   );
-}
+};
 
 export default function RecommendedQueriesPage({
   searchParams,

@@ -11,9 +11,9 @@ interface TalentLifecycleActionsProps {
   talent: Talent;
 }
 
-export function TalentLifecycleActions({
+export const TalentLifecycleActions = ({
   talent,
-}: TalentLifecycleActionsProps) {
+}: TalentLifecycleActionsProps) => {
   const isDeleted = talent.deleted_at !== null;
   const isRetired = !isDeleted && talent.status === "retired";
   const isActive = !isDeleted && talent.status === "active";
@@ -51,4 +51,4 @@ export function TalentLifecycleActions({
       />
     </div>
   );
-}
+};

@@ -14,7 +14,7 @@ const STATUS_LABELS: Record<TalentStatus, string> = {
   retired: "引退",
 };
 
-function getBadgeVariant(talent: TalentStatusInfo): BadgeProps["variant"] {
+const getBadgeVariant = (talent: TalentStatusInfo): BadgeProps["variant"] => {
   if (talent.deleted_at) {
     return "danger";
   }
@@ -24,28 +24,26 @@ function getBadgeVariant(talent: TalentStatusInfo): BadgeProps["variant"] {
   }
 
   return "success";
-}
+};
 
-function getStatusText(talent: TalentStatusInfo): string {
+const getStatusText = (talent: TalentStatusInfo): string => {
   if (talent.deleted_at) {
     return "削除済み";
   }
 
   return STATUS_LABELS[talent.status] ?? talent.status;
-}
+};
 
 interface TalentStatusBadgeProps {
   talent: TalentStatusInfo;
   className?: string;
 }
 
-export function TalentStatusBadge({
+export const TalentStatusBadge = ({
   talent,
   className,
-}: TalentStatusBadgeProps) {
-  return (
-    <Badge className={className} variant={getBadgeVariant(talent)}>
-      {getStatusText(talent)}
-    </Badge>
-  );
-}
+}: TalentStatusBadgeProps) => (
+  <Badge className={className} variant={getBadgeVariant(talent)}>
+    {getStatusText(talent)}
+  </Badge>
+);

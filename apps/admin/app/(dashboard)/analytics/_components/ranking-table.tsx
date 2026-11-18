@@ -28,11 +28,11 @@ interface RankingTableProps {
 }
 
 /** 順位・名前・回数を並べるランキングの表 */
-export function RankingTable({
+export const RankingTable = ({
   items,
   labelHeading,
   valueHeading = "回数",
-}: RankingTableProps) {
+}: RankingTableProps) => {
   if (items.length === 0) {
     return <EmptyState title="データがありません" />;
   }
@@ -63,28 +63,26 @@ export function RankingTable({
       </TableBody>
     </Table>
   );
-}
+};
 
 /** 読み込み中の `RankingTable`。順位・名前・回数の3列を並べる */
-export function RankingTableSkeleton() {
-  return (
-    <TableSkeleton
-      columns={[
-        {
-          align: "end",
-          cell: <Skeleton className="h-4 w-5" />,
-          className: "w-16",
-          id: "rank",
-        },
-        { cell: <Skeleton className="h-4 w-48" />, id: "label" },
-        {
-          align: "end",
-          cell: <Skeleton className="h-4 w-10" />,
-          className: "w-24",
-          id: "value",
-        },
-      ]}
-      rows={10}
-    />
-  );
-}
+export const RankingTableSkeleton = () => (
+  <TableSkeleton
+    columns={[
+      {
+        align: "end",
+        cell: <Skeleton className="h-4 w-5" />,
+        className: "w-16",
+        id: "rank",
+      },
+      { cell: <Skeleton className="h-4 w-48" />, id: "label" },
+      {
+        align: "end",
+        cell: <Skeleton className="h-4 w-10" />,
+        className: "w-24",
+        id: "value",
+      },
+    ]}
+    rows={10}
+  />
+);

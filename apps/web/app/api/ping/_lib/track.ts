@@ -14,7 +14,7 @@ type TrackProperties = {
   video_id: string;
 };
 
-function generateTrackProperties(video: Video): TrackProperties {
+const generateTrackProperties = (video: Video): TrackProperties => {
   const url = getVideoUrl(video);
 
   if (!url) {
@@ -29,7 +29,7 @@ function generateTrackProperties(video: Video): TrackProperties {
     url,
     video_id: video.id,
   };
-}
+};
 
 export default async function track(
   video: Video,

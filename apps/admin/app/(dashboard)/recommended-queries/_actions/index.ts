@@ -11,11 +11,11 @@ import { getRedisClient } from "@/lib/redis";
 
 import { recommendedQuerySchema } from "../_lib/schema";
 
-async function revalidateRecommendedQueries(): Promise<void> {
+const revalidateRecommendedQueries = async (): Promise<void> => {
   revalidatePath("/recommended-queries");
   revalidatePath("/", "page");
   await revalidateTags([CACHE_TAGS.RECOMMENDATION_QUERIES]);
-}
+};
 
 export const addQueryAction = adminAction(
   "addQueryAction",

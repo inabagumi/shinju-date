@@ -75,11 +75,11 @@ describe(syncTwitchUserIcon, () => {
     image = await createImage(300, 300);
   });
 
-  function respondWithUser(): void {
+  const respondWithUser = (): void => {
     supabase.respond(({ method, table }) =>
       method === "PATCH" && table === "twitch_users" ? [{ id: saved.id }] : []
     );
-  }
+  };
 
   it("stores the icon of a user that has none yet", async () => {
     const requests = serveImage(supabase, ICON_URL, {

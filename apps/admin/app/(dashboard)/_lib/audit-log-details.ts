@@ -19,18 +19,18 @@ const changeDetailsSchema = z.union([
 export type AuditLogChanges = z.infer<typeof changesSchema>;
 
 /** Returns the name of the record that the entry recorded, if any. */
-export function getEntityName(details: Log["details"]): string | null {
+export const getEntityName = (details: Log["details"]): string | null => {
   const result = entityRefSchema.safeParse(details);
 
   return result.success ? result.data.entityName : null;
-}
+};
 
 /**
  * Returns the values before and after the change that the entry recorded,
  * or `null` when the details hold no changes.
  */
-export function getChanges(details: Log["details"]): AuditLogChanges | null {
+export const getChanges = (details: Log["details"]): AuditLogChanges | null => {
   const result = changeDetailsSchema.safeParse(details);
 
   return result.success ? result.data : null;
-}
+};

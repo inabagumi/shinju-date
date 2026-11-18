@@ -27,9 +27,8 @@ interface IconCandidate {
   width: number;
 }
 
-function isHttpsUrl(value: string): boolean {
-  return URL.canParse(value) && new URL(value).protocol === "https:";
-}
+const isHttpsUrl = (value: string): boolean =>
+  URL.canParse(value) && new URL(value).protocol === "https:";
 
 /**
  * Picks the URL of a channel icon to store from `snippet.thumbnails`.
@@ -43,9 +42,9 @@ function isHttpsUrl(value: string): boolean {
  *
  * @returns `null` when the channel has no icon.
  */
-export function selectYouTubeChannelIconUrl(
+export const selectYouTubeChannelIconUrl = (
   thumbnails: youtube.Schema$ThumbnailDetails | null | undefined
-): string | null {
+): string | null => {
   const candidates: IconCandidate[] = THUMBNAIL_KEYS.flatMap((key) => {
     const thumbnail = thumbnails?.[key];
     const url = thumbnail?.url;
@@ -78,7 +77,7 @@ export function selectYouTubeChannelIconUrl(
   );
 
   return largest?.url ?? null;
-}
+};
 
 export type { SavedProfileImageRow };
 
@@ -114,13 +113,13 @@ export interface SyncYouTubeChannelIconOptions {
  * @throws When the icon cannot be downloaded, stored or assigned. The channel
  *   keeps its current icon then.
  */
-export function syncYouTubeChannelIcon({
+export const syncYouTubeChannelIcon = ({
   channel,
   now = Temporal.Now.instant(),
   saved,
   supabaseClient,
-}: SyncYouTubeChannelIconOptions): Promise<ProfileImageSyncResult> {
-  return syncProfileImage({
+}: SyncYouTubeChannelIconOptions): Promise<ProfileImageSyncResult> =>
+  syncProfileImage({
     now,
     owner: {
       id: saved.id,
@@ -131,4 +130,3 @@ export function syncYouTubeChannelIcon({
     sourceUrl: selectYouTubeChannelIconUrl(channel.snippet.thumbnails),
     supabaseClient,
   });
-}

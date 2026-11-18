@@ -63,19 +63,16 @@ interface AccountInputMessages {
  * アカウントの入力（ID、ハンドル、URL など）のスキーマを作る。
  * 前後の空白を除いた、空でない文字列で、`parse` が解釈できるものだけを通す。
  */
-function accountInputSchema(
+const accountInputSchema = (
   parse: (input: string) => unknown,
   { invalid, required }: AccountInputMessages
-) {
-  return (
-    z
-      .string({ message: required })
-      .trim()
-      // 空のときに、解釈できないことのエラーを重ねない
-      .min(1, { abort: true, message: required })
-      .refine((input) => parse(input) !== null, { message: invalid })
-  );
-}
+) =>
+  z
+    .string({ message: required })
+    .trim()
+    // 空のときに、解釈できないことのエラーを重ねない
+    .min(1, { abort: true, message: required })
+    .refine((input) => parse(input) !== null, { message: invalid });
 
 /**
  * YouTube のチャンネルの入力。チャンネル ID（UC...）、ハンドル（@name）、または URL。

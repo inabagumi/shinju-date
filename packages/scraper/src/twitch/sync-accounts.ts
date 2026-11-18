@@ -16,13 +16,12 @@ import type { TwitchFetcher } from "./fetcher.js";
  *
  * @returns The number of accounts updated.
  */
-export async function syncTwitchUsers(
+export const syncTwitchUsers = async (
   context: CrawlContext<TwitchFetcher>
-): Promise<number> {
-  return countUpdatedAccounts(
+): Promise<number> =>
+  countUpdatedAccounts(
     await syncAccountsWith(context, createTwitchAccounts(context.fetcher))
   );
-}
 
 /**
  * Brings the display name, login and icon of the Twitch accounts of one
@@ -33,11 +32,10 @@ export async function syncTwitchUsers(
  *   has none or was deleted.
  * @throws When the accounts cannot be loaded or Twitch cannot be read.
  */
-export function syncTwitchUsersOfTalent(
+export const syncTwitchUsersOfTalent = (
   context: CrawlContext<TwitchFetcher>,
   talentId: string
-): Promise<SyncAccountResult<TwitchUserFields>[]> {
-  return syncAccountsWith(context, createTwitchAccounts(context.fetcher), {
+): Promise<SyncAccountResult<TwitchUserFields>[]> =>
+  syncAccountsWith(context, createTwitchAccounts(context.fetcher), {
     talentId,
   });
-}

@@ -36,11 +36,10 @@ export class RedisError extends Error {
 }
 
 /** The error of a command on a key of another type. */
-export function wrongTypeError(): RedisError {
-  return new RedisError(
+export const wrongTypeError = (): RedisError =>
+  new RedisError(
     "WRONGTYPE Operation against a key holding the wrong kind of value"
   );
-}
 
 /**
  * The keys of the mock Redis. A key whose expiry time has passed is removed

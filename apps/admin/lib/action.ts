@@ -88,10 +88,10 @@ export class ActionError extends Error {
  * )
  * ```
  */
-export function parseActionInput<TSchema extends z.ZodType>(
+export const parseActionInput = <TSchema extends z.ZodType>(
   schema: TSchema,
   input: unknown
-): z.output<TSchema> {
+): z.output<TSchema> => {
   const result = schema.safeParse(input);
 
   if (!result.success) {
@@ -99,7 +99,7 @@ export function parseActionInput<TSchema extends z.ZodType>(
   }
 
   return result.data;
-}
+};
 
 /**
  * `{ success, error }` 形式を返す Server Action を作る。
@@ -131,14 +131,15 @@ export function parseActionInput<TSchema extends z.ZodType>(
  * )
  * ```
  */
-export function adminAction<TArgs extends unknown[], TData = void>(
-  name: string,
-  handler: (
-    context: AuthenticatedContext,
-    ...args: TArgs
-  ) => Promise<ActionResult<TData>>
-): (...args: TArgs) => Promise<ActionResult<TData>> {
-  return async (...args) => {
+export const adminAction =
+  <TArgs extends unknown[], TData = void>(
+    name: string,
+    handler: (
+      context: AuthenticatedContext,
+      ...args: TArgs
+    ) => Promise<ActionResult<TData>>
+  ): ((...args: TArgs) => Promise<ActionResult<TData>>) =>
+  async (...args) => {
     const auth = await requireAuthenticatedUser();
 
     if (!auth) {
@@ -163,7 +164,6 @@ export function adminAction<TArgs extends unknown[], TData = void>(
       return { error: ACTION_FAILED_ERROR_MESSAGE, success: false };
     }
   };
-}
 
 /**
  * `adminFormAction` のオプション。`hiddenFields` には、画面に入力欄がない項目
@@ -209,16 +209,17 @@ export type AdminFormActionOptions = ZodErrorToFormStateOptions;
  * )
  * ```
  */
-export function adminFormAction<TSchema extends z.ZodType>(
-  name: string,
-  schema: TSchema,
-  handler: (
-    context: AuthenticatedContext,
-    data: z.output<TSchema>
-  ) => Promise<FormState | undefined>,
-  options: AdminFormActionOptions = {}
-): (currentState: FormState, formData: FormData) => Promise<FormState> {
-  return async (_currentState, formData) => {
+export const adminFormAction =
+  <TSchema extends z.ZodType>(
+    name: string,
+    schema: TSchema,
+    handler: (
+      context: AuthenticatedContext,
+      data: z.output<TSchema>
+    ) => Promise<FormState | undefined>,
+    options: AdminFormActionOptions = {}
+  ): ((currentState: FormState, formData: FormData) => Promise<FormState>) =>
+  async (_currentState, formData) => {
     const auth = await requireAuthenticatedUser();
 
     if (!auth) {
@@ -248,4 +249,3 @@ export function adminFormAction<TSchema extends z.ZodType>(
       return { error: ACTION_FAILED_ERROR_MESSAGE };
     }
   };
-}

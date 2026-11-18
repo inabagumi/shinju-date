@@ -13,11 +13,11 @@ export const metadata: Metadata = {
   title: "お知らせ管理",
 };
 
-async function AnnouncementsListData() {
+const AnnouncementsListData = async () => {
   const announcements = await getAnnouncements();
 
   return <AnnouncementsList announcements={announcements} />;
-}
+};
 
 export default function AnnouncementsPage() {
   return (

@@ -22,19 +22,17 @@ vi.mock(import("@/lib/analytics/get-popular-videos"), () => ({
 
 const { DashboardPopularVideos } = await import("./dashboard-popular-videos");
 
-function popularVideo(
+const popularVideo = (
   video: Pick<
     PopularVideo,
     "id" | "platform" | "title" | "twitch_video" | "youtube_video"
   >
-): PopularVideo {
-  return {
-    clicks: 10,
-    status: "ENDED",
-    thumbnail: null,
-    ...video,
-  };
-}
+): PopularVideo => ({
+  clicks: 10,
+  status: "ENDED",
+  thumbnail: null,
+  ...video,
+});
 
 describe("DashboardPopularVideos", () => {
   beforeEach(() => {

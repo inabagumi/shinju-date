@@ -42,7 +42,7 @@ vi.mock(import("botid/server"), () => ({
 
 import { submitContactForm } from "./actions";
 
-function createFormData(values: Record<string, string>): FormData {
+const createFormData = (values: Record<string, string>): FormData => {
   const formData = new FormData();
 
   for (const [key, value] of Object.entries(values)) {
@@ -50,7 +50,7 @@ function createFormData(values: Record<string, string>): FormData {
   }
 
   return formData;
-}
+};
 
 const SUBMITTED_VALUES = {
   email: "hanako@example.com",

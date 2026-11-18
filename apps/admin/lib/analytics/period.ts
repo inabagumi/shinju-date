@@ -25,9 +25,7 @@ export interface RankingQuery extends PeriodQuery {
 export const DEFAULT_RANKING_LIMIT = 20;
 
 /** 文字列の期間を、`Temporal.PlainDate` の期間に直す */
-export function toDateRange({ end, start }: Period): DateRange {
-  return {
-    end: Temporal.PlainDate.from(end),
-    start: Temporal.PlainDate.from(start),
-  };
-}
+export const toDateRange = ({ end, start }: Period): DateRange => ({
+  end: Temporal.PlainDate.from(end),
+  start: Temporal.PlainDate.from(start),
+});

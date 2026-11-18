@@ -5,9 +5,9 @@ vi.mock(import("@/lib/data/talents"), () => ({}));
 
 import { StreamTendency } from "./talent-stream-tendency";
 
-function createCounts(
+const createCounts = (
   cells: [weekday: number, hour: number, count: number][] = []
-): number[][] {
+): number[][] => {
   const counts = Array.from({ length: 7 }, () =>
     Array.from({ length: 24 }, () => 0)
   );
@@ -21,7 +21,7 @@ function createCounts(
   }
 
   return counts;
-}
+};
 
 // 12 streams: 8 on Saturday at 21, 3 on Friday at 22 and 1 on Monday at 0
 const COUNTS = createCounts([

@@ -14,13 +14,13 @@ vi.mock(import("@sentry/nextjs"), () => ({
 
 let shouldThrow = true;
 
-function FlakyWidget() {
+const FlakyWidget = () => {
   if (shouldThrow) {
     throw new Error("failed to load");
   }
 
   return <p>loaded</p>;
-}
+};
 
 describe("<WidgetErrorBoundary>", () => {
   beforeEach(() => {

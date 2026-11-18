@@ -44,9 +44,9 @@ interface DialogState {
  * ダイアログは、返した `dialogProps` を `VideoActionConfirmDialog` に渡して1つだけ
  * 描く。
  */
-export function useVideoAction({
+export const useVideoAction = ({
   onSuccess,
-}: UseVideoActionOptions = {}): UseVideoActionReturn {
+}: UseVideoActionOptions = {}): UseVideoActionReturn => {
   // 閉じる途中も文言が変わらないよう、操作の種類と対象は閉じても残す
   const [dialog, setDialog] = useState<DialogState>({
     action: "toggle",
@@ -87,4 +87,4 @@ export function useVideoAction({
     },
     openDialog,
   };
-}
+};

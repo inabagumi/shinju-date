@@ -28,26 +28,22 @@ interface Term {
 }
 
 /** 頭文字のグループの行の ID。索引のリンク先にする */
-function getGroupId(group: string): string {
-  return `group-${group}`;
-}
+const getGroupId = (group: string): string => `group-${group}`;
 
 /**
  * 用語の一覧の上に並べる、検索ボックスと追加のボタン。データを待たずに出せるため、
  * 一覧の Suspense の外に置く
  */
-export function TermsToolbar() {
-  return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <SearchInput
-        aria-label="用語を検索"
-        className="sm:max-w-md"
-        placeholder="用語、読み方、類義語で検索..."
-      />
-      <TermModal />
-    </div>
-  );
-}
+export const TermsToolbar = () => (
+  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <SearchInput
+      aria-label="用語を検索"
+      className="sm:max-w-md"
+      placeholder="用語、読み方、類義語で検索..."
+    />
+    <TermModal />
+  </div>
+);
 
 interface TermsListProps {
   /** 検索と頭文字のグループ分けを済ませた用語 */
@@ -60,7 +56,7 @@ interface TermsListProps {
  * 頭文字の索引と、頭文字ごとにまとめた用語の表。サーバーで描き、編集のモーダルと
  * 削除のボタンだけをクライアントの部品に任せる
  */
-export function TermsList({ groups, search }: TermsListProps) {
+export const TermsList = ({ groups, search }: TermsListProps) => {
   if (groups.length === 0) {
     return (
       <EmptyState
@@ -139,35 +135,33 @@ export function TermsList({ groups, search }: TermsListProps) {
       </Table>
     </div>
   );
-}
+};
 
 /** 読み込み中の `TermsList`。頭文字の索引と、4列の表を並べる */
-export function TermsListSkeleton() {
-  return (
-    <TableSkeleton
-      columns={[
-        { cell: <Skeleton className="h-4 w-24" />, id: "term" },
-        { cell: <Skeleton className="h-4 w-32" />, id: "readings" },
-        { cell: <Skeleton className="h-4 w-40" />, id: "synonyms" },
-        {
-          align: "end",
-          cell: (
-            <div className="flex gap-4">
-              <Skeleton className="h-7 w-14" />
-              <Skeleton className="h-7 w-14" />
-            </div>
-          ),
-          id: "actions",
-        },
-      ]}
-      filterBar={
-        <div className="mb-4 flex min-h-8 flex-wrap gap-1">
-          {range(8).map((item) => (
-            <Skeleton className="h-8 w-9" key={`term-index-skeleton-${item}`} />
-          ))}
-        </div>
-      }
-      rows={6}
-    />
-  );
-}
+export const TermsListSkeleton = () => (
+  <TableSkeleton
+    columns={[
+      { cell: <Skeleton className="h-4 w-24" />, id: "term" },
+      { cell: <Skeleton className="h-4 w-32" />, id: "readings" },
+      { cell: <Skeleton className="h-4 w-40" />, id: "synonyms" },
+      {
+        align: "end",
+        cell: (
+          <div className="flex gap-4">
+            <Skeleton className="h-7 w-14" />
+            <Skeleton className="h-7 w-14" />
+          </div>
+        ),
+        id: "actions",
+      },
+    ]}
+    filterBar={
+      <div className="mb-4 flex min-h-8 flex-wrap gap-1">
+        {range(8).map((item) => (
+          <Skeleton className="h-8 w-9" key={`term-index-skeleton-${item}`} />
+        ))}
+      </div>
+    }
+    rows={6}
+  />
+);

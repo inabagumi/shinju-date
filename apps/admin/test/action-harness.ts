@@ -32,13 +32,13 @@ const mocks = vi.hoisted(() => ({
   state: { supabase: null as FakeSupabase | null },
 }));
 
-function currentClient() {
+const currentClient = () => {
   if (!mocks.state.supabase) {
     throw new Error("Call setupActionTest() before running a Server Action.");
   }
 
   return mocks.state.supabase.client;
-}
+};
 
 vi.mock("@/lib/auth", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/auth")>()),
@@ -84,21 +84,21 @@ interface RevalidationExpectation {
  * Before each test, the mocks are cleared and an administrator is signed in.
  * Call it once at the top level of the test file.
  */
-export function setupActionTest() {
+export const setupActionTest = () => {
   const supabase = setupSupabase();
 
   mocks.state.supabase = supabase;
 
-  function signIn(user: Partial<User> = {}): void {
+  const signIn = (user: Partial<User> = {}): void => {
     mocks.requireAuthenticatedUser.mockResolvedValue({
       supabaseClient: supabase.client,
       user: { ...TEST_USER, ...user },
     });
-  }
+  };
 
-  function signOut(): void {
+  const signOut = (): void => {
     mocks.requireAuthenticatedUser.mockResolvedValue(null);
-  }
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -183,6 +183,6 @@ export function setupActionTest() {
     /** The fake Supabase that both clients talk to. */
     supabase,
   };
-}
+};
 
 export type ActionTest = ReturnType<typeof setupActionTest>;

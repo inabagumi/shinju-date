@@ -55,16 +55,15 @@ const twitchUser = createTwitchUser({
 });
 
 /** Put the talents, their accounts and the given videos in the database */
-function seedVideos(
+const seedVideos = (
   rows: Parameters<typeof videoSeed>[0]
-): ReturnType<typeof seedSupabase> {
-  return seedSupabase({
+): ReturnType<typeof seedSupabase> =>
+  seedSupabase({
     talents: [talent, otherTalent],
     twitchUsers: [twitchUser],
     youtubeChannels: [channel, otherChannel],
     ...videoSeed(rows),
   });
-}
 
 describe("lib/data/talent-streams", () => {
   beforeEach(() => {

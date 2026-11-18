@@ -31,9 +31,9 @@ export interface GetVideoExternalUrlParams {
  *
  * YouTube: `https://www.youtube.com/watch?v=<id>`
  */
-export function getVideoExternalUrl(
+export const getVideoExternalUrl = (
   params: GetVideoExternalUrlParams
-): string | null {
+): string | null => {
   // Only `twitch` uses the Twitch branch; anything else (including missing /
   // unexpected values) falls back to YouTube when a YouTube id is present.
   if (params.platform === "twitch") {
@@ -71,4 +71,4 @@ export function getVideoExternalUrl(
   return `https://www.youtube.com/watch?v=${encodeURIComponent(
     params.youtubeVideoId
   )}`;
-}
+};

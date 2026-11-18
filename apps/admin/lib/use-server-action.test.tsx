@@ -20,44 +20,42 @@ import type {
   UseServerActionOptions,
 } from "./use-server-action";
 
-function createDeferred<T>() {
+const createDeferred = <T,>() => {
   let resolve: (value: T) => void = () => {};
   const promise = new Promise<T>((r) => {
     resolve = r;
   });
 
   return { promise, resolve };
-}
+};
 
 interface WrapperProps {
   children: ReactNode;
 }
 
-function Wrapper({ children }: WrapperProps) {
-  return <ActionToastProvider>{children}</ActionToastProvider>;
-}
+const Wrapper = ({ children }: WrapperProps) => (
+  <ActionToastProvider>{children}</ActionToastProvider>
+);
 
-function renderServerAction<
+const renderServerAction = <
   TArgs extends unknown[],
   TResult extends ServerActionResult,
 >(
   action: (...args: TArgs) => Promise<TResult>,
   options?: UseServerActionOptions<TResult>
-) {
-  return renderHook(() => useServerAction(action, options), {
+) =>
+  renderHook(() => useServerAction(action, options), {
     wrapper: Wrapper,
   });
-}
 
 /** トーストは、`ToastViewport`（`role="region"`）の中のリストの項目として描かれる */
-function getToasts() {
-  return within(screen.getByRole("region")).queryAllByRole("listitem");
-}
+const getToasts = () =>
+  within(screen.getByRole("region")).queryAllByRole("listitem");
 
-function ComponentOutsideProvider() {
+const ComponentOutsideProvider = () => {
   useServerAction(async () => ({ success: true }));
   return null;
-}
+};
 
 describe(useServerAction, () => {
   it("passes the arguments to the action and shows the success text", async () => {

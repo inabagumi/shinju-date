@@ -14,10 +14,10 @@ interface BackfillsDependencies {
  * after an earlier one succeeded, so that the failure alert and the bulk
  * retry can be checked.
  */
-export function createBackfills(
+export const createBackfills = (
   { faker, now }: SeedContext,
   { twitchUsers, youtubeChannels }: BackfillsDependencies
-): Tables<"video_backfill_jobs">[] {
+): Tables<"video_backfill_jobs">[] => {
   const [channel] = youtubeChannels;
   const failedTwitchUser = twitchUsers[1];
 
@@ -73,4 +73,4 @@ export function createBackfills(
       started_at: requestedAt,
     };
   });
-}
+};

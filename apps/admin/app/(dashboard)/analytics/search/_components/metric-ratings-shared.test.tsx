@@ -65,13 +65,12 @@ const { SearchEngagementRateWidget } =
   await import("./search-engagement-rate-widget");
 const { SearchExitRateWidget } = await import("./search-exit-rate-widget");
 
-function createSearchParams(): Promise<AnalyticsSearchParams> {
-  return Promise.resolve({
+const createSearchParams = (): Promise<AnalyticsSearchParams> =>
+  Promise.resolve({
     dateRange: { endDate: "2026-11-14", startDate: "2026-11-08" },
     selectedDate: null,
     tab: null,
   });
-}
 
 describe("the search metric widgets with changed thresholds", () => {
   beforeEach(() => {

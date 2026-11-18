@@ -20,7 +20,10 @@ interface VideoKindBadgeProps {
   className?: string;
 }
 
-export function VideoKindBadge({ videoKind, className }: VideoKindBadgeProps) {
+export const VideoKindBadge = ({
+  videoKind,
+  className,
+}: VideoKindBadgeProps) => {
   const variant = VIDEO_KIND_VARIANTS[videoKind] ?? "neutral";
   const text = VIDEO_KIND_LABELS[videoKind] ?? videoKind;
 
@@ -29,4 +32,4 @@ export function VideoKindBadge({ videoKind, className }: VideoKindBadgeProps) {
       {text}
     </Badge>
   );
-}
+};

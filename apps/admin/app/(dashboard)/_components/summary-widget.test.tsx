@@ -23,9 +23,11 @@ vi.mock(import("./video-stats-chart-ui"), () => ({
 const { ContentSummaryWidget, VideoSummaryWidget } =
   await import("./summary-widget");
 
-function trend(current: number, dayChange: number | null = null) {
-  return { current, dayChange, weekChange: null };
-}
+const trend = (current: number, dayChange: number | null = null) => ({
+  current,
+  dayChange,
+  weekChange: null,
+});
 
 /** The counts of a day without the snapshots to compare with. */
 const stats: WithTrends<SummaryStats> = {
@@ -38,9 +40,8 @@ const stats: WithTrends<SummaryStats> = {
   visibleVideos: trend(25),
 };
 
-function getTile(label: string): HTMLElement {
-  return screen.getByRole("link", { name: new RegExp(`^${label}`) });
-}
+const getTile = (label: string): HTMLElement =>
+  screen.getByRole("link", { name: new RegExp(`^${label}`) });
 
 describe("VideoSummaryWidget", () => {
   beforeEach(() => {

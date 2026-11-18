@@ -10,7 +10,7 @@ import { createScraper } from "@/lib/scraper";
 
 export const maxDuration = 120;
 
-export async function POST(request: NextRequest): Promise<Response> {
+export const POST = async (request: NextRequest): Promise<Response> => {
   const query = parseQuery(providerQuerySchema, request);
 
   if (query instanceof Response) {
@@ -26,6 +26,6 @@ export async function POST(request: NextRequest): Promise<Response> {
       await revalidateTags([CACHE_TAGS.TALENTS], { signal: request.signal });
     }
   });
-}
+};
 
 export const GET = POST;

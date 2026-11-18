@@ -13,9 +13,8 @@ import { findMissingBlankLines } from "./check-cache-directives.mjs";
  * @param {string} source
  * @param {string} [fileName]
  */
-function lines(source, fileName = "fixture.ts") {
-  return findMissingBlankLines(source, fileName).map(({ line }) => line);
-}
+const lines = (source, fileName = "fixture.ts") =>
+  findMissingBlankLines(source, fileName).map(({ line }) => line);
 
 describe(findMissingBlankLines, () => {
   it("accepts blank lines after the directive and the cache functions", () => {

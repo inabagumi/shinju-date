@@ -34,7 +34,7 @@ const KEY_VISUAL_SIZE = {
  * cached. It changes only with a deployment, and is not data from outside,
  * so the cache is not remote.
  */
-async function loadKeyVisual(): Promise<string> {
+const loadKeyVisual = async (): Promise<string> => {
   "use cache";
 
   cacheLife("max");
@@ -45,7 +45,7 @@ async function loadKeyVisual(): Promise<string> {
     .toBuffer();
 
   return `data:image/jpeg;base64,${jpeg.toString("base64")}`;
-}
+};
 
 /**
  * The Open Graph image of a page: its title and the logo on the left half,
@@ -55,7 +55,7 @@ async function loadKeyVisual(): Promise<string> {
  * No fonts are passed, so `ImageResponse` fetches the fonts for the Japanese
  * characters by itself.
  */
-export async function createOgImage(title: string): Promise<ImageResponse> {
+export const createOgImage = async (title: string): Promise<ImageResponse> => {
   const keyVisualURL = await loadKeyVisual();
 
   return new ImageResponse(
@@ -108,4 +108,4 @@ export async function createOgImage(title: string): Promise<ImageResponse> {
     </div>,
     OG_IMAGE_SIZE
   );
-}
+};

@@ -12,9 +12,9 @@ import {
   FeatureRequestDetailSkeleton,
 } from "./_components/feedback-detail";
 
-export async function generateMetadata({
+export const generateMetadata = async ({
   params,
-}: Pick<PageProps<"/feedback/[id]">, "params">): Promise<Metadata> {
+}: Pick<PageProps<"/feedback/[id]">, "params">): Promise<Metadata> => {
   const { id } = await params;
 
   const featureRequest = await getFeatureRequestById(id);
@@ -30,11 +30,11 @@ export async function generateMetadata({
   return {
     title: `${title} - 機能要望詳細`,
   };
-}
+};
 
-async function FeatureRequestDetailData({
+const FeatureRequestDetailData = async ({
   params,
-}: Pick<PageProps<"/feedback/[id]">, "params">) {
+}: Pick<PageProps<"/feedback/[id]">, "params">) => {
   const { id } = await params;
 
   const featureRequest = await getFeatureRequestById(id);
@@ -44,7 +44,7 @@ async function FeatureRequestDetailData({
   }
 
   return <FeatureRequestDetail featureRequest={featureRequest} />;
-}
+};
 
 export default function FeedbackDetailPage({
   params,

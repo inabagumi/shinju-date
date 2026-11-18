@@ -242,22 +242,20 @@ const platformCases: PlatformCase[] = [
   },
 ];
 
-function talentTouches() {
-  return supabase.calls("rpc", "touch_talent");
-}
+const talentTouches = () => supabase.calls("rpc", "touch_talent");
 
 /** Asserts that the `updated_at` of the talent was moved forward. */
-function expectTalentTouched(): void {
+const expectTalentTouched = (): void => {
   expect(talentTouches()).toHaveLength(1);
   expect(talentTouches()[0]?.body).toStrictEqual({ p_talent_id: talentId });
-}
+};
 
 /** Asserts that nothing that follows a change was done. */
-function expectNothingCompleted(): void {
+const expectNothingCompleted = (): void => {
   expect(talentTouches()).toHaveLength(0);
   test.expectNoAuditLog();
   test.expectNotRevalidated();
-}
+};
 
 describe.each(platformCases)("$platform accounts", (platformCase) => {
   const { field, messages, table } = platformCase;
@@ -277,7 +275,7 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
     "talent:talents(name)",
   ];
 
-  function addAccount(fields: Record<string, string>): Promise<FormState> {
+  const addAccount = (fields: Record<string, string>): Promise<FormState> => {
     const formData = new FormData();
 
     for (const [name, value] of Object.entries(fields)) {
@@ -285,22 +283,20 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
     }
 
     return platformCase.addAction({}, formData);
-  }
+  };
 
   /** Adds the account with an input that is understood. */
-  function addValidAccount(): Promise<FormState> {
-    return addAccount({ [field]: validInput, talent_id: talentId });
-  }
+  const addValidAccount = (): Promise<FormState> =>
+    addAccount({ [field]: validInput, talent_id: talentId });
 
   /** Lets the insert of the new account succeed and return the account. */
-  function answerInsert(): void {
+  const answerInsert = (): void => {
     supabase.on("insert", table, savedAccount);
-  }
+  };
 
   /** The rows the action inserted into the table of the accounts. */
-  function insertedRows(): unknown[] {
-    return supabase.calls("insert", table).map((request) => request.body);
-  }
+  const insertedRows = (): unknown[] =>
+    supabase.calls("insert", table).map((request) => request.body);
 
   beforeEach(() => {
     platformCase.resolve.mockResolvedValue(platformCase.remote);
@@ -518,9 +514,9 @@ describe.each(platformCases)("$platform accounts", (platformCase) => {
 
   describe("removing an account", () => {
     /** Answers the read of the account before it is removed. */
-    function answerAccount(): void {
+    const answerAccount = (): void => {
       supabase.on("select", table, savedAccount);
-    }
+    };
 
     it("should remove the account", async () => {
       answerAccount();

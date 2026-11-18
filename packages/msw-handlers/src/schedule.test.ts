@@ -4,12 +4,11 @@ import { describe, expect, it } from "vitest";
 import { getLiveScheduleStart } from "./seeds/schedule.js";
 
 /** `time` on Sunday, 15 November 2026 in `TIME_ZONE` */
-function at(time: string) {
-  return Temporal.PlainDate.from("2026-11-15").toZonedDateTime({
+const at = (time: string) =>
+  Temporal.PlainDate.from("2026-11-15").toZonedDateTime({
     plainTime: Temporal.PlainTime.from(time),
     timeZone: TIME_ZONE,
   });
-}
 
 describe(getLiveScheduleStart, () => {
   it("should start 30 minutes before now", () => {

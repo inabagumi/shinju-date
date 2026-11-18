@@ -7,13 +7,13 @@ import { serverEnv } from "@/lib/env";
 import { payloadSchema } from "./_lib/schemas";
 import type { Payload } from "./_lib/schemas";
 
-async function parseRequest(request: Request): Promise<Payload> {
+const parseRequest = async (request: Request): Promise<Payload> => {
   const rawPayload = (await request.json()) as unknown;
 
   return payloadSchema.parse(rawPayload);
-}
+};
 
-export async function POST(request: Request): Promise<Response> {
+export const POST = async (request: Request): Promise<Response> => {
   // 認証チェック
   const secretToken = serverEnv.REVALIDATE_SECRET_TOKEN;
   if (secretToken) {
@@ -56,4 +56,4 @@ export async function POST(request: Request): Promise<Response> {
   return new Response(null, {
     status: 204,
   });
-}
+};

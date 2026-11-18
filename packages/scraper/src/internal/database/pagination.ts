@@ -9,7 +9,9 @@
  * @throws When a page does not move past the previous one, which would
  *   otherwise repeat the same page forever.
  */
-export async function* paginateById<T extends { id: string }>(
+export const paginateById = async function* paginateById<
+  T extends { id: string },
+>(
   getPage: (cursor: string | undefined) => Promise<T[]>
 ): AsyncGenerator<T[], void, undefined> {
   let cursor: string | undefined;
@@ -32,4 +34,4 @@ export async function* paginateById<T extends { id: string }>(
 
     yield page;
   }
-}
+};

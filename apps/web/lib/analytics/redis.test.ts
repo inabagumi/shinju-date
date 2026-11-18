@@ -24,9 +24,8 @@ const pipeline = {
 };
 const multi = pipeline as Partial<Pipeline> as Pipeline;
 
-function at(instant: string): Temporal.ZonedDateTime {
-  return Temporal.Instant.from(instant).toZonedDateTimeISO(TIME_ZONE);
-}
+const at = (instant: string): Temporal.ZonedDateTime =>
+  Temporal.Instant.from(instant).toZonedDateTimeISO(TIME_ZONE);
 
 describe("lib/analytics/redis", () => {
   beforeEach(() => {

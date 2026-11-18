@@ -8,71 +8,63 @@ import type { AnalyticsSummary, SummaryStats } from "./schema.js";
 /** How long a snapshot is kept (30 days). */
 export const SNAPSHOT_TTL_SECONDS = 30 * 24 * 60 * 60;
 
-function getSummaryKey(dateKey: string): string {
-  return `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`;
-}
+const getSummaryKey = (dateKey: string): string =>
+  `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`;
 
-function getAnalyticsKey(dateKey: string): string {
-  return `${REDIS_KEYS.SUMMARY_ANALYTICS_PREFIX}${dateKey}`;
-}
+const getAnalyticsKey = (dateKey: string): string =>
+  `${REDIS_KEYS.SUMMARY_ANALYTICS_PREFIX}${dateKey}`;
 
-async function readSnapshot<T>(
+const readSnapshot = async <T>(
   redisClient: Redis,
   key: string,
   schema: z.ZodType<T>
-): Promise<T | null> {
+): Promise<T | null> => {
   const value = await redisClient.get<unknown>(key);
   const result = schema.safeParse(value);
 
   return result.success ? result.data : null;
-}
+};
 
 /**
  * Read the snapshot of the counts of a day (`dateKey`, made by
  * `formatDateKey`). Returns `null` when there is none, or when it is not in
  * the form of {@link SummaryStats}.
  */
-export function readSummarySnapshot(
+export const readSummarySnapshot = (
   redisClient: Redis,
   dateKey: string
-): Promise<SummaryStats | null> {
-  return readSnapshot(redisClient, getSummaryKey(dateKey), summaryStatsSchema);
-}
+): Promise<SummaryStats | null> =>
+  readSnapshot(redisClient, getSummaryKey(dateKey), summaryStatsSchema);
 
 /** Save the snapshot of the counts of a day (`dateKey`). */
-export async function writeSummarySnapshot(
+export const writeSummarySnapshot = async (
   redisClient: Redis,
   dateKey: string,
   stats: SummaryStats
-): Promise<void> {
+): Promise<void> => {
   await redisClient.set(getSummaryKey(dateKey), stats, {
     ex: SNAPSHOT_TTL_SECONDS,
   });
-}
+};
 
 /**
  * Read the snapshot of the analytics of a day (`dateKey`, made by
  * `formatDateKey`). Returns `null` when there is none, or when it is not in
  * the form of {@link AnalyticsSummary}.
  */
-export function readAnalyticsSnapshot(
+export const readAnalyticsSnapshot = (
   redisClient: Redis,
   dateKey: string
-): Promise<AnalyticsSummary | null> {
-  return readSnapshot(
-    redisClient,
-    getAnalyticsKey(dateKey),
-    analyticsSummarySchema
-  );
-}
+): Promise<AnalyticsSummary | null> =>
+  readSnapshot(redisClient, getAnalyticsKey(dateKey), analyticsSummarySchema);
 
 /** Save the snapshot of the analytics of a day (`dateKey`). */
-export async function writeAnalyticsSnapshot(
+export const writeAnalyticsSnapshot = async (
   redisClient: Redis,
   dateKey: string,
   summary: AnalyticsSummary
-): Promise<void> {
+): Promise<void> => {
   await redisClient.set(getAnalyticsKey(dateKey), summary, {
     ex: SNAPSHOT_TTL_SECONDS,
   });
-}
+};

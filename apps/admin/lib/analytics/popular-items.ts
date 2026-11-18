@@ -26,10 +26,10 @@ interface PopularItemsOptions {
  * @param options.limit - Maximum number of items to return
  * @returns Array of [itemId, score] tuples
  */
-export async function getPopularItems(
+export const getPopularItems = async (
   keyPrefix: string,
   { limit, range }: PopularItemsOptions
-): Promise<[string, number][]> {
+): Promise<[string, number][]> => {
   const redisClient = getRedisClient();
 
   const getTopItems = async (key: string): Promise<[string, number][]> => {
@@ -91,4 +91,4 @@ export async function getPopularItems(
 
     return [];
   }
-}
+};

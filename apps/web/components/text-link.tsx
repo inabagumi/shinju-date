@@ -8,11 +8,11 @@ interface TextLinkProps extends ComponentPropsWithRef<"a"> {
 }
 
 /** A link in the accent color, such as to a channel or a calendar */
-export function TextLink({
+export const TextLink = ({
   asChild = false,
   className,
   ...props
-}: TextLinkProps) {
+}: TextLinkProps) => {
   const Comp = asChild ? Slot : "a";
 
   return (
@@ -24,18 +24,16 @@ export function TextLink({
       {...props}
     />
   );
-}
+};
 
 /** The icon next to the text of `TextLink`. Pass the icon as the child */
-export function TextLinkIcon({
+export const TextLinkIcon = ({
   className,
   ...props
-}: ComponentPropsWithRef<typeof Slot>) {
-  return (
-    <Slot
-      aria-hidden="true"
-      className={twMerge("size-4", className)}
-      {...props}
-    />
-  );
-}
+}: ComponentPropsWithRef<typeof Slot>) => (
+  <Slot
+    aria-hidden="true"
+    className={twMerge("size-4", className)}
+    {...props}
+  />
+);

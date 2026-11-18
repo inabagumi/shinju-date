@@ -19,7 +19,7 @@ import { createSupabaseServerClient } from "@/lib/supabase";
  * The widgets of the dashboard share one result, so that the counts run once
  * for each display.
  */
-export async function getSummaryStats(): Promise<WithTrends<SummaryStats>> {
+export const getSummaryStats = async (): Promise<WithTrends<SummaryStats>> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -41,4 +41,4 @@ export async function getSummaryStats(): Promise<WithTrends<SummaryStats>> {
   ]);
 
   return withTrends(current, yesterday, lastWeek);
-}
+};

@@ -60,24 +60,21 @@ vi.mock(import("@/components/video-card"), () => ({
   VideoCardSkeleton: vi.fn<typeof VideoCardSkeleton>(),
 }));
 
-function createVideos(count: number, prefix: string): Video[] {
-  return Array.from(
+const createVideos = (count: number, prefix: string): Video[] =>
+  Array.from(
     { length: count },
     (_, index) => ({ id: `${prefix}-${index}` }) as Video
   );
-}
 
-function createDashboardVideos(
+const createDashboardVideos = (
   counts: Partial<Record<keyof DashboardVideos, number>> = {}
-): DashboardVideos {
-  return {
-    live: createVideos(counts.live ?? 0, "live"),
-    recent: createVideos(counts.recent ?? 0, "recent"),
-    shorts: createVideos(counts.shorts ?? 0, "shorts"),
-  };
-}
+): DashboardVideos => ({
+  live: createVideos(counts.live ?? 0, "live"),
+  recent: createVideos(counts.recent ?? 0, "recent"),
+  shorts: createVideos(counts.shorts ?? 0, "shorts"),
+});
 
-function renderWithQueryClient(ui: ReactNode) {
+const renderWithQueryClient = (ui: ReactNode) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -87,7 +84,7 @@ function renderWithQueryClient(ui: ReactNode) {
   );
 
   return { container, queryClient };
-}
+};
 
 describe(LiveSection, () => {
   it("should show the number of live videos next to the heading", () => {

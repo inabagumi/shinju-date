@@ -26,7 +26,7 @@ interface Term {
  * @throws When a page does not move past the previous one, which would
  *   otherwise repeat the same page forever.
  */
-export async function* getAllTerms(
+export const getAllTerms = async function* getAllTerms(
   supabase: TypedSupabaseClient,
   { pageSize = TERMS_PAGE_SIZE }: { pageSize?: number } = {}
 ): AsyncGenerator<Term, void, undefined> {
@@ -61,4 +61,4 @@ export async function* getAllTerms(
 
     yield* page;
   }
-}
+};

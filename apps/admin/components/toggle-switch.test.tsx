@@ -10,10 +10,10 @@ interface ControlledToggleSwitchProps {
   onChange?: (checked: boolean) => void;
 }
 
-function ControlledToggleSwitch({
+const ControlledToggleSwitch = ({
   defaultChecked = false,
   onChange,
-}: ControlledToggleSwitchProps) {
+}: ControlledToggleSwitchProps) => {
   const [checked, setChecked] = useState(defaultChecked);
 
   return (
@@ -26,7 +26,7 @@ function ControlledToggleSwitch({
       }}
     />
   );
-}
+};
 
 describe(ToggleSwitch, () => {
   it("renders a switch with the label and the checked state", () => {

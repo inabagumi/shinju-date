@@ -13,7 +13,7 @@ const SearchModalContext = createContext<SearchModalContextType | undefined>(
   undefined
 );
 
-export function SearchModalProvider({ children }: { children: ReactNode }) {
+export const SearchModalProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const openModal = () => setIsOpen(true);
@@ -24,12 +24,12 @@ export function SearchModalProvider({ children }: { children: ReactNode }) {
       {children}
     </SearchModalContext.Provider>
   );
-}
+};
 
-export function useSearchModal() {
+export const useSearchModal = () => {
   const context = useContext(SearchModalContext);
   if (context === undefined) {
     throw new Error("useSearchModal must be used within a SearchModalProvider");
   }
   return context;
-}
+};

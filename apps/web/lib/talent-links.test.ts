@@ -15,29 +15,25 @@ import {
 
 const TALENT_ID = "00000000-0000-4000-8000-000000000001";
 
-function createYouTubeChannel(
+const createYouTubeChannel = (
   overrides: Partial<TalentYouTubeChannel> = {}
-): TalentYouTubeChannel {
-  return {
-    name: "メインチャンネル",
-    profile_image: null,
-    youtube_channel_id: "UCmain",
-    youtube_handle: "@main",
-    ...overrides,
-  };
-}
+): TalentYouTubeChannel => ({
+  name: "メインチャンネル",
+  profile_image: null,
+  youtube_channel_id: "UCmain",
+  youtube_handle: "@main",
+  ...overrides,
+});
 
-function createTwitchUser(
+const createTwitchUser = (
   overrides: Partial<TalentTwitchUser> = {}
-): TalentTwitchUser {
-  return {
-    name: "Twitch表示名",
-    profile_image: null,
-    twitch_login_name: "login",
-    twitch_user_id: "100",
-    ...overrides,
-  };
-}
+): TalentTwitchUser => ({
+  name: "Twitch表示名",
+  profile_image: null,
+  twitch_login_name: "login",
+  twitch_user_id: "100",
+  ...overrides,
+});
 
 describe(findFirstNonBlank, () => {
   it("should return the first value that is not blank, trimmed", () => {

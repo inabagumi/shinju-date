@@ -14,10 +14,10 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
  *   呼び出し側で認証済みであることを確認しておくこと
  * - 1件の失敗で止めない処理（サムネイルの保存など）の失敗は、`logger` に記録される
  */
-export function createScraper(platform: Enums<"platform_type">): Scraper {
+export const createScraper = (platform: Enums<"platform_type">): Scraper => {
   const options = { logger, supabaseClient: getSupabaseAdminClient() };
 
   return platform === "twitch"
     ? new TwitchScraper(options)
     : new YouTubeScraper(options);
-}
+};

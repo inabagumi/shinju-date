@@ -5,6 +5,5 @@
 // browsers use the polyfill, so relying on `toLocaleString` causes hydration
 // errors.
 
-export function padNumber(value: number): string {
-  return value.toString(10).padStart(2, "0");
-}
+export const padNumber = (value: number): string =>
+  value.toString(10).padStart(2, "0");

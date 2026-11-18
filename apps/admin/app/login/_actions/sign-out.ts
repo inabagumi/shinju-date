@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import type { FormState } from "@/components/form";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
-export async function signOutAction(): Promise<FormState> {
+export const signOutAction = async (): Promise<FormState> => {
   const supabaseClient = await createSupabaseServerClient();
   const { error } = await supabaseClient.auth.signOut();
 
@@ -18,4 +18,4 @@ export async function signOutAction(): Promise<FormState> {
   }
 
   redirect("/login");
-}
+};

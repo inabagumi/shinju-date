@@ -20,10 +20,10 @@ import Form, { SubmitButton } from "@/components/form";
 import { LogoIcon } from "@/components/logo-icon";
 import { SERVER_ACTION_FALLBACK_ERROR } from "@/lib/use-server-action";
 
-function ActiveNavigationLink({
+const ActiveNavigationLink = ({
   href,
   ...props
-}: ComponentProps<typeof NextLink>) {
+}: ComponentProps<typeof NextLink>) => {
   const pathname = usePathname();
   const path = typeof href === "string" ? href : href.pathname;
 
@@ -34,15 +34,13 @@ function ActiveNavigationLink({
       href={href}
     />
   );
-}
+};
 
-function Link(props: ComponentProps<typeof NextLink>) {
-  return (
-    <Suspense fallback={<NextLink {...props} />}>
-      <ActiveNavigationLink {...props} />
-    </Suspense>
-  );
-}
+const Link = (props: ComponentProps<typeof NextLink>) => (
+  <Suspense fallback={<NextLink {...props} />}>
+    <ActiveNavigationLink {...props} />
+  </Suspense>
+);
 
 interface NavigationItem {
   href: string;
@@ -85,47 +83,44 @@ interface NavigationMenuProps {
 }
 
 /** バーのボタンから開くメニュー。クリックかキーボードで開く */
-function NavigationMenu({
+const NavigationMenu = ({
   align = "start",
   children,
   label,
   trigger,
-}: NavigationMenuProps) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          aria-label={label}
-          className={twMerge(
-            barItemClassName,
-            "data-[state=open]:bg-primary-foreground/10"
-          )}
-          type="button"
-        >
-          {trigger}
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align={align} className="min-w-52">
-        {children}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
+}: NavigationMenuProps) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <button
+        aria-label={label}
+        className={twMerge(
+          barItemClassName,
+          "data-[state=open]:bg-primary-foreground/10"
+        )}
+        type="button"
+      >
+        {trigger}
+      </button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align={align} className="min-w-52">
+      {children}
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
 
 interface NavigationMenuLinksProps {
   items: NavigationItem[];
 }
 
-function NavigationMenuLinks({ items }: NavigationMenuLinksProps) {
-  return items.map((item) => (
+const NavigationMenuLinks = ({ items }: NavigationMenuLinksProps) =>
+  items.map((item) => (
     <DropdownMenuItem asChild className={menuLinkClassName} key={item.href}>
       <Link href={item.href}>{item.label}</Link>
     </DropdownMenuItem>
   ));
-}
 
 /** ユーザーメニューのログアウト。失敗したときはトーストで知らせる */
-function SignOutMenuItem() {
+const SignOutMenuItem = () => {
   const [isPending, startTransition] = useTransition();
   const { showToast } = useActionToast();
 
@@ -158,14 +153,14 @@ function SignOutMenuItem() {
       ログアウト
     </DropdownMenuItem>
   );
-}
+};
 
 interface NavigationBarProps {
   /** バーの右側に表示する最終同期の日時 */
   lastSync?: ReactNode;
 }
 
-export function NavigationBar({ lastSync }: NavigationBarProps) {
+export const NavigationBar = ({ lastSync }: NavigationBarProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -291,4 +286,4 @@ export function NavigationBar({ lastSync }: NavigationBarProps) {
       )}
     </nav>
   );
-}
+};

@@ -47,7 +47,7 @@ const NON_REDIS_RECEIVERS = new Set([
 ]);
 
 /** The Redis commands that `@upstash/redis` has methods for. */
-function getClientCommands(): Set<string> {
+const getClientCommands = (): Set<string> => {
   const redis = new Redis({ token: "fake-token", url: UPSTASH_URL });
   const pipeline = redis.pipeline();
   const names = [redis, pipeline].flatMap((client) =>
@@ -57,14 +57,14 @@ function getClientCommands(): Set<string> {
   );
 
   return new Set(names.filter((name) => !NON_COMMAND_METHODS.has(name)));
-}
+};
 
 /**
  * The Redis commands that the code of `apps/` and `packages/` calls: the
  * methods of `@upstash/redis` called in the files that use Redis, except the
  * tests (which use fakes) and this package.
  */
-function findUsedCommands(): Map<string, Set<string>> {
+const findUsedCommands = (): Map<string, Set<string>> => {
   const commands = getClientCommands();
   const files = execFileSync(
     "git",
@@ -101,12 +101,12 @@ function findUsedCommands(): Map<string, Set<string>> {
   }
 
   return used;
-}
+};
 
-async function send(
+const send = async (
   path: string,
   body: unknown
-): Promise<{ body: unknown; status: number }> {
+): Promise<{ body: unknown; status: number }> => {
   const response = await fetch(`${UPSTASH_URL}${path}`, {
     body: JSON.stringify(body),
     headers: { "Content-Type": "application/json" },
@@ -114,12 +114,11 @@ async function send(
   });
 
   return { body: await response.json(), status: response.status };
-}
+};
 
 /** A key that no other test uses. */
-function uniqueKey(name: string): string {
-  return `test:${name}:${crypto.randomUUID()}`;
-}
+const uniqueKey = (name: string): string =>
+  `test:${name}:${crypto.randomUUID()}`;
 
 describe("Upstash Redis commands", () => {
   const redis = new Redis({ token: "fake-token", url: UPSTASH_URL });

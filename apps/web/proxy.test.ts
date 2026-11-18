@@ -19,13 +19,13 @@ vi.mock(import("@/lib/redis"), () => ({
 
 const BASE_URL = "https://shinju.date";
 
-async function importProxy() {
+const importProxy = async () => {
   // The proxy keeps the maintenance mode in a module variable, so each test
   // starts from a fresh module.
   vi.resetModules();
 
   return import("./proxy");
-}
+};
 
 type ProxyFunction = Awaited<ReturnType<typeof importProxy>>["proxy"];
 
@@ -33,18 +33,21 @@ type ProxyFunction = Awaited<ReturnType<typeof importProxy>>["proxy"];
  * Runs the proxy for a path. The testing helpers of Next.js take a
  * `NextResponse`, and they only read its headers.
  */
-async function run(proxy: ProxyFunction, path: string): Promise<NextResponse> {
+const run = async (
+  proxy: ProxyFunction,
+  path: string
+): Promise<NextResponse> => {
   const response = await proxy(new NextRequest(new URL(path, BASE_URL)));
 
   return response as NextResponse;
-}
+};
 
 describe("config.matcher", () => {
-  async function doesMatch(path: string): Promise<boolean> {
+  const doesMatch = async (path: string): Promise<boolean> => {
     const { config } = await importProxy();
 
     return unstable_doesMiddlewareMatch({ config, url: `${BASE_URL}${path}` });
-  }
+  };
 
   it.each([
     "/",

@@ -14,9 +14,8 @@ import { unwrap } from "@/lib/supabase/query";
 import { escapeSearchString } from "./escape-search";
 import { VIDEO_SELECT } from "./video-select";
 
-function selectVideos(supabaseClient: TypedSupabaseClient) {
-  return supabaseClient.from("videos").select(VIDEO_SELECT, { count: "exact" });
-}
+const selectVideos = (supabaseClient: TypedSupabaseClient) =>
+  supabaseClient.from("videos").select(VIDEO_SELECT, { count: "exact" });
 
 type VideoRow = QueryData<ReturnType<typeof selectVideos>>[number];
 
@@ -40,7 +39,7 @@ export interface VideoFilters {
 export type VideoSortField = "published_at" | "updated_at";
 export type VideoSortOrder = "asc" | "desc";
 
-export async function getVideos(
+export const getVideos = async (
   page = 1,
   perPage = 20,
   filters?: VideoFilters,
@@ -49,7 +48,7 @@ export async function getVideos(
 ): Promise<{
   videos: Video[];
   total: number;
-}> {
+}> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -155,4 +154,4 @@ export async function getVideos(
     total: count ?? 0,
     videos: videosWithClicks,
   };
-}
+};

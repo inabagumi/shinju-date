@@ -32,7 +32,7 @@ interface SortableItemProps {
   showRemove: boolean;
 }
 
-function SortableItem({
+const SortableItem = ({
   id,
   onChange,
   onPaste,
@@ -40,7 +40,7 @@ function SortableItem({
   placeholder,
   showRemove,
   value,
-}: SortableItemProps) {
+}: SortableItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
 
@@ -105,7 +105,7 @@ function SortableItem({
       )}
     </div>
   );
-}
+};
 
 interface Item {
   id: string;
@@ -119,12 +119,12 @@ interface SortableInputListProps {
   addButtonLabel?: string;
 }
 
-export function SortableInputList({
+export const SortableInputList = ({
   addButtonLabel = "追加",
   defaultValues = [],
   name,
   placeholder,
-}: SortableInputListProps) {
+}: SortableInputListProps) => {
   const [items, setItems] = useState<Item[]>(() =>
     defaultValues.length > 0
       ? defaultValues.map((value, index) => ({
@@ -266,4 +266,4 @@ export function SortableInputList({
       ))}
     </div>
   );
-}
+};

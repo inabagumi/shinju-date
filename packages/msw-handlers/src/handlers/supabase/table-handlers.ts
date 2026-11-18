@@ -29,11 +29,8 @@ import type {
 } from "./tables.js";
 
 /** Whether the request asks for the rows that it changed. */
-function returnsRepresentation(request: Request): boolean {
-  return (request.headers.get("prefer") ?? "").includes(
-    "return=representation"
-  );
-}
+const returnsRepresentation = (request: Request): boolean =>
+  (request.headers.get("prefer") ?? "").includes("return=representation");
 
 /**
  * The rows that a read returns, projected with the select of the query, and
@@ -41,13 +38,13 @@ function returnsRepresentation(request: Request): boolean {
  * resources with `!inner`) before the pagination, which an exact count
  * returns.
  */
-async function readRows<Name extends TableName>(
+const readRows = async <Name extends TableName>(
   table: TableDefinition<Name>,
   request: Request
 ): Promise<{
   headers: Record<string, string>;
   page: object[];
-}> {
+}> => {
   const query = parseSupabaseQuery(new URL(request.url));
   const matched = applyOrder(
     await selectRows(
@@ -75,7 +72,7 @@ async function readRows<Name extends TableName>(
     },
     page: page.map(({ output }) => output),
   };
-}
+};
 
 /**
  * Parse the query of a write, and check its select (for
@@ -84,10 +81,10 @@ async function readRows<Name extends TableName>(
  * filters of the table itself, so filters on embedded resources are not
  * supported.
  */
-function parseWriteQuery(
+const parseWriteQuery = (
   request: Request,
   tableName: TableName
-): SupabaseQuery {
+): SupabaseQuery => {
   const query = parseSupabaseQuery(new URL(request.url));
   const embedded = query.filters.find(({ path }) => path.length > 0);
 
@@ -101,7 +98,7 @@ function parseWriteQuery(
   validateSelect(query.select, tableName);
 
   return query;
-}
+};
 
 /** The primary key, which every table of the mock has. */
 const PRIMARY_KEY_COLUMNS = ["id"] as const;
@@ -112,11 +109,11 @@ const PRIMARY_KEY_COLUMNS = ["id"] as const;
  * rows, or two rows of the table with the same values of a unique
  * constraint. `null` when nothing breaks.
  */
-function findViolation<Name extends TableName>(
+const findViolation = <Name extends TableName>(
   table: WritableTableDefinition<Name>,
   writtenRows: readonly Tables<Name>[],
   allRows: readonly Tables<Name>[]
-): Response | null {
+): Response | null => {
   for (const row of writtenRows) {
     for (const column of table.notNullColumns) {
       if (getColumn(row, column) == null) {
@@ -168,42 +165,40 @@ function findViolation<Name extends TableName>(
   }
 
   return null;
-}
+};
 
 /** The row with the same values of the given columns, if any. */
-function findConflict<Row extends object>(
+const findConflict = <Row extends object>(
   rows: readonly Row[],
   values: object,
   columns: readonly string[]
-): Row | undefined {
-  return rows.find((row) =>
+): Row | undefined =>
+  rows.find((row) =>
     columns.every(
       (column) =>
         getColumn(values, column) != null &&
         getColumn(row, column) === getColumn(values, column)
     )
   );
-}
 
 /**
  * The changes of an update, with `updated_at` set to the current time when
  * a trigger of the table does so (also for the updates of upserts).
  */
-function withTriggers<Name extends TableName>(
+const withTriggers = <Name extends TableName>(
   table: WritableTableDefinition<Name>,
   changes: Partial<Tables<Name>>
-): Partial<Tables<Name>> {
-  return table.updatedAtTrigger
+): Partial<Tables<Name>> =>
+  table.updatedAtTrigger
     ? { ...changes, updated_at: toDBString(Temporal.Now.instant()) }
     : changes;
-}
 
 /**
  * The error of PostgreSQL when an upsert updates the same row twice, or a row
  * that the same request inserts.
  */
-function cardinalityViolation(): Response {
-  return HttpResponse.json(
+const cardinalityViolation = (): Response =>
+  HttpResponse.json(
     {
       code: "21000",
       details: null,
@@ -212,7 +207,6 @@ function cardinalityViolation(): Response {
     },
     { status: 400 }
   );
-}
 
 /** The changes that a write makes to a collection. */
 interface WritePlan<Row> {
@@ -226,10 +220,10 @@ interface WritePlan<Row> {
  * far are undone and an error is returned. The written records are returned
  * otherwise, updates first.
  */
-async function applyWrite<Name extends TableName>(
+const applyWrite = async <Name extends TableName>(
   table: WritableTableDefinition<Name>,
   { inserts, updates }: WritePlan<Tables<Name>>
-): Promise<Tables<Name>[] | Response> {
+): Promise<Tables<Name>[] | Response> => {
   const { collection } = table;
   const undo: (() => Promise<unknown>)[] = [];
   const writtenRows: Tables<Name>[] = [];
@@ -278,7 +272,7 @@ async function applyWrite<Name extends TableName>(
   }
 
   return writtenRows;
-}
+};
 
 /**
  * The POST, PATCH and DELETE handlers of a table, which write to its
@@ -286,9 +280,9 @@ async function applyWrite<Name extends TableName>(
  * including when a single object is requested and the write would not
  * return exactly one row.
  */
-function createWriteHandlers<Name extends TableName>(
+const createWriteHandlers = <Name extends TableName>(
   table: WritableTableDefinition<Name>
-) {
+) => {
   const url = `${REST_URL}/${table.name}`;
   const { collection } = table;
 
@@ -454,16 +448,16 @@ function createWriteHandlers<Name extends TableName>(
       return new HttpResponse(null, { status: 204 });
     }),
   ];
-}
+};
 
 /**
  * The handlers of a table at `/rest/v1/<name>`: GET and HEAD with filters,
  * ordering, pagination, embedded resources and exact counts, and POST,
  * PATCH and DELETE unless it is a view.
  */
-export function createTableHandlers<Name extends TableName>(
+export const createTableHandlers = <Name extends TableName>(
   table: TableDefinition<Name>
-) {
+) => {
   const url = `${REST_URL}/${table.name}`;
 
   return [
@@ -479,4 +473,4 @@ export function createTableHandlers<Name extends TableName>(
     }),
     ...(table.kind === "table" ? createWriteHandlers(table) : []),
   ];
-}
+};

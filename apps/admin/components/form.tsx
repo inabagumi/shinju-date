@@ -115,20 +115,19 @@ interface MessageLinesProps {
   messages: string[];
 }
 
-function MessageLines({ messages }: MessageLinesProps) {
-  return messages.map((message, i) => (
+const MessageLines = ({ messages }: MessageLinesProps) =>
+  messages.map((message, i) => (
     <Fragment key={message}>
       {i > 0 && <br />}
       {message}
     </Fragment>
   ));
-}
 
 /**
  * 項目に結び付かないエラー（`FormState.error` と `errors.generic`）を出す。
  * 置き忘れないよう、`Form` がフォームの先頭に必ず描く。
  */
-function FormError() {
+const FormError = () => {
   const { error, errors } = useContext(FormContext);
   const messages = [
     ...new Set([...(error ? [error] : []), ...(errors?.["generic"] ?? [])]),
@@ -141,17 +140,17 @@ function FormError() {
       </Alert>
     )
   );
-}
+};
 
 type SubmitButtonProps = Omit<UIButtonProps, "asChild">;
 
-export function SubmitButton({
+export const SubmitButton = ({
   disabled,
   type = "submit",
   variant = "primary",
   size = "md",
   ...props
-}: SubmitButtonProps) {
+}: SubmitButtonProps) => {
   const { pending } = useFormStatus();
 
   return (
@@ -163,15 +162,15 @@ export function SubmitButton({
       {...props}
     />
   );
-}
+};
 
 interface ErrorMessageProps extends ComponentPropsWithoutRef<"p"> {}
 
-export function ErrorMessage({
+export const ErrorMessage = ({
   className,
   role = "alert",
   ...props
-}: ErrorMessageProps) {
+}: ErrorMessageProps) => {
   const { errors } = useContext(FormContext);
   const { id, name } = useContext(FormFieldContext);
   const errorMessages = (name && errors?.[name]) || [];
@@ -188,13 +187,13 @@ export function ErrorMessage({
       </p>
     )
   );
-}
+};
 
 interface FormFieldProps extends ComponentPropsWithoutRef<"div"> {
   name?: string;
 }
 
-export function FormField({ name, ...props }: FormFieldProps) {
+export const FormField = ({ name, ...props }: FormFieldProps) => {
   const id = useId();
 
   return (
@@ -207,17 +206,17 @@ export function FormField({ name, ...props }: FormFieldProps) {
       <div {...props} />
     </FormFieldContext.Provider>
   );
-}
+};
 
 interface SuccessMessageProps extends ComponentPropsWithoutRef<"p"> {
   message?: string;
 }
 
-export function SuccessMessage({
+export const SuccessMessage = ({
   message = "更新が完了しました。",
   role = "status",
   ...props
-}: SuccessMessageProps) {
+}: SuccessMessageProps) => {
   const { success } = useContext(FormContext);
 
   return (
@@ -227,11 +226,11 @@ export function SuccessMessage({
       </p>
     )
   );
-}
+};
 
 type InputPropsCustom = Omit<UIInputProps, "value" | "onChange" | "variant">;
 
-export function Input({
+export const Input = ({
   defaultValue = "",
   disabled,
   id: newId,
@@ -239,7 +238,7 @@ export function Input({
   type = "text",
   inputSize = "md",
   ...props
-}: InputPropsCustom) {
+}: InputPropsCustom) => {
   const [value, setValue] = useState(defaultValue);
   const { pending } = useFormStatus();
   const { errors } = useContext(FormContext);
@@ -268,7 +267,7 @@ export function Input({
       {...props}
     />
   );
-}
+};
 
 interface CheckboxProps extends Omit<
   ComponentPropsWithoutRef<"input">,
@@ -283,14 +282,14 @@ interface CheckboxProps extends Omit<
  * `Form` は送信のあとにフォームをリセットしないので、`defaultChecked` を使う
  * 制御されていない入力欄のままでよい。
  */
-export function Checkbox({
+export const Checkbox = ({
   className,
   disabled,
   id: newId,
   name: newName,
   value = "true",
   ...props
-}: CheckboxProps) {
+}: CheckboxProps) => {
   const { pending } = useFormStatus();
   const { errors } = useContext(FormContext);
   const { id, name } = useContext(FormFieldContext);
@@ -309,11 +308,11 @@ export function Checkbox({
       {...props}
     />
   );
-}
+};
 
 interface LabelProps extends ComponentPropsWithoutRef<"label"> {}
 
-export function Label({ className, htmlFor, ...props }: LabelProps) {
+export const Label = ({ className, htmlFor, ...props }: LabelProps) => {
   const { pending } = useFormStatus();
   const { id } = useContext(FormFieldContext);
 
@@ -328,17 +327,17 @@ export function Label({ className, htmlFor, ...props }: LabelProps) {
       {...props}
     />
   );
-}
+};
 
 type SelectProps = Omit<UISelectProps, "value" | "variant">;
 
-export function Select({
+export const Select = ({
   defaultValue = "",
   disabled,
   id: newId,
   name: newName,
   ...props
-}: SelectProps) {
+}: SelectProps) => {
   const [value, setValue] = useState(defaultValue);
   const { pending } = useFormStatus();
   const { errors } = useContext(FormContext);
@@ -365,17 +364,17 @@ export function Select({
       {...props}
     />
   );
-}
+};
 
 type TextareaProps = Omit<UITextareaProps, "value" | "variant">;
 
-export function Textarea({
+export const Textarea = ({
   defaultValue = "",
   disabled,
   id: newId,
   name: newName,
   ...props
-}: TextareaProps) {
+}: TextareaProps) => {
   const [value, setValue] = useState(defaultValue);
   const { pending } = useFormStatus();
   const { errors } = useContext(FormContext);
@@ -402,4 +401,4 @@ export function Textarea({
       {...props}
     />
   );
-}
+};

@@ -20,34 +20,32 @@ export interface EmptyStateProps extends Omit<
  * データがないことを伝える表示。高さは内容なりで、大きな空白は作らない。
  * 表やカードの中に置く場合も、そのまま中央に並ぶ。
  */
-export function EmptyState({
+export const EmptyState = ({
   action,
   className,
   description,
   icon,
   title,
   ...props
-}: EmptyStateProps) {
-  return (
-    <div
-      className={twMerge(
-        "flex flex-col items-center gap-2 px-4 py-8 text-center",
-        className
-      )}
-      {...props}
-    >
-      {icon && (
-        <div aria-hidden="true" className="text-muted [&_svg]:size-8">
-          {icon}
-        </div>
-      )}
-      <p className="text-body leading-normal font-semibold text-foreground">
-        {title}
-      </p>
-      {description && (
-        <div className="max-w-text text-meta text-muted">{description}</div>
-      )}
-      {action && <div className="mt-2">{action}</div>}
-    </div>
-  );
-}
+}: EmptyStateProps) => (
+  <div
+    className={twMerge(
+      "flex flex-col items-center gap-2 px-4 py-8 text-center",
+      className
+    )}
+    {...props}
+  >
+    {icon && (
+      <div aria-hidden="true" className="text-muted [&_svg]:size-8">
+        {icon}
+      </div>
+    )}
+    <p className="text-body leading-normal font-semibold text-foreground">
+      {title}
+    </p>
+    {description && (
+      <div className="max-w-text text-meta text-muted">{description}</div>
+    )}
+    {action && <div className="mt-2">{action}</div>}
+  </div>
+);

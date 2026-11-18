@@ -34,12 +34,12 @@ interface GetAuditLogsParams {
  * Mirrors `get_audit_logs`: the audit logs with the email of the user who
  * recorded them, sorted by `created_at` or `user_email` and then newest first.
  */
-async function getMockAuditLogs({
+const getMockAuditLogs = async ({
   p_limit: limit = 50,
   p_offset: offset = 0,
   p_sort_by: sortBy = "created_at",
   p_sort_direction: sortDirection = "desc",
-}: GetAuditLogsParams) {
+}: GetAuditLogsParams) => {
   const logs = (await auditLogs.findMany()).map((log) => ({
     ...log,
     user_email:
@@ -59,7 +59,7 @@ async function getMockAuditLogs({
       return order || b.created_at.localeCompare(a.created_at);
     })
     .slice(offset, offset + limit);
-}
+};
 
 interface SearchVideosParams {
   p_perpage?: number;
@@ -94,26 +94,24 @@ const DEFAULT_SEARCH_VIDEOS_SELECT = [
  * Normalize text roughly like PGroonga's `NormalizerAuto`: NFKC and lower
  * case.
  */
-function normalizeSearchText(text: string): string {
-  return text.normalize("NFKC").toLowerCase();
-}
+const normalizeSearchText = (text: string): string =>
+  text.normalize("NFKC").toLowerCase();
 
 /**
  * Normalize text for a prefix search on readings (`&^~`), which also matches
  * katakana with hiragana.
  */
-function normalizeReadingText(text: string): string {
-  return normalizeSearchText(text).replaceAll(/[\u30A1-\u30F6]/g, (char) =>
+const normalizeReadingText = (text: string): string =>
+  normalizeSearchText(text).replaceAll(/[\u30A1-\u30F6]/g, (char) =>
     String.fromCharCode(char.charCodeAt(0) - 0x60)
   );
-}
 
 /**
  * Mirrors `pgroonga_query_expand('terms', 'synonyms', 'synonyms', query)`:
  * the query and, when a term lists it as a synonym, the other synonyms of
  * that term.
  */
-async function expandMockQuery(query: string): Promise<string[]> {
+const expandMockQuery = async (query: string): Promise<string[]> => {
   const normalizedQuery = normalizeSearchText(query);
   const expanded = new Set([normalizedQuery]);
 
@@ -128,18 +126,18 @@ async function expandMockQuery(query: string): Promise<string[]> {
   }
 
   return [...expanded];
-}
+};
 
 /**
  * The visible videos of the given talents and kinds whose titles contain the
  * query or one of its synonyms and that were published before `p_until`.
  */
-async function filterMockVideos({
+const filterMockVideos = async ({
   p_query: query = "",
   p_talent_ids: talentIds = [],
   p_until: until,
   p_video_kinds: videoKinds,
-}: SearchVideosParams) {
+}: SearchVideosParams) => {
   const keywords = query === "" ? [] : await expandMockQuery(query);
 
   return videos
@@ -156,7 +154,7 @@ async function filterMockVideos({
         (!videoKinds || videoKinds.includes(video.video_kind)) &&
         (!until || Temporal.Instant.compare(video.published_at, until) < 0)
     );
-}
+};
 
 /**
  * The videos of `filterMockVideos` that the site shows: the ones whose talent
@@ -165,7 +163,7 @@ async function filterMockVideos({
  * name of its user or an ID that is not the placeholder of an archive that is
  * not ready yet (`live:{stream_id}`), unless it is a clip.
  */
-async function filterShownMockVideos(params: SearchVideosParams) {
+const filterShownMockVideos = async (params: SearchVideosParams) => {
   const matchedVideos = await filterMockVideos(params);
   const visibleTalentIds = new Set(
     talents
@@ -204,34 +202,31 @@ async function filterShownMockVideos(params: SearchVideosParams) {
         ? linkableTwitchVideoIds.has(video.id)
         : linkableYouTubeVideoIds.has(video.id))
   );
-}
+};
 
 /** The first `perpage` of the given videos, newest first. */
-function pageMockVideos<T extends { published_at: string }>(
+const pageMockVideos = <T extends { published_at: string }>(
   matchedVideos: T[],
   perpage = 10
-): T[] {
-  return matchedVideos
+): T[] =>
+  matchedVideos
     .sort((a, b) => Temporal.Instant.compare(b.published_at, a.published_at))
     .slice(0, perpage);
-}
 
 /**
  * Mirrors `search_videos_v4`: the videos of `filterShownMockVideos`, newest
  * first. The videos the site does not show are left out before the page size
  * is applied.
  */
-async function searchShownMockVideos({
+const searchShownMockVideos = async ({
   p_perpage: perpage,
   ...params
-}: SearchVideosParams) {
-  return pageMockVideos(await filterShownMockVideos(params), perpage);
-}
+}: SearchVideosParams) =>
+  pageMockVideos(await filterShownMockVideos(params), perpage);
 
 /** Mirrors `count_videos_v2`: the number of the videos the site shows. */
-async function countMockVideos(params: SearchVideosParams) {
-  return (await filterShownMockVideos(params)).length;
-}
+const countMockVideos = async (params: SearchVideosParams) =>
+  (await filterShownMockVideos(params)).length;
 
 interface SuggestionsParams {
   p_query?: string;
@@ -243,7 +238,7 @@ interface SuggestionsParams {
  * it. The popularity of the mock terms is not used, so shorter terms come
  * first.
  */
-async function suggestMockTerms({ p_query: query = "" }: SuggestionsParams) {
+const suggestMockTerms = async ({ p_query: query = "" }: SuggestionsParams) => {
   const normalizedQuery = normalizeReadingText(query);
   const startsWithQuery = (text: string) =>
     normalizeReadingText(text).startsWith(normalizedQuery);
@@ -267,7 +262,7 @@ async function suggestMockTerms({ p_query: query = "" }: SuggestionsParams) {
         (a.term < b.term ? -1 : a.term > b.term ? 1 : 0)
     )
     .slice(0, 10);
-}
+};
 
 interface UpdateTermsPopularityParams {
   p_items?: { score?: number; term?: string }[];
@@ -278,9 +273,9 @@ interface UpdateTermsPopularityParams {
  * terms, ignoring the case. The popularity of the mock terms is not used, so
  * nothing is written.
  */
-async function updateMockTermsPopularity({
+const updateMockTermsPopularity = async ({
   p_items: items = [],
-}: UpdateTermsPopularityParams) {
+}: UpdateTermsPopularityParams) => {
   const givenTerms = new Set(
     items.flatMap(({ score, term }) =>
       typeof term === "string" && typeof score === "number"
@@ -292,7 +287,7 @@ async function updateMockTermsPopularity({
   return terms
     .findMany()
     .filter(({ term }) => givenTerms.has(term.toLowerCase())).length;
-}
+};
 
 type VideoDeletedReason = NonNullable<Tables<"videos">["deleted_reason"]>;
 
@@ -312,10 +307,10 @@ interface RestoreVideosParams {
  * of the table does. Only the thumbnails whose `deleted_at` is not yet in the
  * wanted state (deleted or not) are updated.
  */
-async function setMockThumbnailsDeletedAt(
+const setMockThumbnailsDeletedAt = async (
   thumbnailIds: readonly (string | null)[],
   deletedAt: string | null
-) {
+) => {
   const ids = new Set(thumbnailIds);
   const updatedAt = toDBString(Temporal.Now.instant());
 
@@ -332,18 +327,18 @@ async function setMockThumbnailsDeletedAt(
       });
     }
   }
-}
+};
 
 /**
  * Mirrors `soft_delete_videos`: soft-deletes the given videos that are not
  * deleted yet, with their thumbnails, and returns the IDs of the deleted
  * videos. The reason and the time of the videos deleted earlier are kept.
  */
-async function softDeleteMockVideos({
+const softDeleteMockVideos = async ({
   p_deleted_at: deletedAt,
   p_reason: reason,
   p_video_ids: videoIds,
-}: SoftDeleteVideosParams) {
+}: SoftDeleteVideosParams) => {
   const ids = new Set(videoIds);
   const updatedAt = toDBString(Temporal.Now.instant());
   const targets = videos
@@ -367,17 +362,17 @@ async function softDeleteMockVideos({
   );
 
   return targets.map((video) => video.id);
-}
+};
 
 /**
  * Mirrors `restore_videos`: restores the given deleted videos (only those
  * deleted for `p_reason`, unless it is `null`), with their thumbnails, and
  * returns the IDs of the restored videos.
  */
-async function restoreMockVideos({
+const restoreMockVideos = async ({
   p_reason: reason = null,
   p_video_ids: videoIds,
-}: RestoreVideosParams) {
+}: RestoreVideosParams) => {
   const ids = new Set(videoIds);
   const updatedAt = toDBString(Temporal.Now.instant());
   const targets = videos
@@ -406,7 +401,7 @@ async function restoreMockVideos({
   );
 
   return targets.map((video) => video.id);
-}
+};
 
 interface InsertVideoParams {
   p_platform: Tables<"videos">["platform"];
@@ -429,11 +424,11 @@ const PLATFORM_VIDEO_KEYS = {
  * platform video is already saved. The function sets the ID and the
  * platform of the video and the `video_id` of the platform row.
  */
-async function insertMockVideo({
+const insertMockVideo = async ({
   p_platform: platform,
   p_platform_video: platformVideo,
   p_video: video,
-}: InsertVideoParams): Promise<string | null> {
+}: InsertVideoParams): Promise<string | null> => {
   const savedRows: readonly Record<string, unknown>[] =
     platform === "twitch" ? twitchVideos.findMany() : youtubeVideos.findMany();
   const alreadySaved = PLATFORM_VIDEO_KEYS[platform].some(
@@ -478,13 +473,17 @@ async function insertMockVideo({
   }
 
   return videoId;
-}
+};
 
 /**
  * Mirrors `touch_talent`: moves `updated_at` of the talent to the current
  * time, as the trigger of the table does, without changing anything else.
  */
-async function touchMockTalent({ p_talent_id: id }: { p_talent_id: string }) {
+const touchMockTalent = async ({
+  p_talent_id: id,
+}: {
+  p_talent_id: string;
+}) => {
   const updatedAt = toDBString(Temporal.Now.instant());
 
   for (const talent of talents.findMany().filter((row) => row.id === id)) {
@@ -494,18 +493,18 @@ async function touchMockTalent({ p_talent_id: id }: { p_talent_id: string }) {
       },
     });
   }
-}
+};
 
 /**
  * Mirrors `touch_thumbnail`: moves `updated_at` of the thumbnail to the
  * current time, as the trigger of the table does, without changing anything
  * else.
  */
-async function touchMockThumbnail({
+const touchMockThumbnail = async ({
   p_thumbnail_id: id,
 }: {
   p_thumbnail_id: string;
-}) {
+}) => {
   const updatedAt = toDBString(Temporal.Now.instant());
 
   for (const thumbnail of thumbnails
@@ -517,7 +516,7 @@ async function touchMockThumbnail({
       },
     });
   }
-}
+};
 
 /** The handlers of the database functions (`/rest/v1/rpc/<name>`). */
 export const rpcHandlers = [

@@ -61,14 +61,14 @@ const cases = actions.flatMap(([name, action]) =>
   )
 );
 
-function expectNoSideEffects() {
+const expectNoSideEffects = () => {
   expect(test.createSupabaseServerClient).not.toHaveBeenCalled();
   // No PostgREST request at all, through either client
   expect(supabase.requests).toStrictEqual([]);
   expect(test.getRedisClient).not.toHaveBeenCalled();
   test.expectNoAuditLog();
   test.expectNotRevalidated();
-}
+};
 
 describe("mutation Server Actions without an authenticated user", () => {
   beforeEach(() => {

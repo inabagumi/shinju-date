@@ -21,21 +21,21 @@ export interface TalentVideosProps {
   searchParams: PageProps<"/talents/[id]">["searchParams"];
 }
 
-async function getKind(
+const getKind = async (
   searchParams: TalentVideosProps["searchParams"]
-): Promise<VideoKindFilter> {
+): Promise<VideoKindFilter> => {
   const searchParamValues = await searchParams;
 
   return parseVideoKindFilter(searchParamValues[VIDEO_KIND_SEARCH_PARAM]);
-}
+};
 
 /**
  * タレントの動画の種別の切り替え。リンク先はタレント詳細にとどまる。
  */
-export async function TalentVideoKindFilterNav({
+export const TalentVideoKindFilterNav = async ({
   params,
   searchParams,
-}: TalentVideosProps) {
+}: TalentVideosProps) => {
   const [talent, kind] = await Promise.all([
     getShownTalent(params),
     getKind(searchParams),
@@ -48,23 +48,21 @@ export async function TalentVideoKindFilterNav({
       getPath={(value) => getTalentPath(talent.id, value)}
     />
   );
-}
+};
 
-export function TalentVideoKindFilterNavSkeleton() {
-  return (
-    <div className="mb-6">
-      <VideoKindFilterNavSkeleton />
-    </div>
-  );
-}
+export const TalentVideoKindFilterNavSkeleton = () => (
+  <div className="mb-6">
+    <VideoKindFilterNavSkeleton />
+  </div>
+);
 
 /**
  * タレントの動画を、動画一覧と同じ日付ごとの並びで表示する。
  */
-export async function TalentVideos({
+export const TalentVideos = async ({
   params,
   searchParams,
-}: TalentVideosProps) {
+}: TalentVideosProps) => {
   const [talent, kind] = await Promise.all([
     getShownTalent(params),
     getKind(searchParams),
@@ -91,4 +89,4 @@ export async function TalentVideos({
       talentIds={talentIds}
     />
   );
-}
+};

@@ -10,13 +10,11 @@ vi.mock(import("./get-combined-queries"), () => ({
     vi.fn<typeof getCombinedRecommendationQueries>(),
 }));
 
-function createQueries(count: number): string[] {
-  return range(1, count + 1).map((i) => `query${i}`);
-}
+const createQueries = (count: number): string[] =>
+  range(1, count + 1).map((i) => `query${i}`);
 
-function getRank(query: string): number {
-  return Number.parseInt(query.replace("query", ""), 10);
-}
+const getRank = (query: string): number =>
+  Number.parseInt(query.replace("query", ""), 10);
 
 describe(getDisplayRecommendationQueries, () => {
   beforeEach(() => {

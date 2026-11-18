@@ -1,17 +1,14 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
-function getHeader(page: Page) {
-  return page.getByRole("banner");
-}
+const getHeader = (page: Page) => page.getByRole("banner");
 
 // The inline navigation comes before the one inside the mobile menu, and both
 // are labelled the same, so pick the first `<nav>` including hidden ones.
-function getInlineNavigation(page: Page) {
-  return getHeader(page).locator("nav").first();
-}
+const getInlineNavigation = (page: Page) =>
+  getHeader(page).locator("nav").first();
 
-async function getMobileMenu(page: Page) {
+const getMobileMenu = async (page: Page) => {
   const menuButton = getHeader(page).getByRole("button", { name: "メニュー" });
   const menuId = await menuButton.getAttribute("aria-controls");
 
@@ -23,7 +20,7 @@ async function getMobileMenu(page: Page) {
     menu: page.locator(`[id="${menuId}"]`),
     menuButton,
   };
-}
+};
 
 test.describe("Mobile Navigation", () => {
   test.use({ viewport: { height: 844, width: 390 } });

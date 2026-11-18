@@ -66,10 +66,10 @@ interface BulkVideoActionOptions {
  * 選ばれた動画を読み、`update` で更新し、更新された動画の監査ログを書き、再検証する。
  * 一部だけ更新できたときは、更新できたぶんの監査ログと再検証を行ってから、件数を知らせる。
  */
-async function runBulkVideoAction(
+const runBulkVideoAction = async (
   context: AuthenticatedContext,
   { auditAction, ids, update }: BulkVideoActionOptions
-): Promise<ActionResult<BulkVideoActionData>> {
+): Promise<ActionResult<BulkVideoActionData>> => {
   const { supabaseClient } = context;
   const videoIds = parseActionInput(videoIdsSchema, ids);
 
@@ -123,7 +123,7 @@ async function runBulkVideoAction(
     data: { skippedCount, updatedCount: updatedVideos.length },
     success: true,
   };
-}
+};
 
 /**
  * 関数（`soft_delete_videos` / `restore_videos`）が返した、実際に更新された
@@ -131,10 +131,10 @@ async function runBulkVideoAction(
  * 関数は、すでに目的の状態の動画を更新しないので、返されなかった動画は
  * 失敗ではなく、更新しなかったものとして数える
  */
-function toBulkVideoUpdateResult(
+const toBulkVideoUpdateResult = (
   videos: readonly BulkVideo[],
   updatedIds: readonly string[]
-): BulkVideoUpdateResult {
+): BulkVideoUpdateResult => {
   const ids = new Set(updatedIds);
   const updatedVideos = videos.filter((video) => ids.has(video.id));
 
@@ -142,7 +142,7 @@ function toBulkVideoUpdateResult(
     skippedCount: videos.length - updatedVideos.length,
     updatedVideos,
   };
-}
+};
 
 export const toggleVisibilityAction = adminAction(
   "toggleVisibilityAction",

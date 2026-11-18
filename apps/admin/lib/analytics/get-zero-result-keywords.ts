@@ -7,7 +7,7 @@ import { getRedisClient } from "@/lib/redis";
 /**
  * Get keywords that returned zero search results from Redis
  */
-export async function getZeroResultKeywords(): Promise<string[]> {
+export const getZeroResultKeywords = async (): Promise<string[]> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -22,4 +22,4 @@ export async function getZeroResultKeywords(): Promise<string[]> {
     logger.error("Redisからゼロ結果キーワードの取得に失敗しました", { error });
     return [];
   }
-}
+};

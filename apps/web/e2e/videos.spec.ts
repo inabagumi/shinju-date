@@ -15,18 +15,17 @@ const VIDEO_URL_PATTERN =
   /^https:\/\/(?:www\.youtube\.com\/watch\?v=|www\.twitch\.tv\/|clips\.twitch\.tv\/)./;
 
 /** Video cards are links that contain the heading of the video title */
-function getVideoCards(page: Page) {
+const getVideoCards = (page: Page) => {
   const main = page.getByRole("main");
 
   return main
     .getByRole("link")
     .filter({ has: page.getByRole("heading", { level: 3 }) });
-}
+};
 
 /** The number of the videos found, shown under the heading */
-function getResultCount(page: Page) {
-  return page.getByRole("main").getByText(/^[\d,]+件$/);
-}
+const getResultCount = (page: Page) =>
+  page.getByRole("main").getByText(/^[\d,]+件$/);
 
 test.describe("Videos page", () => {
   test("should list the videos by date", async ({ page }) => {

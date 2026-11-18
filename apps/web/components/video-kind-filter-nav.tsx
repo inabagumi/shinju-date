@@ -57,15 +57,13 @@ export default function VideoKindFilterNav({
   );
 }
 
-export function VideoKindFilterNavSkeleton() {
-  return (
-    <div aria-hidden="true" className="flex gap-2">
-      {VIDEO_KIND_FILTER_OPTIONS.map((option) => (
-        <div
-          className="h-9 w-20 animate-pulse rounded-full bg-muted"
-          key={option.value}
-        />
-      ))}
-    </div>
-  );
-}
+export const VideoKindFilterNavSkeleton = () => (
+  <div aria-hidden="true" className="flex gap-2">
+    {VIDEO_KIND_FILTER_OPTIONS.map((option) => (
+      <div
+        className="h-9 w-20 animate-pulse rounded-full bg-muted"
+        key={option.value}
+      />
+    ))}
+  </div>
+);

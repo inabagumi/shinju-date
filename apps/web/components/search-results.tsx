@@ -22,27 +22,25 @@ const LIST_CLASS_NAME = "lg:grid-cols-4";
 /**
  * スケルトンを1段ぶんだけ表示する。モバイルは1件、タブレットは2件、PC は4件。
  */
-function getRowSkeletonItemClassName(index: number): string | undefined {
+const getRowSkeletonItemClassName = (index: number): string | undefined => {
   if (index === 0) {
     return undefined;
   }
 
   return index === 1 ? "hidden sm:flex" : "hidden lg:flex";
-}
+};
 
 interface VideoCardRowSkeletonProps {
   className?: string | undefined;
 }
 
-function VideoCardRowSkeleton({ className }: VideoCardRowSkeletonProps) {
-  return (
-    <VideoCardListSkeleton
-      className={twMerge(LIST_CLASS_NAME, className)}
-      count={4}
-      itemClassName={getRowSkeletonItemClassName}
-    />
-  );
-}
+const VideoCardRowSkeleton = ({ className }: VideoCardRowSkeletonProps) => (
+  <VideoCardListSkeleton
+    className={twMerge(LIST_CLASS_NAME, className)}
+    count={4}
+    itemClassName={getRowSkeletonItemClassName}
+  />
+);
 
 /**
  * 日付の見出し。スクロール中はサイトのヘッダー（高さ 56px）の下に固定する。
@@ -53,16 +51,14 @@ function VideoCardRowSkeleton({ className }: VideoCardRowSkeletonProps) {
 const DATE_HEADING_CLASS_NAME =
   "sticky top-14 z-10 -mx-4 mb-4 bg-background px-4 py-2 text-heading font-bold";
 
-export function SearchResultsSkeleton() {
-  return (
-    <div aria-hidden="true">
-      <div className={DATE_HEADING_CLASS_NAME}>
-        <div className="h-[1lh] w-32 animate-pulse rounded-control bg-muted" />
-      </div>
-      <VideoCardRowSkeleton />
+export const SearchResultsSkeleton = () => (
+  <div aria-hidden="true">
+    <div className={DATE_HEADING_CLASS_NAME}>
+      <div className="h-[1lh] w-32 animate-pulse rounded-control bg-muted" />
     </div>
-  );
-}
+    <VideoCardRowSkeleton />
+  </div>
+);
 
 interface DateSectionProps {
   date: Temporal.PlainDate;
@@ -70,7 +66,7 @@ interface DateSectionProps {
   values: Video[];
 }
 
-function DateSection({ date, today, values }: DateSectionProps) {
+const DateSection = ({ date, today, values }: DateSectionProps) => {
   const headingId = useId();
 
   return (
@@ -88,7 +84,7 @@ function DateSection({ date, today, values }: DateSectionProps) {
       />
     </section>
   );
-}
+};
 
 interface SearchResultsProps {
   kind?: VideoKindFilter;

@@ -2,9 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { getLegacySearchRedirectPath } from "./search-redirect";
 
-function getPath(path: string): string | undefined {
-  return getLegacySearchRedirectPath(new URL(path, "https://shinju.date"));
-}
+const getPath = (path: string): string | undefined =>
+  getLegacySearchRedirectPath(new URL(path, "https://shinju.date"));
 
 describe(getLegacySearchRedirectPath, () => {
   it("redirects a query to the search results", () => {

@@ -44,23 +44,23 @@ interface VideoListResponse {
 
 const API_URL = "https://youtube.googleapis.com/youtube/v3";
 
-async function get<Body>(path: string): Promise<Body> {
+const get = async <Body>(path: string): Promise<Body> => {
   const response = await fetch(`${API_URL}/${path}`);
 
   expect(response.status).toBe(200);
 
   return (await response.json()) as Body;
-}
+};
 
 /** The YouTube channels of the Supabase mock. */
-async function getSavedChannels() {
+const getSavedChannels = async () => {
   await ensureCollectionsSeeded();
 
   return youtubeChannels.findMany();
-}
+};
 
 /** The YouTube videos of the Supabase mock, with their videos. */
-async function getSavedVideos() {
+const getSavedVideos = async () => {
   await ensureCollectionsSeeded();
 
   const savedVideos = new Map(
@@ -72,7 +72,7 @@ async function getSavedVideos() {
 
     return video ? [{ video, youtubeVideo }] : [];
   });
-}
+};
 
 describe("YouTube Handlers", () => {
   beforeAll(() => {

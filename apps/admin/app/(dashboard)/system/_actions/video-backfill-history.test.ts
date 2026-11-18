@@ -119,9 +119,8 @@ describe("video backfill history actions", () => {
     },
   ];
 
-  function job(id: string) {
-    return createBackfillJob({ added: 0, id, status: "pending" });
-  }
+  const job = (id: string) =>
+    createBackfillJob({ added: 0, id, status: "pending" });
 
   describe("getVideoBackfillHistoryAction()", () => {
     beforeEach(() => {

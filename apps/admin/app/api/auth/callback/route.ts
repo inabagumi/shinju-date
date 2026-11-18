@@ -6,7 +6,7 @@ import { createAuditLog } from "@/lib/audit-log";
 import { getSafeRedirectPath, REDIRECT_PARAM } from "@/lib/redirect-path";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
-export async function GET(request: NextRequest): Promise<Response> {
+export const GET = async (request: NextRequest): Promise<Response> => {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const next = getSafeRedirectPath(
@@ -44,4 +44,4 @@ export async function GET(request: NextRequest): Promise<Response> {
 
   // If there's an error or no code, redirect to login
   return NextResponse.redirect(new URL("/login", request.url));
-}
+};

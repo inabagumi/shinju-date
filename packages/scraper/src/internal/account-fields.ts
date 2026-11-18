@@ -6,10 +6,10 @@ import type { AccountChanges, AccountFields } from "../types.js";
  *
  * @returns The changed columns, or `undefined` when nothing changed.
  */
-export function diffAccountFields<TFields extends AccountFields>(
+export const diffAccountFields = <TFields extends AccountFields>(
   before: TFields,
   after: TFields
-): AccountChanges<TFields> | undefined {
+): AccountChanges<TFields> | undefined => {
   const changes: AccountChanges<TFields> = { after: {}, before: {} };
   let changed = false;
 
@@ -22,4 +22,4 @@ export function diffAccountFields<TFields extends AccountFields>(
   }
 
   return changed ? changes : undefined;
-}
+};

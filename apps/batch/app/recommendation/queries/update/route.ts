@@ -37,10 +37,10 @@ interface WeightedQuery {
  * Sums the scores of the rankings with their weights, using a working key
  * that is deleted afterwards even when reading it fails.
  */
-async function readWeightedQueries(
+const readWeightedQueries = async (
   keys: string[],
   weights: number[]
-): Promise<WeightedQuery[]> {
+): Promise<WeightedQuery[]> => {
   try {
     await redisClient.zunionstore(
       REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
@@ -81,12 +81,12 @@ async function readWeightedQueries(
         });
       });
   }
-}
+};
 
 export const maxDuration = 120;
 
-export async function POST(request: NextRequest): Promise<Response> {
-  return runCronJob(request, RECOMMENDATION_QUERIES_UPDATE_JOB, async () => {
+export const POST = async (request: NextRequest): Promise<Response> =>
+  runCronJob(request, RECOMMENDATION_QUERIES_UPDATE_JOB, async () => {
     const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE);
     const today = formatDateKey(now);
     const mondayOfWeek = getMondayOfWeek(now);
@@ -197,6 +197,5 @@ export async function POST(request: NextRequest): Promise<Response> {
       })),
     });
   });
-}
 
 export const GET = POST;

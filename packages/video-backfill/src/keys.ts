@@ -27,32 +27,25 @@ export const BACKFILL_PENDING_TIMEOUT_SECONDS = 60 * 60;
  * How long a claim is locked, in seconds: the longest a worker may run, and
  * {@link BACKFILL_LEASE_MARGIN_SECONDS}.
  */
-export function getLeaseSeconds(
+export const getLeaseSeconds = (
   maxRunSeconds: number = BACKFILL_DEFAULT_MAX_RUN_SECONDS
-): number {
-  return Math.ceil(maxRunSeconds) + BACKFILL_LEASE_MARGIN_SECONDS;
-}
+): number => Math.ceil(maxRunSeconds) + BACKFILL_LEASE_MARGIN_SECONDS;
 
-export function getBackfillJobId(
+export const getBackfillJobId = (
   provider: BackfillProvider,
   accountId: string
-): string {
-  return `${provider}:${accountId}`;
-}
+): string => `${provider}:${accountId}`;
 
-export function jobKey(id: string): string {
-  return `${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${id}`;
-}
+export const jobKey = (id: string): string =>
+  `${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${id}`;
 
-export function lockKey(id: string): string {
-  return `${REDIS_KEYS.VIDEO_BACKFILL_LOCK_PREFIX}${id}`;
-}
+export const lockKey = (id: string): string =>
+  `${REDIS_KEYS.VIDEO_BACKFILL_LOCK_PREFIX}${id}`;
 
 /**
  * Key of the outcome of a job of a check of all accounts, kept when the job
  * finishes so the check still shows it after the job is requested again on
  * its own.
  */
-export function getRunResultKey(runId: string, jobId: string): string {
-  return `${REDIS_KEYS.VIDEO_BACKFILL_RUN_RESULT_PREFIX}${runId}:${jobId}`;
-}
+export const getRunResultKey = (runId: string, jobId: string): string =>
+  `${REDIS_KEYS.VIDEO_BACKFILL_RUN_RESULT_PREFIX}${runId}:${jobId}`;

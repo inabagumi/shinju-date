@@ -35,18 +35,16 @@ export const inputVariants = cva(
 export type InputProps = ComponentPropsWithRef<"input"> &
   VariantProps<typeof inputVariants>;
 
-export function Input({
+export const Input = ({
   className,
   variant,
   inputSize,
   type = "text",
   ...props
-}: InputProps) {
-  return (
-    <input
-      className={twMerge(inputVariants({ inputSize, variant }), className)}
-      type={type}
-      {...props}
-    />
-  );
-}
+}: InputProps) => (
+  <input
+    className={twMerge(inputVariants({ inputSize, variant }), className)}
+    type={type}
+    {...props}
+  />
+);

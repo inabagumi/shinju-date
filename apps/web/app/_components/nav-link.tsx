@@ -9,11 +9,10 @@ interface NavLinkProps extends Omit<ComponentProps<typeof Link>, "href"> {
   href: string;
 }
 
-function isCurrentPath(pathname: string, href: string): boolean {
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
+const isCurrentPath = (pathname: string, href: string): boolean =>
+  pathname === href || pathname.startsWith(`${href}/`);
 
-function ActiveNavLink({ href, ...props }: NavLinkProps) {
+const ActiveNavLink = ({ href, ...props }: NavLinkProps) => {
   const pathname = usePathname();
 
   return (
@@ -23,7 +22,7 @@ function ActiveNavLink({ href, ...props }: NavLinkProps) {
       href={href}
     />
   );
-}
+};
 
 /**
  * A navigation link that marks itself with `aria-current="page"` when the
@@ -33,10 +32,8 @@ function ActiveNavLink({ href, ...props }: NavLinkProps) {
  * params, so the active state is resolved inside a Suspense boundary while a
  * plain link is rendered as the fallback.
  */
-export function NavLink(props: NavLinkProps) {
-  return (
-    <Suspense fallback={<Link {...props} />}>
-      <ActiveNavLink {...props} />
-    </Suspense>
-  );
-}
+export const NavLink = (props: NavLinkProps) => (
+  <Suspense fallback={<Link {...props} />}>
+    <ActiveNavLink {...props} />
+  </Suspense>
+);

@@ -27,61 +27,56 @@ vi.mock(import("../_actions/video-backfill-history"), () => ({
 const { VideoBackfillHistoryPanel } =
   await import("./video-backfill-history-panel");
 
-function createEntry(
+const createEntry = (
   overrides: Partial<VideoBackfillHistoryEntry> = {}
-): VideoBackfillHistoryEntry {
-  return {
-    accountId: "channel-row-1",
-    added: 12,
-    error: null,
-    finishedAt: "2026-11-14T02:00:00Z",
-    id: "history-1",
-    name: "Main",
-    pages: 3,
-    provider: "youtube",
-    requestedAt: "2026-11-14T01:00:00Z",
-    requester: "admin@example.com",
-    scope: "all",
-    status: "done",
-    talentId: "talent-1",
-    talentName: "Alice",
-    ...overrides,
-  };
-}
+): VideoBackfillHistoryEntry => ({
+  accountId: "channel-row-1",
+  added: 12,
+  error: null,
+  finishedAt: "2026-11-14T02:00:00Z",
+  id: "history-1",
+  name: "Main",
+  pages: 3,
+  provider: "youtube",
+  requestedAt: "2026-11-14T01:00:00Z",
+  requester: "admin@example.com",
+  scope: "all",
+  status: "done",
+  talentId: "talent-1",
+  talentName: "Alice",
+  ...overrides,
+});
 
-function createFailure(
+const createFailure = (
   overrides: Partial<VideoBackfillFailure> = {}
-): VideoBackfillFailure {
-  return {
-    accountId: "twitch-row-1",
-    active: false,
-    error: "quota exceeded",
-    finishedAt: "2026-11-14T03:00:00Z",
-    name: "alice",
-    provider: "twitch",
-    talentId: "talent-1",
-    talentName: "Alice",
-    ...overrides,
-  };
-}
+): VideoBackfillFailure => ({
+  accountId: "twitch-row-1",
+  active: false,
+  error: "quota exceeded",
+  finishedAt: "2026-11-14T03:00:00Z",
+  name: "alice",
+  provider: "twitch",
+  talentId: "talent-1",
+  talentName: "Alice",
+  ...overrides,
+});
 
-function renderPanel(
+const renderPanel = (
   history: Partial<Omit<VideoBackfillHistory, "success">> = {}
-) {
-  return render(
+) =>
+  render(
     <VideoBackfillHistoryPanel
       initialData={{ entries: [], failures: [], success: true, ...history }}
     />,
     { wrapper: ActionToastProvider }
   );
-}
 
 describe("VideoBackfillHistoryPanel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  function renderHistory() {
+  const renderHistory = () => {
     renderPanel({
       entries: [
         createEntry(),
@@ -97,7 +92,7 @@ describe("VideoBackfillHistoryPanel", () => {
         }),
       ],
     });
-  }
+  };
 
   it("shows what past backfills did and who requested them", () => {
     renderHistory();
@@ -165,7 +160,7 @@ describe("VideoBackfillHistoryPanel", () => {
   });
 
   /** Renders the failures and clicks the button to retry them. */
-  function openRetryDialog(): HTMLElement {
+  const openRetryDialog = (): HTMLElement => {
     mocks.getVideoBackfillHistoryAction.mockResolvedValue({
       data: {
         entries: [],
@@ -200,7 +195,7 @@ describe("VideoBackfillHistoryPanel", () => {
     fireEvent.click(button);
 
     return button;
-  }
+  };
 
   it("confirms before retrying the failed jobs at once", () => {
     openRetryDialog();

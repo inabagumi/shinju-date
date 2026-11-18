@@ -97,11 +97,11 @@ describe("video backfill run actions", () => {
   };
 
   /** Makes `start()` report that the request at `index` failed. */
-  function failRequest(
+  const failRequest = (
     requests: readonly BackfillRunRequest[],
     { onError }: StartBackfillRunOptions,
     index: number
-  ): void {
+  ): void => {
     const request = requests[index];
 
     if (!request || !onError) {
@@ -109,7 +109,7 @@ describe("video backfill run actions", () => {
     }
 
     onError(request, new Error("redis unavailable"));
-  }
+  };
 
   describe("requestVideoBackfillRunAction()", () => {
     beforeEach(() => {

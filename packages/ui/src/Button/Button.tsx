@@ -34,14 +34,14 @@ export type ButtonProps = ComponentPropsWithRef<"button"> &
     asChild?: boolean;
   };
 
-export function Button({
+export const Button = ({
   asChild = false,
   className,
   variant,
   size,
   type = "button",
   ...props
-}: ButtonProps) {
+}: ButtonProps) => {
   const Comp = asChild ? Slot : "button";
   return (
     <Comp
@@ -50,4 +50,4 @@ export function Button({
       {...props}
     />
   );
-}
+};

@@ -29,46 +29,44 @@ const { BACKFILL_SENTRY_TAG, workOffBackfillQueue } =
 const youtubeId = "youtube:channel-row-1";
 const twitchId = "twitch:twitch-row-1";
 
-function createJob(overrides: Partial<BackfillJob> = {}): BackfillJob {
-  return {
-    accountId: "channel-row-1",
-    added: 0,
-    attempts: 0,
-    cursor: null,
-    error: null,
-    finishedAt: null,
-    id: youtubeId,
-    pages: 0,
-    provider: "youtube",
-    requestedAt: "2026-11-14T00:00:00Z",
-    requestedBy: "user-1",
-    startedAt: null,
-    status: "pending",
-    talentId: "talent-1",
-    updatedAt: Temporal.Now.instant().toString(),
-    ...overrides,
-  };
-}
+const createJob = (overrides: Partial<BackfillJob> = {}): BackfillJob => ({
+  accountId: "channel-row-1",
+  added: 0,
+  attempts: 0,
+  cursor: null,
+  error: null,
+  finishedAt: null,
+  id: youtubeId,
+  pages: 0,
+  provider: "youtube",
+  requestedAt: "2026-11-14T00:00:00Z",
+  requestedBy: "user-1",
+  startedAt: null,
+  status: "pending",
+  talentId: "talent-1",
+  updatedAt: Temporal.Now.instant().toString(),
+  ...overrides,
+});
 
-function createTwitchJob(overrides: Partial<BackfillJob> = {}): BackfillJob {
-  return createJob({
+const createTwitchJob = (overrides: Partial<BackfillJob> = {}): BackfillJob =>
+  createJob({
     accountId: "twitch-row-1",
     id: twitchId,
     provider: "twitch",
     ...overrides,
   });
-}
 
 /** A claim of a job whose job has the given fields. */
-function claimOf(fields: Partial<BackfillJob>) {
-  return { job: expect.objectContaining(fields), token: expect.any(String) };
-}
+const claimOf = (fields: Partial<BackfillJob>) => ({
+  job: expect.objectContaining(fields),
+  token: expect.any(String),
+});
 
 /**
  * A queue on {@link FakeRedis} that holds the given jobs, queued in order,
  * so that the batch is tested with the policy of the queue.
  */
-async function createQueue(jobs: BackfillJob[]) {
+const createQueue = async (jobs: BackfillJob[]) => {
   const redis = new FakeRedis() as Partial<Redis> as Redis;
 
   for (const job of jobs) {
@@ -94,9 +92,9 @@ async function createQueue(jobs: BackfillJob[]) {
     queue,
     spies,
   };
-}
+};
 
-function createScraper() {
+const createScraper = () => {
   const addPastVideos = vi.fn<Scraper["addPastVideos"]>();
 
   return {
@@ -105,7 +103,7 @@ function createScraper() {
       () => ({ addPastVideos }) as Partial<Scraper> as Scraper
     ),
   };
-}
+};
 
 const farFuture = Temporal.Now.instant().add({ hours: 1 });
 
@@ -115,7 +113,7 @@ describe("workOffBackfillQueue", () => {
   });
 
   /** Works off a queue of one job whose videos fill two pages. */
-  async function readTwoPages() {
+  const readTwoPages = async () => {
     const queued = await createQueue([createJob()]);
     const scraper = createScraper();
 
@@ -130,7 +128,7 @@ describe("workOffBackfillQueue", () => {
     });
 
     return { ...queued, ...scraper, result };
-  }
+  };
 
   it("reads every page of a job", async () => {
     const { addPastVideos, getScraper, result, spies } = await readTwoPages();

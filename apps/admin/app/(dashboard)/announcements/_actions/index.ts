@@ -17,11 +17,11 @@ import {
 
 const ID_REQUIRED_ERROR = "IDが指定されていません。";
 
-async function revalidateAnnouncements(): Promise<void> {
+const revalidateAnnouncements = async (): Promise<void> => {
   revalidatePath("/announcements");
   revalidatePath("/", "page");
   await revalidateTags([CACHE_TAGS.ANNOUNCEMENTS]);
-}
+};
 
 export const createAnnouncementAction = adminFormAction(
   "createAnnouncementAction",

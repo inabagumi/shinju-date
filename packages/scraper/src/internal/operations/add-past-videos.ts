@@ -66,11 +66,11 @@ export interface PastVideoAdapter<TFetcher, TListed> {
  * @throws {StalledPaginationError} When the platform returns the requested
  *   cursor as the next one.
  */
-export async function addPastVideosWith<TFetcher, TListed>(
+export const addPastVideosWith = async <TFetcher, TListed>(
   context: CrawlContext<TFetcher>,
   adapter: PastVideoAdapter<TFetcher, TListed>,
   { accountId, cursor }: Pick<AddPastVideosOptions, "accountId" | "cursor">
-): Promise<AddPastVideosResult> {
+): Promise<AddPastVideosResult> => {
   const account = await findAccount(
     context.supabaseClient,
     adapter.accountTable,
@@ -99,4 +99,4 @@ export async function addPastVideosWith<TFetcher, TListed>(
   );
 
   return { added, cursor: page.cursor, listed: page.listed.length };
-}
+};

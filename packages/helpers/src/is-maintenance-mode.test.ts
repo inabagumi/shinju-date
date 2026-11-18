@@ -4,13 +4,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { isMaintenanceMode } from "./is-maintenance-mode.js";
 import type { MaintenanceModeRedisClient } from "./is-maintenance-mode.js";
 
-function createRedisClient(get: () => Promise<unknown>) {
+const createRedisClient = (get: () => Promise<unknown>) => {
   const mockGet = vi.fn<() => Promise<unknown>>(get);
 
   return { get: mockGet } as MaintenanceModeRedisClient & {
     get: typeof mockGet;
   };
-}
+};
 
 describe(isMaintenanceMode, () => {
   afterEach(() => {

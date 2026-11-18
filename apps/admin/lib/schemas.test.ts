@@ -26,12 +26,11 @@ describe("uuidSchema.safeParse", () => {
 
 describe("uuidListSchema.safeParse", () => {
   /** `n` 件の、重複しない UUID */
-  function uuids(n: number): string[] {
-    return Array.from(
+  const uuids = (n: number): string[] =>
+    Array.from(
       { length: n },
       (_, index) => `00000000-0000-0000-0000-${String(index).padStart(12, "0")}`
     );
-  }
 
   it.each([1, 2, MAX_UUID_LIST_LENGTH])("accepts %i ids", (n) => {
     expect(uuidListSchema.safeParse(uuids(n)).success).toBeTruthy();

@@ -23,7 +23,7 @@ interface BackfillStatusBadgeProps {
 }
 
 /** 過去動画の取り込みの状態を示すバッジ */
-export function BackfillStatusBadge({ status }: BackfillStatusBadgeProps) {
+export const BackfillStatusBadge = ({ status }: BackfillStatusBadgeProps) => {
   if (status === null) {
     return <Badge variant="neutral">未実行</Badge>;
   }
@@ -31,4 +31,4 @@ export function BackfillStatusBadge({ status }: BackfillStatusBadgeProps) {
   const { label, variant } = BACKFILL_STATUS_LABELS[status];
 
   return <Badge variant={variant}>{label}</Badge>;
-}
+};

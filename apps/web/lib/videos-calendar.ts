@@ -21,10 +21,10 @@ interface CreateVideosCalendarResponseOptions {
  * 1週間先までの動画を新しい順に 100 件まで取得し、カレンダーとして返す。
  * `/videos.ics` とタレント別のカレンダーで共有する。
  */
-export async function createVideosCalendarResponse({
+export const createVideosCalendarResponse = async ({
   kind = "all",
   talentIds = [],
-}: CreateVideosCalendarResponseOptions = {}): Promise<Response> {
+}: CreateVideosCalendarResponseOptions = {}): Promise<Response> => {
   let videos: CalendarVideo[];
 
   try {
@@ -50,4 +50,4 @@ export async function createVideosCalendarResponse({
   });
 
   return createCalendarResponse(events);
-}
+};

@@ -23,22 +23,20 @@ interface ErrorBody {
   message: string;
 }
 
-async function get(path: string, init?: RequestInit): Promise<Response> {
-  return await fetch(`${REST_URL}/${path}`, init);
-}
+const get = async (path: string, init?: RequestInit): Promise<Response> =>
+  await fetch(`${REST_URL}/${path}`, init);
 
-async function getJson<T>(path: string): Promise<T> {
+const getJson = async <T>(path: string): Promise<T> => {
   const response = await get(path);
 
   expect(response.ok).toBeTruthy();
 
   return (await response.json()) as T;
-}
+};
 
 /** The IDs of the rows, sorted, to compare them regardless of the order. */
-function ids(rows: readonly { id: string }[]): string[] {
-  return rows.map(({ id }) => id).sort();
-}
+const ids = (rows: readonly { id: string }[]): string[] =>
+  rows.map(({ id }) => id).sort();
 
 describe("Supabase filters", () => {
   let videos: Video[];

@@ -14,7 +14,7 @@ vi.mock(import("../_lib/actions"), () => ({ submitContactForm }));
 
 import { ContactForm } from "./contact-form";
 
-function failWithSubmittedValues() {
+const failWithSubmittedValues = () => {
   submitContactForm.mockImplementation(async (_, formData) => ({
     error: "送信中にエラーが発生しました。",
     success: false,
@@ -24,40 +24,33 @@ function failWithSubmittedValues() {
       )
     ),
   }));
-}
+};
 
-function getTypeSelect() {
-  return screen.getByLabelText(/お問い合わせ種別/) as HTMLSelectElement;
-}
+const getTypeSelect = () =>
+  screen.getByLabelText(/お問い合わせ種別/) as HTMLSelectElement;
 
-function getNameInput() {
-  return screen.getByLabelText("お名前（任意）") as HTMLInputElement;
-}
+const getNameInput = () =>
+  screen.getByLabelText("お名前（任意）") as HTMLInputElement;
 
-function getReplyCheckbox() {
-  return screen.getByLabelText("返信を希望する") as HTMLInputElement;
-}
+const getReplyCheckbox = () =>
+  screen.getByLabelText("返信を希望する") as HTMLInputElement;
 
-function queryEmailInput() {
-  return screen.queryByLabelText(/メールアドレス/) as HTMLInputElement | null;
-}
+const queryEmailInput = () =>
+  screen.queryByLabelText(/メールアドレス/) as HTMLInputElement | null;
 
-function getMessageTextarea() {
-  return screen.getByLabelText(/お問い合わせ内容/) as HTMLTextAreaElement;
-}
+const getMessageTextarea = () =>
+  screen.getByLabelText(/お問い合わせ内容/) as HTMLTextAreaElement;
 
 /** The values of the fields, with `email` undefined when it is not shown. */
-function getFormValues() {
-  return {
-    email: queryEmailInput()?.value,
-    message: getMessageTextarea().value,
-    name: getNameInput().value,
-    type: getTypeSelect().value,
-    wantsReply: getReplyCheckbox().checked,
-  };
-}
+const getFormValues = () => ({
+  email: queryEmailInput()?.value,
+  message: getMessageTextarea().value,
+  name: getNameInput().value,
+  type: getTypeSelect().value,
+  wantsReply: getReplyCheckbox().checked,
+});
 
-function fillForm() {
+const fillForm = () => {
   fireEvent.change(getTypeSelect(), { target: { value: "bug" } });
   fireEvent.change(getNameInput(), { target: { value: "山田花子" } });
   fireEvent.click(getReplyCheckbox());
@@ -67,13 +60,13 @@ function fillForm() {
   fireEvent.change(getMessageTextarea(), {
     target: { value: "動画が表示されません" },
   });
-}
+};
 
-async function submit(container: HTMLElement) {
+const submit = async (container: HTMLElement) => {
   await act(async () => {
     fireEvent.submit(container.querySelector("form") as HTMLFormElement);
   });
-}
+};
 
 describe(ContactForm, () => {
   beforeEach(() => {

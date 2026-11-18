@@ -24,7 +24,7 @@ interface TalentActionsProps {
   talent: Talent;
 }
 
-export function TalentActions({ talent }: TalentActionsProps) {
+export const TalentActions = ({ talent }: TalentActionsProps) => {
   const { isPending: isSyncPending, run: runSync } = useServerAction(
     syncTalentAccountsAction,
     {
@@ -109,4 +109,4 @@ export function TalentActions({ talent }: TalentActionsProps) {
       />
     </>
   );
-}
+};

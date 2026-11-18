@@ -119,12 +119,12 @@ const withMDX = createMDX({
   },
 });
 
-function withPlugins(config: NextConfig): NextConfig {
+const withPlugins = (config: NextConfig): NextConfig => {
   // Apply BotID rewrites before other plugins so challenge/proxy routes are
   // always registered.
   const configWithBotId = withBotId(config);
 
   return withSentry(withMDX(configWithBotId));
-}
+};
 
 export default withPlugins(nextConfig);

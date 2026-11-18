@@ -55,7 +55,7 @@ interface Diagnostic {
 }
 
 /** Expected `<rule>` -> lines, from the lines that end with `// report: <rule>` */
-function getExpectedRules(source: string): Map<string, number[]> {
+const getExpectedRules = (source: string): Map<string, number[]> => {
   const rules = new Map<string, number[]>();
 
   for (const [index, line] of source.split("\n").entries()) {
@@ -67,10 +67,10 @@ function getExpectedRules(source: string): Map<string, number[]> {
   }
 
   return rules;
-}
+};
 
 /** `eslint(no-restricted-imports)` -> `no-restricted-imports` */
-function getRuleName(code: string): string {
+const getRuleName = (code: string): string => {
   const [, plugin, rule] = /^([^(]+)\((.+)\)$/u.exec(code) ?? [];
 
   if (!(plugin && rule)) {
@@ -78,7 +78,7 @@ function getRuleName(code: string): string {
   }
 
   return plugin === "eslint" ? rule : `${plugin}/${rule}`;
-}
+};
 
 /**
  * Runs oxlint and returns the lines that each rule reports, by file.
@@ -86,7 +86,7 @@ function getRuleName(code: string): string {
  * @param paths - Paths relative to the repository root
  * @returns file -> rule -> lines
  */
-function lint(paths: string[]): Map<string, Map<string, number[]>> {
+const lint = (paths: string[]): Map<string, Map<string, number[]>> => {
   const result = spawnSync(oxlint, ["--format=json", ...paths], {
     cwd: root,
     encoding: "utf-8",
@@ -114,15 +114,14 @@ function lint(paths: string[]): Map<string, Map<string, number[]>> {
   }
 
   return reports;
-}
+};
 
 describe("oxlint.config.ts", () => {
   const fixtures = new Map<string, string>();
   let reports = new Map<string, Map<string, number[]>>();
 
-  function getLines(file: string, rule: string): number[] {
-    return (reports.get(file)?.get(rule) ?? []).toSorted((a, b) => a - b);
-  }
+  const getLines = (file: string, rule: string): number[] =>
+    (reports.get(file)?.get(rule) ?? []).toSorted((a, b) => a - b);
 
   beforeAll(() => {
     for (const parent of TEMP_PARENTS) {

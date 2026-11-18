@@ -25,23 +25,21 @@ vi.mock(import("next/navigation"), () => ({
 
 type Rerender = ReturnType<typeof render>["rerender"];
 
-function getSearchInput() {
-  return screen.getByLabelText("タイトルまたはIDで検索");
-}
+const getSearchInput = () => screen.getByLabelText("タイトルまたはIDで検索");
 
 /** 検索ボックスに入力し、URL に反映されるまで待つ */
-function search(value: string) {
+const search = (value: string) => {
   fireEvent.change(getSearchInput(), { target: { value } });
   act(() => {
     vi.advanceTimersByTime(500);
   });
-}
+};
 
 /** URL のパラメータが変わったときの再描画（「戻る」「進む」、リンク、自分の更新の反映） */
-function navigate(rerender: Rerender, searchParams: string) {
+const navigate = (rerender: Rerender, searchParams: string) => {
   mocks.searchParams = new URLSearchParams(searchParams);
   rerender(<VideoFilters talents={[]} />);
-}
+};
 
 describe("VideoFilters search", () => {
   beforeEach(() => {

@@ -47,11 +47,9 @@ return 0`;
  * new BackfillQueue(redis, { finishedJobKeys: getBackfillRunResultKeys })
  * ```
  */
-export function getBackfillRunResultKeys(
+export const getBackfillRunResultKeys = (
   job: Pick<BackfillJob, "id" | "runId">
-): string[] {
-  return job.runId ? [getRunResultKey(job.runId, job.id)] : [];
-}
+): string[] => (job.runId ? [getRunResultKey(job.runId, job.id)] : []);
 
 /** Accounts queued at the same time when a check is requested. */
 const ENQUEUE_CONCURRENCY = 10;
@@ -137,30 +135,32 @@ export type StartBackfillRunResult =
   /** No account was queued: every one was skipped or failed. */
   | { failed: number; skipped: number; status: "empty" };
 
-function createCounts(): Record<BackfillRunJobStatus, number> {
-  return { done: 0, failed: 0, interrupted: 0, pending: 0, running: 0 };
-}
+const createCounts = (): Record<BackfillRunJobStatus, number> => ({
+  done: 0,
+  failed: 0,
+  interrupted: 0,
+  pending: 0,
+  running: 0,
+});
 
-function toProgress(
+const toProgress = (
   runJob: BackfillRunJob,
   job: BackfillJob,
   { active, status }: BackfillJobActivity
-): BackfillRunJobProgress {
-  return {
-    ...runJob,
-    active,
-    added: Math.max(0, job.added - runJob.addedBefore),
-    error: job.error,
-    status,
-    updatedAt: job.updatedAt,
-  };
-}
+): BackfillRunJobProgress => ({
+  ...runJob,
+  active,
+  added: Math.max(0, job.added - runJob.addedBefore),
+  error: job.error,
+  status,
+  updatedAt: job.updatedAt,
+});
 
-async function mapWithConcurrency<T, R>(
+const mapWithConcurrency = async <T, R>(
   items: readonly T[],
   concurrency: number,
   callback: (item: T) => Promise<R>
-): Promise<R[]> {
+): Promise<R[]> => {
   const results = new Array<R>(items.length);
   let next = 0;
 
@@ -177,7 +177,7 @@ async function mapWithConcurrency<T, R>(
   );
 
   return results;
-}
+};
 
 /**
  * Checks of the accounts of all active talents for videos that are not

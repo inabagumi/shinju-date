@@ -21,40 +21,34 @@ export type TwitchVideoFields = Pick<
 /**
  * Maps a Helix video to the columns we keep in sync with Twitch.
  */
-export function toVideoFields(video: TwitchVideo): TwitchVideoFields {
-  return {
-    duration: video.duration,
-    published_at: toDBString(
-      Temporal.Instant.from(video.published_at || video.created_at)
-    ),
-    status: getTwitchVideoStatus(video.type),
-    title: video.title,
-  };
-}
+export const toVideoFields = (video: TwitchVideo): TwitchVideoFields => ({
+  duration: video.duration,
+  published_at: toDBString(
+    Temporal.Instant.from(video.published_at || video.created_at)
+  ),
+  status: getTwitchVideoStatus(video.type),
+  title: video.title,
+});
 
 /**
  * Maps a Helix clip to the columns we keep in sync with Twitch.
  */
-export function toClipFields(clip: TwitchClip): TwitchVideoFields {
-  return {
-    duration: clip.duration,
-    published_at: toDBString(Temporal.Instant.from(clip.created_at)),
-    status: getTwitchVideoStatus("clip"),
-    title: clip.title,
-  };
-}
+export const toClipFields = (clip: TwitchClip): TwitchVideoFields => ({
+  duration: clip.duration,
+  published_at: toDBString(Temporal.Instant.from(clip.created_at)),
+  status: getTwitchVideoStatus("clip"),
+  title: clip.title,
+});
 
 /**
  * Maps a live stream to the columns of its `videos` row while it is on air.
  */
-export function toLiveFields(stream: TwitchStream): TwitchVideoFields {
-  return {
-    duration: "P0D",
-    published_at: toDBString(Temporal.Instant.from(stream.started_at)),
-    status: "LIVE",
-    title: stream.title,
-  };
-}
+export const toLiveFields = (stream: TwitchStream): TwitchVideoFields => ({
+  duration: "P0D",
+  published_at: toDBString(Temporal.Instant.from(stream.started_at)),
+  status: "LIVE",
+  title: stream.title,
+});
 
 /**
  * Twitch serves this placeholder while a VOD's own thumbnail is still being
@@ -69,9 +63,9 @@ const PROCESSING_THUMBNAIL_PATTERN = /\/_404\/404_processing_/;
  * empty during the broadcast and points to a "processing" placeholder right
  * after it, and neither should be stored as the video's thumbnail.
  */
-export function getThumbnailSource(
+export const getThumbnailSource = (
   templateUrl: string
-): ThumbnailSource | null {
+): ThumbnailSource | null => {
   if (!templateUrl || PROCESSING_THUMBNAIL_PATTERN.test(templateUrl)) {
     return null;
   }
@@ -81,4 +75,4 @@ export function getThumbnailSource(
     url: resolveThumbnailTemplateUrl(templateUrl),
     width: DEFAULT_THUMBNAIL_WIDTH,
   };
-}
+};

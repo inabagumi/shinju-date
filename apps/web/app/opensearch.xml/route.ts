@@ -11,7 +11,7 @@ import { getVideosPath } from "@/lib/video-kind-filter";
  */
 const SEARCH_TERMS = "{searchTerms}";
 
-export function GET(): Response {
+export const GET = (): Response => {
   const baseURL = publicEnv.NEXT_PUBLIC_BASE_URL;
   const body = dedent`
     <?xml version="1.0" encoding="utf-8"?>
@@ -33,4 +33,4 @@ export function GET(): Response {
       "Content-Type": "application/opensearchdescription+xml; charset=UTF-8",
     },
   });
-}
+};

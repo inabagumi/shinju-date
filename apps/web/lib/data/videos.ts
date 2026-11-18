@@ -18,9 +18,8 @@ import { hasPlatformSource } from "@/lib/video-url";
  * The query of the videos of the video cards, which the type of the rows is
  * derived from. The filters are added to it by each fetcher.
  */
-function selectVideos() {
-  return supabaseClient.from("videos").select(VIDEO_LIST_SELECT);
-}
+const selectVideos = () =>
+  supabaseClient.from("videos").select(VIDEO_LIST_SELECT);
 
 /** A video of the video cards */
 export type Video = QueryData<ReturnType<typeof selectVideos>>[number];
@@ -93,14 +92,13 @@ export const fetchCurrentTime = async (): Promise<string> => {
   return Temporal.Now.zonedDateTimeISO(TIME_ZONE).toString();
 };
 
-async function getDefaultBaseTime() {
-  return Temporal.Now.zonedDateTimeISO(TIME_ZONE)
+const getDefaultBaseTime = async () =>
+  Temporal.Now.zonedDateTimeISO(TIME_ZONE)
     .startOfDay()
     .add({
       months: 1,
     })
     .toInstant();
-}
 
 interface FetchVideosOptions {
   kind?: VideoKindFilter;
@@ -177,9 +175,8 @@ export const countVideos = async ({
 };
 
 /** The query of the videos of the calendars, which the type is derived from */
-function selectCalendarVideos() {
-  return supabaseClient.from("videos").select(VIDEO_CALENDAR_SELECT);
-}
+const selectCalendarVideos = () =>
+  supabaseClient.from("videos").select(VIDEO_CALENDAR_SELECT);
 
 /** A video of the calendars (`/videos.ics` and `/talents/[id].ics`) */
 export type CalendarVideo = QueryData<
@@ -258,12 +255,12 @@ interface DashboardVideosCondition {
  * Fetch the videos of a section of the dashboard that match `condition`, from
  * the latest.
  */
-async function fetchDashboardSectionVideos({
+const fetchDashboardSectionVideos = async ({
   limit,
   shorts,
   status,
   withinHours,
-}: DashboardVideosCondition): Promise<Video[]> {
+}: DashboardVideosCondition): Promise<Video[]> => {
   "use cache: remote";
 
   cacheLife("minutes");
@@ -292,7 +289,7 @@ async function fetchDashboardSectionVideos({
   );
 
   return videos.filter(hasPlatformSource);
-}
+};
 
 /** The currently streaming (`LIVE`) videos */
 const LIVE_VIDEOS_CONDITION: DashboardVideosCondition = {

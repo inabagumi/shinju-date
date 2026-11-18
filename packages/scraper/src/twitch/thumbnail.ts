@@ -15,10 +15,10 @@ export interface CreateTwitchThumbnailOptions {
  * cannot be stored. A video without a thumbnail is still worth listing, so
  * failures are reported instead of thrown.
  */
-export async function createTwitchThumbnail(
+export const createTwitchThumbnail = async (
   { now, reportError, supabaseClient }: WriteContext,
   { thumbnailUrl, twitchVideoId }: CreateTwitchThumbnailOptions
-): Promise<Thumbnail | null> {
+): Promise<Thumbnail | null> => {
   const source = getThumbnailSource(thumbnailUrl);
 
   if (!source) {
@@ -37,4 +37,4 @@ export async function createTwitchThumbnail(
 
     return null;
   }
-}
+};

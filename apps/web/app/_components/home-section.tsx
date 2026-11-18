@@ -42,15 +42,13 @@ interface HomeSectionCountProps {
   count: number;
 }
 
-export function HomeSectionCount({ count }: HomeSectionCountProps) {
-  return <p className="text-muted tabular-nums">{count}件</p>;
-}
+export const HomeSectionCount = ({ count }: HomeSectionCountProps) => (
+  <p className="text-muted tabular-nums">{count}件</p>
+);
 
-export function HomeSectionCountSkeleton() {
-  return (
-    <span
-      aria-hidden="true"
-      className="inline-block h-4 w-8 animate-pulse rounded-control bg-muted align-middle"
-    />
-  );
-}
+export const HomeSectionCountSkeleton = () => (
+  <span
+    aria-hidden="true"
+    className="inline-block h-4 w-8 animate-pulse rounded-control bg-muted align-middle"
+  />
+);

@@ -6,9 +6,9 @@ import {
   summarizeStreamTendency,
 } from "./stream-tendency";
 
-function createCounts(
+const createCounts = (
   cells: [weekday: number, hour: number, count: number][] = []
-): number[][] {
+): number[][] => {
   const counts = Array.from({ length: 7 }, () =>
     Array.from({ length: 24 }, () => 0)
   );
@@ -22,7 +22,7 @@ function createCounts(
   }
 
   return counts;
-}
+};
 
 describe(countStreamsByWeekdayAndHour, () => {
   it("returns 7 rows of 24 zeros for no streams", () => {

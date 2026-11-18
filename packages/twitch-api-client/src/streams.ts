@@ -13,7 +13,7 @@ interface GetStreamsByUserIdsOptions extends ClientOptions, BatchOptions {
  * Gets currently live streams for the given Helix user IDs.
  * Offline users are omitted from the response (same as Helix).
  */
-export async function* getStreamsByUserIds({
+export const getStreamsByUserIds = async function* getStreamsByUserIds({
   client = getTwitchApiClient(),
   schedule,
   userIds,
@@ -30,4 +30,4 @@ export async function* getStreamsByUserIds({
       yield mapped;
     }
   }
-}
+};

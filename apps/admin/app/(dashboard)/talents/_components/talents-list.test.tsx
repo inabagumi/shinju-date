@@ -48,21 +48,21 @@ const { TalentsList } = await import("./talents-list");
 
 type TalentsListProps = Parameters<typeof TalentsList>[0];
 
-function createTalent(overrides: Partial<TalentListItem> = {}): TalentListItem {
-  return {
-    created_at: "2025-01-01T00:00:00Z",
-    deleted_at: null,
-    id: "00000000-0000-4000-8000-000000000001",
-    name: "テストタレント",
-    status: "active",
-    updated_at: "2025-01-02T00:00:00Z",
-    youtube_channels: [],
-    ...overrides,
-  };
-}
+const createTalent = (
+  overrides: Partial<TalentListItem> = {}
+): TalentListItem => ({
+  created_at: "2025-01-01T00:00:00Z",
+  deleted_at: null,
+  id: "00000000-0000-4000-8000-000000000001",
+  name: "テストタレント",
+  status: "active",
+  updated_at: "2025-01-02T00:00:00Z",
+  youtube_channels: [],
+  ...overrides,
+});
 
-function renderList(props: Partial<TalentsListProps> = {}) {
-  return render(
+const renderList = (props: Partial<TalentsListProps> = {}) =>
+  render(
     <TalentsList
       search={undefined}
       searchParams=""
@@ -73,7 +73,6 @@ function renderList(props: Partial<TalentsListProps> = {}) {
     />,
     { wrapper: ActionToastProvider }
   );
-}
 
 describe("TalentsList", () => {
   beforeEach(() => {
@@ -82,7 +81,7 @@ describe("TalentsList", () => {
   });
 
   /** Renders an active talent with a channel and a deleted one without. */
-  function renderTalentRows(): [HTMLElement, HTMLElement] {
+  const renderTalentRows = (): [HTMLElement, HTMLElement] => {
     renderList({
       talents: [
         createTalent({
@@ -104,7 +103,7 @@ describe("TalentsList", () => {
     });
 
     return screen.getAllByRole("row").slice(1) as [HTMLElement, HTMLElement];
-  }
+  };
 
   it("renders a row for each talent", () => {
     expect(renderTalentRows()).toHaveLength(2);

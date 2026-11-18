@@ -18,10 +18,10 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
  *
  * @returns 同期結果。失敗した場合は `null`
  */
-export async function syncYouTubeChannelIconSafely(
+export const syncYouTubeChannelIconSafely = async (
   channel: SyncYouTubeChannelIconOptions["channel"],
   saved: SavedYouTubeChannelIcon
-): Promise<ProfileImageSyncResult | null> {
+): Promise<ProfileImageSyncResult | null> => {
   try {
     return await syncYouTubeChannelIcon({
       channel,
@@ -38,11 +38,10 @@ export async function syncYouTubeChannelIconSafely(
 
     return null;
   }
-}
+};
 
 /** アイコンに変更があったかどうか（失敗・変更なしは `false`） */
-export function hasProfileImageChanged(
+export const hasProfileImageChanged = (
   result: ProfileImageSyncResult | null
-): result is Exclude<ProfileImageSyncResult, "unchanged"> {
-  return result !== null && result !== "unchanged";
-}
+): result is Exclude<ProfileImageSyncResult, "unchanged"> =>
+  result !== null && result !== "unchanged";

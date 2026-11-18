@@ -8,33 +8,30 @@ import {
   toBackfillHistoryRow,
 } from "./video-backfill-history";
 
-function createJob(overrides: Partial<BackfillJob> = {}): BackfillJob {
-  return {
-    accountId: "channel-row-1",
-    added: 12,
-    attempts: 0,
-    cursor: null,
-    error: null,
-    finishedAt: "2026-11-14T00:10:00.123Z",
-    id: "youtube:channel-row-1",
-    pages: 3,
-    provider: "youtube",
-    requestedAt: "2026-11-14T00:00:00.456Z",
-    requestedBy: "user-1",
-    runId: "run-1",
-    startedAt: "2026-11-14T00:01:00.789Z",
-    status: "done",
-    talentId: "talent-1",
-    updatedAt: "2026-11-14T00:10:00.123Z",
-    ...overrides,
-  };
-}
+const createJob = (overrides: Partial<BackfillJob> = {}): BackfillJob => ({
+  accountId: "channel-row-1",
+  added: 12,
+  attempts: 0,
+  cursor: null,
+  error: null,
+  finishedAt: "2026-11-14T00:10:00.123Z",
+  id: "youtube:channel-row-1",
+  pages: 3,
+  provider: "youtube",
+  requestedAt: "2026-11-14T00:00:00.456Z",
+  requestedBy: "user-1",
+  runId: "run-1",
+  startedAt: "2026-11-14T00:01:00.789Z",
+  status: "done",
+  talentId: "talent-1",
+  updatedAt: "2026-11-14T00:10:00.123Z",
+  ...overrides,
+});
 
-function withoutRunId({ runId: _runId, ...job }: BackfillJob): BackfillJob {
-  return job;
-}
+const withoutRunId = ({ runId: _runId, ...job }: BackfillJob): BackfillJob =>
+  job;
 
-function createSupabaseClient(error: { message: string } | null = null) {
+const createSupabaseClient = (error: { message: string } | null = null) => {
   const upsert = vi.fn<
     (
       row: ReturnType<typeof toBackfillHistoryRow>,
@@ -50,7 +47,7 @@ function createSupabaseClient(error: { message: string } | null = null) {
     from,
     upsert,
   };
-}
+};
 
 describe(toBackfillHistoryRow, () => {
   it("converts a finished job, keeping the request time as queued", () => {

@@ -9,7 +9,7 @@ import { finishVideoSync } from "@/lib/video-sync";
 
 export const maxDuration = 120;
 
-export async function POST(request: NextRequest): Promise<Response> {
+export const POST = async (request: NextRequest): Promise<Response> => {
   const query = parseQuery(providerQuerySchema, request);
 
   if (query instanceof Response) {
@@ -24,6 +24,6 @@ export async function POST(request: NextRequest): Promise<Response> {
 
     await finishVideoSync({ changed, now, signal: request.signal });
   });
-}
+};
 
 export const GET = POST;

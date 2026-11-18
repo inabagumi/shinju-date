@@ -17,9 +17,9 @@ const token = process.env["UPSTASH_REDIS_REST_TOKEN"];
  * `define` gets a function that creates the client a test runs against; pass
  * it to {@link useScopedRedis}.
  */
-export function describeOnEachRedis(
+export const describeOnEachRedis = (
   define: (createClient: () => Redis) => void
-): void {
+): void => {
   describe("on FakeRedis", () => {
     define(() => new FakeRedis() as unknown as Redis);
   });
@@ -27,7 +27,7 @@ export function describeOnEachRedis(
   describe.skipIf(!url || !token)("on Redis", () => {
     define(() => new Redis({ token: token ?? "", url: url ?? "" }));
   });
-}
+};
 
 interface SetOptions {
   ex?: number;
@@ -57,7 +57,7 @@ export interface ScopedRedis {
  * work on the keys under `prefix`. Any other command is missing, so a test
  * that uses one fails instead of touching a key outside the prefix.
  */
-export function scopeRedis(client: Redis, prefix: string): ScopedRedis {
+export const scopeRedis = (client: Redis, prefix: string): ScopedRedis => {
   const used = new Set<string>();
   let nextScriptHook: (() => Promise<void>) | undefined;
 
@@ -115,19 +115,20 @@ export function scopeRedis(client: Redis, prefix: string): ScopedRedis {
     },
     redis: redis as unknown as Redis,
   };
-}
+};
 
-function toSetCommandOptions(options: SetOptions | undefined) {
+const toSetCommandOptions = (options: SetOptions | undefined) =>
   // The options of `SET` of `@upstash/redis` are a union of shapes.
-  return options as Parameters<Redis["set"]>[2];
-}
+  options as Parameters<Redis["set"]>[2];
 
 /**
  * Gives each test of the enclosing `describe` a {@link ScopedRedis} of its
  * own, on the client that `createClient` returns, and deletes its keys after
  * the test.
  */
-export function useScopedRedis(createClient: () => Redis): () => ScopedRedis {
+export const useScopedRedis = (
+  createClient: () => Redis
+): (() => ScopedRedis) => {
   let current: ScopedRedis | undefined;
 
   beforeEach(() => {
@@ -149,19 +150,19 @@ export function useScopedRedis(createClient: () => Redis): () => ScopedRedis {
 
     return current;
   };
-}
+};
 
 /**
  * Checks the time to live of a key. Real Redis counts it down while the test
  * runs, so it may be a little less than it was set to.
  */
-export async function expectTtl(
+export const expectTtl = async (
   redis: Redis,
   key: string,
   seconds: number
-): Promise<void> {
+): Promise<void> => {
   const ttl = await redis.ttl(key);
 
   expect(ttl).toBeLessThanOrEqual(seconds);
   expect(ttl).toBeGreaterThan(seconds - 30);
-}
+};

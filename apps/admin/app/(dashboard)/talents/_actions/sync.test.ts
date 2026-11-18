@@ -70,27 +70,25 @@ const updatedUser: SyncAccountResult = {
   status: "updated",
 };
 
-function account(
+const account = (
   status: SyncAccountResult["status"],
   overrides: Partial<SyncAccountResult> = {}
-): SyncAccountResult {
-  return {
-    accountId: "account-row",
-    iconUpdated: false,
-    name: "Name",
-    status,
-    ...overrides,
-  };
-}
+): SyncAccountResult => ({
+  accountId: "account-row",
+  iconUpdated: false,
+  name: "Name",
+  status,
+  ...overrides,
+});
 
 /** Makes the scrapers return these results for the talent. */
-function syncTo({
+const syncTo = ({
   twitch = [],
   youtube = [],
 }: {
   twitch?: SyncAccountResult[] | Error;
   youtube?: SyncAccountResult[] | Error;
-}): void {
+}): void => {
   for (const [mock, results] of [
     [scraper.youtube, youtube],
     [scraper.twitch, twitch],
@@ -101,11 +99,9 @@ function syncTo({
       mock.mockResolvedValue(results);
     }
   }
-}
+};
 
-function talentTouches() {
-  return supabase.calls("rpc", "touch_talent");
-}
+const talentTouches = () => supabase.calls("rpc", "touch_talent");
 
 describe("talent sync actions", () => {
   beforeEach(() => {

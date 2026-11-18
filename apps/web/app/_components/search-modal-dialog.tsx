@@ -12,7 +12,7 @@ import { Suspense, useCallback } from "react";
 import { SearchModalContent } from "./search-modal-content";
 import { useSearchModal } from "./search-modal-context";
 
-export function SearchModalDialog() {
+export const SearchModalDialog = () => {
   const { isOpen, closeModal } = useSearchModal();
 
   const handleClose = useCallback(
@@ -45,4 +45,4 @@ export function SearchModalDialog() {
       </DialogPortal>
     </Dialog>
   );
-}
+};

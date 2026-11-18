@@ -29,13 +29,13 @@ vi.mock(import("./video-card"), () => ({
   VideoCardSkeleton: vi.fn<typeof VideoCardSkeleton>(),
 }));
 
-function renderWithQueryClient(ui: ReactNode) {
+const renderWithQueryClient = (ui: ReactNode) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false, staleTime: Infinity } },
   });
 
   render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
-}
+};
 
 describe(SearchResults, () => {
   beforeEach(() => {

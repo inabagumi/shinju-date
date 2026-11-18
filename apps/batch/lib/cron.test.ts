@@ -52,12 +52,11 @@ const job: CronJob = {
   schedule: "1/5 * * * *",
 };
 
-function createRequest(headers: Record<string, string> = {}): Request {
-  return new Request("http://localhost:5000/videos/update", {
+const createRequest = (headers: Record<string, string> = {}): Request =>
+  new Request("http://localhost:5000/videos/update", {
     headers,
     method: "POST",
   });
-}
 
 describe("runCronJob", () => {
   beforeEach(() => {

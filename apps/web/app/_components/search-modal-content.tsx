@@ -40,15 +40,14 @@ const SEARCH_MODAL_STALE_TIME = 5 * 60 * 1000;
 
 const NO_TALENTS: Talent[] = [];
 
-function isVideosPath(pathname: string): boolean {
-  return pathname === "/videos" || pathname.startsWith("/videos/");
-}
+const isVideosPath = (pathname: string): boolean =>
+  pathname === "/videos" || pathname.startsWith("/videos/");
 
 interface SearchModalContentProps {
   onClose: () => void;
 }
 
-export function SearchModalContent({ onClose }: SearchModalContentProps) {
+export const SearchModalContent = ({ onClose }: SearchModalContentProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -333,4 +332,4 @@ export function SearchModalContent({ onClose }: SearchModalContentProps) {
       </div>
     </div>
   );
-}
+};

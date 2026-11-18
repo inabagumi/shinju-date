@@ -17,11 +17,11 @@ import { createTwitchThumbnail } from "./thumbnail.js";
  *
  * @returns Whether the saved video changed.
  */
-export async function refreshTypeAndThumbnail(
+export const refreshTypeAndThumbnail = async (
   context: WriteContext,
   saved: SavedTwitchVideo,
   fetched: TwitchLookedUpVideo
-): Promise<boolean> {
+): Promise<boolean> => {
   const type = getTwitchVideoType(fetched);
   const typeChanged = saved.twitch_video.type !== type;
 
@@ -47,7 +47,7 @@ export async function refreshTypeAndThumbnail(
   });
 
   return thumbnail !== null || typeChanged;
-}
+};
 
 /**
  * Brings the newest finished Twitch videos of active talents in line with
@@ -56,15 +56,14 @@ export async function refreshTypeAndThumbnail(
  *
  * @returns The number of videos updated or deleted.
  */
-export function refreshRecentTwitchVideos(
+export const refreshRecentTwitchVideos = (
   context: CrawlContext<TwitchFetcher>
-): Promise<number> {
-  return refreshSavedVideos(context, createTwitchPlatform(context.fetcher), {
+): Promise<number> =>
+  refreshSavedVideos(context, createTwitchPlatform(context.fetcher), {
     afterRefresh: (saved, fetched) =>
       refreshTypeAndThumbnail(context, saved, fetched),
     scope: "recent",
   });
-}
 
 /**
  * Checks every saved Twitch video of non-deleted talents (retired ones too)
@@ -72,8 +71,7 @@ export function refreshRecentTwitchVideos(
  *
  * @returns The number of videos deleted.
  */
-export function removeUnavailableTwitchVideos(
+export const removeUnavailableTwitchVideos = (
   context: CrawlContext<TwitchFetcher>
-): Promise<number> {
-  return sweepUnavailableVideos(context, createTwitchPlatform(context.fetcher));
-}
+): Promise<number> =>
+  sweepUnavailableVideos(context, createTwitchPlatform(context.fetcher));

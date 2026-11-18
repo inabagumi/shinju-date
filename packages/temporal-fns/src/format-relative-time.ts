@@ -31,11 +31,11 @@ const UNITS: readonly (readonly [
  * @param now - Optional reference time (defaults to current time)
  * @returns A relative time string (e.g., "5分前", "2時間前")
  */
-export function formatRelativeTime(
+export const formatRelativeTime = (
   date: Temporal.Instant | Temporal.ZonedDateTime,
   locale = "ja",
   now?: Temporal.Instant
-): string {
+): string => {
   const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 
   // Convert inputs to Instant for comparison
@@ -61,4 +61,4 @@ export function formatRelativeTime(
 
   // Unreachable: the last entry has an infinite upper bound
   throw new RangeError(`Invalid time difference: ${diffSeconds}`);
-}
+};

@@ -18,25 +18,23 @@ import { createIconResponse } from "./icon.js";
  * `snippet.thumbnails` of a channel, in the sizes the YouTube Data API
  * returns for channels.
  */
-function createChannelThumbnails(channelId: string) {
-  return {
-    default: {
-      height: 88,
-      url: getYouTubeChannelIconUrl(channelId, 88),
-      width: 88,
-    },
-    high: {
-      height: 800,
-      url: getYouTubeChannelIconUrl(channelId, 800),
-      width: 800,
-    },
-    medium: {
-      height: 240,
-      url: getYouTubeChannelIconUrl(channelId, 240),
-      width: 240,
-    },
-  };
-}
+const createChannelThumbnails = (channelId: string) => ({
+  default: {
+    height: 88,
+    url: getYouTubeChannelIconUrl(channelId, 88),
+    width: 88,
+  },
+  high: {
+    height: 800,
+    url: getYouTubeChannelIconUrl(channelId, 800),
+    width: 800,
+  },
+  medium: {
+    height: 240,
+    url: getYouTubeChannelIconUrl(channelId, 240),
+    width: 240,
+  },
+});
 
 /** A channel as returned by the YouTube Data API (`channels.list`). */
 interface YouTubeChannel {
@@ -50,7 +48,7 @@ interface YouTubeChannel {
   };
 }
 
-function toYouTubeChannel({
+const toYouTubeChannel = ({
   handle,
   id,
   title,
@@ -58,20 +56,18 @@ function toYouTubeChannel({
   handle: string | null;
   id: string;
   title: string;
-}): YouTubeChannel {
-  return {
-    contentDetails: {
-      relatedPlaylists: { uploads: getYouTubeUploadsPlaylistId(id) },
-    },
-    id,
-    kind: "youtube#channel",
-    snippet: {
-      ...(handle ? { customUrl: handle } : {}),
-      thumbnails: createChannelThumbnails(id),
-      title,
-    },
-  };
-}
+}): YouTubeChannel => ({
+  contentDetails: {
+    relatedPlaylists: { uploads: getYouTubeUploadsPlaylistId(id) },
+  },
+  id,
+  kind: "youtube#channel",
+  snippet: {
+    ...(handle ? { customUrl: handle } : {}),
+    thumbnails: createChannelThumbnails(id),
+    title,
+  },
+});
 
 /** The format of the ID of a channel: `UC` and 22 characters. */
 const CHANNEL_ID_PATTERN = /^UC[\w-]{22}$/;
@@ -80,11 +76,11 @@ const CHANNEL_ID_PATTERN = /^UC[\w-]{22}$/;
  * The channels of the Supabase mock (`youtube_channels`), so that the apps
  * find the channels that they saved.
  */
-async function getSavedChannels(): Promise<Tables<"youtube_channels">[]> {
+const getSavedChannels = async (): Promise<Tables<"youtube_channels">[]> => {
   await ensureCollectionsSeeded();
 
   return youtubeChannels.findMany();
-}
+};
 
 /**
  * Finds a channel by ID. A channel of the Supabase mock is answered as it is
@@ -92,7 +88,7 @@ async function getSavedChannels(): Promise<Tables<"youtube_channels">[]> {
  * generated channel without videos, so that a new channel can be added in
  * the admin app.
  */
-async function findChannelById(id: string): Promise<YouTubeChannel | null> {
+const findChannelById = async (id: string): Promise<YouTubeChannel | null> => {
   const channel = (await getSavedChannels()).find(
     (candidate) => candidate.youtube_channel_id === id
   );
@@ -108,7 +104,7 @@ async function findChannelById(id: string): Promise<YouTubeChannel | null> {
   return CHANNEL_ID_PATTERN.test(id)
     ? toYouTubeChannel({ handle: null, id, title: `Channel ${id}` })
     : null;
-}
+};
 
 /** A video of the Supabase mock on YouTube, with its video and its channel. */
 interface MockYouTubeVideo {
@@ -122,7 +118,7 @@ interface MockYouTubeVideo {
  * `videos` and `youtube_channels`), newest first like the uploads of a
  * channel. Deleted videos are left out, as they are no longer on YouTube.
  */
-async function getMockYouTubeVideos(): Promise<MockYouTubeVideo[]> {
+const getMockYouTubeVideos = async (): Promise<MockYouTubeVideo[]> => {
   const channelsById = new Map(
     (await getSavedChannels()).map((channel) => [channel.id, channel])
   );
@@ -143,12 +139,11 @@ async function getMockYouTubeVideos(): Promise<MockYouTubeVideo[]> {
     .sort((a, b) =>
       Temporal.Instant.compare(b.video.published_at, a.video.published_at)
     );
-}
+};
 
 /** A timestamp as the YouTube Data API returns it, such as `2026-01-01T00:00:00Z`. */
-function toYouTubeTimestamp(instant: Temporal.Instant | string): string {
-  return Temporal.Instant.from(instant).toString({ smallestUnit: "second" });
-}
+const toYouTubeTimestamp = (instant: Temporal.Instant | string): string =>
+  Temporal.Instant.from(instant).toString({ smallestUnit: "second" });
 
 /**
  * `liveStreamingDetails` of a video, which follows its status like on
@@ -156,11 +151,11 @@ function toYouTubeTimestamp(instant: Temporal.Instant | string): string {
  * has started, and a finished stream has ended after its duration. Videos
  * that are not streams have none.
  */
-function toLiveStreamingDetails({
+const toLiveStreamingDetails = ({
   duration,
   published_at,
   status,
-}: Tables<"videos">) {
+}: Tables<"videos">) => {
   const start = toYouTubeTimestamp(published_at);
 
   switch (status) {
@@ -185,10 +180,10 @@ function toLiveStreamingDetails({
       return undefined;
     }
   }
-}
+};
 
 /** A video as returned by the YouTube Data API (`videos.list`). */
-function toYouTubeVideo({ channel, video, youtubeVideo }: MockYouTubeVideo) {
+const toYouTubeVideo = ({ channel, video, youtubeVideo }: MockYouTubeVideo) => {
   const id = youtubeVideo.youtube_video_id;
   const liveStreamingDetails = toLiveStreamingDetails(video);
 
@@ -216,41 +211,34 @@ function toYouTubeVideo({ channel, video, youtubeVideo }: MockYouTubeVideo) {
       title: video.title,
     },
   };
-}
+};
 
 /** An item of the uploads of a channel (`playlistItems.list`). */
-function toPlaylistItem({ video, youtubeVideo }: MockYouTubeVideo) {
-  return {
-    contentDetails: {
-      videoId: youtubeVideo.youtube_video_id,
-      videoPublishedAt: toYouTubeTimestamp(video.published_at),
-    },
-    id: `mock-playlist-item-${youtubeVideo.id}`,
-    kind: "youtube#playlistItem",
-  };
-}
+const toPlaylistItem = ({ video, youtubeVideo }: MockYouTubeVideo) => ({
+  contentDetails: {
+    videoId: youtubeVideo.youtube_video_id,
+    videoPublishedAt: toYouTubeTimestamp(video.published_at),
+  },
+  id: `mock-playlist-item-${youtubeVideo.id}`,
+  kind: "youtube#playlistItem",
+});
 
 /**
  * The values of a parameter that can be given several times or separated
  * with commas, such as `id`.
  */
-function getListParameter(url: URL, name: string): string[] {
-  return url.searchParams
+const getListParameter = (url: URL, name: string): string[] =>
+  url.searchParams
     .getAll(name)
     .flatMap((value) => value.split(","))
     .map((value) => value.trim())
     .filter(Boolean);
-}
 
-function normalizeHandle(handle: string): string {
-  return handle.startsWith("@")
-    ? handle.slice(1).toLowerCase()
-    : handle.toLowerCase();
-}
+const normalizeHandle = (handle: string): string =>
+  handle.startsWith("@") ? handle.slice(1).toLowerCase() : handle.toLowerCase();
 
-function badRequest(message: string): Response {
-  return HttpResponse.json({ error: { code: 400, message } }, { status: 400 });
-}
+const badRequest = (message: string): Response =>
+  HttpResponse.json({ error: { code: 400, message } }, { status: 400 });
 
 export const youtubeHandlers = [
   // YouTube Data API - channels.list, by `id` or by `forHandle` (or

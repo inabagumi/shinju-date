@@ -26,7 +26,7 @@ const REVALIDATION = {
 };
 
 /** 画面の `handleAction` が送るのと同じ形の、お知らせのフォーム */
-function announcementForm(entries: Record<string, string>): FormData {
+const announcementForm = (entries: Record<string, string>): FormData => {
   const formData = new FormData();
 
   for (const [key, value] of Object.entries({
@@ -39,7 +39,7 @@ function announcementForm(entries: Record<string, string>): FormData {
   }
 
   return formData;
-}
+};
 
 /** 日時の項目は画面に入力欄がないため、エラーは `generic` になる */
 const periodCases = [

@@ -48,9 +48,9 @@ describe("updateSession with MSW", () => {
     server.close();
   });
 
-  function stubEnv(authenticated: boolean) {
+  const stubEnv = (authenticated: boolean) => {
     serverEnv.MSW_SUPABASE_AUTHENTICATED = authenticated;
-  }
+  };
 
   it("lets requests without cookies through when MSW_SUPABASE_AUTHENTICATED is true", async () => {
     stubEnv(true);

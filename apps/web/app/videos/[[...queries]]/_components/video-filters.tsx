@@ -24,11 +24,11 @@ interface SelectedTalentListProps {
  * 選んでいるタレントを、1人ずつ外せるチップで並べる。2人以上のときは
  * まとめて外すリンクも出す。
  */
-function SelectedTalentList({
+const SelectedTalentList = ({
   kind,
   query,
   selectedTalents,
-}: SelectedTalentListProps) {
+}: SelectedTalentListProps) => {
   const selectedIds = selectedTalents.map((talent) => talent.id);
 
   return (
@@ -62,7 +62,7 @@ function SelectedTalentList({
       )}
     </ul>
   );
-}
+};
 
 interface VideoFiltersProps {
   kind: VideoKindFilter;
@@ -123,11 +123,9 @@ export default function VideoFilters({
   );
 }
 
-export function VideoFiltersSkeleton() {
-  return (
-    <div aria-hidden="true" className="mb-6 flex flex-wrap gap-2">
-      <VideoKindFilterNavSkeleton />
-      <div className="h-9 w-40 animate-pulse rounded-full bg-muted" />
-    </div>
-  );
-}
+export const VideoFiltersSkeleton = () => (
+  <div aria-hidden="true" className="mb-6 flex flex-wrap gap-2">
+    <VideoKindFilterNavSkeleton />
+    <div className="h-9 w-40 animate-pulse rounded-full bg-muted" />
+  </div>
+);

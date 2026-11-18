@@ -6,12 +6,12 @@ const THEME_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
  * `#RRGGBB`. The value is put into a `style` attribute, so anything else is
  * dropped instead of being passed through.
  */
-export function parseThemeColor(
+export const parseThemeColor = (
   value: string | null | undefined
-): string | null {
+): string | null => {
   if (!value || !THEME_COLOR_PATTERN.test(value)) {
     return null;
   }
 
   return value.toLowerCase();
-}
+};

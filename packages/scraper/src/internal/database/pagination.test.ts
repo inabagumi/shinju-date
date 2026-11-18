@@ -2,9 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { paginateById } from "./pagination.js";
 
-function rows(...ids: string[]) {
-  return ids.map((id) => ({ id }));
-}
+const rows = (...ids: string[]) => ids.map((id) => ({ id }));
 
 type GetPage = (cursor: string | undefined) => Promise<{ id: string }[]>;
 

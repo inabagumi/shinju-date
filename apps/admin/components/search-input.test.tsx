@@ -23,18 +23,17 @@ vi.mock(import("next/navigation"), () => ({
   useSearchParams: () => mocks.searchParams as ReadonlyURLSearchParams,
 }));
 
-function getInput() {
-  return screen.getByRole("searchbox", { name: "検索" }) as HTMLInputElement;
-}
+const getInput = () =>
+  screen.getByRole("searchbox", { name: "検索" }) as HTMLInputElement;
 
 /** URL のパラメータが変わったときの再描画 */
-function navigate(
+const navigate = (
   rerender: ReturnType<typeof render>["rerender"],
   search: string
-) {
+) => {
   mocks.searchParams = new URLSearchParams(search);
   rerender(<SearchInput aria-label="検索" />);
-}
+};
 
 describe(SearchInput, () => {
   beforeEach(() => {

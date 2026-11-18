@@ -14,21 +14,19 @@ export interface VideoSort {
  *
  * @param searchParams 今のページの URL のパラメータ
  */
-export function getVideoSortHref(
+export const getVideoSortHref = (
   searchParams: URLSearchParams | string,
   current: VideoSort,
   field: VideoSortField
-): string {
-  return buildSearchParamsHref(
+): string =>
+  buildSearchParamsHref(
     "/videos",
     searchParams,
     current.field === field
       ? { sortOrder: current.order === "asc" ? "desc" : "asc" }
       : { sortField: field, sortOrder: "desc" }
   );
-}
 
 /** 並べ替えの向きを、見出しの `aria-sort` の値にする */
-export function toAriaSort(order: VideoSortOrder): "ascending" | "descending" {
-  return order === "asc" ? "ascending" : "descending";
-}
+export const toAriaSort = (order: VideoSortOrder): "ascending" | "descending" =>
+  order === "asc" ? "ascending" : "descending";

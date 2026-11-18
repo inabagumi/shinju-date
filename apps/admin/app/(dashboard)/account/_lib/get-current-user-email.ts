@@ -9,7 +9,7 @@ import { createSupabaseServerClient } from "@/lib/supabase";
  * メールアドレスを変えたあとの表示が古いまま残らないよう、ほかの取得関数より
  * 短い `seconds` にする
  */
-export async function getCurrentUserEmail(): Promise<string | null> {
+export const getCurrentUserEmail = async (): Promise<string | null> => {
   "use cache: private";
 
   cacheLife("seconds");
@@ -25,4 +25,4 @@ export async function getCurrentUserEmail(): Promise<string | null> {
   }
 
   return user.email ?? "";
-}
+};

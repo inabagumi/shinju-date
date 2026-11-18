@@ -8,7 +8,7 @@ import { FormSubmitButton } from "@/components/form/form-submit-button";
 
 import { submitFeedback } from "../_lib/actions";
 
-export function FeedbackForm() {
+export const FeedbackForm = () => {
   const [state, formAction, isPending] = useActionState(submitFeedback, null);
   const fieldErrors = isPending ? undefined : state?.fieldErrors;
   // React resets the form after the action, so restore the submitted values
@@ -33,4 +33,4 @@ export function FeedbackForm() {
       <FormStatus state={isPending ? null : state} />
     </form>
   );
-}
+};

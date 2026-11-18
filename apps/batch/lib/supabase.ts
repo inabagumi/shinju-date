@@ -8,11 +8,11 @@ import { serverEnv } from "./env";
 export type TypedSupabaseClient<Database = DefaultDatabase> =
   SupabaseClient<Database>;
 
-export function createSupabaseClient<Database = DefaultDatabase>(
+export const createSupabaseClient = <Database = DefaultDatabase>(
   url: string | undefined = serverEnv.NEXT_PUBLIC_SUPABASE_URL,
   key: string | undefined = serverEnv.SUPABASE_SERVICE_ROLE_KEY,
   options?: NonNullable<Parameters<typeof createClient<Database>>[2]>
-): SupabaseClient<Database> {
+): SupabaseClient<Database> => {
   if (!url || !key) {
     throw new TypeError("Supabase URL and key are required.");
   }
@@ -24,6 +24,6 @@ export function createSupabaseClient<Database = DefaultDatabase>(
       fetch: options?.global?.fetch ?? retryableFetch,
     },
   });
-}
+};
 
 export const supabaseClient = createSupabaseClient();

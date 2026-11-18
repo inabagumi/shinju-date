@@ -7,13 +7,17 @@ type Filter = (row: Row) => boolean;
 
 // Compares values the way PostgreSQL compares these columns: the timestamps
 // are ISO 8601 strings in UTC, so the string order is the time order
-function compare(value: unknown, operator: string, operand: string): boolean {
+const compare = (
+  value: unknown,
+  operator: string,
+  operand: string
+): boolean => {
   if (operator === "is" && operand === "null") return value === null;
   if (typeof value !== "string") return false;
   if (operator === "gte") return value >= operand;
   if (operator === "lt") return value < operand;
   throw new Error(`Unsupported operator: ${operator}`);
-}
+};
 
 export interface FakeSupabaseOptions {
   /** Tables whose count fails with this error message. */
@@ -24,11 +28,11 @@ export interface FakeSupabaseOptions {
  * A Supabase client that counts the rows of in-memory tables with the filters
  * of the query, so that the tests check the counts themselves.
  */
-export function createFakeSupabaseClient(
+export const createFakeSupabaseClient = (
   tables: Record<string, readonly object[]>,
   { errors = {} }: FakeSupabaseOptions = {}
-): SupabaseClient<Database> {
-  return {
+): SupabaseClient<Database> =>
+  ({
     from(table: string) {
       const filters: Filter[] = [];
       const builder = {
@@ -85,8 +89,7 @@ export function createFakeSupabaseClient(
       };
       return builder;
     },
-  } as unknown as SupabaseClient<Database>;
-}
+  }) as unknown as SupabaseClient<Database>;
 
 /**
  * The subset of Redis the statistics use, kept in memory. Values are stored as

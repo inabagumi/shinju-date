@@ -17,10 +17,10 @@ import {
 } from "./sync-live.js";
 import type { SavedLiveVideo } from "./sync-live.js";
 
-async function findSavedVideo(
+const findSavedVideo = async (
   supabaseClient: TypedSupabaseClient,
   videoId: string
-): Promise<SavedLiveVideo | null> {
+): Promise<SavedLiveVideo | null> => {
   const { data, error } = await selectSavedLiveVideos(supabaseClient)
     .eq("id", videoId)
     .eq("platform", "twitch")
@@ -32,7 +32,7 @@ async function findSavedVideo(
   }
 
   return data && toSavedLiveVideo(data);
-}
+};
 
 /**
  * Brings one saved Twitch video in line with Twitch, the same way the
@@ -46,10 +46,10 @@ async function findSavedVideo(
  * Unlike the scheduled operations, the video is refreshed whatever the status
  * of its talent.
  */
-export async function refreshTwitchVideo(
+export const refreshTwitchVideo = async (
   context: CrawlContext<TwitchFetcher>,
   videoId: string
-): Promise<RefreshVideoResult> {
+): Promise<RefreshVideoResult> => {
   const { logger, supabaseClient } = context;
   const saved = await findSavedVideo(supabaseClient, videoId);
 
@@ -101,4 +101,4 @@ export async function refreshTwitchVideo(
   });
 
   return { ...diff, status: "updated", title: current.title };
-}
+};

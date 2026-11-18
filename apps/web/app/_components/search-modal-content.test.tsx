@@ -49,25 +49,19 @@ vi.mock(import("next/navigation"), () => ({
 
 vi.mock(import("@/app/_lib/actions"), () => actions);
 
-function getInput() {
-  return screen.getByRole("searchbox");
-}
+const getInput = () => screen.getByRole("searchbox");
 
-function getChipList() {
-  return screen.getByRole("list", { name: "選んでいるタレント" });
-}
+const getChipList = () =>
+  screen.getByRole("list", { name: "選んでいるタレント" });
 
-function getTalentSection() {
-  return screen.getByRole("region", { name: "タレント" });
-}
+const getTalentSection = () => screen.getByRole("region", { name: "タレント" });
 
-function createQueryClient() {
-  return new QueryClient({
+const createQueryClient = () =>
+  new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-}
 
-async function renderContent(queryClient = createQueryClient()) {
+const renderContent = async (queryClient = createQueryClient()) => {
   const onClose = vi.fn<() => void>();
 
   const { unmount } = render(
@@ -83,18 +77,18 @@ async function renderContent(queryClient = createQueryClient()) {
   await screen.findByRole("link", { name: "歌枠" });
 
   return { onClose, unmount };
-}
+};
 
-async function selectTalent(query: string, name: string) {
+const selectTalent = async (query: string, name: string) => {
   fireEvent.change(getInput(), { target: { value: query } });
   fireEvent.click(
     await within(getTalentSection()).findByRole("button", { name })
   );
-}
+};
 
-function submit() {
+const submit = () => {
   fireEvent.submit(getInput().closest("form") as HTMLFormElement);
-}
+};
 
 describe(SearchModalContent, () => {
   beforeEach(() => {

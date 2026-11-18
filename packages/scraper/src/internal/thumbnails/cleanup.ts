@@ -44,10 +44,10 @@ export interface RemoveUnusedThumbnailsOptions {
  *
  * @throws When the rows cannot be deleted for another reason.
  */
-async function deleteThumbnailRows(
+const deleteThumbnailRows = async (
   supabaseClient: TypedSupabaseClient,
   thumbnails: readonly Thumbnail[]
-): Promise<Thumbnail[]> {
+): Promise<Thumbnail[]> => {
   const { data, error } = await supabaseClient
     .from("thumbnails")
     .delete()
@@ -90,7 +90,7 @@ async function deleteThumbnailRows(
   }
 
   return deleted;
-}
+};
 
 /**
  * Deletes thumbnails that no video uses and that have not been used for
@@ -107,10 +107,10 @@ async function deleteThumbnailRows(
  * @throws When unused thumbnails cannot be listed or deleted. A failure to
  *   remove an image is ignored: without its row it is never served.
  */
-export async function removeUnusedThumbnails(
+export const removeUnusedThumbnails = async (
   supabaseClient: TypedSupabaseClient,
   { now, olderThan }: RemoveUnusedThumbnailsOptions
-): Promise<number> {
+): Promise<number> => {
   const before = now.subtract(olderThan);
   const { data, error } = await supabaseClient
     .from("thumbnails")
@@ -150,4 +150,4 @@ export async function removeUnusedThumbnails(
   }
 
   return removedCount;
-}
+};

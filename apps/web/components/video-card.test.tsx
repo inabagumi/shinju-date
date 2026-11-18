@@ -28,50 +28,46 @@ const unnamedTwitchUser: TwitchUser = {
   twitch_login_name: null,
 };
 
-function createYouTubeVideo(
+const createYouTubeVideo = (
   youtubeChannel: YouTubeChannel = unnamedYouTubeChannel
-): Video {
-  return {
-    duration: "PT10M",
-    id: "youtube-video",
-    platform: "youtube",
-    published_at: "2026-11-14T11:00:00Z",
-    status: "PUBLISHED",
-    talent: { id: "talent-1", name: "タレント名" },
-    thumbnail: null,
-    title: "YouTubeの動画",
-    twitch_video: null,
-    video_kind: "standard",
-    youtube_video: {
-      youtube_channel: youtubeChannel,
-      youtube_video_id: "YT_video1abc",
-    },
-  };
-}
+): Video => ({
+  duration: "PT10M",
+  id: "youtube-video",
+  platform: "youtube",
+  published_at: "2026-11-14T11:00:00Z",
+  status: "PUBLISHED",
+  talent: { id: "talent-1", name: "タレント名" },
+  thumbnail: null,
+  title: "YouTubeの動画",
+  twitch_video: null,
+  video_kind: "standard",
+  youtube_video: {
+    youtube_channel: youtubeChannel,
+    youtube_video_id: "YT_video1abc",
+  },
+});
 
-function createTwitchVideo(twitchUser: TwitchUser = unnamedTwitchUser): Video {
-  return {
-    duration: "PT1H",
-    id: "twitch-video",
-    platform: "twitch",
-    published_at: "2026-11-14T11:00:00Z",
-    status: "ENDED",
-    talent: { id: "talent-1", name: "タレント名" },
-    thumbnail: null,
-    title: "Twitchの配信",
-    twitch_video: {
-      twitch_user: twitchUser,
-      twitch_video_id: "1234567890",
-      type: "archive",
-    },
-    video_kind: "standard",
-    youtube_video: null,
-  };
-}
+const createTwitchVideo = (
+  twitchUser: TwitchUser = unnamedTwitchUser
+): Video => ({
+  duration: "PT1H",
+  id: "twitch-video",
+  platform: "twitch",
+  published_at: "2026-11-14T11:00:00Z",
+  status: "ENDED",
+  talent: { id: "talent-1", name: "タレント名" },
+  thumbnail: null,
+  title: "Twitchの配信",
+  twitch_video: {
+    twitch_user: twitchUser,
+    twitch_video_id: "1234567890",
+    type: "archive",
+  },
+  video_kind: "standard",
+  youtube_video: null,
+});
 
-function getCreator() {
-  return screen.getByTestId("video-creator");
-}
+const getCreator = () => screen.getByTestId("video-creator");
 
 describe(VideoCard, () => {
   it("should show the icon and name of the YouTube channel", () => {

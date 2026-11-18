@@ -17,32 +17,29 @@ const client = {
   videos: { getVideosByIds, getVideosByUser: helixGetVideosByUser },
 } as unknown as ApiClient;
 
-function notFound(): Error {
-  return Object.assign(new Error("Encountered HTTP status code 404"), {
+const notFound = (): Error =>
+  Object.assign(new Error("Encountered HTTP status code 404"), {
     statusCode: 404,
   });
-}
 
-function helixVideo(id: string) {
-  return {
-    creationDate: new Date("2024-01-01T00:00:00Z"),
-    description: "",
-    durationInSeconds: 3723,
-    id,
-    isPublic: true,
-    language: "ja",
-    publishDate: new Date("2024-01-01T00:00:00Z"),
-    streamId: null,
-    thumbnailUrl: "https://example.com/%{width}x%{height}.jpg",
-    title: `Video ${id}`,
-    type: "archive",
-    url: `https://www.twitch.tv/videos/${id}`,
-    userDisplayName: "Alice",
-    userId: "user-1",
-    userName: "alice",
-    views: 1,
-  };
-}
+const helixVideo = (id: string) => ({
+  creationDate: new Date("2024-01-01T00:00:00Z"),
+  description: "",
+  durationInSeconds: 3723,
+  id,
+  isPublic: true,
+  language: "ja",
+  publishDate: new Date("2024-01-01T00:00:00Z"),
+  streamId: null,
+  thumbnailUrl: "https://example.com/%{width}x%{height}.jpg",
+  title: `Video ${id}`,
+  type: "archive",
+  url: `https://www.twitch.tv/videos/${id}`,
+  userDisplayName: "Alice",
+  userId: "user-1",
+  userName: "alice",
+  views: 1,
+});
 
 describe("Twitch videos API", () => {
   beforeEach(() => {

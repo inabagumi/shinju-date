@@ -40,7 +40,7 @@ const SCRIPT_PATTERN = /\.[cm]?[jt]sx?$/;
  *   the package exists
  * @returns {string[]} The problems
  */
-export function findExportsProblems(pkg, fileExists) {
+export const findExportsProblems = (pkg, fileExists) => {
   /** @type {string[]} */
   const problems = [];
 
@@ -119,9 +119,9 @@ export function findExportsProblems(pkg, fileExists) {
   }
 
   return problems;
-}
+};
 
-function main() {
+const main = () => {
   let count = 0;
 
   const names = readdirSync(join(root, PACKAGES_DIR), { withFileTypes: true })
@@ -154,7 +154,7 @@ function main() {
     );
     process.exitCode = 1;
   }
-}
+};
 
 if (process.argv[1] && resolve(process.argv[1]) === import.meta.filename) {
   main();

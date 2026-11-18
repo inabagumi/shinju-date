@@ -45,6 +45,5 @@ interface PostgrestErrorInit {
  * that it does not support, so that a query does not silently get a result
  * that differs from PostgREST.
  */
-export function parseError(message: string, details: string): PostgrestError {
-  return new PostgrestError(400, { code: "PGRST100", details, message });
-}
+export const parseError = (message: string, details: string): PostgrestError =>
+  new PostgrestError(400, { code: "PGRST100", details, message });

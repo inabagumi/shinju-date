@@ -26,11 +26,11 @@ const mockSupabaseClient = { from } as Partial<
 > as SupabaseClient;
 
 /** Makes the query on the talents table return the error. */
-function respondWithError(error: { message: string } | null): void {
+const respondWithError = (error: { message: string } | null): void => {
   from.mockReturnValue({
     select: () => ({ limit: async () => ({ error }) }),
   });
-}
+};
 
 // Mock Redis client
 const ping = vi.fn<Redis["ping"]>();

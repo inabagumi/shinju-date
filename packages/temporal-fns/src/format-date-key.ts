@@ -20,12 +20,11 @@
  * const redisKey = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}` // "summary:stats:20251111"
  * ```
  */
-export function formatDateKey(
+export const formatDateKey = (
   timestamp: Temporal.ZonedDateTime | Temporal.PlainDate
-): string {
-  return [
+): string =>
+  [
     timestamp.year.toString(10).padStart(4, "0"),
     timestamp.month.toString(10).padStart(2, "0"),
     timestamp.day.toString(10).padStart(2, "0"),
   ].join("");
-}

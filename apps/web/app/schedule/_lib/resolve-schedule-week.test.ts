@@ -17,9 +17,7 @@ import { fetchOldestVideoDate, fetchScheduleToday } from "@/lib/data/schedule";
 
 import { resolveScheduleWeek } from "./resolve-schedule-week";
 
-function params(date: string) {
-  return Promise.resolve({ date });
-}
+const params = (date: string) => Promise.resolve({ date });
 
 describe(resolveScheduleWeek, () => {
   beforeEach(() => {

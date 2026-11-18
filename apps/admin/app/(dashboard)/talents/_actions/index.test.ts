@@ -55,18 +55,15 @@ const DATABASE_ERROR = {
   message: "Database connection error",
 };
 
-function databaseErrorResponse(): Response {
-  return postgresError(DATABASE_ERROR.code, DATABASE_ERROR.message);
-}
+const databaseErrorResponse = (): Response =>
+  postgresError(DATABASE_ERROR.code, DATABASE_ERROR.message);
 
-function talentUpdates() {
-  return supabase.calls("update", "talents");
-}
+const talentUpdates = () => supabase.calls("update", "talents");
 
 /** Answers the talent update with the updated talent's name. */
-function mockTalentUpdate(name = "Updated Talent") {
+const mockTalentUpdate = (name = "Updated Talent") => {
   supabase.on("update", "talents", { name });
-}
+};
 
 describe("updateTalentAction()", () => {
   it("should successfully update talent", async () => {
@@ -536,18 +533,18 @@ describe("createTalentAction()", () => {
       snippet: { customUrl: "@example", title: "Example Channel" },
     };
 
-    function channelFormData(): FormData {
+    const channelFormData = (): FormData => {
       const formData = new FormData();
       formData.append("name", "New Talent");
       formData.append("youtube_channel_id", youtubeChannel.id);
       return formData;
-    }
+    };
 
-    function expectNothingCompleted(): void {
+    const expectNothingCompleted = (): void => {
       test.expectNoAuditLog();
       test.expectNotRevalidated();
       expect(syncYouTubeChannelIconSafely).not.toHaveBeenCalled();
-    }
+    };
 
     beforeEach(() => {
       vi.mocked(resolveYouTubeChannel).mockResolvedValue(

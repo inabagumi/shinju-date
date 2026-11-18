@@ -29,7 +29,7 @@ const getAdminPagePath = (table: string, id: string): string | null => {
   }
 };
 
-export function AuditLogTarget({ log }: { log: Log }) {
+export const AuditLogTarget = ({ log }: { log: Log }) => {
   const displayName = getEntityName(log.details) ?? log.target_record_id;
 
   if (!log.target_table || !displayName) {
@@ -61,4 +61,4 @@ export function AuditLogTarget({ log }: { log: Log }) {
       {content}
     </div>
   );
-}
+};

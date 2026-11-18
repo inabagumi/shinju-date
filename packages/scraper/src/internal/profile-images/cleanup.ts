@@ -26,10 +26,10 @@ export interface RemoveUnusedProfileImagesOptions {
  * @returns The number of icons deleted.
  * @throws When unused icons cannot be listed or deleted.
  */
-export async function removeUnusedProfileImages(
+export const removeUnusedProfileImages = async (
   supabaseClient: TypedSupabaseClient,
   { now }: RemoveUnusedProfileImagesOptions
-): Promise<number> {
+): Promise<number> => {
   const before = now.subtract(UNUSED_PROFILE_IMAGE_GRACE_PERIOD);
   const { data, error } = await supabaseClient
     .from("profile_images")
@@ -52,4 +52,4 @@ export async function removeUnusedProfileImages(
   }
 
   return removedCount;
-}
+};

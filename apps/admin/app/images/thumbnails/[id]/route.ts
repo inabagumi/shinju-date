@@ -7,10 +7,10 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const SIGNED_URL_EXPIRES_IN = 60; // 1 minute
 
-export async function GET(
+export const GET = async (
   request: NextRequest,
   ctx: RouteContext<"/images/thumbnails/[id]">
-) {
+) => {
   const { id } = await ctx.params;
   const { data: thumbnail, error } = await getSupabaseAdminClient()
     .from("thumbnails")
@@ -76,4 +76,4 @@ export async function GET(
       },
     });
   }
-}
+};

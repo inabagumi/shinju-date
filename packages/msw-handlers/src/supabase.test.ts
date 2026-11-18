@@ -416,13 +416,13 @@ describe("Supabase Handlers", () => {
   describe("Table handlers", () => {
     const restUrl = "https://fake.supabase.test/rest/v1";
 
-    async function listIds(table: string, filters = ""): Promise<string[]> {
+    const listIds = async (table: string, filters = ""): Promise<string[]> => {
       const rows = (await (
         await fetch(`${restUrl}/${table}?select=id${filters}`)
       ).json()) as { id: string }[];
 
       return rows.map(({ id }) => id);
-    }
+    };
 
     it.each(["videos", "talents", "terms"])(
       "should count every row of %s, not only the page",
@@ -701,9 +701,9 @@ describe("Supabase Handlers", () => {
       ).resolves.toStrictEqual([{ term: second?.term }]);
     });
 
-    async function createTerms(
+    const createTerms = async (
       terms: { id?: string; popularity?: number | null; term: string }[]
-    ): Promise<{ id: string; term: string; updated_at: string }[]> {
+    ): Promise<{ id: string; term: string; updated_at: string }[]> => {
       const response = await fetch(
         `${restUrl}/terms?select=id,term,updated_at`,
         {
@@ -725,13 +725,13 @@ describe("Supabase Handlers", () => {
         term: string;
         updated_at: string;
       }[];
-    }
+    };
 
-    async function deleteTerms(ids: string[]) {
+    const deleteTerms = async (ids: string[]) => {
       await fetch(`${restUrl}/terms?id=in.(${ids.join(",")})`, {
         method: "DELETE",
       });
-    }
+    };
 
     it("should not match null with eq.null, as in SQL", async () => {
       await expect(
@@ -1273,13 +1273,13 @@ describe("Supabase Handlers", () => {
       twitch_user_id: string;
     }
 
-    async function getTwitchUsers(): Promise<TwitchUserRow[]> {
+    const getTwitchUsers = async (): Promise<TwitchUserRow[]> => {
       const response = await fetch(
         "https://fake.supabase.test/rest/v1/twitch_users?select=id,twitch_user_id,twitch_login_name,profile_image:profile_images(path,width)"
       );
 
       return (await response.json()) as TwitchUserRow[];
-    }
+    };
 
     it("should return Twitch users with and without an icon", async () => {
       const users = await getTwitchUsers();
@@ -1399,9 +1399,9 @@ describe("Supabase Handlers", () => {
       youtube_video: { youtube_video_id: string } | null;
     }
 
-    async function searchVideos(
+    const searchVideos = async (
       body: Record<string, unknown>
-    ): Promise<VideoRow[]> {
+    ): Promise<VideoRow[]> => {
       const response = await fetch(
         `https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=${encodeURIComponent(select)}`,
         {
@@ -1414,7 +1414,7 @@ describe("Supabase Handlers", () => {
       expect(response.ok).toBeTruthy();
 
       return (await response.json()) as VideoRow[];
-    }
+    };
 
     it("should seed Twitch videos of each type and status", async () => {
       const response = await fetch(
@@ -1802,7 +1802,7 @@ describe("Supabase Handlers", () => {
   describe("Soft-deleting and restoring videos", () => {
     const restUrl = "https://fake.supabase.test/rest/v1";
 
-    async function callRpc(name: string, params: Record<string, unknown>) {
+    const callRpc = async (name: string, params: Record<string, unknown>) => {
       const response = await fetch(`${restUrl}/rpc/${name}`, {
         body: JSON.stringify(params),
         headers: { "Content-Type": "application/json" },
@@ -1812,10 +1812,10 @@ describe("Supabase Handlers", () => {
       expect(response.status).toBe(200);
 
       return (await response.json()) as string[];
-    }
+    };
 
-    async function getStates(ids: string[]) {
-      return (await (
+    const getStates = async (ids: string[]) =>
+      (await (
         await fetch(
           `${restUrl}/videos?select=id,deleted_at,deleted_reason,thumbnail:thumbnails(deleted_at)&id=in.(${ids.join(",")})&order=id.asc`
         )
@@ -1825,7 +1825,6 @@ describe("Supabase Handlers", () => {
         id: string;
         thumbnail: { deleted_at: string | null } | null;
       }[];
-    }
 
     it("should delete and restore the videos with their thumbnails, like the functions", async () => {
       const videos = (await (
@@ -1939,10 +1938,10 @@ describe("Supabase Handlers", () => {
   describe("Inserting videos", () => {
     const restUrl = "https://fake.supabase.test/rest/v1";
 
-    async function insertVideo(
+    const insertVideo = async (
       youtubeVideoId: string,
       channel: { id: string; talent_id: string }
-    ) {
+    ) => {
       const response = await fetch(`${restUrl}/rpc/insert_video`, {
         body: JSON.stringify({
           p_platform: "youtube",
@@ -1966,7 +1965,7 @@ describe("Supabase Handlers", () => {
       expect(response.status).toBe(200);
 
       return (await response.json()) as string | null;
-    }
+    };
 
     it("should insert the video with its platform row, and nothing when it is already saved", async () => {
       const [channel] = (await (
@@ -2049,7 +2048,7 @@ describe("Supabase Handlers", () => {
   });
 
   describe("Search suggestions", () => {
-    async function suggest(query: string) {
+    const suggest = async (query: string) => {
       const response = await fetch(
         "https://fake.supabase.test/rest/v1/rpc/suggestions_v2",
         {
@@ -2062,7 +2061,7 @@ describe("Supabase Handlers", () => {
       expect(response.ok).toBeTruthy();
 
       return (await response.json()) as { priority: number; term: string }[];
-    }
+    };
 
     it("should suggest terms that start with the query", async () => {
       await expect(suggest("歌")).resolves.toStrictEqual([
@@ -2197,13 +2196,13 @@ describe("Supabase Handlers", () => {
 
     const url = "https://fake.supabase.test/rest/v1/feature_requests";
 
-    async function listFeatureRequests(search = "") {
+    const listFeatureRequests = async (search = "") => {
       const response = await fetch(
         `${url}?select=*&order=created_at.desc${search}`
       );
 
       return (await response.json()) as FeatureRequestRow[];
-    }
+    };
 
     it("should return the seeded feature requests newest first", async () => {
       const rows = await listFeatureRequests();
@@ -2329,7 +2328,7 @@ describe("Supabase Handlers", () => {
       user_id: string | null;
     }
 
-    async function getAuditLogs(params: Record<string, unknown>) {
+    const getAuditLogs = async (params: Record<string, unknown>) => {
       const response = await fetch(
         "https://fake.supabase.test/rest/v1/rpc/get_audit_logs",
         {
@@ -2342,7 +2341,7 @@ describe("Supabase Handlers", () => {
       expect(response.status).toBe(200);
 
       return (await response.json()) as AuditLogRow[];
-    }
+    };
 
     it("should return the seeded audit logs newest first with emails", async () => {
       const logs = await getAuditLogs({ p_limit: 10 });

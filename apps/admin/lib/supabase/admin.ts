@@ -13,11 +13,11 @@ let supabaseAdminClient: SupabaseClient<DefaultDatabase> | undefined;
  * Created on first use and reused afterwards, so that importing this module
  * does not create the client.
  */
-export function getSupabaseAdminClient(): SupabaseClient<DefaultDatabase> {
+export const getSupabaseAdminClient = (): SupabaseClient<DefaultDatabase> => {
   supabaseAdminClient ??= createClient<DefaultDatabase>(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,
     serverEnv.SUPABASE_SERVICE_ROLE_KEY
   );
 
   return supabaseAdminClient;
-}
+};

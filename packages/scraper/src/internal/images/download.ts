@@ -24,10 +24,10 @@ export interface DownloadedImage {
  * @throws When the image cannot be downloaded (including an error response)
  *   or the response is not an image.
  */
-export async function downloadImage(
+export const downloadImage = async (
   url: string,
   { etag }: DownloadImageOptions = {}
-): Promise<DownloadedImage | null> {
+): Promise<DownloadedImage | null> => {
   const response = await retryableFetch(url, {
     ...(etag ? { headers: { "If-None-Match": etag } } : {}),
   });
@@ -59,4 +59,4 @@ export async function downloadImage(
   }
 
   return { body, contentType, etag: responseEtag };
-}
+};

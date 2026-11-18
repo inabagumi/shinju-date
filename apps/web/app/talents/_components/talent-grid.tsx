@@ -44,14 +44,12 @@ export default function TalentGrid({
   );
 }
 
-export function TalentGridSkeleton() {
-  return (
-    <ul aria-hidden="true" className={GRID_CLASS_NAME}>
-      {Array.from({ length: SKELETON_COUNT }, (_, index) => (
-        <li key={index}>
-          <TalentCardSkeleton />
-        </li>
-      ))}
-    </ul>
-  );
-}
+export const TalentGridSkeleton = () => (
+  <ul aria-hidden="true" className={GRID_CLASS_NAME}>
+    {Array.from({ length: SKELETON_COUNT }, (_, index) => (
+      <li key={index}>
+        <TalentCardSkeleton />
+      </li>
+    ))}
+  </ul>
+);

@@ -11,15 +11,12 @@ import { SortableInputList } from "./sortable-input-list";
 
 const placeholder = "読み方を入力";
 
-function getInputs() {
-  return screen.getAllByPlaceholderText<HTMLInputElement>(placeholder);
-}
+const getInputs = () =>
+  screen.getAllByPlaceholderText<HTMLInputElement>(placeholder);
 
-function getInputValues() {
-  return getInputs().map((input) => input.value);
-}
+const getInputValues = () => getInputs().map((input) => input.value);
 
-function renderInForm(defaultValues?: string[]) {
+const renderInForm = (defaultValues?: string[]) => {
   const { container } = render(
     <form>
       <input name="term" readOnly type="hidden" value="SHINJU" />
@@ -38,17 +35,16 @@ function renderInForm(defaultValues?: string[]) {
   }
 
   return form;
-}
+};
 
-function getSubmittedEntries(form: HTMLFormElement) {
-  return [...new FormData(form).entries()];
-}
+const getSubmittedEntries = (form: HTMLFormElement) => [
+  ...new FormData(form).entries(),
+];
 
-function paste(input: HTMLInputElement, text: string) {
-  return fireEvent.paste(input, {
+const paste = (input: HTMLInputElement, text: string) =>
+  fireEvent.paste(input, {
     clipboardData: { getData: () => text },
   });
-}
 
 describe(SortableInputList, () => {
   const originalGetBoundingClientRect =

@@ -9,9 +9,9 @@ export interface FeatureRequestFilters {
   isRead?: boolean;
 }
 
-export async function getFeatureRequests(
+export const getFeatureRequests = async (
   filters: FeatureRequestFilters = {}
-): Promise<Tables<"feature_requests">[]> {
+): Promise<Tables<"feature_requests">[]> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -30,11 +30,11 @@ export async function getFeatureRequests(
   }
 
   return unwrap(await query, "getFeatureRequests") ?? [];
-}
+};
 
-export async function getFeatureRequestById(
+export const getFeatureRequestById = async (
   id: string
-): Promise<Tables<"feature_requests"> | null> {
+): Promise<Tables<"feature_requests"> | null> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -47,4 +47,4 @@ export async function getFeatureRequestById(
       .single(),
     "getFeatureRequestById"
   );
-}
+};

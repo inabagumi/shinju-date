@@ -136,10 +136,10 @@ export interface VideoActionRunResult extends VideoActionResult {
  * 表に従って、対象の動画に操作のアクションを呼ぶ。失敗して `error` が空の
  * ときは、操作ごとの文を `error` に入れる
  */
-export async function runVideoAction(
+export const runVideoAction = async (
   action: VideoAction,
   targets: readonly VideoActionTarget[]
-): Promise<VideoActionRunResult> {
+): Promise<VideoActionRunResult> => {
   const definition: VideoActionDefinition = VIDEO_ACTIONS[action];
   const result = await definition.action(targets.map((target) => target.id));
 
@@ -149,11 +149,11 @@ export async function runVideoAction(
     error: result.success ? result.error : result.error || definition.errorText,
     targets,
   };
-}
+};
 
 /** 成功したときにトーストで出す文を、表に従って作る */
-export function getVideoActionSuccessText(result: VideoActionRunResult) {
+export const getVideoActionSuccessText = (result: VideoActionRunResult) => {
   const definition: VideoActionDefinition = VIDEO_ACTIONS[result.action];
 
   return definition.successText(result, result.targets);
-}
+};

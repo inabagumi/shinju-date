@@ -11,9 +11,8 @@ import { supabaseClient } from "@/lib/supabase";
 import { hasPlatformSource } from "@/lib/video-url";
 
 /** The query of the videos of the schedule, which the type is derived from */
-function selectScheduleVideos() {
-  return supabaseClient.from("videos").select(VIDEO_SCHEDULE_SELECT);
-}
+const selectScheduleVideos = () =>
+  supabaseClient.from("videos").select(VIDEO_SCHEDULE_SELECT);
 
 /**
  * A video on the schedule: a video of the video cards without the thumbnail,

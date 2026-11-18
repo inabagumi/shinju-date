@@ -28,17 +28,15 @@ type Rpc = (
   args: { p_items: RpcItem[] }
 ) => Promise<{ data: number | null; error: { message: string } | null }>;
 
-function createMockRedis(results: (string | number)[]) {
-  return {
-    zrange: vi.fn<Redis["zrange"]>().mockResolvedValue(results),
-  };
-}
+const createMockRedis = (results: (string | number)[]) => ({
+  zrange: vi.fn<Redis["zrange"]>().mockResolvedValue(results),
+});
 
 /**
  * A Supabase client whose `update_terms_popularity` matches the given terms
  * ignoring the case, like the Postgres function.
  */
-function createMockSupabase(existingTerms: string[]) {
+const createMockSupabase = (existingTerms: string[]) => {
   const known = new Set(existingTerms.map((term) => term.toLowerCase()));
   const rpc = vi.fn<Rpc>(
     async (_name: string, { p_items }: { p_items: RpcItem[] }) => ({
@@ -49,19 +47,18 @@ function createMockSupabase(existingTerms: string[]) {
   const from = vi.fn<TypedSupabaseClient["from"]>();
 
   return { from, rpc };
-}
+};
 
-async function run(
+const run = async (
   redis: ReturnType<typeof createMockRedis>,
   supabase: { from: unknown; rpc: unknown }
-) {
-  return updateTermPopularity(
+) =>
+  updateTermPopularity(
     // oxlint-disable-next-line typescript/no-explicit-any -- Mocked Redis client
     redis as any,
     // oxlint-disable-next-line typescript/no-explicit-any -- Mocked Supabase client
     supabase as any
   );
-}
 
 describe(updateTermPopularity, () => {
   it("should fetch and update term popularity", async () => {

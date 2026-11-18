@@ -22,20 +22,18 @@ vi.mock(import("next/navigation"), () => ({
   useSearchParams: () => mocks.searchParams as ReadonlyURLSearchParams,
 }));
 
-function createFeatureRequest(
+const createFeatureRequest = (
   overrides: Partial<Tables<"feature_requests">> = {}
-): Tables<"feature_requests"> {
-  return {
-    admin_memo: null,
-    created_at: "2025-01-01T00:00:00Z",
-    id: "00000000-0000-4000-8000-000000000001",
-    is_read: false,
-    message: "配信予定をカレンダーに登録したい",
-    status: "pending",
-    updated_at: "2025-01-01T00:00:00Z",
-    ...overrides,
-  };
-}
+): Tables<"feature_requests"> => ({
+  admin_memo: null,
+  created_at: "2025-01-01T00:00:00Z",
+  id: "00000000-0000-4000-8000-000000000001",
+  is_read: false,
+  message: "配信予定をカレンダーに登録したい",
+  status: "pending",
+  updated_at: "2025-01-01T00:00:00Z",
+  ...overrides,
+});
 
 describe(FeatureRequestList, () => {
   beforeEach(() => {

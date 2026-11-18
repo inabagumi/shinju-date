@@ -10,10 +10,10 @@ interface FilterableTalent {
   updated_at: string;
 }
 
-function matchesStatus(
+const matchesStatus = (
   talent: FilterableTalent,
   filter: TalentStatusFilter
-): boolean {
+): boolean => {
   const isDeleted = talent.deleted_at !== null;
 
   switch (filter) {
@@ -33,7 +33,7 @@ function matchesStatus(
       return !isDeleted;
     }
   }
-}
+};
 
 /**
  * タレントの一覧を、URL のパラメータで絞り込み、最終更新日時で並べ替える。
@@ -42,10 +42,10 @@ function matchesStatus(
  * - `search`: 名前か ID に含むもの（大文字と小文字を区別しない）
  * - `sort`: 最終更新日時の向き
  */
-export function filterTalents<T extends FilterableTalent>(
+export const filterTalents = <T extends FilterableTalent>(
   talents: readonly T[],
   { search, sort, status }: TalentSearchParams
-): T[] {
+): T[] => {
   const query = search?.toLowerCase();
 
   return talents
@@ -64,4 +64,4 @@ export function filterTalents<T extends FilterableTalent>(
 
       return sort === "desc" ? -order : order;
     });
-}
+};

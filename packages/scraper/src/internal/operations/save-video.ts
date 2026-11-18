@@ -44,12 +44,12 @@ export interface NewVideoAdapter<TNew> {
  *   first).
  * @throws When the video cannot be inserted.
  */
-export async function saveVideoWithThumbnail<TNew>(
+export const saveVideoWithThumbnail = async <TNew>(
   context: WriteContext,
   adapter: NewVideoAdapter<TNew>,
   video: TNew,
   account: TalentAccount
-): Promise<boolean> {
+): Promise<boolean> => {
   const { now, supabaseClient } = context;
   // Mapped before the thumbnail is stored, so a video that cannot be mapped
   // leaves nothing behind.
@@ -90,4 +90,4 @@ export async function saveVideoWithThumbnail<TNew>(
   }
 
   return false;
-}
+};

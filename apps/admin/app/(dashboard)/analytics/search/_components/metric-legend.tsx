@@ -13,23 +13,21 @@ interface MetricLegendProps extends DescribeRatingsOptions {
 }
 
 /** 指標の評価の凡例。評価の表から、しきい値とラベルの一覧を描く */
-export function MetricLegend({
+export const MetricLegend = ({
   columns = 2,
   ratings,
   title,
   ...options
-}: MetricLegendProps) {
-  return (
-    <dl
-      className={twMerge(
-        "mt-4 grid grid-cols-2 gap-x-4 text-caption text-muted",
-        columns === 4 && "sm:grid-cols-4"
-      )}
-    >
-      <dt className="col-span-full font-semibold">{title}</dt>
-      {describeRatings(ratings, options).map((description) => (
-        <dd key={description}>{description}</dd>
-      ))}
-    </dl>
-  );
-}
+}: MetricLegendProps) => (
+  <dl
+    className={twMerge(
+      "mt-4 grid grid-cols-2 gap-x-4 text-caption text-muted",
+      columns === 4 && "sm:grid-cols-4"
+    )}
+  >
+    <dt className="col-span-full font-semibold">{title}</dt>
+    {describeRatings(ratings, options).map((description) => (
+      <dd key={description}>{description}</dd>
+    ))}
+  </dl>
+);

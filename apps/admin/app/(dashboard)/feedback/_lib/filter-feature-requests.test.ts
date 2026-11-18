@@ -8,11 +8,8 @@ const FEATURE_REQUESTS = [
   { id: "resolved-read", is_read: true, status: "resolved" },
 ] as const;
 
-function ids(filters: Parameters<typeof filterFeatureRequests>[1]) {
-  return filterFeatureRequests(FEATURE_REQUESTS, filters).map(
-    (item) => item.id
-  );
-}
+const ids = (filters: Parameters<typeof filterFeatureRequests>[1]) =>
+  filterFeatureRequests(FEATURE_REQUESTS, filters).map((item) => item.id);
 
 describe(filterFeatureRequests, () => {
   it("keeps every feature request without filters", () => {

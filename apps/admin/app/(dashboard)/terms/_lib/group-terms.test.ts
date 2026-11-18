@@ -6,9 +6,11 @@ import {
   groupTermsByInitial,
 } from "./group-terms";
 
-function createTerm(term: string, readings: string[], synonyms: string[] = []) {
-  return { readings, synonyms, term };
-}
+const createTerm = (
+  term: string,
+  readings: string[],
+  synonyms: string[] = []
+) => ({ readings, synonyms, term });
 
 describe(getInitialGroup, () => {
   it.each([

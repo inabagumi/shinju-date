@@ -66,14 +66,10 @@ vi.mock(import("next/server"), async (importOriginal) => ({
 
 const { POST } = await import("./route");
 
-function createRequest(): NextRequest {
-  return new NextRequest(
-    "http://localhost:5000/recommendation/queries/update",
-    {
-      method: "POST",
-    }
-  );
-}
+const createRequest = (): NextRequest =>
+  new NextRequest("http://localhost:5000/recommendation/queries/update", {
+    method: "POST",
+  });
 
 describe("POST /recommendation/queries/update", () => {
   beforeEach(() => {

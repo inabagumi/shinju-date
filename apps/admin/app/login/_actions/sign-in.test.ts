@@ -34,10 +34,10 @@ vi.mock(import("@/lib/supabase"), () => ({
 import { signInAction } from "./sign-in";
 
 /** The response of `signInWithPassword()` for a user with this metadata. */
-function signedIn(
+const signedIn = (
   id: string,
   appMetadata: User["app_metadata"]
-): AuthTokenResponsePassword {
+): AuthTokenResponsePassword => {
   const user: User = {
     app_metadata: appMetadata,
     aud: "authenticated",
@@ -59,9 +59,9 @@ function signedIn(
     },
     error: null,
   };
-}
+};
 
-function createFormData(next?: string): FormData {
+const createFormData = (next?: string): FormData => {
   const formData = new FormData();
   formData.set("email", "user@example.com");
   formData.set("password", "password123");
@@ -71,7 +71,7 @@ function createFormData(next?: string): FormData {
   }
 
   return formData;
-}
+};
 
 describe(signInAction, () => {
   beforeEach(() => {

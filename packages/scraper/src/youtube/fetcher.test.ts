@@ -28,11 +28,11 @@ interface FakeYouTube {
   videoIds?: string[];
 }
 
-function createClient({
+const createClient = ({
   channelIds = [],
   uploads = {},
   videoIds = [],
-}: FakeYouTube) {
+}: FakeYouTube) => {
   const channelsList = vi.fn<ListMethod<youtube.Schema$ChannelListResponse>>(
     async ({ id = [] }: ListParams) => ({
       data: {
@@ -81,13 +81,13 @@ function createClient({
   } as unknown as youtube.Youtube;
 
   return { channelsList, client, playlistItemsList, videosList };
-}
+};
 
 /**
  * A client whose `videos.list` takes a while, to see how many requests run at
  * once.
  */
-function createSlowClient() {
+const createSlowClient = () => {
   let running = 0;
   let peak = 0;
   const list = vi.fn<ListMethod<youtube.Schema$VideoListResponse>>(async () => {
@@ -104,13 +104,12 @@ function createSlowClient() {
     list,
     peak: () => peak,
   };
-}
+};
 
-function notFoundError(): Error {
-  return Object.assign(new Error("The playlist cannot be found."), {
+const notFoundError = (): Error =>
+  Object.assign(new Error("The playlist cannot be found."), {
     status: 404,
   });
-}
 
 describe(YouTubeFetcher, () => {
   it("identifies its platform", () => {

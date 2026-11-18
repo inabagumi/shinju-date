@@ -13,12 +13,12 @@ export type TalentAccounts = Pick<
  * `fetchTalent` and `fetchTalentList` sort the channels and users in the same
  * way, so a talent with several of them always gets the same icon.
  */
-export function getTalentProfileImage(
+export const getTalentProfileImage = (
   talent: TalentAccounts
-): ProfileImage | null {
+): ProfileImage | null => {
   const accounts = [...talent.youtube_channels, ...talent.twitch_users];
 
   return (
     accounts.find((account) => account.profile_image)?.profile_image ?? null
   );
-}
+};

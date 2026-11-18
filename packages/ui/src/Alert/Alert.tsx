@@ -55,7 +55,7 @@ export interface AlertProps extends Omit<
  * 状態を知らせる枠。地は `tone` の色の 10%、枠線は 30% で、文字は
  * `text-foreground` にする。
  */
-export function Alert({
+export const Alert = ({
   action,
   children,
   className,
@@ -63,18 +63,16 @@ export function Alert({
   title,
   tone = "neutral",
   ...props
-}: AlertProps) {
-  return (
-    <div
-      className={twMerge(alertVariants({ tone }), className)}
-      role={role ?? DEFAULT_ROLES[tone]}
-      {...props}
-    >
-      <div className="min-w-0 flex-1">
-        {title && <p className="font-semibold">{title}</p>}
-        <div className={title ? "mt-1" : undefined}>{children}</div>
-      </div>
-      {action && <div className="shrink-0">{action}</div>}
+}: AlertProps) => (
+  <div
+    className={twMerge(alertVariants({ tone }), className)}
+    role={role ?? DEFAULT_ROLES[tone]}
+    {...props}
+  >
+    <div className="min-w-0 flex-1">
+      {title && <p className="font-semibold">{title}</p>}
+      <div className={title ? "mt-1" : undefined}>{children}</div>
     </div>
-  );
-}
+    {action && <div className="shrink-0">{action}</div>}
+  </div>
+);

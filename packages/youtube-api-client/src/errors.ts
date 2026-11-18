@@ -5,7 +5,7 @@
  * The status is read from `status`, `response.status` or `code`, whichever
  * the client set (`code` may be a string).
  */
-export function getErrorStatus(error: unknown): number | undefined {
+export const getErrorStatus = (error: unknown): number | undefined => {
   if (typeof error !== "object" || error === null) {
     return undefined;
   }
@@ -29,4 +29,4 @@ export function getErrorStatus(error: unknown): number | undefined {
   }
 
   return undefined;
-}
+};

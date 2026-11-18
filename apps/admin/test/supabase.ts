@@ -55,26 +55,24 @@ export type SupabaseResponder =
  * Builds the response PostgREST sends when a statement fails. Supabase
  * returns it to the caller as `error`, with the given `code` and `message`.
  */
-export function postgresError(code: string, message: string): Response {
-  return HttpResponse.json(
+export const postgresError = (code: string, message: string): Response =>
+  HttpResponse.json(
     { code, details: null, hint: null, message },
     { status: code === "23505" ? 409 : 400 }
   );
-}
 
 /** Builds the response for a query that asked for a `count`. */
-export function withCount(rows: unknown[], count: number): Response {
-  return HttpResponse.json(rows, {
+export const withCount = (rows: unknown[], count: number): Response =>
+  HttpResponse.json(rows, {
     headers: {
       "Content-Range": `${rows.length > 0 ? `0-${rows.length - 1}` : "*"}/${count}`,
     },
   });
-}
 
-function operationOf(
+const operationOf = (
   request: Request,
   isRpc: boolean
-): SupabaseOperation | null {
+): SupabaseOperation | null => {
   if (isRpc) {
     return "rpc";
   }
@@ -101,10 +99,10 @@ function operationOf(
       return null;
     }
   }
-}
+};
 
-function noRows(): Response {
-  return HttpResponse.json(
+const noRows = (): Response =>
+  HttpResponse.json(
     {
       code: NO_ROWS_ERROR_CODE,
       details: "The result contains 0 rows",
@@ -113,9 +111,8 @@ function noRows(): Response {
     },
     { status: 406 }
   );
-}
 
-function toResponse(request: SupabaseRequest, result: unknown): Response {
+const toResponse = (request: SupabaseRequest, result: unknown): Response => {
   if (result instanceof Response) {
     return result;
   }
@@ -137,11 +134,10 @@ function toResponse(request: SupabaseRequest, result: unknown): Response {
   return HttpResponse.json(
     Array.isArray(result) || result == null ? (result ?? []) : [result]
   );
-}
+};
 
-function key(operation: SupabaseOperation, table: string): string {
-  return `${operation} ${table}`;
-}
+const key = (operation: SupabaseOperation, table: string): string =>
+  `${operation} ${table}`;
 
 /**
  * Starts a fake Supabase for the current test file: a real client whose
@@ -155,19 +151,19 @@ function key(operation: SupabaseOperation, table: string): string {
  *
  * Answers and recorded requests are cleared after each test.
  */
-export function setupSupabase() {
+export const setupSupabase = () => {
   const requests: SupabaseRequest[] = [];
   const persistent = new Map<string, SupabaseResponder>();
   const queued = new Map<string, SupabaseResponder[]>();
 
-  async function answer(request: SupabaseRequest): Promise<Response> {
+  const answer = async (request: SupabaseRequest): Promise<Response> => {
     const name = key(request.operation, request.table);
     const responder = queued.get(name)?.shift() ?? persistent.get(name);
     const result =
       typeof responder === "function" ? await responder(request) : responder;
 
     return toResponse(request, result);
-  }
+  };
 
   const server = setupServer(
     http.all(`${SUPABASE_URL}/rest/v1/*`, async ({ request }) => {
@@ -260,6 +256,6 @@ export function setupSupabase() {
     /** The underlying MSW server, for endpoints other than PostgREST. */
     server,
   };
-}
+};
 
 export type FakeSupabase = ReturnType<typeof setupSupabase>;

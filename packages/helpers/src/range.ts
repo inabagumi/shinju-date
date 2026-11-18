@@ -12,7 +12,7 @@
  * range(0, 10, 2) // [0, 2, 4, 6, 8]
  * range(5, 0, -1) // [5, 4, 3, 2, 1]
  */
-export function range(start: number, stop?: number, step = 1): number[] {
+export const range = (start: number, stop?: number, step = 1): number[] => {
   // Single argument case: range(stop)
   if (stop === undefined) {
     stop = start;
@@ -26,4 +26,4 @@ export function range(start: number, stop?: number, step = 1): number[] {
 
   const length = Math.max(0, Math.ceil((stop - start) / step));
   return Array.from({ length }, (_, i) => start + i * step);
-}
+};

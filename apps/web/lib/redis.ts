@@ -4,7 +4,7 @@ import { serverEnv } from "@/lib/env";
 
 let redisClient: Redis | undefined;
 
-export function getRedisClient(): Redis {
+export const getRedisClient = (): Redis => {
   if (!redisClient) {
     redisClient = new Redis({
       cache: "default",
@@ -14,4 +14,4 @@ export function getRedisClient(): Redis {
   }
 
   return redisClient;
-}
+};

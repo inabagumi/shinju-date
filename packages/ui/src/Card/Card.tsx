@@ -21,22 +21,20 @@ const cardVariants = cva(
 export type CardProps = ComponentPropsWithRef<"div"> &
   VariantProps<typeof cardVariants>;
 
-export function Card({ className, variant, ...props }: CardProps) {
-  return (
-    <div className={twMerge(cardVariants({ variant }), className)} {...props} />
-  );
-}
+export const Card = ({ className, variant, ...props }: CardProps) => (
+  <div className={twMerge(cardVariants({ variant }), className)} {...props} />
+);
 
-export function CardHeader({
+export const CardHeader = ({
   className,
   ...props
-}: ComponentPropsWithRef<"div">) {
-  return <div className={twMerge("p-6 pb-0", className)} {...props} />;
-}
+}: ComponentPropsWithRef<"div">) => (
+  <div className={twMerge("p-6 pb-0", className)} {...props} />
+);
 
-export function CardContent({
+export const CardContent = ({
   className,
   ...props
-}: ComponentPropsWithRef<"div">) {
-  return <div className={twMerge("p-6", className)} {...props} />;
-}
+}: ComponentPropsWithRef<"div">) => (
+  <div className={twMerge("p-6", className)} {...props} />
+);

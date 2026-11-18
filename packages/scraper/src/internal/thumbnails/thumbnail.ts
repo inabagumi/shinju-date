@@ -61,13 +61,13 @@ export interface Thumbnail {
  * @throws When the image cannot be downloaded, stored or registered. Nothing
  *   is left behind in that case.
  */
-export async function createThumbnail({
+export const createThumbnail = async ({
   etag,
   folder,
   now,
   source,
   supabaseClient,
-}: CreateThumbnailOptions): Promise<Thumbnail | null> {
+}: CreateThumbnailOptions): Promise<Thumbnail | null> => {
   const downloaded = await downloadImage(source.url, { etag });
 
   if (!downloaded) {
@@ -118,7 +118,7 @@ export async function createThumbnail({
   }
 
   return thumbnail;
-}
+};
 
 /**
  * Removes a thumbnail that is no longer used: first its row, then its image.
@@ -127,10 +127,10 @@ export async function createThumbnail({
  * instead of thrown. The image is only removed once the row is gone, so a row
  * never points at a missing image.
  */
-export async function removeThumbnail(
+export const removeThumbnail = async (
   { reportError, supabaseClient }: ThumbnailRemovalContext,
   thumbnail: Thumbnail
-): Promise<void> {
+): Promise<void> => {
   try {
     const removed = await removeImage(supabaseClient, {
       bucket: THUMBNAILS_BUCKET,
@@ -149,4 +149,4 @@ export async function removeThumbnail(
       thumbnailPath: thumbnail.path,
     });
   }
-}
+};

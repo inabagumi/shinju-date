@@ -22,7 +22,7 @@ const ONE_DAY_IN_SECONDS = 60 * 60 * 24;
  * When the periods of some announcements overlap, the newest one is returned.
  * Returns null if no announcement is active
  */
-export async function getAnnouncement(): Promise<Announcement | null> {
+export const getAnnouncement = async (): Promise<Announcement | null> => {
   try {
     const announcements = await fetchActiveAnnouncements();
 
@@ -32,7 +32,7 @@ export async function getAnnouncement(): Promise<Announcement | null> {
 
     return null;
   }
-}
+};
 
 /**
  * Get the currently active announcement with its message rendered on the
@@ -40,17 +40,18 @@ export async function getAnnouncement(): Promise<Announcement | null> {
  * being shipped to the browser.
  * Returns null if no announcement is active
  */
-export async function getRenderedAnnouncement(): Promise<RenderedAnnouncement | null> {
-  const announcement = await getAnnouncement();
+export const getRenderedAnnouncement =
+  async (): Promise<RenderedAnnouncement | null> => {
+    const announcement = await getAnnouncement();
 
-  return announcement ? renderAnnouncement(announcement) : null;
-}
+    return announcement ? renderAnnouncement(announcement) : null;
+  };
 
 /**
  * Server action to dismiss an announcement by saving its ID to a cookie
  * This prevents the announcement from being shown again until the cookie expires
  */
-export async function dismissAnnouncement(announcementId: string) {
+export const dismissAnnouncement = async (announcementId: string) => {
   const cookieStore = await cookies();
 
   cookieStore.set(COOKIE_NAMES.DISMISSED_ANNOUNCEMENT_ID, announcementId, {
@@ -60,7 +61,7 @@ export async function dismissAnnouncement(announcementId: string) {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
   });
-}
+};
 
 export interface Suggestion {
   term: string;
@@ -70,7 +71,9 @@ export interface Suggestion {
  * Fetch search suggestions based on a query
  * Returns an array of suggested search terms
  */
-export async function fetchSuggestions(query: string): Promise<Suggestion[]> {
+export const fetchSuggestions = async (
+  query: string
+): Promise<Suggestion[]> => {
   if (!query || query.trim().length === 0) {
     return [];
   }
@@ -90,30 +93,30 @@ export async function fetchSuggestions(query: string): Promise<Suggestion[]> {
     logger.error("Failed to fetch suggestions", { error, query });
     return [];
   }
-}
+};
 
 /**
  * Fetch recommended queries for display
  * Returns an array of recommended search query strings
  */
-export async function fetchRecommendedQueries(): Promise<string[]> {
+export const fetchRecommendedQueries = async (): Promise<string[]> => {
   try {
     return await getDisplayRecommendationQueries();
   } catch (error) {
     logger.error("Failed to fetch recommended queries", { error });
     return [];
   }
-}
+};
 
 /**
  * Fetch the active talents (ID and name) for the search modal.
  * The modal matches them against the input in the browser.
  */
-export async function fetchSearchModalTalents(): Promise<Talent[]> {
+export const fetchSearchModalTalents = async (): Promise<Talent[]> => {
   try {
     return await fetchActiveTalents();
   } catch (error) {
     logger.error("Failed to fetch talents", { error });
     return [];
   }
-}
+};

@@ -27,47 +27,43 @@ const { VideoBackfillRunPanel } = await import("./video-backfill-run-panel");
 
 const targets = { twitch: 1, youtube: 2 };
 
-function createAccount(
+const createAccount = (
   overrides: Partial<VideoBackfillRunAccount> = {}
-): VideoBackfillRunAccount {
-  return {
-    accountId: "channel-row-1",
-    active: false,
-    added: 0,
-    error: null,
-    name: "Main",
-    provider: "youtube",
-    status: "done",
-    talentId: "talent-1",
-    talentName: "Alice",
-    updatedAt: null,
-    ...overrides,
-  };
-}
+): VideoBackfillRunAccount => ({
+  accountId: "channel-row-1",
+  active: false,
+  added: 0,
+  error: null,
+  name: "Main",
+  provider: "youtube",
+  status: "done",
+  talentId: "talent-1",
+  talentName: "Alice",
+  updatedAt: null,
+  ...overrides,
+});
 
-function createRun(
+const createRun = (
   overrides: Partial<VideoBackfillRun> = {}
-): VideoBackfillRun {
-  return {
-    accounts: [createAccount()],
-    active: false,
-    added: 0,
-    counts: { done: 1, failed: 0, interrupted: 0, pending: 0, running: 0 },
-    failed: 0,
-    id: "run-1",
-    requestedAt: "2026-11-14T00:00:00Z",
-    skipped: 0,
-    ...overrides,
-  };
-}
+): VideoBackfillRun => ({
+  accounts: [createAccount()],
+  active: false,
+  added: 0,
+  counts: { done: 1, failed: 0, interrupted: 0, pending: 0, running: 0 },
+  failed: 0,
+  id: "run-1",
+  requestedAt: "2026-11-14T00:00:00Z",
+  skipped: 0,
+  ...overrides,
+});
 
-function renderPanel(run: VideoBackfillRun | null) {
+const renderPanel = (run: VideoBackfillRun | null) => {
   const initialData: VideoBackfillRunState = { run, success: true, targets };
 
   return render(<VideoBackfillRunPanel initialData={initialData} />, {
     wrapper: ActionToastProvider,
   });
-}
+};
 
 describe("VideoBackfillRunPanel", () => {
   beforeEach(() => {
@@ -83,7 +79,7 @@ describe("VideoBackfillRunPanel", () => {
   });
 
   /** Renders the panel without a check, with the actions to request one. */
-  function renderWithoutRun() {
+  const renderWithoutRun = () => {
     mocks.requestVideoBackfillRunAction.mockResolvedValue({
       data: {
         message: "全タレントの取得漏れチェックを3件キューに追加しました。",
@@ -110,13 +106,13 @@ describe("VideoBackfillRunPanel", () => {
     });
 
     renderPanel(null);
-  }
+  };
 
-  function clickRequestButton() {
+  const clickRequestButton = () => {
     fireEvent.click(
       screen.getByRole("button", { name: "取得漏れをチェックする" })
     );
-  }
+  };
 
   it("confirms the number of accounts before requesting a check", () => {
     renderWithoutRun();

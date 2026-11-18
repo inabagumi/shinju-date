@@ -21,48 +21,42 @@ export interface ZodErrorToFormStateOptions {
  * zod の検証エラーを、項目ごとのエラーの `FormState` に直す。同じ項目の同じ文は
  * 1つにまとめる（`hiddenFields` の項目が、同じ文で `generic` に集まるときなど）
  */
-export function zodErrorToFormState(
+export const zodErrorToFormState = (
   error: z.ZodError,
   { hiddenFields = [] }: ZodErrorToFormStateOptions = {}
-): FormState {
-  return error.issues.reduce<FormState>(
-    ({ errors: previousErrors = {} }, issue) => {
-      const path = issue.path.join(".");
-      const name = hiddenFields.includes(path) ? "generic" : path;
-      const previousMessages = previousErrors[name] ?? [];
+): FormState =>
+  error.issues.reduce<FormState>(({ errors: previousErrors = {} }, issue) => {
+    const path = issue.path.join(".");
+    const name = hiddenFields.includes(path) ? "generic" : path;
+    const previousMessages = previousErrors[name] ?? [];
 
-      if (previousMessages.includes(issue.message)) {
-        return { errors: previousErrors };
-      }
+    if (previousMessages.includes(issue.message)) {
+      return { errors: previousErrors };
+    }
 
-      return {
-        errors: {
-          ...previousErrors,
-          [name]: [...previousMessages, issue.message],
-        },
-      };
-    },
-    {}
-  );
-}
+    return {
+      errors: {
+        ...previousErrors,
+        [name]: [...previousMessages, issue.message],
+      },
+    };
+  }, {});
 
 /**
  * `ActionError` を `FormState` に直す。項目（`field`）があればその項目のエラーに、
  * なければ項目に結び付かないエラー（`generic`）にする。
  */
-export function actionErrorToFormState(error: ActionError): FormState {
-  return {
-    errors: {
-      [error.field ?? "generic"]: [error.message],
-    },
-  };
-}
+export const actionErrorToFormState = (error: ActionError): FormState => ({
+  errors: {
+    [error.field ?? "generic"]: [error.message],
+  },
+});
 
 /**
  * `FormData` をオブジェクトに直す。`readings[0]`、`readings[1]` のような
  * `名前[添字]` の形のキーは、添字の順に並べた `名前` の配列にまとめる。
  */
-function formDataToObject(formData: FormData): Record<string, unknown> {
+const formDataToObject = (formData: FormData): Record<string, unknown> => {
   const values = new Map<string, FormDataEntryValue>();
   const indexedValues = new Map<string, [number, FormDataEntryValue][]>();
 
@@ -88,17 +82,17 @@ function formDataToObject(formData: FormData): Record<string, unknown> {
       entries.sort(([a], [b]) => a - b).map(([, value]) => value),
     ]),
   ]);
-}
+};
 
 /**
  * `FormData` をスキーマで検証する。失敗したときは、そのまま返せる
  * `FormState` を `state` に入れて返す。
  */
-export function parseFormData<T extends z.ZodType>(
+export const parseFormData = <T extends z.ZodType>(
   schema: T,
   formData: FormData,
   options?: ZodErrorToFormStateOptions
-): ParseFormDataResult<z.output<T>> {
+): ParseFormDataResult<z.output<T>> => {
   const result = schema.safeParse(formDataToObject(formData));
 
   if (!result.success) {
@@ -109,4 +103,4 @@ export function parseFormData<T extends z.ZodType>(
   }
 
   return { data: result.data, success: true };
-}
+};

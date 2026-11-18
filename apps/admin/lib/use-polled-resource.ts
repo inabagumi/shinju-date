@@ -48,12 +48,12 @@ export interface UsePolledResourceReturn<T> {
  * - `isActive(data)` が真の間だけ `fetcher` を呼び、偽になったら止める
  * - 取り直しに失敗しても、前のデータを残して `error` に理由を入れる
  */
-export function usePolledResource<T extends { success: true }>({
+export const usePolledResource = <T extends { success: true }>({
   fetcher,
   initialData,
   intervalMs,
   isActive,
-}: UsePolledResourceOptions<T>): UsePolledResourceReturn<T> {
+}: UsePolledResourceOptions<T>): UsePolledResourceReturn<T> => {
   const [data, setData] = useState(initialData);
   const [error, setError] = useState<string | null>(null);
 
@@ -106,4 +106,4 @@ export function usePolledResource<T extends { success: true }>({
   }, [active, intervalMs, reload]);
 
   return { data, error, reload };
-}
+};

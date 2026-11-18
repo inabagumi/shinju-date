@@ -3,35 +3,31 @@ import { describe, expect, it } from "vitest";
 import { getVideoUrl, hasPlatformSource } from "./video-url";
 import type { VideoUrlSource } from "./video-url";
 
-function createYouTubeVideo(
+const createYouTubeVideo = (
   overrides: Partial<VideoUrlSource> = {}
-): VideoUrlSource {
-  return {
-    platform: "youtube",
-    status: "ENDED",
-    twitch_video: null,
-    youtube_video: { youtube_video_id: "YT_video1abc" },
-    ...overrides,
-  };
-}
+): VideoUrlSource => ({
+  platform: "youtube",
+  status: "ENDED",
+  twitch_video: null,
+  youtube_video: { youtube_video_id: "YT_video1abc" },
+  ...overrides,
+});
 
-function createTwitchVideo(
+const createTwitchVideo = (
   twitchVideo: Partial<NonNullable<VideoUrlSource["twitch_video"]>> = {},
   overrides: Partial<VideoUrlSource> = {}
-): VideoUrlSource {
-  return {
-    platform: "twitch",
-    status: "ENDED",
-    twitch_video: {
-      twitch_user: { twitch_login_name: "mio" },
-      twitch_video_id: "1234567890",
-      type: "archive",
-      ...twitchVideo,
-    },
-    youtube_video: null,
-    ...overrides,
-  };
-}
+): VideoUrlSource => ({
+  platform: "twitch",
+  status: "ENDED",
+  twitch_video: {
+    twitch_user: { twitch_login_name: "mio" },
+    twitch_video_id: "1234567890",
+    type: "archive",
+    ...twitchVideo,
+  },
+  youtube_video: null,
+  ...overrides,
+});
 
 describe(getVideoUrl, () => {
   it("links a YouTube video to its watch page", () => {

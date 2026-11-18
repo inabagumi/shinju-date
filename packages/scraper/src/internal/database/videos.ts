@@ -27,11 +27,11 @@ export type NewPlatformVideo =
  * @returns The new video ID, or `null` when the platform video already exists
  *   (another run saved it first). Nothing is inserted then.
  */
-export async function insertVideo(
+export const insertVideo = async (
   supabaseClient: TypedSupabaseClient,
   video: NewVideo,
   platformVideo: NewPlatformVideo
-): Promise<string | null> {
+): Promise<string | null> => {
   const { data, error } = await supabaseClient.rpc("insert_video", {
     p_platform: platformVideo.platform,
     p_platform_video: platformVideo.values,
@@ -48,7 +48,7 @@ export async function insertVideo(
   // The generated types do not tell that the function returns `NULL` when
   // the platform video already exists.
   return data as string | null;
-}
+};
 
 /**
  * Updates the given columns of one video.
@@ -56,11 +56,11 @@ export async function insertVideo(
  * `updated_at` is not one of them: the `on_videos_update` trigger sets it to
  * the current time of the database on every update.
  */
-export async function updateVideo(
+export const updateVideo = async (
   supabaseClient: TypedSupabaseClient,
   videoId: string,
   values: Omit<TablesUpdate<"videos">, "updated_at">
-): Promise<void> {
+): Promise<void> => {
   const { error } = await supabaseClient
     .from("videos")
     .update(values)
@@ -69,7 +69,7 @@ export async function updateVideo(
   if (error) {
     throw new DatabaseError("Failed to update a video", error);
   }
-}
+};
 
 export interface SoftDeleteVideosOptions {
   now: Temporal.Instant;
@@ -86,10 +86,10 @@ export interface SoftDeleteVideosOptions {
  *
  * @returns The number of videos that were deleted by this call.
  */
-export async function softDeleteUnavailableVideos(
+export const softDeleteUnavailableVideos = async (
   supabaseClient: TypedSupabaseClient,
   { now, videoIds }: SoftDeleteVideosOptions
-): Promise<number> {
+): Promise<number> => {
   const deletedAt = toDBString(now);
   let deletedCount = 0;
 
@@ -108,16 +108,16 @@ export async function softDeleteUnavailableVideos(
   }
 
   return deletedCount;
-}
+};
 
 /**
  * Returns which of the given YouTube video IDs are already saved, including
  * soft-deleted videos.
  */
-export async function findSavedYouTubeVideoIds(
+export const findSavedYouTubeVideoIds = async (
   supabaseClient: TypedSupabaseClient,
   youtubeVideoIds: readonly string[]
-): Promise<Set<string>> {
+): Promise<Set<string>> => {
   const savedIds = new Set<string>();
 
   for (const ids of chunk(youtubeVideoIds, IN_FILTER_CHUNK_SIZE)) {
@@ -136,4 +136,4 @@ export async function findSavedYouTubeVideoIds(
   }
 
   return savedIds;
-}
+};

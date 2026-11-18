@@ -16,30 +16,30 @@ import {
 import { TwitchFetcher } from "./fetcher.js";
 import type { TwitchApi } from "./types.js";
 
-function createClient(overrides: Partial<TwitchApi> = {}): TwitchApi {
-  return {
-    getClips: vi.fn<TwitchApi["getClips"]>(() => fromArray<TwitchClip>([])),
-    getStreamsByUserIds: vi.fn<TwitchApi["getStreamsByUserIds"]>(() =>
-      fromArray<TwitchStream>([])
-    ),
-    getUsers: vi.fn<TwitchApi["getUsers"]>(() => fromArray<TwitchUser>([])),
-    getVideos: vi.fn<TwitchApi["getVideos"]>(() => fromArray<TwitchVideo>([])),
-    getVideosByUser: vi.fn<TwitchApi["getVideosByUser"]>(() =>
-      fromArray<TwitchVideo>([])
-    ),
-    getVideosByUserPage: vi.fn<TwitchApi["getVideosByUserPage"]>(async () => ({
-      cursor: null,
-      videos: [],
-    })),
-    ...overrides,
-  };
-}
+const createClient = (overrides: Partial<TwitchApi> = {}): TwitchApi => ({
+  getClips: vi.fn<TwitchApi["getClips"]>(() => fromArray<TwitchClip>([])),
+  getStreamsByUserIds: vi.fn<TwitchApi["getStreamsByUserIds"]>(() =>
+    fromArray<TwitchStream>([])
+  ),
+  getUsers: vi.fn<TwitchApi["getUsers"]>(() => fromArray<TwitchUser>([])),
+  getVideos: vi.fn<TwitchApi["getVideos"]>(() => fromArray<TwitchVideo>([])),
+  getVideosByUser: vi.fn<TwitchApi["getVideosByUser"]>(() =>
+    fromArray<TwitchVideo>([])
+  ),
+  getVideosByUserPage: vi.fn<TwitchApi["getVideosByUserPage"]>(async () => ({
+    cursor: null,
+    videos: [],
+  })),
+  ...overrides,
+});
 
-async function* fromArray<T>(items: T[]): AsyncGenerator<T, void, undefined> {
+const fromArray = async function* fromArray<T>(
+  items: T[]
+): AsyncGenerator<T, void, undefined> {
   for (const item of items) {
     yield item;
   }
-}
+};
 
 describe(TwitchFetcher, () => {
   it("identifies its platform", () => {

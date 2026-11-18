@@ -23,11 +23,11 @@ export interface SyncVideoSummary {
 
 const NOT_FOUND_ERROR_MESSAGE = "動画が見つかりませんでした。";
 
-async function revalidateVideo(videoId: string): Promise<void> {
+const revalidateVideo = async (videoId: string): Promise<void> => {
   revalidatePath(`/videos/${videoId}`);
   revalidatePath("/videos");
   await revalidateTags([CACHE_TAGS.VIDEOS]);
-}
+};
 
 /**
  * 動画1件を、YouTube や Twitch の今の状態に合わせる。

@@ -17,37 +17,35 @@ import { getToday } from "../_lib/get-today";
 const POPULAR_VIDEOS_LIMIT = 10;
 
 /** 読み込み中の `DashboardPopularVideos`。取得する件数ぶんの行を並べる */
-export function DashboardPopularVideosSkeleton() {
-  return (
-    <PanelSkeleton title="人気動画ランキング (過去30日間)">
-      <div className="divide-y divide-border">
-        {range(POPULAR_VIDEOS_LIMIT).map((row) => (
-          <div
-            className="flex items-center gap-4 py-3"
-            key={`popular-video-skeleton-${row}`}
-          >
-            <Skeleton className="size-8 shrink-0 rounded-full" />
-            <Skeleton className="aspect-video w-28 shrink-0 rounded-container" />
-            <div className="min-w-0 flex-1 space-y-1">
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-5 w-24" />
-            </div>
-            <div className="flex shrink-0 gap-2">
-              <Skeleton className="h-7 w-12" />
-              <Skeleton className="size-7" />
-            </div>
+export const DashboardPopularVideosSkeleton = () => (
+  <PanelSkeleton title="人気動画ランキング (過去30日間)">
+    <div className="divide-y divide-border">
+      {range(POPULAR_VIDEOS_LIMIT).map((row) => (
+        <div
+          className="flex items-center gap-4 py-3"
+          key={`popular-video-skeleton-${row}`}
+        >
+          <Skeleton className="size-8 shrink-0 rounded-full" />
+          <Skeleton className="aspect-video w-28 shrink-0 rounded-container" />
+          <div className="min-w-0 flex-1 space-y-1">
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-5 w-24" />
           </div>
-        ))}
-      </div>
-    </PanelSkeleton>
-  );
-}
+          <div className="flex shrink-0 gap-2">
+            <Skeleton className="h-7 w-12" />
+            <Skeleton className="size-7" />
+          </div>
+        </div>
+      ))}
+    </div>
+  </PanelSkeleton>
+);
 
 /**
  * DashboardPopularVideos - Displays popular videos ranking
  * This is an async Server Component that fetches its own data
  */
-export async function DashboardPopularVideos() {
+export const DashboardPopularVideos = async () => {
   const today = Temporal.PlainDate.from(await getToday());
   const startDate = today.subtract({ days: 29 });
   const popularVideos = await getPopularVideos({
@@ -99,4 +97,4 @@ export async function DashboardPopularVideos() {
       )}
     </Panel>
   );
-}
+};

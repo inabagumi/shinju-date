@@ -15,16 +15,15 @@ const STORAGE_DELETE_URL =
 const now = Temporal.Instant.from("2024-05-08T12:34:56.789Z");
 const olderThan = UNUSED_THUMBNAIL_GRACE_PERIOD;
 
-function unusedThumbnail(index: number) {
-  return { id: `thumb-${index}`, path: `vod-${index}/a.jpg`, videos: [] };
-}
+const unusedThumbnail = (index: number) => ({
+  id: `thumb-${index}`,
+  path: `vod-${index}/a.jpg`,
+  videos: [],
+});
 
 /** The IDs a `DELETE thumbnails` request deletes, e.g. `in.(a,b)`. */
-function deletedIds(): (string | undefined)[] {
-  return supabase
-    .written("DELETE", "thumbnails")
-    .map(({ query }) => query["id"]);
-}
+const deletedIds = (): (string | undefined)[] =>
+  supabase.written("DELETE", "thumbnails").map(({ query }) => query["id"]);
 
 describe(removeUnusedThumbnails, () => {
   it("lists the oldest thumbnails no video uses that are past the grace period", async () => {

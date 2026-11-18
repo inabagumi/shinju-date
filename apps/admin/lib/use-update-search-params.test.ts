@@ -26,9 +26,8 @@ vi.mock(import("next/navigation"), () => ({
   useSearchParams: () => mocks.searchParams as ReadonlyURLSearchParams,
 }));
 
-function renderUpdate() {
-  return renderHook(() => useUpdateSearchParams()).result.current;
-}
+const renderUpdate = () =>
+  renderHook(() => useUpdateSearchParams()).result.current;
 
 describe(useUpdateSearchParams, () => {
   beforeEach(() => {

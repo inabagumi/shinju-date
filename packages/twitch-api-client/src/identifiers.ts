@@ -22,9 +22,9 @@ const TWITCH_LOGIN_PATTERN = /^[a-zA-Z0-9_]{4,25}$/;
  *
  * @returns Parsed identifier, or `null` if the input cannot be interpreted
  */
-export function parseTwitchUserIdentifier(
+export const parseTwitchUserIdentifier = (
   raw: string
-): TwitchUserIdentifier | null {
+): TwitchUserIdentifier | null => {
   const input = raw.trim();
   if (!input) {
     return null;
@@ -79,4 +79,4 @@ export function parseTwitchUserIdentifier(
   }
 
   return null;
-}
+};

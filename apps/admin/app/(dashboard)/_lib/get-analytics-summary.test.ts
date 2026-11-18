@@ -31,12 +31,12 @@ interface FakeRedisData {
 }
 
 /** Keep what the analytics read in Redis. Today is 2025-11-13. */
-function mockRedis({
+const mockRedis = ({
   clicks = {},
   popularKeywords = 0,
   searches,
   snapshots = {},
-}: FakeRedisData = {}) {
+}: FakeRedisData = {}) => {
   const values: Record<string, unknown> = {
     [`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}20251113`]: searches,
     ...Object.fromEntries(
@@ -63,7 +63,7 @@ function mockRedis({
   vi.mocked(getRedisClient).mockReturnValue(createMockRedisClient(redisClient));
 
   return redisClient;
-}
+};
 
 describe(getAnalyticsSummary, () => {
   beforeEach(() => {

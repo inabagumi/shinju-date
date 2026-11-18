@@ -29,44 +29,41 @@ let sendBeacon: ReturnType<
 >;
 
 /** ルートレイアウトの `SearchExitObserver` と、ページの `SearchExitTracker` */
-function Page({ tracker }: PageProps) {
-  return (
-    <>
-      <SearchExitObserver />
-      {tracker && <SearchExitTracker {...tracker} />}
-      <a href="#video" ping="/api/ping">
-        <span>動画</span>
-      </a>
-      <a href="#about">このサイトについて</a>
-    </>
-  );
-}
+const Page = ({ tracker }: PageProps) => (
+  <>
+    <SearchExitObserver />
+    {tracker && <SearchExitTracker {...tracker} />}
+    <a href="#video" ping="/api/ping">
+      <span>動画</span>
+    </a>
+    <a href="#about">このサイトについて</a>
+  </>
+);
 
 /** `pathname` へ移動して、そのページを描き直す */
-function navigate(
+const navigate = (
   rerender: (ui: React.ReactNode) => void,
   pathname: string,
   props: PageProps = {}
-) {
+) => {
   mocks.pathname = pathname;
   rerender(<Page {...props} />);
-}
+};
 
-function getSentQueries(): string[] {
-  return sendBeacon.mock.calls.map(([url, data]) => {
+const getSentQueries = (): string[] =>
+  sendBeacon.mock.calls.map(([url, data]) => {
     expect(url).toBe(SEARCH_EXIT_ENDPOINT);
 
     return (JSON.parse(data) as { query: string }).query;
   });
-}
 
-function setVisibilityState(state: DocumentVisibilityState) {
+const setVisibilityState = (state: DocumentVisibilityState) => {
   Object.defineProperty(document, "visibilityState", {
     configurable: true,
     value: state,
   });
   document.dispatchEvent(new Event("visibilitychange"));
-}
+};
 
 describe("search exit tracking", () => {
   beforeEach(async () => {

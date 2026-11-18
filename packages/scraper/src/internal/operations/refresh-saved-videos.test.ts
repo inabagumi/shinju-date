@@ -30,23 +30,21 @@ const context = createTestContext({
   supabaseClient: supabase.supabaseClient,
 });
 
-function createSaved(platformId: string): FakeSaved {
-  return {
-    duration: "PT1H",
-    id: `video-${platformId}`,
-    platform_id: platformId,
-    published_at: "2024-05-01T09:00:00+00:00",
-    status: "ENDED",
-    thumbnail_id: `thumb-${platformId}`,
-    title: `Video ${platformId}`,
-  };
-}
+const createSaved = (platformId: string): FakeSaved => ({
+  duration: "PT1H",
+  id: `video-${platformId}`,
+  platform_id: platformId,
+  published_at: "2024-05-01T09:00:00+00:00",
+  status: "ENDED",
+  thumbnail_id: `thumb-${platformId}`,
+  title: `Video ${platformId}`,
+});
 
 /** A platform that returns `videos` and reports every other ID missing. */
-function createAdapter(
+const createAdapter = (
   videos: FakeVideo[],
   { notLookedUp = [] }: { notLookedUp?: string[] } = {}
-) {
+) => {
   const byId = new Map(videos.map((video) => [video.id, video]));
   const lookUp = vi.fn<FakeAdapter["lookUp"]>(async (savedVideos) => {
     const ids = savedVideos
@@ -79,7 +77,7 @@ function createAdapter(
   };
 
   return { adapter, lookUp };
-}
+};
 
 describe("refresh saved videos", () => {
   beforeEach(() => {

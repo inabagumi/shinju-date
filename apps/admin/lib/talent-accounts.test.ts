@@ -38,9 +38,7 @@ const youtubeChannel = {
   snippet: { customUrl: "@example", title: "Example Channel" },
 };
 
-function talentTouches() {
-  return supabase.calls("rpc", "touch_talent");
-}
+const talentTouches = () => supabase.calls("rpc", "touch_talent");
 
 describe(touchTalent, () => {
   it("moves the updated_at of the talent with touch_talent", async () => {

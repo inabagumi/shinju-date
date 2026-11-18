@@ -2,7 +2,7 @@ import type { Tables } from "@shinju-date/database";
 import { Badge } from "@shinju-date/ui";
 
 // Get level badge variant
-function getLevelBadgeVariant(level: string): "info" | "warning" | "danger" {
+const getLevelBadgeVariant = (level: string): "info" | "warning" | "danger" => {
   switch (level) {
     case "warning": {
       return "warning";
@@ -14,10 +14,10 @@ function getLevelBadgeVariant(level: string): "info" | "warning" | "danger" {
       return "info";
     }
   }
-}
+};
 
 // Get level label
-function getLevelLabel(level: string): string {
+const getLevelLabel = (level: string): string => {
   switch (level) {
     case "warning": {
       return "警告";
@@ -29,10 +29,10 @@ function getLevelLabel(level: string): string {
       return "情報";
     }
   }
-}
+};
 
 // Check if announcement is currently active
-function isActive(announcement: Tables<"announcements">): boolean {
+const isActive = (announcement: Tables<"announcements">): boolean => {
   if (!announcement.enabled) return false;
 
   const now = Temporal.Now.instant();
@@ -43,24 +43,21 @@ function isActive(announcement: Tables<"announcements">): boolean {
     Temporal.Instant.compare(now, start) >= 0 &&
     Temporal.Instant.compare(now, end) <= 0
   );
-}
+};
 
-export function LevelBadge({ level }: { level: string }) {
-  return (
-    <Badge variant={getLevelBadgeVariant(level)}>{getLevelLabel(level)}</Badge>
-  );
-}
+export const LevelBadge = ({ level }: { level: string }) => (
+  <Badge variant={getLevelBadgeVariant(level)}>{getLevelLabel(level)}</Badge>
+);
 
-export function StatusBadge({
+export const StatusBadge = ({
   announcement,
 }: {
   announcement: Tables<"announcements">;
-}) {
-  return isActive(announcement) ? (
+}) =>
+  isActive(announcement) ? (
     <Badge variant="success">公開中</Badge>
   ) : announcement.enabled ? (
     <Badge variant="neutral">公開予定</Badge>
   ) : (
     <Badge variant="neutral">無効</Badge>
   );
-}

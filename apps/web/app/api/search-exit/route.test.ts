@@ -23,8 +23,8 @@ import type { trackSearchExitWithoutClick } from "@/lib/session-analytics";
 
 import { POST } from "./route";
 
-function post(body: string): Promise<Response> {
-  return POST(
+const post = (body: string): Promise<Response> =>
+  POST(
     new Request("https://shinju.date/api/search-exit", {
       body,
       // `navigator.sendBeacon` は文字列の本文を `text/plain` で送る
@@ -32,7 +32,6 @@ function post(body: string): Promise<Response> {
       method: "POST",
     })
   );
-}
 
 describe("POST /api/search-exit", () => {
   beforeEach(() => {

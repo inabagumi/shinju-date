@@ -3,10 +3,10 @@
  *
  * Returns an empty array when `start` is after `end`.
  */
-export function listDatesInRange(
+export const listDatesInRange = (
   start: Temporal.PlainDate,
   end: Temporal.PlainDate
-): Temporal.PlainDate[] {
+): Temporal.PlainDate[] => {
   const dates: Temporal.PlainDate[] = [];
 
   for (
@@ -18,4 +18,4 @@ export function listDatesInRange(
   }
 
   return dates;
-}
+};

@@ -122,14 +122,14 @@ describe("exportSearchParamsSchema.safeParse", () => {
 
   describe("compared with the schema of the analytics pages", () => {
     /** Whether the analytics pages show the given range instead of the default one */
-    function isAcceptedByPage(from: string, to: string): boolean {
+    const isAcceptedByPage = (from: string, to: string): boolean => {
       const { dateRange } = analyticsSearchParamsSchema.parse({ from, to });
 
       return dateRange.startDate === from && dateRange.endDate === to;
-    }
+    };
 
     /** Whether the export covers the given range */
-    function isAcceptedByExport(from: string, to: string): boolean {
+    const isAcceptedByExport = (from: string, to: string): boolean => {
       const result = exportSearchParamsSchema.safeParse({ from, to });
 
       return (
@@ -137,7 +137,7 @@ describe("exportSearchParamsSchema.safeParse", () => {
         result.data.range.start === from &&
         result.data.range.end === to
       );
-    }
+    };
 
     it.each([
       ["a range within the window", "2026-11-01", "2026-11-10", true],

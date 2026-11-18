@@ -18,9 +18,8 @@ vi.mock(import("next/cache"), () => ({
 setupSupabase();
 
 /** The IDs of the given rows or results, to compare them in order */
-function ids(rows: readonly { id: string }[]): string[] {
-  return rows.map((row) => row.id);
-}
+const ids = (rows: readonly { id: string }[]): string[] =>
+  rows.map((row) => row.id);
 
 describe("lib/data/announcements", () => {
   beforeEach(() => {

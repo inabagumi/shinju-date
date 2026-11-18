@@ -16,11 +16,11 @@ interface Props {
   hasTwitchUsers: boolean;
 }
 
-export function SyncTalentButton({
+export const SyncTalentButton = ({
   talentId,
   hasYouTubeChannels,
   hasTwitchUsers,
-}: Props) {
+}: Props) => {
   const youtube = useServerAction(syncTalentWithYouTubeAction, {
     errorText: "同期に失敗しました。",
     successText: ({ data }) =>
@@ -73,4 +73,4 @@ export function SyncTalentButton({
       )}
     </>
   );
-}
+};

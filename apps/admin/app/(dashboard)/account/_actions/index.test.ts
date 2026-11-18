@@ -39,30 +39,30 @@ const session: Session = {
   user: TEST_USER,
 };
 
-function signIn(user: Partial<typeof TEST_USER> = {}): void {
+const signIn = (user: Partial<typeof TEST_USER> = {}): void => {
   test.requireAuthenticatedUser.mockResolvedValue({
     supabaseClient,
     user: { ...TEST_USER, ...user },
   });
-}
+};
 
-function emailForm(email: string): FormData {
+const emailForm = (email: string): FormData => {
   const formData = new FormData();
   formData.set("email", email);
   return formData;
-}
+};
 
-function passwordForm({
+const passwordForm = ({
   confirmPassword = NEW_PASSWORD,
   currentPassword = PASSWORD,
   newPassword = NEW_PASSWORD,
-} = {}): FormData {
+} = {}): FormData => {
   const formData = new FormData();
   formData.set("currentPassword", currentPassword);
   formData.set("newPassword", newPassword);
   formData.set("confirmPassword", confirmPassword);
   return formData;
-}
+};
 
 describe("account actions", () => {
   beforeEach(() => {

@@ -68,10 +68,10 @@ const operations = [
   },
 ] as const;
 
-function renderDialog(
+const renderDialog = (
   operation: (typeof operations)[number]["operation"],
   onSuccess = vi.fn<(text: string) => void>()
-) {
+) => {
   render(
     <TalentLifecycleDialog
       onSuccess={onSuccess}
@@ -83,7 +83,7 @@ function renderDialog(
   fireEvent.click(screen.getByRole("button", { name: "開く" }));
 
   return { onSuccess };
-}
+};
 
 describe("TalentLifecycleDialog", () => {
   beforeEach(() => {

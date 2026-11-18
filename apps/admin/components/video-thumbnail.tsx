@@ -31,12 +31,12 @@ const imageSizes: Record<VideoThumbnailSize, string> = {
 /**
  * 動画のサムネイル。画像がない動画は、同じ大きさの枠に「No Image」を描く。
  */
-export function VideoThumbnail({
+export const VideoThumbnail = ({
   alt = "",
   className,
   size,
   thumbnail,
-}: VideoThumbnailProps) {
+}: VideoThumbnailProps) => {
   const frameClassName = twMerge(
     "relative aspect-video",
     sizeClassNames[size],
@@ -70,4 +70,4 @@ export function VideoThumbnail({
       />
     </div>
   );
-}
+};

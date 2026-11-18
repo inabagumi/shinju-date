@@ -15,26 +15,26 @@ const { supabase } = test;
 const ID = "70000000-0000-0000-0000-000000000001";
 const MEMO = "検索の絞り込みと合わせて、次の四半期に対応する。";
 
-function statusForm(status: string, id = ID): FormData {
+const statusForm = (status: string, id = ID): FormData => {
   const formData = new FormData();
   formData.set("id", id);
   formData.set("status", status);
   return formData;
-}
+};
 
-function memoForm(adminMemo: string, id = ID): FormData {
+const memoForm = (adminMemo: string, id = ID): FormData => {
   const formData = new FormData();
   formData.set("id", id);
   formData.set("admin_memo", adminMemo);
   return formData;
-}
+};
 
-function readForm(isRead: string, id = ID): FormData {
+const readForm = (isRead: string, id = ID): FormData => {
   const formData = new FormData();
   formData.set("id", id);
   formData.set("is_read", isRead);
   return formData;
-}
+};
 
 /**
  * 予期しない例外のときに画面に出る文（`@/lib/action` の `ACTION_FAILED_ERROR_MESSAGE`）。
@@ -44,18 +44,15 @@ function readForm(isRead: string, id = ID): FormData {
 const ACTION_FAILED_ERROR =
   "処理に失敗しました。時間をおいて、もう一度お試しください。";
 
-function errorState(message: string) {
-  return { errors: { generic: [message] } };
-}
+const errorState = (message: string) => ({ errors: { generic: [message] } });
 
 /** What the audit log entries record, without the client passed first. */
-function recordedAuditLogs(): string {
-  return JSON.stringify(
+const recordedAuditLogs = (): string =>
+  JSON.stringify(
     test.createAuditLog.mock.calls.map(
       ([, ...args]: unknown[]): unknown[] => args
     )
   );
-}
 
 describe("updateFeatureRequestStatusAction()", () => {
   it("records the status before and after the change", async () => {
@@ -294,7 +291,7 @@ describe("with the client of the signed-in user", () => {
    * サービスロールのクライアントと区別できるように、ログインしたユーザーの
    * クライアントを、`from()` を記録する別のオブジェクトにする
    */
-  function signInWithRecordedClient() {
+  const signInWithRecordedClient = () => {
     const fromTable = (table: "feature_requests") =>
       supabase.client.from(table);
     const from = vi.fn<typeof fromTable>(fromTable);
@@ -308,7 +305,7 @@ describe("with the client of the signed-in user", () => {
     });
 
     return { from, supabaseClient };
-  }
+  };
 
   it.each([
     [

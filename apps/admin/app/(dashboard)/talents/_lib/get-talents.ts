@@ -15,20 +15,16 @@ const TALENT_LIST_SELECT = `
   youtube_channels (id, name, youtube_channel_id, youtube_handle)
 `;
 
-function selectTalents(supabaseClient: TypedSupabaseClient) {
-  return supabaseClient
-    .from("talents")
-    .select(TALENT_LIST_SELECT)
-    .order("name", {
-      ascending: true,
-    });
-}
+const selectTalents = (supabaseClient: TypedSupabaseClient) =>
+  supabaseClient.from("talents").select(TALENT_LIST_SELECT).order("name", {
+    ascending: true,
+  });
 
 export type TalentListItem = QueryData<
   ReturnType<typeof selectTalents>
 >[number];
 
-export async function getTalents(): Promise<TalentListItem[]> {
+export const getTalents = async (): Promise<TalentListItem[]> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -37,4 +33,4 @@ export async function getTalents(): Promise<TalentListItem[]> {
 
   // Admin can read deleted talents via RLS; include all for filter UI
   return unwrap(await selectTalents(supabaseClient), "getTalents");
-}
+};

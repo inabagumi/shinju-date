@@ -132,7 +132,7 @@ describe("Scraper#cleanUpImages", () => {
   const now = Temporal.Instant.from("2024-05-08T12:00:00Z");
 
   /** Records the paths removed from each storage bucket. */
-  function mockStorage(): Record<string, string[]> {
+  const mockStorage = (): Record<string, string[]> => {
     const removed: Record<string, string[]> = {};
 
     supabase.server.use(
@@ -149,9 +149,9 @@ describe("Scraper#cleanUpImages", () => {
     );
 
     return removed;
-  }
+  };
 
-  function createScraper() {
+  const createScraper = () => {
     const onError = vi.fn<ErrorReporter>();
     const scraper = new ExampleScraper({
       onError,
@@ -159,7 +159,7 @@ describe("Scraper#cleanUpImages", () => {
     });
 
     return { onError, scraper };
-  }
+  };
 
   it("deletes the thumbnails and icons nothing uses, past their grace periods", async () => {
     const removed = mockStorage();

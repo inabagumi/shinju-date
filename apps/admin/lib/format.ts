@@ -9,12 +9,11 @@ interface FormatDateTimeFromISOOptions {
  * Formats an ISO 8601 string in `TIME_ZONE` as `YYYY/MM/DD HH:mm:ss` (or
  * `YYYY/MM/DD HH:mm` with `includeSeconds: false`).
  */
-export function formatDateTimeFromISO(
+export const formatDateTimeFromISO = (
   isoString: string,
   options: FormatDateTimeFromISOOptions = {}
-): string {
-  return formatDateTimeFromISOInTimeZone(isoString, {
+): string =>
+  formatDateTimeFromISOInTimeZone(isoString, {
     ...options,
     timeZone: TIME_ZONE,
   });
-}

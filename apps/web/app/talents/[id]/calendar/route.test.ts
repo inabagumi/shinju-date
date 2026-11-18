@@ -22,11 +22,12 @@ const mocks = vi.hoisted(() => {
 
   // Vitest does not run `'use cache'`, so serve the second call with the same
   // arguments from the entry of the first, as Next.js does
-  function cached<Args extends unknown[], Result>(
-    name: string,
-    fn: (...args: Args) => Promise<Result>
-  ): (...args: Args) => Promise<Result> {
-    return (...args) => {
+  const cached =
+    <Args extends unknown[], Result>(
+      name: string,
+      fn: (...args: Args) => Promise<Result>
+    ): ((...args: Args) => Promise<Result>) =>
+    (...args) => {
       const key = JSON.stringify([name, args]);
 
       if (!cacheEntries.has(key)) {
@@ -35,7 +36,6 @@ const mocks = vi.hoisted(() => {
 
       return cacheEntries.get(key) as Promise<Result>;
     };
-  }
 
   return {
     cached,
@@ -96,18 +96,16 @@ const short = createVideoOnYouTube(channel, {
 });
 const otherSong = createVideoOnYouTube(otherChannel, { title: "歌ってみた" });
 
-function get(id: string): Promise<Response> {
-  return GET(new Request(`https://shinju.date/talents/${id}.ics`), {
+const get = (id: string): Promise<Response> =>
+  GET(new Request(`https://shinju.date/talents/${id}.ics`), {
     params: Promise.resolve({ id }),
   });
-}
 
 /** The IDs of the videos of the events of a calendar, sorted */
-async function eventIds(response: Response): Promise<string[]> {
-  return [...(await response.text()).matchAll(/^UID:(.+)@shinju\.date/gm)]
+const eventIds = async (response: Response): Promise<string[]> =>
+  [...(await response.text()).matchAll(/^UID:(.+)@shinju\.date/gm)]
     .map(([, id]) => id ?? "")
     .toSorted();
-}
 
 describe("GET /talents/[id].ics", () => {
   beforeEach(async () => {

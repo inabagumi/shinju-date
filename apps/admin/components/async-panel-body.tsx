@@ -17,11 +17,11 @@ interface AsyncPanelBodyProps {
  * 一定の間隔で取り直すパネルの中身。取り直しに失敗したら、その理由と「再試行」の
  * ボタンを中身の上に出す
  */
-export function AsyncPanelBody({
+export const AsyncPanelBody = ({
   children,
   error,
   onRetry,
-}: AsyncPanelBodyProps) {
+}: AsyncPanelBodyProps) => {
   const [isPending, startTransition] = useTransition();
 
   return (
@@ -47,4 +47,4 @@ export function AsyncPanelBody({
       {children}
     </>
   );
-}
+};

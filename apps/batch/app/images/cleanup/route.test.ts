@@ -36,11 +36,10 @@ vi.mock(import("next/server"), async (importOriginal) => ({
 
 const { POST } = await import("./route");
 
-function createRequest(): Request {
-  return new Request("http://localhost:5000/images/cleanup", {
+const createRequest = (): Request =>
+  new Request("http://localhost:5000/images/cleanup", {
     method: "POST",
   });
-}
 
 describe("POST /images/cleanup", () => {
   beforeEach(() => {

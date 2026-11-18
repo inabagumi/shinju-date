@@ -16,10 +16,10 @@ interface AuditLogsDependencies {
  * of the first talent, a hidden video, the first term and the maintenance
  * mode.
  */
-export function createAuditLogs(
+export const createAuditLogs = (
   { faker, now }: SeedContext,
   { talents, terms, videos }: AuditLogsDependencies
-): Tables<"audit_logs">[] {
+): Tables<"audit_logs">[] => {
   const [talent] = talents;
   const [term] = terms;
   const hiddenVideo = videos.find((video) => !video.visible);
@@ -60,4 +60,4 @@ export function createAuditLogs(
     id: faker.string.uuid(),
     user_id: MOCK_SUPABASE_USER.id,
   }));
-}
+};

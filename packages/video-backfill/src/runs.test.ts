@@ -34,11 +34,11 @@ const otherJobId = getBackfillJobId("youtube", "channel-row-2");
  * A check queues its jobs at the same time, so on Redis they are not queued
  * in the order of the accounts; the jobs claimed before it are put back.
  */
-async function claimJob(
+const claimJob = async (
   queue: BackfillQueue,
   id: string,
   at: Temporal.Instant
-): Promise<BackfillClaim> {
+): Promise<BackfillClaim> => {
   const skipped: BackfillClaim[] = [];
 
   try {
@@ -60,20 +60,20 @@ async function claimJob(
       await queue.requeue(claim, at);
     }
   }
-}
+};
 
 /**
  * Records a page of a claimed job, failing the test when the lock was lost.
  *
  * @returns The claim to keep writing with.
  */
-async function recordPage(
+const recordPage = async (
   queue: BackfillQueue,
   claim: BackfillClaim,
   added: number,
   nextCursor: string | null,
   at: Temporal.Instant
-): Promise<BackfillClaim> {
+): Promise<BackfillClaim> => {
   const result = await queue.recordPage(
     claim,
     { added, done: nextCursor === null, nextCursor },
@@ -85,10 +85,10 @@ async function recordPage(
   }
 
   return { job: result.job, token: claim.token };
-}
+};
 
 /** Starts a check, failing the test when it does not start. */
-async function startRun(runs: BackfillRuns, at: Temporal.Instant = now) {
+const startRun = async (runs: BackfillRuns, at: Temporal.Instant = now) => {
   const result = await runs.start(requests, { requestedBy: "user-1" }, at);
 
   if (result.status !== "started") {
@@ -96,13 +96,13 @@ async function startRun(runs: BackfillRuns, at: Temporal.Instant = now) {
   }
 
   return result.run;
-}
+};
 
 describeOnEachRedis((createClient) => {
   describe(BackfillRuns, () => {
     const getScopedRedis = useScopedRedis(createClient);
 
-    function createRuns() {
+    const createRuns = () => {
       const scoped = getScopedRedis();
       const { redis } = scoped;
       // The queue of the workers, which keeps the outcomes of the jobs.
@@ -111,7 +111,7 @@ describeOnEachRedis((createClient) => {
       });
 
       return { queue, redis, runs: new BackfillRuns(redis, queue), scoped };
-    }
+    };
 
     it("queues one job per account and keeps the check as the latest", async () => {
       const { redis, runs } = createRuns();

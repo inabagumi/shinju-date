@@ -4,7 +4,7 @@ import NextLink from "next/link";
 import type { LinkProps } from "next/link";
 import type { ComponentPropsWithoutRef } from "react";
 
-function Link({
+const Link = ({
   children,
   className,
   href,
@@ -12,7 +12,7 @@ function Link({
   onTouchStart,
   onClick,
   ...props
-}: ComponentPropsWithoutRef<"a">) {
+}: ComponentPropsWithoutRef<"a">) => {
   const linkClassName = twMerge(
     "text-accent underline underline-offset-2 hover:decoration-2",
     className
@@ -45,7 +45,7 @@ function Link({
       {children}
     </a>
   );
-}
+};
 
 /**
  * 文書ページ（とは・利用規約・プライバシーポリシー）の本文の要素。
@@ -97,9 +97,7 @@ const documentComponents: MDXComponents = {
   ),
 };
 
-export function useMDXComponents(components: MDXComponents): MDXComponents {
-  return {
-    ...documentComponents,
-    ...components,
-  };
-}
+export const useMDXComponents = (components: MDXComponents): MDXComponents => ({
+  ...documentComponents,
+  ...components,
+});

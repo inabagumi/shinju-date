@@ -17,9 +17,9 @@ import { withMockSessionCookie } from "@/lib/supabase/mock-session";
  * @param request - The incoming Next.js request
  * @returns A NextResponse with updated session cookies
  */
-export async function updateSession(
+export const updateSession = async (
   request: NextRequest
-): Promise<NextResponse> {
+): Promise<NextResponse> => {
   const { cookieOptions, key, url } = getSupabaseConfig();
   const response = NextResponse.next({
     request,
@@ -74,4 +74,4 @@ export async function updateSession(
   }
 
   return response;
-}
+};

@@ -12,15 +12,13 @@ export type SkeletonProps = Omit<ComponentPropsWithRef<"span">, "children">;
  * 見出しや段落の中にも置けるよう `<span>` を `block` で描く。文字の行に並べるときは
  * `inline-block` を指定する。支援技術には読ませない（`aria-hidden`）。
  */
-export function Skeleton({ className, ...props }: SkeletonProps) {
-  return (
-    <span
-      aria-hidden="true"
-      className={twMerge(
-        "block animate-pulse rounded-control bg-muted",
-        className
-      )}
-      {...props}
-    />
-  );
-}
+export const Skeleton = ({ className, ...props }: SkeletonProps) => (
+  <span
+    aria-hidden="true"
+    className={twMerge(
+      "block animate-pulse rounded-control bg-muted",
+      className
+    )}
+    {...props}
+  />
+);

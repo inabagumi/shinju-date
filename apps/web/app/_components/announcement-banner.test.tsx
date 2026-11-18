@@ -19,15 +19,13 @@ const actions = vi.hoisted(() => ({
 
 vi.mock(import("../_lib/actions"), () => actions);
 
-function createAnnouncement(message: ReactNode): RenderedAnnouncement {
-  return {
-    id: "announcement-1",
-    level: "info",
-    message,
-  };
-}
+const createAnnouncement = (message: ReactNode): RenderedAnnouncement => ({
+  id: "announcement-1",
+  level: "info",
+  message,
+});
 
-function renderBanner(announcement: RenderedAnnouncement) {
+const renderBanner = (announcement: RenderedAnnouncement) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -39,7 +37,7 @@ function renderBanner(announcement: RenderedAnnouncement) {
   );
 
   return { queryClient };
-}
+};
 
 describe(AnnouncementBanner, () => {
   beforeEach(() => {

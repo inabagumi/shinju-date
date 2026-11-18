@@ -19,7 +19,7 @@ interface WantsReplyChange {
   state: ContactFormState | null;
 }
 
-export function ContactForm() {
+export const ContactForm = () => {
   const [state, formAction, isPending] = useActionState(
     submitContactForm,
     null
@@ -105,4 +105,4 @@ export function ContactForm() {
       <FormStatus state={isPending ? null : state} />
     </form>
   );
-}
+};

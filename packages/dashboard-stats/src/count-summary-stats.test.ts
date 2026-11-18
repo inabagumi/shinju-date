@@ -15,18 +15,16 @@ const asOf = Temporal.Instant.from("2025-11-13T15:00:00Z");
 const before = "2025-11-01T00:00:00Z";
 const after = "2025-11-14T00:00:00Z";
 
-function video(
+const video = (
   status: VideoRow["status"],
   overrides: Partial<VideoRow> = {}
-): VideoRow {
-  return {
-    created_at: before,
-    deleted_at: null,
-    status,
-    visible: true,
-    ...overrides,
-  };
-}
+): VideoRow => ({
+  created_at: before,
+  deleted_at: null,
+  status,
+  visible: true,
+  ...overrides,
+});
 
 const videos: VideoRow[] = [
   video("PUBLISHED"),

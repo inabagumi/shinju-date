@@ -2,9 +2,8 @@ import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
 /** The rows of the video table, without the header row */
-function videoRows(page: Page) {
-  return page.getByRole("table").getByRole("rowgroup").nth(1).getByRole("row");
-}
+const videoRows = (page: Page) =>
+  page.getByRole("table").getByRole("rowgroup").nth(1).getByRole("row");
 
 test.describe("Videos", () => {
   for (const viewport of [

@@ -12,9 +12,9 @@ import { createVideo } from "./videos.js";
  * It is never later than `now`, and is in the current week even right after
  * the week starts on Sunday.
  */
-export function getLiveScheduleStart(
+export const getLiveScheduleStart = (
   now: Temporal.ZonedDateTime
-): Temporal.ZonedDateTime {
+): Temporal.ZonedDateTime => {
   const dayStart = now.startOfDay();
   // The latest start whose hour ends by the end of the day
   const latestStart = dayStart.add({ days: 1 }).subtract({ hours: 1 });
@@ -29,7 +29,7 @@ export function getLiveScheduleStart(
   }
 
   return start;
-}
+};
 
 const SCHEDULE_TITLES = [
   "【定期】朝の雑談",
@@ -51,10 +51,10 @@ interface ScheduleDependencies {
  * is drawn for stays within today). Their status follows the start: `ENDED`
  * before `now` and `UPCOMING` after it.
  */
-export function createScheduleVideos(
+export const createScheduleVideos = (
   context: SeedContext,
   { talents, thumbnails }: ScheduleDependencies
-): Tables<"videos">[] {
+): Tables<"videos">[] => {
   const now = context.now.toZonedDateTimeISO(TIME_ZONE);
   const weekStart = now
     .toPlainDate()
@@ -109,4 +109,4 @@ export function createScheduleVideos(
         ]
       : [];
   });
-}
+};

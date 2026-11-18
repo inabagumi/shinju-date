@@ -46,7 +46,7 @@ const auth: AuthenticatedContext = {
   user: { id: "user-id" } as Partial<User> as User,
 };
 
-function formData(entries: Record<string, string>): FormData {
+const formData = (entries: Record<string, string>): FormData => {
   const data = new FormData();
 
   for (const [key, value] of Object.entries(entries)) {
@@ -54,7 +54,7 @@ function formData(entries: Record<string, string>): FormData {
   }
 
   return data;
-}
+};
 
 describe("lib/action", () => {
   beforeEach(() => {

@@ -7,9 +7,9 @@ import SchedulePageContent from "../_components/schedule-page-content";
 import { resolveScheduleWeek } from "../_lib/resolve-schedule-week";
 import { getScheduleWeekTitle } from "../_lib/week-title";
 
-export async function generateMetadata({
+export const generateMetadata = async ({
   params,
-}: Pick<PageProps<"/schedule/[date]">, "params">): Promise<Metadata> {
+}: Pick<PageProps<"/schedule/[date]">, "params">): Promise<Metadata> => {
   const { weekStart } = await resolveScheduleWeek(params);
 
   return createPageMetadata({
@@ -20,7 +20,7 @@ export async function generateMetadata({
     title: getScheduleWeekTitle(weekStart),
     type: "article",
   });
-}
+};
 
 /**
  * その日を含む週（日曜〜土曜）の配信スケジュール。`params` は Suspense の中の

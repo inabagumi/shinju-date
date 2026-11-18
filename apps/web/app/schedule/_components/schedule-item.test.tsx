@@ -32,11 +32,11 @@ const VIDEO = createScheduleVideoItem({
   },
 });
 
-function createTwitchVideo(
+const createTwitchVideo = (
   overrides: Partial<ScheduleVideo> = {},
   twitchLoginName: string | null = "mio"
-): ScheduleVideo {
-  return createScheduleVideoItem({
+): ScheduleVideo =>
+  createScheduleVideoItem({
     ...VIDEO,
     platform: "twitch",
     status: "ENDED",
@@ -52,11 +52,8 @@ function createTwitchVideo(
     youtube_video: null,
     ...overrides,
   });
-}
 
-function getItem() {
-  return screen.getByTestId("schedule-item");
-}
+const getItem = () => screen.getByTestId("schedule-item");
 
 describe(ScheduleItem, () => {
   it("should show the start, the talent and the title", () => {

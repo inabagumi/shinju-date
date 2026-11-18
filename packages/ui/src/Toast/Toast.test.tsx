@@ -11,8 +11,8 @@ import {
 } from "./Toast";
 import type { ToastProps } from "./Toast";
 
-function renderToast(props: Omit<ToastProps, "children"> = {}) {
-  return render(
+const renderToast = (props: Omit<ToastProps, "children"> = {}) =>
+  render(
     <ToastProvider>
       <Toast {...props}>
         <ToastTitle>設定を保存しました。</ToastTitle>
@@ -21,12 +21,10 @@ function renderToast(props: Omit<ToastProps, "children"> = {}) {
       <ToastViewport />
     </ToastProvider>
   );
-}
 
 /** トーストは、`ToastViewport`（`role="region"`）の中のリストの項目として描かれる */
-function getToasts() {
-  return within(screen.getByRole("region")).queryAllByRole("listitem");
-}
+const getToasts = () =>
+  within(screen.getByRole("region")).queryAllByRole("listitem");
 
 describe(Toast, () => {
   // jsdom には `hasPointerCapture` がない。トーストは、スワイプの処理のために `pointerup` で呼ぶ

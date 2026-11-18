@@ -12,9 +12,9 @@ export interface MaintenanceModeRedisClient {
  * Reads whether the maintenance mode is on. When Redis cannot be read, it
  * returns `false`, so that an outage of Redis does not stop the service.
  */
-export async function isMaintenanceMode(
+export const isMaintenanceMode = async (
   redisClient: MaintenanceModeRedisClient
-): Promise<boolean> {
+): Promise<boolean> => {
   try {
     const value = await redisClient.get<boolean>(REDIS_KEYS.MAINTENANCE_MODE);
 
@@ -24,4 +24,4 @@ export async function isMaintenanceMode(
 
     return false;
   }
-}
+};

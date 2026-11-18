@@ -94,11 +94,11 @@ export interface SyncAccountsOptions {
  *
  * @throws When the accounts cannot be loaded.
  */
-async function loadSavedAccounts<TSaved extends SavedAccountBase>(
+const loadSavedAccounts = async <TSaved extends SavedAccountBase>(
   { supabaseClient }: WriteContext,
   { accountTable: { table }, savedAccountColumns }: SavedAccountQuery,
   talentId: string | undefined
-): Promise<TSaved[]> {
+): Promise<TSaved[]> => {
   let query = supabaseClient
     .from("talents")
     .select(`id, ${table}!inner(${savedAccountColumns})`)
@@ -119,7 +119,7 @@ async function loadSavedAccounts<TSaved extends SavedAccountBase>(
   return (talents as unknown as Partial<Record<string, TSaved[]>>[]).flatMap(
     (talent) => talent[table] ?? []
   );
-}
+};
 
 /**
  * Updates the stored icon of a saved account.
@@ -129,7 +129,7 @@ async function loadSavedAccounts<TSaved extends SavedAccountBase>(
  *
  * @returns Whether anything was written.
  */
-async function syncIcon<
+const syncIcon = async <
   TAccount extends { id: string },
   TSaved extends SavedAccountBase & TFields,
   TFields extends AccountFields,
@@ -138,7 +138,7 @@ async function syncIcon<
   adapter: AccountAdapter<TAccount, TSaved, TFields>,
   saved: TSaved,
   account: TAccount
-): Promise<boolean> {
+): Promise<boolean> => {
   const platformId = { [adapter.platformIdKey]: adapter.getPlatformId(saved) };
 
   try {
@@ -162,14 +162,14 @@ async function syncIcon<
 
     return false;
   }
-}
+};
 
 /**
  * Syncs the details of a saved account, then its icon. The two are
  * independent: a failure to write the details is reported and does not keep
  * the icon from being synced.
  */
-async function syncAccount<
+const syncAccount = async <
   TAccount extends { id: string },
   TSaved extends SavedAccountBase & TFields,
   TFields extends AccountFields,
@@ -178,7 +178,7 @@ async function syncAccount<
   adapter: AccountAdapter<TAccount, TSaved, TFields>,
   saved: TSaved,
   account: TAccount
-): Promise<SyncAccountResult<TFields>> {
+): Promise<SyncAccountResult<TFields>> => {
   const details = adapter.toDetails(account);
   const changes: AccountChanges<TFields> | undefined =
     diffAccountFields<TFields>(saved, details);
@@ -213,7 +213,7 @@ async function syncAccount<
     status: changes || iconUpdated ? "updated" : "unchanged",
     ...(changes ? { changes } : {}),
   };
-}
+};
 
 /**
  * Brings the details and the icon of saved accounts in line with the
@@ -227,7 +227,7 @@ async function syncAccount<
  * @returns One result per saved account; empty when there is none.
  * @throws When the accounts cannot be loaded or the platform cannot be read.
  */
-export async function syncAccountsWith<
+export const syncAccountsWith = async <
   TAccount extends { id: string },
   TSaved extends SavedAccountBase & TFields,
   TFields extends AccountFields,
@@ -235,7 +235,7 @@ export async function syncAccountsWith<
   context: WriteContext,
   adapter: AccountAdapter<TAccount, TSaved, TFields>,
   { talentId }: SyncAccountsOptions = {}
-): Promise<SyncAccountResult<TFields>[]> {
+): Promise<SyncAccountResult<TFields>[]> => {
   const savedAccounts = await loadSavedAccounts<TSaved>(
     context,
     adapter,
@@ -278,15 +278,14 @@ export async function syncAccountsWith<
       })
     )
   );
-}
+};
 
 /**
  * Counts the accounts a sync wrote to: those whose details or icon changed.
  */
-export function countUpdatedAccounts(
+export const countUpdatedAccounts = (
   results: readonly SyncAccountResult[]
-): number {
-  return results.filter(
+): number =>
+  results.filter(
     ({ iconUpdated, status }) => status === "updated" || iconUpdated
   ).length;
-}

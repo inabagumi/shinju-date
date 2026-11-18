@@ -57,7 +57,7 @@ console.error(
 type CommandResult = { result: RedisReply } | { error: string };
 
 /** Run a command and reply `{ result }`, or `{ error }` when it fails. */
-function execute(command: unknown): CommandResult {
+const execute = (command: unknown): CommandResult => {
   try {
     if (!Array.isArray(command)) {
       throw new RedisError("ERR failed to parse command");
@@ -71,31 +71,31 @@ function execute(command: unknown): CommandResult {
 
     throw error;
   }
-}
+};
 
 /** A single command: `{ result }`, or `{ error }` with 400 like Upstash. */
-function replyToCommand(command: unknown): Response {
+const replyToCommand = (command: unknown): Response => {
   const reply = execute(command);
 
   return HttpResponse.json(reply, { status: "error" in reply ? 400 : 200 });
-}
+};
 
 /**
  * A pipeline: the reply of each command in order. A failing command does not
  * stop the others.
  */
-async function replyToPipeline(request: Request): Promise<Response> {
+const replyToPipeline = async (request: Request): Promise<Response> => {
   const commands = (await request.json()) as unknown[];
 
   return HttpResponse.json(commands.map(execute));
-}
+};
 
 /**
  * A transaction (`MULTI` … `EXEC`). Like Redis, an unknown command aborts
  * the whole transaction before anything runs, while a command that fails
  * when it runs (such as `WRONGTYPE`) does not stop the others.
  */
-async function replyToTransaction(request: Request): Promise<Response> {
+const replyToTransaction = async (request: Request): Promise<Response> => {
   const commands = (await request.json()) as unknown[];
 
   for (const command of commands) {
@@ -112,7 +112,7 @@ async function replyToTransaction(request: Request): Promise<Response> {
   }
 
   return HttpResponse.json(commands.map(execute));
-}
+};
 
 export const upstashHandlers = [
   http.post(`${UPSTASH_URL}/pipeline`, ({ request }) =>

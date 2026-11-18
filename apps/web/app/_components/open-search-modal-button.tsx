@@ -8,10 +8,10 @@ import { useSearchModal } from "./search-modal-context";
 
 type OpenSearchModalButtonProps = Omit<ButtonProps, "onClick" | "type">;
 
-export function OpenSearchModalButton({
+export const OpenSearchModalButton = ({
   children = "検索する",
   ...props
-}: OpenSearchModalButtonProps) {
+}: OpenSearchModalButtonProps) => {
   const { openModal } = useSearchModal();
 
   return (
@@ -20,4 +20,4 @@ export function OpenSearchModalButton({
       {children}
     </Button>
   );
-}
+};

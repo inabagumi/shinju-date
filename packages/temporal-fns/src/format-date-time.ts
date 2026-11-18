@@ -8,20 +8,18 @@ interface FormatDateTimeOptions {
 /**
  * Formats a timestamp as `YYYY/MM/DD HH:mm` (or `YYYY/MM/DD HH:mm:ss`).
  */
-export function formatDateTime(
+export const formatDateTime = (
   timestamp: Temporal.ZonedDateTime,
   options: FormatDateTimeOptions = {}
-): string {
+): string => {
   const { includeSeconds = false } = options;
 
   return `${formatDate(timestamp)} ${formatTime(timestamp, { includeSeconds })}`;
-}
+};
 
-export function formatDateTimeWithSeconds(
+export const formatDateTimeWithSeconds = (
   timestamp: Temporal.ZonedDateTime
-): string {
-  return formatDateTime(timestamp, { includeSeconds: true });
-}
+): string => formatDateTime(timestamp, { includeSeconds: true });
 
 interface FormatDateTimeFromISOOptions extends FormatDateTimeOptions {
   timeZone: string;
@@ -40,13 +38,13 @@ interface FormatDateTimeFromISOOptions extends FormatDateTimeOptions {
  * // "2026/03/26 01:22:03"
  * ```
  */
-export function formatDateTimeFromISO(
+export const formatDateTimeFromISO = (
   isoString: string,
   options: FormatDateTimeFromISOOptions
-): string {
+): string => {
   const { includeSeconds = true, timeZone } = options;
   const zonedDateTime =
     Temporal.Instant.from(isoString).toZonedDateTimeISO(timeZone);
 
   return formatDateTime(zonedDateTime, { includeSeconds });
-}
+};

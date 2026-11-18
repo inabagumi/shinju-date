@@ -38,7 +38,7 @@ const featureRequest: Tables<"feature_requests"> = {
 };
 
 /** The form that holds the button */
-function getForm(buttonName: string): HTMLFormElement {
+const getForm = (buttonName: string): HTMLFormElement => {
   const form = screen.getByRole("button", { name: buttonName }).closest("form");
 
   if (!form) {
@@ -46,14 +46,14 @@ function getForm(buttonName: string): HTMLFormElement {
   }
 
   return form;
-}
+};
 
 /** The `FormData` that the action was last called with, as an object */
-function submittedValues(action: ReturnType<typeof vi.fn>) {
+const submittedValues = (action: ReturnType<typeof vi.fn>) => {
   const [, formData] = action.mock.lastCall as [unknown, FormData];
 
   return Object.fromEntries(formData);
-}
+};
 
 describe("FeatureRequestDetail", () => {
   beforeEach(() => {

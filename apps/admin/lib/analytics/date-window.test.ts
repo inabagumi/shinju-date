@@ -12,16 +12,14 @@ import {
 } from "./date-window";
 
 /** Fix the current time. The date is derived from the time zone that is asked for */
-function mockNow(instant: string) {
+const mockNow = (instant: string) => {
   vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockImplementation(
     (timeZone = "UTC") =>
       Temporal.Instant.from(instant).toZonedDateTimeISO(timeZone)
   );
-}
+};
 
-function plainDate(value: string) {
-  return Temporal.PlainDate.from(value);
-}
+const plainDate = (value: string) => Temporal.PlainDate.from(value);
 
 describe("date-window", () => {
   beforeEach(() => {

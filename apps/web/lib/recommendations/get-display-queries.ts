@@ -22,7 +22,7 @@ const RANDOM_POOL_END = 20; // End index for random pool (up to 20th position)
  *
  * @returns Array of query strings to display (max `TOTAL_DISPLAY_COUNT`)
  */
-export async function getDisplayRecommendationQueries(): Promise<string[]> {
+export const getDisplayRecommendationQueries = async (): Promise<string[]> => {
   const allQueries = await getCombinedRecommendationQueries();
 
   // If we have few enough queries, just return them all
@@ -41,4 +41,4 @@ export async function getDisplayRecommendationQueries(): Promise<string[]> {
   const randomQueries = shuffle(randomPool).slice(0, randomCount);
 
   return [...championQueries, ...randomQueries];
-}
+};

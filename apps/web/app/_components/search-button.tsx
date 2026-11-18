@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 import { useSearchModal } from "./search-modal-context";
 
-export function SearchButton() {
+export const SearchButton = () => {
   const [isMac, setIsMac] = useState<boolean | undefined>(undefined);
   const { openModal } = useSearchModal();
 
@@ -45,4 +45,4 @@ export function SearchButton() {
       )}
     </button>
   );
-}
+};

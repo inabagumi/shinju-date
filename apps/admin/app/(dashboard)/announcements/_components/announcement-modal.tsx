@@ -23,18 +23,18 @@ import {
 } from "../_actions";
 
 // Convert datetime-local format to ISO string
-function toISOString(dateTimeLocal: string): string {
+const toISOString = (dateTimeLocal: string): string => {
   // Parse as plain datetime in JST timezone
   const plainDateTime = Temporal.PlainDateTime.from(dateTimeLocal);
   const zonedDateTime = plainDateTime.toZonedDateTime(TIME_ZONE);
   return zonedDateTime.toInstant().toString();
-}
+};
 
-export function AnnouncementModal({
+export const AnnouncementModal = ({
   announcement,
 }: {
   announcement?: Tables<"announcements">;
-}) {
+}) => {
   const defaultStartAt = useMemo(
     () =>
       (announcement
@@ -160,4 +160,4 @@ export function AnnouncementModal({
       </FormField>
     </FormDialog>
   );
-}
+};

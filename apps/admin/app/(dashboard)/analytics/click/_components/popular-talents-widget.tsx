@@ -9,7 +9,7 @@ interface Props {
 }
 
 /** 最もクリックされているタレントのランキング */
-export async function PopularTalentsWidget({ searchParams }: Props) {
+export const PopularTalentsWidget = async ({ searchParams }: Props) => {
   const { dateRange, selectedDate } = await searchParams;
   const range = resolvePeriod({ dateRange, selectedDate });
   const talents = await getPopularTalents({ limit: 20, range });
@@ -30,4 +30,4 @@ export async function PopularTalentsWidget({ searchParams }: Props) {
       valueHeading="クリック数"
     />
   );
-}
+};

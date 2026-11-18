@@ -14,22 +14,20 @@ class RedisError extends Error {
   override name = "RedisError";
 }
 
-function wrongTypeError(): RedisError {
-  return new RedisError(
+const wrongTypeError = (): RedisError =>
+  new RedisError(
     "WRONGTYPE Operation against a key holding the wrong kind of value"
   );
-}
 
 /** Turns a value into the string Redis keeps, like `@upstash/redis` does. */
-function serialize(value: unknown): string {
-  return typeof value === "string" ? value : JSON.stringify(value);
-}
+const serialize = (value: unknown): string =>
+  typeof value === "string" ? value : JSON.stringify(value);
 
 /**
  * Turns a reply back into a value, like the automatic deserialization of
  * `@upstash/redis`: JSON is parsed, anything else is kept as it is.
  */
-function deserialize(reply: RedisReply): unknown {
+const deserialize = (reply: RedisReply): unknown => {
   if (Array.isArray(reply)) {
     return reply.map(deserialize);
   }
@@ -47,15 +45,15 @@ function deserialize(reply: RedisReply): unknown {
   } catch {
     return reply;
   }
-}
+};
 
-function parseInteger(text: string | undefined): number {
+const parseInteger = (text: string | undefined): number => {
   if (text === undefined || !/^-?\d+$/.test(text)) {
     throw new RedisError("ERR value is not an integer or out of range");
   }
 
   return Number(text);
-}
+};
 
 /**
  * The subset of `@upstash/redis` that the queue uses, kept in memory, for

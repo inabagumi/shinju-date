@@ -19,7 +19,7 @@ type PipelineCommandMocks = Partial<
  * command with `mockResolvedValueOnce()` and the like. Like the real
  * pipeline, `exec()` rejects when any command fails.
  */
-export function createMockPipeline(client: PipelineCommandMocks): Pipeline {
+export const createMockPipeline = (client: PipelineCommandMocks): Pipeline => {
   const queued: (() => unknown)[] = [];
   const pipeline: Partial<Record<PipelineCommand | "exec", unknown>> = {
     exec: () => Promise.all(queued.map((run) => run())),
@@ -41,16 +41,16 @@ export function createMockPipeline(client: PipelineCommandMocks): Pipeline {
 
   // Only has the commands above and `exec()`
   return pipeline as Partial<Pipeline> as Pipeline;
-}
+};
 
 /**
  * Create a stand-in for the `Redis` client of `@upstash/redis` with only the
  * given (mocked) commands, and a mocked `pipeline()` that runs them through
  * `createMockPipeline()`. Calling any other command fails.
  */
-export function createMockRedisClient(
+export const createMockRedisClient = (
   commands: Partial<Record<keyof Redis, (...args: never[]) => unknown>>
-): Redis {
+): Redis => {
   const client: Partial<Record<keyof Redis, unknown>> = {
     ...commands,
     pipeline: vi.fn<Redis["pipeline"]>(() => createMockPipeline(commands)),
@@ -58,4 +58,4 @@ export function createMockRedisClient(
 
   // Only has the given commands and `pipeline()`
   return client as Partial<Redis> as Redis;
-}
+};

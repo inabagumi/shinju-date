@@ -24,9 +24,9 @@ const YOUTUBE_HANDLE_PATTERN = /^[\w.-]{3,30}$/;
  *
  * @returns Parsed identifier, or `null` if the input cannot be interpreted
  */
-export function parseYouTubeChannelIdentifier(
+export const parseYouTubeChannelIdentifier = (
   raw: string
-): YouTubeChannelIdentifier | null {
+): YouTubeChannelIdentifier | null => {
   const input = raw.trim();
   if (!input) {
     return null;
@@ -92,4 +92,4 @@ export function parseYouTubeChannelIdentifier(
   }
 
   return null;
-}
+};

@@ -42,19 +42,17 @@ interface ActionToastProps {
 }
 
 /** 操作の結果を知らせるトースト1件。`ActionToastProvider` だけが描く */
-function ActionToast({ message, onOpenChange }: ActionToastProps) {
-  return (
-    <Toast
-      duration={5000}
-      onOpenChange={onOpenChange}
-      open={message.open}
-      variant={message.type}
-    >
-      <ToastTitle className="whitespace-pre-line">{message.text}</ToastTitle>
-      <ToastClose />
-    </Toast>
-  );
-}
+const ActionToast = ({ message, onOpenChange }: ActionToastProps) => (
+  <Toast
+    duration={5000}
+    onOpenChange={onOpenChange}
+    open={message.open}
+    variant={message.type}
+  >
+    <ToastTitle className="whitespace-pre-line">{message.text}</ToastTitle>
+    <ToastClose />
+  </Toast>
+);
 
 interface ActionToastProviderProps {
   children: ReactNode;
@@ -64,7 +62,7 @@ interface ActionToastProviderProps {
  * 操作の結果を知らせるトーストを、画面に1か所だけ描く。ルートのレイアウトに置き、
  * 各部品は `useActionToast()` の `showToast` で知らせる。
  */
-export function ActionToastProvider({ children }: ActionToastProviderProps) {
+export const ActionToastProvider = ({ children }: ActionToastProviderProps) => {
   const [messages, setMessages] = useState<ActionToastMessage[]>([]);
   const nextId = useRef(0);
 
@@ -108,12 +106,12 @@ export function ActionToastProvider({ children }: ActionToastProviderProps) {
       </ToastProvider>
     </ActionToastContext>
   );
-}
+};
 
 /**
  * 操作の結果をトーストで知らせる関数を返す。`ActionToastProvider` の中で使う。
  */
-export function useActionToast(): ActionToastContextValue {
+export const useActionToast = (): ActionToastContextValue => {
   const context = useContext(ActionToastContext);
 
   if (!context) {
@@ -123,4 +121,4 @@ export function useActionToast(): ActionToastContextValue {
   }
 
   return context;
-}
+};

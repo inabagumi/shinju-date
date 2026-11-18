@@ -15,11 +15,9 @@ export const TWITCH_DEFAULT_ICON_URL = `${TWITCH_ICON_HOST}/${TWITCH_DEFAULT_ICO
  * {@link TWITCH_USER_ICON_DIRECTORY}. The icon handler answers with it as
  * the ETag.
  */
-export function getTwitchUserIconName(userId: string): string {
-  return `mock-${userId}-profile_image-300x300.png`;
-}
+export const getTwitchUserIconName = (userId: string): string =>
+  `mock-${userId}-profile_image-300x300.png`;
 
 /** The URL of the icon of a user (`profile_image_url`). */
-export function getTwitchUserIconUrl(userId: string): string {
-  return `${TWITCH_ICON_HOST}/${TWITCH_USER_ICON_DIRECTORY}/${getTwitchUserIconName(userId)}`;
-}
+export const getTwitchUserIconUrl = (userId: string): string =>
+  `${TWITCH_ICON_HOST}/${TWITCH_USER_ICON_DIRECTORY}/${getTwitchUserIconName(userId)}`;

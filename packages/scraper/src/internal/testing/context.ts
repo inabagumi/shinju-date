@@ -17,17 +17,15 @@ export interface TestContextOptions<TFetcher> {
 /**
  * Builds the context a crawl operation runs with, with a silent logger.
  */
-export function createTestContext<TFetcher>({
+export const createTestContext = <TFetcher>({
   fetcher,
   now = TEST_NOW,
   reportError,
   supabaseClient,
-}: TestContextOptions<TFetcher>): CrawlContext<TFetcher> {
-  return {
-    fetcher,
-    logger: { debug() {}, error() {}, info() {}, warn() {} },
-    now,
-    reportError,
-    supabaseClient,
-  };
-}
+}: TestContextOptions<TFetcher>): CrawlContext<TFetcher> => ({
+  fetcher,
+  logger: { debug() {}, error() {}, info() {}, warn() {} },
+  now,
+  reportError,
+  supabaseClient,
+});

@@ -42,14 +42,12 @@ export interface FakeFetcherOptions<TAccount, TVideo, TRecentVideo = TVideo> {
   videos?: TVideo[];
 }
 
-function pick<T extends Resource>(
+const pick = <T extends Resource>(
   items: readonly T[],
   ids: readonly string[]
-): T[] {
-  return items.filter((item) => ids.includes(item.id));
-}
+): T[] => items.filter((item) => ids.includes(item.id));
 
-function createFakeMethods<
+const createFakeMethods = <
   TAccount extends Resource,
   TVideo extends Resource,
   TRecentVideo,
@@ -59,7 +57,7 @@ function createFakeMethods<
   missingVideoIds = [],
   recentVideos = [],
   videos = [],
-}: FakeFetcherOptions<TAccount, TVideo, TRecentVideo>) {
+}: FakeFetcherOptions<TAccount, TVideo, TRecentVideo>) => {
   const findMissing = (videoIds: readonly string[]) =>
     missingVideoIds.filter((id) => videoIds.includes(id));
 
@@ -82,7 +80,7 @@ function createFakeMethods<
       videos: pick(videos, videoIds),
     })),
   };
-}
+};
 
 /**
  * Stands in for the fetcher of a platform. What it returns is given by the
@@ -94,17 +92,17 @@ function createFakeMethods<
  * })
  * ```
  */
-export function createFakeFetcher<TFetcher extends AnyFetcher>(
+export const createFakeFetcher = <TFetcher extends AnyFetcher>(
   options: FakeFetcherOptions<
     AccountOf<TFetcher>,
     VideoOf<TFetcher>,
     RecentVideoOf<TFetcher>
   > = {}
-) {
+) => {
   const methods = createFakeMethods(options);
 
   return { ...methods, fetcher: methods as unknown as TFetcher };
-}
+};
 
 export interface FakeTwitchFetcherOptions extends Omit<
   FakeFetcherOptions<TwitchUser, TwitchVideo>,
@@ -126,14 +124,14 @@ export interface FakeTwitchFetcherOptions extends Omit<
  * {@link createFakeFetcher} with the calls only Twitch has: live streams,
  * clips and the newest videos by type.
  */
-export function createFakeTwitchFetcher({
+export const createFakeTwitchFetcher = ({
   archives = [],
   clips = [],
   liveStreams = [],
   missingClipIds = [],
   uploads = [],
   ...options
-}: FakeTwitchFetcherOptions = {}) {
+}: FakeTwitchFetcherOptions = {}) => {
   const { failures = [] } = options;
   const methods = {
     ...createFakeMethods(options),
@@ -154,4 +152,4 @@ export function createFakeTwitchFetcher({
   };
 
   return { ...methods, fetcher: methods as unknown as TwitchFetcher };
-}
+};

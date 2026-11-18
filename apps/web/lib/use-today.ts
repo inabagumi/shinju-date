@@ -4,9 +4,7 @@ import { useMemo, useSyncExternalStore } from "react";
 
 import { useNow } from "@/components/timer";
 
-function subscribeNothing() {
-  return () => {};
-}
+const subscribeNothing = () => () => {};
 
 /**
  * 「今日」を判定する基準の日付。
@@ -14,7 +12,7 @@ function subscribeNothing() {
  * 両者の文言を揃える。ハイドレーションの後はブラウザの現在時刻に切り替えるため、
  * キャッシュを作った後に日付が変わっていても正しい文言になる。
  */
-export function useToday(referenceDate: string): Temporal.PlainDate {
+export const useToday = (referenceDate: string): Temporal.PlainDate => {
   const now = useNow();
   const isHydrated = useSyncExternalStore(
     subscribeNothing,
@@ -27,4 +25,4 @@ export function useToday(referenceDate: string): Temporal.PlainDate {
       isHydrated ? now.toPlainDate() : Temporal.PlainDate.from(referenceDate),
     [isHydrated, now, referenceDate]
   );
-}
+};

@@ -13,7 +13,7 @@ import { getRedisClient } from "../redis";
  * `CACHE_TAGS.RECOMMENDATION_QUERIES`, which admin and batch revalidate
  * after changing the queries.
  */
-export async function getCombinedRecommendationQueries(): Promise<string[]> {
+export const getCombinedRecommendationQueries = async (): Promise<string[]> => {
   "use cache: remote";
 
   cacheLife("minutes");
@@ -38,4 +38,4 @@ export async function getCombinedRecommendationQueries(): Promise<string[]> {
   }
 
   return combined;
-}
+};

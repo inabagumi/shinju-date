@@ -80,7 +80,7 @@ const analyticsSummary: AnalyticsSummary = {
 const SNAPSHOT_TTL_SECONDS = 30 * 24 * 60 * 60;
 
 /** Run the route as if it is `instant` now. */
-async function runAt(instant: string): Promise<Response> {
+const runAt = async (instant: string): Promise<Response> => {
   vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockImplementation(
     (timeZone = TIME_ZONE) =>
       Temporal.Instant.from(instant).toZonedDateTimeISO(timeZone)
@@ -93,7 +93,7 @@ async function runAt(instant: string): Promise<Response> {
       method: "POST",
     })
   );
-}
+};
 
 describe("stats/snapshot route", () => {
   beforeEach(() => {

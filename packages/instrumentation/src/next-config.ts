@@ -18,10 +18,10 @@ export interface WithSentryOptions {
  *
  * Apply it last, after the other plugins such as `withMDX`.
  */
-export function withSentry<C>(
+export const withSentry = <C>(
   nextConfig: C,
   { browser = true }: WithSentryOptions = {}
-): C {
+): C => {
   if (!process.env["NEXT_PUBLIC_SENTRY_DSN"]) {
     return nextConfig;
   }
@@ -41,4 +41,4 @@ export function withSentry<C>(
         }
       : {}),
   });
-}
+};

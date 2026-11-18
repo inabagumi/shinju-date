@@ -20,31 +20,27 @@ export interface RenderedAnnouncement {
  * お知らせの本文（Markdown）をレンダリングするサーバーコンポーネント。
  * 生の HTML はレンダリングしない（`react-markdown` の既定のまま）。
  */
-export function AnnouncementMessage({ children }: { children: string }) {
-  return (
-    <ReactMarkdown
-      rehypePlugins={[
-        [
-          rehypeExternalLinks,
-          {
-            rel: ["nofollow", "noopener", "noreferrer"],
-            target: "_blank",
-          },
-        ],
-      ]}
-      remarkPlugins={[remarkGfm]}
-    >
-      {children}
-    </ReactMarkdown>
-  );
-}
+export const AnnouncementMessage = ({ children }: { children: string }) => (
+  <ReactMarkdown
+    rehypePlugins={[
+      [
+        rehypeExternalLinks,
+        {
+          rel: ["nofollow", "noopener", "noreferrer"],
+          target: "_blank",
+        },
+      ],
+    ]}
+    remarkPlugins={[remarkGfm]}
+  >
+    {children}
+  </ReactMarkdown>
+);
 
-export function renderAnnouncement(
+export const renderAnnouncement = (
   announcement: Announcement
-): RenderedAnnouncement {
-  return {
-    id: announcement.id,
-    level: announcement.level,
-    message: <AnnouncementMessage>{announcement.message}</AnnouncementMessage>,
-  };
-}
+): RenderedAnnouncement => ({
+  id: announcement.id,
+  level: announcement.level,
+  message: <AnnouncementMessage>{announcement.message}</AnnouncementMessage>,
+});

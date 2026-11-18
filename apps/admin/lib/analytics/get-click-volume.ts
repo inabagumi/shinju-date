@@ -18,9 +18,9 @@ export interface DailyClickVolume {
  * Get daily click volume for a date range
  * @param query.range - The date range (both ends inclusive)
  */
-export async function getClickVolume({
+export const getClickVolume = async ({
   range,
-}: PeriodQuery): Promise<DailyClickVolume[]> {
+}: PeriodQuery): Promise<DailyClickVolume[]> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -59,4 +59,4 @@ export async function getClickVolume({
     });
     return [];
   }
-}
+};

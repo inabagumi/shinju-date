@@ -35,27 +35,25 @@ vi.mock(import("../../_actions/backfill"), () => ({
 
 const { VideoBackfillPanel } = await import("./video-backfill-panel");
 
-function createAccount(
+const createAccount = (
   overrides: Partial<VideoBackfillAccount> = {}
-): VideoBackfillAccount {
-  return {
-    accountId: "channel-row-1",
-    active: false,
-    added: 0,
-    error: null,
-    finishedAt: null,
-    name: "Main",
-    pages: 0,
-    provider: "youtube",
-    requestedAt: null,
-    status: null,
-    updatedAt: null,
-    ...overrides,
-  };
-}
+): VideoBackfillAccount => ({
+  accountId: "channel-row-1",
+  active: false,
+  added: 0,
+  error: null,
+  finishedAt: null,
+  name: "Main",
+  pages: 0,
+  provider: "youtube",
+  requestedAt: null,
+  status: null,
+  updatedAt: null,
+  ...overrides,
+});
 
-function renderPanel(accounts: VideoBackfillAccount[]) {
-  return render(
+const renderPanel = (accounts: VideoBackfillAccount[]) =>
+  render(
     <VideoBackfillPanel
       initialData={{ accounts, success: true }}
       talentId="talent-1"
@@ -63,7 +61,6 @@ function renderPanel(accounts: VideoBackfillAccount[]) {
     />,
     { wrapper: ActionToastProvider }
   );
-}
 
 describe("VideoBackfillPanel", () => {
   beforeEach(() => {

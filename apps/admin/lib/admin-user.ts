@@ -15,6 +15,5 @@ export const ADMIN_ROLE = "admin";
  * Supabase Auth にログインできること自体は管理者であることを意味しないため、
  * 管理画面へのアクセスを許可する前に必ずこの関数で確認する。
  */
-export function isAdminUser(user: Pick<User, "app_metadata">): boolean {
-  return user.app_metadata?.["role"] === ADMIN_ROLE;
-}
+export const isAdminUser = (user: Pick<User, "app_metadata">): boolean =>
+  user.app_metadata?.["role"] === ADMIN_ROLE;

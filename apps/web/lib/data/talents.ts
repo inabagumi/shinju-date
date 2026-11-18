@@ -90,13 +90,13 @@ const TALENT_DETAIL_SELECT = `
   )
 `;
 
-function compareStrings(a: string, b: string): number {
+const compareStrings = (a: string, b: string): number => {
   if (a === b) {
     return 0;
   }
 
   return a < b ? -1 : 1;
-}
+};
 
 /**
  * Fetch an active talent (`status = 'active'` and not deleted).

@@ -15,9 +15,9 @@ export const metadata: Metadata = {
   title: "用語管理",
 };
 
-async function TermsListData({
+const TermsListData = async ({
   searchParams,
-}: Pick<PageProps<"/terms">, "searchParams">) {
+}: Pick<PageProps<"/terms">, "searchParams">) => {
   const [terms, rawParams] = await Promise.all([getTerms(), searchParams]);
   const { search } = termsSearchParamsSchema.parse(rawParams);
 
@@ -27,7 +27,7 @@ async function TermsListData({
       search={search}
     />
   );
-}
+};
 
 export default function TermsPage({ searchParams }: PageProps<"/terms">) {
   return (

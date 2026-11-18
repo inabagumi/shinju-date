@@ -5,20 +5,19 @@ import type { ProfileImage, TalentYouTubeChannel } from "@/lib/data/talents";
 
 import TalentIcon from "./talent-icon";
 
-function createProfileImage(id: string): ProfileImage {
-  return { blur_data_url: "data:image/png;base64,AAAA", id };
-}
+const createProfileImage = (id: string): ProfileImage => ({
+  blur_data_url: "data:image/png;base64,AAAA",
+  id,
+});
 
-function createYouTubeChannel(
+const createYouTubeChannel = (
   profileImage: ProfileImage | null
-): TalentYouTubeChannel {
-  return {
-    name: "YouTube",
-    profile_image: profileImage,
-    youtube_channel_id: "UC1",
-    youtube_handle: "@youtube",
-  };
-}
+): TalentYouTubeChannel => ({
+  name: "YouTube",
+  profile_image: profileImage,
+  youtube_channel_id: "UC1",
+  youtube_handle: "@youtube",
+});
 
 describe(TalentIcon, () => {
   it("should show the icon as a decoration", () => {

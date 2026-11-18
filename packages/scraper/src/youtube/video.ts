@@ -12,10 +12,10 @@ import type { YouTubeVideo } from "./types.js";
 /**
  * Maps a YouTube video to the columns we keep in sync with YouTube.
  */
-export function toVideoFields(
+export const toVideoFields = (
   video: YouTubeVideo,
   now: Temporal.Instant
-): VideoFields {
+): VideoFields => {
   const publishedAt =
     getPublishedAt(video) ?? Temporal.Instant.from(video.snippet.publishedAt);
 
@@ -26,14 +26,14 @@ export function toVideoFields(
     title: video.snippet.title ?? "",
     video_kind: getVideoKind(video),
   };
-}
+};
 
 /**
  * Picks the best thumbnail YouTube offers for a video, if any.
  */
-export function getThumbnailSource(
+export const getThumbnailSource = (
   video: YouTubeVideo
-): ThumbnailSource | null {
+): ThumbnailSource | null => {
   const thumbnails = video.snippet.thumbnails;
   const thumbnail =
     thumbnails?.maxres ?? thumbnails?.standard ?? thumbnails?.high;
@@ -47,4 +47,4 @@ export function getThumbnailSource(
     url: thumbnail.url,
     width: thumbnail.width,
   };
-}
+};

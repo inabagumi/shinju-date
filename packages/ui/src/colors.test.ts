@@ -24,7 +24,7 @@ const tailwindThemeCSS = readFileSync(
 // sRGB の線形値（0〜1）
 type LinearRGB = [number, number, number];
 
-function extractDeclarations(css: string): Map<string, string> {
+const extractDeclarations = (css: string): Map<string, string> => {
   const declarations = new Map<string, string>();
 
   // `--color-*` と、`text-*` だけに効く `--text-color-*`
@@ -37,7 +37,7 @@ function extractDeclarations(css: string): Map<string, string> {
   }
 
   return declarations;
-}
+};
 
 const semanticStart = themeCSS.indexOf(SEMANTIC_COLORS_START);
 const darkStart = themeCSS.indexOf(DARK_MODE_QUERY);
@@ -59,17 +59,13 @@ const modes = [
   ["dark", new Map([...palette, ...lightDeclarations, ...darkDeclarations])],
 ] as const;
 
-function srgbToLinear(value: number): number {
-  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-}
+const srgbToLinear = (value: number): number =>
+  value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
 
-function linearToSRGB(value: number): number {
-  return value <= 0.0031308
-    ? value * 12.92
-    : 1.055 * value ** (1 / 2.4) - 0.055;
-}
+const linearToSRGB = (value: number): number =>
+  value <= 0.0031308 ? value * 12.92 : 1.055 * value ** (1 / 2.4) - 0.055;
 
-function parseHex(hex: string): LinearRGB {
+const parseHex = (hex: string): LinearRGB => {
   const digits =
     hex.length === 4
       ? [...hex.slice(1)].map((digit) => digit + digit)
@@ -78,10 +74,14 @@ function parseHex(hex: string): LinearRGB {
   return digits.map((digit) =>
     srgbToLinear(Number.parseInt(digit, 16) / 255)
   ) as LinearRGB;
-}
+};
 
 // https://bottosson.github.io/posts/oklab/
-function parseOklch(lightness: number, chroma: number, hue: number): LinearRGB {
+const parseOklch = (
+  lightness: number,
+  chroma: number,
+  hue: number
+): LinearRGB => {
   const radian = (hue * Math.PI) / 180;
   const a = chroma * Math.cos(radian);
   const b = chroma * Math.sin(radian);
@@ -94,9 +94,9 @@ function parseOklch(lightness: number, chroma: number, hue: number): LinearRGB {
     -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
     -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
   ].map((value) => Math.min(1, Math.max(0, value))) as LinearRGB;
-}
+};
 
-function resolveColor(colors: Map<string, string>, name: string): LinearRGB {
+const resolveColor = (colors: Map<string, string>, name: string): LinearRGB => {
   const value = colors.get(name);
 
   if (!value) {
@@ -124,30 +124,29 @@ function resolveColor(colors: Map<string, string>, name: string): LinearRGB {
   }
 
   throw new Error(`${name} の値を解釈できません: ${value}`);
-}
+};
 
 // 半透明の前景色（`bg-danger/10` など）を地に重ねたときの色
-function blend(
+const blend = (
   foreground: LinearRGB,
   background: LinearRGB,
   alpha: number
-): LinearRGB {
-  return foreground.map((value, i) =>
+): LinearRGB =>
+  foreground.map((value, i) =>
     srgbToLinear(
       linearToSRGB(value) * alpha +
         linearToSRGB(background[i] ?? 0) * (1 - alpha)
     )
   ) as LinearRGB;
-}
 
-function contrastRatio(a: LinearRGB, b: LinearRGB): number {
+const contrastRatio = (a: LinearRGB, b: LinearRGB): number => {
   const luminance = ([r, g, b]: LinearRGB) =>
     0.2126 * r + 0.7152 * g + 0.0722 * b;
   const la = luminance(a);
   const lb = luminance(b);
 
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
-}
+};
 
 const SEMANTIC_COLOR_NAMES = [
   "--color-primary",

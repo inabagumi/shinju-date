@@ -62,7 +62,7 @@ interface FormDialogFooterProps {
   submitLabel: string;
 }
 
-function FormDialogFooter({ submitLabel }: FormDialogFooterProps) {
+const FormDialogFooter = ({ submitLabel }: FormDialogFooterProps) => {
   const { pending } = useFormStatus();
 
   return (
@@ -75,14 +75,14 @@ function FormDialogFooter({ submitLabel }: FormDialogFooterProps) {
       <SubmitButton>{submitLabel}</SubmitButton>
     </div>
   );
-}
+};
 
 /**
  * 作成と編集に使う、フォームを載せたダイアログ。
  * 開くボタン、見出し、取り消しと保存のボタンを持ち、入力欄だけを `children` で
  * 受け取る。
  */
-export function FormDialog({
+export const FormDialog = ({
   trigger,
   title,
   description,
@@ -91,7 +91,7 @@ export function FormDialog({
   size = "md",
   children,
   onSuccess,
-}: FormDialogProps) {
+}: FormDialogProps) => {
   const [open, setOpen] = useState(false);
   // 開くたびにフォームを作り直して、前回の入力とエラーを消す。閉じるアニメー
   // ションの途中で開き直しても消えるよう、`key` で作り直す
@@ -168,4 +168,4 @@ export function FormDialog({
       </DialogPortal>
     </Dialog>
   );
-}
+};

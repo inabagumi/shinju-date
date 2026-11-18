@@ -13,7 +13,7 @@ interface GetClipsOptions extends ClientOptions, BatchOptions {
  * Gets Twitch clips by ID (slug).
  * IDs that no longer exist are omitted.
  */
-export async function* getClips({
+export const getClips = async function* getClips({
   client = getTwitchApiClient(),
   ids,
   schedule,
@@ -25,4 +25,4 @@ export async function* getClips({
   )) {
     yield mapClip(clip);
   }
-}
+};

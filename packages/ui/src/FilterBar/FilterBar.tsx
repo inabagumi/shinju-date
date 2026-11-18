@@ -23,13 +23,13 @@ export interface FilterBarProps extends Omit<
  * 開閉の状態は Radix UI の Collapsible が持つため、サーバーコンポーネントからも
  * そのまま使える。
  */
-export function FilterBar({
+export const FilterBar = ({
   activeCount = 0,
   children,
   className,
   label = "絞り込み",
   ...props
-}: FilterBarProps) {
+}: FilterBarProps) => {
   const contentId = useId();
 
   return (
@@ -68,4 +68,4 @@ export function FilterBar({
       </div>
     </Collapsible.Root>
   );
-}
+};

@@ -44,41 +44,38 @@ export interface AuthenticatedContext {
  * }
  * ```
  */
-export async function requireAuthenticatedUser(): Promise<AuthenticatedContext | null> {
-  try {
-    const supabaseClient = await createSupabaseServerClient();
-    const {
-      data: { user },
-      error,
-    } = await supabaseClient.auth.getUser();
+export const requireAuthenticatedUser =
+  async (): Promise<AuthenticatedContext | null> => {
+    try {
+      const supabaseClient = await createSupabaseServerClient();
+      const {
+        data: { user },
+        error,
+      } = await supabaseClient.auth.getUser();
 
-    if (error || !user || !isAdminUser(user)) {
+      if (error || !user || !isAdminUser(user)) {
+        return null;
+      }
+
+      return { supabaseClient, user };
+    } catch {
       return null;
     }
-
-    return { supabaseClient, user };
-  } catch {
-    return null;
-  }
-}
+  };
 
 /**
  * `{ success, error }` 形式を返す Server Action 用の未認証レスポンス。
  */
-export function unauthenticatedResult(): { success: false; error: string } {
-  return {
-    error: UNAUTHENTICATED_ERROR_MESSAGE,
-    success: false,
-  };
-}
+export const unauthenticatedResult = (): { success: false; error: string } => ({
+  error: UNAUTHENTICATED_ERROR_MESSAGE,
+  success: false,
+});
 
 /**
  * `FormState` を返す Server Action（`useActionState` 用）の未認証レスポンス。
  */
-export function unauthenticatedFormState(): FormState {
-  return {
-    errors: {
-      generic: [UNAUTHENTICATED_ERROR_MESSAGE],
-    },
-  };
-}
+export const unauthenticatedFormState = (): FormState => ({
+  errors: {
+    generic: [UNAUTHENTICATED_ERROR_MESSAGE],
+  },
+});

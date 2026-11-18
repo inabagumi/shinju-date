@@ -17,7 +17,7 @@ const rows: Row[] = [
 const dateRange = { endDate: "2026-11-14", startDate: "2026-11-08" };
 
 describe(RankingWidget, () => {
-  function renderTalentRanking() {
+  const renderTalentRanking = () => {
     render(
       <RankingWidget
         dateRange={dateRange}
@@ -34,7 +34,7 @@ describe(RankingWidget, () => {
         valueHeading="クリック数"
       />
     );
-  }
+  };
 
   it("renders the header and the export link", () => {
     renderTalentRanking();

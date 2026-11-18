@@ -67,13 +67,11 @@ export default function TalentCard({ streamStatus, talent }: TalentCardProps) {
   );
 }
 
-export function TalentCardSkeleton() {
-  return (
-    <div className="flex flex-col items-center gap-2">
-      <div
-        className={`${ICON_CLASS_NAME} shrink-0 animate-pulse rounded-full bg-muted`}
-      />
-      <div className="h-[1lh] w-3/4 animate-pulse rounded-control bg-muted text-body leading-normal" />
-    </div>
-  );
-}
+export const TalentCardSkeleton = () => (
+  <div className="flex flex-col items-center gap-2">
+    <div
+      className={`${ICON_CLASS_NAME} shrink-0 animate-pulse rounded-full bg-muted`}
+    />
+    <div className="h-[1lh] w-3/4 animate-pulse rounded-control bg-muted text-body leading-normal" />
+  </div>
+);

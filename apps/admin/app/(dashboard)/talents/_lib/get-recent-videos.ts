@@ -16,12 +16,12 @@ const RECENT_VIDEO_SELECT = `
   youtube_video:youtube_videos (youtube_video_id)
 `;
 
-function selectRecentVideos(
+const selectRecentVideos = (
   supabaseClient: TypedSupabaseClient,
   talentId: string,
   limit: number
-) {
-  return supabaseClient
+) =>
+  supabaseClient
     .from("videos")
     .select(RECENT_VIDEO_SELECT)
     .is("deleted_at", null)
@@ -29,16 +29,15 @@ function selectRecentVideos(
     .eq("talent_id", talentId)
     .order("published_at", { ascending: false })
     .limit(limit);
-}
 
 export type RecentVideo = QueryData<
   ReturnType<typeof selectRecentVideos>
 >[number];
 
-export async function getRecentVideosForTalent(
+export const getRecentVideosForTalent = async (
   talentId: string,
   limit = 5
-): Promise<RecentVideo[]> {
+): Promise<RecentVideo[]> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -49,4 +48,4 @@ export async function getRecentVideosForTalent(
     await selectRecentVideos(supabaseClient, talentId, limit),
     "getRecentVideosForTalent"
   );
-}
+};

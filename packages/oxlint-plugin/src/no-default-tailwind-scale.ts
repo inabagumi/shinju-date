@@ -25,25 +25,23 @@ const DENIED_CLASS_PATTERNS = [
   /(?:^|:)dark:/u,
 ];
 
-function hasDeniedClass(value: string): boolean {
-  return value
+const hasDeniedClass = (value: string): boolean =>
+  value
     .split(/\s+/u)
     .some((className) =>
       DENIED_CLASS_PATTERNS.some((pattern) => pattern.test(className))
     );
-}
 
-function getAttributeName(node: ESTree.JSXAttribute): string {
-  return node.name.type === "JSXIdentifier"
+const getAttributeName = (node: ESTree.JSXAttribute): string =>
+  node.name.type === "JSXIdentifier"
     ? node.name.name
     : `${node.name.namespace.name}:${node.name.name.name}`;
-}
 
 /**
  * Whether the node is in the value of `class` or `className`, or in the
  * arguments of `twMerge()` or `cva()`.
  */
-function isInClassNames(node: ESTree.Node): boolean {
+const isInClassNames = (node: ESTree.Node): boolean => {
   let child: ESTree.Node = node;
 
   for (let parent = node.parent; parent; parent = parent.parent) {
@@ -67,7 +65,7 @@ function isInClassNames(node: ESTree.Node): boolean {
   }
 
   return false;
-}
+};
 
 /**
  * Reports the default font sizes, border radii and shadows of Tailwind and
@@ -77,13 +75,13 @@ function isInClassNames(node: ESTree.Node): boolean {
  */
 export const noDefaultTailwindScale = {
   create(context) {
-    function check(node: ESTree.Node) {
+    const check = (node: ESTree.Node) => {
       const value = getStringValue(node);
 
       if (value !== null && hasDeniedClass(value) && isInClassNames(node)) {
         context.report({ messageId: "defaultTailwindScale", node });
       }
-    }
+    };
 
     return {
       Literal: check,

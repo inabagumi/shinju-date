@@ -12,13 +12,11 @@ const TALENT_WITHOUT_ICON_NAME = "動画のないタレント";
 const ACTIVE_TALENT_COUNT = 5;
 
 // The grid comes right under `<main>`, after the breadcrumbs in the header
-function getTalentList(page: Page) {
-  return page.getByRole("main").locator(":scope > ul");
-}
+const getTalentList = (page: Page) =>
+  page.getByRole("main").locator(":scope > ul");
 
-function getTalentCard(page: Page, name: string) {
-  return getTalentList(page).getByRole("link", { exact: true, name });
-}
+const getTalentCard = (page: Page, name: string) =>
+  getTalentList(page).getByRole("link", { exact: true, name });
 
 test.describe("Talents page", () => {
   test("should list the active talents with their icons", async ({ page }) => {

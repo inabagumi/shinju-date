@@ -10,35 +10,27 @@ const LIVE_VIDEO_TITLE = "ただいま配信中";
 const WEEK_PATH_PATTERN = /^\/schedule\/(\d{4}-\d{2}-\d{2})$/;
 
 /** `YYYY-MM-DD` that is `days` days after `date` */
-function addDays(date: string, days: number): string {
+const addDays = (date: string, days: number): string => {
   const [year = 0, month = 1, day = 1] = date.split("-").map(Number);
 
   return new Date(Date.UTC(year, month - 1, day + days))
     .toISOString()
     .slice(0, 10);
-}
+};
 
-function getMain(page: Page) {
-  return page.getByRole("main");
-}
+const getMain = (page: Page) => page.getByRole("main");
 
-function getWeekNavigation(page: Page) {
-  return page.getByRole("navigation", { name: "週の移動" });
-}
+const getWeekNavigation = (page: Page) =>
+  page.getByRole("navigation", { name: "週の移動" });
 
-function getDays(page: Page) {
-  return getMain(page).getByTestId("schedule-day");
-}
+const getDays = (page: Page) => getMain(page).getByTestId("schedule-day");
 
-function getItems(page: Page) {
-  return getMain(page).getByTestId("schedule-item");
-}
+const getItems = (page: Page) => getMain(page).getByTestId("schedule-item");
 
-function getWeekLink(page: Page, name: string) {
-  return getWeekNavigation(page).getByRole("link", { exact: true, name });
-}
+const getWeekLink = (page: Page, name: string) =>
+  getWeekNavigation(page).getByRole("link", { exact: true, name });
 
-async function getLinkPath(page: Page, name: string): Promise<string> {
+const getLinkPath = async (page: Page, name: string): Promise<string> => {
   const href = await getWeekLink(page, name).getAttribute("href");
 
   if (!href) {
@@ -46,10 +38,10 @@ async function getLinkPath(page: Page, name: string): Promise<string> {
   }
 
   return href;
-}
+};
 
 /** The Sunday (`YYYY-MM-DD`) of the current week */
-async function getCurrentWeekStart(page: Page): Promise<string> {
+const getCurrentWeekStart = async (page: Page): Promise<string> => {
   await page.goto("/schedule");
 
   const previousPath = await getLinkPath(page, "前の週");
@@ -57,22 +49,22 @@ async function getCurrentWeekStart(page: Page): Promise<string> {
     previousPath.match(WEEK_PATH_PATTERN) ?? [];
 
   return addDays(previousWeekStart, 7);
-}
+};
 
-async function expectNotFound(page: Page) {
+const expectNotFound = async (page: Page) => {
   await expect(
     page.getByRole("heading", { level: 1, name: "ページが見つかりません" })
   ).toBeVisible();
-}
+};
 
-async function expectNoHorizontalScroll(page: Page) {
+const expectNoHorizontalScroll = async (page: Page) => {
   const { clientWidth, scrollWidth } = await page.evaluate(() => ({
     clientWidth: document.documentElement.clientWidth,
     scrollWidth: document.documentElement.scrollWidth,
   }));
 
   expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
-}
+};
 
 test.describe("Schedule page", () => {
   test("should show the 7 days of the current week with today marked", async ({

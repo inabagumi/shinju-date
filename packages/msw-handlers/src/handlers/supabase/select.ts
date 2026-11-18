@@ -30,7 +30,7 @@ type SelectNode =
  * `thumbnail:thumbnails(id,path),talent:talents(id,name)` becomes
  * `['thumbnail:thumbnails(id,path)', 'talent:talents(id,name)']`.
  */
-function splitSelectFields(selectStr: string): string[] {
+const splitSelectFields = (selectStr: string): string[] => {
   const fields: string[] = [];
   let depth = 0;
   let current = "";
@@ -52,15 +52,15 @@ function splitSelectFields(selectStr: string): string[] {
   fields.push(current);
 
   return fields.map((field) => field.trim()).filter((field) => field !== "");
-}
+};
 
 /**
  * Parse a PostgREST `select` parameter into a tree of select nodes. The
  * forms that the mock does not support, such as spreads (`...talents(name)`),
  * aggregates (`count()`) and JSON paths (`data->name`), are errors.
  */
-function parseSelect(selectStr: string): SelectNode[] {
-  return splitSelectFields(selectStr).map((field): SelectNode => {
+const parseSelect = (selectStr: string): SelectNode[] =>
+  splitSelectFields(selectStr).map((field): SelectNode => {
     if (field === "*") {
       return { kind: "wildcard" };
     }
@@ -94,14 +94,13 @@ function parseSelect(selectStr: string): SelectNode[] {
     const [, alias, column = field] = columnMatch;
     return { alias: alias ?? column, column, kind: "column" };
   });
-}
 
 /** The paths of the embedded resources of a select, such as `['talent']`. */
-function getEmbeddedPaths(
+const getEmbeddedPaths = (
   nodes: readonly SelectNode[],
   parent: readonly string[] = []
-): string[][] {
-  return nodes.flatMap((node) => {
+): string[][] =>
+  nodes.flatMap((node) => {
     if (node.kind !== "relation") {
       return [];
     }
@@ -110,17 +109,16 @@ function getEmbeddedPaths(
 
     return [path, ...getEmbeddedPaths(node.fields, path)];
   });
-}
 
 /**
  * Check that every filter on an embedded resource, such as
  * `talents.deleted_at=is.null`, names an embedded resource of the select
  * (`PGRST108` of PostgREST otherwise).
  */
-function checkEmbeddedFilters(
+const checkEmbeddedFilters = (
   nodes: readonly SelectNode[],
   filters: readonly Filter[]
-): void {
+): void => {
   const paths = new Set(
     getEmbeddedPaths(nodes).map((path) => JSON.stringify(path))
   );
@@ -136,17 +134,17 @@ function checkEmbeddedFilters(
       });
     }
   }
-}
+};
 
 /**
  * The relation of a table to an embedded resource, and the table it refers
  * to. A relation that the table does not define is an error (`PGRST200` of
  * PostgREST).
  */
-function findRelation(
+const findRelation = (
   table: AnyTableDefinition | undefined,
   relationName: string
-) {
+) => {
   const relation = table?.relations.find(({ table }) => table === relationName);
   const target = relation && findTable(relation.table);
 
@@ -160,45 +158,45 @@ function findRelation(
   }
 
   return { relation, target };
-}
+};
 
 /** Check that every embedded resource of a select has a relation. */
-function checkRelations(
+const checkRelations = (
   nodes: readonly SelectNode[],
   table: AnyTableDefinition | undefined
-): void {
+): void => {
   for (const node of nodes) {
     if (node.kind === "relation") {
       checkRelations(node.fields, findRelation(table, node.relation).target);
     }
   }
-}
+};
 
 /**
  * Check a select and the filters on its embedded resources without reading
  * any rows, and throw the error of PostgREST for what is not supported. A
  * write checks them before it changes anything, as PostgREST does.
  */
-export function validateSelect(
+export const validateSelect = (
   selectStr: string,
   tableName: TableName,
   filters: readonly Filter[] = []
-): SelectNode[] {
+): SelectNode[] => {
   const nodes = parseSelect(selectStr);
 
   checkEmbeddedFilters(nodes, filters);
   checkRelations(nodes, findTable(tableName));
 
   return nodes;
-}
+};
 
 /** The rows of an embedded resource that match its filters. */
-async function resolveRelation(
+const resolveRelation = async (
   table: AnyTableDefinition | undefined,
   relationName: string,
   row: object,
   filters: readonly Filter[]
-): Promise<{ rows: object[]; table: AnyTableDefinition; many: boolean }> {
+): Promise<{ rows: object[]; table: AnyTableDefinition; many: boolean }> => {
   const { relation, target } = findRelation(table, relationName);
   const value = getColumn(row, relation.column);
   const related =
@@ -211,20 +209,20 @@ async function resolveRelation(
         );
 
   return { many: relation.many, rows: related, table: target };
-}
+};
 
 /**
  * Project a single row according to parsed select nodes, resolving
  * embedded resources recursively. `null` when an embedded resource with
  * `!inner` has no rows, which leaves the row out.
  */
-async function projectRow(
+const projectRow = async (
   row: object,
   nodes: readonly SelectNode[],
   table: AnyTableDefinition | undefined,
   filters: readonly Filter[],
   path: readonly string[]
-): Promise<Record<string, unknown> | null> {
+): Promise<Record<string, unknown> | null> => {
   const result: Record<string, unknown> = {};
 
   for (const node of nodes) {
@@ -267,7 +265,7 @@ async function projectRow(
   }
 
   return result;
-}
+};
 
 /** A row of a table and what the select of a query returns for it. */
 export interface SelectedRow<Row extends object = object> {
@@ -285,12 +283,12 @@ export interface SelectedRow<Row extends object = object> {
  * embedded resource with `!inner` are left out. The filters on the rows of
  * the table itself have to be applied before.
  */
-export async function selectRows<Row extends object>(
+export const selectRows = async <Row extends object>(
   rows: readonly Row[],
   selectStr: string,
   tableName: TableName,
   filters: readonly Filter[] = []
-): Promise<SelectedRow<Row>[]> {
+): Promise<SelectedRow<Row>[]> => {
   const nodes = validateSelect(selectStr, tableName, filters);
 
   if (selectStr === "*") {
@@ -309,19 +307,18 @@ export async function selectRows<Row extends object>(
   }
 
   return selected;
-}
+};
 
 /**
  * The outputs of `selectRows`, for the rows that a write returns or the
  * rows of a database function.
  */
-export async function applySelect(
+export const applySelect = async (
   rows: readonly object[],
   selectStr: string,
   tableName: TableName,
   filters: readonly Filter[] = []
-): Promise<object[]> {
-  return (await selectRows(rows, selectStr, tableName, filters)).map(
+): Promise<object[]> =>
+  (await selectRows(rows, selectStr, tableName, filters)).map(
     ({ output }) => output
   );
-}

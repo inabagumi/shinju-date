@@ -23,15 +23,14 @@ const REQUIRED_ENV = {
 
 type RequiredName = keyof typeof REQUIRED_ENV;
 
-function without(...names: RequiredName[]): EnvSource {
-  return Object.fromEntries(
+const without = (...names: RequiredName[]): EnvSource =>
+  Object.fromEntries(
     Object.entries(REQUIRED_ENV).filter(
       ([name]) => !names.includes(name as RequiredName)
     )
   );
-}
 
-function errorOf(callback: () => unknown): Error {
+const errorOf = (callback: () => unknown): Error => {
   try {
     callback();
   } catch (error) {
@@ -41,7 +40,7 @@ function errorOf(callback: () => unknown): Error {
   }
 
   throw new Error("Expected an error to be thrown.");
-}
+};
 
 describe(parseEnv, () => {
   it("returns the variables when every required one is set", () => {
@@ -182,9 +181,8 @@ interface TurboConfig {
   tasks?: Record<string, { env?: string[] }>;
 }
 
-function readTurboConfig(path: string): TurboConfig {
-  return JSON.parse(readFileSync(new URL(path, import.meta.url), "utf-8"));
-}
+const readTurboConfig = (path: string): TurboConfig =>
+  JSON.parse(readFileSync(new URL(path, import.meta.url), "utf-8"));
 
 describe("the names in ENV_NAMES", () => {
   it("are all passed to the build by turbo.json", () => {

@@ -11,9 +11,9 @@ const VALID_SORT_ORDERS: VideoSortOrder[] = ["asc", "desc"];
  * 1つまたは複数の値を受け取り、enum の値だけを残すスキーマ。
  * 有効な値が1つもなければ `undefined` にする
  */
-function enumValuesSchema<const T extends readonly [string, ...string[]]>(
+const enumValuesSchema = <const T extends readonly [string, ...string[]]>(
   values: T
-) {
+) => {
   const valueSchema = z.enum(values);
 
   return z
@@ -26,7 +26,7 @@ function enumValuesSchema<const T extends readonly [string, ...string[]]>(
       );
       return validValues.length > 0 ? validValues : undefined;
     });
-}
+};
 
 /**
  * Zod schema for video management page search parameters

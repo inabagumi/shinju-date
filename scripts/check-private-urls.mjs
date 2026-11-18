@@ -54,7 +54,7 @@ export const PRIVATE_URL_PATTERNS = [
  * @param {string} text
  * @returns {PrivateUrl[]}
  */
-export function findPrivateUrls(text) {
+export const findPrivateUrls = (text) => {
   /** @type {PrivateUrl[]} */
   const found = [];
 
@@ -67,7 +67,7 @@ export function findPrivateUrls(text) {
   }
 
   return found;
-}
+};
 
 /**
  * @typedef {object} Source
@@ -85,20 +85,18 @@ export function findPrivateUrls(text) {
  * @param {Source[]} sources
  * @returns {Problem[]}
  */
-export function findProblems(sources) {
-  return sources.flatMap(({ label, text }) =>
+export const findProblems = (sources) =>
+  sources.flatMap(({ label, text }) =>
     findPrivateUrls(text ?? "").map((found) => ({ label, ...found }))
   );
-}
 
 /**
  * Format a problem for the log.
  *
  * @param {Problem} problem
  */
-export function formatProblem({ label, line, name, url }) {
-  return `${label} (${line} 行目): ${url} (${name})`;
-}
+export const formatProblem = ({ label, line, name, url }) =>
+  `${label} (${line} 行目): ${url} (${name})`;
 
 export const GUIDANCE =
   "ほとんどの人が開けない URL は、コミットメッセージとプルリクエストに書かないでください。CONTRIBUTING.md の「コミットメッセージ」を参照。";
@@ -109,7 +107,7 @@ export const GUIDANCE =
  * @param {string} base
  * @returns {Source[]}
  */
-function listCommits(base) {
+const listCommits = (base) => {
   const output = execFileSync(
     "git",
     ["log", "-z", "--format=%h%n%B", `${base}..HEAD`],
@@ -127,9 +125,9 @@ function listCommits(base) {
         text: entry.slice(newline + 1),
       };
     });
-}
+};
 
-function main() {
+const main = () => {
   const base = process.argv[2] ?? "origin/main";
   const problems = findProblems(listCommits(base));
 
@@ -141,7 +139,7 @@ function main() {
     console.error(`\n${problems.length} 件の問題があります。${GUIDANCE}`);
     process.exitCode = 1;
   }
-}
+};
 
 if (process.argv[1] && resolve(process.argv[1]) === import.meta.filename) {
   main();

@@ -17,7 +17,7 @@ const MOCK_ICON_PNG = Uint8Array.from(
  * image, so the ETag only depends on `key` (e.g. the file name); a
  * conditional request with a matching ETag gets `304 Not Modified`.
  */
-export function createIconResponse(request: Request, key: string): Response {
+export const createIconResponse = (request: Request, key: string): Response => {
   const etag = `"${key}"`;
   const headers = { "Content-Type": "image/png", ETag: etag };
 
@@ -26,4 +26,4 @@ export function createIconResponse(request: Request, key: string): Response {
   }
 
   return new HttpResponse(MOCK_ICON_PNG, { headers });
-}
+};

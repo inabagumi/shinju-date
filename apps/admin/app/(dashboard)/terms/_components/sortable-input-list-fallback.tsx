@@ -14,12 +14,12 @@ interface SortableInputListFallbackProps {
  * 読み込み後に失われないよう、入力欄とボタンは操作できないようにしておく。
  * 読み込み中に送信されても値が消えないよう、送信用の値は読み込み後と同じ形で置く。
  */
-export function SortableInputListFallback({
+export const SortableInputListFallback = ({
   addButtonLabel = "追加",
   defaultValues = [],
   name,
   placeholder,
-}: SortableInputListFallbackProps) {
+}: SortableInputListFallbackProps) => {
   const values = defaultValues.length > 0 ? defaultValues : [""];
 
   return (
@@ -70,4 +70,4 @@ export function SortableInputListFallback({
       ))}
     </div>
   );
-}
+};

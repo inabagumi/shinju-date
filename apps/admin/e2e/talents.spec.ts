@@ -2,13 +2,13 @@ import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
 /** Opens the detail page of the first talent in the list */
-async function openFirstTalent(page: Page) {
+const openFirstTalent = async (page: Page) => {
   await page.goto("/talents");
 
   // The first row is the header
   await page.getByRole("row").nth(1).getByRole("link").first().click();
   await expect(page).toHaveURL(/\/talents\/[0-9a-f-]{36}$/);
-}
+};
 
 test.describe("Talents", () => {
   test("should display a talent detail page from the list", async ({

@@ -8,13 +8,13 @@ import type { youtube_v3 as youtube } from "@googleapis/youtube";
  * @param video - The YouTube video object
  * @returns The published date as a Temporal.Instant
  */
-export function getPublishedAt(
+export const getPublishedAt = (
   video: youtube.Schema$Video
-): Temporal.Instant | null {
+): Temporal.Instant | null => {
   const publishedAt =
     video.liveStreamingDetails?.actualStartTime ??
     video.liveStreamingDetails?.scheduledStartTime ??
     video.snippet?.publishedAt;
 
   return publishedAt ? Temporal.Instant.from(publishedAt) : null;
-}
+};

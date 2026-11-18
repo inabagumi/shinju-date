@@ -10,9 +10,9 @@ export interface HealthCheckResult {
 /**
  * Check Supabase database connectivity
  */
-export async function checkSupabaseHealth(
+export const checkSupabaseHealth = async (
   supabaseClient: SupabaseClient
-): Promise<HealthCheckResult> {
+): Promise<HealthCheckResult> => {
   try {
     const { error } = await supabaseClient
       .from("talents")
@@ -35,14 +35,14 @@ export async function checkSupabaseHealth(
       status: "error",
     };
   }
-}
+};
 
 /**
  * Check Upstash Redis connectivity
  */
-export async function checkRedisHealth(
+export const checkRedisHealth = async (
   redisClient: Redis
-): Promise<HealthCheckResult> {
+): Promise<HealthCheckResult> => {
   try {
     const result = await redisClient.ping();
 
@@ -62,14 +62,14 @@ export async function checkRedisHealth(
       status: "error",
     };
   }
-}
+};
 
 /**
  * Run multiple health checks and return combined result
  */
-export async function runHealthChecks(
+export const runHealthChecks = async (
   checks: (() => Promise<HealthCheckResult>)[]
-): Promise<{ status: "ok" | "error"; results: HealthCheckResult[] }> {
+): Promise<{ status: "ok" | "error"; results: HealthCheckResult[] }> => {
   const results = await Promise.all(checks.map((check) => check()));
   const hasError = results.some((result) => result.status === "error");
 
@@ -77,16 +77,16 @@ export async function runHealthChecks(
     results,
     status: hasError ? "error" : "ok",
   };
-}
+};
 
 /**
  * Create a readiness check response
  */
-export function createReadinessResponse(
+export const createReadinessResponse = (
   status: "ok" | "error",
   results?: HealthCheckResult[],
   errorDetails?: { message?: string; details?: string }
-): Response {
+): Response => {
   if (status === "ok") {
     return Response.json({ status: "ok" });
   }
@@ -108,4 +108,4 @@ export function createReadinessResponse(
   }
 
   return Response.json(errorResponse, { status: 503 });
-}
+};

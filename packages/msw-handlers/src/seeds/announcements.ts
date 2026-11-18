@@ -8,9 +8,9 @@ import type { SeedContext } from "./context.js";
  * syntax (strikethrough), so that the rendering of the Markdown message can
  * be checked.
  */
-export function createAnnouncements(
+export const createAnnouncements = (
   context: SeedContext
-): Tables<"announcements">[] {
+): Tables<"announcements">[] => {
   const createdAt = randomPast(context, 30);
 
   return [
@@ -26,4 +26,4 @@ export function createAnnouncements(
       updated_at: createdAt,
     },
   ];
-}
+};

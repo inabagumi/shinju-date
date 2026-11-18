@@ -3,21 +3,19 @@ import { describe, expect, it } from "vitest";
 import { filterTalents } from "./filter-talents";
 import type { TalentSearchParams } from "./search-params-schema";
 
-function createTalent(
+const createTalent = (
   id: string,
   name: string,
   updatedAt: string,
   overrides: { deleted_at?: string | null; status?: string } = {}
-) {
-  return {
-    deleted_at: null,
-    id,
-    name,
-    status: "active",
-    updated_at: updatedAt,
-    ...overrides,
-  };
-}
+) => ({
+  deleted_at: null,
+  id,
+  name,
+  status: "active",
+  updated_at: updatedAt,
+  ...overrides,
+});
 
 const TALENTS = [
   createTalent("id-active", "アクティブ", "2025-01-02T00:00:00Z"),
@@ -35,11 +33,10 @@ const DEFAULT_FILTERS: TalentSearchParams = {
   status: "not_deleted",
 };
 
-function ids(filters: Partial<TalentSearchParams>) {
-  return filterTalents(TALENTS, { ...DEFAULT_FILTERS, ...filters }).map(
+const ids = (filters: Partial<TalentSearchParams>) =>
+  filterTalents(TALENTS, { ...DEFAULT_FILTERS, ...filters }).map(
     (talent) => talent.id
   );
-}
 
 describe(filterTalents, () => {
   it("excludes the deleted talents and sorts by the last update, newest first, by default", () => {

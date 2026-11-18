@@ -22,11 +22,11 @@ export interface InitClientOptions {
  * the first render. When it fails to load, the error is logged to the console
  * and thrown again.
  */
-export function initClient({
+export const initClient = ({
   profileSessionSampleRate,
   replay,
   tracesSampleRate,
-}: InitClientOptions): void {
+}: InitClientOptions): void => {
   const dsn = process.env["NEXT_PUBLIC_SENTRY_DSN"];
 
   if (!dsn) {
@@ -60,16 +60,16 @@ export function initClient({
       console.error("Failed to initialize Sentry:", error);
       throw error;
     });
-}
+};
 
 /**
  * `onRouterTransitionStart` of `instrumentation-client.ts`. Starts the trace
  * of a client-side navigation when `NEXT_PUBLIC_SENTRY_DSN` is set.
  */
-export async function onRouterTransitionStart(
+export const onRouterTransitionStart = async (
   href: string,
   navigationType: string
-): Promise<void> {
+): Promise<void> => {
   const dsn = process.env["NEXT_PUBLIC_SENTRY_DSN"];
 
   if (dsn) {
@@ -77,4 +77,4 @@ export async function onRouterTransitionStart(
 
     Sentry.captureRouterTransitionStart(href, navigationType);
   }
-}
+};

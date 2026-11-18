@@ -19,9 +19,9 @@ import { getRedisClient } from "@/lib/redis";
  * keywords, each with its changes from the snapshots of the day before and
  * the week before (saved by the daily job `/stats/snapshot` of batch).
  */
-export async function getAnalyticsSummary(): Promise<
+export const getAnalyticsSummary = async (): Promise<
   WithTrends<AnalyticsSummary>
-> {
+> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -53,4 +53,4 @@ export async function getAnalyticsSummary(): Promise<
       null
     );
   }
-}
+};

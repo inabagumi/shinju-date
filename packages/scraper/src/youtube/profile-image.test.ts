@@ -114,13 +114,13 @@ describe(syncYouTubeChannelIcon, () => {
     image = await createImage(800, 800);
   });
 
-  function respondWithChannel(): void {
+  const respondWithChannel = (): void => {
     supabase.respond(({ method, table }) =>
       method === "PATCH" && table === "youtube_channels"
         ? [{ id: saved.id }]
         : []
     );
-  }
+  };
 
   it("stores the icon of a channel that has none yet", async () => {
     const requests = serveImage(supabase, thumbnails.high.url, { body: image });

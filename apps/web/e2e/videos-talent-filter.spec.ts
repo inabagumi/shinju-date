@@ -4,15 +4,14 @@ import type { Page } from "@playwright/test";
 const TALENT_PARAM_PATTERN = /[?&]talent=[0-9a-f-]{36}/;
 
 /** タレントの複数選択を開いて、指定したタレントを選ぶ */
-async function selectTalent(page: Page, trigger: string, name: string) {
+const selectTalent = async (page: Page, trigger: string, name: string) => {
   await page.getByRole("button", { exact: true, name: trigger }).click();
   await page.getByRole("checkbox", { name }).click();
   await page.keyboard.press("Escape");
-}
+};
 
-function getSelectedTalentList(page: Page) {
-  return page.getByRole("list", { name: "選んでいるタレント" });
-}
+const getSelectedTalentList = (page: Page) =>
+  page.getByRole("list", { name: "選んでいるタレント" });
 
 test.describe("Videos - Talent filter", () => {
   test("should filter the videos by the selected talents", async ({ page }) => {

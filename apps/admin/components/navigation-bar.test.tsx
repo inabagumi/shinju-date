@@ -22,8 +22,8 @@ vi.mock(import("@/app/login/_actions/sign-out"), () => ({
 
 const { NavigationBar } = await import("./navigation-bar");
 
-function renderNavigationBar() {
-  return render(
+const renderNavigationBar = () =>
+  render(
     <ActionToastProvider>
       <NavigationBar />
       <main>
@@ -31,7 +31,6 @@ function renderNavigationBar() {
       </main>
     </ActionToastProvider>
   );
-}
 
 describe("NavigationBar", () => {
   beforeEach(() => {

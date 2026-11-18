@@ -60,14 +60,12 @@ const adapter: NewVideoAdapter<FakeVideo> = {
 
 const THUMBNAIL_URL = "https://img.example.test/video-1.jpg";
 
-function createFakeVideo(overrides: Partial<FakeVideo> = {}): FakeVideo {
-  return {
-    id: "video-1",
-    thumbnailUrl: THUMBNAIL_URL,
-    title: "Video 1",
-    ...overrides,
-  };
-}
+const createFakeVideo = (overrides: Partial<FakeVideo> = {}): FakeVideo => ({
+  id: "video-1",
+  thumbnailUrl: THUMBNAIL_URL,
+  title: "Video 1",
+  ...overrides,
+});
 
 interface Row {
   id: string;
@@ -80,7 +78,7 @@ interface Row {
  * inserts nothing and returns `NULL` for a platform video ID that is already
  * saved, like the function does.
  */
-function mockDatabase() {
+const mockDatabase = () => {
   const rows = {
     thumbnails: new Map<string, Row>(),
     videos: new Map<string, Row>(),
@@ -123,7 +121,7 @@ function mockDatabase() {
   });
 
   return rows;
-}
+};
 
 describe(saveVideoWithThumbnail, () => {
   let image: Buffer;
