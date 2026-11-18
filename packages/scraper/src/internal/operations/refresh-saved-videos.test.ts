@@ -134,7 +134,7 @@ describe('refreshSavedVideos', () => {
         return [createSaved('gone')]
       }
 
-      return table === 'videos' ? [{ id: 'video-gone' }] : []
+      return table === 'rpc/soft_delete_videos' ? ['video-gone'] : []
     })
     const { adapter } = createAdapter([])
     const afterRefresh = vi.fn(async () => true)
@@ -146,9 +146,9 @@ describe('refreshSavedVideos', () => {
 
     expect(changed).toBe(1)
     expect(afterRefresh).not.toHaveBeenCalled()
-    expect(supabase.written('PATCH', 'videos')[0]?.query['id']).toBe(
-      'in.(video-gone)',
-    )
+    expect(
+      supabase.written('POST', 'rpc/soft_delete_videos')[0]?.body,
+    ).toMatchObject({ p_video_ids: ['video-gone'] })
   })
 })
 
@@ -164,16 +164,16 @@ describe('refreshSavedVideo', () => {
 
   it('soft-deletes a video the platform no longer returns', async () => {
     supabase.respond(({ table }) =>
-      table === 'videos' ? [{ id: 'video-gone' }] : [],
+      table === 'rpc/soft_delete_videos' ? ['video-gone'] : [],
     )
     const { adapter } = createAdapter([])
 
     await expect(
       refreshSavedVideo(context, adapter, createSaved('gone')),
     ).resolves.toBe('unavailable')
-    expect(supabase.written('PATCH', 'videos')[0]?.query['id']).toBe(
-      'in.(video-gone)',
-    )
+    expect(
+      supabase.written('POST', 'rpc/soft_delete_videos')[0]?.body,
+    ).toMatchObject({ p_video_ids: ['video-gone'] })
   })
 
   it('returns the columns that changed', async () => {
@@ -210,7 +210,7 @@ describe('sweepUnavailableVideos', () => {
         return query['id'] ? [] : [createSaved('a'), createSaved('gone')]
       }
 
-      return table === 'videos' ? [{ id: 'video-gone' }] : []
+      return table === 'rpc/soft_delete_videos' ? ['video-gone'] : []
     })
     const { adapter, lookUp } = createAdapter([{ id: 'a', title: 'Video a' }])
 
@@ -218,8 +218,8 @@ describe('sweepUnavailableVideos', () => {
 
     expect(deleted).toBe(1)
     expect(lookUp).toHaveBeenCalledOnce()
-    expect(supabase.written('PATCH', 'videos')[0]?.query['id']).toBe(
-      'in.(video-gone)',
-    )
+    expect(
+      supabase.written('POST', 'rpc/soft_delete_videos')[0]?.body,
+    ).toMatchObject({ p_video_ids: ['video-gone'] })
   })
 })

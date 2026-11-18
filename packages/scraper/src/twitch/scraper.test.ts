@@ -133,6 +133,8 @@ function respondWithSavedVideo(
           },
         }
         return []
+      case 'POST rpc/soft_delete_videos':
+        return (body as { p_video_ids: string[] }).p_video_ids
       default:
         return []
     }
@@ -423,13 +425,11 @@ describe('TwitchScraper', () => {
 
       expect(single).toEqual([
         expect.objectContaining({
-          body: expect.objectContaining({ deleted_reason: 'unavailable' }),
-          query: expect.objectContaining({ id: 'in.(video-1)' }),
-          table: 'videos',
-        }),
-        expect.objectContaining({
-          query: expect.objectContaining({ id: 'in.(thumb-1)' }),
-          table: 'thumbnails',
+          body: expect.objectContaining({
+            p_reason: 'unavailable',
+            p_video_ids: ['video-1'],
+          }),
+          table: 'rpc/soft_delete_videos',
         }),
       ])
       expect(writes()).toEqual(single)
@@ -600,16 +600,16 @@ describe('TwitchScraper', () => {
               ]
         }
 
-        return table === 'videos' ? [{ id: 'video-1' }] : []
+        return table === 'rpc/soft_delete_videos' ? ['video-1'] : []
       })
       const { scraper } = createScraper({})
 
       await expect(scraper.removeUnavailableVideos(TEST_NOW)).resolves.toBe(
         true,
       )
-      expect(supabase.written('PATCH', 'videos')[0]?.body).toMatchObject({
-        deleted_reason: 'unavailable',
-      })
+      expect(
+        supabase.written('POST', 'rpc/soft_delete_videos')[0]?.body,
+      ).toMatchObject({ p_reason: 'unavailable', p_video_ids: ['video-1'] })
     })
   })
 

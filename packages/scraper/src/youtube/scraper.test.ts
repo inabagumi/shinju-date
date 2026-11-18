@@ -296,16 +296,15 @@ describe('YouTubeScraper', () => {
           return [savedVideo]
         }
 
-        return table === 'videos' ? [{ id: 'video-1' }] : []
+        return table === 'rpc/soft_delete_videos' ? ['video-1'] : []
       })
       const { scraper } = createScraper({})
 
       await expect(scraper.refreshLiveVideos(TEST_NOW)).resolves.toBe(true)
 
-      expect(supabase.written('PATCH', 'videos')[0]?.body).toMatchObject({
-        deleted_reason: 'unavailable',
-      })
-      expect(supabase.written('PATCH', 'thumbnails')).toHaveLength(1)
+      expect(
+        supabase.written('POST', 'rpc/soft_delete_videos')[0]?.body,
+      ).toMatchObject({ p_reason: 'unavailable', p_video_ids: ['video-1'] })
     })
 
     it('reports no change when nothing is scheduled or on air', async () => {
@@ -513,7 +512,7 @@ describe('YouTubeScraper', () => {
           return [savedVideo]
         }
 
-        return table === 'videos' ? [{ id: 'video-1' }] : []
+        return table === 'rpc/soft_delete_videos' ? ['video-1'] : []
       })
       const { scraper } = createScraper({})
 
@@ -527,13 +526,11 @@ describe('YouTubeScraper', () => {
 
       expect(single).toEqual([
         expect.objectContaining({
-          body: expect.objectContaining({ deleted_reason: 'unavailable' }),
-          query: expect.objectContaining({ id: 'in.(video-1)' }),
-          table: 'videos',
-        }),
-        expect.objectContaining({
-          query: expect.objectContaining({ id: 'in.(thumb-1)' }),
-          table: 'thumbnails',
+          body: expect.objectContaining({
+            p_reason: 'unavailable',
+            p_video_ids: ['video-1'],
+          }),
+          table: 'rpc/soft_delete_videos',
         }),
       ])
       expect(
@@ -572,7 +569,7 @@ describe('YouTubeScraper', () => {
               ]
         }
 
-        return table === 'videos' ? [{ id: 'video-2' }] : []
+        return table === 'rpc/soft_delete_videos' ? ['video-2'] : []
       })
       const { scraper, videosList } = createScraper({ videos: { 'yt-1': {} } })
 
@@ -583,9 +580,9 @@ describe('YouTubeScraper', () => {
       expect(videosList).toHaveBeenCalledWith(
         expect.objectContaining({ part: ['id'] }),
       )
-      expect(supabase.written('PATCH', 'videos')[0]?.query['id']).toBe(
-        'in.(video-2)',
-      )
+      expect(
+        supabase.written('POST', 'rpc/soft_delete_videos')[0]?.body,
+      ).toMatchObject({ p_video_ids: ['video-2'] })
     })
   })
 
