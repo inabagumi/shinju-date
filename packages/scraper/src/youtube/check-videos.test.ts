@@ -95,7 +95,6 @@ describe('refreshYouTubeVideos', () => {
         body: {
           published_at: '2024-05-01T11:58:00Z',
           status: 'LIVE',
-          updated_at: '2024-05-01T12:00:00Z',
         },
         query: { id: 'eq.video-b' },
       }),
@@ -256,7 +255,6 @@ describe('refreshYouTubeVideos and thumbnails', () => {
       expect.objectContaining({
         body: {
           thumbnail_id: (inserted as { id: string }).id,
-          updated_at: '2024-05-01T12:00:00Z',
         },
         query: { id: 'eq.video-a' },
       }),
@@ -289,16 +287,12 @@ describe('refreshYouTubeVideos and thumbnails', () => {
       expect.objectContaining({
         body: {
           thumbnail_id: (inserted as { id: string }).id,
-          updated_at: '2024-05-01T12:00:00Z',
         },
       }),
     ])
     // The old thumbnail is left for the cleanup of unused thumbnails.
-    expect(supabase.written('PATCH', 'thumbnails')).toEqual([
-      expect.objectContaining({
-        body: { updated_at: '2024-05-01T12:00:00Z' },
-        query: { id: 'eq.thumb-a' },
-      }),
+    expect(supabase.written('POST', 'rpc/touch_thumbnail')).toEqual([
+      expect.objectContaining({ body: { p_thumbnail_id: 'thumb-a' } }),
     ])
     expect(supabase.written('DELETE', 'thumbnails')).toHaveLength(0)
     expect(storage.removed).toHaveLength(0)

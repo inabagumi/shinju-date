@@ -309,12 +309,12 @@ describe('toggleVisibilityAction', () => {
       })),
     ).toEqual([
       {
-        body: { updated_at: '2024-11-24T17:00:00Z', visible: true },
+        body: { visible: true },
         id: 'in.(video-id-1)',
         visible: 'eq.false',
       },
       {
-        body: { updated_at: '2024-11-24T17:00:00Z', visible: false },
+        body: { visible: false },
         id: 'in.(video-id-2,video-id-3)',
         visible: 'eq.true',
       },

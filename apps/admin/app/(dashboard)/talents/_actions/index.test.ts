@@ -81,7 +81,6 @@ describe('updateTalentAction', () => {
       name: 'Updated Talent',
       reading: null,
       theme_color: '#FF5733',
-      updated_at: NOW,
     })
     test.expectAuditLog('CHANNEL_UPDATE', TALENT_ID, {
       entityName: 'Updated Talent',
@@ -184,7 +183,6 @@ describe('updateTalentAction', () => {
       name: 'Updated Talent',
       reading: null,
       theme_color: null,
-      updated_at: NOW,
     })
   })
 
@@ -204,7 +202,6 @@ describe('updateTalentAction', () => {
       name: 'Updated Talent',
       reading: 'しんじゅー',
       theme_color: null,
-      updated_at: NOW,
     })
   })
 
@@ -302,7 +299,7 @@ const lifecycleActionCases: LifecycleActionCase[] = [
     auditAction: 'CHANNEL_DELETE',
     expectedDeletedAtFilter: 'is null',
     expectedStatusFilter: null,
-    expectedUpdate: { deleted_at: NOW, updated_at: NOW },
+    expectedUpdate: { deleted_at: NOW },
     name: 'deleteTalentAction',
     notFoundError:
       '指定されたタレントが見つかりません。既に削除されているか、存在しないIDが指定されています。',
@@ -313,7 +310,7 @@ const lifecycleActionCases: LifecycleActionCase[] = [
     auditAction: 'CHANNEL_RESTORE',
     expectedDeletedAtFilter: 'is not null',
     expectedStatusFilter: null,
-    expectedUpdate: { deleted_at: null, updated_at: NOW },
+    expectedUpdate: { deleted_at: null },
     name: 'restoreTalentAction',
     notFoundError:
       '指定されたタレントが見つかりません。既に復活しているか、存在しないIDが指定されています。',
@@ -324,7 +321,7 @@ const lifecycleActionCases: LifecycleActionCase[] = [
     auditAction: 'CHANNEL_RETIRE',
     expectedDeletedAtFilter: 'is null',
     expectedStatusFilter: 'active',
-    expectedUpdate: { status: 'retired', updated_at: NOW },
+    expectedUpdate: { status: 'retired' },
     name: 'retireTalentAction',
     notFoundError:
       '指定されたタレントが見つかりません。既に引退・削除されているか、存在しないIDが指定されています。',
@@ -335,7 +332,7 @@ const lifecycleActionCases: LifecycleActionCase[] = [
     auditAction: 'CHANNEL_ACTIVATE',
     expectedDeletedAtFilter: 'is null',
     expectedStatusFilter: 'retired',
-    expectedUpdate: { status: 'active', updated_at: NOW },
+    expectedUpdate: { status: 'active' },
     name: 'activateTalentAction',
     notFoundError:
       '指定されたタレントが見つかりません。既にアクティブ・削除されているか、存在しないIDが指定されています。',

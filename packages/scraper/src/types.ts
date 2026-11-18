@@ -32,7 +32,12 @@ export interface ScraperOptions {
 /** What code that writes to the database needs during one run. */
 export interface WriteContext {
   logger: Logger
-  /** The time of the run; every row touched by it gets the same timestamp. */
+  /**
+   * The time of the run. The timestamps written to the rows it inserts
+   * (`updated_at` and so on) and `deleted_at` of the rows it soft-deletes are
+   * all this time. The `updated_at` of the rows it updates is the current
+   * time of the database instead: the triggers of the tables set it.
+   */
   now: Temporal.Instant
   reportError: ErrorReporter
   supabaseClient: TypedSupabaseClient

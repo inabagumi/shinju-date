@@ -1,7 +1,6 @@
 'use server'
 
 import { CACHE_TAGS } from '@shinju-date/constants'
-import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
 import {
@@ -52,7 +51,6 @@ export const updateTermAction = adminFormAction(
         readings,
         synonyms,
         term,
-        updated_at: toDBString(Temporal.Now.instant()),
       })
       .eq('id', id)
       .select('term')
