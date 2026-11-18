@@ -12,6 +12,7 @@ import {
   parseFormData,
   type ZodErrorToFormStateOptions,
 } from '@/lib/form'
+import { INVALID_INPUT_ERROR_MESSAGE } from '@/lib/schemas'
 
 /**
  * 予期しない例外で Server Action が失敗したときに、画面に見せる文。
@@ -67,6 +68,39 @@ export class ActionError extends Error {
 
     this.field = field
   }
+}
+
+/**
+ * フォームを使わない Server Action の引数を `schema` で検証し、検証した値を返す。
+ *
+ * TypeScript の型は、ブラウザから届く値を保証しない。`adminAction` の `handler` の
+ * 先頭（認証の確認のあと、データを読み書きする前）で呼ぶ。失敗したら、
+ * `INVALID_INPUT_ERROR_MESSAGE` の `ActionError` を投げる（`adminAction` が
+ * `{ success: false, error }` にして返す）。
+ *
+ * @example
+ * ```ts
+ * export const deleteSomethingAction = adminAction(
+ *   'deleteSomethingAction',
+ *   async ({ supabaseClient }, id: string): Promise<ActionResult> => {
+ *     const somethingId = parseActionInput(uuidSchema, id)
+ *
+ *     // ...
+ *   },
+ * )
+ * ```
+ */
+export function parseActionInput<TSchema extends z.ZodType>(
+  schema: TSchema,
+  input: unknown,
+): z.output<TSchema> {
+  const result = schema.safeParse(input)
+
+  if (!result.success) {
+    throw new ActionError(INVALID_INPUT_ERROR_MESSAGE)
+  }
+
+  return result.data
 }
 
 /**

@@ -22,7 +22,9 @@ import {
   ActionError,
   adminAction,
   adminFormAction,
+  parseActionInput,
 } from './action'
+import { INVALID_INPUT_ERROR_MESSAGE, uuidSchema } from './schemas'
 
 const auth = {
   supabaseClient: { from: vi.fn() },
@@ -137,6 +139,35 @@ describe('adminAction', () => {
     })
 
     await expect(action()).rejects.toThrow('NEXT_REDIRECT')
+    expect(loggerErrorMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('parseActionInput', () => {
+  it('returns the parsed value', () => {
+    expect(parseActionInput(z.string().trim(), '  query  ')).toBe('query')
+  })
+
+  it('throws an ActionError with the fixed message when the value is invalid', () => {
+    expect(() => parseActionInput(uuidSchema, 'not-a-uuid')).toThrow(
+      new ActionError(INVALID_INPUT_ERROR_MESSAGE),
+    )
+  })
+
+  it('makes adminAction return the fixed message without going on', async () => {
+    const update = vi.fn()
+    const action = adminAction('testAction', async (_context, id: string) => {
+      parseActionInput(uuidSchema, id)
+      update()
+
+      return { success: true }
+    })
+
+    await expect(action('not-a-uuid')).resolves.toEqual({
+      error: INVALID_INPUT_ERROR_MESSAGE,
+      success: false,
+    })
+    expect(update).not.toHaveBeenCalled()
     expect(loggerErrorMock).not.toHaveBeenCalled()
   })
 })
