@@ -10,6 +10,9 @@ const ACTION_LABELS: Record<Enums<'audit_action'>, string> = {
   ANNOUNCEMENT_CREATE: 'お知らせを作成',
   ANNOUNCEMENT_DELETE: 'お知らせを削除',
   ANNOUNCEMENT_UPDATE: 'お知らせを更新',
+  // `CHANNEL_*` はタレントの操作（以前の名前。`talents` は、以前は `channels`）。
+  // 過去のログが使っていて、Postgres では enum から値を削除できないので、名前は
+  // そのまま使う
   CHANNEL_ACTIVATE: 'タレントをアクティブ状態に',
   CHANNEL_CREATE: 'タレントを作成',
   CHANNEL_DELETE: 'タレントを削除',
@@ -31,6 +34,8 @@ const ACTION_LABELS: Record<Enums<'audit_action'>, string> = {
   VIDEO_DELETE: '動画を削除',
   VIDEO_RESTORE: '動画を復元',
   VIDEO_SYNC: '動画を同期',
+  // 今は記録するコードがない。過去のログのために残す（Postgres では enum から値を
+  // 削除できない）
   VIDEO_UPDATE: '動画を更新',
   VIDEO_VISIBILITY_TOGGLE: '動画の表示設定を変更',
   YOUTUBE_CHANNEL_CREATE: 'YouTubeチャンネルを追加',

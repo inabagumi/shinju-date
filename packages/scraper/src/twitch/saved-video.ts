@@ -1,5 +1,5 @@
+import { isLiveTwitchVideoId } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
-import { isLiveTwitchVideoId } from '@shinju-date/twitch-api-client'
 import type { QueryData } from '@supabase/supabase-js'
 import { chunk } from '../internal/batch.js'
 import { IN_FILTER_CHUNK_SIZE } from '../internal/constants.js'

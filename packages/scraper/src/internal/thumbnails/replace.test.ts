@@ -58,14 +58,13 @@ describe('replaceThumbnail', () => {
     expect(update?.body).toEqual({
       thumbnail_id: 'thumb-new',
       title: 'Archive',
-      updated_at: '2024-05-01T12:00:00Z',
     })
     expect(deletedThumbnailIds()).toEqual([])
     expect(removedPaths).toEqual([])
     expect(reportError).not.toHaveBeenCalled()
   })
 
-  it('marks the previous thumbnail as replaced at the time of the run, before the video', async () => {
+  it('marks the previous thumbnail as replaced with `touch_thumbnail`, before the video', async () => {
     const { context } = setup()
     supabase.respond(() => [])
 
@@ -78,13 +77,11 @@ describe('replaceThumbnail', () => {
 
     expect(
       supabase.requests.map(({ method, table }) => `${method} ${table}`),
-    ).toEqual(['PATCH thumbnails', 'PATCH videos'])
-    expect(supabase.written('PATCH', 'thumbnails')).toEqual([
-      expect.objectContaining({
-        body: { updated_at: '2024-05-01T12:00:00Z' },
-        query: { id: 'eq.thumb-old' },
-      }),
+    ).toEqual(['POST rpc/touch_thumbnail', 'PATCH videos'])
+    expect(supabase.written('POST', 'rpc/touch_thumbnail')).toEqual([
+      expect.objectContaining({ body: { p_thumbnail_id: 'thumb-old' } }),
     ])
+    expect(supabase.written('PATCH', 'thumbnails')).toEqual([])
   })
 
   it('touches no thumbnail when the video had none', async () => {
@@ -98,14 +95,14 @@ describe('replaceThumbnail', () => {
       videoId: 'video-1',
     })
 
-    expect(supabase.written('PATCH', 'thumbnails')).toEqual([])
+    expect(supabase.written('POST', 'rpc/touch_thumbnail')).toEqual([])
     expect(supabase.written('PATCH', 'videos')).toHaveLength(1)
   })
 
   it('keeps the video and removes the new thumbnail when the previous one cannot be marked', async () => {
     const { context, removedPaths } = setup()
     supabase.respond(({ method, table }) =>
-      method === 'PATCH' && table === 'thumbnails'
+      method === 'POST' && table === 'rpc/touch_thumbnail'
         ? postgresError('57014', 'statement timeout')
         : [],
     )
@@ -137,7 +134,6 @@ describe('replaceThumbnail', () => {
     expect(thumbnail).toBeNull()
     expect(supabase.written('PATCH', 'videos')[0]?.body).toEqual({
       title: 'Archive',
-      updated_at: '2024-05-01T12:00:00Z',
     })
   })
 

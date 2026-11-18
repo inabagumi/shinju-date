@@ -371,12 +371,12 @@ describe('toggleVisibilityAction', () => {
       })),
     ).toEqual([
       {
-        body: { updated_at: '2024-11-24T17:00:00Z', visible: true },
+        body: { visible: true },
         id: 'in.(30000000-0000-0000-0000-000000000001)',
         visible: 'eq.false',
       },
       {
-        body: { updated_at: '2024-11-24T17:00:00Z', visible: false },
+        body: { visible: false },
         id: 'in.(30000000-0000-0000-0000-000000000002,30000000-0000-0000-0000-000000000003)',
         visible: 'eq.true',
       },

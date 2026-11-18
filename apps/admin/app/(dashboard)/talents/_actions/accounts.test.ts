@@ -44,7 +44,6 @@ vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
   Temporal.Instant.from('2024-11-24T17:00:00Z'),
 )
 
-const NOW = '2024-11-24T17:00:00Z'
 const talentId = '123e4567-e89b-12d3-a456-426614174000'
 const accountId = '223e4567-e89b-12d3-a456-426614174000'
 const talent = { name: 'Example Talent' }
@@ -233,20 +232,19 @@ const platformCases: PlatformCase[] = [
   },
 ]
 
-function talentUpdates() {
-  return supabase.calls('update', 'talents')
+function talentTouches() {
+  return supabase.calls('rpc', 'touch_talent')
 }
 
 /** Asserts that the `updated_at` of the talent was moved forward. */
 function expectTalentTouched(): void {
-  expect(talentUpdates()).toHaveLength(1)
-  expect(talentUpdates()[0]?.body).toEqual({ updated_at: NOW })
-  expect(talentUpdates()[0]?.query['id']).toBe(`eq.${talentId}`)
+  expect(talentTouches()).toHaveLength(1)
+  expect(talentTouches()[0]?.body).toEqual({ p_talent_id: talentId })
 }
 
 /** Asserts that nothing that follows a change was done. */
 function expectNothingCompleted(): void {
-  expect(talentUpdates()).toHaveLength(0)
+  expect(talentTouches()).toHaveLength(0)
   test.expectNoAuditLog()
   test.expectNotRevalidated()
 }
@@ -360,8 +358,8 @@ describe.each(platformCases)('$platform accounts', (platformCase) => {
     it('should add the account even when the talent cannot be touched', async () => {
       answerInsert()
       supabase.on(
-        'update',
-        'talents',
+        'rpc',
+        'touch_talent',
         postgresError('42501', 'permission denied'),
       )
 

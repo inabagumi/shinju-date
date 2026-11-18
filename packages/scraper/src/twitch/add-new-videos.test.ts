@@ -266,7 +266,6 @@ describe('addNewTwitchVideos', () => {
         status: 'ENDED',
         thumbnail_id: 'thumb-new',
         title: 'Archive',
-        updated_at: '2024-05-01T12:00:00Z',
       },
       query: { id: 'eq.video-1' },
     })

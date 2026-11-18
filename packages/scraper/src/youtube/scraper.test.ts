@@ -292,7 +292,6 @@ describe('YouTubeScraper', () => {
         body: {
           published_at: '2024-05-01T11:59:00Z',
           status: 'LIVE',
-          updated_at: '2024-05-01T12:00:00Z',
         },
         query: { id: 'eq.video-1' },
       })
@@ -397,7 +396,6 @@ describe('YouTubeScraper', () => {
             published_at: '2024-05-01T11:59:00Z',
             status: 'LIVE',
             title: 'Now on air',
-            updated_at: '2024-05-01T12:00:00Z',
           },
           query: { id: 'eq.video-1' },
         }),
@@ -486,7 +484,7 @@ describe('YouTubeScraper', () => {
       })
       expect(supabase.written('PATCH', 'videos')).toEqual([
         expect.objectContaining({
-          body: { thumbnail_id: 'thumb-1', updated_at: '2024-05-01T12:00:00Z' },
+          body: { thumbnail_id: 'thumb-1' },
           query: { id: 'eq.video-1' },
         }),
       ])

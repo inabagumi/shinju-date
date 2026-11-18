@@ -149,6 +149,7 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 - `requireAuthenticatedUser()` と `proxy.ts` は、管理者のロールを持たないユーザーを未認証として扱う
 - 管理画面向けの RLS のポリシーは、`TO "authenticated"` に加えて、**必ず** `(SELECT "public"."is_admin"())` を条件にする（`USING (true)` は使わない）。`supabase/tests/database/admin_role.test.sql` が検査する
 - `SECURITY DEFINER` の関数は RLS を迂回するので、関数の中で `public.is_admin()` を確かめる
+- ポリシーの名前は「`<テーブル>: admins can <操作>`」「`<テーブル>: anyone can <操作>`」、インデックスの名前は `idx_<テーブル>_<列>` にする（`supabase/tests/database/naming.test.sql` が検査する）
 
 ## MSW による認証の模擬
 

@@ -75,7 +75,6 @@ describe('refreshRecentTwitchVideos', () => {
         body: {
           duration: 'PT2H30M',
           title: 'Renamed',
-          updated_at: '2024-05-01T12:00:00Z',
         },
         query: { id: 'eq.video-1' },
       }),
@@ -132,7 +131,7 @@ describe('refreshRecentTwitchVideos', () => {
     expect(getClips).toHaveBeenCalledWith(['clip-1'])
     expect(supabase.written('PATCH', 'videos')).toEqual([
       expect.objectContaining({
-        body: { title: 'Clip', updated_at: '2024-05-01T12:00:00Z' },
+        body: { title: 'Clip' },
         query: { id: 'eq.video-2' },
       }),
     ])
@@ -157,7 +156,6 @@ describe('refreshRecentTwitchVideos', () => {
     )
     expect(supabase.written('PATCH', 'videos')[0]?.body).toEqual({
       thumbnail_id: 'thumb-new',
-      updated_at: '2024-05-01T12:00:00Z',
     })
   })
 
@@ -173,10 +171,7 @@ describe('refreshRecentTwitchVideos', () => {
 
     expect(changed).toBe(1)
     expect(supabase.written('PATCH', 'videos').map(({ body }) => body)).toEqual(
-      [
-        { title: 'Renamed', updated_at: '2024-05-01T12:00:00Z' },
-        { thumbnail_id: 'thumb-new', updated_at: '2024-05-01T12:00:00Z' },
-      ],
+      [{ title: 'Renamed' }, { thumbnail_id: 'thumb-new' }],
     )
   })
 

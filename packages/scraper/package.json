@@ -2,6 +2,7 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@googleapis/youtube": "catalog:",
+    "@shinju-date/constants": "workspace:*",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/retryable-fetch": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",

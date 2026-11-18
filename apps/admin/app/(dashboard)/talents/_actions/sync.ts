@@ -54,7 +54,7 @@ async function syncPlatform(
     }
 
     // 一覧の並びに反映するため、タレントの更新日時を進める
-    const touchError = await touchTalent(supabaseClient, talent.id, now)
+    const touchError = await touchTalent(supabaseClient, talent.id)
 
     if (touchError) {
       throw touchError

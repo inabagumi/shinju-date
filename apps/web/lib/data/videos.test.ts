@@ -163,7 +163,7 @@ describe('fetchVideos', () => {
   })
 
   test('throws when the videos cannot be searched', async () => {
-    failSupabase('rpc/search_videos_v3', 'failed')
+    failSupabase('rpc/search_videos_v4', 'failed')
 
     await expect(fetchVideos({})).rejects.toThrow('failed')
   })
@@ -217,7 +217,7 @@ describe('countVideos', () => {
   })
 
   test('throws when the videos cannot be counted', async () => {
-    failSupabase('rpc/count_videos_v1', 'failed')
+    failSupabase('rpc/count_videos_v2', 'failed')
 
     await expect(countVideos({})).rejects.toThrow('failed')
   })

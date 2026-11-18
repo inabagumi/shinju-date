@@ -1,9 +1,10 @@
 -- Tests for the video search by kind (#6804) and its pages, which leave out the
--- videos the site does not show (#7200) or cannot link to (#7050). Run with
--- `supabase test db`.
+-- videos the site does not show (#7200) or cannot link to (#7050), and the
+-- functions they replace, which take `channel_ids` instead of `talent_ids`
+-- (#7121). Run with `supabase test db`.
 BEGIN;
 
-SELECT plan(17);
+SELECT plan(19);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures: a talent with regular videos and shorts, and a deleted talent.
@@ -77,10 +78,10 @@ SET LOCAL ROLE "anon";
 SELECT set_config('request.jwt.claims', '{"role": "anon"}', true);
 
 -- ---------------------------------------------------------------------------
--- search_videos_v3
+-- search_videos_v4
 -- ---------------------------------------------------------------------------
 SELECT results_eq(
-    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 10)$$,
+    $$SELECT "id" FROM "public"."search_videos_v4"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 10)$$,
     $$VALUES
         ('e1000000-0000-0000-0000-000000000004'::uuid),
         ('e1000000-0000-0000-0000-000000000003'::uuid),
@@ -90,13 +91,13 @@ SELECT results_eq(
 );
 
 SELECT results_eq(
-    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 10, ARRAY['short']::"public"."video_kind"[])$$,
+    $$SELECT "id" FROM "public"."search_videos_v4"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 10, ARRAY['short']::"public"."video_kind"[])$$,
     $$VALUES ('e1000000-0000-0000-0000-000000000002'::uuid)$$,
     'only shorts are returned for the short kind'
 );
 
 SELECT results_eq(
-    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-11-13T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 2, ARRAY['standard']::"public"."video_kind"[])$$,
+    $$SELECT "id" FROM "public"."search_videos_v4"('', '2026-11-13T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 2, ARRAY['standard']::"public"."video_kind"[])$$,
     $$VALUES
         ('e1000000-0000-0000-0000-000000000003'::uuid),
         ('e1000000-0000-0000-0000-000000000001'::uuid)$$,
@@ -104,7 +105,7 @@ SELECT results_eq(
 );
 
 SELECT results_eq(
-    $$SELECT "id" FROM "public"."search_videos_v3"('歌', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 10, ARRAY['standard']::"public"."video_kind"[])$$,
+    $$SELECT "id" FROM "public"."search_videos_v4"('歌', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 10, ARRAY['standard']::"public"."video_kind"[])$$,
     $$VALUES
         ('e1000000-0000-0000-0000-000000000004'::uuid),
         ('e1000000-0000-0000-0000-000000000001'::uuid)$$,
@@ -112,13 +113,13 @@ SELECT results_eq(
 );
 
 SELECT results_eq(
-    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-11-12T12:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 10, ARRAY['standard']::"public"."video_kind"[])$$,
+    $$SELECT "id" FROM "public"."search_videos_v4"('', '2026-11-12T12:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 10, ARRAY['standard']::"public"."video_kind"[])$$,
     $$VALUES ('e1000000-0000-0000-0000-000000000001'::uuid)$$,
     'only videos published before until are returned'
 );
 
 SELECT results_eq(
-    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002']::uuid[], 10)$$,
+    $$SELECT "id" FROM "public"."search_videos_v4"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002']::uuid[], 10)$$,
     $$VALUES
         ('e1000000-0000-0000-0000-000000000004'::uuid),
         ('e1000000-0000-0000-0000-000000000003'::uuid),
@@ -128,7 +129,7 @@ SELECT results_eq(
 );
 
 SELECT results_eq(
-    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002']::uuid[], 2)$$,
+    $$SELECT "id" FROM "public"."search_videos_v4"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002']::uuid[], 2)$$,
     $$VALUES
         ('e1000000-0000-0000-0000-000000000004'::uuid),
         ('e1000000-0000-0000-0000-000000000003'::uuid)$$,
@@ -136,13 +137,13 @@ SELECT results_eq(
 );
 
 SELECT results_eq(
-    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[], 1)$$,
+    $$SELECT "id" FROM "public"."search_videos_v4"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[], 1)$$,
     $$VALUES ('e1000000-0000-0000-0000-000000000012'::uuid)$$,
     'the videos the site cannot link to are left out before the page size is applied'
 );
 
 SELECT results_eq(
-    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[], 10)$$,
+    $$SELECT "id" FROM "public"."search_videos_v4"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[], 10)$$,
     $$VALUES
         ('e1000000-0000-0000-0000-000000000012'::uuid),
         ('e1000000-0000-0000-0000-000000000011'::uuid)$$,
@@ -151,54 +152,70 @@ SELECT results_eq(
 
 -- The pages and the count agree
 SELECT is(
-    (SELECT count(*) FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002']::uuid[], 1000)),
-    "public"."count_videos_v1"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002']::uuid[]),
-    'the search returns as many videos as count_videos_v1 counts'
+    (SELECT count(*) FROM "public"."search_videos_v4"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002']::uuid[], 1000)),
+    "public"."count_videos_v2"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002']::uuid[]),
+    'the search returns as many videos as count_videos_v2 counts'
 );
 
 -- ---------------------------------------------------------------------------
--- count_videos_v1
+-- count_videos_v2
 -- ---------------------------------------------------------------------------
 SELECT is(
-    "public"."count_videos_v1"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[]),
+    "public"."count_videos_v2"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[]),
     4::bigint,
     'without kinds, videos of every kind are counted'
 );
 
 SELECT is(
-    "public"."count_videos_v1"('歌', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[]),
+    "public"."count_videos_v2"('歌', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[]),
     3::bigint,
     'only the videos matching the query are counted'
 );
 
 SELECT is(
-    "public"."count_videos_v1"('歌', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], ARRAY['short']::"public"."video_kind"[]),
+    "public"."count_videos_v2"('歌', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], ARRAY['short']::"public"."video_kind"[]),
     1::bigint,
     'only the videos of the given kinds are counted'
 );
 
 SELECT is(
-    "public"."count_videos_v1"('歌', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000002']::uuid[]),
+    "public"."count_videos_v2"('歌', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000002']::uuid[]),
     0::bigint,
     'the videos of a deleted talent are not counted'
 );
 
 SELECT is(
-    "public"."count_videos_v1"('動画なし', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[]),
+    "public"."count_videos_v2"('動画なし', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[]),
     0::bigint,
     'the videos with neither a YouTube nor a Twitch video are not counted'
 );
 
 SELECT is(
-    "public"."count_videos_v1"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[]),
+    "public"."count_videos_v2"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[]),
     2::bigint,
     'the videos the site cannot link to are not counted'
 );
 
 SELECT is(
-    (SELECT count(*) FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[], 1000)),
-    "public"."count_videos_v1"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[]),
-    'the search returns as many videos on Twitch as count_videos_v1 counts'
+    (SELECT count(*) FROM "public"."search_videos_v4"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[], 1000)),
+    "public"."count_videos_v2"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000003']::uuid[]),
+    'the search returns as many videos on Twitch as count_videos_v2 counts'
+);
+
+-- ---------------------------------------------------------------------------
+-- search_videos_v3 and count_videos_v1, kept until the deployed site stops
+-- calling them, return the same as the functions that replace them
+-- ---------------------------------------------------------------------------
+SELECT results_eq(
+    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000003']::uuid[], 1000)$$,
+    $$SELECT "id" FROM "public"."search_videos_v4"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000003']::uuid[], 1000)$$,
+    'search_videos_v3 returns the same videos as search_videos_v4'
+);
+
+SELECT is(
+    "public"."count_videos_v1"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000003']::uuid[]),
+    "public"."count_videos_v2"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000003']::uuid[]),
+    'count_videos_v1 counts as many videos as count_videos_v2'
 );
 
 RESET ROLE;
