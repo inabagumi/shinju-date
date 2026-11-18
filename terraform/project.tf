@@ -18,9 +18,10 @@ locals {
       value     = var.upstash_redis_rest_token
     }
     upstash_redis_rest_token_dev = {
-      key    = "UPSTASH_REDIS_REST_TOKEN"
-      target = ["preview", "development"]
-      value  = var.upstash_redis_rest_token_dev
+      key       = "UPSTASH_REDIS_REST_TOKEN"
+      sensitive = true
+      target    = ["preview"]
+      value     = var.upstash_redis_rest_token_dev
     }
     upstash_redis_rest_url = {
       key       = "UPSTASH_REDIS_REST_URL"
@@ -29,9 +30,10 @@ locals {
       value     = var.upstash_redis_rest_url
     }
     upstash_redis_rest_url_dev = {
-      key    = "UPSTASH_REDIS_REST_URL"
-      target = ["preview", "development"]
-      value  = var.upstash_redis_rest_url_dev
+      key       = "UPSTASH_REDIS_REST_URL"
+      sensitive = true
+      target    = ["preview"]
+      value     = var.upstash_redis_rest_url_dev
     }
   }
 
@@ -68,11 +70,6 @@ locals {
           sensitive = true
           target    = ["production", "preview"]
           value     = var.google_api_key
-        }
-        google_api_key_development = {
-          key    = "GOOGLE_API_KEY"
-          target = ["development"]
-          value  = var.google_api_key
         }
         cron_secret = {
           key       = "CRON_SECRET"
