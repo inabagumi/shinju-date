@@ -137,7 +137,7 @@ jobs:
       - name: Check cache directives
         run: pnpm run check:cache-directives
 
-      # Tests the check scripts (the oxlint rules in config/oxlint/ are tested in the test job)
+      # Tests the check scripts (the oxlint rules in packages/oxlint-plugin/ are tested in the test job)
       - name: Test scripts
         run: pnpm run test:scripts
 

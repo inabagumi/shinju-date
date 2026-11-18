@@ -42,11 +42,11 @@ pnpm run fix
 oxlint の設定は、ルートの `oxlint.config.ts` に置いています。`apps/web`、`apps/admin`、`apps/batch`、`packages/ui` の `oxlint.config.ts` は、React と Next.js のプリセットを足し、最後にルートの設定を引き継ぎます（ルートの設定が、プリセットより優先されます）。
 
 - このプロジェクトの決まり（`Date` の禁止、`temporal-polyfill` と `tailwind-merge` の import の禁止など）は、ルートの `oxlint.config.ts` の `rules` と `overrides` に書いています
-- 組み込みのルールで確かめられない決まりは、`config/oxlint/`（`@shinju-date/oxlint-plugin`）に TypeScript で書いた oxlint の JS プラグインとして置き、ルートの `oxlint.config.ts` の `jsPlugins` で読み込んでいます
+- 組み込みのルールで確かめられない決まりは、`packages/oxlint-plugin/`（`@shinju-date/oxlint-plugin`）に TypeScript で書いた oxlint の JS プラグインとして置き、ルートの `oxlint.config.ts` の `jsPlugins` で読み込んでいます
 - ルールを無効にする行には、`// oxlint-disable-next-line <ルール> -- <理由>` のように、理由を書きます
 - 今のコードが違反しているプリセットのルールは、ルートの `oxlint.config.ts` の `temporarilyDisabled` で、一時的に無効にしています（[#7400](https://github.com/inabagumi/shinju-date/issues/7400) で、コードを直して1つずつ戻します）
 
-`config/oxlint/` のルールと設定を変えたら、テストを実行してください。`scripts/` のスクリプトを変えたら、そのテストも実行してください。
+`packages/oxlint-plugin/` のルールと設定を変えたら、テストを実行してください。`scripts/` のスクリプトを変えたら、そのテストも実行してください。
 
 ```bash
 pnpm run test --filter=@shinju-date/oxlint-plugin

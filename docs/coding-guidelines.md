@@ -417,7 +417,7 @@ await redis.set("summary:stats:2025-11-11", data);
 - タイムゾーンに依存しない絶対時刻は、`Temporal.Now.instant()` で取る
 - API で送受信するときは、ISO 8601 の文字列にする。`Temporal.Instant` の `toString()` は、常に UTC（末尾が `Z`。例: `2025-11-01T12:00:00Z`）で出力する。タイムゾーン付きの文字列（例: `2025-11-01T21:00:00+09:00`）が要る場合は、`Temporal.ZonedDateTime` の `toString()` を使う
 - ユーザーに時刻を表示するときなど、タイムゾーンが要る場合は、`'Asia/Tokyo'` などを直接書かず、`@shinju-date/constants` の `TIME_ZONE` を使う
-  - `pnpm run check` が、`'Asia/Tokyo'` を含む文字列をエラーにする（`config/oxlint/src/no-hardcoded-time-zone.ts`）。`TIME_ZONE` の定義と、テストのファイルは対象外
+  - `pnpm run check` が、`'Asia/Tokyo'` を含む文字列をエラーにする（`packages/oxlint-plugin/src/no-hardcoded-time-zone.ts`）。`TIME_ZONE` の定義と、テストのファイルは対象外
 
 ```typescript
 import { TIME_ZONE } from "@shinju-date/constants";

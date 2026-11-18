@@ -1,6 +1,5 @@
 packages:
   - apps/*
-  - config/oxlint
   - packages/*
 
 allowBuilds:

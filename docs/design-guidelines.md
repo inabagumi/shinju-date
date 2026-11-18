@@ -438,7 +438,7 @@ import { twMerge } from "@shinju-date/ui";
 
 ## 新しい画面を作るとき
 
-`dark:` と、Tailwind の既定の文字サイズ（`text-sm` など）・角丸（`rounded-md` など）・影（`shadow-lg` など）は、`pnpm run check` がエラーにします（`config/oxlint/src/no-default-tailwind-scale.ts`。`class` と `className` の値、`twMerge` と `cva` の引数を調べます）。
+`dark:` と、Tailwind の既定の文字サイズ（`text-sm` など）・角丸（`rounded-md` など）・影（`shadow-lg` など）は、`pnpm run check` がエラーにします（`packages/oxlint-plugin/src/no-default-tailwind-scale.ts`。`class` と `className` の値、`twMerge` と `cva` の引数を調べます）。
 
 - [ ] 色はセマンティックカラーで指定し、`dark:` で手書きしていない
 - [ ] 紫は要所（リンク・選択中・主ボタン・フォーカス・フッター）だけ、ピンクは配信中だけに使っている

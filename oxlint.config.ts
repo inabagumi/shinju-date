@@ -210,8 +210,8 @@ export default defineConfig({
       // The definition of TIME_ZONE, and the rule that reports the time zone
       // and its fixtures
       files: [
-        "config/oxlint/src/fixtures.ts",
-        "config/oxlint/src/no-hardcoded-time-zone.ts",
+        "packages/oxlint-plugin/src/fixtures.ts",
+        "packages/oxlint-plugin/src/no-hardcoded-time-zone.ts",
         "packages/constants/src/index.ts",
       ],
       rules: {
