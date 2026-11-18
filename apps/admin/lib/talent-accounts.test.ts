@@ -33,39 +33,26 @@ const youtubeChannel = {
   snippet: { customUrl: '@example', title: 'Example Channel' },
 }
 
-function talentUpdates() {
-  return supabase.calls('update', 'talents')
+function talentTouches() {
+  return supabase.calls('rpc', 'touch_talent')
 }
 
 describe('touchTalent', () => {
-  it('moves the updated_at of the talent to the current time', async () => {
+  it('moves the updated_at of the talent with touch_talent', async () => {
     const error = await touchTalent(supabase.client, talentId)
 
     expect(error).toBeNull()
-    expect(talentUpdates()).toHaveLength(1)
-    expect(talentUpdates()[0]?.body).toEqual({
-      updated_at: '2024-11-24T17:00:00Z',
-    })
-    expect(talentUpdates()[0]?.query['id']).toBe(`eq.${talentId}`)
+    expect(talentTouches()).toHaveLength(1)
+    expect(talentTouches()[0]?.body).toEqual({ p_talent_id: talentId })
+    // `updated_at` is left to the trigger, so the talent is not updated directly
+    expect(supabase.calls('update', 'talents')).toHaveLength(0)
     expect(test.logger.error).not.toHaveBeenCalled()
-  })
-
-  it('uses the given time', async () => {
-    await touchTalent(
-      supabase.client,
-      talentId,
-      Temporal.Instant.from('2025-01-02T03:04:05Z'),
-    )
-
-    expect(talentUpdates()[0]?.body).toEqual({
-      updated_at: '2025-01-02T03:04:05Z',
-    })
   })
 
   it('logs and returns the error instead of throwing when the update fails', async () => {
     supabase.on(
-      'update',
-      'talents',
+      'rpc',
+      'touch_talent',
       postgresError('42501', 'permission denied'),
     )
 

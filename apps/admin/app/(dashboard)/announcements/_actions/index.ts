@@ -128,7 +128,6 @@ export const updateAnnouncementAction = adminFormAction(
         level: level || 'info',
         message,
         start_at: toDBString(start),
-        updated_at: toDBString(Temporal.Now.instant()),
       })
       .eq('id', id)
       .select('message')
