@@ -64,7 +64,7 @@ agent-browser install
 ```
 
 - クラウドセッションでは、`.claude/hooks/session-start.sh` が `agent-browser` を pnpm の bin（`PATH` に入っています）に入れ、`AGENT_BROWSER_EXECUTABLE_PATH` でコンテナにある Chromium を指定します。追加の設定は要りません
-- フックで入れるバージョンは、`# renovate:` のコメントの次の行に `AGENT_BROWSER_VERSION="0.43.0"` のような `_VERSION` で終わる大文字の変数（先頭に `export` があってもよい）で固定しています。コメントの書き方は `.devcontainer/Dockerfile` と同じです。共有プリセットが使っている公式のプリセット（`customManagers:dockerfileVersions` と `customManagers:githubActionsVersions`）はシェルスクリプトを読まないため、`.github/renovate.json` の `customManagers` でこのフックを読ませ、Renovate が更新の Pull Request を作ります
+- フックで入れるバージョンは、`# renovate:` のコメントの次の行に `AGENT_BROWSER_VERSION="0.43.0"` のような `_VERSION` で終わる大文字の変数（先頭に `export` があってもよい）で固定しています。コメントの書き方は `.devcontainer/Dockerfile` と同じです。共有プリセットが使っている公式のプリセット（`customManagers:dockerfileVersions` と `customManagers:githubActionsVersions`）はシェルスクリプトを読まないため、`.github/renovate.json5` の `customManagers` でこのフックを読ませ、Renovate が更新の Pull Request を作ります
 - 使い方は `agent-browser skills get core` で読めます
 
 ## next-dev-loop で apps/web を確かめる
