@@ -1,5 +1,9 @@
+locals {
+  domain = "shinju.date"
+}
+
 resource "vercel_project_domain" "date" {
-  domain     = "shinju.date"
+  domain     = local.domain
   project_id = vercel_project.this["web"].id
   team_id    = vercel_project.this["web"].team_id
 }
@@ -21,7 +25,7 @@ resource "vercel_project_domain" "ink" {
 }
 
 resource "vercel_project_domain" "admin" {
-  domain     = "admin.shinju.date"
+  domain     = "admin.${local.domain}"
   project_id = vercel_project.this["admin"].id
   team_id    = vercel_project.this["admin"].team_id
 }

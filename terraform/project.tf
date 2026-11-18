@@ -52,7 +52,7 @@ locals {
         base_url = {
           key    = "NEXT_PUBLIC_BASE_URL"
           target = ["production"]
-          value  = "https://shinju.date"
+          value  = "https://${local.domain}"
         }
       }
     }
