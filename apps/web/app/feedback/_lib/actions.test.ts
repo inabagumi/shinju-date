@@ -1,20 +1,19 @@
+// @vitest-environment node
+import { featureRequests } from '@shinju-date/msw-handlers'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-
-const { insert } = vi.hoisted(() => ({
-  insert: vi.fn(),
-}))
+import {
+  disconnectSupabase,
+  failSupabase,
+  setupSupabase,
+} from '@/test/supabase'
 
 vi.mock('botid/server', () => ({
   checkBotId: vi.fn().mockResolvedValue({ isBot: false }),
 }))
 
-vi.mock('@/lib/supabase', () => ({
-  supabaseClient: {
-    from: () => ({ insert }),
-  },
-}))
-
 import { submitFeedback } from './actions'
+
+setupSupabase()
 
 function createFormData(values: Record<string, string>): FormData {
   const formData = new FormData()
@@ -26,10 +25,14 @@ function createFormData(values: Record<string, string>): FormData {
   return formData
 }
 
+/** The messages of the feature requests in the mock database */
+function storedMessages(): string[] {
+  return featureRequests.findMany().map(({ message }) => message)
+}
+
 describe('submitFeedback', () => {
   beforeEach(() => {
-    insert.mockReset()
-    insert.mockResolvedValue({ error: null })
+    vi.restoreAllMocks()
   })
 
   test.each([
@@ -45,7 +48,7 @@ describe('submitFeedback', () => {
         success: false,
         values: { message },
       })
-      expect(insert).not.toHaveBeenCalled()
+      expect(storedMessages()).toEqual([])
     },
   )
 
@@ -53,10 +56,10 @@ describe('submitFeedback', () => {
     const result = await submitFeedback(null, new FormData())
 
     expect(result.fieldErrors?.message).toBe('機能要望を入力してください')
-    expect(insert).not.toHaveBeenCalled()
+    expect(storedMessages()).toEqual([])
   })
 
-  test('stores the trimmed message', async () => {
+  test('stores the trimmed message as a new request', async () => {
     const result = await submitFeedback(
       null,
       createFormData({ message: '  検索機能がほしい  ' }),
@@ -64,12 +67,18 @@ describe('submitFeedback', () => {
 
     expect(result.success).toBe(true)
     expect(result.values).toBeUndefined()
-    expect(insert).toHaveBeenCalledWith({ message: '検索機能がほしい' })
+    expect(featureRequests.findMany()).toEqual([
+      expect.objectContaining({
+        is_read: false,
+        message: '検索機能がほしい',
+        status: 'pending',
+      }),
+    ])
   })
 
   test('returns the submitted message when the insert fails', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
-    insert.mockResolvedValue({ error: { message: 'insert failed' } })
+    failSupabase('feature_requests', 'insert failed')
 
     const result = await submitFeedback(
       null,
@@ -79,11 +88,12 @@ describe('submitFeedback', () => {
     expect(result.success).toBe(false)
     expect(result.error).toBeDefined()
     expect(result.values).toEqual({ message: '  検索機能がほしい  ' })
+    expect(storedMessages()).toEqual([])
   })
 
-  test('returns the submitted message when an unexpected error occurs', async () => {
+  test('returns the submitted message when the request cannot be sent', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
-    insert.mockRejectedValue(new Error('network error'))
+    disconnectSupabase('feature_requests')
 
     const result = await submitFeedback(
       null,

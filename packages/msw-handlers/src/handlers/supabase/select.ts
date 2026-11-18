@@ -210,7 +210,7 @@ async function resolveRelation(
       : (await getRows(target)).filter(
           (relatedRow) =>
             getColumn(relatedRow, relation.referencedColumn) === value &&
-            matchesFilters(relatedRow, filters),
+            matchesFilters(relatedRow, filters, target.uuidColumns),
         )
 
   return { many: relation.many, rows: related, table: target }

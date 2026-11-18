@@ -9,12 +9,10 @@ import {
   BACKFILL_JOB_TTL_SECONDS,
   BACKFILL_RUN_LOCK_SECONDS,
   type BackfillClaim,
-  type BackfillJob,
   BackfillQueue,
   type BackfillRunRequest,
   BackfillRuns,
   getBackfillJobId,
-  getBackfillRunJobStatus,
 } from './index.js'
 
 const now = Temporal.Instant.from('2026-11-14T00:00:00Z')
@@ -62,12 +60,29 @@ async function claimJob(
   }
 }
 
-/** The claim with changes made to its job. */
-function withChanges(
-  { job, token }: BackfillClaim,
-  changes: Partial<BackfillJob>,
-): BackfillClaim {
-  return { job: { ...job, ...changes }, token }
+/**
+ * Records a page of a claimed job, failing the test when the lock was lost.
+ *
+ * @returns The claim to keep writing with.
+ */
+async function recordPage(
+  queue: BackfillQueue,
+  claim: BackfillClaim,
+  added: number,
+  nextCursor: string | null,
+  at: Temporal.Instant,
+): Promise<BackfillClaim> {
+  const result = await queue.recordPage(
+    claim,
+    { added, done: nextCursor === null, nextCursor },
+    at,
+  )
+
+  if (result.status !== 'saved') {
+    throw new Error('Expected the page to be saved')
+  }
+
+  return { job: result.job, token: claim.token }
 }
 
 /** Starts a check, failing the test when it does not start. */
@@ -169,6 +184,7 @@ describeOnEachRedis((createClient) => {
             requestedBy: 'user-1',
             runId: run.id,
           }),
+          status: 'pending',
         },
       ])
     })
@@ -327,18 +343,21 @@ describeOnEachRedis((createClient) => {
 
       // Jobs are claimed in the order they were queued.
       const youtube = await claimJob(queue, youtubeJobId, later(1))
-      await queue.complete(
-        withChanges(youtube, { added: 4, cursor: null }),
-        later(2),
-      )
+      await recordPage(queue, youtube, 4, null, later(2))
       const twitch = await claimJob(queue, twitchJobId, later(2))
-      await queue.fail(
-        withChanges(twitch, { added: 1 }),
-        'quota exceeded',
+      await queue.recordFailure(
+        await recordPage(queue, twitch, 1, 'page-2', later(3)),
+        new Error('quota exceeded'),
+        { permanent: true },
         later(3),
       )
-      const other = await claimJob(queue, otherJobId, later(3))
-      await queue.update(withChanges(other, { added: 2 }), later(4))
+      const other = await recordPage(
+        queue,
+        await claimJob(queue, otherJobId, later(3)),
+        2,
+        'page-2',
+        later(4),
+      )
 
       await expect(runs.getLatest(later(5))).resolves.toMatchObject({
         active: true,
@@ -357,10 +376,7 @@ describeOnEachRedis((createClient) => {
         ],
       })
 
-      await queue.complete(
-        withChanges(other, { added: 2, cursor: null }),
-        later(6),
-      )
+      await recordPage(queue, other, 0, null, later(6))
 
       await expect(runs.getLatest(later(7))).resolves.toMatchObject({
         active: false,
@@ -373,10 +389,7 @@ describeOnEachRedis((createClient) => {
 
       await startRun(runs)
       const job = await claimJob(queue, youtubeJobId, later(1))
-      await queue.update(
-        withChanges(job, { added: 3, cursor: 'page-2' }),
-        later(2),
-      )
+      await recordPage(queue, job, 3, 'page-2', later(2))
       // Every lease ran out and the other jobs were lost.
       await redis.del(`${REDIS_KEYS.VIDEO_BACKFILL_LOCK_PREFIX}${job.job.id}`)
       await redis.del(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)
@@ -393,15 +406,13 @@ describeOnEachRedis((createClient) => {
         {
           active: true,
           job: expect.objectContaining({ cursor: 'page-2', runId: run.id }),
+          status: 'pending',
         },
       ])
 
       // Only what was added since the new check counts for it.
       const resumed = await claimJob(queue, youtubeJobId, later(92))
-      await queue.complete(
-        withChanges(resumed, { added: 5, cursor: null }),
-        later(93),
-      )
+      await recordPage(queue, resumed, 2, null, later(93))
 
       await expect(runs.getLatest(later(94))).resolves.toMatchObject({
         jobs: [{ added: 2, id: youtubeJobId, status: 'done' }, {}, {}],
@@ -413,9 +424,10 @@ describeOnEachRedis((createClient) => {
 
       await startRun(runs)
       const job = await claimJob(queue, youtubeJobId, later(1))
-      await queue.fail(
-        withChanges(job, { cursor: 'page-2' }),
+      await queue.recordFailure(
+        await recordPage(queue, job, 0, 'page-2', later(2)),
         'error',
+        { permanent: true },
         later(2),
       )
 
@@ -440,10 +452,7 @@ describeOnEachRedis((createClient) => {
 
       await startRun(runs)
       const job = await claimJob(queue, youtubeJobId, later(1))
-      await queue.complete(
-        withChanges(job, { added: 4, cursor: null }),
-        later(2),
-      )
+      await recordPage(queue, job, 4, null, later(2))
 
       // Starts over from the newest videos, outside the check.
       await queue.enqueue(
@@ -478,22 +487,5 @@ describeOnEachRedis((createClient) => {
         ],
       })
     })
-  })
-})
-
-describe('getBackfillRunJobStatus', () => {
-  it('shows an unfinished job that is not active as interrupted', () => {
-    expect(getBackfillRunJobStatus('pending', false)).toBe('interrupted')
-    expect(getBackfillRunJobStatus('running', false)).toBe('interrupted')
-  })
-
-  it('keeps the status of an active job', () => {
-    expect(getBackfillRunJobStatus('pending', true)).toBe('pending')
-    expect(getBackfillRunJobStatus('running', true)).toBe('running')
-  })
-
-  it('keeps the status of a job that finished', () => {
-    expect(getBackfillRunJobStatus('done', false)).toBe('done')
-    expect(getBackfillRunJobStatus('failed', false)).toBe('failed')
   })
 })

@@ -1,3 +1,4 @@
+import { BACKFILL_LEASE_MARGIN_SECONDS } from '@shinju-date/video-backfill'
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -33,7 +34,7 @@ vi.mock('next/server', async (importOriginal) => ({
   after: vi.fn((callback: () => unknown) => callback()),
 }))
 
-const { POST } = await import('./route')
+const { POST, maxDuration } = await import('./route')
 
 function createRequest(): NextRequest {
   return new NextRequest('http://localhost:5000/videos/backfill', {
@@ -67,6 +68,14 @@ describe('POST /videos/backfill', () => {
     expect(getScraper('youtube')).toBe(getScraper('youtube'))
     getScraper('twitch')
     expect(createScraper.mock.calls).toEqual([['youtube'], ['twitch']])
+  })
+
+  it('locks each job for as long as the run may last', async () => {
+    await POST(createRequest())
+
+    const [{ queue }] = workOffBackfillQueue.mock.calls[0] ?? []
+
+    expect(queue.leaseSeconds).toBe(maxDuration + BACKFILL_LEASE_MARGIN_SECONDS)
   })
 
   it('records the jobs that finish in the history', async () => {

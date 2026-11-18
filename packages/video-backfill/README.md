@@ -5,12 +5,13 @@
 ## 仕組み
 
 - **1 ジョブ = 1 アカウント**（YouTube チャンネル / Twitch ユーザー）。ジョブ ID は `<provider>:<アカウント行の ID>`
-- バッチはジョブを `claim` し、1 ページずつ読んでは進捗（カーソル・追加件数）を記録します。時間内に読み終わらなければ `requeue` でキューの末尾に戻し、次の実行で続きから読みます
+- バッチはジョブを `claim` し、1 ページずつ読んでは `recordPage` で進捗（カーソル・追加件数）を記録します。最後のページなら、`recordPage` がジョブを終えます。時間内に読み終わらなければ `requeue` でキューの末尾に戻し、次の実行で続きから読みます
+- ページを読めなかったときは `recordFailure` で記録します。試した回数を増やし、最大の回数（`BackfillQueue` を作るときの `maxAttempts`、既定は `BACKFILL_MAX_ATTEMPTS`）に達したか、`permanent`（アカウントが消えた、など）なら `failed` にし、そうでなければキューに戻して次の実行で再試行します。ジョブの項目を書き換えるのはこのパッケージだけで、バッチは直接書き換えません
 - 待機中・処理中のジョブは二重に依頼できません。失敗・中断したジョブは続きから、完了したジョブは最新の動画から読み直します
 - 依頼の保存は、読み取った時点からジョブが変わっていないときだけ行う compare-and-set です（`ENQUEUE_SCRIPT`、Redis 上で原子的に実行）。同時に来た依頼や途中で止まった依頼が、互いの進捗やワーカーの進捗を上書きすることはありません。ジョブの保存とキューへの追加は常に一体で行います
-- `claim` したジョブはロック（`BACKFILL_LEASE_SECONDS`）され、同じジョブを 2 つのワーカーが同時に読むことはありません。ワーカーが落ちてもロックの期限が切れれば再依頼できます
+- `claim` したジョブはロックされ、同じジョブを 2 つのワーカーが同時に読むことはありません。ロックの長さ（`leaseSeconds`）は、`BackfillQueue` を作るときの「1 回の実行の最長の時間」（`maxRunSeconds`、バッチはルートの `maxDuration` を渡す）に、余裕（`BACKFILL_LEASE_MARGIN_SECONDS`）を足したものです。ワーカーが落ちてもロックの期限が切れれば再依頼できます
 - `claim` は、キューからの取り出し・ロック・`running` への更新を 1 つのスクリプト（`CLAIM_SCRIPT`）で行います。途中で止まっても、キューから消えたのに `pending` のまま、というジョブは残りません
-- ロックの値は `claim` のたびに作るトークンです。`claim` はジョブとトークン（`BackfillClaim`）を返し、`update`・`complete`・`fail`・`requeue` は、ロックがそのトークンを持っているときだけ書き込みます。ロックの期限が切れたあと（別のワーカーが取り出したかもしれない）は何も書き込まず、`{ status: 'lost' }` を返すので、バッチはそのジョブの処理をやめて次へ進みます
+- ロックの値は `claim` のたびに作るトークンです。`claim` はジョブとトークン（`BackfillClaim`）を返し、`recordPage`・`recordFailure`・`requeue` は、ロックがそのトークンを持っているときだけ書き込みます。ロックの期限が切れたあと（別のワーカーが取り出したかもしれない）は何も書き込まず、`{ status: 'lost' }` を返すので、バッチはそのジョブの処理をやめて次へ進みます
 
 | 状態      | 意味                             |
 | --------- | -------------------------------- |
@@ -18,6 +19,10 @@
 | `running` | ワーカーが処理中                 |
 | `done`    | 履歴を最後まで読んだ             |
 | `failed`  | 中止した（再依頼で続きから）     |
+
+状態の遷移は `BACKFILL_JOB_TRANSITIONS` の表 1 つで決めます。操作（`claim`、`enqueue`、`recordPage`、`complete`、`fail`、`requeue`）ごとに、どの状態から、どの状態へ進めるかを持ち、`BackfillQueue` は表にない遷移（終わったジョブを進める、など）を `BackfillTransitionError` にします。
+
+`pending` や `running` のまま、待機も処理もされていないジョブは「中断」（`interrupted`）です。この判定は `getJobActivity(job, { locked })` の 1 か所で行い、`getJobs`、`BackfillRuns`、管理画面の表示が使います。
 
 ## 全アカウントのチェック（`BackfillRuns`）
 
@@ -45,7 +50,7 @@ Redis のジョブは最後の変更から 7 日で消えるため、終えた�
 
 ## Redis キー
 
-キーはすべて `@shinju-date/constants` の `REDIS_KEYS` で管理し、7 日間の TTL を設定します（処理中のジョブのロックは `BACKFILL_LEASE_SECONDS`、チェックの依頼中のロックは `BACKFILL_RUN_LOCK_SECONDS`）。
+キーはすべて `@shinju-date/constants` の `REDIS_KEYS` で管理し、7 日間の TTL を設定します（処理中のジョブのロックは `BackfillQueue` の `leaseSeconds`、チェックの依頼中のロックは `BACKFILL_RUN_LOCK_SECONDS`）。
 
 | キー                                                               | 内容                     |
 | ------------------------------------------------------------------ | ------------------------ |
@@ -61,19 +66,34 @@ Redis のジョブは最後の変更から 7 日で消えるため、終えた�
 ```ts
 import { BackfillQueue, BackfillRuns } from '@shinju-date/video-backfill'
 
+// 管理画面: 依頼する
 const queue = new BackfillQueue(redisClient)
 
-// 管理画面: 依頼する
 await queue.enqueue({ accountId, provider: 'youtube', requestedBy, talentId })
 
-// バッチ: 処理する
-const claim = await queue.claim()
+// バッチ: 処理する（ロックは、実行の最長の時間と余裕のぶん）
+const worker = new BackfillQueue(redisClient, { maxRunSeconds: maxDuration })
+const claim = await worker.claim()
 
 if (claim) {
-  const result = await queue.update({
-    ...claim,
-    job: { ...claim.job, pages: 1 },
-  })
+  let result
+
+  try {
+    const page = await scraper.addPastVideos({
+      accountId,
+      cursor: claim.job.cursor,
+    })
+
+    result = await worker.recordPage(claim, {
+      added: page.added,
+      done: page.cursor === null,
+      nextCursor: page.cursor,
+    })
+  } catch (error) {
+    result = await worker.recordFailure(claim, error, {
+      permanent: error instanceof AccountNotFoundError,
+    })
+  }
 
   if (result.status === 'lost') {
     // ロックが切れた: このジョブの処理をやめる

@@ -142,8 +142,8 @@ describe('VideoList', () => {
 
     it('shows a success toast and clears the selection', async () => {
       vi.mocked(toggleVisibilityAction).mockResolvedValue({
+        data: { updatedCount: 1 },
         success: true,
-        updatedCount: 1,
       })
 
       renderWithToast()
@@ -387,8 +387,8 @@ describe('VideoList', () => {
 
     it('toggles the visibility of the video', async () => {
       vi.mocked(toggleVisibilityAction).mockResolvedValue({
+        data: { updatedCount: 1 },
         success: true,
-        updatedCount: 1,
       })
 
       render(<TestVideoList videos={[createVideo()]} />, { wrapper: Wrapper })

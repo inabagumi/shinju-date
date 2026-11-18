@@ -73,8 +73,8 @@ describe('VideoActionsProvider', () => {
 
   it('toggles the visibility and tells the new state', async () => {
     vi.mocked(toggleVisibilityAction).mockResolvedValue({
+      data: { updatedCount: 1 },
       success: true,
-      updatedCount: 1,
     })
     renderActions({ visible: true })
 

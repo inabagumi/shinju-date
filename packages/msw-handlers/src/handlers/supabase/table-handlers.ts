@@ -48,7 +48,7 @@ async function readRows<Name extends TableName>(
   const query = parseSupabaseQuery(new URL(request.url))
   const matched = applyOrder(
     await selectRows(
-      applySupabaseConditions(await getRows(table), query),
+      applySupabaseConditions(await getRows(table), query, table.uuidColumns),
       query.select,
       table.name,
       query.filters,
@@ -385,7 +385,11 @@ function createWriteHandlers<Name extends TableName>(
         (await request.json()) as Partial<Tables<Name>>,
       )
       const currentRows = collection.findMany()
-      const matches = applySupabaseConditions(currentRows, query)
+      const matches = applySupabaseConditions(
+        currentRows,
+        query,
+        table.uuidColumns,
+      )
       const changedRows = matches.map(
         (row): Tables<Name> => ({ ...row, ...changes }),
       )
@@ -423,7 +427,11 @@ function createWriteHandlers<Name extends TableName>(
     // Deletes only the rows that match all the filters
     rest.delete(url, async ({ request }) => {
       const query = parseWriteQuery(request, table.name)
-      const matches = applySupabaseConditions(collection.findMany(), query)
+      const matches = applySupabaseConditions(
+        collection.findMany(),
+        query,
+        table.uuidColumns,
+      )
 
       if (acceptsSingleObject(request) && matches.length !== 1) {
         return singleObjectError(matches.length)

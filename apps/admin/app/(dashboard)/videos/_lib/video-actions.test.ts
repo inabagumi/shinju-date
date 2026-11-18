@@ -48,7 +48,7 @@ describe('runVideoAction', () => {
   ] as const)(
     'fills the error of %s when the action returns none',
     async (action, fn, text) => {
-      vi.mocked(fn).mockResolvedValue({ success: false })
+      vi.mocked(fn).mockResolvedValue({ error: '', success: false })
 
       const result = await runVideoAction(action, [targetA])
 
@@ -73,9 +73,9 @@ describe('getVideoActionSuccessText', () => {
     expect(
       getVideoActionSuccessText({
         action: 'toggle',
+        data: { updatedCount: 2 },
         success: true,
         targets: [targetA, targetB],
-        updatedCount: 2,
       }),
     ).toBe('2 件の動画の表示状態を更新しました。')
   })
@@ -84,9 +84,9 @@ describe('getVideoActionSuccessText', () => {
     expect(
       getVideoActionSuccessText({
         action: 'toggle',
+        data: { updatedCount: 1 },
         success: true,
         targets: [{ ...targetA, visible: false }],
-        updatedCount: 1,
       }),
     ).toBe('動画を表示に変更しました。')
   })

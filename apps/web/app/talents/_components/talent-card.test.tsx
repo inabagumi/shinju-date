@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, test, vi } from 'vitest'
-import type { TalentListItem, TalentStreamStatus } from '@/lib/data/talents'
+import type { TalentStreamStatus } from '@/lib/data/talents'
+import { createTalentListItem } from '@/test/factories'
 
 vi.mock('@/lib/data/talents', () => ({}))
 
@@ -9,19 +10,15 @@ import TalentGrid from './talent-grid'
 
 const TALENT_ID = '00000000-0000-4000-8000-000000000001'
 
-function createTalent(overrides: Partial<TalentListItem> = {}): TalentListItem {
-  return {
-    id: TALENT_ID,
-    name: '朝霧ミオ',
-    twitch_users: [],
-    youtube_channels: [{ profile_image: { blur_data_url: '', id: 'icon-1' } }],
-    ...overrides,
-  }
-}
+const TALENT = createTalentListItem({
+  id: TALENT_ID,
+  name: '朝霧ミオ',
+  youtube_channels: [{ profile_image: { blur_data_url: '', id: 'icon-1' } }],
+})
 
 describe('TalentCard', () => {
   test('should link to the page of the talent by its name', () => {
-    render(<TalentCard talent={createTalent()} />)
+    render(<TalentCard talent={TALENT} />)
 
     expect(screen.getByRole('link', { name: '朝霧ミオ' })).toHaveAttribute(
       'href',
@@ -30,7 +27,7 @@ describe('TalentCard', () => {
   })
 
   test('should show the icon as a decoration', () => {
-    const { container } = render(<TalentCard talent={createTalent()} />)
+    const { container } = render(<TalentCard talent={TALENT} />)
 
     expect(screen.getByTestId('talent-icon')).toHaveClass(
       'size-20',
@@ -44,7 +41,11 @@ describe('TalentCard', () => {
   })
 
   test('should show the default icon for a talent without icons', () => {
-    render(<TalentCard talent={createTalent({ youtube_channels: [] })} />)
+    render(
+      <TalentCard
+        talent={createTalentListItem({ ...TALENT, youtube_channels: [] })}
+      />,
+    )
 
     expect(screen.getByTestId('talent-default-icon')).toBeInTheDocument()
   })
@@ -52,7 +53,10 @@ describe('TalentCard', () => {
   test('should wrap a long name', () => {
     render(
       <TalentCard
-        talent={createTalent({ name: 'AVeryLongTalentNameWithoutSpaces' })}
+        talent={createTalentListItem({
+          ...TALENT,
+          name: 'AVeryLongTalentNameWithoutSpaces',
+        })}
       />,
     )
 
@@ -71,7 +75,7 @@ describe('TalentCard with the stream status', () => {
   }
 
   test('should show neither the badge nor the next stream by default', () => {
-    render(<TalentCard talent={createTalent()} />)
+    render(<TalentCard talent={TALENT} />)
 
     const link = screen.getByRole('link', { name: '朝霧ミオ' })
 
@@ -82,7 +86,7 @@ describe('TalentCard with the stream status', () => {
   })
 
   test('should show the ring and the badge while live', () => {
-    render(<TalentCard streamStatus={live} talent={createTalent()} />)
+    render(<TalentCard streamStatus={live} talent={TALENT} />)
 
     const link = screen.getByRole('link', { name: '朝霧ミオ' })
 
@@ -106,7 +110,7 @@ describe('TalentCard with the stream status', () => {
     render(
       <TalentCard
         streamStatus={live}
-        talent={createTalent({ youtube_channels: [] })}
+        talent={createTalentListItem({ ...TALENT, youtube_channels: [] })}
       />,
     )
 
@@ -114,7 +118,7 @@ describe('TalentCard with the stream status', () => {
   })
 
   test('should show the start of the next stream in Japan time', () => {
-    render(<TalentCard streamStatus={upcoming} talent={createTalent()} />)
+    render(<TalentCard streamStatus={upcoming} talent={TALENT} />)
 
     const link = screen.getByRole('link', { name: '朝霧ミオ' })
     const nextStream = screen.getByText(/^次回/)
@@ -134,7 +138,7 @@ describe('TalentCard with the stream status', () => {
     render(
       <TalentCard
         streamStatus={{ isLive: true, nextStreamAt: '2026-11-16T11:00:00Z' }}
-        talent={createTalent()}
+        talent={TALENT}
       />,
     )
 
@@ -148,8 +152,9 @@ describe('TalentGrid', () => {
     render(
       <TalentGrid
         talents={[
-          createTalent(),
-          createTalent({
+          TALENT,
+          createTalentListItem({
+            ...TALENT,
             id: '00000000-0000-4000-8000-000000000002',
             name: '夜宵ルナ',
           }),
@@ -175,8 +180,8 @@ describe('TalentGrid', () => {
           [secondId]: { isLive: true, nextStreamAt: null },
         }}
         talents={[
-          createTalent(),
-          createTalent({ id: secondId, name: '夜宵ルナ' }),
+          TALENT,
+          createTalentListItem({ ...TALENT, id: secondId, name: '夜宵ルナ' }),
         ]}
       />,
     )

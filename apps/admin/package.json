@@ -38,6 +38,7 @@
   "description": "Content management admin dashboard for SHINJU DATE",
   "devDependencies": {
     "@playwright/test": "catalog:",
+    "@shinju-date/config": "workspace:*",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
     "@tailwindcss/turbopack": "catalog:",
@@ -50,7 +51,6 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "jsdom": "catalog:",
     "msw": "catalog:",

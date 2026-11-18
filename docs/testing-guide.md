@@ -2,7 +2,7 @@
 
 このドキュメントでは、SHINJU DATE プロジェクトにおけるテストの実装方法とベストプラクティスを説明します。
 
-**最終更新日**: 2026-11-17
+**最終更新日**: 2026-11-18
 
 ## 📋 目次
 
@@ -48,18 +48,13 @@ describe('MyComponent', () => {
 - **apps/web**: ユーザー向け Web アプリコンポーネント
 - **packages/ui**: 共有 UI コンポーネント
 
-これらのプロジェクトでは、`vitest.config.ts` で以下の設定がされています：
+これらのプロジェクトの `vitest.config.ts` は、`@shinju-date/config` の `defineVitestConfig.react()` を呼びます。共通の設定（`@vitejs/plugin-react` による JSX トランスフォーム、jsdom、`globals: true`）は `packages/config/vitest.ts` にあり、各プロジェクトには、そのプロジェクトだけの設定を書きます（[`@shinju-date/config` の Vitest](../packages/config/README.md#vitest)）。
 
 ```typescript
-import path from 'node:path'
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import { defineVitestConfig } from '@shinju-date/config/vitest'
 
-export default defineConfig({
-  plugins: [react()], // JSX トランスフォームを有効化
+export default defineVitestConfig.react({
   test: {
-    environment: 'jsdom', // ブラウザ環境をシミュレート
-    globals: true, // describe, test, expect をグローバルに使用可能
     setupFiles: ['./vitest.setup.ts'], // テスト前の初期化
   },
 })
@@ -78,19 +73,14 @@ export default defineConfig({
 
 ### Vitest での設定
 
-Vitest でこの機能を使用するには、`@vitejs/plugin-react` を設定に追加する必要があります：
+Vitest でこの機能を使用するには、`@vitejs/plugin-react` が設定に必要です。`defineVitestConfig.react()` が追加します：
 
 ```typescript
 // vitest.config.ts
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import { defineVitestConfig } from '@shinju-date/config/vitest'
 
-export default defineConfig({
-  plugins: [react()], // この行を追加
-  test: {
-    environment: 'jsdom',
-    // ... その他の設定
-  },
+export default defineVitestConfig.react({
+  // ... そのプロジェクトだけの設定
 })
 ```
 
@@ -314,6 +304,43 @@ describe('restoreAction', () => {
 
 `toDBString` はモックせず、本物を使います。秒に丸めるので、期待する日時は `2024-11-24T17:00:00Z` のように書きます。
 
+#### 公開サイトの Supabase を使うテスト
+
+`apps/web` の取得関数やルートハンドラーのテストでは、`@/lib/supabase` を `vi.mock()` で置き換えず、`apps/web/test/` の補助を使います。クエリの組み立てを模倣すると、条件の順番を入れ替えただけで壊れ、条件の誤りは見逃すためです。
+
+- `supabase.ts`: `@shinju-date/msw-handlers` の PostgREST のモックを、テストのファイルごとに MSW で起動する
+  - `setupSupabase()`: サーバーを起動し、各テストの前にデータベースを空にする。モックしていないホストへのリクエストは、テストを失敗させる
+  - `seedSupabase({ talents, videos, … })`: テーブルの行を入れ替える。`videoSeed()` は、動画と YouTube / Twitch の動画の行に分ける
+  - `failSupabase(table)`: そのテーブル（または `rpc/<名前>`）へのリクエストを、PostgreSQL のエラーにする
+  - `supabaseRequests(table)`: 送られたリクエスト。キャッシュで2回目を送らないことや、公開のキー（`role: 'anon'`）で送ったことを確かめるときだけに使う
+- `factories.ts`: テーブルの行（`createTalent`、`createVideo`、`createVideoOnYouTube` など）と、取得関数が返す値（`createVideoItem`、`createTalentDetail` など。部品のテスト用）
+
+データを入れ、取得関数を呼び、返った行を確かめます。「どのメソッドが、どの引数で呼ばれたか」は確かめません。`'use cache'` はテストでは働かないので、`next/cache` は今までどおりモックします。
+
+```ts
+import { createTalent } from '@/test/factories'
+import { seedSupabase, setupSupabase } from '@/test/supabase'
+import { fetchActiveTalents } from './talents'
+
+vi.mock('next/cache', () => ({ cacheLife: vi.fn(), cacheTag: vi.fn() }))
+
+setupSupabase()
+
+test('returns the active talents', async () => {
+  const talent = createTalent({ name: 'あおい' })
+
+  await seedSupabase({
+    talents: [talent, createTalent({ status: 'retired' })],
+  })
+
+  await expect(fetchActiveTalents()).resolves.toEqual([
+    { id: talent.id, name: 'あおい' },
+  ])
+})
+```
+
+モックは PostgREST の条件を実際と同じように扱いますが、RLS は再現しません。RLS で見えない行は、入れないことで表します。
+
 ### 5. 非同期処理のテスト
 
 ```tsx
@@ -353,19 +380,18 @@ screen.getByClassName('email-input')
 
 **解決方法**:
 
-1. `@vitejs/plugin-react` がインストールされているか確認
+1. `@vitejs/plugin-react` がインストールされているか確認（`@shinju-date/config` の依存です）
 
    ```bash
-   pnpm list @vitejs/plugin-react
+   pnpm --filter @shinju-date/config list @vitejs/plugin-react
    ```
 
-2. `vitest.config.ts` で plugin が設定されているか確認
+2. `vitest.config.ts` が `defineVitestConfig()` ではなく `defineVitestConfig.react()` を呼んでいるか確認
 
    ```typescript
-   import react from '@vitejs/plugin-react'
+   import { defineVitestConfig } from '@shinju-date/config/vitest'
 
-   export default defineConfig({
-     plugins: [react()], // この行が必要
+   export default defineVitestConfig.react({
      // ...
    })
    ```

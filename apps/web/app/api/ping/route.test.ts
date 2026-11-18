@@ -1,14 +1,16 @@
 // @vitest-environment node
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-
-type Row = Record<string, unknown>
-
-interface Filter {
-  column: string
-  operator: 'eq' | 'ilike' | 'in'
-  value: unknown
-}
+import {
+  createTalent,
+  createTwitchUser,
+  createVideoOnTwitch,
+  createVideoOnYouTube,
+  createYouTubeChannel,
+  type VideoOnTwitch,
+  type VideoOnYouTube,
+} from '@/test/factories'
+import { seedSupabase, setupSupabase, videoSeed } from '@/test/supabase'
 
 const mocks = vi.hoisted(() => ({
   pipeline: {
@@ -16,139 +18,7 @@ const mocks = vi.hoisted(() => ({
     expire: vi.fn(),
     zincrby: vi.fn(),
   },
-  tables: {} as Record<string, Row[]>,
   track: vi.fn(),
-}))
-
-/** Reads a column, following `.` into embedded resources. */
-function getColumn(row: Row, column: string): unknown {
-  return column
-    .split('.')
-    .reduce<unknown>(
-      (value, key) =>
-        value != null && typeof value === 'object'
-          ? (value as Row)[key]
-          : undefined,
-      row,
-    )
-}
-
-/** Whether a value matches an `ilike` pattern, as PostgreSQL reads it. */
-function matchesPattern(value: unknown, pattern: string): boolean {
-  const source = pattern
-    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    .replace(/%/g, '.*')
-    .replace(/_/g, '.')
-
-  return typeof value === 'string' && new RegExp(`^${source}$`, 'i').test(value)
-}
-
-function matches(row: Row, { column, operator, value }: Filter): boolean {
-  const actual = getColumn(row, column)
-
-  switch (operator) {
-    case 'eq':
-      return actual != null && actual === value
-    case 'ilike':
-      return matchesPattern(actual, value as string)
-    case 'in':
-      return (value as unknown[]).includes(actual)
-  }
-}
-
-/**
- * A query builder of supabase-js on the rows of `mocks.tables`. The rows are
- * returned as they are, whatever is selected.
- */
-function createQuery(table: string) {
-  const filters: Filter[] = []
-  let order: { ascending: boolean; column: string } | undefined
-  let limit: number | undefined
-
-  function rows(): Row[] {
-    const result = (mocks.tables[table] ?? []).filter((row) =>
-      filters.every((filter) => matches(row, filter)),
-    )
-
-    if (order) {
-      const { ascending, column } = order
-
-      result.sort((a, b) => {
-        const compared = String(getColumn(a, column)).localeCompare(
-          String(getColumn(b, column)),
-        )
-
-        return ascending ? compared : -compared
-      })
-    }
-
-    return limit === undefined ? result : result.slice(0, limit)
-  }
-
-  const query = {
-    eq(column: string, value: unknown) {
-      filters.push({ column, operator: 'eq', value })
-      return query
-    },
-    ilike(column: string, value: string) {
-      filters.push({ column, operator: 'ilike', value })
-      return query
-    },
-    in(column: string, value: unknown[]) {
-      filters.push({ column, operator: 'in', value })
-      return query
-    },
-    limit(count: number) {
-      limit = count
-      return query
-    },
-    async maybeSingle() {
-      const result = rows()
-
-      return result.length > 1
-        ? {
-            data: null,
-            error: { code: 'PGRST116', message: 'multiple rows returned' },
-          }
-        : { data: result[0] ?? null, error: null }
-    },
-    order(column: string, { ascending = true } = {}) {
-      order = { ascending, column }
-      return query
-    },
-    select() {
-      return query
-    },
-    async single() {
-      const result = rows()
-
-      return result.length === 1
-        ? { data: result[0], error: null }
-        : {
-            data: null,
-            error: {
-              code: 'PGRST116',
-              message: `${result.length} rows returned`,
-            },
-          }
-    },
-    // biome-ignore lint/suspicious/noThenProperty: supabase-js query builders are awaited directly
-    then<T>(
-      onFulfilled: (value: { data: Row[]; error: null }) => T,
-      onRejected?: (reason: unknown) => T,
-    ) {
-      return Promise.resolve({ data: rows(), error: null }).then(
-        onFulfilled,
-        onRejected,
-      )
-    },
-  }
-
-  return query
-}
-
-vi.mock('@/lib/supabase', () => ({
-  supabaseClient: { from: createQuery },
 }))
 
 vi.mock('@/lib/redis', () => ({
@@ -165,95 +35,62 @@ vi.mock('@sentry/nextjs', () => ({
 
 import { POST } from './route'
 
-const talentA = { id: 'talent-a', name: 'Talent A' }
-const talentB = { id: 'talent-b', name: 'Talent B' }
+setupSupabase()
 
-function youtubeVideo(id: string, youtubeVideoId: string): Row {
-  return {
-    id,
-    platform: 'youtube',
-    published_at: '2026-11-16T12:00:00Z',
-    status: 'ENDED',
-    talent: talentA,
-    title: `Video ${id}`,
-    twitch_video: null,
-    youtube_video: { youtube_video_id: youtubeVideoId },
-  }
-}
+const talentA = createTalent({ name: 'Talent A' })
+const talentB = createTalent({ name: 'Talent B' })
+const channel = createYouTubeChannel({ talent_id: talentA.id })
+const fooBar = createTwitchUser({
+  talent_id: talentA.id,
+  twitch_login_name: 'foo_bar',
+})
+const fooxbar = createTwitchUser({
+  talent_id: talentB.id,
+  twitch_login_name: 'fooxbar',
+})
+const noLogin = createTwitchUser({
+  talent_id: talentB.id,
+  twitch_login_name: null,
+})
 
-interface TwitchVideoOptions {
-  login: string
-  publishedAt?: string
-  status?: string
-  talent?: Row
-  twitchVideoId: string
-  twitchUserId: string
-  type?: string
-}
+const PUBLISHED_AT = '2026-11-16T12:00:00Z'
 
-function twitchVideo(
-  id: string,
-  {
-    login,
-    publishedAt = '2026-11-16T12:00:00Z',
-    status = 'ENDED',
-    talent = talentA,
-    twitchUserId,
-    twitchVideoId,
-    type = 'archive',
-  }: TwitchVideoOptions,
-): Row {
-  return {
-    id,
-    platform: 'twitch',
-    published_at: publishedAt,
-    status,
-    talent,
-    title: `Video ${id}`,
-    twitch_user_id: twitchUserId,
-    twitch_video: {
-      twitch_user: { twitch_login_name: login },
-      twitch_video_id: twitchVideoId,
-      type,
-    },
-    youtube_video: null,
-  }
-}
+const youtubeVideo = createVideoOnYouTube(
+  channel,
+  { published_at: PUBLISHED_AT },
+  { youtube_video_id: 'ytvid1' },
+)
+const vod = createVideoOnTwitch(
+  fooBar,
+  { published_at: PUBLISHED_AT },
+  { twitch_video_id: '2000000001' },
+)
+const clip = createVideoOnTwitch(
+  fooBar,
+  { published_at: PUBLISHED_AT },
+  { twitch_video_id: 'FunnyClipSlug', type: 'clip' },
+)
+const otherVideo = createVideoOnTwitch(
+  fooxbar,
+  { published_at: PUBLISHED_AT },
+  { twitch_video_id: '2000000002' },
+)
 
-/** Saves the videos with the `twitch_videos` rows that link them to users. */
-function saveVideos(videos: Row[]): void {
-  mocks.tables['videos'] = videos
-  mocks.tables['twitch_videos'] = videos
-    .filter((video) => video['platform'] === 'twitch')
-    .map((video) => ({
-      twitch_user_id: video['twitch_user_id'],
-      video_id: video['id'],
-    }))
+/** Saves the talents, their accounts and the given videos. */
+function seed(
+  videos: readonly (VideoOnTwitch | VideoOnYouTube)[],
+  twitchUsers = [fooBar, fooxbar, noLogin],
+): Promise<void> {
+  return seedSupabase({
+    talents: [talentA, talentB],
+    twitchUsers,
+    youtubeChannels: [channel],
+    ...videoSeed(videos),
+  })
 }
 
 /** The videos saved before each test. */
-function savedVideos(): Row[] {
-  return [
-    youtubeVideo('video-yt', 'ytvid1'),
-    twitchVideo('video-vod', {
-      login: 'foo_bar',
-      twitchUserId: 'user-foo-bar',
-      twitchVideoId: '2000000001',
-    }),
-    twitchVideo('video-clip', {
-      login: 'foo_bar',
-      twitchUserId: 'user-foo-bar',
-      twitchVideoId: 'FunnyClipSlug',
-      type: 'clip',
-    }),
-    twitchVideo('video-other', {
-      login: 'fooxbar',
-      talent: talentB,
-      twitchUserId: 'user-fooxbar',
-      twitchVideoId: '2000000002',
-    }),
-  ]
-}
+const SAVED_VIDEOS = [youtubeVideo, vod, clip, otherVideo]
 
 function ping(url: string): Promise<Response> {
   return POST(
@@ -279,17 +116,10 @@ function countedVideoId(): unknown {
 }
 
 describe('POST /api/ping', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
 
-    mocks.tables = {
-      twitch_users: [
-        { id: 'user-foo-bar', twitch_login_name: 'foo_bar' },
-        { id: 'user-fooxbar', twitch_login_name: 'fooxbar' },
-        { id: 'user-no-login', twitch_login_name: null },
-      ],
-    }
-    saveVideos(savedVideos())
+    await seed(SAVED_VIDEOS)
   })
 
   describe('YouTube', () => {
@@ -302,7 +132,7 @@ describe('POST /api/ping', () => {
       const response = await ping(url)
 
       expect(response.status).toBe(204)
-      expect(countedVideoId()).toBe('video-yt')
+      expect(countedVideoId()).toBe(youtubeVideo.video.id)
     })
 
     it.each([
@@ -326,50 +156,45 @@ describe('POST /api/ping', () => {
 
   describe('Twitch', () => {
     it.each([
-      ['https://www.twitch.tv/videos/2000000001', 'video-vod'],
-      ['https://m.twitch.tv/videos/2000000001', 'video-vod'],
-      ['https://clips.twitch.tv/FunnyClipSlug', 'video-clip'],
-      ['https://www.twitch.tv/foo_bar/clip/FunnyClipSlug', 'video-clip'],
-    ])('counts a click on %s', async (url, videoId) => {
+      ['https://www.twitch.tv/videos/2000000001', vod],
+      ['https://m.twitch.tv/videos/2000000001', vod],
+      ['https://clips.twitch.tv/FunnyClipSlug', clip],
+      ['https://www.twitch.tv/foo_bar/clip/FunnyClipSlug', clip],
+    ])('counts a click on %s', async (url, expected) => {
       const response = await ping(url)
 
       expect(response.status).toBe(204)
-      expect(countedVideoId()).toBe(videoId)
+      expect(countedVideoId()).toBe(expected.video.id)
     })
 
     it('counts a click on a channel for the video live there', async () => {
-      saveVideos([
-        ...savedVideos(),
-        twitchVideo('video-live', {
-          login: 'foo_bar',
-          publishedAt: '2026-11-16T10:00:00Z',
-          status: 'LIVE',
-          twitchUserId: 'user-foo-bar',
-          twitchVideoId: 'live:123',
-        }),
-      ])
+      const live = createVideoOnTwitch(
+        fooBar,
+        { published_at: '2026-11-16T10:00:00Z', status: 'LIVE' },
+        { twitch_video_id: 'live:123' },
+      )
+
+      await seed([...SAVED_VIDEOS, live])
 
       const response = await ping('https://www.twitch.tv/foo_bar')
 
       expect(response.status).toBe(204)
-      expect(countedVideoId()).toBe('video-live')
+      expect(countedVideoId()).toBe(live.video.id)
     })
 
     it('counts a click on a channel with no live video for its latest video', async () => {
-      saveVideos([
-        ...savedVideos(),
-        twitchVideo('video-latest', {
-          login: 'foo_bar',
-          publishedAt: '2026-11-16T15:00:00Z',
-          twitchUserId: 'user-foo-bar',
-          twitchVideoId: '2000000003',
-        }),
-      ])
+      const latest = createVideoOnTwitch(
+        fooBar,
+        { published_at: '2026-11-16T15:00:00Z' },
+        { twitch_video_id: '2000000003' },
+      )
+
+      await seed([...SAVED_VIDEOS, latest])
 
       const response = await ping('https://www.twitch.tv/foo_bar')
 
       expect(response.status).toBe(204)
-      expect(countedVideoId()).toBe('video-latest')
+      expect(countedVideoId()).toBe(latest.video.id)
     })
 
     it('finds the user whose login is exactly the one in the URL, read in lowercase', async () => {
@@ -377,13 +202,11 @@ describe('POST /api/ping', () => {
       const response = await ping('https://www.twitch.tv/Foo_Bar')
 
       expect(response.status).toBe(204)
-      expect(countedVideoId()).not.toBe('video-other')
+      expect(countedVideoId()).not.toBe(otherVideo.video.id)
     })
 
     it('does not count a click on a login with `_` for another user', async () => {
-      mocks.tables['twitch_users'] = [
-        { id: 'user-fooxbar', twitch_login_name: 'fooxbar' },
-      ]
+      await seed(SAVED_VIDEOS, [fooxbar])
 
       const response = await ping('https://www.twitch.tv/foo_bar')
 
@@ -399,9 +222,9 @@ describe('POST /api/ping', () => {
     })
 
     it('answers 422 for a channel with no videos', async () => {
-      mocks.tables['twitch_users'] = [
-        { id: 'user-quiet', twitch_login_name: 'quiet' },
-      ]
+      await seed(SAVED_VIDEOS, [
+        createTwitchUser({ talent_id: talentA.id, twitch_login_name: 'quiet' }),
+      ])
 
       const response = await ping('https://www.twitch.tv/quiet')
 
@@ -476,12 +299,12 @@ describe('POST /api/ping', () => {
     expect(mocks.pipeline.zincrby).toHaveBeenCalledWith(
       videoKey,
       1,
-      'video-other',
+      otherVideo.video.id,
     )
     expect(mocks.pipeline.zincrby).toHaveBeenCalledWith(
       talentKey,
       1,
-      'talent-b',
+      talentB.id,
     )
     expect(mocks.pipeline.expire).toHaveBeenCalledTimes(2)
     expect(mocks.pipeline.expire).toHaveBeenCalledWith(
@@ -497,9 +320,9 @@ describe('POST /api/ping', () => {
       'Link click',
       expect.objectContaining({
         provider: 'Twitch',
-        talent_id: 'talent-b',
+        talent_id: talentB.id,
         url: 'https://www.twitch.tv/videos/2000000002',
-        video_id: 'video-other',
+        video_id: otherVideo.video.id,
       }),
       { headers: expect.any(Headers) },
     )
