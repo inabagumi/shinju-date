@@ -7,6 +7,7 @@ import {
   it,
   vi,
 } from 'vitest'
+import { seedCollections } from './collections.js'
 import { MOCK_DELETED_TALENT_ID } from './seeds/accounts.js'
 import { server } from './server.js'
 
@@ -1496,12 +1497,25 @@ describe('Supabase Handlers', () => {
 
       // The Twitch videos are among the latest up to now, so the first page
       // shows them. Upcoming streams of the schedule come later than now.
-      const firstPage = await searchVideos({
-        perpage: 6,
-        until: Temporal.Now.instant().toString(),
-      })
+      // Which videos come first depends on now (the streams of the schedule
+      // that just ended, or the YouTube videos on air), so the data is seeded
+      // around a fixed now and seeded again around the current time after.
+      const now = Temporal.Instant.from('2026-11-15T12:34:56.789Z')
 
-      expect(firstPage.some((video) => video.platform === 'twitch')).toBe(true)
+      try {
+        await seedCollections({ now })
+
+        const firstPage = await searchVideos({
+          perpage: 6,
+          until: now.toString(),
+        })
+
+        expect(firstPage.some((video) => video.platform === 'twitch')).toBe(
+          true,
+        )
+      } finally {
+        await seedCollections()
+      }
     })
 
     it('should search only videos published before until', async () => {
