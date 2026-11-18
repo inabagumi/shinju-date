@@ -85,23 +85,6 @@ export function scopeRedis(client: Redis, prefix: string): ScopedRedis {
     lrange: (key: string, start: number, stop: number) =>
       client.lrange(scoped(key), start, stop),
     mget: (...keys: string[]) => client.mget(...keys.map(scoped)),
-    multi: () => {
-      const transaction = client.multi()
-      const wrapped = {
-        del: (...keys: string[]) => {
-          transaction.del(...keys.map(scoped))
-          return wrapped
-        },
-        exec: () => transaction.exec(),
-        set: (key: string, value: unknown, options?: SetOptions) => {
-          transaction.set(scoped(key), value, toSetCommandOptions(options))
-          return wrapped
-        },
-      }
-
-      return wrapped
-    },
-    rpop: (key: string) => client.rpop(scoped(key)),
     set: (key: string, value: unknown, options?: SetOptions) =>
       client.set(scoped(key), value, toSetCommandOptions(options)),
     ttl: (key: string) => client.ttl(scoped(key)),
@@ -112,8 +95,18 @@ export function scopeRedis(client: Redis, prefix: string): ScopedRedis {
       nextScriptHook = hook
     },
     async cleanup() {
-      if (used.size > 0) {
-        await client.del(...[...used].map((key) => `${prefix}${key}`))
+      const keys = new Set([...used].map((key) => `${prefix}${key}`))
+
+      // Scripts also write keys that they make from a prefix, such as the
+      // lock of a job they claim, which are not among the keys used.
+      if (client instanceof Redis) {
+        for (const key of await client.keys(`${prefix}*`)) {
+          keys.add(key)
+        }
+      }
+
+      if (keys.size > 0) {
+        await client.del(...keys)
       }
     },
     keys() {

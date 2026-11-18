@@ -1,4 +1,10 @@
-import { ENQUEUE_SCRIPT, REQUEUE_SCRIPT } from '../queue.js'
+import {
+  CLAIM_SCRIPT,
+  ENQUEUE_SCRIPT,
+  FINISH_SCRIPT,
+  REQUEUE_SCRIPT,
+  SAVE_SCRIPT,
+} from '../queue.js'
 import { RUN_UNLOCK_SCRIPT } from '../runs.js'
 
 /** A reply of Redis, as the REST API of Upstash returns it in JSON. */
@@ -66,8 +72,70 @@ export const SCRIPT_EMULATIONS: Readonly<Record<string, ScriptEmulation>> = {
 
     return 1
   },
+  [nameOf(CLAIM_SCRIPT)]: (
+    call,
+    [queue = '', jobPrefix = '', lockPrefix = ''],
+    argv,
+  ) => {
+    const [token = '', lease = '', timestamp = '', ttl = ''] = argv
+
+    while (true) {
+      const id = call('RPOP', queue)
+
+      if (typeof id !== 'string') {
+        return null
+      }
+
+      const lock = `${lockPrefix}${id}`
+
+      if (call('SET', lock, token, 'EX', lease, 'NX') !== null) {
+        const key = `${jobPrefix}${id}`
+        const value = call('GET', key)
+        const job =
+          typeof value === 'string'
+            ? (JSON.parse(value) as Record<string, unknown>)
+            : null
+
+        if (job && job['status'] !== 'done' && job['status'] !== 'failed') {
+          const encoded = JSON.stringify({
+            ...job,
+            startedAt: job['startedAt'] ?? timestamp,
+            status: 'running',
+            updatedAt: timestamp,
+          })
+
+          call('SET', key, encoded, 'EX', ttl)
+
+          return encoded
+        }
+
+        call('DEL', lock)
+      }
+    }
+  },
+  [nameOf(FINISH_SCRIPT)]: (call, [job = '', lock = '', outcome], argv) => {
+    const [token = '', value = '', ttl = ''] = argv
+
+    if (call('GET', lock) !== token) {
+      return 0
+    }
+
+    call('SET', job, value, 'EX', ttl)
+
+    if (outcome !== undefined) {
+      call('SET', outcome, value, 'EX', ttl)
+    }
+
+    call('DEL', lock)
+
+    return 1
+  },
   [nameOf(REQUEUE_SCRIPT)]: (call, [queue = '', job = '', lock = ''], argv) => {
-    const [id = '', value = '', ttl = ''] = argv
+    const [id = '', value = '', ttl = '', token = ''] = argv
+
+    if (call('GET', lock) !== token) {
+      return 0
+    }
 
     call('LPUSH', queue, id)
     call('EXPIRE', queue, ttl)
@@ -78,4 +146,15 @@ export const SCRIPT_EMULATIONS: Readonly<Record<string, ScriptEmulation>> = {
   },
   [nameOf(RUN_UNLOCK_SCRIPT)]: (call, [lock = ''], [token]) =>
     call('GET', lock) === token ? call('DEL', lock) : 0,
+  [nameOf(SAVE_SCRIPT)]: (call, [job = '', lock = ''], argv) => {
+    const [token = '', value = '', ttl = ''] = argv
+
+    if (call('GET', lock) !== token) {
+      return 0
+    }
+
+    call('SET', job, value, 'EX', ttl)
+
+    return 1
+  },
 }

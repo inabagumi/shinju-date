@@ -77,6 +77,25 @@ export type EnqueueResult =
    */
   | { enqueued: false; job: BackfillJob | null }
 
+/**
+ * A job a worker claimed, with the token of its lock. The worker passes it to
+ * every write, which is made only while the lock still holds the token.
+ */
+export interface BackfillClaim {
+  job: BackfillJob
+  /** The value of the lock, made anew for each claim. */
+  token: string
+}
+
+export type BackfillWriteResult =
+  | { job: BackfillJob; status: 'saved' }
+  /**
+   * The lock no longer holds the claim's token: its lease ran out, and another
+   * worker may have claimed the job since. Nothing was written; the worker
+   * should stop working on the job.
+   */
+  | { status: 'lost' }
+
 /** How long jobs and the queue are kept after their last change (7 days). */
 export const BACKFILL_JOB_TTL_SECONDS = 7 * 24 * 60 * 60
 
@@ -144,10 +163,87 @@ redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
 return 1`
 
 /**
- * Puts a claimed job back at the end of the queue, saves it as pending and
- * releases it, atomically so a worker can claim it right away.
+ * Takes the next job off the queue, locks it and saves it as `running`, all
+ * at once, so that a worker that stops in between never leaves a job off the
+ * queue but still `pending`.
  *
- * `LPUSH` is the only command here that can fail (on a key of the wrong
+ * Queue entries of jobs that are locked by another worker (queued twice) are
+ * dropped: that worker queues the job again if needed. Entries of jobs that
+ * are finished or gone are dropped too.
+ *
+ * The job is decoded and encoded again with `cjson`, which escapes `/` as
+ * `\/`; that is undone, so that the job is stored as `JSON.stringify` writes
+ * it and {@link ENQUEUE_SCRIPT} finds it unchanged. In the output of `cjson`,
+ * every `/` is escaped, so a `\/` is always an escaped `/`.
+ *
+ * KEYS: queue, prefix of job keys, prefix of lock keys (the keys of a job are
+ * the prefixes followed by its ID, which is only known once it is taken off
+ * the queue)
+ * ARGV: lock token, lease, timestamp, TTL
+ *
+ * @returns The job as saved (JSON), or nil when the queue is empty.
+ */
+export const CLAIM_SCRIPT = `-- video-backfill:claim
+while true do
+  local id = redis.call('RPOP', KEYS[1])
+  if not id then return false end
+  local lock = KEYS[3] .. id
+  if redis.call('SET', lock, ARGV[1], 'EX', ARGV[2], 'NX') then
+    local key = KEYS[2] .. id
+    local value = redis.call('GET', key)
+    local job = value and cjson.decode(value)
+    if job and job.status ~= 'done' and job.status ~= 'failed' then
+      job.status = 'running'
+      if job.startedAt == nil or job.startedAt == cjson.null then
+        job.startedAt = ARGV[3]
+      end
+      job.updatedAt = ARGV[3]
+      local encoded = string.gsub(cjson.encode(job), [[\\/]], '/')
+      redis.call('SET', key, encoded, 'EX', ARGV[4])
+      return encoded
+    end
+    redis.call('DEL', lock)
+  end
+end`
+
+/**
+ * Saves a claimed job, only while its lock holds the claim's token.
+ *
+ * KEYS: job, worker lock
+ * ARGV: lock token, job, TTL
+ *
+ * @returns 1 when the job was saved, 0 when the lock was lost.
+ */
+export const SAVE_SCRIPT = `-- video-backfill:save
+if redis.call('GET', KEYS[2]) ~= ARGV[1] then return 0 end
+redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
+return 1`
+
+/**
+ * Saves a claimed job that finished, with its outcome for the check it
+ * belongs to if any, and releases it, only while its lock holds the claim's
+ * token.
+ *
+ * KEYS: job, worker lock, outcome for the check (absent without a check)
+ * ARGV: lock token, job, TTL
+ *
+ * @returns 1 when the job was saved, 0 when the lock was lost.
+ */
+export const FINISH_SCRIPT = `-- video-backfill:finish
+if redis.call('GET', KEYS[2]) ~= ARGV[1] then return 0 end
+redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
+if KEYS[3] then
+  redis.call('SET', KEYS[3], ARGV[2], 'EX', ARGV[3])
+end
+redis.call('DEL', KEYS[2])
+return 1`
+
+/**
+ * Puts a claimed job back at the end of the queue, saves it as pending and
+ * releases it, atomically so a worker can claim it right away, and only while
+ * its lock holds the claim's token.
+ *
+ * `LPUSH` is the only write here that can fail (on a key of the wrong
  * type), and a script stops at a failing command without rolling back the
  * ones before it, so it runs first: when it fails nothing changed and the job
  * stays claimed until its lease runs out. A MULTI transaction would not do:
@@ -155,9 +251,12 @@ return 1`
  * job pending without a queue entry.
  *
  * KEYS: queue, job, worker lock
- * ARGV: job ID, job, TTL
+ * ARGV: job ID, job, TTL, lock token
+ *
+ * @returns 1 when the job was queued, 0 when the lock was lost.
  */
 export const REQUEUE_SCRIPT = `-- video-backfill:requeue
+if redis.call('GET', KEYS[3]) ~= ARGV[4] then return 0 end
 redis.call('LPUSH', KEYS[1], ARGV[1])
 redis.call('EXPIRE', KEYS[1], ARGV[3])
 redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3])
@@ -197,7 +296,10 @@ function isActive(
  * others.
  *
  * A claimed job is locked for {@link BACKFILL_LEASE_SECONDS}, so it is never
- * read twice at once even if it was queued twice.
+ * read twice at once even if it was queued twice. The lock holds a token made
+ * for the claim ({@link BackfillClaim}), and the writes of a worker are made
+ * only while it does: once the lease runs out and another worker claims the
+ * job, the first worker's writes are ignored and return `lost`.
  */
 export class BackfillQueue {
   readonly #redis: Redis
@@ -293,84 +395,77 @@ export class BackfillQueue {
   }
 
   /**
-   * Takes the next job off the queue, locks it and marks it `running`.
+   * Takes the next job off the queue, locks it with a token of its own and
+   * marks it `running`, in one call to Redis.
    *
-   * @returns `null` when the queue is empty.
+   * @returns The job with the token to write it with, or `null` when the
+   *   queue is empty.
    */
   async claim(
     now: Temporal.Instant = Temporal.Now.instant(),
-  ): Promise<BackfillJob | null> {
-    while (true) {
-      const id = await this.#redis.rpop<string>(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)
+  ): Promise<BackfillClaim | null> {
+    const token = crypto.randomUUID()
+    const reply = await this.#redis.eval<
+      [string, number, string, number],
+      BackfillJob | string | null
+    >(
+      CLAIM_SCRIPT,
+      [
+        REDIS_KEYS.VIDEO_BACKFILL_QUEUE,
+        REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX,
+        REDIS_KEYS.VIDEO_BACKFILL_LOCK_PREFIX,
+      ],
+      [token, BACKFILL_LEASE_SECONDS, now.toString(), BACKFILL_JOB_TTL_SECONDS],
+    )
 
-      if (!id) {
-        return null
-      }
-
-      const locked = await this.#redis.set(lockKey(id), now.toString(), {
-        ex: BACKFILL_LEASE_SECONDS,
-        nx: true,
-      })
-
-      if (locked !== 'OK') {
-        // Queued twice: the worker that holds it queues it again if needed.
-        continue
-      }
-
-      const job = await this.#redis.get<BackfillJob>(jobKey(id))
-
-      if (!job || job.status === 'done' || job.status === 'failed') {
-        await this.#redis.del(lockKey(id))
-        continue
-      }
-
-      const timestamp = now.toString()
-      const running: BackfillJob = {
-        ...job,
-        startedAt: job.startedAt ?? timestamp,
-        status: 'running',
-        updatedAt: timestamp,
-      }
-
-      await this.#save(running)
-
-      return running
+    if (reply == null) {
+      return null
     }
+
+    // `@upstash/redis` parses the JSON of the reply unless it was created
+    // without automatic deserialization.
+    const job: BackfillJob =
+      typeof reply === 'string' ? JSON.parse(reply) : reply
+
+    return { job, token }
   }
 
   /**
    * Records the progress of a claimed job.
    */
   async update(
-    job: BackfillJob,
+    { job, token }: BackfillClaim,
     now: Temporal.Instant = Temporal.Now.instant(),
-  ): Promise<BackfillJob> {
+  ): Promise<BackfillWriteResult> {
     const updated: BackfillJob = { ...job, updatedAt: now.toString() }
+    const saved = await this.#redis.eval<[string, string, number], number>(
+      SAVE_SCRIPT,
+      [jobKey(job.id), lockKey(job.id)],
+      [token, JSON.stringify(updated), BACKFILL_JOB_TTL_SECONDS],
+    )
 
-    await this.#save(updated)
-
-    return updated
+    return saved === 1 ? { job: updated, status: 'saved' } : { status: 'lost' }
   }
 
   /**
    * Marks a claimed job `done` and releases it.
    */
   async complete(
-    job: BackfillJob,
+    { job, token }: BackfillClaim,
     now: Temporal.Instant = Temporal.Now.instant(),
-  ): Promise<BackfillJob> {
-    return this.#finish({ ...job, error: null, status: 'done' }, now)
+  ): Promise<BackfillWriteResult> {
+    return this.#finish({ ...job, error: null, status: 'done' }, token, now)
   }
 
   /**
    * Marks a claimed job `failed` and releases it.
    */
   async fail(
-    job: BackfillJob,
+    { job, token }: BackfillClaim,
     error: string,
     now: Temporal.Instant = Temporal.Now.instant(),
-  ): Promise<BackfillJob> {
-    return this.#finish({ ...job, error, status: 'failed' }, now)
+  ): Promise<BackfillWriteResult> {
+    return this.#finish({ ...job, error, status: 'failed' }, token, now)
   }
 
   /**
@@ -378,54 +473,49 @@ export class BackfillQueue {
    * run, and releases it.
    */
   async requeue(
-    job: BackfillJob,
+    { job, token }: BackfillClaim,
     now: Temporal.Instant = Temporal.Now.instant(),
-  ): Promise<BackfillJob> {
+  ): Promise<BackfillWriteResult> {
     const pending: BackfillJob = {
       ...job,
       status: 'pending',
       updatedAt: now.toString(),
     }
+    const queued = await this.#redis.eval<
+      [string, string, number, string],
+      number
+    >(
+      REQUEUE_SCRIPT,
+      [REDIS_KEYS.VIDEO_BACKFILL_QUEUE, jobKey(job.id), lockKey(job.id)],
+      [job.id, JSON.stringify(pending), BACKFILL_JOB_TTL_SECONDS, token],
+    )
 
-    await this.#queue(pending)
-
-    return pending
+    return queued === 1 ? { job: pending, status: 'saved' } : { status: 'lost' }
   }
 
-  async #finish(job: BackfillJob, now: Temporal.Instant): Promise<BackfillJob> {
+  async #finish(
+    job: BackfillJob,
+    token: string,
+    now: Temporal.Instant,
+  ): Promise<BackfillWriteResult> {
     const timestamp = now.toString()
     const finished: BackfillJob = {
       ...job,
       finishedAt: timestamp,
       updatedAt: timestamp,
     }
-
-    const transaction = this.#redis
-      .multi()
-      .set(jobKey(job.id), finished, { ex: BACKFILL_JOB_TTL_SECONDS })
+    const keys = [jobKey(job.id), lockKey(job.id)]
 
     if (finished.runId) {
-      transaction.set(getRunResultKey(finished.runId, job.id), finished, {
-        ex: BACKFILL_JOB_TTL_SECONDS,
-      })
+      keys.push(getRunResultKey(finished.runId, job.id))
     }
 
-    await transaction.del(lockKey(job.id)).exec()
-
-    return finished
-  }
-
-  async #queue(job: BackfillJob): Promise<void> {
-    await this.#redis.eval<[string, string, number]>(
-      REQUEUE_SCRIPT,
-      [REDIS_KEYS.VIDEO_BACKFILL_QUEUE, jobKey(job.id), lockKey(job.id)],
-      [job.id, JSON.stringify(job), BACKFILL_JOB_TTL_SECONDS],
+    const saved = await this.#redis.eval<[string, string, number], number>(
+      FINISH_SCRIPT,
+      keys,
+      [token, JSON.stringify(finished), BACKFILL_JOB_TTL_SECONDS],
     )
-  }
 
-  async #save(job: BackfillJob): Promise<void> {
-    await this.#redis.set(jobKey(job.id), job, {
-      ex: BACKFILL_JOB_TTL_SECONDS,
-    })
+    return saved === 1 ? { job: finished, status: 'saved' } : { status: 'lost' }
   }
 }
