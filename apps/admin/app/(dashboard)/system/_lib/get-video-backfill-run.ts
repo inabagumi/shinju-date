@@ -1,17 +1,16 @@
-import {
-  type BackfillProvider,
-  type BackfillRunJobStatus,
-  BackfillRuns,
+import { BackfillRuns } from "@shinju-date/video-backfill";
+import type {
+  BackfillProvider,
+  BackfillRunJobStatus,
 } from "@shinju-date/video-backfill";
 import { cacheLife } from "next/cache";
 
 import { getRedisClient } from "@/lib/redis";
-import {
-  createSupabaseServerClient,
-  type TypedSupabaseClient,
-} from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase";
+import type { TypedSupabaseClient } from "@/lib/supabase";
 
-import { type BackfillAccount, getBackfillAccounts } from "./backfill-accounts";
+import { getBackfillAccounts } from "./backfill-accounts";
+import type { BackfillAccount } from "./backfill-accounts";
 
 /** Progress of the backfill of one account in a check of all talents. */
 export interface VideoBackfillRunAccount {

@@ -121,7 +121,7 @@ describe("NavigationBar", () => {
 
     const item = screen.getByRole("menuitem", { name: "ログアウト" });
 
-    expect(mocks.signOutAction).toHaveBeenCalledTimes(1);
+    expect(mocks.signOutAction).toHaveBeenCalledOnce();
     // 終わるまでメニューを開いたままにし、項目を無効にする
     expect(item).toHaveAttribute("aria-disabled", "true");
 
@@ -144,8 +144,8 @@ describe("NavigationBar", () => {
     await user.click(screen.getByRole("button", { name: "ユーザーメニュー" }));
     await user.click(screen.getByRole("menuitem", { name: "ログアウト" }));
 
-    expect(
-      await screen.findByText("ログアウトに失敗しました。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("ログアウトに失敗しました。")
+    ).resolves.toBeInTheDocument();
   });
 });

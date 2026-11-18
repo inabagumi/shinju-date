@@ -10,12 +10,8 @@ import {
 import VideoCardList, {
   VideoCardListSkeleton,
 } from "@/components/video-card-list";
-import {
-  fetchDashboardVideos,
-  fetchUpcomingVideos,
-  type UpcomingVideos,
-  type Video,
-} from "@/lib/data/videos";
+import { fetchDashboardVideos, fetchUpcomingVideos } from "@/lib/data/videos";
+import type { UpcomingVideos, Video } from "@/lib/data/videos";
 import { queryKeys } from "@/lib/query-keys";
 import { getSchedulePath } from "@/lib/schedule";
 

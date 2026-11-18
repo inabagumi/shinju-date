@@ -3,10 +3,10 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
-import {
-  buildSearchParamsHref,
-  type SearchParamsHrefOptions,
-  type SearchParamUpdates,
+import { buildSearchParamsHref } from "./search-params-href";
+import type {
+  SearchParamsHrefOptions,
+  SearchParamUpdates,
 } from "./search-params-href";
 
 export interface UpdateSearchParamsOptions extends SearchParamsHrefOptions {

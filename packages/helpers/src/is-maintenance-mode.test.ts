@@ -1,10 +1,8 @@
 import { REDIS_KEYS } from "@shinju-date/constants";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-  isMaintenanceMode,
-  type MaintenanceModeRedisClient,
-} from "./is-maintenance-mode.js";
+import { isMaintenanceMode } from "./is-maintenance-mode.js";
+import type { MaintenanceModeRedisClient } from "./is-maintenance-mode.js";
 
 function createRedisClient(get: () => Promise<unknown>) {
   const mockGet = vi.fn(get);

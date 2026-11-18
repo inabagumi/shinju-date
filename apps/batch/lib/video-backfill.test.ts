@@ -1,11 +1,11 @@
 import { REDIS_KEYS } from "@shinju-date/constants";
-import { AccountNotFoundError, type Scraper } from "@shinju-date/scraper";
+import { AccountNotFoundError } from "@shinju-date/scraper";
+import type { Scraper } from "@shinju-date/scraper";
 import {
   BACKFILL_MAX_ATTEMPTS,
-  type BackfillClaim,
-  type BackfillJob,
   BackfillQueue,
 } from "@shinju-date/video-backfill";
+import type { BackfillClaim, BackfillJob } from "@shinju-date/video-backfill";
 import { FakeRedis } from "@shinju-date/video-backfill/testing";
 import type { Redis } from "@upstash/redis";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -173,7 +173,7 @@ describe("workOffBackfillQueue", () => {
       })
     ).resolves.toEqual({ added: 2, jobs: 1 });
 
-    expect(addPastVideos).toHaveBeenCalledTimes(1);
+    expect(addPastVideos).toHaveBeenCalledOnce();
     expect(spies.requeue).toHaveBeenCalledWith(
       claimOf({ added: 7, cursor: "page-4", pages: 3 })
     );
@@ -288,7 +288,7 @@ describe("workOffBackfillQueue", () => {
       workOffBackfillQueue({ deadline: farFuture, getScraper, queue })
     ).resolves.toEqual({ added: 0, jobs: 0 });
 
-    expect(spies.claim).toHaveBeenCalledTimes(1);
+    expect(spies.claim).toHaveBeenCalledOnce();
     expect(getScraper).not.toHaveBeenCalled();
   });
 

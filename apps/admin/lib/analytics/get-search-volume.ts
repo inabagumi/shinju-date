@@ -6,7 +6,8 @@ import { cacheLife } from "next/cache";
 import { getRedisClient } from "@/lib/redis";
 
 import { listDatesInRange } from "./list-dates-in-range";
-import { type PeriodQuery, toDateRange } from "./period";
+import { toDateRange } from "./period";
+import type { PeriodQuery } from "./period";
 
 export interface DailySearchVolume {
   count: number;

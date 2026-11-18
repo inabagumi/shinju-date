@@ -1,9 +1,6 @@
 import { max, min } from "@shinju-date/temporal-fns";
-import {
-  convertTimestampToArray,
-  createEvents,
-  type EventAttributes,
-} from "ics";
+import { convertTimestampToArray, createEvents } from "ics";
+import type { EventAttributes } from "ics";
 
 import type { CalendarVideo } from "@/lib/data/videos";
 

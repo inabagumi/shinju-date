@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ContactFormState } from "../_lib/actions";
 
@@ -69,7 +69,7 @@ describe("ContactForm", () => {
     submitContactForm.mockReset();
   });
 
-  test("keeps the entered values when the submission fails", async () => {
+  it("keeps the entered values when the submission fails", async () => {
     failWithSubmittedValues();
 
     const { container } = render(<ContactForm />);
@@ -85,7 +85,7 @@ describe("ContactForm", () => {
     expect(getMessageTextarea().value).toBe("動画が表示されません");
   });
 
-  test("keeps the values changed after a failed submission", async () => {
+  it("keeps the values changed after a failed submission", async () => {
     failWithSubmittedValues();
 
     const { container } = render(<ContactForm />);
@@ -103,7 +103,7 @@ describe("ContactForm", () => {
     expect(getMessageTextarea().value).toBe("動画が表示されません");
   });
 
-  test("clears the form when the submission succeeds", async () => {
+  it("clears the form when the submission succeeds", async () => {
     submitContactForm.mockResolvedValue({
       message: "お問い合わせを受け付けました。ありがとうございます。",
       success: true,

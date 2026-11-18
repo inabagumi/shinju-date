@@ -110,9 +110,10 @@ function respondWithSavedVideo(
     }
 
     switch (route) {
-      case "GET talents":
+      case "GET talents": {
         return TWITCH_TALENTS;
-      case "GET videos":
+      }
+      case "GET videos": {
         if (isSavedVideoLookup(request)) {
           return findSavedVideos([row])(request);
         }
@@ -126,10 +127,12 @@ function respondWithSavedVideo(
             },
           },
         ];
-      case "PATCH videos":
+      }
+      case "PATCH videos": {
         row = { ...row, ...(body as Partial<SavedTwitchVideo>) };
         return [{ id: row.id }];
-      case "PATCH twitch_videos":
+      }
+      case "PATCH twitch_videos": {
         row = {
           ...row,
           twitch_video: {
@@ -138,10 +141,13 @@ function respondWithSavedVideo(
           },
         };
         return [];
-      case "POST rpc/soft_delete_videos":
+      }
+      case "POST rpc/soft_delete_videos": {
         return (body as { p_video_ids: string[] }).p_video_ids;
-      default:
+      }
+      default: {
         return [];
+      }
     }
   });
 }
@@ -206,9 +212,10 @@ describe("TwitchScraper", () => {
         }
 
         switch (table) {
-          case "talents":
+          case "talents": {
             return TWITCH_TALENTS;
-          case "videos":
+          }
+          case "videos": {
             return [
               {
                 ...video,
@@ -218,8 +225,10 @@ describe("TwitchScraper", () => {
                 },
               },
             ];
-          default:
+          }
+          default: {
             return [];
+          }
         }
       });
       const { scraper } = createScraper({ archives: [createVideo()] });

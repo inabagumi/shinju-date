@@ -3,7 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { createRef } from "react";
 import { describe, expect, it } from "vitest";
 
-import { Input, type InputProps } from "./Input";
+import { Input } from "./Input";
+import type { InputProps } from "./Input";
 
 const BASE_CLASSES = [
   "w-full",

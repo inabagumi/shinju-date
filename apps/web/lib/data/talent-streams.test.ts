@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { logger } from "@shinju-date/logger";
 import { cacheLife, cacheTag } from "next/cache";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   createTalent,
@@ -74,7 +74,7 @@ describe("fetchTalentStreamStatuses", () => {
     mockNow("2026-11-15T03:34:56Z");
   });
 
-  test("returns the earliest upcoming stream of each talent within a week", async () => {
+  it("returns the earliest upcoming stream of each talent within a week", async () => {
     await seedVideos([
       createVideoOnYouTube(channel, {
         published_at: "2026-11-16T11:00:00Z",
@@ -109,7 +109,7 @@ describe("fetchTalentStreamStatuses", () => {
     });
   });
 
-  test("returns no talent without a stream within a week", async () => {
+  it("returns no talent without a stream within a week", async () => {
     await seedVideos([
       createVideoOnYouTube(channel, {
         published_at: "2026-11-22T03:00:01Z",
@@ -120,7 +120,7 @@ describe("fetchTalentStreamStatuses", () => {
     await expect(fetchTalentStreamStatuses()).resolves.toEqual({});
   });
 
-  test("is cached for minutes with the videos tag", async () => {
+  it("is cached for minutes with the videos tag", async () => {
     await fetchTalentStreamStatuses();
 
     expect(cacheLife).toHaveBeenCalledWith("minutes");
@@ -128,7 +128,7 @@ describe("fetchTalentStreamStatuses", () => {
     expect(cacheTag).not.toHaveBeenCalledWith("talents");
   });
 
-  test("returns no next stream for a talent that is live", async () => {
+  it("returns no next stream for a talent that is live", async () => {
     await seedVideos([
       createVideoOnYouTube(channel, {
         published_at: "2026-11-15T01:00:00Z",
@@ -145,7 +145,7 @@ describe("fetchTalentStreamStatuses", () => {
     });
   });
 
-  test("skips the videos without YouTube or Twitch videos", async () => {
+  it("skips the videos without YouTube or Twitch videos", async () => {
     await seedVideos([
       createVideo({ status: "LIVE", talent_id: talent.id }),
       createVideo({
@@ -164,7 +164,7 @@ describe("fetchTalentStreamStatuses", () => {
     });
   });
 
-  test("skips the upcoming streams that should have started before this hour", async () => {
+  it("skips the upcoming streams that should have started before this hour", async () => {
     await seedVideos([
       createVideoOnYouTube(channel, {
         published_at: "2026-11-15T02:59:59Z",
@@ -185,7 +185,7 @@ describe("fetchTalentStreamStatuses", () => {
     });
   });
 
-  test("throws when the videos cannot be fetched", async () => {
+  it("throws when the videos cannot be fetched", async () => {
     failSupabase("videos", "failed");
 
     await expect(fetchTalentStreamStatuses()).rejects.toThrow("failed");
@@ -197,7 +197,7 @@ describe("fetchTalentStreamStatusesSafe", () => {
     mockNow("2026-11-15T03:34:56Z");
   });
 
-  test("returns the stream statuses", async () => {
+  it("returns the stream statuses", async () => {
     await seedVideos([
       createVideoOnYouTube(channel, {
         published_at: "2026-11-15T01:00:00Z",
@@ -211,7 +211,7 @@ describe("fetchTalentStreamStatusesSafe", () => {
     expect(logger.error).not.toHaveBeenCalled();
   });
 
-  test("returns no statuses and logs the error when they cannot be fetched", async () => {
+  it("returns no statuses and logs the error when they cannot be fetched", async () => {
     failSupabase("videos", "failed");
 
     await expect(fetchTalentStreamStatusesSafe()).resolves.toEqual({});
@@ -228,7 +228,7 @@ describe("fetchTalentStreamStarts", () => {
     mockNow("2026-11-14T15:34:56Z");
   });
 
-  test("returns the starts of the finished streams of the talent for 90 days before today", async () => {
+  it("returns the starts of the finished streams of the talent for 90 days before today", async () => {
     const ended = (publishedAt: string, overrides = {}) =>
       createVideoOnYouTube(channel, {
         published_at: publishedAt,
@@ -259,14 +259,14 @@ describe("fetchTalentStreamStarts", () => {
     ]);
   });
 
-  test("is cached for days with the videos tag", async () => {
+  it("is cached for days with the videos tag", async () => {
     await fetchTalentStreamStarts(talent.id);
 
     expect(cacheLife).toHaveBeenCalledWith("days");
     expect(cacheTag).toHaveBeenCalledWith("videos");
   });
 
-  test("throws when the streams cannot be fetched", async () => {
+  it("throws when the streams cannot be fetched", async () => {
     failSupabase("videos", "failed");
 
     await expect(fetchTalentStreamStarts(talent.id)).rejects.toThrow("failed");

@@ -8,12 +8,12 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  type MouseHandlerDataParam,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import type { MouseHandlerDataParam } from "recharts";
 
 import { ChartTooltipContent } from "../../_components/chart-tooltip-content";
 import type { ChartSeries } from "../../_lib/chart-series";

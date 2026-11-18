@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   createProfileImage,
@@ -53,7 +53,7 @@ describe("opengraph-image of a talent", () => {
     });
   });
 
-  test("should be a 1200x630 PNG with the icon of the talent", async () => {
+  it("should be a 1200x630 PNG with the icon of the talent", async () => {
     const response = await render();
 
     expect(contentType).toBe("image/png");
@@ -73,7 +73,7 @@ describe("opengraph-image of a talent", () => {
     ).toEqual([`eq.${ICON.id}`]);
   });
 
-  test("should not be cached as immutable", async () => {
+  it("should not be cached as immutable", async () => {
     const response = await render();
 
     expect(response.headers.get("cache-control")).toBe(
@@ -81,7 +81,7 @@ describe("opengraph-image of a talent", () => {
     );
   });
 
-  test("should be generated without a theme color or an icon", async () => {
+  it("should be generated without a theme color or an icon", async () => {
     await seedSupabase({ talents: [{ ...TALENT, theme_color: null }] });
 
     const response = await render();
@@ -94,7 +94,7 @@ describe("opengraph-image of a talent", () => {
     expect(supabaseRequests("profile_images")).toEqual([]);
   });
 
-  test.each([
+  it.each([
     ["an ID that is not a UUID", "not-a-uuid"],
     ["a talent that does not exist", crypto.randomUUID()],
   ])("should be not found for %s", async (_, id) => {

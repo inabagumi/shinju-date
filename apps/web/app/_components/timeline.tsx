@@ -2,7 +2,8 @@
 
 import { TIME_ZONE } from "@shinju-date/constants";
 import { twMerge } from "@shinju-date/ui";
-import { type ReactNode, useId, useMemo } from "react";
+import { useId, useMemo } from "react";
+import type { ReactNode } from "react";
 
 import FormattedTime from "@/components/formatted-time";
 import VideoCard, { VideoCardSkeleton } from "@/components/video-card";

@@ -7,7 +7,11 @@ const serverEnv: { CRON_SECRET: string | undefined } = {
   CRON_SECRET: undefined,
 };
 
-vi.mock("@sentry/nextjs", () => ({ captureCheckIn, captureException, flush }));
+vi.mock("@sentry/nextjs", () => ({
+  captureCheckIn,
+  captureException,
+  flush,
+}));
 
 const logger = { error: vi.fn(), info: vi.fn(), warn: vi.fn() };
 const redis = await vi.hoisted(async () => {
@@ -56,7 +60,7 @@ describe("runCronJob", () => {
     const response = await runCronJob(createRequest(), job, run);
 
     expect(response.status).toBe(204);
-    expect(run).toHaveBeenCalledTimes(1);
+    expect(run).toHaveBeenCalledOnce();
     expect(captureCheckIn).toHaveBeenNthCalledWith(
       1,
       { monitorSlug: "/videos/update", status: "in_progress" },
@@ -167,7 +171,7 @@ describe("runCronJob", () => {
 
     expect(secondResponse.status).toBe(429);
     expect(second).not.toHaveBeenCalled();
-    expect(captureCheckIn).toHaveBeenCalledTimes(1);
+    expect(captureCheckIn).toHaveBeenCalledOnce();
 
     finish(undefined);
 
@@ -185,7 +189,7 @@ describe("runCronJob", () => {
     const response = await runCronJob(createRequest(), job, run);
 
     expect(response.status).toBe(204);
-    expect(run).toHaveBeenCalledTimes(1);
+    expect(run).toHaveBeenCalledOnce();
   });
 
   it("runs again right after the previous run fails", async () => {
@@ -199,7 +203,7 @@ describe("runCronJob", () => {
     const response = await runCronJob(createRequest(), job, run);
 
     expect(response.status).toBe(204);
-    expect(run).toHaveBeenCalledTimes(1);
+    expect(run).toHaveBeenCalledOnce();
   });
 
   it("locks the job for a little longer than its maximum duration", async () => {
@@ -228,7 +232,7 @@ describe("runCronJob", () => {
     );
 
     expect(response.status).toBe(204);
-    expect(run).toHaveBeenCalledTimes(1);
+    expect(run).toHaveBeenCalledOnce();
 
     finish(undefined);
     await first;
@@ -281,7 +285,7 @@ describe("runCronJob", () => {
       const response = await runCronJob(createRequest(), rateLimitedJob, run);
 
       expect(response.status).toBe(204);
-      expect(run).toHaveBeenCalledTimes(1);
+      expect(run).toHaveBeenCalledOnce();
       expect(limit).toHaveBeenCalledWith("videos:backfill");
     });
 
@@ -319,7 +323,7 @@ describe("runCronJob", () => {
     );
 
     expect(response.status).toBe(204);
-    expect(run).toHaveBeenCalledTimes(1);
+    expect(run).toHaveBeenCalledOnce();
   });
 });
 

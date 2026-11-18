@@ -20,20 +20,15 @@ import Link from "next/link";
 
 import { getExternalVideoUrl } from "@/components/external-video-link";
 import { PlatformBadge } from "@/components/platform-badge";
-import {
-  TableSkeleton,
-  type TableSkeletonColumn,
-} from "@/components/table-skeleton";
+import { TableSkeleton } from "@/components/table-skeleton";
+import type { TableSkeletonColumn } from "@/components/table-skeleton";
 import { VideoStatusBadge } from "@/components/video-status-badge";
 import { VideoThumbnail } from "@/components/video-thumbnail";
 import { formatDateTimeFromISO } from "@/lib/format";
 
 import type { Video, VideoSortField } from "../_lib/get-videos";
-import {
-  getVideoSortHref,
-  toAriaSort,
-  type VideoSort,
-} from "../_lib/video-sort";
+import { getVideoSortHref, toAriaSort } from "../_lib/video-sort";
+import type { VideoSort } from "../_lib/video-sort";
 import { VideoBulkActions } from "./video-bulk-actions";
 import { VideoKindBadge } from "./video-kind-badge";
 import { VideoRowActions } from "./video-row-actions";
@@ -61,11 +56,11 @@ interface SortLinkProps {
 /** 見出しの並べ替えのリンク。今の並べ替えの項目には、向きの矢印を付ける */
 function SortLink({ field, label, sort, searchParams }: SortLinkProps) {
   const isCurrent = sort.field === field;
-  const Icon = !isCurrent
-    ? ArrowUpDown
-    : sort.order === "asc"
+  const Icon = isCurrent
+    ? sort.order === "asc"
       ? ArrowUp
-      : ArrowDown;
+      : ArrowDown
+    : ArrowUpDown;
 
   return (
     <Link

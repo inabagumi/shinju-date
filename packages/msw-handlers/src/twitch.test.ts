@@ -32,6 +32,7 @@ describe("Twitch Handlers", () => {
   afterEach(() => {
     server.resetHandlers();
   });
+
   afterAll(() => {
     server.close();
   });
@@ -42,7 +43,7 @@ describe("Twitch Handlers", () => {
       { method: "POST" }
     );
 
-    expect(await response.json()).toMatchObject({
+    await expect(response.json()).resolves.toMatchObject({
       access_token: expect.any(String),
       token_type: "bearer",
     });
@@ -88,7 +89,7 @@ describe("Twitch Handlers", () => {
       const login = saved?.user.twitch_login_name ?? "";
 
       expect(login).not.toBe("");
-      expect(await getUsers(`login=${login.toUpperCase()}`)).toEqual([
+      await expect(getUsers(`login=${login.toUpperCase()}`)).resolves.toEqual([
         expect.objectContaining({ id: saved?.user.twitch_user_id }),
       ]);
     });
@@ -132,7 +133,7 @@ describe("Twitch Handlers", () => {
     });
 
     it("finds no user for a login that is not saved", async () => {
-      expect(await getUsers("login=not-a-saved-login")).toEqual([]);
+      await expect(getUsers("login=not-a-saved-login")).resolves.toEqual([]);
     });
 
     it("rejects a request without IDs or logins", async () => {

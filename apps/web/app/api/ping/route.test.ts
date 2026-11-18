@@ -8,9 +8,8 @@ import {
   createVideoOnTwitch,
   createVideoOnYouTube,
   createYouTubeChannel,
-  type VideoOnTwitch,
-  type VideoOnYouTube,
 } from "@/test/factories";
+import type { VideoOnTwitch, VideoOnYouTube } from "@/test/factories";
 import { seedSupabase, setupSupabase, videoSeed } from "@/test/supabase";
 
 const mocks = vi.hoisted(() => ({

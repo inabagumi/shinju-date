@@ -3,7 +3,8 @@ import { beforeEach, expect, vi } from "vitest";
 
 import type { AuditAction, AuditLogEntry } from "@/lib/audit-log";
 
-import { type FakeSupabase, setupSupabase } from "./supabase";
+import { setupSupabase } from "./supabase";
+import type { FakeSupabase } from "./supabase";
 
 /**
  * The modules every Server Action talks to, replaced for the action tests.

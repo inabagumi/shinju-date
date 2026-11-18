@@ -32,7 +32,7 @@ describe("retryableFetch", () => {
 
     expect(response.status).toBe(200);
     await expect(response.text()).resolves.toBe("ok");
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 
   it.each([304, 400, 401, 403, 404, 406, 409])(
@@ -43,7 +43,7 @@ describe("retryableFetch", () => {
       const response = await retryableFetch(URL);
 
       expect(response.status).toBe(status);
-      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledOnce();
     }
   );
 
@@ -64,7 +64,7 @@ describe("retryableFetch", () => {
         .mockResolvedValueOnce(respond(200, "ok"));
 
       const promise = retryableFetch(URL);
-      await vi.advanceTimersByTimeAsync(1_000);
+      await vi.advanceTimersByTimeAsync(1000);
       const response = await promise;
 
       expect(response.status).toBe(200);
@@ -90,7 +90,7 @@ describe("retryableFetch", () => {
       .mockResolvedValueOnce(respond(200));
 
     const promise = retryableFetch(URL, { method: "head" });
-    await vi.advanceTimersByTimeAsync(1_000);
+    await vi.advanceTimersByTimeAsync(1000);
     const response = await promise;
 
     expect(response.status).toBe(200);
@@ -103,7 +103,7 @@ describe("retryableFetch", () => {
       .mockResolvedValueOnce(respond(200));
 
     const promise = retryableFetch(URL);
-    await vi.advanceTimersByTimeAsync(1_000);
+    await vi.advanceTimersByTimeAsync(1000);
     const response = await promise;
 
     expect(response.status).toBe(200);
@@ -136,7 +136,7 @@ describe("retryableFetch", () => {
       const response = await retryableFetch(URL, { method });
 
       expect(response.status).toBe(status);
-      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledOnce();
     }
   );
 
@@ -146,7 +146,7 @@ describe("retryableFetch", () => {
     await expect(retryableFetch(URL, { method: "POST" })).rejects.toThrow(
       "fetch failed"
     );
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 
   it("uses the method of a Request object", async () => {
@@ -155,7 +155,7 @@ describe("retryableFetch", () => {
     const response = await retryableFetch(new Request(URL, { method: "POST" }));
 
     expect(response.status).toBe(500);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 
   it("stops retrying when the signal is aborted", async () => {
@@ -165,7 +165,7 @@ describe("retryableFetch", () => {
 
     const promise = retryableFetch(URL, { signal: controller.signal });
     const assertion = expect(promise).rejects.toBe(reason);
-    await vi.advanceTimersByTimeAsync(1_000);
+    await vi.advanceTimersByTimeAsync(1000);
     controller.abort(reason);
     await vi.advanceTimersByTimeAsync(TOTAL_RETRY_DELAY_MS);
     await assertion;
@@ -204,6 +204,6 @@ describe("retryableFetch", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 });

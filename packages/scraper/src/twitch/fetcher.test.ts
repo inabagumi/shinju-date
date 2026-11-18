@@ -158,7 +158,7 @@ describe("TwitchFetcher", () => {
 
       expect(result.videos.map((value) => value.id)).toEqual(["v2"]);
       expect(result.failures).toEqual([{ accountId: "user-1", error }]);
-      expect(logger.error).toHaveBeenCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledOnce();
     });
 
     it("never runs more requests than the concurrency limit", async () => {

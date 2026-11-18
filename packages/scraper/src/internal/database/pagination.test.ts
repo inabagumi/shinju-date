@@ -24,7 +24,7 @@ describe("paginateById", () => {
     const getPage = vi.fn().mockResolvedValue([]);
 
     await expect(Array.fromAsync(paginateById(getPage))).resolves.toEqual([]);
-    expect(getPage).toHaveBeenCalledTimes(1);
+    expect(getPage).toHaveBeenCalledOnce();
   });
 
   it("fails instead of repeating a page that does not advance", async () => {

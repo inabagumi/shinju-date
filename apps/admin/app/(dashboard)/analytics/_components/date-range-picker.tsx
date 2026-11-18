@@ -189,36 +189,7 @@ export default function DateRangePicker({
     <div className="rounded-container border border-border bg-surface p-4">
       <h2 className="mb-3 text-meta font-semibold">期間選択</h2>
 
-      {!isCustomMode ? (
-        <div className="space-y-2">
-          <div className="flex flex-wrap gap-2">
-            {presets.map((preset) => {
-              const isSelected = isSameRange(resolvePresetRange(preset), value);
-
-              return (
-                <Button
-                  aria-pressed={isSelected}
-                  key={preset.label}
-                  onClick={() => handlePresetClick(preset)}
-                  size="sm"
-                  variant={isSelected ? "primary" : "secondary"}
-                >
-                  {preset.label}
-                </Button>
-              );
-            })}
-          </div>
-          <Button
-            aria-pressed={isCustomRange}
-            className="w-full"
-            onClick={handleCustomOpen}
-            size="sm"
-            variant={isCustomRange ? "primary" : "secondary"}
-          >
-            カスタム期間を選択
-          </Button>
-        </div>
-      ) : (
+      {isCustomMode ? (
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -281,6 +252,35 @@ export default function DateRangePicker({
               適用
             </Button>
           </div>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-2">
+            {presets.map((preset) => {
+              const isSelected = isSameRange(resolvePresetRange(preset), value);
+
+              return (
+                <Button
+                  aria-pressed={isSelected}
+                  key={preset.label}
+                  onClick={() => handlePresetClick(preset)}
+                  size="sm"
+                  variant={isSelected ? "primary" : "secondary"}
+                >
+                  {preset.label}
+                </Button>
+              );
+            })}
+          </div>
+          <Button
+            aria-pressed={isCustomRange}
+            className="w-full"
+            onClick={handleCustomOpen}
+            size="sm"
+            variant={isCustomRange ? "primary" : "secondary"}
+          >
+            カスタム期間を選択
+          </Button>
         </div>
       )}
 

@@ -118,7 +118,7 @@ describe("TalentLifecycleDialog", () => {
       await waitFor(() => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
       });
-      expect(config.action).toHaveBeenCalledTimes(1);
+      expect(config.action).toHaveBeenCalledOnce();
       expect(config.action).toHaveBeenCalledWith("talent-1");
       expect(onSuccess).toHaveBeenCalledWith(config.successText);
     });
@@ -133,9 +133,9 @@ describe("TalentLifecycleDialog", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "引退にする" }));
 
-    expect(
-      await screen.findByText("指定されたタレントが見つかりません。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("指定されたタレントが見つかりません。")
+    ).resolves.toBeInTheDocument();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(onSuccess).not.toHaveBeenCalled();
   });
@@ -151,9 +151,9 @@ describe("TalentLifecycleDialog", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "削除" }));
 
-    expect(
-      await screen.findByRole("button", { name: "削除中..." })
-    ).toBeDisabled();
+    await expect(
+      screen.findByRole("button", { name: "削除中..." })
+    ).resolves.toBeDisabled();
     expect(screen.getByRole("button", { name: "キャンセル" })).toBeDisabled();
 
     resolve({ success: true });

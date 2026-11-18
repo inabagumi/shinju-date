@@ -1,5 +1,6 @@
 import type { Tables } from "@shinju-date/database";
-import { Badge, type BadgeProps, twMerge } from "@shinju-date/ui";
+import { Badge, twMerge } from "@shinju-date/ui";
+import type { BadgeProps } from "@shinju-date/ui";
 
 type VideoStatus = Tables<"videos">["status"];
 

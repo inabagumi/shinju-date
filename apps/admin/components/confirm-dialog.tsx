@@ -3,7 +3,6 @@
 import {
   Alert,
   Button,
-  type ButtonProps,
   Dialog,
   DialogClose,
   DialogContent,
@@ -15,7 +14,9 @@ import {
   Input,
   twMerge,
 } from "@shinju-date/ui";
-import { type ReactElement, type ReactNode, useId, useState } from "react";
+import type { ButtonProps } from "@shinju-date/ui";
+import { useId, useState } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 /**
  * `onConfirm` が返す処理の結果。
@@ -194,10 +195,10 @@ export function ConfirmDialog({
 
     try {
       result = onConfirm();
-    } catch (err) {
+    } catch (error_) {
       // 値を返さない `onConfirm` は、これまでどおり例外があっても閉じる
       setOpen(false);
-      throw err;
+      throw error_;
     }
 
     if (!isPromiseLike<ConfirmResult>(result)) {

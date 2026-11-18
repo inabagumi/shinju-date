@@ -52,7 +52,7 @@ function toCreditKey(value: string): string {
   return value
     .normalize("NFKC")
     .toLowerCase()
-    .replace(/[\s・]/g, "");
+    .replaceAll(/[\s・]/g, "");
 }
 
 /**
@@ -80,7 +80,7 @@ export function parseVideoTitle(
   const trailingTags: string[] = [];
   const labels: string[] = [];
 
-  let text = title.replace(BRACKET, (_match: string, content: string) => {
+  let text = title.replaceAll(BRACKET, (_match: string, content: string) => {
     contents.push(content);
 
     return " ";
@@ -91,7 +91,7 @@ export function parseVideoTitle(
   // 末尾に並ぶハッシュタグだけを切り出す。数字だけのもの（`#11` などの
   // 回数の表記）は残す
   text = text.replace(TRAILING_RUN, (run) =>
-    run.replace(HASHTAG_IN_RUN, (match: string, name: string) => {
+    run.replaceAll(HASHTAG_IN_RUN, (match: string, name: string) => {
       if (isNumber(name)) {
         return match;
       }
@@ -101,12 +101,12 @@ export function parseVideoTitle(
       return " ";
     })
   );
-  text = text.replace(SPACES, " ").trim();
+  text = text.replaceAll(SPACES, " ").trim();
 
   // 【】の外がハッシュタグだけで、切り出すと回数の表記しか残らないものは、
   // 切り出さずにそのまま本文にする
   if (trailingTags.length > 0 && NUMBER_HASHTAGS_ONLY.test(text)) {
-    text = textWithHashtags.replace(SPACES, " ").trim();
+    text = textWithHashtags.replaceAll(SPACES, " ").trim();
     trailingTags.length = 0;
   }
 
@@ -118,7 +118,7 @@ export function parseVideoTitle(
   for (const content of contents) {
     const label = content
       .split(SEGMENT_SEPARATOR)
-      .map((segment) => segment.replace(SPACES, " ").trim())
+      .map((segment) => segment.replaceAll(SPACES, " ").trim())
       .filter((segment) => {
         if (segment === "") {
           return false;
@@ -186,7 +186,11 @@ export function parseVideoTitle(
     return { hashtags, labels: restLabels, text: firstLabel };
   }
 
-  return { hashtags: [], labels: [], text: title.replace(SPACES, " ").trim() };
+  return {
+    hashtags: [],
+    labels: [],
+    text: title.replaceAll(SPACES, " ").trim(),
+  };
 }
 
 /** ラベルとハッシュタグの行に出すハッシュタグの数 */

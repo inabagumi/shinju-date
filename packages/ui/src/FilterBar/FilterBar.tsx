@@ -1,6 +1,7 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
-import { type ComponentPropsWithoutRef, useId } from "react";
+import { useId } from "react";
+import type { ComponentPropsWithoutRef } from "react";
 
 import { Button } from "../Button/Button.js";
 import { twMerge } from "../tw-merge.js";

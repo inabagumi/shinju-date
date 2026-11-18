@@ -1,10 +1,10 @@
 import { render } from "@testing-library/react";
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { Skeleton } from "./Skeleton";
 
 describe("Skeleton", () => {
-  test("should render a pulsing block hidden from assistive technology", () => {
+  it("should render a pulsing block hidden from assistive technology", () => {
     const { container } = render(<Skeleton className="h-4 w-32" />);
     const skeleton = container.firstElementChild;
 
@@ -19,7 +19,7 @@ describe("Skeleton", () => {
     );
   });
 
-  test("should let className override the radius and the color", () => {
+  it("should let className override the radius and the color", () => {
     const { container } = render(
       <Skeleton className="rounded-container bg-border" />
     );
@@ -30,7 +30,7 @@ describe("Skeleton", () => {
     expect(skeleton).not.toHaveClass("bg-muted");
   });
 
-  test("should let className make it inline", () => {
+  it("should let className make it inline", () => {
     const { container } = render(<Skeleton className="inline-block" />);
 
     expect(container.firstElementChild).toHaveClass("inline-block");

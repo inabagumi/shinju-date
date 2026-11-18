@@ -2,10 +2,8 @@
 import { DUMMY_THUMBNAIL_PNG } from "@shinju-date/constants";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-  type ServeStorageImageOptions,
-  serveStorageImage,
-} from "./storage-image";
+import { serveStorageImage } from "./storage-image";
+import type { ServeStorageImageOptions } from "./storage-image";
 
 const SIGNED_URL = "https://storage.test/signed/youtube/UC1/a.webp?token=t";
 
@@ -55,7 +53,7 @@ describe("serveStorageImage", () => {
     const response = await serveStorageImage(request, options);
 
     expect(createSignedUrl).toHaveBeenCalledWith("youtube/UC1/a.webp", 600);
-    expect(await response.text()).toBe("webp");
+    await expect(response.text()).resolves.toBe("webp");
     expect(response.headers.get("Content-Type")).toBe("image/webp");
     expect(response.headers.get("Cache-Control")).toBe("public, max-age=600");
 

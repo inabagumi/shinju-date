@@ -1,8 +1,8 @@
-import {
-  getVideoExternalUrl,
-  type TwitchVideoType,
-  type VideoPlatform,
-  type VideoStatus,
+import { getVideoExternalUrl } from "@shinju-date/helpers";
+import type {
+  TwitchVideoType,
+  VideoPlatform,
+  VideoStatus,
 } from "@shinju-date/helpers";
 import type { ComponentPropsWithoutRef } from "react";
 

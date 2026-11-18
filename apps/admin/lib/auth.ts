@@ -2,10 +2,8 @@ import type { User } from "@supabase/supabase-js";
 
 import type { FormState } from "@/lib/action";
 import { isAdminUser } from "@/lib/admin-user";
-import {
-  createSupabaseServerClient,
-  type TypedSupabaseClient,
-} from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase";
+import type { TypedSupabaseClient } from "@/lib/supabase";
 
 /**
  * 未認証のリクエストに対して Server Action が返すエラーメッセージ。

@@ -6,10 +6,8 @@ import {
   addYouTubeChannelAction,
   removeYouTubeChannelAction,
 } from "../../_actions/channels";
-import {
-  type LinkedAccountListProps,
-  LinkedAccountManager,
-} from "./linked-account-manager";
+import { LinkedAccountManager } from "./linked-account-manager";
+import type { LinkedAccountListProps } from "./linked-account-manager";
 
 type Channel = Pick<
   Tables<"youtube_channels">,

@@ -81,20 +81,25 @@ function operationOf(
 
   switch (request.method) {
     case "GET":
-    case "HEAD":
+    case "HEAD": {
       return "select";
-    case "POST":
+    }
+    case "POST": {
       return /resolution=(merge|ignore)-duplicates/.test(
         request.headers.get("Prefer") ?? ""
       )
         ? "upsert"
         : "insert";
-    case "PATCH":
+    }
+    case "PATCH": {
       return "update";
-    case "DELETE":
+    }
+    case "DELETE": {
       return "delete";
-    default:
+    }
+    default: {
       return null;
+    }
   }
 }
 

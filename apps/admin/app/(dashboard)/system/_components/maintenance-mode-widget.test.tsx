@@ -45,7 +45,7 @@ describe("MaintenanceModeWidget", () => {
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
-    expect(mocks.enableMaintenanceModeAction).toHaveBeenCalledTimes(1);
+    expect(mocks.enableMaintenanceModeAction).toHaveBeenCalledOnce();
     expect(screen.getByText("ON")).toBeInTheDocument();
   });
 
@@ -62,7 +62,7 @@ describe("MaintenanceModeWidget", () => {
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
-    expect(mocks.disableMaintenanceModeAction).toHaveBeenCalledTimes(1);
+    expect(mocks.disableMaintenanceModeAction).toHaveBeenCalledOnce();
     expect(screen.getByText("OFF")).toBeInTheDocument();
   });
 
@@ -86,9 +86,9 @@ describe("MaintenanceModeWidget", () => {
     toggle();
     fireEvent.click(screen.getByRole("button", { name: "有効にする" }));
 
-    expect(
-      await screen.findByText("メンテナンスモードの有効化に失敗しました。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("メンテナンスモードの有効化に失敗しました。")
+    ).resolves.toBeInTheDocument();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("OFF")).toBeInTheDocument();
   });

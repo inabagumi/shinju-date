@@ -204,16 +204,18 @@ describe("VideoBackfillPanel", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "取り込む" }));
 
-    expect(await screen.findByText("キューに追加しました。")).toBeTruthy();
+    await expect(
+      screen.findByText("キューに追加しました。")
+    ).resolves.toBeTruthy();
     expect(mocks.requestVideoBackfillAction).toHaveBeenCalledWith(
       "talent-1",
       "youtube"
     );
 
     // The job that was just queued shows up without reloading the page.
-    expect(
-      await screen.findByRole("button", { name: "YouTube: 実行中" })
-    ).toBeTruthy();
+    await expect(
+      screen.findByRole("button", { name: "YouTube: 実行中" })
+    ).resolves.toBeTruthy();
     expect(mocks.getVideoBackfillStatusAction).toHaveBeenCalledWith("talent-1");
   });
 

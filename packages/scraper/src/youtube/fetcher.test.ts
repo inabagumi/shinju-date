@@ -188,7 +188,7 @@ describe("YouTubeFetcher", () => {
 
       expect(result.videos).toEqual([{ channelId: "UCbbb", videoId: "b1" }]);
       expect(result.failures).toEqual([{ accountId: "UCaaa", error }]);
-      expect(logger.error).toHaveBeenCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledOnce();
     });
 
     it("treats a missing uploads playlist as a channel without uploads", async () => {

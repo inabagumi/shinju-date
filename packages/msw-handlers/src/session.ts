@@ -43,7 +43,7 @@ export const MOCK_SUPABASE_USER = {
  */
 export const MOCK_SUPABASE_SESSION = {
   access_token: "mock_access_token",
-  expires_at: 9999999999,
+  expires_at: 9_999_999_999,
   expires_in: 3600,
   refresh_token: "mock_refresh_token",
   token_type: "bearer",

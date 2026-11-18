@@ -1,10 +1,10 @@
 import { CACHE_TAGS } from "@shinju-date/constants";
 import type { Scraper } from "@shinju-date/scraper";
 import {
-  type BackfillProvider,
   BackfillQueue,
   getBackfillRunResultKeys,
 } from "@shinju-date/video-backfill";
+import type { BackfillProvider } from "@shinju-date/video-backfill";
 import { revalidateTags } from "@shinju-date/web-cache";
 import type { NextRequest } from "next/server";
 

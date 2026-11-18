@@ -1,5 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { TalentStreamStatus } from "@/lib/data/talents";
 import { createTalentDetail } from "@/test/factories";
@@ -33,7 +33,7 @@ const TALENT = createTalentDetail({
 });
 
 describe("TalentPageHeader", () => {
-  test("should show the icon and the name as the page heading", () => {
+  it("should show the icon and the name as the page heading", () => {
     const { container } = render(<TalentPageHeader talent={TALENT} />);
 
     expect(
@@ -48,7 +48,7 @@ describe("TalentPageHeader", () => {
     ).toBeInTheDocument();
   });
 
-  test("should link back to the list of talents", () => {
+  it("should link back to the list of talents", () => {
     render(<TalentPageHeader talent={TALENT} />);
 
     const breadcrumbs = screen.getByRole("navigation", {
@@ -63,7 +63,7 @@ describe("TalentPageHeader", () => {
     ).toHaveAttribute("aria-current", "page");
   });
 
-  test("should open the channels in a new tab", () => {
+  it("should open the channels in a new tab", () => {
     render(<TalentPageHeader talent={TALENT} />);
 
     const youtubeLink = screen.getByRole("link", {
@@ -83,7 +83,7 @@ describe("TalentPageHeader", () => {
     }
   });
 
-  test("should link to the calendar in the same tab", () => {
+  it("should link to the calendar in the same tab", () => {
     render(<TalentPageHeader talent={TALENT} />);
 
     const calendarLink = screen.getByRole("link", { name: "カレンダーに登録" });
@@ -92,7 +92,7 @@ describe("TalentPageHeader", () => {
     expect(calendarLink).not.toHaveAttribute("target");
   });
 
-  test("should show the default icon for a talent without icons", () => {
+  it("should show the default icon for a talent without icons", () => {
     render(
       <TalentPageHeader
         talent={createTalentDetail({
@@ -118,7 +118,7 @@ describe("TalentPageHeader with the stream status", () => {
     nextStreamAt: "2026-11-16T11:00:00Z",
   };
 
-  test("should show the ring and the badge while live", () => {
+  it("should show the ring and the badge while live", () => {
     render(<TalentPageHeader streamStatus={live} talent={TALENT} />);
 
     const badge = screen.getByText("配信中");
@@ -144,7 +144,7 @@ describe("TalentPageHeader with the stream status", () => {
     expect(screen.queryByText(/次回/)).not.toBeInTheDocument();
   });
 
-  test("should not show the next stream while live", () => {
+  it("should not show the next stream while live", () => {
     render(
       <TalentPageHeader
         streamStatus={{ isLive: true, nextStreamAt: "2026-11-16T11:00:00Z" }}
@@ -156,7 +156,7 @@ describe("TalentPageHeader with the stream status", () => {
     expect(screen.queryByText(/次回/)).not.toBeInTheDocument();
   });
 
-  test("should show the start of the next stream in Japan time", () => {
+  it("should show the start of the next stream in Japan time", () => {
     render(<TalentPageHeader streamStatus={upcoming} talent={TALENT} />);
 
     const nextStream = screen.getByText(/^次回/);
@@ -175,7 +175,7 @@ describe("TalentPageHeader with the stream status", () => {
     expect(screen.getByTestId("talent-icon")).not.toHaveClass("ring-live");
   });
 
-  test("should put the stream status above the links", () => {
+  it("should put the stream status above the links", () => {
     render(<TalentPageHeader streamStatus={upcoming} talent={TALENT} />);
 
     const line = screen.getByText(/^次回/).closest("p");
@@ -185,7 +185,7 @@ describe("TalentPageHeader with the stream status", () => {
     expect(line?.nextElementSibling).toBe(links);
   });
 
-  test("should show nothing without a stream", () => {
+  it("should show nothing without a stream", () => {
     const { container } = render(<TalentPageHeader talent={TALENT} />);
 
     expect(screen.queryByText("配信中")).not.toBeInTheDocument();

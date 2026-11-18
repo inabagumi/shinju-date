@@ -1,6 +1,7 @@
 import type { default as DefaultDatabase } from "@shinju-date/database";
 import { createServerClient } from "@supabase/ssr";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { isAdminUser } from "@/lib/admin-user";
 import { getSafeRedirectPath, REDIRECT_PARAM } from "@/lib/redirect-path";

@@ -2,7 +2,7 @@
 
 import { HttpResponse, http } from "msw";
 import sharp from "sharp";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SITE_THEME_COLOR } from "@/lib/site";
 import { createProfileImage } from "@/test/factories";
@@ -29,18 +29,18 @@ const DOWNLOAD_URL =
   "https://fake.supabase.test/storage/v1/object/profile-images/*";
 
 describe("getTalentThemeColor", () => {
-  test("should use the theme color of the talent", () => {
+  it("should use the theme color of the talent", () => {
     expect(getTalentThemeColor("#FF6B9D")).toBe("#ff6b9d");
     expect(getTalentThemeColor("#87ceeb")).toBe("#87ceeb");
   });
 
-  test("should use the site theme color without a theme color", () => {
+  it("should use the site theme color without a theme color", () => {
     expect(getTalentThemeColor(null)).toBe(SITE_THEME_COLOR);
     expect(getTalentThemeColor(undefined)).toBe(SITE_THEME_COLOR);
     expect(getTalentThemeColor("")).toBe(SITE_THEME_COLOR);
   });
 
-  test("should use the site theme color for values that are not #rrggbb", () => {
+  it("should use the site theme color for values that are not #rrggbb", () => {
     for (const value of [
       "#fff",
       "#ff6b9d80",
@@ -66,7 +66,7 @@ describe("fetchTalentIconDataURL", () => {
     await seedSupabase({ profileImages: [ICON] });
   });
 
-  test("should convert the icon to a PNG of the given size", async () => {
+  it("should convert the icon to a PNG of the given size", async () => {
     const webp = await sharp({
       create: {
         background: "#ff0000",
@@ -112,26 +112,26 @@ describe("fetchTalentIconDataURL", () => {
     });
   });
 
-  test("should return null for a talent without an icon", async () => {
+  it("should return null for a talent without an icon", async () => {
     await expect(fetchTalentIconDataURL(null, 320)).resolves.toBeNull();
 
     expect(supabaseRequests()).toEqual([]);
   });
 
   // RLS hides the icons that are not in use from the public key
-  test("should return null for an icon that cannot be read", async () => {
+  it("should return null for an icon that cannot be read", async () => {
     await seedSupabase();
 
     await expect(fetchTalentIconDataURL(profileImage, 320)).resolves.toBeNull();
   });
 
-  test("should return null when the lookup fails", async () => {
+  it("should return null when the lookup fails", async () => {
     failSupabase("profile_images", "failed");
 
     await expect(fetchTalentIconDataURL(profileImage, 320)).resolves.toBeNull();
   });
 
-  test("should return null when the download fails", async () => {
+  it("should return null when the download fails", async () => {
     supabaseServer.use(
       http.get(DOWNLOAD_URL, () =>
         HttpResponse.json(
@@ -148,7 +148,7 @@ describe("fetchTalentIconDataURL", () => {
     await expect(fetchTalentIconDataURL(profileImage, 320)).resolves.toBeNull();
   });
 
-  test("should return null for an icon that cannot be converted", async () => {
+  it("should return null for an icon that cannot be converted", async () => {
     supabaseServer.use(
       http.get(DOWNLOAD_URL, () => new HttpResponse("not an image"))
     );

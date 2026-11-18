@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type { Announcement } from "@/lib/data/announcements";
 
@@ -21,11 +21,11 @@ function createAnnouncement(
 const NOW = Temporal.Instant.from("2026-11-17T03:00:00Z");
 
 describe("selectCurrentAnnouncement", () => {
-  test("returns null when there are no announcements", () => {
+  it("returns null when there are no announcements", () => {
     expect(selectCurrentAnnouncement([], NOW)).toBeNull();
   });
 
-  test("returns the first of the announcements whose periods overlap", () => {
+  it("returns the first of the announcements whose periods overlap", () => {
     const newer = createAnnouncement(
       "newer",
       "2026-11-16T00:00:00+00:00",
@@ -40,7 +40,7 @@ describe("selectCurrentAnnouncement", () => {
     expect(selectCurrentAnnouncement([newer, older], NOW)).toBe(newer);
   });
 
-  test("skips the announcements that have not started yet", () => {
+  it("skips the announcements that have not started yet", () => {
     const upcoming = createAnnouncement(
       "upcoming",
       "2026-11-17T03:00:01+00:00",
@@ -56,7 +56,7 @@ describe("selectCurrentAnnouncement", () => {
     expect(selectCurrentAnnouncement([upcoming], NOW)).toBeNull();
   });
 
-  test("skips the announcements that have already ended", () => {
+  it("skips the announcements that have already ended", () => {
     const ended = createAnnouncement(
       "ended",
       "2026-11-10T00:00:00+00:00",
@@ -66,7 +66,7 @@ describe("selectCurrentAnnouncement", () => {
     expect(selectCurrentAnnouncement([ended], NOW)).toBeNull();
   });
 
-  test("includes the start and the end of the period", () => {
+  it("includes the start and the end of the period", () => {
     const starting = createAnnouncement(
       "starting",
       "2026-11-17T12:00:00+09:00",

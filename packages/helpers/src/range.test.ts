@@ -59,7 +59,7 @@ describe("range", () => {
   describe("edge cases", () => {
     it("should handle large ranges", () => {
       const result = range(1000);
-      expect(result.length).toBe(1000);
+      expect(result).toHaveLength(1000);
       expect(result[0]).toBe(0);
       expect(result[999]).toBe(999);
     });

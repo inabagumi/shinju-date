@@ -1,4 +1,5 @@
-import { type BrowserContext, expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { BrowserContext, Page } from "@playwright/test";
 
 // Provided by the MSW mock data (packages/msw-handlers): several videos have
 // `歌枠` in their titles

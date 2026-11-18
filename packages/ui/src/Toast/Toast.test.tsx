@@ -5,11 +5,11 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   Toast,
   ToastClose,
-  type ToastProps,
   ToastProvider,
   ToastTitle,
   ToastViewport,
 } from "./Toast";
+import type { ToastProps } from "./Toast";
 
 function renderToast(props: Omit<ToastProps, "children"> = {}) {
   return render(
@@ -68,7 +68,7 @@ describe("Toast", () => {
   it("announces a background toast politely", async () => {
     renderToast({ type: "background" });
 
-    expect(await screen.findByRole("status")).toHaveAttribute(
+    await expect(screen.findByRole("status")).resolves.toHaveAttribute(
       "aria-live",
       "polite"
     );

@@ -15,10 +15,8 @@ import { useActionToast } from "@/components/action-toast";
 import { useServerAction } from "@/lib/use-server-action";
 
 import { syncTalentAccountsAction } from "../_actions/sync";
-import {
-  TalentLifecycleDialog,
-  type TalentLifecycleOperation,
-} from "./talent-lifecycle-dialog";
+import { TalentLifecycleDialog } from "./talent-lifecycle-dialog";
+import type { TalentLifecycleOperation } from "./talent-lifecycle-dialog";
 
 type Talent = Pick<Tables<"talents">, "id" | "name" | "status" | "deleted_at">;
 

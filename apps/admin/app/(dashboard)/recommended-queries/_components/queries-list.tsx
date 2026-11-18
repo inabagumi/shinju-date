@@ -24,7 +24,7 @@ interface QueriesListProps {
   /** 手動追加のクエリの全件の数 */
   manualTotal: number;
   /** 検索で絞り込んだ、自動選出のクエリ */
-  autoQueries: Array<{ query: string; score: number }>;
+  autoQueries: { query: string; score: number }[];
   /** 自動選出のクエリの全件の数 */
   autoTotal: number;
   /** URL の `search`。前後の空白を取り除いたもの */

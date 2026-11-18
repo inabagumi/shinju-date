@@ -1,6 +1,7 @@
 import type { Tables } from "@shinju-date/database";
 
-import { randomFuture, randomPast, type SeedContext } from "./context.js";
+import { randomFuture, randomPast } from "./context.js";
+import type { SeedContext } from "./context.js";
 
 /**
  * An announcement that is shown now. Its message contains a link and GFM

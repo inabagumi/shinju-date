@@ -111,7 +111,7 @@ export function getJobActivity(
   let active: boolean;
 
   switch (job.status) {
-    case "pending":
+    case "pending": {
       active =
         Temporal.Instant.compare(
           Temporal.Instant.from(job.updatedAt).add({
@@ -120,11 +120,14 @@ export function getJobActivity(
           now
         ) > 0;
       break;
-    case "running":
+    }
+    case "running": {
       active = locked;
       break;
-    default:
+    }
+    default: {
       return { active: false, status: job.status };
+    }
   }
 
   return { active, status: active ? job.status : "interrupted" };

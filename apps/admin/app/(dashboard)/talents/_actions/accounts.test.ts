@@ -1,6 +1,7 @@
 import { resolveTwitchUser } from "@shinju-date/twitch-api-client";
 import { resolveYouTubeChannel } from "@shinju-date/youtube-api-client";
-import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Mock } from "vitest";
 
 import type { FormState } from "@/components/form";
 import type { AuditAction } from "@/lib/audit-log";

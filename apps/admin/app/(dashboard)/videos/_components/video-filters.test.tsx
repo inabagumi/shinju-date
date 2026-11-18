@@ -86,7 +86,7 @@ describe("VideoFilters search", () => {
       vi.advanceTimersByTime(1);
     });
     // Keeps the other filters and goes back to page 1
-    expect(mocks.replace).toHaveBeenCalledTimes(1);
+    expect(mocks.replace).toHaveBeenCalledOnce();
     expect(mocks.replace).toHaveBeenCalledWith(
       "/videos?status=LIVE&search=anime"
     );

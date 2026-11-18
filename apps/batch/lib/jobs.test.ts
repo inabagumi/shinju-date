@@ -16,7 +16,7 @@ async function readMaxDuration(path: string): Promise<number | undefined> {
   const { pathname } = new URL(path, "http://localhost");
   const source = await readFile(
     new URL(`../app${pathname}/route.ts`, import.meta.url),
-    "utf8"
+    "utf-8"
   );
   const value = source.match(/^export const maxDuration = (\d+);$/m)?.[1];
 

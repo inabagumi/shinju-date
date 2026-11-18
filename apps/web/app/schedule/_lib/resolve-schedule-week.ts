@@ -6,8 +6,8 @@ import {
   getWeekStart,
   isWeekInRange,
   parseScheduleDate,
-  type ScheduleWeekRange,
 } from "@/lib/schedule";
+import type { ScheduleWeekRange } from "@/lib/schedule";
 
 /**
  * `params` of `/schedule/[date]`. `/schedule` has none, and shows the week

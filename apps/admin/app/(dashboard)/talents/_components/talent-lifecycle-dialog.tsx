@@ -4,7 +4,8 @@ import type { Tables } from "@shinju-date/database";
 import type { ButtonProps } from "@shinju-date/ui";
 import type { ReactElement } from "react";
 
-import { type ActionResult, ConfirmDialog } from "@/components/confirm-dialog";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import type { ActionResult } from "@/components/confirm-dialog";
 
 import {
   activateTalentAction,

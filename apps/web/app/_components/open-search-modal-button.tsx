@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, type ButtonProps } from "@shinju-date/ui";
+import { Button } from "@shinju-date/ui";
+import type { ButtonProps } from "@shinju-date/ui";
 import { Search } from "lucide-react";
 
 import { useSearchModal } from "./search-modal-context";

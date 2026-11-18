@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
   notFound: vi.fn(() => {
@@ -30,7 +30,7 @@ describe("resolveScheduleWeek", () => {
     vi.mocked(fetchOldestVideoDate).mockResolvedValue("2026-10-28");
   });
 
-  test("should return the week of today without the date", async () => {
+  it("should return the week of today without the date", async () => {
     const { range, today, weekStart } = await resolveScheduleWeek();
 
     expect(weekStart.toString()).toBe("2026-11-08");
@@ -39,7 +39,7 @@ describe("resolveScheduleWeek", () => {
     expect(range.last.toString()).toBe("2026-12-06");
   });
 
-  test("should return the Sunday of the week of the date", async () => {
+  it("should return the Sunday of the week of the date", async () => {
     expect(
       (await resolveScheduleWeek(params("2026-11-12"))).weekStart.toString()
     ).toBe("2026-11-08");
@@ -48,7 +48,7 @@ describe("resolveScheduleWeek", () => {
     ).toBe("2026-11-01");
   });
 
-  test("should go across the years", async () => {
+  it("should go across the years", async () => {
     vi.mocked(fetchScheduleToday).mockResolvedValue("2026-12-30");
 
     expect(
@@ -56,7 +56,7 @@ describe("resolveScheduleWeek", () => {
     ).toBe("2026-12-27");
   });
 
-  test.each(["2026-W46", "2026-02-30", "today"])(
+  it.each(["2026-W46", "2026-02-30", "today"])(
     "should render the not-found page for %s without fetching",
     async (value) => {
       await expect(resolveScheduleWeek(params(value))).rejects.toThrow(
@@ -67,14 +67,14 @@ describe("resolveScheduleWeek", () => {
     }
   );
 
-  test("should render the not-found page before the week of the oldest video", async () => {
+  it("should render the not-found page before the week of the oldest video", async () => {
     // Saturday of the week before the oldest video
     await expect(resolveScheduleWeek(params("2026-10-24"))).rejects.toThrow(
       "NEXT_NOT_FOUND"
     );
   });
 
-  test("should render the not-found page more than 4 weeks ahead", async () => {
+  it("should render the not-found page more than 4 weeks ahead", async () => {
     await expect(
       resolveScheduleWeek(params("2026-12-12"))
     ).resolves.toMatchObject({});

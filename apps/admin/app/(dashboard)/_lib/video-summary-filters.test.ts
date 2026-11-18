@@ -4,8 +4,8 @@ import { videoSearchParamsSchema } from "../videos/_lib/search-params-schema";
 import {
   getVideoListHref,
   VIDEO_SUMMARY_FILTERS,
-  type VideoSummaryTile,
 } from "./video-summary-filters";
+import type { VideoSummaryTile } from "./video-summary-filters";
 
 /** Read the query of the URL as Next.js passes `searchParams` to the page */
 function parseSearchParams(href: string) {

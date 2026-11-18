@@ -21,10 +21,9 @@
  */
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, resolve } from "node:path";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const root = resolve(import.meta.dirname, "..");
 
 const PACKAGES_DIR = "packages";
 
@@ -138,7 +137,7 @@ function main() {
       continue;
     }
 
-    const pkg = JSON.parse(readFileSync(file, "utf8"));
+    const pkg = JSON.parse(readFileSync(file, "utf-8"));
     const problems = findExportsProblems(pkg, (target) =>
       existsSync(join(dir, target))
     );
@@ -157,9 +156,6 @@ function main() {
   }
 }
 
-if (
-  process.argv[1] &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-) {
+if (process.argv[1] && resolve(process.argv[1]) === import.meta.filename) {
   main();
 }

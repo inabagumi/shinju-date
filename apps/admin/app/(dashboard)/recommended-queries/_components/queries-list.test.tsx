@@ -86,9 +86,9 @@ describe("QueriesList", () => {
     fireEvent.click(screen.getByRole("button", { name: "「歌枠」を削除" }));
     fireEvent.click(screen.getByRole("button", { name: "削除" }));
 
-    expect(
-      await screen.findByText("クエリの削除に失敗しました。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("クエリの削除に失敗しました。")
+    ).resolves.toBeInTheDocument();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(
       screen.queryByText("クエリを削除しました。")
@@ -103,9 +103,9 @@ describe("QueriesList", () => {
     fireEvent.change(input, { target: { value: "雑談" } });
     fireEvent.click(screen.getByRole("button", { name: "追加" }));
 
-    expect(
-      await screen.findByText("クエリを追加しました。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("クエリを追加しました。")
+    ).resolves.toBeInTheDocument();
     expect(mocks.addQueryAction).toHaveBeenCalledWith("雑談");
     expect(input).toHaveValue("");
   });
@@ -121,9 +121,9 @@ describe("QueriesList", () => {
     fireEvent.change(input, { target: { value: "雑談" } });
     fireEvent.click(screen.getByRole("button", { name: "追加" }));
 
-    expect(
-      await screen.findByText("クエリを入力してください。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("クエリを入力してください。")
+    ).resolves.toBeInTheDocument();
     expect(input).toHaveValue("雑談");
   });
 

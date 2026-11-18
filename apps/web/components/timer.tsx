@@ -1,13 +1,8 @@
 "use client";
 
 import { TIME_ZONE } from "@shinju-date/constants";
-import {
-  createContext,
-  type ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 
 interface TimerContextValue {
   now?: Temporal.ZonedDateTime | undefined;

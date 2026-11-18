@@ -10,10 +10,10 @@ import {
 } from "../internal/testing/images.js";
 import { setupSupabase } from "../internal/testing/supabase.js";
 import {
-  type SavedYouTubeChannelIcon,
   selectYouTubeChannelIconUrl,
   syncYouTubeChannelIcon,
 } from "./profile-image.js";
+import type { SavedYouTubeChannelIcon } from "./profile-image.js";
 
 const supabase = setupSupabase();
 

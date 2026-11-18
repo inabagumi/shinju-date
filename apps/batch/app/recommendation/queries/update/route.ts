@@ -12,9 +12,9 @@ import { supabaseClient } from "@/lib/supabase";
 import { getAllTerms } from "./_lib/get-all-terms";
 
 // Weights for different time periods
-const WEIGHT_DAILY = 10.0;
-const WEIGHT_WEEKLY = 5.0;
-const WEIGHT_ALL_TIME = 1.0;
+const WEIGHT_DAILY = 10;
+const WEIGHT_WEEKLY = 5;
+const WEIGHT_ALL_TIME = 1;
 
 /**
  * How long the working key of the weighted union is kept, in case the job

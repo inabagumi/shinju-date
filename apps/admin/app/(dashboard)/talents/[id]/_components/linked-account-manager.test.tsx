@@ -163,9 +163,9 @@ describe.each(definitions)("LinkedAccountManager ($name)", (definition) => {
     fireEvent.click(screen.getByRole("button", { name: removeLabel }));
     fireEvent.click(screen.getByRole("button", { name: "削除" }));
 
-    expect(
-      await screen.findByText(`${definition.account}を削除しました。`)
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText(`${definition.account}を削除しました。`)
+    ).resolves.toBeInTheDocument();
     expect(definition.removeAction).toHaveBeenCalledWith(
       definition.accountRowId,
       "talent-1"
@@ -187,7 +187,7 @@ describe.each(definitions)("LinkedAccountManager ($name)", (definition) => {
 
     fireEvent.click(within(dialog).getByRole("button", { name: "削除" }));
 
-    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+    await expect(within(dialog).findByRole("alert")).resolves.toHaveTextContent(
       "削除できませんでした。"
     );
     expect(screen.getByRole("dialog")).toBe(dialog);
@@ -204,7 +204,7 @@ describe.each(definitions)("LinkedAccountManager ($name)", (definition) => {
 
     fireEvent.click(within(dialog).getByRole("button", { name: "削除" }));
 
-    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+    await expect(within(dialog).findByRole("alert")).resolves.toHaveTextContent(
       "処理に失敗しました。"
     );
     expect(screen.getByRole("dialog")).toBe(dialog);
@@ -250,7 +250,7 @@ describe.each(definitions)("LinkedAccountManager ($name)", (definition) => {
 
     fireEvent.click(within(dialog).getByRole("button", { name: "追加" }));
 
-    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+    await expect(within(dialog).findByRole("alert")).resolves.toHaveTextContent(
       `${definition.account}の追加に失敗しました。`
     );
     expect(screen.getByRole("dialog")).toBe(dialog);

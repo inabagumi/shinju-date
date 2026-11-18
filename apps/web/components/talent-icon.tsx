@@ -1,7 +1,5 @@
-import {
-  getTalentProfileImage,
-  type TalentAccounts,
-} from "@/lib/talent-profile-image";
+import { getTalentProfileImage } from "@/lib/talent-profile-image";
+import type { TalentAccounts } from "@/lib/talent-profile-image";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 

@@ -3,8 +3,8 @@ import type { Enums } from "@shinju-date/database";
 import {
   createThumbnail,
   replaceThumbnail,
-  type Thumbnail,
 } from "../internal/thumbnails/index.js";
+import type { Thumbnail } from "../internal/thumbnails/index.js";
 import type { WriteContext } from "../types.js";
 import type { SavedYouTubeVideo } from "./saved-video.js";
 import type { YouTubeVideo } from "./types.js";

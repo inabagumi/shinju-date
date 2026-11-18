@@ -44,8 +44,8 @@ describe("POST /images/cleanup", () => {
 
     expect(response.status).toBe(204);
     expect(acquireLock).toHaveBeenCalledWith("images:cleanup", 70);
-    expect(createScraper).toHaveBeenCalledTimes(1);
-    expect(scraper.cleanUpImages).toHaveBeenCalledTimes(1);
+    expect(createScraper).toHaveBeenCalledOnce();
+    expect(scraper.cleanUpImages).toHaveBeenCalledOnce();
   });
 
   it("does not run while the previous run holds the lock", async () => {

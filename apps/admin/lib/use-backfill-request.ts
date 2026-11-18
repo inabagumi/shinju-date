@@ -1,6 +1,7 @@
 "use client";
 
-import { type ServerActionResult, useServerAction } from "./use-server-action";
+import { useServerAction } from "./use-server-action";
+import type { ServerActionResult } from "./use-server-action";
 
 /**
  * 過去動画の取り込みをキューに追加する Server Action の戻り値。成功のトーストの文は

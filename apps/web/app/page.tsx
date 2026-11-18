@@ -9,7 +9,6 @@ import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE } from "@/lib/site";
 
 import hero from "./_assets/hero.jpg";
 import {
-  type DashboardVideos,
   LiveSection,
   RecentSection,
   RecentSectionSkeleton,
@@ -18,6 +17,7 @@ import {
   ShortsSection,
   ShortsSectionSkeleton,
 } from "./_components/home-sections";
+import type { DashboardVideos } from "./_components/home-sections";
 
 export const metadata: Metadata = createPageMetadata({
   absoluteTitle: `${SITE_NAME} - ${SITE_TAGLINE}`,

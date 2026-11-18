@@ -1,4 +1,5 @@
-import { CACHE_TAGS, type CacheTag } from "@shinju-date/constants";
+import { CACHE_TAGS } from "@shinju-date/constants";
+import type { CacheTag } from "@shinju-date/constants";
 import {
   afterEach,
   beforeEach,

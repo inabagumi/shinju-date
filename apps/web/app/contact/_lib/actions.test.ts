@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const DEFAULT_ADMIN_EMAIL = "contact@example.org";
 
@@ -53,7 +53,7 @@ describe("submitContactForm", () => {
     vi.restoreAllMocks();
   });
 
-  test("returns field errors matching the labels for empty required fields", async () => {
+  it("returns field errors matching the labels for empty required fields", async () => {
     const result = await submitContactForm(
       null,
       createFormData({ message: "", type: "" })
@@ -69,7 +69,7 @@ describe("submitContactForm", () => {
     });
   });
 
-  test("returns a field error for an invalid email address", async () => {
+  it("returns a field error for an invalid email address", async () => {
     const result = await submitContactForm(
       null,
       createFormData({
@@ -86,7 +86,7 @@ describe("submitContactForm", () => {
     );
   });
 
-  test("requires an email address when a reply is requested", async () => {
+  it("requires an email address when a reply is requested", async () => {
     const result = await submitContactForm(
       null,
       createFormData({
@@ -102,7 +102,7 @@ describe("submitContactForm", () => {
     );
   });
 
-  test.each([
+  it.each([
     ["not set", undefined],
     ["the sample value", "admin@example.com"],
   ])(
@@ -124,7 +124,7 @@ describe("submitContactForm", () => {
     }
   );
 
-  test("reports success when the email is sent", async () => {
+  it("reports success when the email is sent", async () => {
     sendEmail.mockResolvedValue({
       data: { id: "email-id" },
       error: null,
@@ -150,7 +150,7 @@ describe("submitContactForm", () => {
     );
   });
 
-  test("includes the name in the body when no reply is requested", async () => {
+  it("includes the name in the body when no reply is requested", async () => {
     sendEmail.mockResolvedValue({
       data: { id: "email-id" },
       error: null,
@@ -174,7 +174,7 @@ describe("submitContactForm", () => {
     expect(options.text).toContain("■ お名前\n山田花子\n");
   });
 
-  test("marks the name as not entered when it is empty", async () => {
+  it("marks the name as not entered when it is empty", async () => {
     sendEmail.mockResolvedValue({
       data: { id: "email-id" },
       error: null,
@@ -193,7 +193,7 @@ describe("submitContactForm", () => {
     );
   });
 
-  test("reports a failure when Resend returns an error", async () => {
+  it("reports a failure when Resend returns an error", async () => {
     const consoleError = vi
       .spyOn(console, "error")
       .mockImplementation(() => {});

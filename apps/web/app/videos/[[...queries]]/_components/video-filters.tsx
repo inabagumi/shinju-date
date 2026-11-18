@@ -9,11 +9,8 @@ import VideoKindFilterNav, {
   VideoKindFilterNavSkeleton,
 } from "@/components/video-kind-filter-nav";
 import type { Talent } from "@/lib/data/talents";
-import {
-  getVideosCalendarPath,
-  getVideosPath,
-  type VideoKindFilter,
-} from "@/lib/video-kind-filter";
+import { getVideosCalendarPath, getVideosPath } from "@/lib/video-kind-filter";
+import type { VideoKindFilter } from "@/lib/video-kind-filter";
 
 import TalentFilter from "./talent-filter";
 

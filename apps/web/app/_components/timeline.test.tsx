@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Video } from "@/lib/data/videos";
 import { createVideoItem } from "@/test/factories";
@@ -33,7 +33,7 @@ describe("Timeline", () => {
     vi.restoreAllMocks();
   });
 
-  test("should keep each single-video date next to its own card", () => {
+  it("should keep each single-video date next to its own card", () => {
     render(
       <Timeline
         referenceDate="2026-11-14"
@@ -75,7 +75,7 @@ describe("Timeline", () => {
     }
   });
 
-  test("should group multiple videos on the same date in order of start time", () => {
+  it("should group multiple videos on the same date in order of start time", () => {
     render(
       <Timeline
         referenceDate="2026-11-14"
@@ -121,7 +121,7 @@ describe("Timeline", () => {
     expect(within(secondGroup).getByText("1件")).toBeInTheDocument();
   });
 
-  test("should place the date heading before its cards", () => {
+  it("should place the date heading before its cards", () => {
     render(
       <Timeline
         referenceDate="2026-11-14"
@@ -149,7 +149,7 @@ describe("Timeline", () => {
     );
   });
 
-  test("should show the start time next to each card", () => {
+  it("should show the start time next to each card", () => {
     render(
       <Timeline
         referenceDate="2026-11-14"
@@ -171,7 +171,7 @@ describe("Timeline", () => {
     );
   });
 
-  test("should label dates from the reference date when rendered on the server", () => {
+  it("should label dates from the reference date when rendered on the server", () => {
     // サーバーでキャッシュを作ったのは 2026-11-14 で、描画した時点では日付が変わっている
     vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(
       Temporal.ZonedDateTime.from("2026-11-15T00:30:00+09:00[Asia/Tokyo]")
@@ -193,7 +193,7 @@ describe("Timeline", () => {
     expect(html).toContain(">今日</time>");
   });
 
-  test("should label dates from the current time after hydration", () => {
+  it("should label dates from the current time after hydration", () => {
     vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(
       Temporal.ZonedDateTime.from("2026-11-15T00:30:00+09:00[Asia/Tokyo]")
     );

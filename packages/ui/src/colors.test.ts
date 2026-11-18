@@ -14,11 +14,11 @@ const SEMANTIC_COLORS_START = "@theme static";
 const require = createRequire(import.meta.url);
 const themeCSS = readFileSync(
   require.resolve("@shinju-date/tailwind-config/theme.css"),
-  "utf8"
+  "utf-8"
 );
 const tailwindThemeCSS = readFileSync(
   require.resolve("tailwindcss/theme.css"),
-  "utf8"
+  "utf-8"
 );
 
 // sRGB の線形値（0〜1）
@@ -42,7 +42,7 @@ function extractDeclarations(css: string): Map<string, string> {
 const semanticStart = themeCSS.indexOf(SEMANTIC_COLORS_START);
 const darkStart = themeCSS.indexOf(DARK_MODE_QUERY);
 
-if (semanticStart < 0 || darkStart < semanticStart) {
+if (semanticStart === -1 || darkStart < semanticStart) {
   throw new Error("theme.css のセマンティックカラーの定義が見つかりません");
 }
 
@@ -60,11 +60,11 @@ const modes = [
 ] as const;
 
 function srgbToLinear(value: number): number {
-  return value <= 0.040_45 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
 }
 
 function linearToSRGB(value: number): number {
-  return value <= 0.003_130_8
+  return value <= 0.0031308
     ? value * 12.92
     : 1.055 * value ** (1 / 2.4) - 0.055;
 }
@@ -85,14 +85,14 @@ function parseOklch(lightness: number, chroma: number, hue: number): LinearRGB {
   const radian = (hue * Math.PI) / 180;
   const a = chroma * Math.cos(radian);
   const b = chroma * Math.sin(radian);
-  const l = (lightness + 0.396_337_777_4 * a + 0.215_803_757_3 * b) ** 3;
-  const m = (lightness - 0.105_561_345_8 * a - 0.063_854_172_8 * b) ** 3;
-  const s = (lightness - 0.089_484_177_5 * a - 1.291_485_548 * b) ** 3;
+  const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
 
   return [
-    4.076_741_662_1 * l - 3.307_711_591_3 * m + 0.230_969_929_2 * s,
-    -1.268_438_004_6 * l + 2.609_757_401_1 * m - 0.341_319_396_5 * s,
-    -0.004_196_086_3 * l - 0.703_418_614_7 * m + 1.707_614_701 * s,
+    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
   ].map((value) => Math.min(1, Math.max(0, value))) as LinearRGB;
 }
 

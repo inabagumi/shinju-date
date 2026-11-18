@@ -13,10 +13,8 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Panel, PanelSkeleton } from "@/components/panel";
 import { formatDateTimeFromISO } from "@/lib/format";
 import { useBackfillRequest } from "@/lib/use-backfill-request";
-import {
-  type PolledResourceFailure,
-  usePolledResource,
-} from "@/lib/use-polled-resource";
+import { usePolledResource } from "@/lib/use-polled-resource";
+import type { PolledResourceFailure } from "@/lib/use-polled-resource";
 
 import {
   getVideoBackfillHistoryAction,

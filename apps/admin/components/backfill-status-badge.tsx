@@ -1,4 +1,5 @@
-import { Badge, type BadgeProps } from "@shinju-date/ui";
+import { Badge } from "@shinju-date/ui";
+import type { BadgeProps } from "@shinju-date/ui";
 import type { BackfillRunJobStatus } from "@shinju-date/video-backfill";
 
 /**

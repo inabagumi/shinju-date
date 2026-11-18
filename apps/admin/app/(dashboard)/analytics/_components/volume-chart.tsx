@@ -9,11 +9,8 @@ import type { Period } from "@/lib/analytics/period";
 import type { ChartSeries } from "../../_lib/chart-series";
 import { formatDateLabel } from "../_lib/format-date";
 import type { AnalyticsSearchParams } from "../_lib/search-params-schema";
-import {
-  type VolumeChartDatum,
-  VolumeChartUI,
-  type VolumeChartVariant,
-} from "./volume-chart-ui";
+import { VolumeChartUI } from "./volume-chart-ui";
+import type { VolumeChartDatum, VolumeChartVariant } from "./volume-chart-ui";
 
 interface VolumeChartKindDefinition {
   /**

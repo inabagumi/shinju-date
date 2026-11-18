@@ -4,21 +4,26 @@ import { logger } from "@shinju-date/logger";
 import {
   parseTwitchUserIdentifier,
   resolveTwitchUser,
-  type TwitchUser,
-  type TwitchUserIdentifier,
+} from "@shinju-date/twitch-api-client";
+import type {
+  TwitchUser,
+  TwitchUserIdentifier,
 } from "@shinju-date/twitch-api-client";
 import { revalidateTags } from "@shinju-date/web-cache";
 import {
-  type FilteredYouTubeChannel,
   parseYouTubeChannelIdentifier,
   resolveYouTubeChannel,
-  type YouTubeChannelIdentifier,
+} from "@shinju-date/youtube-api-client";
+import type {
+  FilteredYouTubeChannel,
+  YouTubeChannelIdentifier,
 } from "@shinju-date/youtube-api-client";
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
 import { ActionError } from "@/lib/action";
-import { type AuditLogDetails, createAuditLog } from "@/lib/audit-log";
+import { createAuditLog } from "@/lib/audit-log";
+import type { AuditLogDetails } from "@/lib/audit-log";
 import type { TypedSupabaseClient } from "@/lib/supabase";
 import {
   isNotFoundError,

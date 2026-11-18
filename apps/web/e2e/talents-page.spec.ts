@@ -1,4 +1,5 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 // Provided by the MSW mock data (packages/msw-handlers): five active talents,
 // a retired talent and a deleted talent. The first talent has icons, and the

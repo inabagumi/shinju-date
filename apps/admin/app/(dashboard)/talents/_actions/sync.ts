@@ -14,11 +14,10 @@ import { touchTalent } from "@/lib/talent-accounts";
 
 import {
   accountsNotFoundError,
-  type PlatformSyncOutcome,
-  type SyncResult,
   toSyncResult,
   toSyncSummary,
 } from "../_lib/sync-result";
+import type { PlatformSyncOutcome, SyncResult } from "../_lib/sync-result";
 import { talentIdSchema } from "../_lib/talent-schema";
 
 type Platform = Enums<"platform_type">;

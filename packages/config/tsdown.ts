@@ -1,4 +1,5 @@
-import { defineConfig, type UserConfig } from "tsdown";
+import { defineConfig } from "tsdown";
+import type { UserConfig } from "tsdown";
 
 export interface PackageConfigOptions extends UserConfig {
   /** The source files to build. Each one becomes a file in `dist/`. */

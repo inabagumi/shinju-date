@@ -1,9 +1,9 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { groupVideosByDate } from "./group-videos-by-date";
 
 describe("groupVideosByDate", () => {
-  test("should group the videos by the date in Japan, in the order of the start", () => {
+  it("should group the videos by the date in Japan, in the order of the start", () => {
     const groups = groupVideosByDate([
       { id: "c", published_at: "2026-11-11T13:00:00Z" },
       // 00:30 on 10 November in Japan
@@ -26,7 +26,7 @@ describe("groupVideosByDate", () => {
     expect(groups.get("2026-11-11")?.map((video) => video.id)).toEqual(["c"]);
   });
 
-  test("should not change the given videos", () => {
+  it("should not change the given videos", () => {
     const videos = [
       { id: "b", published_at: "2026-11-10T13:00:00Z" },
       { id: "a", published_at: "2026-11-10T12:00:00Z" },
@@ -37,7 +37,7 @@ describe("groupVideosByDate", () => {
     expect(videos.map((video) => video.id)).toEqual(["b", "a"]);
   });
 
-  test("should keep the given order with `sort: false`", () => {
+  it("should keep the given order with `sort: false`", () => {
     const groups = groupVideosByDate(
       [
         { id: "c", published_at: "2026-11-11T13:00:00Z" },

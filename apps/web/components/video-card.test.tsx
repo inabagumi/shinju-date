@@ -1,5 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type { Video } from "@/lib/data/videos";
 
@@ -74,7 +74,7 @@ function getCreator() {
 }
 
 describe("VideoCard", () => {
-  test("should show the icon and name of the YouTube channel", () => {
+  it("should show the icon and name of the YouTube channel", () => {
     render(
       <VideoCard
         value={createYouTubeVideo({
@@ -97,7 +97,7 @@ describe("VideoCard", () => {
     );
   });
 
-  test("should show the icon and display name of the Twitch user", () => {
+  it("should show the icon and display name of the Twitch user", () => {
     render(
       <VideoCard
         value={createTwitchVideo({
@@ -115,7 +115,7 @@ describe("VideoCard", () => {
     expect(creator.querySelector("img")).not.toBeNull();
   });
 
-  test("should show the default icon when the account has no icon", () => {
+  it("should show the default icon when the account has no icon", () => {
     render(
       <VideoCard
         value={createYouTubeVideo({
@@ -135,7 +135,7 @@ describe("VideoCard", () => {
     expect(creator).toHaveTextContent("チャンネル名");
   });
 
-  test.each([
+  it.each([
     [
       "the YouTube handle",
       createYouTubeVideo({
@@ -171,7 +171,7 @@ describe("VideoCard", () => {
     expect(screen.getByRole("link")).toBeInTheDocument();
   });
 
-  test("should still render the card without any creator data", () => {
+  it("should still render the card without any creator data", () => {
     const video = createYouTubeVideo();
 
     render(
@@ -182,7 +182,7 @@ describe("VideoCard", () => {
     expect(screen.queryByTestId("video-creator")).not.toBeInTheDocument();
   });
 
-  test("should not announce the creator icon or nest links in the card", () => {
+  it("should not announce the creator icon or nest links in the card", () => {
     render(
       <VideoCard
         value={createYouTubeVideo({
@@ -201,7 +201,7 @@ describe("VideoCard", () => {
     expect(within(link).queryAllByRole("link")).toHaveLength(0);
   });
 
-  test("should wrap the title at word boundaries when possible", () => {
+  it("should wrap the title at word boundaries when possible", () => {
     render(<VideoCard value={createYouTubeVideo()} />);
 
     // `break-all` splits words such as "#shorts" in the middle.
@@ -211,7 +211,7 @@ describe("VideoCard", () => {
     expect(title).not.toHaveClass("break-all");
   });
 
-  test("should truncate a long creator name and keep the full name in the title", () => {
+  it("should truncate a long creator name and keep the full name in the title", () => {
     const longName = "とても長いチャンネル名".repeat(10);
 
     render(
@@ -230,7 +230,7 @@ describe("VideoCard", () => {
     expect(getCreator()).toHaveClass("min-w-0");
   });
 
-  test("should keep the height of two lines for the title", () => {
+  it("should keep the height of two lines for the title", () => {
     render(<VideoCard value={createYouTubeVideo()} />);
 
     const title = screen.getByRole("heading");
@@ -238,7 +238,7 @@ describe("VideoCard", () => {
     expect(title).toHaveClass("line-clamp-2", "min-h-[2lh]");
   });
 
-  test("should show the creator and the date in one line", () => {
+  it("should show the creator and the date in one line", () => {
     render(
       <VideoCard
         value={createYouTubeVideo({
@@ -260,7 +260,7 @@ describe("VideoCard", () => {
     expect(within(meta).getByText("・")).toHaveAttribute("aria-hidden", "true");
   });
 
-  test("should hide the date below 640px when it is shown outside the card", () => {
+  it("should hide the date below 640px when it is shown outside the card", () => {
     render(
       <VideoCard
         hideTimeOnMobile
@@ -276,7 +276,7 @@ describe("VideoCard", () => {
     expect(screen.getByText("20:00")).toHaveClass("max-sm:hidden");
   });
 
-  test("should use the given heading level for the title", () => {
+  it("should use the given heading level for the title", () => {
     render(<VideoCard titleAs="h4" value={createYouTubeVideo()} />);
 
     expect(
@@ -284,7 +284,7 @@ describe("VideoCard", () => {
     ).toBeInTheDocument();
   });
 
-  test("should not show the separator without a creator", () => {
+  it("should not show the separator without a creator", () => {
     const video = createYouTubeVideo();
 
     render(
@@ -294,7 +294,7 @@ describe("VideoCard", () => {
     expect(screen.queryByText("・")).not.toBeInTheDocument();
   });
 
-  test("should show the duration on the thumbnail", () => {
+  it("should show the duration on the thumbnail", () => {
     render(<VideoCard value={createYouTubeVideo()} />);
 
     const duration = within(
@@ -305,7 +305,7 @@ describe("VideoCard", () => {
     expect(duration.parentElement).toHaveClass("right-0", "bottom-0");
   });
 
-  test("should show the live badge only for live videos", () => {
+  it("should show the live badge only for live videos", () => {
     const video = createYouTubeVideo();
     const { rerender } = render(<VideoCard value={video} />);
 
@@ -320,7 +320,7 @@ describe("VideoCard", () => {
     expect(badge).toHaveClass("top-0", "left-0", "bg-live");
   });
 
-  test.each([
+  it.each([
     ["grid", true],
     ["row", true],
     ["short", false],
@@ -353,7 +353,7 @@ describe("VideoCard", () => {
     }
   );
 
-  test("should label the start time of upcoming videos only when asked", () => {
+  it("should label the start time of upcoming videos only when asked", () => {
     const video = { ...createYouTubeVideo(), status: "UPCOMING" as const };
     const { rerender } = render(<VideoCard value={video} />);
 
@@ -370,7 +370,7 @@ describe("VideoCard", () => {
     expect(screen.queryByText("予定")).not.toBeInTheDocument();
   });
 
-  test.each([
+  it.each([
     ["Twitch", createTwitchVideo(), true],
     ["YouTube", createYouTubeVideo(), false],
   ])("should show the platform badge for %s: %s", (name, video, expected) => {
@@ -385,7 +385,7 @@ describe("VideoCard", () => {
     }
   });
 
-  test("should show a focus ring around the whole card", () => {
+  it("should show a focus ring around the whole card", () => {
     render(<VideoCard value={createYouTubeVideo()} />);
 
     expect(screen.getByRole("link")).toHaveClass(
@@ -394,7 +394,7 @@ describe("VideoCard", () => {
     );
   });
 
-  test("should show the title without the labels and the credits", () => {
+  it("should show the title without the labels and the credits", () => {
     const title =
       "【雀魂】指示厨が泡吹いて倒れない麻雀【タレント名 / ななしいんく】";
 
@@ -408,7 +408,7 @@ describe("VideoCard", () => {
     expect(screen.getByTestId("video-card-tags").textContent).toBe("雀魂");
   });
 
-  test("should show the trailing hashtags above the title", () => {
+  it("should show the trailing hashtags above the title", () => {
     render(
       <VideoCard
         value={{
@@ -432,7 +432,7 @@ describe("VideoCard", () => {
     ).toHaveLength(0);
   });
 
-  test("should show the first label and up to three hashtags", () => {
+  it("should show the first label and up to three hashtags", () => {
     render(
       <VideoCard
         value={{
@@ -448,7 +448,7 @@ describe("VideoCard", () => {
     expect(screen.getByRole("heading").textContent).toBe("最終日！");
   });
 
-  test("should keep the height of one line without labels and hashtags", () => {
+  it("should keep the height of one line without labels and hashtags", () => {
     render(<VideoCard value={createYouTubeVideo()} />);
 
     const tags = screen.getByTestId("video-card-tags");
@@ -462,7 +462,7 @@ describe("VideoCard", () => {
     );
   });
 
-  test("should not show the labels and hashtags on the short variant", () => {
+  it("should not show the labels and hashtags on the short variant", () => {
     render(
       <VideoCard
         value={{
@@ -479,7 +479,7 @@ describe("VideoCard", () => {
     expect(screen.getByRole("heading").textContent).toBe("Magic / 3SKM");
   });
 
-  test.each([
+  it.each([
     ["grid", ["flex-col"], "aspect-video"],
     ["row", ["flex-row", "sm:flex-col"], "w-2/5"],
     ["short", ["flex-col"], "aspect-9/16"],
@@ -492,7 +492,7 @@ describe("VideoCard", () => {
 });
 
 describe("VideoCardSkeleton", () => {
-  test.each([
+  it.each([
     ["grid", ["flex-col"], "aspect-video"],
     ["row", ["flex-row", "sm:flex-col"], "w-2/5"],
     ["short", ["flex-col"], "aspect-9/16"],
@@ -508,7 +508,7 @@ describe("VideoCardSkeleton", () => {
     }
   );
 
-  test.each([
+  it.each([
     ["grid", 3],
     ["row", 3],
     ["short", 2],

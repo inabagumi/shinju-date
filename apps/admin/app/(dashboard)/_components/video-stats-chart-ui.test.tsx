@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { cloneElement, type ReactElement } from "react";
+import { cloneElement } from "react";
+import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 // jsdom は要素の大きさを測れないので、グラフに大きさを直接渡す

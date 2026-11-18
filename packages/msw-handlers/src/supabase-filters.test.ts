@@ -363,7 +363,7 @@ describe("Supabase filters", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual([{ id, visible }]);
+      await expect(response.json()).resolves.toEqual([{ id, visible }]);
     });
 
     it("matches the IDs in upper case in the rows of a database function", async () => {
@@ -384,7 +384,7 @@ describe("Supabase filters", () => {
       const id = (await search("limit=1000")).find(hasLetters);
 
       expect(id).toBeDefined();
-      expect(await search(`id=eq.${id?.toUpperCase()}`)).toEqual([id]);
+      await expect(search(`id=eq.${id?.toUpperCase()}`)).resolves.toEqual([id]);
     });
 
     it("still compares the text columns with case", async () => {

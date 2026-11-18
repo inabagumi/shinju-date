@@ -2,7 +2,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { Button, type ButtonProps } from "./Button";
+import { Button } from "./Button";
+import type { ButtonProps } from "./Button";
 
 const BASE_CLASSES = [
   "inline-flex",
@@ -76,7 +77,7 @@ describe("Button", () => {
 
     await user.click(screen.getByRole("button", { name: "保存" }));
 
-    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(onClick).toHaveBeenCalledOnce();
   });
 
   it("does not call onClick while disabled", async () => {

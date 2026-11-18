@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { logger } from "@shinju-date/logger";
-import { AccountNotFoundError, type Scraper } from "@shinju-date/scraper";
+import { AccountNotFoundError } from "@shinju-date/scraper";
+import type { Scraper } from "@shinju-date/scraper";
 import type {
   BackfillClaim,
   BackfillJob,

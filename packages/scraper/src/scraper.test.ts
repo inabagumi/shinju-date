@@ -195,7 +195,7 @@ describe("Scraper#cleanUpImages", () => {
 
     await expect(scraper.cleanUpImages(now)).resolves.toBeUndefined();
 
-    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledOnce();
     expect(onError).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.stringContaining("Failed to list unused thumbnails"),

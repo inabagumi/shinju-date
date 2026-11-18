@@ -4,7 +4,8 @@ import { Resend } from "resend";
 import { z } from "zod";
 
 import { UNEXPECTED_ERROR, withBotCheck } from "@/lib/form-action";
-import { type FormState, toValidationErrorState } from "@/lib/form-state";
+import { toValidationErrorState } from "@/lib/form-state";
+import type { FormState } from "@/lib/form-state";
 
 import { getContactFormConfig } from "./utils";
 

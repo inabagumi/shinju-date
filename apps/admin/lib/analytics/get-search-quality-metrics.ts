@@ -6,12 +6,8 @@ import { cacheLife } from "next/cache";
 import { getRedisClient } from "@/lib/redis";
 
 import { listDatesInRange } from "./list-dates-in-range";
-import {
-  DEFAULT_RANKING_LIMIT,
-  type PeriodQuery,
-  type RankingQuery,
-  toDateRange,
-} from "./period";
+import { DEFAULT_RANKING_LIMIT, toDateRange } from "./period";
+import type { PeriodQuery, RankingQuery } from "./period";
 import { dailyKeys, parseScoredMembers } from "./redis";
 
 /**
@@ -75,7 +71,7 @@ export async function getSearchExitRates({
   limit = DEFAULT_RANKING_LIMIT,
   range,
 }: RankingQuery): Promise<
-  Array<{ keyword: string; exitRate: number; searchCount: number }>
+  { keyword: string; exitRate: number; searchCount: number }[]
 > {
   "use cache: private";
 
@@ -144,11 +140,11 @@ export async function getSearchExitRates({
     }
 
     // Calculate exit rates for each keyword
-    const exitRates: Array<{
+    const exitRates: {
       keyword: string;
       exitRate: number;
       searchCount: number;
-    }> = [];
+    }[] = [];
 
     for (const [keyword, searchCount] of searchCounts.entries()) {
       const exitCount = exitCounts.get(keyword) ?? 0;

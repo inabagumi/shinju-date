@@ -1,7 +1,8 @@
 import { createErrorResponse } from "@shinju-date/helpers";
 import { logger } from "@shinju-date/logger";
 import { stringify } from "csv-stringify/sync";
-import { connection, type NextRequest } from "next/server";
+import { connection } from "next/server";
+import type { NextRequest } from "next/server";
 
 import type { Period } from "@/lib/analytics/period";
 

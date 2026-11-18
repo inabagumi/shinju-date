@@ -1,10 +1,8 @@
 import type { QueryData } from "@supabase/supabase-js";
 import { cacheLife } from "next/cache";
 
-import {
-  createSupabaseServerClient,
-  type TypedSupabaseClient,
-} from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase";
+import type { TypedSupabaseClient } from "@/lib/supabase";
 import { unwrapOrNull } from "@/lib/supabase/query";
 
 const TALENT_SELECT = `

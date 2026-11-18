@@ -16,13 +16,13 @@ import { ChartLegendContent } from "./chart-legend-content";
 import { ChartTooltipContent } from "./chart-tooltip-content";
 
 interface VideoStatsChartProps {
-  data: Array<{
+  data: {
     date: string;
     visibleVideos: number;
     scheduledVideos: number;
     hiddenVideos: number;
     deletedVideos: number;
-  }>;
+  }[];
 }
 
 interface VideoStatsSeries extends ChartSeries {

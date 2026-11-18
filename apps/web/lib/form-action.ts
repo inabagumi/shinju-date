@@ -1,6 +1,7 @@
 import { checkBotId } from "botid/server";
 
-import { type FormState, getFormValues } from "@/lib/form-state";
+import { getFormValues } from "@/lib/form-state";
+import type { FormState } from "@/lib/form-state";
 
 export const BOT_DETECTED_ERROR =
   "送信を完了できませんでした。しばらく時間をおいて再度お試しください。";

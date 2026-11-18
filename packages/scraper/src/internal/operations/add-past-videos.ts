@@ -4,11 +4,8 @@ import type {
   CrawlContext,
 } from "../../types.js";
 import { BACKFILL_SAVE_CONCURRENCY } from "../constants.js";
-import {
-  type AccountTable,
-  findAccount,
-  type TalentAccount,
-} from "../database/index.js";
+import { findAccount } from "../database/index.js";
+import type { AccountTable, TalentAccount } from "../database/index.js";
 import { AccountNotFoundError, StalledPaginationError } from "../errors.js";
 
 /** One page of the videos of an account, newest first. */

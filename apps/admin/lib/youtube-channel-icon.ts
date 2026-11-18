@@ -1,9 +1,9 @@
 import { logger } from "@shinju-date/logger";
-import {
-  type ProfileImageSyncResult,
-  type SavedYouTubeChannelIcon,
-  type SyncYouTubeChannelIconOptions,
-  syncYouTubeChannelIcon,
+import { syncYouTubeChannelIcon } from "@shinju-date/scraper/youtube";
+import type {
+  ProfileImageSyncResult,
+  SavedYouTubeChannelIcon,
+  SyncYouTubeChannelIconOptions,
 } from "@shinju-date/scraper/youtube";
 
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";

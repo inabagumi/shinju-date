@@ -1,4 +1,5 @@
-import { Constants, type Enums } from "@shinju-date/database";
+import { Constants } from "@shinju-date/database";
+import type { Enums } from "@shinju-date/database";
 
 export type FeatureRequestStatus = Enums<"feature_request_status">;
 

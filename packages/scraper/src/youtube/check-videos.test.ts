@@ -453,7 +453,7 @@ describe("refreshYouTubeVideos and thumbnails", () => {
     const changed = await refreshYouTubeVideos(createContext(fetcher), "live");
 
     expect(changed).toBe(1);
-    expect(reportError).toHaveBeenCalledTimes(1);
+    expect(reportError).toHaveBeenCalledOnce();
     expect(reportError).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.stringContaining("Failed to download an image"),
@@ -489,12 +489,15 @@ describe("removeUnavailableYouTubeVideos", () => {
       cursors.push(query["id"]);
 
       switch (query["id"]) {
-        case undefined:
+        case undefined: {
           return createPage(0, 1000);
-        case "gt.video-0999":
+        }
+        case "gt.video-0999": {
           return createPage(1000, 3);
-        default:
+        }
+        default: {
           return [];
+        }
       }
     });
     const { findMissingVideoIds, fetcher } =

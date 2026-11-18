@@ -4,7 +4,8 @@ import { revalidateTag } from "next/cache";
 
 import { serverEnv } from "@/lib/env";
 
-import { type Payload, payloadSchema } from "./_lib/schemas";
+import { payloadSchema } from "./_lib/schemas";
+import type { Payload } from "./_lib/schemas";
 
 async function parseRequest(request: Request): Promise<Payload> {
   const rawPayload = (await request.json()) as unknown;

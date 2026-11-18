@@ -2,10 +2,12 @@ import type { youtube_v3 as youtube } from "@googleapis/youtube";
 
 import {
   MAX_PROFILE_IMAGE_SIZE,
-  type ProfileImageSyncResult,
-  type SavedProfileImageRow,
   syncProfileImage,
   toStoredProfileImage,
+} from "../internal/profile-images/index.js";
+import type {
+  ProfileImageSyncResult,
+  SavedProfileImageRow,
 } from "../internal/profile-images/index.js";
 import type { TypedSupabaseClient } from "../types.js";
 import type { YouTubeChannel } from "./types.js";

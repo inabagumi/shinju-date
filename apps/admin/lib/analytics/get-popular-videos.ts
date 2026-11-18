@@ -4,16 +4,11 @@ import type { QueryData } from "@supabase/supabase-js";
 import { cacheLife } from "next/cache";
 
 import { isNonNullable } from "@/lib/is-non-nullable";
-import {
-  createSupabaseServerClient,
-  type TypedSupabaseClient,
-} from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase";
+import type { TypedSupabaseClient } from "@/lib/supabase";
 
-import {
-  DEFAULT_RANKING_LIMIT,
-  type RankingQuery,
-  toDateRange,
-} from "./period";
+import { DEFAULT_RANKING_LIMIT, toDateRange } from "./period";
+import type { RankingQuery } from "./period";
 import { getPopularItems } from "./popular-items";
 
 const POPULAR_VIDEO_SELECT = `

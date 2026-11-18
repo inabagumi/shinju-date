@@ -2,11 +2,8 @@
 
 import type { Tables } from "@shinju-date/database";
 import { range } from "@shinju-date/helpers";
-import {
-  FilterBar,
-  MultiSelect,
-  type MultiSelectOption,
-} from "@shinju-date/ui";
+import { FilterBar, MultiSelect } from "@shinju-date/ui";
+import type { MultiSelectOption } from "@shinju-date/ui";
 import { useSearchParams } from "next/navigation";
 
 import { SearchInput } from "@/components/search-input";

@@ -1,5 +1,5 @@
 import { REDIS_KEYS } from "@shinju-date/constants";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { logSearchQuery } from "./search-analytics";
 
@@ -36,7 +36,7 @@ describe("logSearchQuery", () => {
     vi.restoreAllMocks();
   });
 
-  test("counts the normalized query for the day, the week and the whole period", async () => {
+  it("counts the normalized query for the day, the week and the whole period", async () => {
     await logSearchQuery("  Singing 歌枠 ", 3);
 
     expect(multi.zincrby.mock.calls).toEqual([
@@ -47,7 +47,7 @@ describe("logSearchQuery", () => {
     expect(multi.exec).toHaveBeenCalledOnce();
   });
 
-  test("increments the daily search volume", async () => {
+  it("increments the daily search volume", async () => {
     await logSearchQuery("歌枠", 3);
 
     expect(multi.incr.mock.calls).toEqual([
@@ -55,10 +55,10 @@ describe("logSearchQuery", () => {
     ]);
   });
 
-  test("sets a TTL on every daily and weekly key, and on no other key", async () => {
+  it("sets a TTL on every daily and weekly key, and on no other key", async () => {
     await logSearchQuery("歌枠", 0);
 
-    expect(multi.expire.mock.calls).toHaveLength(3);
+    expect(multi.expire).toHaveBeenCalledTimes(3);
     expect(multi.expire.mock.calls).toEqual(
       expect.arrayContaining([
         [`${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}20251014`, 90 * DAY_SECONDS],
@@ -71,7 +71,7 @@ describe("logSearchQuery", () => {
     );
   });
 
-  test("records a query without results", async () => {
+  it("records a query without results", async () => {
     await logSearchQuery("歌枠", 0);
 
     expect(multi.sadd.mock.calls).toEqual([
@@ -79,13 +79,13 @@ describe("logSearchQuery", () => {
     ]);
   });
 
-  test("does not record a query with results as one without", async () => {
+  it("does not record a query with results as one without", async () => {
     await logSearchQuery("歌枠", 3);
 
     expect(multi.sadd).not.toHaveBeenCalled();
   });
 
-  test("does not write anything for a blank query", async () => {
+  it("does not write anything for a blank query", async () => {
     await logSearchQuery("  ", 0);
 
     expect(multi.exec).not.toHaveBeenCalled();

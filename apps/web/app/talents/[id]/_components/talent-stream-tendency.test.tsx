@@ -1,5 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/data/talents", () => ({}));
 
@@ -31,7 +31,7 @@ const COUNTS = createCounts([
 ]);
 
 describe("StreamTendency", () => {
-  test("should show the heading and the summary", () => {
+  it("should show the heading and the summary", () => {
     render(<StreamTendency counts={COUNTS} />);
 
     expect(
@@ -47,7 +47,7 @@ describe("StreamTendency", () => {
     ).toBeInTheDocument();
   });
 
-  test("should fold into a line with the busiest day and hour", () => {
+  it("should fold into a line with the busiest day and hour", () => {
     const { container } = render(<StreamTendency counts={COUNTS} />);
 
     const summary = container.querySelector("details > summary");
@@ -56,7 +56,7 @@ describe("StreamTendency", () => {
     expect(summary).toHaveTextContent("配信の傾向土曜日・21時台が多い");
   });
 
-  test("should read out the count of each cell by the day and the hour", () => {
+  it("should read out the count of each cell by the day and the hour", () => {
     render(<StreamTendency counts={COUNTS} />);
 
     const table = screen.getByRole("table", {
@@ -86,7 +86,7 @@ describe("StreamTendency", () => {
     expect(cells[20]).toHaveTextContent("0回");
   });
 
-  test("should show the numbers of only some hours", () => {
+  it("should show the numbers of only some hours", () => {
     render(<StreamTendency counts={COUNTS} />);
 
     for (const hour of [0, 6, 12, 18]) {
@@ -104,7 +104,7 @@ describe("StreamTendency", () => {
     ).toBeNull();
   });
 
-  test("should shade the cells by the count with the accent", () => {
+  it("should shade the cells by the count with the accent", () => {
     render(<StreamTendency counts={COUNTS} />);
 
     const cells = screen.getAllByTestId("stream-tendency-cell");
@@ -126,7 +126,7 @@ describe("StreamTendency", () => {
     }
   });
 
-  test("should render nothing with fewer than 10 streams", () => {
+  it("should render nothing with fewer than 10 streams", () => {
     const { container } = render(
       <StreamTendency counts={createCounts([[5, 21, 9]])} />
     );
@@ -134,7 +134,7 @@ describe("StreamTendency", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  test("should render nothing without streams", () => {
+  it("should render nothing without streams", () => {
     const { container } = render(<StreamTendency counts={createCounts()} />);
 
     expect(container).toBeEmptyDOMElement();

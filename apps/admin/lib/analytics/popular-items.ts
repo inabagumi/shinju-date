@@ -4,7 +4,8 @@ import { formatDateKey } from "@shinju-date/temporal-fns";
 
 import { getRedisClient } from "@/lib/redis";
 
-import { type DateRange, dailyKeys, parseScoredMembers } from "./redis";
+import { dailyKeys, parseScoredMembers } from "./redis";
+import type { DateRange } from "./redis";
 
 /**
  * キャッシュ有効期間（秒）

@@ -3,9 +3,9 @@ import { WRITE_CONCURRENCY } from "../internal/constants.js";
 import {
   findSavedYouTubeVideoIds,
   getActiveAccounts,
-  type TalentAccount,
   YOUTUBE_CHANNELS,
 } from "../internal/database/index.js";
+import type { TalentAccount } from "../internal/database/index.js";
 import { saveVideoWithThumbnail } from "../internal/operations/save-video.js";
 import type { CrawlContext } from "../types.js";
 import type { YouTubeFetcher } from "./fetcher.js";

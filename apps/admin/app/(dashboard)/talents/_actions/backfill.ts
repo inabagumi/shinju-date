@@ -1,26 +1,20 @@
 "use server";
 
 import { logger } from "@shinju-date/logger";
-import {
-  type BackfillProvider,
-  BackfillQueue,
-} from "@shinju-date/video-backfill";
+import { BackfillQueue } from "@shinju-date/video-backfill";
+import type { BackfillProvider } from "@shinju-date/video-backfill";
 
 import { PLATFORM_LABELS } from "@/components/platform-badge";
-import {
-  ActionError,
-  type ActionResult,
-  adminAction,
-  parseActionInput,
-} from "@/lib/action";
+import { ActionError, adminAction, parseActionInput } from "@/lib/action";
+import type { ActionResult } from "@/lib/action";
 import { createAuditLog } from "@/lib/audit-log";
 import { getRedisClient } from "@/lib/redis";
 
 import {
   getTalentAccounts,
   readVideoBackfillStatus,
-  type VideoBackfillStatus,
 } from "../_lib/get-video-backfill-status";
+import type { VideoBackfillStatus } from "../_lib/get-video-backfill-status";
 import { backfillProviderSchema, talentIdSchema } from "../_lib/talent-schema";
 
 /** 過去動画の取り込みをキューに追加できたときに、画面に知らせること */

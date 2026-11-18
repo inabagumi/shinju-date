@@ -3,7 +3,8 @@ import {
   syncAccountsWith,
 } from "../internal/operations/sync-accounts.js";
 import type { CrawlContext, SyncAccountResult } from "../types.js";
-import { createTwitchAccounts, type TwitchUserFields } from "./accounts.js";
+import { createTwitchAccounts } from "./accounts.js";
+import type { TwitchUserFields } from "./accounts.js";
 import type { TwitchFetcher } from "./fetcher.js";
 
 /**

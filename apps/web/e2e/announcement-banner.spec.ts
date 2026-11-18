@@ -1,4 +1,5 @@
-import { expect, type Locator, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 // Provided by the MSW mock data (packages/msw-handlers)
 const ANNOUNCEMENT_MESSAGE = "メンテナンスのお知らせ";

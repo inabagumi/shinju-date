@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 const { serverEnv } = vi.hoisted(() => ({
   serverEnv: {
@@ -28,7 +28,7 @@ describe("getContactFormConfig", () => {
     serverEnv.RESEND_API_KEY = undefined;
   });
 
-  test("returns the settings when every variable is set", () => {
+  it("returns the settings when every variable is set", () => {
     setEnv({});
 
     expect(getContactFormConfig()).toEqual({
@@ -39,7 +39,7 @@ describe("getContactFormConfig", () => {
     expect(isContactFormEnabled()).toBe(true);
   });
 
-  test.each(["ADMIN_EMAIL", "FROM_EMAIL", "RESEND_API_KEY"] as const)(
+  it.each(["ADMIN_EMAIL", "FROM_EMAIL", "RESEND_API_KEY"] as const)(
     "returns null when %s is not set",
     (name) => {
       setEnv({ [name]: undefined });
@@ -49,7 +49,7 @@ describe("getContactFormConfig", () => {
     }
   );
 
-  test("returns null when ADMIN_EMAIL is the sample value", () => {
+  it("returns null when ADMIN_EMAIL is the sample value", () => {
     setEnv({ ADMIN_EMAIL: "admin@example.com" });
 
     expect(getContactFormConfig()).toBeNull();

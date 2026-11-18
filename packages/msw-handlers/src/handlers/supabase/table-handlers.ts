@@ -11,8 +11,8 @@ import {
   getColumn,
   getOffset,
   parseSupabaseQuery,
-  type SupabaseQuery,
 } from "./query.js";
+import type { SupabaseQuery } from "./query.js";
 import {
   acceptsSingleObject,
   REST_URL,
@@ -20,12 +20,12 @@ import {
   singleObjectError,
 } from "./rest.js";
 import { applySelect, selectRows, validateSelect } from "./select.js";
-import {
-  getRows,
-  type TableDefinition,
-  type TableName,
-  type UniqueConstraint,
-  type WritableTableDefinition,
+import { getRows } from "./tables.js";
+import type {
+  TableDefinition,
+  TableName,
+  UniqueConstraint,
+  WritableTableDefinition,
 } from "./tables.js";
 
 /** Whether the request asks for the rows that it changed. */

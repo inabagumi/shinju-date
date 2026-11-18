@@ -13,7 +13,8 @@ import {
   twMerge,
 } from "@shinju-date/ui";
 import { unstable_rethrow } from "next/navigation";
-import { type ReactElement, type ReactNode, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 
 import type { FormState } from "@/components/form";

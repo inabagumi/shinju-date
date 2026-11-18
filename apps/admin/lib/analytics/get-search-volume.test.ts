@@ -50,7 +50,7 @@ describe("getSearchVolume", async () => {
       { count: 0, date: "2024-01-31" },
       { count: 3, date: "2024-02-01" },
     ]);
-    expect(redisClient.pipeline).toHaveBeenCalledTimes(1);
+    expect(redisClient.pipeline).toHaveBeenCalledOnce();
     expect(vi.mocked(redisClient.get).mock.calls).toEqual([
       [`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}20240130`],
       [`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}20240131`],

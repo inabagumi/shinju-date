@@ -1,11 +1,8 @@
 import { PostgrestError, parseError } from "./errors.js";
-import { type Filter, filtersAt, getColumn, matchesFilters } from "./query.js";
-import {
-  type AnyTableDefinition,
-  findTable,
-  getRows,
-  type TableName,
-} from "./tables.js";
+import { filtersAt, getColumn, matchesFilters } from "./query.js";
+import type { Filter } from "./query.js";
+import { findTable, getRows } from "./tables.js";
+import type { AnyTableDefinition, TableName } from "./tables.js";
 
 /**
  * A single entry of a PostgREST `select` parameter.

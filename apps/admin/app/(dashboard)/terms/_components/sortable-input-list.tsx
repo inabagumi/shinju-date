@@ -3,12 +3,12 @@
 import {
   closestCenter,
   DndContext,
-  type DragEndEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
@@ -19,12 +19,8 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Button, Input } from "@shinju-date/ui";
 import { GripVertical, X } from "lucide-react";
-import {
-  type ChangeEvent,
-  type ClipboardEvent,
-  useCallback,
-  useState,
-} from "react";
+import { useCallback, useState } from "react";
+import type { ChangeEvent, ClipboardEvent } from "react";
 
 interface SortableItemProps {
   id: string;

@@ -16,10 +16,8 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Panel, PanelSkeleton } from "@/components/panel";
 import { formatDateTimeFromISO } from "@/lib/format";
 import { useBackfillRequest } from "@/lib/use-backfill-request";
-import {
-  type PolledResourceFailure,
-  usePolledResource,
-} from "@/lib/use-polled-resource";
+import { usePolledResource } from "@/lib/use-polled-resource";
+import type { PolledResourceFailure } from "@/lib/use-polled-resource";
 
 import {
   getVideoBackfillRunAction,
@@ -34,7 +32,7 @@ import type {
 type Status = VideoBackfillRunAccount["status"];
 
 /** How often progress is refreshed while a check is in progress. */
-const POLL_INTERVAL_MS = 5_000;
+const POLL_INTERVAL_MS = 5000;
 
 const TITLE = "取得漏れチェック（全タレント）";
 const DESCRIPTION =

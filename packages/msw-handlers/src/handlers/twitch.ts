@@ -301,7 +301,7 @@ export const twitchHandlers = [
   http.post("https://id.twitch.tv/oauth2/token", () =>
     HttpResponse.json({
       access_token: "mock-twitch-app-access-token",
-      expires_in: 5011271,
+      expires_in: 5_011_271,
       token_type: "bearer",
     })
   ),

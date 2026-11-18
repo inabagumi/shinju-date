@@ -1,9 +1,9 @@
 import { logger } from "@shinju-date/logger";
-import {
-  type ProfileImageSyncResult,
-  type SavedTwitchUserIcon,
-  type SyncTwitchUserIconOptions,
-  syncTwitchUserIcon,
+import { syncTwitchUserIcon } from "@shinju-date/scraper/twitch";
+import type {
+  ProfileImageSyncResult,
+  SavedTwitchUserIcon,
+  SyncTwitchUserIconOptions,
 } from "@shinju-date/scraper/twitch";
 
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";

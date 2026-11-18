@@ -123,15 +123,17 @@ describe("VideoBackfillRunPanel", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "チェックする" }));
 
-    expect(
-      await screen.findByText(
+    await expect(
+      screen.findByText(
         "全タレントの取得漏れチェックを3件キューに追加しました。"
       )
-    ).toBeTruthy();
+    ).resolves.toBeTruthy();
     expect(mocks.requestVideoBackfillRunAction).toHaveBeenCalledOnce();
 
     // The check that was just queued shows up without reloading the page.
-    expect(await screen.findByRole("button", { name: "実行中" })).toBeTruthy();
+    await expect(
+      screen.findByRole("button", { name: "実行中" })
+    ).resolves.toBeTruthy();
     expect(screen.getByText("待機中", { selector: "span" })).toBeTruthy();
   });
 

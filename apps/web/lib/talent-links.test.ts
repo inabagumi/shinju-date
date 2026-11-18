@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type {
   TalentTwitchUser,
@@ -40,20 +40,20 @@ function createTwitchUser(
 }
 
 describe("findFirstNonBlank", () => {
-  test("should return the first value that is not blank, trimmed", () => {
+  it("should return the first value that is not blank, trimmed", () => {
     expect(findFirstNonBlank(null, undefined, " ", " name ", "other")).toBe(
       "name"
     );
   });
 
-  test("should return null without any value that is not blank", () => {
+  it("should return null without any value that is not blank", () => {
     expect(findFirstNonBlank()).toBeNull();
     expect(findFirstNonBlank(null, undefined, "", "  ")).toBeNull();
   });
 });
 
 describe("getTalentLinks", () => {
-  test("should link to each channel and the calendar", () => {
+  it("should link to each channel and the calendar", () => {
     expect(
       getTalentLinks(
         createTalentDetail({
@@ -80,7 +80,7 @@ describe("getTalentLinks", () => {
     ]);
   });
 
-  test("should tell several accounts of the same platform apart", () => {
+  it("should tell several accounts of the same platform apart", () => {
     const links = getTalentLinks(
       createTalentDetail({
         twitch_users: [
@@ -117,7 +117,7 @@ describe("getTalentLinks", () => {
     ]);
   });
 
-  test("should skip Twitch users without a login", () => {
+  it("should skip Twitch users without a login", () => {
     const links = getTalentLinks(
       createTalentDetail({
         twitch_users: [
@@ -143,7 +143,7 @@ describe("getTalentLinks", () => {
 });
 
 describe("getTalentPath", () => {
-  test("should add the kind of videos except for all", () => {
+  it("should add the kind of videos except for all", () => {
     expect(getTalentPath(TALENT_ID, "all")).toBe(`/talents/${TALENT_ID}`);
     expect(getTalentPath(TALENT_ID, "short")).toBe(
       `/talents/${TALENT_ID}?kind=short`
@@ -153,7 +153,7 @@ describe("getTalentPath", () => {
     );
   });
 
-  test("should return the paths of the page and the calendar", () => {
+  it("should return the paths of the page and the calendar", () => {
     expect(getTalentPath(TALENT_ID)).toBe(`/talents/${TALENT_ID}`);
     expect(getTalentCalendarPath(TALENT_ID)).toBe(`/talents/${TALENT_ID}.ics`);
   });

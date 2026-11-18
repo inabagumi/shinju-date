@@ -67,7 +67,7 @@ describe("addQueryAction", () => {
     test.expectAuditLog("RECOMMENDED_QUERY_CREATE", null, {
       entityName: "Hoge",
     });
-    expect(test.revalidateTags).toHaveBeenCalledTimes(1);
+    expect(test.revalidateTags).toHaveBeenCalledOnce();
     expect(test.revalidateTags).toHaveBeenCalledWith([
       CACHE_TAGS.RECOMMENDATION_QUERIES,
     ]);
@@ -113,7 +113,7 @@ describe("deleteQueryAction", () => {
     test.expectAuditLog("RECOMMENDED_QUERY_DELETE", null, {
       entityName: "Hoge",
     });
-    expect(test.revalidateTags).toHaveBeenCalledTimes(1);
+    expect(test.revalidateTags).toHaveBeenCalledOnce();
     expect(test.revalidateTags).toHaveBeenCalledWith([
       CACHE_TAGS.RECOMMENDATION_QUERIES,
     ]);

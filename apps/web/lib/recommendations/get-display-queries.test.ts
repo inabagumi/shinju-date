@@ -95,8 +95,8 @@ describe("getDisplayRecommendationQueries", () => {
     );
 
     // random() close to 1 leaves the pool (3rd to 20th) in order
-    vi.spyOn(Math, "random").mockReturnValue(0.999_999);
-    expect(await getDisplayRecommendationQueries()).toEqual([
+    vi.spyOn(Math, "random").mockReturnValue(0.999999);
+    await expect(getDisplayRecommendationQueries()).resolves.toEqual([
       "query1",
       "query2",
       "query3",
@@ -105,8 +105,8 @@ describe("getDisplayRecommendationQueries", () => {
 
     // The first swap exchanges the last item of the pool (20th) with the
     // first (3rd), and the rest leave the pool as is
-    vi.spyOn(Math, "random").mockReturnValueOnce(0).mockReturnValue(0.999_999);
-    expect(await getDisplayRecommendationQueries()).toEqual([
+    vi.spyOn(Math, "random").mockReturnValueOnce(0).mockReturnValue(0.999999);
+    await expect(getDisplayRecommendationQueries()).resolves.toEqual([
       "query1",
       "query2",
       "query20",

@@ -1,10 +1,7 @@
 import { twMerge } from "@shinju-date/ui";
 
-import {
-  type DescribeRatingsOptions,
-  describeRatings,
-  type Ratings,
-} from "../_lib/metric-ratings";
+import { describeRatings } from "../_lib/metric-ratings";
+import type { DescribeRatingsOptions, Ratings } from "../_lib/metric-ratings";
 
 interface MetricLegendProps extends DescribeRatingsOptions {
   /** 広い画面での列の数。既定は 2 */

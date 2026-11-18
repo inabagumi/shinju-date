@@ -3,7 +3,8 @@
 import { logger } from "@shinju-date/logger";
 import { BackfillQueue } from "@shinju-date/video-backfill";
 
-import { ActionError, type ActionResult, adminAction } from "@/lib/action";
+import { ActionError, adminAction } from "@/lib/action";
+import type { ActionResult } from "@/lib/action";
 import { createAuditLog } from "@/lib/audit-log";
 import { getRedisClient } from "@/lib/redis";
 
@@ -12,8 +13,8 @@ import {
   getLatestFailures,
   readVideoBackfillHistory,
   toFailedAccounts,
-  type VideoBackfillHistory,
 } from "../_lib/get-video-backfill-history";
+import type { VideoBackfillHistory } from "../_lib/get-video-backfill-history";
 
 /** 失敗した過去動画の取り込みをキューに追加し直せたときに、画面に知らせること */
 interface VideoBackfillRetrySummary {

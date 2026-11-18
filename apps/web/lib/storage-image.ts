@@ -72,7 +72,7 @@ export async function serveStorageImage(
       headers,
       status: res.status,
     });
-  } catch (_error) {
+  } catch {
     // If fetch throws an error (e.g., network error), return a dummy image
     return createFallbackResponse();
   }

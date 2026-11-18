@@ -1,8 +1,6 @@
 import { TIME_ZONE } from "@shinju-date/constants";
-import {
-  readSummarySnapshot,
-  type SummaryStats,
-} from "@shinju-date/dashboard-stats";
+import { readSummarySnapshot } from "@shinju-date/dashboard-stats";
+import type { SummaryStats } from "@shinju-date/dashboard-stats";
 import { formatDate, formatDateKey } from "@shinju-date/temporal-fns";
 import { cacheLife } from "next/cache";
 

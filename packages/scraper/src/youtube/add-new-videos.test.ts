@@ -208,7 +208,7 @@ describe("addNewYouTubeVideos", () => {
       }),
       { youtubeVideoId: "bad-1" }
     );
-    expect(removeThumbnail).toHaveBeenCalledTimes(1);
+    expect(removeThumbnail).toHaveBeenCalledOnce();
   });
 
   it("reports channels that could not be read and handles the rest", async () => {

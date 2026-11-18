@@ -2,7 +2,8 @@ import type { youtube_v3 as youtube } from "@googleapis/youtube";
 import { paginate } from "@shinju-date/helpers";
 
 import { YOUTUBE_DATA_API_MAX_RESULTS } from "./batches.js";
-import { type ClientOptions, getYouTubeClient } from "./client.js";
+import { getYouTubeClient } from "./client.js";
+import type { ClientOptions } from "./client.js";
 import type {
   FilteredYouTubePlaylistItem,
   YouTubePlaylistItemsPage,

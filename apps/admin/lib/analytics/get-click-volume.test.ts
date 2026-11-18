@@ -54,7 +54,7 @@ describe("getClickVolume", async () => {
       { clicks: 0, date: "2024-01-31" },
       { clicks: 10, date: "2024-02-01" },
     ]);
-    expect(redisClient.pipeline).toHaveBeenCalledTimes(1);
+    expect(redisClient.pipeline).toHaveBeenCalledOnce();
     expect(vi.mocked(redisClient.zrange).mock.calls).toEqual([
       [
         `${REDIS_KEYS.CLICK_VIDEO_PREFIX}20240130`,

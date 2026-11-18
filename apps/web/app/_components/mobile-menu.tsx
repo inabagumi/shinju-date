@@ -1,7 +1,8 @@
 "use client";
 
 import { Menu, X } from "lucide-react";
-import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import type { ReactNode } from "react";
 
 interface MobileMenuProps {
   children: ReactNode;

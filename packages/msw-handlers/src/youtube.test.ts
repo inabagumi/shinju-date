@@ -81,6 +81,7 @@ describe("YouTube Handlers", () => {
   afterEach(() => {
     server.resetHandlers();
   });
+
   afterAll(() => {
     server.close();
   });

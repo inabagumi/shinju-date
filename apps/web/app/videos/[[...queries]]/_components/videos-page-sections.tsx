@@ -1,10 +1,12 @@
 import { formatNumber } from "@shinju-date/helpers";
-import { type ComponentProps, Suspense } from "react";
+import { Suspense } from "react";
+import type { ComponentProps } from "react";
 
 import NoResults from "@/components/no-results";
 import PageHeader, { PageHeaderSkeleton } from "@/components/page-header";
 import SearchResults from "@/components/search-results";
-import { fetchActiveTalents, type Talent } from "@/lib/data/talents";
+import { fetchActiveTalents } from "@/lib/data/talents";
+import type { Talent } from "@/lib/data/talents";
 import { countVideos, fetchVideos } from "@/lib/data/videos";
 import { getDisplayRecommendationQueries } from "@/lib/recommendations/get-display-queries";
 import { getReferenceDate } from "@/lib/reference-date";
@@ -15,8 +17,8 @@ import {
   getVideosPath,
   parseVideoKindFilter,
   VIDEO_KIND_SEARCH_PARAM,
-  type VideoKindFilter,
 } from "@/lib/video-kind-filter";
+import type { VideoKindFilter } from "@/lib/video-kind-filter";
 
 import SearchExitTracker from "./search-exit-tracker";
 import SearchQueryTracker from "./search-query-tracker";

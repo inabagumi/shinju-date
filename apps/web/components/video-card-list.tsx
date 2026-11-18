@@ -3,10 +3,8 @@ import type { ComponentPropsWithoutRef } from "react";
 
 import type { Video } from "@/lib/data/videos";
 
-import VideoCard, {
-  VideoCardSkeleton,
-  type VideoCardVariant,
-} from "./video-card";
+import VideoCard, { VideoCardSkeleton } from "./video-card";
+import type { VideoCardVariant } from "./video-card";
 
 type VideoCardListVariant = Exclude<VideoCardVariant, "short">;
 

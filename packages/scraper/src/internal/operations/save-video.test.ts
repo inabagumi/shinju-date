@@ -10,7 +10,8 @@ import {
   setupSupabase,
 } from "../testing/supabase.js";
 import { createThumbnail, THUMBNAILS_BUCKET } from "../thumbnails/thumbnail.js";
-import { type NewVideoAdapter, saveVideoWithThumbnail } from "./save-video.js";
+import { saveVideoWithThumbnail } from "./save-video.js";
+import type { NewVideoAdapter } from "./save-video.js";
 
 interface FakeVideo {
   id: string;
@@ -90,12 +91,14 @@ function mockDatabase() {
     const id = query["id"]?.replace(/^eq\./, "");
 
     switch (`${method} ${table}`) {
-      case "POST thumbnails":
+      case "POST thumbnails": {
         rows.thumbnails.set((body as Row).id, body as Row);
         return [];
-      case "DELETE thumbnails":
+      }
+      case "DELETE thumbnails": {
         if (id) rows.thumbnails.delete(id);
         return [];
+      }
       case "POST rpc/insert_video": {
         const { p_platform_video, p_video } = body as {
           p_platform_video: { youtube_video_id: string };
@@ -112,8 +115,9 @@ function mockDatabase() {
         rows.youtubeVideos.set(p_platform_video.youtube_video_id, videoId);
         return HttpResponse.json(videoId);
       }
-      default:
+      default: {
         return [];
+      }
     }
   });
 

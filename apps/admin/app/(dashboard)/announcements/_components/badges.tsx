@@ -4,24 +4,30 @@ import { Badge } from "@shinju-date/ui";
 // Get level badge variant
 function getLevelBadgeVariant(level: string): "info" | "warning" | "danger" {
   switch (level) {
-    case "warning":
+    case "warning": {
       return "warning";
-    case "alert":
+    }
+    case "alert": {
       return "danger";
-    default:
+    }
+    default: {
       return "info";
+    }
   }
 }
 
 // Get level label
 function getLevelLabel(level: string): string {
   switch (level) {
-    case "warning":
+    case "warning": {
       return "警告";
-    case "alert":
+    }
+    case "alert": {
       return "重要";
-    default:
+    }
+    default: {
       return "情報";
+    }
   }
 }
 

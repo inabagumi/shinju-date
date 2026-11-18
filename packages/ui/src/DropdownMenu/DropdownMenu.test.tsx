@@ -135,7 +135,7 @@ describe("DropdownMenu", () => {
     await user.keyboard("{ArrowDown}");
     await user.keyboard("{Enter}");
 
-    expect(onEdit).toHaveBeenCalledTimes(1);
+    expect(onEdit).toHaveBeenCalledOnce();
     expect(onDelete).not.toHaveBeenCalled();
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
@@ -174,7 +174,7 @@ describe("DropdownMenu", () => {
     await user.click(screen.getByRole("button", { name: "操作" }));
     await user.click(screen.getByRole("menuitem", { name: "削除" }));
 
-    expect(onDelete).toHaveBeenCalledTimes(1);
+    expect(onDelete).toHaveBeenCalledOnce();
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 

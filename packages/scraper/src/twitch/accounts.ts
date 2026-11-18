@@ -4,10 +4,8 @@ import { TWITCH_USERS } from "../internal/database/index.js";
 import { DatabaseError } from "../internal/errors.js";
 import type { AccountAdapter } from "../internal/operations/sync-accounts.js";
 import type { TwitchFetcher } from "./fetcher.js";
-import {
-  type SavedTwitchUserIcon,
-  syncTwitchUserIcon,
-} from "./profile-image.js";
+import { syncTwitchUserIcon } from "./profile-image.js";
+import type { SavedTwitchUserIcon } from "./profile-image.js";
 import type { TwitchUser } from "./types.js";
 
 /** The columns of a user that are kept in line with Twitch. */

@@ -5,12 +5,8 @@ import { useState } from "react";
 import type { ActionResult, ConfirmHandler } from "@/components/confirm-dialog";
 import { useServerAction } from "@/lib/use-server-action";
 
-import {
-  getVideoActionSuccessText,
-  runVideoAction,
-  type VideoAction,
-  type VideoActionTarget,
-} from "./video-actions";
+import { getVideoActionSuccessText, runVideoAction } from "./video-actions";
+import type { VideoAction, VideoActionTarget } from "./video-actions";
 
 export interface UseVideoActionOptions {
   /** 操作が成功したときに、トーストを出したあとで呼ばれる */

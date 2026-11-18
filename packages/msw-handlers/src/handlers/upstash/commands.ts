@@ -9,15 +9,11 @@
 import {
   SCRIPT_EMULATIONS as BACKFILL_SCRIPT_EMULATIONS,
   getScriptName,
-  type ScriptEmulation,
 } from "@shinju-date/video-backfill/testing";
+import type { ScriptEmulation } from "@shinju-date/video-backfill/testing";
 
-import {
-  type MockRedisStore,
-  RedisError,
-  type RedisValueOf,
-  wrongTypeError,
-} from "./store.js";
+import { RedisError, wrongTypeError } from "./store.js";
+import type { MockRedisStore, RedisValueOf } from "./store.js";
 
 /** A reply of Redis as Upstash returns it in JSON. */
 export type RedisReply = number | string | null | RedisReply[];
@@ -108,13 +104,13 @@ function parseFlags(
 /** The members of a sorted set, ordered by score and then by member. */
 function sortZset(zset: RedisValueOf<"zset">): [string, number][] {
   return [...zset].sort(([memberA, scoreA], [memberB, scoreB]) =>
-    scoreA !== scoreB
-      ? scoreA - scoreB
-      : memberA < memberB
+    scoreA === scoreB
+      ? memberA < memberB
         ? -1
         : memberA > memberB
           ? 1
           : 0
+      : scoreA - scoreB
   );
 }
 

@@ -91,7 +91,7 @@ describe("getSearchEngagementRate", async () => {
     });
 
     expect(result).toBe(20); // (30+50) / (100+300) * 100 = 20%
-    expect(redisClient.pipeline).toHaveBeenCalledTimes(1);
+    expect(redisClient.pipeline).toHaveBeenCalledOnce();
     expect(vi.mocked(redisClient.scard).mock.calls).toEqual([
       [`${REDIS_KEYS.SESSIONS_TOTAL_PREFIX}20240101`],
       [`${REDIS_KEYS.SESSIONS_WITH_SEARCH_PREFIX}20240101`],
@@ -233,7 +233,7 @@ describe("getRepeatSearchRate", async () => {
     });
 
     expect(result).toBe(3); // (3+1+5) / 3 = 3
-    expect(redisClient.pipeline).toHaveBeenCalledTimes(1);
+    expect(redisClient.pipeline).toHaveBeenCalledOnce();
     expect(redisClient.hgetall).toHaveBeenCalledTimes(3);
   });
 

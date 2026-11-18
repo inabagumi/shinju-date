@@ -217,7 +217,7 @@ describe("VideoActionConfirmDialog", () => {
 
     fireEvent.click(confirmButton);
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onConfirm).toHaveBeenCalledOnce();
     await waitFor(() => {
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });

@@ -5,7 +5,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useId, useMemo } from "react";
 import { useInView } from "react-intersection-observer";
 
-import { fetchVideos, type Video } from "@/lib/data/videos";
+import { fetchVideos } from "@/lib/data/videos";
+import type { Video } from "@/lib/data/videos";
 import { formatRelativeDate } from "@/lib/date-heading";
 import { groupVideosByDate } from "@/lib/group-videos-by-date";
 import { queryKeys } from "@/lib/query-keys";
@@ -134,14 +135,13 @@ export default function SearchResults({
           }
         : {}),
       initialPageParam: undefined as bigint | undefined,
-      queryFn: ({ pageParam }) => {
-        return fetchVideos({
+      queryFn: ({ pageParam }) =>
+        fetchVideos({
           kind,
           query,
           talentIds,
           until: pageParam,
-        });
-      },
+        }),
       queryKey: queryKeys.videos({ kind, query, talentIds }),
     });
 

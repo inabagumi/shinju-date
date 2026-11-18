@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useOptimistic, useTransition } from "react";
 
 import type { Talent } from "@/lib/data/talents";
-import { getVideosPath, type VideoKindFilter } from "@/lib/video-kind-filter";
+import { getVideosPath } from "@/lib/video-kind-filter";
+import type { VideoKindFilter } from "@/lib/video-kind-filter";
 
 interface TalentFilterProps {
   kind: VideoKindFilter;

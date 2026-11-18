@@ -1,6 +1,7 @@
 import type { Tables } from "@shinju-date/database";
 
-import { randomPast, type SeedContext } from "./context.js";
+import { randomPast } from "./context.js";
+import type { SeedContext } from "./context.js";
 
 const TERMS = [
   {

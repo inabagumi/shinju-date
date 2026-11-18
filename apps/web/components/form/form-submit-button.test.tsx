@@ -1,10 +1,10 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { FormSubmitButton } from "./form-submit-button";
 
 describe("FormSubmitButton", () => {
-  test("is enabled before the form is submitted", () => {
+  it("is enabled before the form is submitted", () => {
     render(
       <form>
         <FormSubmitButton />
@@ -14,7 +14,7 @@ describe("FormSubmitButton", () => {
     expect(screen.getByRole("button", { name: "送信する" })).toBeEnabled();
   });
 
-  test("is disabled and shows the pending label while submitting", async () => {
+  it("is disabled and shows the pending label while submitting", async () => {
     const { promise, resolve } = Promise.withResolvers<void>();
 
     const { container } = render(

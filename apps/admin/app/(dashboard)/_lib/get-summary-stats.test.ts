@@ -5,18 +5,14 @@ import type { SummaryStats } from "@shinju-date/dashboard-stats";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getRedisClient } from "@/lib/redis";
-import {
-  postgresError,
-  type SupabaseRequest,
-  setupSupabase,
-  withCount,
-} from "@/test/supabase";
+import { postgresError, setupSupabase, withCount } from "@/test/supabase";
+import type { SupabaseRequest } from "@/test/supabase";
 
 import { getSummaryStats } from "./get-summary-stats";
-import {
-  VIDEO_SUMMARY_FILTERS,
-  type VideoSummaryFilter,
-  type VideoSummaryTile,
+import { VIDEO_SUMMARY_FILTERS } from "./video-summary-filters";
+import type {
+  VideoSummaryFilter,
+  VideoSummaryTile,
 } from "./video-summary-filters";
 
 const mocks = vi.hoisted(() => ({

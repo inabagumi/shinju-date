@@ -1,14 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  CircleAlert,
-  type LucideIcon,
-  Megaphone,
-  Minus,
-  TriangleAlert,
-  X,
-} from "lucide-react";
+import { CircleAlert, Megaphone, Minus, TriangleAlert, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { queryKeys } from "@/lib/query-keys";
@@ -31,27 +25,30 @@ interface BannerTone {
  */
 function getBannerTone(level: string): BannerTone {
   switch (level) {
-    case "warning":
+    case "warning": {
       return {
         borderClassName: "border-l-warning",
         icon: TriangleAlert,
         label: "注意",
         textClassName: "text-warning",
       };
-    case "alert":
+    }
+    case "alert": {
       return {
         borderClassName: "border-l-danger",
         icon: CircleAlert,
         label: "警告",
         textClassName: "text-danger",
       };
-    default:
+    }
+    default: {
       return {
         borderClassName: "border-l-accent",
         icon: Megaphone,
         label: "お知らせ",
         textClassName: "text-accent",
       };
+    }
   }
 }
 
@@ -95,7 +92,7 @@ export function AnnouncementBanner({
       return announcement;
     },
     queryKey: queryKeys.announcement(),
-    refetchInterval: 1_000 * 60, // Refetch every 60 seconds
+    refetchInterval: 1000 * 60, // Refetch every 60 seconds
     refetchIntervalInBackground: true,
     // The message is a React element rendered on the server, not JSON data.
     // Structural sharing would walk the whole element tree (including the
@@ -184,7 +181,7 @@ export function AnnouncementBanner({
             >
               <div
                 className={`prose prose-sm max-w-none prose-tokens ${
-                  !isExpanded ? "line-clamp-1" : ""
+                  isExpanded ? "" : "line-clamp-1"
                 }`}
               >
                 {data.message}

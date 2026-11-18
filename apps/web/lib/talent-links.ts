@@ -1,8 +1,6 @@
 import type { TalentDetail } from "@/lib/data/talents";
-import {
-  VIDEO_KIND_SEARCH_PARAM,
-  type VideoKindFilter,
-} from "@/lib/video-kind-filter";
+import { VIDEO_KIND_SEARCH_PARAM } from "@/lib/video-kind-filter";
+import type { VideoKindFilter } from "@/lib/video-kind-filter";
 
 export interface TalentLink {
   /** Whether the link leads outside of this site */

@@ -6,8 +6,9 @@ import {
   getRewrittenUrl,
   unstable_doesMiddlewareMatch,
 } from "next/experimental/testing/server";
-import { NextRequest, type NextResponse } from "next/server";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { NextRequest } from "next/server";
+import type { NextResponse } from "next/server";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const redisGet = vi.fn<(key: string) => Promise<unknown>>();
 
@@ -44,7 +45,7 @@ describe("config.matcher", () => {
     return unstable_doesMiddlewareMatch({ config, url: `${BASE_URL}${path}` });
   }
 
-  test.each([
+  it.each([
     "/",
     "/videos",
     "/videos/歌枠",
@@ -59,7 +60,7 @@ describe("config.matcher", () => {
     await expect(doesMatch(path)).resolves.toBe(true);
   });
 
-  test.each([
+  it.each([
     "/_next/static/chunks/main.js",
     "/_next/image?url=%2Fhero.jpg&w=640&q=75",
     "/api/healthz",
@@ -94,7 +95,7 @@ describe("proxy", () => {
     redisGet.mockReset();
   });
 
-  test("shows the maintenance page while the maintenance mode is on", async () => {
+  it("shows the maintenance page while the maintenance mode is on", async () => {
     redisGet.mockResolvedValue(true);
     const { proxy } = await importProxy();
 
@@ -104,7 +105,7 @@ describe("proxy", () => {
     expect(getRewrittenUrl(response)).toBe(`${BASE_URL}/maintenance.html`);
   });
 
-  test("passes the request while the maintenance mode is off", async () => {
+  it("passes the request while the maintenance mode is off", async () => {
     const { proxy } = await importProxy();
 
     const response = await run(proxy, "/videos");
@@ -113,7 +114,7 @@ describe("proxy", () => {
     expect(getRedirectUrl(response)).toBeNull();
   });
 
-  test("passes the request when Redis cannot be read", async () => {
+  it("passes the request when Redis cannot be read", async () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     redisGet.mockRejectedValue(new Error("unavailable"));
     const { proxy } = await importProxy();
@@ -123,7 +124,7 @@ describe("proxy", () => {
     expect(getRewrittenUrl(response)).toBeNull();
   });
 
-  test("redirects a legacy search", async () => {
+  it("redirects a legacy search", async () => {
     const { proxy } = await importProxy();
 
     const response = await run(proxy, "/videos?q=歌枠");
@@ -134,7 +135,7 @@ describe("proxy", () => {
     );
   });
 
-  test("reads Redis once for the requests within 5 seconds", async () => {
+  it("reads Redis once for the requests within 5 seconds", async () => {
     const start = Temporal.Instant.from("2026-11-17T00:00:00Z");
     const now = vi.spyOn(Temporal.Now, "instant").mockReturnValue(start);
     const { proxy } = await importProxy();
@@ -143,10 +144,10 @@ describe("proxy", () => {
     now.mockReturnValue(start.add({ milliseconds: 4999 }));
     await run(proxy, "/schedule");
 
-    expect(redisGet).toHaveBeenCalledTimes(1);
+    expect(redisGet).toHaveBeenCalledOnce();
   });
 
-  test("reads Redis again after 5 seconds", async () => {
+  it("reads Redis again after 5 seconds", async () => {
     const start = Temporal.Instant.from("2026-11-17T00:00:00Z");
     const now = vi.spyOn(Temporal.Now, "instant").mockReturnValue(start);
     const { proxy } = await importProxy();

@@ -47,7 +47,7 @@ describe("POST /talents/update", () => {
     expect(response.status).toBe(204);
     expect(acquireLock).toHaveBeenCalledWith("talents:update", 130);
     expect(createScraper).toHaveBeenCalledWith("youtube");
-    expect(scraper.syncAccounts).toHaveBeenCalledTimes(1);
+    expect(scraper.syncAccounts).toHaveBeenCalledOnce();
     expect(revalidateTags).not.toHaveBeenCalled();
   });
 

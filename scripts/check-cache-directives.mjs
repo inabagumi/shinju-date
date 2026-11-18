@@ -22,12 +22,11 @@
 
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 
 import ts from "typescript";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const root = resolve(import.meta.dirname, "..");
 
 const SOURCE_PATTERNS = [
   "*.cjs",
@@ -184,7 +183,7 @@ function listSourceFiles() {
       "--",
       ...SOURCE_PATTERNS,
     ],
-    { cwd: root, encoding: "utf8" }
+    { cwd: root, encoding: "utf-8" }
   );
 
   return output
@@ -202,7 +201,7 @@ function main() {
     let sourceText;
 
     try {
-      sourceText = readFileSync(resolve(root, file), "utf8");
+      sourceText = readFileSync(resolve(root, file), "utf-8");
     } catch (error) {
       // A tracked file that was deleted but not yet staged
       if (error?.code === "ENOENT") {
@@ -236,9 +235,6 @@ function main() {
   }
 }
 
-if (
-  process.argv[1] &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-) {
+if (process.argv[1] && resolve(process.argv[1]) === import.meta.filename) {
   main();
 }

@@ -5,11 +5,8 @@ import { YOUTUBE_CHANNELS } from "../database/index.js";
 import { AccountNotFoundError, StalledPaginationError } from "../errors.js";
 import { createTestContext } from "../testing/context.js";
 import { setupSupabase } from "../testing/supabase.js";
-import {
-  addPastVideosWith,
-  type PastVideoAdapter,
-  type PastVideoPage,
-} from "./add-past-videos.js";
+import { addPastVideosWith } from "./add-past-videos.js";
+import type { PastVideoAdapter, PastVideoPage } from "./add-past-videos.js";
 
 const supabase = setupSupabase();
 const context = createTestContext({

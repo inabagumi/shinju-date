@@ -1,6 +1,7 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
-import { Constants, type Enums } from "./index.js";
+import { Constants } from "./index.js";
+import type { Enums } from "./index.js";
 
 describe("Constants", () => {
   it("exposes the values of platform_type at runtime", () => {

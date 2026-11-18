@@ -6,16 +6,12 @@ import type { TwitchFetcher } from "./fetcher.js";
 import {
   isLivePlaceholder,
   SAVED_TWITCH_VIDEO_COLUMNS,
-  type SavedTwitchVideo,
 } from "./saved-video.js";
+import type { SavedTwitchVideo } from "./saved-video.js";
 import { createTwitchThumbnail } from "./thumbnail.js";
 import type { TwitchClip, TwitchVideo } from "./types.js";
-import {
-  type TwitchVideoFields,
-  type TwitchVideoType,
-  toClipFields,
-  toVideoFields,
-} from "./video.js";
+import { toClipFields, toVideoFields } from "./video.js";
+import type { TwitchVideoFields, TwitchVideoType } from "./video.js";
 
 /** What Twitch returns for a saved video: a Helix video, or a clip. */
 export type TwitchLookedUpVideo = TwitchClip | TwitchVideo;

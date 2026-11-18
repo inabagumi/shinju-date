@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { fetchVideos, type Video } from "@/lib/data/videos";
+import { fetchVideos } from "@/lib/data/videos";
+import type { Video } from "@/lib/data/videos";
 import { createVideoItem } from "@/test/factories";
 
 import SearchResults from "./search-results";
@@ -41,7 +42,7 @@ describe("SearchResults", () => {
     vi.restoreAllMocks();
   });
 
-  test("should group the videos by date in Japan", () => {
+  it("should group the videos by date in Japan", () => {
     renderWithQueryClient(
       <SearchResults
         prefetchedData={[
@@ -111,7 +112,7 @@ describe("SearchResults", () => {
     ).toHaveAttribute("dateTime", "2026-11-14");
   });
 
-  test("should keep the date headings below the site header", () => {
+  it("should keep the date headings below the site header", () => {
     renderWithQueryClient(
       <SearchResults
         prefetchedData={[
@@ -133,7 +134,7 @@ describe("SearchResults", () => {
     );
   });
 
-  test("should render nothing without videos", () => {
+  it("should render nothing without videos", () => {
     const { container } = render(
       <QueryClientProvider client={new QueryClient()}>
         <SearchResults prefetchedData={[[]]} referenceDate="2026-11-14" />
@@ -143,7 +144,7 @@ describe("SearchResults", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  test("should fetch the videos with the selected talents", () => {
+  it("should fetch the videos with the selected talents", () => {
     const talentIds = ["0f6b7c84-1a1e-4b4e-9d3a-5c7a0c1e2f01"];
 
     renderWithQueryClient(

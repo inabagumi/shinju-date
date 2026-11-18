@@ -17,7 +17,9 @@ const scraper = vi.hoisted(() => ({
   youtube: vi.fn(),
 }));
 
-vi.mock("@/lib/scraper", () => ({ createScraper: scraper.createScraper }));
+vi.mock("@/lib/scraper", () => ({
+  createScraper: scraper.createScraper,
+}));
 
 const test = setupActionTest();
 
@@ -372,7 +374,7 @@ describe("syncTalentAccountsAction", () => {
       success: true,
       warnings: ["YouTube: 同期に失敗しました。"],
     });
-    expect(test.createAuditLog).toHaveBeenCalledTimes(1);
+    expect(test.createAuditLog).toHaveBeenCalledOnce();
     test.expectAuditLog(
       "CHANNEL_SYNC",
       talentId,

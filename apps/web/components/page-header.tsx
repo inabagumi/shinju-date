@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
-import Breadcrumbs, { type BreadcrumbItem } from "./breadcrumbs";
+import Breadcrumbs from "./breadcrumbs";
+import type { BreadcrumbItem } from "./breadcrumbs";
 
 interface PageHeaderProps {
   /** トップページより下の階層。最後の項目が現在のページになる */

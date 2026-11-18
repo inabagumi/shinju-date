@@ -11,13 +11,8 @@ import {
 import { ChevronDown, Menu, User, X } from "lucide-react";
 import NextLink from "next/link";
 import { unstable_rethrow, usePathname } from "next/navigation";
-import {
-  type ComponentProps,
-  type ReactNode,
-  Suspense,
-  useState,
-  useTransition,
-} from "react";
+import { Suspense, useState, useTransition } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 import { signOutAction } from "@/app/login/_actions/sign-out";
 import { useActionToast } from "@/components/action-toast";

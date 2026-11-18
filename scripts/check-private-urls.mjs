@@ -20,10 +20,9 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const root = resolve(import.meta.dirname, "..");
 
 /**
  * URLs that most people cannot open. Add a pattern here to check more URLs.
@@ -114,7 +113,7 @@ function listCommits(base) {
   const output = execFileSync(
     "git",
     ["log", "-z", "--format=%h%n%B", `${base}..HEAD`],
-    { cwd: root, encoding: "utf8" }
+    { cwd: root, encoding: "utf-8" }
   );
 
   return output
@@ -144,9 +143,6 @@ function main() {
   }
 }
 
-if (
-  process.argv[1] &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-) {
+if (process.argv[1] && resolve(process.argv[1]) === import.meta.filename) {
   main();
 }

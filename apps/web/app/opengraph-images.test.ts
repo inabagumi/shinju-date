@@ -1,11 +1,10 @@
 // @vitest-environment node
 import { globSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
-import { fileURLToPath } from "node:url";
 
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
-const APP_DIR = fileURLToPath(new URL(".", import.meta.url));
+const APP_DIR = import.meta.dirname;
 
 /** The directories of the pages, relative to `app/` */
 const PAGE_DIRS = globSync("**/page.{mdx,tsx}", { cwd: APP_DIR }).map((path) =>
@@ -27,11 +26,11 @@ function getImageDir(dir: string): string {
  * image, or it has none.
  */
 describe("Open Graph images of the pages", () => {
-  test("there are pages", () => {
+  it("there are pages", () => {
     expect(PAGE_DIRS).toContain(".");
   });
 
-  test.each(PAGE_DIRS)("the page of app/%s has its own image", (dir) => {
+  it.each(PAGE_DIRS)("the page of app/%s has its own image", (dir) => {
     const imageDir = join(APP_DIR, getImageDir(dir));
     const images = globSync("opengraph-image.{jpg,png,tsx}", {
       cwd: imageDir,

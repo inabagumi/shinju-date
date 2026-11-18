@@ -1,5 +1,6 @@
 import react from "@vitejs/plugin-react";
-import { mergeConfig, type ViteUserConfig } from "vitest/config";
+import { mergeConfig } from "vitest/config";
+import type { ViteUserConfig } from "vitest/config";
 
 /**
  * The Vitest settings that every package and app shares. The tests import

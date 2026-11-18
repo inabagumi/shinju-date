@@ -4,11 +4,11 @@ import type { ButtonProps } from "@shinju-date/ui";
 import type { ServerActionResult } from "@/lib/use-server-action";
 
 import {
-  type BulkVideoActionData,
   restoreAction,
   softDeleteAction,
   toggleVisibilityAction,
 } from "../_actions";
+import type { BulkVideoActionData } from "../_actions";
 
 /** 動画に対する操作の種類 */
 export type VideoAction = "toggle" | "delete" | "restore";

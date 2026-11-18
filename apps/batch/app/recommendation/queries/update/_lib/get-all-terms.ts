@@ -6,7 +6,7 @@ import type { TypedSupabaseClient } from "@/lib/supabase";
  * How many terms one request reads. It must not exceed `max_rows` of
  * PostgREST (1,000 in `supabase/config.toml`).
  */
-export const TERMS_PAGE_SIZE = 1_000;
+export const TERMS_PAGE_SIZE = 1000;
 
 interface Term {
   id: string;

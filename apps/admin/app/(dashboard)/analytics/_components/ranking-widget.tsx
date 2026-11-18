@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { ExportLink, type ExportType } from "./export-link";
+import { ExportLink } from "./export-link";
+import type { ExportType } from "./export-link";
 import { RankingTable, RankingTableSkeleton } from "./ranking-table";
 import { WidgetHeader, WidgetHeaderSkeleton } from "./widget-header";
 

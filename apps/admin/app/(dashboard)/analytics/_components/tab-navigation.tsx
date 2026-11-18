@@ -8,7 +8,7 @@ import type { AnalyticsSearchParams } from "../_lib/search-params-schema";
 
 interface TabNavigationProps {
   searchParams: Promise<AnalyticsSearchParams>;
-  tabs: Array<{ id: string; label: string }>;
+  tabs: { id: string; label: string }[];
   defaultTab: string;
 }
 

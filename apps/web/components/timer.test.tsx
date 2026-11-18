@@ -1,6 +1,6 @@
 import { act, render, screen } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { TimerProvider, useNow } from "./timer";
 
@@ -23,7 +23,7 @@ describe("useNow", () => {
     vi.restoreAllMocks();
   });
 
-  test("should start from the initial time of the provider, not the clock", () => {
+  it("should start from the initial time of the provider, not the clock", () => {
     const html = renderToString(
       <TimerProvider initialNow={INITIAL_NOW}>
         <Now />
@@ -34,7 +34,7 @@ describe("useNow", () => {
     expect(Temporal.Now.zonedDateTimeISO).not.toHaveBeenCalled();
   });
 
-  test("should switch to the clock after the mount and follow it", () => {
+  it("should switch to the clock after the mount and follow it", () => {
     render(
       <TimerProvider initialNow={INITIAL_NOW}>
         <Now />
@@ -53,7 +53,7 @@ describe("useNow", () => {
     expect(screen.getByText("2026-11-15T00:31:00+09:00")).toBeInTheDocument();
   });
 
-  test("should read the clock outside the provider", () => {
+  it("should read the clock outside the provider", () => {
     render(<Now />);
 
     expect(screen.getByText("2026-11-15T00:30:00+09:00")).toBeInTheDocument();

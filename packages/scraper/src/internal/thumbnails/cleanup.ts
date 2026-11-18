@@ -5,7 +5,8 @@ import type { TypedSupabaseClient } from "../../types.js";
 import { IN_FILTER_CHUNK_SIZE } from "../constants.js";
 import { DatabaseError, isForeignKeyViolation } from "../errors.js";
 import { removeStoredImages } from "../images/index.js";
-import { THUMBNAILS_BUCKET, type Thumbnail } from "./thumbnail.js";
+import { THUMBNAILS_BUCKET } from "./thumbnail.js";
+import type { Thumbnail } from "./thumbnail.js";
 
 /**
  * Thumbnails unused for less than this are left alone:

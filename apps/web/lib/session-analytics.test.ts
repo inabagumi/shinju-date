@@ -1,5 +1,5 @@
 import { REDIS_KEYS } from "@shinju-date/constants";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   trackPageVisit,
@@ -43,7 +43,7 @@ afterEach(() => {
 });
 
 describe("trackPageVisit", () => {
-  test("adds the session to the sessions of the day, with a TTL", async () => {
+  it("adds the session to the sessions of the day, with a TTL", async () => {
     await trackPageVisit();
 
     expect(multi.sadd.mock.calls).toEqual([
@@ -57,7 +57,7 @@ describe("trackPageVisit", () => {
 });
 
 describe("trackSearchSession", () => {
-  test("records the session and counts its search for the day, with a TTL on both keys", async () => {
+  it("records the session and counts its search for the day, with a TTL on both keys", async () => {
     await trackSearchSession("歌枠");
 
     const sessionId = multi.sadd.mock.calls[0]?.[1];
@@ -76,7 +76,7 @@ describe("trackSearchSession", () => {
     expect(multi.exec).toHaveBeenCalledOnce();
   });
 
-  test("does not write anything for a blank query", async () => {
+  it("does not write anything for a blank query", async () => {
     await trackSearchSession("  ");
 
     expect(multi.exec).not.toHaveBeenCalled();
@@ -84,7 +84,7 @@ describe("trackSearchSession", () => {
 });
 
 describe("trackSearchExitWithoutClick", () => {
-  test("counts the exit of the normalized query for the day, with a TTL", async () => {
+  it("counts the exit of the normalized query for the day, with a TTL", async () => {
     await trackSearchExitWithoutClick("  Singing 歌枠 ");
 
     expect(multi.hincrby.mock.calls).toEqual([
@@ -103,7 +103,7 @@ describe("trackSearchExitWithoutClick", () => {
     expect(multi.exec).toHaveBeenCalledOnce();
   });
 
-  test("does not write anything for a blank query", async () => {
+  it("does not write anything for a blank query", async () => {
     await trackSearchExitWithoutClick("  ");
 
     expect(multi.exec).not.toHaveBeenCalled();

@@ -1,8 +1,5 @@
-import {
-  getScriptName,
-  type RedisReply,
-  SCRIPT_EMULATIONS,
-} from "./scripts.js";
+import { getScriptName, SCRIPT_EMULATIONS } from "./scripts.js";
+import type { RedisReply } from "./scripts.js";
 
 type Entry =
   | { type: "list"; value: string[] }
@@ -182,10 +179,12 @@ export class FakeRedis {
   /** Runs a command with the semantics of Redis, and returns its reply. */
   #run([name = "", ...args]: readonly string[]): RedisReply {
     switch (name.toUpperCase()) {
-      case "DEL":
+      case "DEL": {
         return args.filter((key) => this.#delete(key)).length;
-      case "EXISTS":
+      }
+      case "EXISTS": {
         return args.filter((key) => this.#entries.has(key)).length;
+      }
       case "EXPIRE": {
         const [key = "", seconds] = args;
 
@@ -197,8 +196,9 @@ export class FakeRedis {
 
         return 1;
       }
-      case "GET":
+      case "GET": {
         return this.#string(args[0] ?? "");
+      }
       case "LPUSH": {
         const [key = "", ...elements] = args;
         const list = this.#list(key) ?? [];
@@ -220,13 +220,14 @@ export class FakeRedis {
           stop < 0 ? list.length + stop + 1 : stop + 1
         );
       }
-      case "MGET":
+      case "MGET": {
         // MGET replies nil for a key of another type instead of an error.
         return args.map((key) => {
           const entry = this.#entries.get(key);
 
           return entry?.type === "string" ? entry.value : null;
         });
+      }
       case "RPOP": {
         const key = args[0] ?? "";
         const list = this.#list(key);
@@ -274,8 +275,9 @@ export class FakeRedis {
 
         return this.#entries.has(key) ? (this.#ttls.get(key) ?? -1) : -2;
       }
-      default:
+      default: {
         throw new RedisError(`ERR unknown command '${name}'`);
+      }
     }
   }
 }

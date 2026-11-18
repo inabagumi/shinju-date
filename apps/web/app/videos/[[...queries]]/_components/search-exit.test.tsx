@@ -1,6 +1,6 @@
 import { fireEvent, render } from "@testing-library/react";
 import type { ComponentType } from "react";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SEARCH_EXIT_ENDPOINT } from "@/lib/search-exit";
 
@@ -91,7 +91,7 @@ describe("search exit tracking", () => {
     vi.unstubAllGlobals();
   });
 
-  test("records an exit once when moving to another page", () => {
+  it("records an exit once when moving to another page", () => {
     const { rerender } = render(
       <Page tracker={{ hasResults: true, query: "歌" }} />
     );
@@ -108,7 +108,7 @@ describe("search exit tracking", () => {
     expect(sendBeacon).toHaveBeenCalledOnce();
   });
 
-  test("records an exit when searching for another query", () => {
+  it("records an exit when searching for another query", () => {
     const { rerender } = render(
       <Page tracker={{ hasResults: true, query: "歌" }} />
     );
@@ -124,7 +124,7 @@ describe("search exit tracking", () => {
     expect(getSentQueries()).toEqual(["歌", "ゲーム"]);
   });
 
-  test("records an exit when the next search has no results", () => {
+  it("records an exit when the next search has no results", () => {
     const { rerender } = render(
       <Page tracker={{ hasResults: true, query: "歌" }} />
     );
@@ -136,7 +136,7 @@ describe("search exit tracking", () => {
     expect(getSentQueries()).toEqual(["歌"]);
   });
 
-  test("does not record an exit when changing the filters of the same search", () => {
+  it("does not record an exit when changing the filters of the same search", () => {
     const { rerender } = render(
       <Page tracker={{ hasResults: true, query: "歌" }} />
     );
@@ -154,7 +154,7 @@ describe("search exit tracking", () => {
     expect(getSentQueries()).toEqual(["歌"]);
   });
 
-  test("does not record an exit after opening a video", () => {
+  it("does not record an exit after opening a video", () => {
     const { getByText, rerender } = render(
       <Page tracker={{ hasResults: true, query: "歌" }} />
     );
@@ -166,7 +166,7 @@ describe("search exit tracking", () => {
     expect(sendBeacon).not.toHaveBeenCalled();
   });
 
-  test("does not record an exit after opening a video in a new tab with the middle button", () => {
+  it("does not record an exit after opening a video in a new tab with the middle button", () => {
     const { getByText, rerender } = render(
       <Page tracker={{ hasResults: true, query: "歌" }} />
     );
@@ -180,7 +180,7 @@ describe("search exit tracking", () => {
     expect(sendBeacon).not.toHaveBeenCalled();
   });
 
-  test("does not treat opening the context menu of a video as opening it", () => {
+  it("does not treat opening the context menu of a video as opening it", () => {
     const { getByText, rerender } = render(
       <Page tracker={{ hasResults: true, query: "歌" }} />
     );
@@ -195,7 +195,7 @@ describe("search exit tracking", () => {
     expect(getSentQueries()).toEqual(["歌"]);
   });
 
-  test("does not treat a click on another link as opening a video", () => {
+  it("does not treat a click on another link as opening a video", () => {
     const { getByText, rerender } = render(
       <Page tracker={{ hasResults: true, query: "歌" }} />
     );
@@ -206,7 +206,7 @@ describe("search exit tracking", () => {
     expect(getSentQueries()).toEqual(["歌"]);
   });
 
-  test("does not record an exit for a search without results", () => {
+  it("does not record an exit for a search without results", () => {
     const { rerender } = render(
       <Page tracker={{ hasResults: false, query: "歌" }} />
     );
@@ -217,7 +217,7 @@ describe("search exit tracking", () => {
     expect(sendBeacon).not.toHaveBeenCalled();
   });
 
-  test("does not record an exit outside of a search", () => {
+  it("does not record an exit outside of a search", () => {
     const { rerender } = render(<Page />);
 
     navigate(rerender, "/about");
@@ -226,7 +226,7 @@ describe("search exit tracking", () => {
     expect(sendBeacon).not.toHaveBeenCalled();
   });
 
-  test("sends a beacon only once when the page is hidden and closed", () => {
+  it("sends a beacon only once when the page is hidden and closed", () => {
     const { rerender } = render(
       <Page tracker={{ hasResults: true, query: "歌" }} />
     );
@@ -240,7 +240,7 @@ describe("search exit tracking", () => {
     expect(getSentQueries()).toEqual(["歌"]);
   });
 
-  test("does not send a beacon when the page becomes visible", () => {
+  it("does not send a beacon when the page becomes visible", () => {
     render(<Page tracker={{ hasResults: true, query: "歌" }} />);
 
     setVisibilityState("visible");
@@ -248,7 +248,7 @@ describe("search exit tracking", () => {
     expect(sendBeacon).not.toHaveBeenCalled();
   });
 
-  test("sends a beacon when the page is closed", () => {
+  it("sends a beacon when the page is closed", () => {
     render(<Page tracker={{ hasResults: true, query: "歌" }} />);
 
     window.dispatchEvent(new Event("pagehide"));
@@ -256,7 +256,7 @@ describe("search exit tracking", () => {
     expect(getSentQueries()).toEqual(["歌"]);
   });
 
-  test("falls back to fetch with keepalive without sendBeacon", () => {
+  it("falls back to fetch with keepalive without sendBeacon", () => {
     Reflect.deleteProperty(navigator, "sendBeacon");
     const fetch = vi.fn(() => Promise.resolve(new Response(null)));
     vi.stubGlobal("fetch", fetch);
@@ -271,7 +271,7 @@ describe("search exit tracking", () => {
     });
   });
 
-  test("falls back to fetch with keepalive when sendBeacon cannot queue the data", () => {
+  it("falls back to fetch with keepalive when sendBeacon cannot queue the data", () => {
     sendBeacon.mockReturnValue(false);
     const fetch = vi.fn(() => Promise.resolve(new Response(null)));
     vi.stubGlobal("fetch", fetch);

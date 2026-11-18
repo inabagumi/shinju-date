@@ -12,7 +12,9 @@ const scraper = vi.hoisted(() => ({
   refreshVideo: vi.fn(),
 }));
 
-vi.mock("@/lib/scraper", () => ({ createScraper: scraper.createScraper }));
+vi.mock("@/lib/scraper", () => ({
+  createScraper: scraper.createScraper,
+}));
 
 const test = setupActionTest();
 

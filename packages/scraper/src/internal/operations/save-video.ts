@@ -1,12 +1,10 @@
 import { toDBString } from "@shinju-date/temporal-fns";
 
 import type { VideoFields, WriteContext } from "../../types.js";
-import {
-  insertVideo,
-  type NewPlatformVideo,
-  type TalentAccount,
-} from "../database/index.js";
-import { removeThumbnail, type Thumbnail } from "../thumbnails/index.js";
+import { insertVideo } from "../database/index.js";
+import type { NewPlatformVideo, TalentAccount } from "../database/index.js";
+import { removeThumbnail } from "../thumbnails/index.js";
+import type { Thumbnail } from "../thumbnails/index.js";
 
 /**
  * What differs between the platforms when a new video is saved: how it maps

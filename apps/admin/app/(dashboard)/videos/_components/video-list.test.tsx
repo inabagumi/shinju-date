@@ -153,9 +153,9 @@ describe("VideoList", () => {
       renderWithToast();
       toggleSelectedVideos();
 
-      expect(
-        await screen.findByText("1 件の動画の表示状態を更新しました。")
-      ).toBeInTheDocument();
+      await expect(
+        screen.findByText("1 件の動画の表示状態を更新しました。")
+      ).resolves.toBeInTheDocument();
       expect(toggleVisibilityAction).toHaveBeenCalledWith([
         "00000000-0000-4000-8000-000000000001",
       ]);
@@ -173,9 +173,9 @@ describe("VideoList", () => {
       renderWithToast();
       toggleSelectedVideos();
 
-      expect(
-        await screen.findByText("更新できませんでした。")
-      ).toBeInTheDocument();
+      await expect(
+        screen.findByText("更新できませんでした。")
+      ).resolves.toBeInTheDocument();
       expect(screen.getByText("1 件選択中")).toBeInTheDocument();
     });
   });

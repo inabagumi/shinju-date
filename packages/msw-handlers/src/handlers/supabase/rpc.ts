@@ -103,7 +103,7 @@ function normalizeSearchText(text: string): string {
  * katakana with hiragana.
  */
 function normalizeReadingText(text: string): string {
-  return normalizeSearchText(text).replace(/[\u30a1-\u30f6]/g, (char) =>
+  return normalizeSearchText(text).replaceAll(/[\u30A1-\u30F6]/g, (char) =>
     String.fromCharCode(char.charCodeAt(0) - 0x60)
   );
 }

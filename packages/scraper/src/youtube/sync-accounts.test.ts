@@ -7,11 +7,8 @@ import {
   mockStorage,
   serveImage,
 } from "../internal/testing/images.js";
-import {
-  postgresError,
-  type SupabaseRoutes,
-  setupSupabase,
-} from "../internal/testing/supabase.js";
+import { postgresError, setupSupabase } from "../internal/testing/supabase.js";
+import type { SupabaseRoutes } from "../internal/testing/supabase.js";
 import { createChannel } from "../internal/testing/youtube.js";
 import type { YouTubeFetcher } from "./fetcher.js";
 import {
@@ -337,7 +334,7 @@ describe("syncYouTubeChannels", () => {
           query: { id: "eq.channel-row-1", select: "id" },
         })
       );
-      expect(reportError).toHaveBeenCalledTimes(1);
+      expect(reportError).toHaveBeenCalledOnce();
       expect(reportError).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringContaining("duplicate key value"),

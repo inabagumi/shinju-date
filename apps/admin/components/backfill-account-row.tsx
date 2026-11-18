@@ -2,7 +2,8 @@ import { Skeleton, twMerge } from "@shinju-date/ui";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { PLATFORM_LABELS, type Platform } from "./platform-badge";
+import { PLATFORM_LABELS } from "./platform-badge";
+import type { Platform } from "./platform-badge";
 
 interface BackfillAccountTalent {
   id: string;

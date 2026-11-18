@@ -9,12 +9,13 @@ import { revalidatePath } from "next/cache";
 
 import {
   ActionError,
-  type ActionResult,
   adminAction,
   adminFormAction,
   parseActionInput,
 } from "@/lib/action";
-import { type AuditAction, createAuditLog } from "@/lib/audit-log";
+import type { ActionResult } from "@/lib/action";
+import { createAuditLog } from "@/lib/audit-log";
+import type { AuditAction } from "@/lib/audit-log";
 import type { AuthenticatedContext } from "@/lib/auth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isNotFoundError } from "@/lib/supabase/query";
@@ -35,12 +36,12 @@ export const createTalentAction = adminFormAction(
   ) => {
     // タレントを作る前に、チャンネルを解決し、登録済みでないことを確かめる
     const account =
-      channelInput !== undefined
-        ? await resolveAccount("youtube", {
+      channelInput === undefined
+        ? null
+        : await resolveAccount("youtube", {
             input: channelInput,
             supabaseClient,
-          })
-        : null;
+          });
 
     const { data: newTalent, error } = await supabaseClient
       .from("talents")

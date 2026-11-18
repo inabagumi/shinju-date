@@ -1,18 +1,18 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { Video } from "@/lib/data/videos";
 import { queryKeys } from "@/lib/query-keys";
 
 import {
-  type DashboardVideos,
   LiveSection,
   RecentSection,
   ScheduleSection,
   ShortsSection,
 } from "./home-sections";
+import type { DashboardVideos } from "./home-sections";
 
 vi.mock("@/lib/data/videos", () => ({
   fetchDashboardVideos: vi.fn(() => new Promise(() => {})),
@@ -76,7 +76,7 @@ function renderWithQueryClient(ui: ReactNode) {
 }
 
 describe("LiveSection", () => {
-  test("should show the number of live videos next to the heading", () => {
+  it("should show the number of live videos next to the heading", () => {
     renderWithQueryClient(
       <LiveSection prefetchedData={createDashboardVideos({ live: 3 })} />
     );
@@ -90,7 +90,7 @@ describe("LiveSection", () => {
     expect(within(section).getAllByRole("article")).toHaveLength(3);
   });
 
-  test("should not render the section when nothing is live", () => {
+  it("should not render the section when nothing is live", () => {
     const { container } = renderWithQueryClient(
       <LiveSection prefetchedData={createDashboardVideos({ recent: 2 })} />
     );
@@ -98,7 +98,7 @@ describe("LiveSection", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  test("should update when the query data is refreshed", async () => {
+  it("should update when the query data is refreshed", async () => {
     const { container, queryClient } = renderWithQueryClient(
       <LiveSection prefetchedData={createDashboardVideos({ live: 1 })} />
     );
@@ -110,7 +110,7 @@ describe("LiveSection", () => {
       );
     });
 
-    expect(await screen.findByText("2件")).toBeInTheDocument();
+    await expect(screen.findByText("2件")).resolves.toBeInTheDocument();
 
     act(() => {
       queryClient.setQueryData(
@@ -126,7 +126,7 @@ describe("LiveSection", () => {
 });
 
 describe("ScheduleSection", () => {
-  test("should show the timeline with the number of upcoming videos", () => {
+  it("should show the timeline with the number of upcoming videos", () => {
     renderWithQueryClient(
       <ScheduleSection
         prefetchedData={{
@@ -152,7 +152,7 @@ describe("ScheduleSection", () => {
     ]);
   });
 
-  test("should show a message when nothing is scheduled", () => {
+  it("should show a message when nothing is scheduled", () => {
     renderWithQueryClient(
       <ScheduleSection prefetchedData={{ today: "2026-11-14", videos: [] }} />
     );
@@ -167,7 +167,7 @@ describe("ScheduleSection", () => {
 });
 
 describe("RecentSection", () => {
-  test("should show only one row of recent videos and link to the videos page", () => {
+  it("should show only one row of recent videos and link to the videos page", () => {
     renderWithQueryClient(
       <RecentSection prefetchedData={createDashboardVideos({ recent: 10 })} />
     );
@@ -186,7 +186,7 @@ describe("RecentSection", () => {
 });
 
 describe("ShortsSection", () => {
-  test("should show the shorts carousel with the number of shorts", () => {
+  it("should show the shorts carousel with the number of shorts", () => {
     renderWithQueryClient(
       <ShortsSection prefetchedData={createDashboardVideos({ shorts: 20 })} />
     );
@@ -199,7 +199,7 @@ describe("ShortsSection", () => {
     ).toBeInTheDocument();
   });
 
-  test("should not render the section when there are no shorts", () => {
+  it("should not render the section when there are no shorts", () => {
     const { container } = renderWithQueryClient(
       <ShortsSection prefetchedData={createDashboardVideos({ live: 1 })} />
     );

@@ -1,5 +1,5 @@
 import type { Metadata, ResolvingMetadata } from "next";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SITE_DESCRIPTION, SITE_TAGLINE } from "@/lib/site";
 
@@ -85,7 +85,7 @@ describe("metadata of the pages", () => {
     vi.mocked(fetchScheduleToday).mockResolvedValue("2026-11-10");
   });
 
-  test("home page", () => {
+  it("home page", () => {
     expect(homeMetadata).toStrictEqual({
       alternates: {
         canonical: "/",
@@ -107,7 +107,7 @@ describe("metadata of the pages", () => {
     });
   });
 
-  test.each([
+  it.each([
     {
       metadata: aboutMetadata,
       name: "about",
@@ -162,7 +162,7 @@ describe("metadata of the pages", () => {
     });
   });
 
-  test("schedule page of a week, which is not indexed", async () => {
+  it("schedule page of a week, which is not indexed", async () => {
     const metadata = await generateScheduleWeekMetadata({
       // A Tuesday. The canonical URL is that of the Sunday of the week.
       params: Promise.resolve({ date: "2026-11-10" }),
@@ -189,7 +189,7 @@ describe("metadata of the pages", () => {
     });
   });
 
-  test("talent page", async () => {
+  it("talent page", async () => {
     vi.mocked(fetchTalent).mockResolvedValue({
       id: TALENT_ID,
       name: "朝霧ミオ",
@@ -220,7 +220,7 @@ describe("metadata of the pages", () => {
     });
   });
 
-  test("list of videos", async () => {
+  it("list of videos", async () => {
     const metadata = await generateVideosPageMetadata(undefined, {
       kind: "short",
     });
@@ -250,7 +250,7 @@ describe("metadata of the pages", () => {
     });
   });
 
-  test("search results, which are not indexed and have no calendar", async () => {
+  it("search results, which are not indexed and have no calendar", async () => {
     const metadata = await generateVideosPageMetadata(["マイクラ"]);
 
     expect(metadata).toStrictEqual({
@@ -278,7 +278,7 @@ describe("metadata of the pages", () => {
     });
   });
 
-  test("list of videos of a talent, which is not indexed", async () => {
+  it("list of videos of a talent, which is not indexed", async () => {
     const metadata = await generateVideosPageMetadata(undefined, {
       talent: TALENT_ID,
     });
@@ -292,7 +292,7 @@ describe("metadata of the pages", () => {
     expect(metadata.robots).toStrictEqual({ index: false });
   });
 
-  test("contact page", () => {
+  it("contact page", () => {
     expect(contactMetadata).toStrictEqual({
       alternates: {
         canonical: "/contact",
@@ -315,7 +315,7 @@ describe("metadata of the pages", () => {
     });
   });
 
-  test("feedback page", () => {
+  it("feedback page", () => {
     expect(feedbackMetadata).toStrictEqual({
       alternates: {
         canonical: "/feedback",
@@ -338,7 +338,7 @@ describe("metadata of the pages", () => {
     });
   });
 
-  test("list of videos without the image of the parent segment", async () => {
+  it("list of videos without the image of the parent segment", async () => {
     const metadata = await generateVideosPageMetadata(undefined, {}, null);
 
     expect(metadata.openGraph).not.toHaveProperty("images");
@@ -350,7 +350,7 @@ describe("metadata of the pages", () => {
  * also their `alt`.
  */
 describe("Open Graph images of the pages", () => {
-  test.each<[string, string, Metadata]>([
+  it.each<[string, string, Metadata]>([
     ["about", aboutImageAlt, aboutMetadata],
     ["contact", contactImageAlt, contactMetadata],
     ["feedback", feedbackImageAlt, feedbackMetadata],
@@ -362,7 +362,7 @@ describe("Open Graph images of the pages", () => {
     expect(alt).toBe(metadata.openGraph?.title);
   });
 
-  test("the image of the list of videos has its title", async () => {
+  it("the image of the list of videos has its title", async () => {
     const metadata = await generateVideosPageMetadata(undefined);
 
     expect(videosImageAlt).toBe(metadata.openGraph?.title);

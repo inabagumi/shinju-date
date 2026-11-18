@@ -5,7 +5,7 @@ import { Markdown } from "./markdown";
 
 describe("Markdown", () => {
   it("opens links in a new tab", () => {
-    render(<Markdown>{"[SHINJU DATE](https://shinju.date/)"}</Markdown>);
+    render(<Markdown>[SHINJU DATE](https://shinju.date/)</Markdown>);
 
     const link = screen.getByRole("link", { name: "SHINJU DATE" });
 
@@ -15,7 +15,7 @@ describe("Markdown", () => {
   });
 
   it("renders GitHub Flavored Markdown", () => {
-    render(<Markdown>{"~~old~~"}</Markdown>);
+    render(<Markdown>~~old~~</Markdown>);
 
     expect(screen.getByText("old").tagName).toBe("DEL");
   });

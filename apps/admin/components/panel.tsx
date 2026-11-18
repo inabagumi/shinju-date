@@ -1,5 +1,6 @@
 import { range } from "@shinju-date/helpers";
-import { Card, type CardProps, Skeleton, twMerge } from "@shinju-date/ui";
+import { Card, Skeleton, twMerge } from "@shinju-date/ui";
+import type { CardProps } from "@shinju-date/ui";
 import type { ReactNode } from "react";
 
 /** `null`・`undefined`・`false`（`{cond && ...}` の結果）・空文字でない中身か */

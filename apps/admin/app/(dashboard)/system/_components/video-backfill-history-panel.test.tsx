@@ -186,17 +186,15 @@ describe("VideoBackfillHistoryPanel", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "再試行する" }));
 
-    expect(
-      await screen.findByText(
-        "失敗した過去動画の取り込みを1件キューに追加しました。"
-      )
-    ).toBeTruthy();
+    await expect(
+      screen.findByText("失敗した過去動画の取り込みを1件キューに追加しました。")
+    ).resolves.toBeTruthy();
     expect(mocks.retryFailedVideoBackfillJobsAction).toHaveBeenCalledOnce();
 
     // Every failed account is retried now, so nothing is left to request.
-    expect(
-      await screen.findByText(/最後の取り込みが失敗したアカウント: 1件/)
-    ).toBeTruthy();
+    await expect(
+      screen.findByText(/最後の取り込みが失敗したアカウント: 1件/)
+    ).resolves.toBeTruthy();
     expect(button).toHaveProperty("disabled", true);
   });
 });

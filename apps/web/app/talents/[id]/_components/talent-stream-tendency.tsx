@@ -12,10 +12,8 @@ import {
   summarizeStreamTendency,
 } from "@/lib/stream-tendency";
 
-import {
-  getShownTalent,
-  type TalentPageParams,
-} from "../_lib/get-shown-talent";
+import { getShownTalent } from "../_lib/get-shown-talent";
+import type { TalentPageParams } from "../_lib/get-shown-talent";
 
 /**
  * The background of a cell for each level of `getStreamCountLevel`. It is

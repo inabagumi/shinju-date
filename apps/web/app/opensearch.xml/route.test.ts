@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 vi.hoisted(() => {
   // `lib/env.ts` reads the variables when the module is imported.
@@ -8,7 +8,7 @@ vi.hoisted(() => {
 import { GET } from "./route";
 
 describe("GET /opensearch.xml", () => {
-  test("uses the search results path that needs no redirect", async () => {
+  it("uses the search results path that needs no redirect", async () => {
     const body = await GET().text();
 
     expect(body).toContain(

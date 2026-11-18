@@ -1,6 +1,6 @@
 import { REDIS_KEYS, TIME_ZONE } from "@shinju-date/constants";
 import type { Pipeline } from "@upstash/redis";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   DAILY_TTL_SECONDS,
@@ -33,21 +33,21 @@ beforeEach(() => {
 });
 
 describe("TTL", () => {
-  test("keeps the daily keys for 90 days and the weekly keys for 35 days", () => {
+  it("keeps the daily keys for 90 days and the weekly keys for 35 days", () => {
     expect(DAILY_TTL_SECONDS).toBe(90 * DAY_SECONDS);
     expect(WEEKLY_TTL_SECONDS).toBe(35 * DAY_SECONDS);
   });
 });
 
 describe("dailyKey", () => {
-  test("appends the date in Japan as YYYYMMDD", () => {
+  it("appends the date in Japan as YYYYMMDD", () => {
     // 2026-11-17T00:30:00+09:00
     expect(
       dailyKey(REDIS_KEYS.CLICK_VIDEO_PREFIX, at("2026-11-16T15:30:00Z"))
     ).toBe(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}20261117`);
   });
 
-  test("pads the month and the day with zeros", () => {
+  it("pads the month and the day with zeros", () => {
     expect(
       dailyKey(REDIS_KEYS.SEARCH_VOLUME_PREFIX, at("2026-01-05T03:00:00Z"))
     ).toBe(`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}20260105`);
@@ -55,7 +55,7 @@ describe("dailyKey", () => {
 });
 
 describe("weeklyKey", () => {
-  test("appends the date of the Monday of the week", () => {
+  it("appends the date of the Monday of the week", () => {
     // 2025-10-14 is a Tuesday
     expect(
       weeklyKey(
@@ -65,7 +65,7 @@ describe("weeklyKey", () => {
     ).toBe(`${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}20251013`);
   });
 
-  test("keeps the date on a Monday", () => {
+  it("keeps the date on a Monday", () => {
     expect(
       weeklyKey(
         REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX,
@@ -74,7 +74,7 @@ describe("weeklyKey", () => {
     ).toBe(`${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}20251013`);
   });
 
-  test("goes back to the Monday of the previous month or year", () => {
+  it("goes back to the Monday of the previous month or year", () => {
     // 2026-01-04 is a Sunday
     expect(
       weeklyKey(
@@ -86,7 +86,7 @@ describe("weeklyKey", () => {
 });
 
 describe("incrWithTtl", () => {
-  test("queues the write and the TTL of the same key", () => {
+  it("queues the write and the TTL of the same key", () => {
     incrWithTtl(multi, `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}20251014`, 60);
 
     expect(pipeline.incr.mock.calls).toEqual([
@@ -99,7 +99,7 @@ describe("incrWithTtl", () => {
 });
 
 describe("zincrbyWithTtl", () => {
-  test("queues the write and the TTL of the same key", () => {
+  it("queues the write and the TTL of the same key", () => {
     zincrbyWithTtl(
       multi,
       `${REDIS_KEYS.CLICK_VIDEO_PREFIX}20251014`,
@@ -118,7 +118,7 @@ describe("zincrbyWithTtl", () => {
 });
 
 describe("saddWithTtl", () => {
-  test("queues the write and the TTL of the same key", () => {
+  it("queues the write and the TTL of the same key", () => {
     saddWithTtl(
       multi,
       `${REDIS_KEYS.SESSIONS_TOTAL_PREFIX}20251014`,
@@ -136,7 +136,7 @@ describe("saddWithTtl", () => {
 });
 
 describe("hincrbyWithTtl", () => {
-  test("queues the write and the TTL of the same key", () => {
+  it("queues the write and the TTL of the same key", () => {
     hincrbyWithTtl(
       multi,
       `${REDIS_KEYS.SEARCH_SESSIONS_PREFIX}20251014`,

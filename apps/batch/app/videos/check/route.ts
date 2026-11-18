@@ -2,7 +2,8 @@ import type { Scraper } from "@shinju-date/scraper";
 import type { NextRequest } from "next/server";
 
 import { runCronJob } from "@/lib/cron";
-import { getVideosCheckJob, type VideosCheckMode } from "@/lib/jobs";
+import { getVideosCheckJob } from "@/lib/jobs";
+import type { VideosCheckMode } from "@/lib/jobs";
 import { parseQuery } from "@/lib/query";
 import { createScraper } from "@/lib/scraper";
 import { finishVideoSync } from "@/lib/video-sync";
@@ -22,12 +23,15 @@ function checkVideos(
   now: Temporal.Instant
 ): Promise<boolean> {
   switch (mode) {
-    case "all":
+    case "all": {
       return scraper.removeUnavailableVideos(now);
-    case "recent":
+    }
+    case "recent": {
       return scraper.refreshRecentVideos(now);
-    default:
+    }
+    default: {
       return scraper.refreshLiveVideos(now);
+    }
   }
 }
 

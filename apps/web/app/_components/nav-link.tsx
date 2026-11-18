@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { type ComponentProps, Suspense } from "react";
+import { Suspense } from "react";
+import type { ComponentProps } from "react";
 
 interface NavLinkProps extends Omit<ComponentProps<typeof Link>, "href"> {
   href: string;

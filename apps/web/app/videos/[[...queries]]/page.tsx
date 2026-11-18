@@ -46,7 +46,7 @@ export async function generateMetadata(
     alternates: {
       ...metadata.alternates,
       types: {
-        "text/calendar": !query ? getVideosCalendarPath(kind, talentIds) : null,
+        "text/calendar": query ? null : getVideosCalendarPath(kind, talentIds),
       },
     },
     openGraph: {

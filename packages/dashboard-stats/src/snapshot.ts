@@ -2,12 +2,8 @@ import { REDIS_KEYS } from "@shinju-date/constants";
 import type { Redis } from "@upstash/redis";
 import type { z } from "zod";
 
-import {
-  type AnalyticsSummary,
-  analyticsSummarySchema,
-  type SummaryStats,
-  summaryStatsSchema,
-} from "./schema.js";
+import { analyticsSummarySchema, summaryStatsSchema } from "./schema.js";
+import type { AnalyticsSummary, SummaryStats } from "./schema.js";
 
 /** How long a snapshot is kept (30 days). */
 export const SNAPSHOT_TTL_SECONDS = 30 * 24 * 60 * 60;

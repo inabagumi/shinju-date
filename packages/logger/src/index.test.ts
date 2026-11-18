@@ -36,7 +36,7 @@ describe("logger", () => {
 
       // 修正点: 2番目の引数としてundefinedが渡されることを期待する
       expect(mock).toHaveBeenCalledWith(message, undefined);
-      expect(mock).toHaveBeenCalledTimes(1);
+      expect(mock).toHaveBeenCalledOnce();
     });
 
     it("should call Sentry logger with attributes", () => {
@@ -44,7 +44,7 @@ describe("logger", () => {
       logger[method](message, attributes);
 
       expect(mock).toHaveBeenCalledWith(message, attributes);
-      expect(mock).toHaveBeenCalledTimes(1);
+      expect(mock).toHaveBeenCalledOnce();
     });
 
     it("should call Sentry logger with an Error object in attributes", () => {
@@ -53,7 +53,7 @@ describe("logger", () => {
       logger[method](message, attributes);
 
       expect(mock).toHaveBeenCalledWith(message, attributes);
-      expect(mock).toHaveBeenCalledTimes(1);
+      expect(mock).toHaveBeenCalledOnce();
     });
   });
 });

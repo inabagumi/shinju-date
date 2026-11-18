@@ -84,7 +84,7 @@ describe("updateTermPopularity", () => {
 
     expect(result).toEqual({ notFound: 0, total: 3, updated: 3 });
 
-    expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
+    expect(mockSupabase.rpc).toHaveBeenCalledOnce();
     expect(mockSupabase.rpc).toHaveBeenCalledWith("update_terms_popularity", {
       p_items: [
         { score: 10, term: "タレント名1" },
@@ -111,7 +111,7 @@ describe("updateTermPopularity", () => {
   });
 
   it("should update every term when there are more than 1,000", async () => {
-    const count = 1_202;
+    const count = 1202;
     const terms = Array.from({ length: count }, (_, i) => `term-${i}`);
     const mockRedis = createMockRedis(terms.flatMap((term, i) => [term, i]));
     const mockSupabase = createMockSupabase(terms);

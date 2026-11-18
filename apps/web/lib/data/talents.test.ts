@@ -1,5 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   createProfileImage,
@@ -42,7 +42,7 @@ afterEach(() => {
 });
 
 describe("fetchActiveTalents", () => {
-  test("returns the active talents that are not deleted, by name", async () => {
+  it("returns the active talents that are not deleted, by name", async () => {
     const yuki = createTalent({ name: "ゆき" });
     const aoi = createTalent({ name: "あおい" });
 
@@ -62,7 +62,7 @@ describe("fetchActiveTalents", () => {
     expect(cacheTag).toHaveBeenCalledWith("talents");
   });
 
-  test("throws when the talents cannot be fetched", async () => {
+  it("throws when the talents cannot be fetched", async () => {
     failSupabase("talents", "failed");
 
     await expect(fetchActiveTalents()).rejects.toThrow("failed");
@@ -70,7 +70,7 @@ describe("fetchActiveTalents", () => {
 });
 
 describe("fetchTalent", () => {
-  test("returns the talent with its accounts, sorted by their platform IDs", async () => {
+  it("returns the talent with its accounts, sorted by their platform IDs", async () => {
     const icon = createProfileImage();
     const subChannel = createYouTubeChannel({
       name: "Sub",
@@ -139,14 +139,14 @@ describe("fetchTalent", () => {
     });
   });
 
-  test("is cached for days with the talents tag", async () => {
+  it("is cached for days with the talents tag", async () => {
     await fetchTalent(talent.id);
 
     expect(cacheLife).toHaveBeenCalledWith("days");
     expect(cacheTag).toHaveBeenCalledWith("talents");
   });
 
-  test.each([
+  it.each([
     ["retired", { status: "retired" }],
     ["deleted", { deleted_at: "2026-11-01T00:00:00Z" }],
   ] as const)("returns null for a talent that is %s", async (_, overrides) => {
@@ -155,18 +155,18 @@ describe("fetchTalent", () => {
     await expect(fetchTalent(talent.id)).resolves.toBeNull();
   });
 
-  test("returns null for a talent that does not exist", async () => {
+  it("returns null for a talent that does not exist", async () => {
     await seedSupabase({ talents: [otherTalent] });
 
     await expect(fetchTalent(talent.id)).resolves.toBeNull();
   });
 
-  test("returns null for an ID that is not a UUID without querying", async () => {
+  it("returns null for an ID that is not a UUID without querying", async () => {
     await expect(fetchTalent("not-a-uuid")).resolves.toBeNull();
     expect(supabaseRequests()).toEqual([]);
   });
 
-  test("throws when the talent cannot be fetched", async () => {
+  it("throws when the talent cannot be fetched", async () => {
     failSupabase("talents", "connection refused");
 
     await expect(fetchTalent(talent.id)).rejects.toThrow("connection refused");
@@ -174,7 +174,7 @@ describe("fetchTalent", () => {
 });
 
 describe("fetchTalentList", () => {
-  test("returns the active talents by reading, and the ones without one by name last", async () => {
+  it("returns the active talents by reading, and the ones without one by name last", async () => {
     const ka = createTalent({ name: "B", reading: "か" });
     const a = createTalent({ name: "A", reading: "あ" });
     const z = createTalent({ name: "Z", reading: null });
@@ -202,7 +202,7 @@ describe("fetchTalentList", () => {
     });
   });
 
-  test("returns only the icons, in the same order as fetchTalent", async () => {
+  it("returns only the icons, in the same order as fetchTalent", async () => {
     const youtubeIcon = createProfileImage();
     const twitchIconA = createProfileImage();
     const twitchIconB = createProfileImage();
@@ -253,14 +253,14 @@ describe("fetchTalentList", () => {
     ]);
   });
 
-  test("is cached for days with the talents tag", async () => {
+  it("is cached for days with the talents tag", async () => {
     await fetchTalentList();
 
     expect(cacheLife).toHaveBeenCalledWith("days");
     expect(cacheTag).toHaveBeenCalledWith("talents");
   });
 
-  test("throws when the talents cannot be fetched", async () => {
+  it("throws when the talents cannot be fetched", async () => {
     failSupabase("talents", "failed");
 
     await expect(fetchTalentList()).rejects.toThrow("failed");

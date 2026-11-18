@@ -1,22 +1,22 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { InputField, SelectField, TextareaField } from "./form-fields";
 
 describe("form fields", () => {
-  test("InputField passes required to the input", () => {
+  it("InputField passes required to the input", () => {
     render(<InputField label="メールアドレス" name="email" required />);
 
     expect(screen.getByLabelText(/メールアドレス/)).toBeRequired();
   });
 
-  test("TextareaField passes required to the textarea", () => {
+  it("TextareaField passes required to the textarea", () => {
     render(<TextareaField label="機能要望" name="message" required />);
 
     expect(screen.getByLabelText(/機能要望/)).toBeRequired();
   });
 
-  test("SelectField passes required to the select", () => {
+  it("SelectField passes required to the select", () => {
     render(
       <SelectField label="お問い合わせ種別" name="type" required>
         <option value="">選択してください</option>
@@ -26,13 +26,13 @@ describe("form fields", () => {
     expect(screen.getByLabelText(/お問い合わせ種別/)).toBeRequired();
   });
 
-  test("fields are not required by default", () => {
+  it("fields are not required by default", () => {
     render(<TextareaField label="機能要望" name="message" />);
 
     expect(screen.getByLabelText("機能要望")).not.toBeRequired();
   });
 
-  test("associates the error message with the field", () => {
+  it("associates the error message with the field", () => {
     render(
       <TextareaField
         error="機能要望を入力してください"

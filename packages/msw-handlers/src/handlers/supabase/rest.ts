@@ -1,4 +1,5 @@
-import { HttpResponse, type HttpResponseResolver, http } from "msw";
+import { HttpResponse, http } from "msw";
+import type { HttpResponseResolver } from "msw";
 
 import { PostgrestError } from "./errors.js";
 

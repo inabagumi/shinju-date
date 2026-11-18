@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type {
   ProfileImage,
@@ -33,7 +33,7 @@ function createTwitchUser(profileImage: ProfileImage | null): TalentTwitchUser {
 }
 
 describe("getTalentProfileImage", () => {
-  test("should prefer the icon of a YouTube channel", () => {
+  it("should prefer the icon of a YouTube channel", () => {
     expect(
       getTalentProfileImage({
         twitch_users: [createTwitchUser(createProfileImage("twitch"))],
@@ -42,7 +42,7 @@ describe("getTalentProfileImage", () => {
     ).toEqual(createProfileImage("youtube"));
   });
 
-  test("should use the first channel that has an icon", () => {
+  it("should use the first channel that has an icon", () => {
     expect(
       getTalentProfileImage({
         twitch_users: [],
@@ -54,7 +54,7 @@ describe("getTalentProfileImage", () => {
     ).toEqual(createProfileImage("second"));
   });
 
-  test("should fall back to the icon of a Twitch user", () => {
+  it("should fall back to the icon of a Twitch user", () => {
     expect(
       getTalentProfileImage({
         twitch_users: [createTwitchUser(createProfileImage("twitch"))],
@@ -63,7 +63,7 @@ describe("getTalentProfileImage", () => {
     ).toEqual(createProfileImage("twitch"));
   });
 
-  test("should return null without any icon", () => {
+  it("should return null without any icon", () => {
     expect(
       getTalentProfileImage({
         twitch_users: [createTwitchUser(null)],

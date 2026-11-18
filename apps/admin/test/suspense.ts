@@ -1,9 +1,5 @@
-import {
-  isValidElement,
-  type ReactElement,
-  type ReactNode,
-  Suspense,
-} from "react";
+import { isValidElement, Suspense } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 /**
  * サーバーコンポーネントの戻り値をたどり、最初の `<Suspense>` の子を返す。

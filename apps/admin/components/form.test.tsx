@@ -5,13 +5,13 @@ import Form, {
   Checkbox,
   ErrorMessage,
   FormField,
-  type FormState,
   Input,
   Label,
   Select,
   SubmitButton,
   SuccessMessage,
 } from "./form";
+import type { FormState } from "./form";
 
 function createDeferred<T>() {
   let resolve!: (value: T) => void;
@@ -88,7 +88,7 @@ describe("Form", () => {
 
     submit();
 
-    expect(await screen.findByRole("status")).toHaveTextContent(
+    await expect(screen.findByRole("status")).resolves.toHaveTextContent(
       "更新が完了しました。"
     );
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -146,7 +146,7 @@ describe("Form after a failed submission", () => {
     });
     submit();
 
-    expect(await screen.findByRole("alert")).toHaveTextContent(
+    await expect(screen.findByRole("alert")).resolves.toHaveTextContent(
       "レベルが正しくありません。"
     );
     expect(screen.getByLabelText("レベル")).toHaveValue("alert");
@@ -177,7 +177,7 @@ describe("Form after a failed submission", () => {
 
     submit();
 
-    await vi.waitFor(() => expect(action).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(action).toHaveBeenCalledOnce());
     expect(action.mock.calls[0]?.[1].get("intent")).toBe("save");
   });
 
@@ -195,7 +195,7 @@ describe("Form after a failed submission", () => {
       deferred.resolve({ error: "保存に失敗しました。" });
     });
 
-    expect(await screen.findByRole("alert")).toHaveTextContent(
+    await expect(screen.findByRole("alert")).resolves.toHaveTextContent(
       "保存に失敗しました。"
     );
     expect(button).toBeEnabled();
@@ -271,7 +271,7 @@ describe("Checkbox", () => {
     renderCheckboxForm(action);
 
     submit();
-    await vi.waitFor(() => expect(action).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(action).toHaveBeenCalledOnce());
     expect(action.mock.calls[0]?.[1].get("enabled")).toBeNull();
 
     fireEvent.click(screen.getByText("有効化"));

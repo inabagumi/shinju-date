@@ -5,7 +5,8 @@
  */
 
 import { Collection } from "@msw/data";
-import { Constants, type Tables } from "@shinju-date/database";
+import { Constants } from "@shinju-date/database";
+import type { Tables } from "@shinju-date/database";
 import { z } from "zod";
 
 import { createAccounts } from "./seeds/accounts.js";

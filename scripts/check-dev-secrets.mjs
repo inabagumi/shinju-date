@@ -15,10 +15,9 @@
  */
 
 import { readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, resolve } from "node:path";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const root = resolve(import.meta.dirname, "..");
 
 const SECRETS_FILE = "config/dev-secrets.env";
 const SAMPLE_FILES = [
@@ -34,7 +33,7 @@ const SAMPLE_FILES = [
  * @returns {string | undefined} The value without surrounding quotes
  */
 function readVariable(file, name) {
-  const content = readFileSync(join(root, file), "utf8");
+  const content = readFileSync(join(root, file), "utf-8");
 
   for (const line of content.split("\n")) {
     const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/);

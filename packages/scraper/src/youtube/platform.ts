@@ -1,10 +1,8 @@
 import type { NewVideoAdapter } from "../internal/operations/save-video.js";
 import type { PlatformAdapter } from "../internal/platform.js";
 import type { YouTubeFetcher } from "./fetcher.js";
-import {
-  SAVED_YOUTUBE_VIDEO_COLUMNS,
-  type SavedYouTubeVideo,
-} from "./saved-video.js";
+import { SAVED_YOUTUBE_VIDEO_COLUMNS } from "./saved-video.js";
+import type { SavedYouTubeVideo } from "./saved-video.js";
 import { createYouTubeThumbnail } from "./thumbnail.js";
 import type { YouTubeVideo } from "./types.js";
 import { toVideoFields } from "./video.js";

@@ -9,11 +9,11 @@ function createRandom(seed: number): () => number {
   let state = seed >>> 0;
 
   return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
+    state = (state + 0x6d_2b_79_f5) >>> 0;
     let t = state;
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    return ((t ^ (t >>> 14)) >>> 0) / 4_294_967_296;
   };
 }
 
@@ -48,7 +48,7 @@ describe("shuffle", () => {
     // random() = 0 always picks index 0: [1,2,3,4] → [4,2,3,1] → [3,2,4,1] → [2,3,4,1]
     expect(shuffle([1, 2, 3, 4], () => 0)).toEqual([2, 3, 4, 1]);
     // random() close to 1 always picks the current index, so nothing moves
-    expect(shuffle([1, 2, 3, 4], () => 0.999_999)).toEqual([1, 2, 3, 4]);
+    expect(shuffle([1, 2, 3, 4], () => 0.999999)).toEqual([1, 2, 3, 4]);
   });
 
   it("makes every order about equally likely", () => {
@@ -64,7 +64,7 @@ describe("shuffle", () => {
     // 3! = 6 orders, each expected 10,000 times
     expect(counts.size).toBe(6);
     for (const count of counts.values()) {
-      expect(count).toBeGreaterThan(9_500);
+      expect(count).toBeGreaterThan(9500);
       expect(count).toBeLessThan(10_500);
     }
   });

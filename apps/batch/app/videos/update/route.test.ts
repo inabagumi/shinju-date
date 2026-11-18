@@ -49,7 +49,7 @@ describe("POST /videos/update", () => {
     expect(response.status).toBe(204);
     expect(acquireLock).toHaveBeenCalledWith("videos:update", 130);
     expect(createScraper).toHaveBeenCalledWith("youtube");
-    expect(scraper.addNewVideos).toHaveBeenCalledTimes(1);
+    expect(scraper.addNewVideos).toHaveBeenCalledOnce();
     expect(finishVideoSync).toHaveBeenCalledWith(
       expect.objectContaining({ changed: true })
     );

@@ -9,7 +9,8 @@ import { useUpdateSearchParams } from "@/lib/use-update-search-params";
 
 import { getDateRangeUpdates } from "../_lib/analytics-url-params";
 import type { AnalyticsSearchParams } from "../_lib/search-params-schema";
-import DateRangePicker, { type DateRange } from "./date-range-picker";
+import DateRangePicker from "./date-range-picker";
+import type { DateRange } from "./date-range-picker";
 
 interface Props {
   searchParams: Promise<AnalyticsSearchParams>;

@@ -2,10 +2,9 @@ import { TIME_ZONE } from "@shinju-date/constants";
 import {
   countSummaryStats,
   readSummarySnapshot,
-  type SummaryStats,
-  type WithTrends,
   withTrends,
 } from "@shinju-date/dashboard-stats";
+import type { SummaryStats, WithTrends } from "@shinju-date/dashboard-stats";
 import { formatDateKey } from "@shinju-date/temporal-fns";
 import { cacheLife } from "next/cache";
 

@@ -4,10 +4,10 @@ import { ensureCollectionsSeeded, videos } from "../../collections.js";
 import { createRedisDataFactory } from "../../redis-factory.js";
 import {
   isSupportedCommand,
-  type RedisReply,
   runCommand,
   unknownCommandError,
 } from "./commands.js";
+import type { RedisReply } from "./commands.js";
 import { MockRedisStore, RedisError } from "./store.js";
 
 /**

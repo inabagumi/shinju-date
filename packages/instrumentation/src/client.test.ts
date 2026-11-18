@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { initClient, onRouterTransitionStart } from "./client.js";
 
@@ -31,7 +31,7 @@ afterEach(() => {
 });
 
 describe("initClient", () => {
-  test("initializes Sentry with the sample rates", async () => {
+  it("initializes Sentry with the sample rates", async () => {
     initClient(options);
 
     await vi.waitFor(() => expect(sentry.init).toHaveBeenCalledOnce());
@@ -52,7 +52,7 @@ describe("initClient", () => {
     });
   });
 
-  test("logs the error when Sentry fails to initialize", async () => {
+  it("logs the error when Sentry fails to initialize", async () => {
     const error = new Error("failed");
     sentry.init.mockImplementationOnce(() => {
       throw error;
@@ -81,7 +81,7 @@ describe("initClient", () => {
     }
   });
 
-  test("does not initialize Sentry without the DSN", async () => {
+  it("does not initialize Sentry without the DSN", async () => {
     vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", undefined);
 
     initClient(options);
@@ -92,7 +92,7 @@ describe("initClient", () => {
 });
 
 describe("onRouterTransitionStart", () => {
-  test("starts the trace of the navigation", async () => {
+  it("starts the trace of the navigation", async () => {
     await onRouterTransitionStart("/videos", "push");
 
     expect(sentry.captureRouterTransitionStart).toHaveBeenCalledWith(
@@ -101,7 +101,7 @@ describe("onRouterTransitionStart", () => {
     );
   });
 
-  test("does nothing without the DSN", async () => {
+  it("does nothing without the DSN", async () => {
     vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", undefined);
 
     await onRouterTransitionStart("/videos", "push");

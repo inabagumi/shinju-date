@@ -1,11 +1,8 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { TALENT_AFFILIATION_NAME } from "./site";
-import {
-  getVideoTitleParts,
-  type ParsedVideoTitle,
-  parseVideoTitle,
-} from "./video-title";
+import { getVideoTitleParts, parseVideoTitle } from "./video-title";
+import type { ParsedVideoTitle } from "./video-title";
 
 const cases: [title: string, talentName: string, expected: ParsedVideoTitle][] =
   [
@@ -237,7 +234,7 @@ const cases: [title: string, talentName: string, expected: ParsedVideoTitle][] =
   ];
 
 describe("parseVideoTitle", () => {
-  test.each(cases)("should parse %s", (title, talentName, expected) => {
+  it.each(cases)("should parse %s", (title, talentName, expected) => {
     expect(
       parseVideoTitle(title, {
         creditKeywords: [TALENT_AFFILIATION_NAME],
@@ -246,7 +243,7 @@ describe("parseVideoTitle", () => {
     ).toEqual(expected);
   });
 
-  test("should keep the credits in the labels without the options", () => {
+  it("should keep the credits in the labels without the options", () => {
     expect(
       parseVideoTitle(
         "【雀魂】指示厨が泡吹いて倒れない麻雀【柚原いづみ / ななしいんく】"
@@ -258,7 +255,7 @@ describe("parseVideoTitle", () => {
     });
   });
 
-  test.each([
+  it.each([
     ["#Minecraft #11", { hashtags: [], labels: [], text: "#Minecraft #11" }],
     [
       "＃Minecraft  ＃11 ＃12",
@@ -278,7 +275,7 @@ describe("parseVideoTitle", () => {
     ).toEqual(expected);
   });
 
-  test("should not treat `#` after a letter as a hashtag", () => {
+  it("should not treat `#` after a letter as a hashtag", () => {
     expect(parseVideoTitle("C# で作るゲーム C#")).toEqual({
       hashtags: [],
       labels: [],
@@ -288,7 +285,7 @@ describe("parseVideoTitle", () => {
 });
 
 describe("getVideoTitleParts", () => {
-  test("should put the first label and up to three hashtags in the tags", () => {
+  it("should put the first label and up to three hashtags in the tags", () => {
     expect(
       getVideoTitleParts(
         "【Minecraft】【雑談】夜の肝試し #マイクラ肝試し2026 #a #b #c"
@@ -299,14 +296,14 @@ describe("getVideoTitleParts", () => {
     });
   });
 
-  test("should leave the tags empty without labels and hashtags", () => {
+  it("should leave the tags empty without labels and hashtags", () => {
     expect(getVideoTitleParts("今日も歌います")).toEqual({
       tags: "",
       text: "今日も歌います",
     });
   });
 
-  test("should drop the credits of the talent and the affiliation", () => {
+  it("should drop the credits of the talent and the affiliation", () => {
     expect(
       getVideoTitleParts(
         `【歌枠】今日も歌います【朝霧ミオ / ${TALENT_AFFILIATION_NAME}】`,
@@ -315,7 +312,7 @@ describe("getVideoTitleParts", () => {
     ).toEqual({ tags: "歌枠", text: "今日も歌います" });
   });
 
-  test("should keep the name of a talent without the talent", () => {
+  it("should keep the name of a talent without the talent", () => {
     expect(getVideoTitleParts("【朝霧ミオ】今日も歌います", null)).toEqual({
       tags: "朝霧ミオ",
       text: "今日も歌います",

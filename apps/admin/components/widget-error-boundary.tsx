@@ -3,7 +3,8 @@
 import * as Sentry from "@sentry/nextjs";
 import { Button } from "@shinju-date/ui";
 import { AlertTriangle } from "lucide-react";
-import { catchError, type ErrorInfo } from "next/error";
+import { catchError } from "next/error";
+import type { ErrorInfo } from "next/error";
 import { useEffect } from "react";
 
 import { Panel } from "./panel";

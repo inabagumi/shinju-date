@@ -1,7 +1,8 @@
 import * as Sentry from "@sentry/nextjs";
 import { createErrorResponse } from "@shinju-date/helpers";
 
-import getVideoByURL, { type Video } from "./_lib/get-video-by-url";
+import getVideoByURL from "./_lib/get-video-by-url";
+import type { Video } from "./_lib/get-video-by-url";
 import increment from "./_lib/increment";
 import track from "./_lib/track";
 
@@ -22,13 +23,13 @@ export async function POST(request: Request): Promise<Response> {
       headers: request.headers.entries(),
     });
 
-    if (requestType !== "text/ping") {
-      return createErrorResponse("Unsupported Media Type", {
-        status: 415,
-      });
-    } else {
+    if (requestType === "text/ping") {
       return createErrorResponse("Unprocessable Entity", {
         status: 422,
+      });
+    } else {
+      return createErrorResponse("Unsupported Media Type", {
+        status: 415,
       });
     }
   }

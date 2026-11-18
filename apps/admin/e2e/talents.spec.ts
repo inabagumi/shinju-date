@@ -1,4 +1,5 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 /** Opens the detail page of the first talent in the list */
 async function openFirstTalent(page: Page) {

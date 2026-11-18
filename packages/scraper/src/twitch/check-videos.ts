@@ -3,12 +3,10 @@ import { sweepUnavailableVideos } from "../internal/operations/sweep-unavailable
 import { replaceThumbnail } from "../internal/thumbnails/index.js";
 import type { CrawlContext, WriteContext } from "../types.js";
 import type { TwitchFetcher } from "./fetcher.js";
-import {
-  createTwitchPlatform,
-  getTwitchVideoType,
-  type TwitchLookedUpVideo,
-} from "./platform.js";
-import { type SavedTwitchVideo, updateTwitchVideo } from "./saved-video.js";
+import { createTwitchPlatform, getTwitchVideoType } from "./platform.js";
+import type { TwitchLookedUpVideo } from "./platform.js";
+import { updateTwitchVideo } from "./saved-video.js";
+import type { SavedTwitchVideo } from "./saved-video.js";
 import { createTwitchThumbnail } from "./thumbnail.js";
 
 /**

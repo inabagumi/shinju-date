@@ -5,7 +5,8 @@ import {
   getYouTubeChannelIconName,
   getYouTubeChannelIconUrl,
 } from "../youtube-urls.js";
-import { randomBlurDataUrl, randomPast, type SeedContext } from "./context.js";
+import { randomBlurDataUrl, randomPast } from "./context.js";
+import type { SeedContext } from "./context.js";
 
 /**
  * IDs of the seeded active talents, in the order of their readings

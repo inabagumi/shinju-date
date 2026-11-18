@@ -211,7 +211,7 @@ describe("getVideosByUser", () => {
     );
 
     expect(videos.map((video) => video.id)).toEqual(["1"]);
-    expect(helixGetVideosByUser).toHaveBeenCalledTimes(1);
+    expect(helixGetVideosByUser).toHaveBeenCalledOnce();
     expect(helixGetVideosByUser).toHaveBeenCalledWith("user-1", {
       limit: 20,
       type: "archive",

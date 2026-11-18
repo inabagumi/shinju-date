@@ -10,7 +10,7 @@ export async function register() {
 
   await registerServer({
     enableMsw: serverEnv.ENABLE_MSW,
-    profileSessionSampleRate: 1.0,
-    tracesSampleRate: 1.0,
+    profileSessionSampleRate: 1,
+    tracesSampleRate: 1,
   });
 }

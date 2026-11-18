@@ -8,11 +8,8 @@ import {
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  type ActionResult,
-  ConfirmDialog,
-  type ConfirmDialogProps,
-} from "./confirm-dialog";
+import { ConfirmDialog } from "./confirm-dialog";
+import type { ActionResult, ConfirmDialogProps } from "./confirm-dialog";
 
 function renderDialog() {
   const onConfirm = vi.fn();
@@ -208,7 +205,7 @@ describe("ConfirmDialog", () => {
 
       fireEvent.click(screen.getByRole("button", { name: "削除" }));
 
-      expect(await screen.findByRole("alert")).toHaveTextContent(
+      await expect(screen.findByRole("alert")).resolves.toHaveTextContent(
         "削除できませんでした。"
       );
       expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -225,7 +222,7 @@ describe("ConfirmDialog", () => {
 
       fireEvent.click(screen.getByRole("button", { name: "削除" }));
 
-      expect(await screen.findByRole("alert")).toHaveTextContent(
+      await expect(screen.findByRole("alert")).resolves.toHaveTextContent(
         "処理に失敗しました。"
       );
       expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -240,7 +237,7 @@ describe("ConfirmDialog", () => {
       });
 
       fireEvent.click(screen.getByRole("button", { name: "削除" }));
-      expect(await screen.findByRole("alert")).toBeInTheDocument();
+      await expect(screen.findByRole("alert")).resolves.toBeInTheDocument();
 
       fireEvent.click(screen.getByRole("button", { name: "キャンセル" }));
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -255,7 +252,7 @@ describe("ConfirmDialog", () => {
       render(<ControlledConfirmDialog />);
 
       fireEvent.click(screen.getByRole("button", { name: "削除" }));
-      expect(await screen.findByRole("alert")).toBeInTheDocument();
+      await expect(screen.findByRole("alert")).resolves.toBeInTheDocument();
 
       fireEvent.click(screen.getByRole("button", { name: "キャンセル" }));
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();

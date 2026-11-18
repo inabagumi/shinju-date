@@ -91,9 +91,9 @@ describe("FeatureRequestDetail", () => {
         within(form).getByRole("button", { name: "ステータスを更新" })
       );
 
-      expect(await within(form).findByRole("status")).toHaveTextContent(
-        "更新しました。"
-      );
+      await expect(
+        within(form).findByRole("status")
+      ).resolves.toHaveTextContent("更新しました。");
       expect(submittedValues(mocks.updateFeatureRequestStatusAction)).toEqual({
         id: FEEDBACK_ID,
         status: "in_progress",
@@ -113,7 +113,7 @@ describe("FeatureRequestDetail", () => {
         within(form).getByRole("button", { name: "ステータスを更新" })
       );
 
-      expect(await within(form).findByRole("alert")).toHaveTextContent(
+      await expect(within(form).findByRole("alert")).resolves.toHaveTextContent(
         "ステータスの更新に失敗しました。"
       );
       expect(within(form).queryByRole("status")).toBeNull();
@@ -136,9 +136,9 @@ describe("FeatureRequestDetail", () => {
       });
       fireEvent.click(within(form).getByRole("button", { name: "メモを保存" }));
 
-      expect(await within(form).findByRole("status")).toHaveTextContent(
-        "保存しました。"
-      );
+      await expect(
+        within(form).findByRole("status")
+      ).resolves.toHaveTextContent("保存しました。");
       expect(submittedValues(mocks.updateFeatureRequestMemoAction)).toEqual({
         admin_memo: "次の四半期に対応する。",
         id: FEEDBACK_ID,
@@ -156,7 +156,7 @@ describe("FeatureRequestDetail", () => {
 
       fireEvent.click(within(form).getByRole("button", { name: "メモを保存" }));
 
-      expect(await within(form).findByRole("alert")).toHaveTextContent(
+      await expect(within(form).findByRole("alert")).resolves.toHaveTextContent(
         "メモの更新に失敗しました。"
       );
       expect(within(form).queryByRole("status")).toBeNull();
@@ -184,9 +184,9 @@ describe("FeatureRequestDetail", () => {
 
         fireEvent.click(within(form).getByRole("button", { name: button }));
 
-        expect(await within(form).findByRole("status")).toHaveTextContent(
-          "更新しました。"
-        );
+        await expect(
+          within(form).findByRole("status")
+        ).resolves.toHaveTextContent("更新しました。");
         expect(submittedValues(mocks.markFeatureRequestAsReadAction)).toEqual({
           id: FEEDBACK_ID,
           is_read: submitted,
@@ -205,7 +205,7 @@ describe("FeatureRequestDetail", () => {
 
       fireEvent.click(within(form).getByRole("button", { name: "既読にする" }));
 
-      expect(await within(form).findByRole("alert")).toHaveTextContent(
+      await expect(within(form).findByRole("alert")).resolves.toHaveTextContent(
         "既読状態の更新に失敗しました。"
       );
       expect(within(form).queryByRole("status")).toBeNull();

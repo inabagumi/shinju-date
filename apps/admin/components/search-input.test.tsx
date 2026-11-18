@@ -64,7 +64,7 @@ describe("SearchInput", () => {
     act(() => {
       vi.advanceTimersByTime(1);
     });
-    expect(mocks.replace).toHaveBeenCalledTimes(1);
+    expect(mocks.replace).toHaveBeenCalledOnce();
     expect(mocks.replace).toHaveBeenCalledWith(
       "/talents?status=all&search=abc"
     );

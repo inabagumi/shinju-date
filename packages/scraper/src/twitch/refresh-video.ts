@@ -12,10 +12,10 @@ import { createTwitchPlatform } from "./platform.js";
 import { isLivePlaceholder } from "./saved-video.js";
 import {
   refreshTwitchBroadcast,
-  type SavedLiveVideo,
   selectSavedLiveVideos,
   toSavedLiveVideo,
 } from "./sync-live.js";
+import type { SavedLiveVideo } from "./sync-live.js";
 
 async function findSavedVideo(
   supabaseClient: TypedSupabaseClient,

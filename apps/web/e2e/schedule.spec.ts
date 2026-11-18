@@ -1,4 +1,5 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 // Seeded by the MSW mock data (packages/msw-handlers): a stream on air now,
 // 2 streams on each day of the current week (one of them at 21:00 in Japan)

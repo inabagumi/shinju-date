@@ -1,5 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SEARCH_RESULT_COUNT } from "@/lib/site";
 import {
@@ -77,7 +77,7 @@ describe("fetchVideos", () => {
     mockNow("2026-11-15T03:20:00Z");
   });
 
-  test("searches the videos of all talents by default", async () => {
+  it("searches the videos of all talents by default", async () => {
     const song = createVideoOnYouTube(channel, { title: "歌枠" });
     const otherSong = createVideoOnYouTube(otherChannel, {
       published_at: "2026-11-14T12:00:00Z",
@@ -93,7 +93,7 @@ describe("fetchVideos", () => {
     ]);
   });
 
-  test("searches only the videos of the given talents and kind", async () => {
+  it("searches only the videos of the given talents and kind", async () => {
     const short = createVideoOnYouTube(channel, { video_kind: "short" });
     const standard = createVideoOnYouTube(channel);
     const otherShort = createVideoOnYouTube(otherChannel, {
@@ -107,7 +107,7 @@ describe("fetchVideos", () => {
     ).toEqual([short.video.id]);
   });
 
-  test("returns the videos before `until`, newest first", async () => {
+  it("returns the videos before `until`, newest first", async () => {
     const older = createVideoOnYouTube(channel, {
       published_at: "2026-11-10T12:00:00Z",
     });
@@ -128,7 +128,7 @@ describe("fetchVideos", () => {
     ]);
   });
 
-  test("leaves out the videos without a YouTube or Twitch video", async () => {
+  it("leaves out the videos without a YouTube or Twitch video", async () => {
     const shown = createVideoOnYouTube(channel);
     const hidden = createVideo({ talent_id: talent.id });
 
@@ -137,7 +137,7 @@ describe("fetchVideos", () => {
     expect(ids(await fetchVideos({}))).toEqual([shown.video.id]);
   });
 
-  test("leaves out the videos that cannot be linked to before the page size", async () => {
+  it("leaves out the videos that cannot be linked to before the page size", async () => {
     const userWithoutLogin = createTwitchUser({ talent_id: talent.id });
     const shown = Array.from({ length: SEARCH_RESULT_COUNT }, (_, index) =>
       createVideoOnYouTube(channel, {
@@ -164,7 +164,7 @@ describe("fetchVideos", () => {
     );
   });
 
-  test("throws when the videos cannot be searched", async () => {
+  it("throws when the videos cannot be searched", async () => {
     failSupabase("rpc/search_videos_v4", "failed");
 
     await expect(fetchVideos({})).rejects.toThrow("failed");
@@ -176,7 +176,7 @@ describe("countVideos", () => {
     mockNow("2026-11-15T03:20:00Z");
   });
 
-  test("counts the videos of all talents by default", async () => {
+  it("counts the videos of all talents by default", async () => {
     await seedVideos([
       createVideoOnYouTube(channel),
       createVideoOnYouTube(channel),
@@ -186,7 +186,7 @@ describe("countVideos", () => {
     await expect(countVideos({})).resolves.toBe(3);
   });
 
-  test("counts only the videos of the given talents", async () => {
+  it("counts only the videos of the given talents", async () => {
     await seedVideos([
       createVideoOnYouTube(channel, { title: "歌枠" }),
       createVideoOnYouTube(channel, { title: "雑談" }),
@@ -198,7 +198,7 @@ describe("countVideos", () => {
     ).resolves.toBe(1);
   });
 
-  test("does not count the videos that cannot be linked to", async () => {
+  it("does not count the videos that cannot be linked to", async () => {
     const userWithoutLogin = createTwitchUser({ talent_id: talent.id });
 
     await seedSupabase({
@@ -218,7 +218,7 @@ describe("countVideos", () => {
     await expect(countVideos({})).resolves.toBe(1);
   });
 
-  test("throws when the videos cannot be counted", async () => {
+  it("throws when the videos cannot be counted", async () => {
     failSupabase("rpc/count_videos_v2", "failed");
 
     await expect(countVideos({})).rejects.toThrow("failed");
@@ -230,7 +230,7 @@ describe("fetchCalendarVideos", () => {
     mockNow("2026-11-15T03:20:45.5Z");
   });
 
-  test("returns the videos until the start of the hour a week later, latest first", async () => {
+  it("returns the videos until the start of the hour a week later, latest first", async () => {
     const past = createVideoOnYouTube(channel, {
       published_at: "2026-11-10T12:00:00Z",
     });
@@ -264,7 +264,7 @@ describe("fetchCalendarVideos", () => {
     expect(cacheTag).toHaveBeenCalledWith("videos");
   });
 
-  test("keeps the latest 100 videos", async () => {
+  it("keeps the latest 100 videos", async () => {
     const rows = Array.from({ length: 101 }, (_, index) =>
       createVideoOnYouTube(channel, {
         published_at: Temporal.Instant.from("2026-11-01T00:00:00Z")
@@ -281,7 +281,7 @@ describe("fetchCalendarVideos", () => {
     expect(ids(videos)).not.toContain(rows[0]?.video.id);
   });
 
-  test("narrows the videos by the talents and the kind", async () => {
+  it("narrows the videos by the talents and the kind", async () => {
     const short = createVideoOnYouTube(channel, { video_kind: "short" });
     const standard = createVideoOnYouTube(channel);
     const otherShort = createVideoOnYouTube(otherChannel, {
@@ -304,7 +304,7 @@ describe("fetchCalendarVideos", () => {
     );
   });
 
-  test("leaves out the videos without a platform source", async () => {
+  it("leaves out the videos without a platform source", async () => {
     const shown = createVideoOnYouTube(channel);
 
     await seedVideos([shown, createVideo({ talent_id: talent.id })]);
@@ -312,7 +312,7 @@ describe("fetchCalendarVideos", () => {
     expect(ids(await fetchCalendarVideos())).toEqual([shown.video.id]);
   });
 
-  test("throws when the videos cannot be fetched", async () => {
+  it("throws when the videos cannot be fetched", async () => {
     failSupabase("videos", "failed");
 
     await expect(fetchCalendarVideos()).rejects.toThrow("failed");
@@ -324,7 +324,7 @@ describe("fetchDashboardVideos", () => {
     mockNow("2026-11-15T12:00:00Z");
   });
 
-  test("returns the live videos, the recent uploads and the recent shorts", async () => {
+  it("returns the live videos, the recent uploads and the recent shorts", async () => {
     const live = createVideoOnYouTube(channel, {
       published_at: "2026-11-15T10:00:00Z",
       status: "LIVE",
@@ -391,7 +391,7 @@ describe("fetchUpcomingVideos", () => {
       ...overrides,
     });
 
-  test("returns the upcoming videos from this hour to a week later by start, with today in Japan", async () => {
+  it("returns the upcoming videos from this hour to a week later by start, with today in Japan", async () => {
     const first = upcoming("2026-11-15T03:00:00Z");
     const second = upcoming("2026-11-16T11:00:00Z");
     const last = upcoming("2026-11-22T03:00:00Z");
@@ -419,7 +419,7 @@ describe("fetchUpcomingVideos", () => {
     expect(cacheTag).toHaveBeenCalledWith("videos");
   });
 
-  test("returns the videos with their thumbnails and channels", async () => {
+  it("returns the videos with their thumbnails and channels", async () => {
     const thumbnail = createThumbnail();
     const icon = createProfileImage();
     const video = upcoming("2026-11-16T11:00:00Z", {
@@ -474,7 +474,7 @@ describe("fetchUpcomingVideos", () => {
     ]);
   });
 
-  test("keeps the nearest 100 videos", async () => {
+  it("keeps the nearest 100 videos", async () => {
     const rows = Array.from({ length: 101 }, (_, index) =>
       upcoming(
         Temporal.Instant.from("2026-11-16T00:00:00Z")
@@ -491,7 +491,7 @@ describe("fetchUpcomingVideos", () => {
     expect(ids(videos)).not.toContain(rows[100]?.video.id);
   });
 
-  test("drops the videos without a YouTube or Twitch video", async () => {
+  it("drops the videos without a YouTube or Twitch video", async () => {
     const shown = upcoming("2026-11-16T11:00:00Z");
 
     await seedVideos([
@@ -508,7 +508,7 @@ describe("fetchUpcomingVideos", () => {
     expect(ids(videos)).toEqual([shown.video.id]);
   });
 
-  test("throws when the videos cannot be fetched", async () => {
+  it("throws when the videos cannot be fetched", async () => {
     failSupabase("videos", "failed");
 
     await expect(fetchUpcomingVideos()).rejects.toThrow("failed");
@@ -516,7 +516,7 @@ describe("fetchUpcomingVideos", () => {
 });
 
 describe("fetchCurrentTime", () => {
-  test("returns the current time in Japan", async () => {
+  it("returns the current time in Japan", async () => {
     mockNow("2026-11-15T15:30:00Z");
 
     await expect(fetchCurrentTime()).resolves.toBe(

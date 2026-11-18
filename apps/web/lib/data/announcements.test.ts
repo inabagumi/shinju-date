@@ -1,5 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createAnnouncement } from "@/test/factories";
 import { mockNow } from "@/test/now";
@@ -34,7 +34,7 @@ describe("fetchActiveAnnouncements", () => {
     mockNow("2026-11-17T03:00:00Z");
   });
 
-  test("returns the enabled announcements that have not ended, newest first", async () => {
+  it("returns the enabled announcements that have not ended, newest first", async () => {
     const older = createAnnouncement({
       created_at: "2026-11-01T00:00:00Z",
       end_at: "2026-11-20T00:00:00Z",
@@ -77,7 +77,7 @@ describe("fetchActiveAnnouncements", () => {
     expect(cacheTag).toHaveBeenCalledWith("announcements");
   });
 
-  test("returns up to 10 announcements", async () => {
+  it("returns up to 10 announcements", async () => {
     const announcements = Array.from({ length: 11 }, (_, index) =>
       createAnnouncement({
         created_at: `2026-11-${String(index + 1).padStart(2, "0")}T00:00:00Z`,
@@ -92,7 +92,7 @@ describe("fetchActiveAnnouncements", () => {
     expect(ids(fetched)).not.toContain(announcements[0]?.id);
   });
 
-  test("throws when the announcements cannot be fetched", async () => {
+  it("throws when the announcements cannot be fetched", async () => {
     failSupabase("announcements", "failed");
 
     await expect(fetchActiveAnnouncements()).rejects.toThrow("failed");

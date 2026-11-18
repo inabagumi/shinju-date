@@ -6,8 +6,8 @@ import {
   DEFAULT_THUMBNAIL_HEIGHT,
   DEFAULT_THUMBNAIL_WIDTH,
   resolveThumbnailTemplateUrl,
-  type ThumbnailSource,
 } from "../internal/thumbnails/index.js";
+import type { ThumbnailSource } from "../internal/thumbnails/index.js";
 import type { TwitchClip, TwitchStream, TwitchVideo } from "./types.js";
 
 export type TwitchVideoType = NonNullable<Tables<"twitch_videos">["type"]>;

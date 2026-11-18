@@ -15,7 +15,7 @@ type CommandMock = (...args: unknown[]) => unknown;
 export function createMockPipeline(
   client: Partial<Record<PipelineCommand, CommandMock>>
 ) {
-  const queued: Array<() => unknown> = [];
+  const queued: (() => unknown)[] = [];
   const pipeline: Record<string, unknown> = {
     exec: () => Promise.all(queued.map((run) => run())),
   };

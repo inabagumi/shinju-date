@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { hydrateRoot, type Root } from "react-dom/client";
+import { hydrateRoot } from "react-dom/client";
+import type { Root } from "react-dom/client";
 import { renderToString } from "react-dom/server";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import Timeline from "@/app/_components/timeline";
 import ScheduleDayHeader from "@/app/schedule/_components/schedule-day-header";
@@ -92,7 +93,7 @@ describe("hydration across the change of the date", () => {
     vi.restoreAllMocks();
   });
 
-  test("the search results", async () => {
+  it("the search results", async () => {
     const { consoleError, onRecoverableError, serverHtml } =
       await renderOnServerAndHydrate(
         <SearchResults
@@ -117,7 +118,7 @@ describe("hydration across the change of the date", () => {
     expect(screen.getByRole("heading")).toHaveTextContent("昨日");
   });
 
-  test("the timeline of the home page", async () => {
+  it("the timeline of the home page", async () => {
     const { consoleError, onRecoverableError, serverHtml } =
       await renderOnServerAndHydrate(
         <Timeline
@@ -141,7 +142,7 @@ describe("hydration across the change of the date", () => {
     ).toHaveTextContent("今日");
   });
 
-  test("the heading of a day on the schedule", async () => {
+  it("the heading of a day on the schedule", async () => {
     const { consoleError, onRecoverableError, serverHtml } =
       await renderOnServerAndHydrate(
         <ScheduleDayHeader
@@ -158,7 +159,7 @@ describe("hydration across the change of the date", () => {
     expect(screen.getByText("今日")).toBeInTheDocument();
   });
 
-  test("the year of a time", async () => {
+  it("the year of a time", async () => {
     const { consoleError, onRecoverableError, serverHtml } =
       await renderOnServerAndHydrate(
         <FormattedTime

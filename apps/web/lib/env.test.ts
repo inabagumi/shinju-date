@@ -1,9 +1,10 @@
 // @vitest-environment node
 import { readFileSync } from "node:fs";
 
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { ENV_NAMES, type EnvSource, parseEnv, parsePublicEnv } from "./env";
+import { ENV_NAMES, parseEnv, parsePublicEnv } from "./env";
+import type { EnvSource } from "./env";
 
 const REQUIRED_ENV = {
   NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key",
@@ -22,7 +23,7 @@ function without(...names: (keyof typeof REQUIRED_ENV)[]): EnvSource {
 }
 
 describe("parseEnv", () => {
-  test("returns the variables when every required one is set", () => {
+  it("returns the variables when every required one is set", () => {
     const { publicEnv, serverEnv } = parseEnv(REQUIRED_ENV);
 
     expect(publicEnv).toMatchObject({
@@ -36,26 +37,26 @@ describe("parseEnv", () => {
     });
   });
 
-  test.each(Object.keys(REQUIRED_ENV) as (keyof typeof REQUIRED_ENV)[])(
+  it.each(Object.keys(REQUIRED_ENV) as (keyof typeof REQUIRED_ENV)[])(
     "throws an error naming %s when it is missing",
     (name) => {
       expect(() => parseEnv(without(name))).toThrow(name);
     }
   );
 
-  test("treats an empty variable as missing", () => {
+  it("treats an empty variable as missing", () => {
     expect(() =>
       parseEnv({ ...REQUIRED_ENV, SUPABASE_SERVICE_ROLE_KEY: "" })
     ).toThrow("SUPABASE_SERVICE_ROLE_KEY: is not set");
   });
 
-  test("names every missing variable at once", () => {
+  it("names every missing variable at once", () => {
     let error: unknown;
 
     try {
       parseEnv({});
-    } catch (caught) {
-      error = caught;
+    } catch (error_) {
+      error = error_;
     }
 
     expect(error).toBeInstanceOf(Error);
@@ -65,13 +66,13 @@ describe("parseEnv", () => {
     }
   });
 
-  test("throws an error naming a variable that is not a URL", () => {
+  it("throws an error naming a variable that is not a URL", () => {
     expect(() =>
       parseEnv({ ...REQUIRED_ENV, UPSTASH_REDIS_REST_URL: "not a url" })
     ).toThrow("UPSTASH_REDIS_REST_URL: is not a valid URL");
   });
 
-  test("uses http://localhost:3000 when NEXT_PUBLIC_BASE_URL is not set", () => {
+  it("uses http://localhost:3000 when NEXT_PUBLIC_BASE_URL is not set", () => {
     expect(parseEnv(REQUIRED_ENV).publicEnv.NEXT_PUBLIC_BASE_URL).toBe(
       "http://localhost:3000"
     );
@@ -85,7 +86,7 @@ describe("parseEnv", () => {
     ).toBe("https://shinju.date");
   });
 
-  test("leaves the optional variables unset", () => {
+  it("leaves the optional variables unset", () => {
     const { publicEnv, serverEnv } = parseEnv(REQUIRED_ENV);
 
     expect(publicEnv.NEXT_PUBLIC_SENTRY_DSN).toBeUndefined();
@@ -93,7 +94,7 @@ describe("parseEnv", () => {
     expect(serverEnv.REVALIDATE_SECRET_TOKEN).toBeUndefined();
   });
 
-  test.each([
+  it.each([
     ["true", true],
     ["false", false],
     [undefined, false],
@@ -105,7 +106,7 @@ describe("parseEnv", () => {
 });
 
 describe("parsePublicEnv", () => {
-  test("does not need the server variables", () => {
+  it("does not need the server variables", () => {
     expect(() =>
       parsePublicEnv(
         without(
@@ -117,7 +118,7 @@ describe("parsePublicEnv", () => {
     ).not.toThrow();
   });
 
-  test("throws an error naming a missing public variable", () => {
+  it("throws an error naming a missing public variable", () => {
     expect(() => parsePublicEnv(without("NEXT_PUBLIC_SUPABASE_URL"))).toThrow(
       "NEXT_PUBLIC_SUPABASE_URL"
     );
@@ -130,11 +131,11 @@ interface TurboConfig {
 }
 
 function readTurboConfig(path: string): TurboConfig {
-  return JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8"));
+  return JSON.parse(readFileSync(new URL(path, import.meta.url), "utf-8"));
 }
 
 describe("ENV_NAMES", () => {
-  test("are all passed to the build by turbo.json", () => {
+  it("are all passed to the build by turbo.json", () => {
     const appConfig = readTurboConfig("../turbo.json");
     const rootConfig = readTurboConfig("../../../turbo.json");
     const passedNames = new Set([

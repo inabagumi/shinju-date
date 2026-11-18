@@ -1,6 +1,7 @@
 import { twMerge } from "@shinju-date/ui";
 import type { MDXComponents } from "mdx/types";
-import NextLink, { type LinkProps } from "next/link";
+import NextLink from "next/link";
+import type { LinkProps } from "next/link";
 import type { ComponentPropsWithoutRef } from "react";
 
 function Link({

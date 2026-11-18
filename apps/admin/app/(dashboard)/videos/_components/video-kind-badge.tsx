@@ -1,5 +1,6 @@
 import type { Enums } from "@shinju-date/database";
-import { Badge, type BadgeProps } from "@shinju-date/ui";
+import { Badge } from "@shinju-date/ui";
+import type { BadgeProps } from "@shinju-date/ui";
 
 const VIDEO_KIND_LABELS: Record<Enums<"video_kind">, string> = {
   short: "ショート",

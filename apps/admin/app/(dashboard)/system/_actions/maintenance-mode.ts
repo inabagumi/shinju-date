@@ -2,7 +2,8 @@
 
 import { REDIS_KEYS } from "@shinju-date/constants";
 
-import { type ActionResult, adminAction } from "@/lib/action";
+import { adminAction } from "@/lib/action";
+import type { ActionResult } from "@/lib/action";
 import { createAuditLog } from "@/lib/audit-log";
 import { getRedisClient } from "@/lib/redis";
 

@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { getLegacySearchRedirectPath } from "./search-redirect";
 
@@ -7,7 +7,7 @@ function getPath(path: string): string | undefined {
 }
 
 describe("getLegacySearchRedirectPath", () => {
-  test("redirects a query to the search results", () => {
+  it("redirects a query to the search results", () => {
     expect(getPath("/search?q=歌枠")).toBe(
       `/videos/${encodeURIComponent("歌枠")}`
     );
@@ -16,14 +16,14 @@ describe("getLegacySearchRedirectPath", () => {
     );
   });
 
-  test("joins multiple queries with a space for both entry points", () => {
+  it("joins multiple queries with a space for both entry points", () => {
     const expected = `/videos/${encodeURIComponent("a b")}`;
 
     expect(getPath("/search?q=a&q=b")).toBe(expected);
     expect(getPath("/videos?q=a&q=b")).toBe(expected);
   });
 
-  test("ignores blank queries", () => {
+  it("ignores blank queries", () => {
     expect(getPath("/search")).toBe("/videos");
     expect(getPath("/search?q=")).toBe("/videos");
     expect(getPath("/videos?q=%20")).toBe("/videos");
@@ -32,7 +32,7 @@ describe("getLegacySearchRedirectPath", () => {
     );
   });
 
-  test("keeps the kind and talent filters", () => {
+  it("keeps the kind and talent filters", () => {
     const talentA = "00000000-0000-4000-8000-000000000001";
     const talentB = "00000000-0000-4000-8000-000000000002";
 
@@ -43,7 +43,7 @@ describe("getLegacySearchRedirectPath", () => {
     );
   });
 
-  test("does not redirect other URLs", () => {
+  it("does not redirect other URLs", () => {
     expect(getPath("/videos")).toBeUndefined();
     expect(getPath("/videos?kind=short")).toBeUndefined();
     expect(getPath("/videos/test?q=a")).toBeUndefined();

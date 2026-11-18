@@ -1,6 +1,7 @@
 import type { default as Database } from "@shinju-date/database";
 import retryableFetch from "@shinju-date/retryable-fetch";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { publicEnv, serverEnv } from "@/lib/env";
 

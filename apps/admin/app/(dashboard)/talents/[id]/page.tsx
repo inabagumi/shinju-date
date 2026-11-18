@@ -127,9 +127,7 @@ async function TalentProfile({
         )}
 
         {/* Talent information - Editable form */}
-        {!isDeleted ? (
-          <EditTalentForm talent={talent} />
-        ) : (
+        {isDeleted ? (
           <Panel
             description="削除済みのため編集できません。"
             title="タレント情報"
@@ -143,6 +141,8 @@ async function TalentProfile({
               </DetailRow>
             </DetailList>
           </Panel>
+        ) : (
+          <EditTalentForm talent={talent} />
         )}
 
         {/* YouTube Channel Management */}

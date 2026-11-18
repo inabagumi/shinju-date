@@ -3,7 +3,8 @@
 import { twMerge } from "@shinju-date/ui";
 import { useState } from "react";
 
-import { type ActionResult, ConfirmDialog } from "@/components/confirm-dialog";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import type { ActionResult } from "@/components/confirm-dialog";
 import { Panel } from "@/components/panel";
 import ToggleSwitch from "@/components/toggle-switch";
 

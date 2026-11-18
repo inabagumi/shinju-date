@@ -68,9 +68,9 @@ describe("CSV export routes", () => {
       { count: 3, keyword: "歌枠, 雑談" },
     ]);
 
-    expect(
-      await exportCsv(exportKeywords, "from=2026-11-08&to=2026-11-14")
-    ).toEqual({
+    await expect(
+      exportCsv(exportKeywords, "from=2026-11-08&to=2026-11-14")
+    ).resolves.toEqual({
       bom: BOM,
       contentDisposition:
         'attachment; filename="search-analytics-keywords-2026-11-08_2026-11-14.csv"',
@@ -90,7 +90,9 @@ describe("CSV export routes", () => {
       { exitRate: 0, keyword: "歌枠", searchCount: 5 },
     ]);
 
-    expect(await exportCsv(exportSearchExitRates, "date=2026-11-10")).toEqual({
+    await expect(
+      exportCsv(exportSearchExitRates, "date=2026-11-10")
+    ).resolves.toEqual({
       bom: BOM,
       contentDisposition:
         'attachment; filename="search-exit-rates-2026-11-10.csv"',
@@ -106,7 +108,7 @@ describe("CSV export routes", () => {
       { clicks: 8, id: "talent-2", name: "タレントB" },
     ] as Awaited<ReturnType<typeof getPopularTalents>>);
 
-    expect(await exportCsv(exportTalents, "from=2026-11-03")).toEqual({
+    await expect(exportCsv(exportTalents, "from=2026-11-03")).resolves.toEqual({
       bom: BOM,
       contentDisposition:
         'attachment; filename="click-analytics-talent-2026-11-03.csv"',
@@ -126,9 +128,9 @@ describe("CSV export routes", () => {
       { clicks: 2, title: "動画B", youtube_video: null },
     ] as Awaited<ReturnType<typeof getPopularVideos>>);
 
-    expect(
-      await exportCsv(exportVideos, "from=2026-11-01&to=2026-11-10&limit=2")
-    ).toEqual({
+    await expect(
+      exportCsv(exportVideos, "from=2026-11-01&to=2026-11-10&limit=2")
+    ).resolves.toEqual({
       bom: BOM,
       contentDisposition:
         'attachment; filename="click-analytics-videos-2026-11-01_2026-11-10.csv"',

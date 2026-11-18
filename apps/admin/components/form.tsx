@@ -4,26 +4,30 @@ import {
   Alert,
   twMerge,
   Button as UIButton,
-  type ButtonProps as UIButtonProps,
   Input as UIInput,
-  type InputProps as UIInputProps,
   Select as UISelect,
-  type SelectProps as UISelectProps,
   Textarea as UITextarea,
-  type TextareaProps as UITextareaProps,
+} from "@shinju-date/ui";
+import type {
+  ButtonProps as UIButtonProps,
+  InputProps as UIInputProps,
+  SelectProps as UISelectProps,
+  TextareaProps as UITextareaProps,
 } from "@shinju-date/ui";
 import {
-  type ChangeEventHandler,
-  type ComponentPropsWithoutRef,
   createContext,
   Fragment,
-  type SubmitEventHandler,
   startTransition,
   useActionState,
   useCallback,
   useContext,
   useId,
   useState,
+} from "react";
+import type {
+  ChangeEventHandler,
+  ComponentPropsWithoutRef,
+  SubmitEventHandler,
 } from "react";
 import { useFormStatus } from "react-dom";
 
@@ -240,7 +244,7 @@ export function Input({
   const { pending } = useFormStatus();
   const { errors } = useContext(FormContext);
   const { id, name } = useContext(FormFieldContext);
-  const invalid = typeof name !== "undefined" && !!errors?.[name];
+  const invalid = name !== undefined && !!errors?.[name];
 
   const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     ({ target }) => {
@@ -290,7 +294,7 @@ export function Checkbox({
   const { pending } = useFormStatus();
   const { errors } = useContext(FormContext);
   const { id, name } = useContext(FormFieldContext);
-  const invalid = typeof name !== "undefined" && !!errors?.[name];
+  const invalid = name !== undefined && !!errors?.[name];
 
   return (
     <input
@@ -339,7 +343,7 @@ export function Select({
   const { pending } = useFormStatus();
   const { errors } = useContext(FormContext);
   const { id, name } = useContext(FormFieldContext);
-  const invalid = typeof name !== "undefined" && !!errors?.[name];
+  const invalid = name !== undefined && !!errors?.[name];
 
   const handleChange = useCallback<ChangeEventHandler<HTMLSelectElement>>(
     ({ target }) => {
@@ -376,7 +380,7 @@ export function Textarea({
   const { pending } = useFormStatus();
   const { errors } = useContext(FormContext);
   const { id, name } = useContext(FormFieldContext);
-  const invalid = typeof name !== "undefined" && !!errors?.[name];
+  const invalid = name !== undefined && !!errors?.[name];
 
   const handleChange = useCallback<ChangeEventHandler<HTMLTextAreaElement>>(
     ({ target }) => {

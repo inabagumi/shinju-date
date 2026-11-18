@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { cloneElement, type ReactElement } from "react";
+import { cloneElement } from "react";
+import type { ReactElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AnalyticsSearchParams } from "../_lib/search-params-schema";

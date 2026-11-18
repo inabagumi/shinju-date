@@ -4,14 +4,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Search, UserRound, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import {
-  type KeyboardEvent,
-  useCallback,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useId, useMemo, useRef, useState } from "react";
+import type { KeyboardEvent } from "react";
 
 import {
   fetchRecommendedQueries,

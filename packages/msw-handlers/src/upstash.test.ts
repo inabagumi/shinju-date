@@ -9,6 +9,7 @@ import { server } from "./server.js";
 describe("Upstash Redis Handlers", () => {
   beforeAll(() => server.listen());
   afterEach(() => server.resetHandlers());
+
   afterAll(() => server.close());
 
   describe("PING command", () => {

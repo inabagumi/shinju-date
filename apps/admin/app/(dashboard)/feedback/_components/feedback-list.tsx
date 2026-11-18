@@ -25,8 +25,8 @@ import { formatDateTimeFromISO } from "@/lib/format";
 import {
   FEATURE_REQUEST_STATUS_LABELS,
   FEATURE_REQUEST_STATUSES,
-  type FeatureRequestStatus,
 } from "../_lib/feature-request-status";
+import type { FeatureRequestStatus } from "../_lib/feature-request-status";
 import type { FeedbackSearchParams } from "../_lib/search-params-schema";
 
 interface FeatureRequestListProps {

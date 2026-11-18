@@ -1,7 +1,5 @@
-import {
-  createThumbnail,
-  type Thumbnail,
-} from "../internal/thumbnails/index.js";
+import { createThumbnail } from "../internal/thumbnails/index.js";
+import type { Thumbnail } from "../internal/thumbnails/index.js";
 import type { WriteContext } from "../types.js";
 import { getThumbnailSource } from "./video.js";
 

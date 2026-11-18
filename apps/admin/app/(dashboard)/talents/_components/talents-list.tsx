@@ -19,10 +19,10 @@ import { formatDateTimeFromISO } from "@/lib/format";
 import { buildSearchParamsHref } from "@/lib/search-params-href";
 
 import type { TalentListItem } from "../_lib/get-talents";
-import {
-  DEFAULT_TALENT_LIST_FILTERS,
-  type TalentSortOrder,
-  type TalentStatusFilter,
+import { DEFAULT_TALENT_LIST_FILTERS } from "../_lib/talent-list-filters";
+import type {
+  TalentSortOrder,
+  TalentStatusFilter,
 } from "../_lib/talent-list-filters";
 import { TalentActions } from "./talent-actions";
 import { TalentModal } from "./talent-modal";
@@ -78,7 +78,7 @@ export function TalentsList({
   const isStatusFiltered = statusFilter !== DEFAULT_TALENT_LIST_FILTERS.status;
   const isFiltered = search !== undefined || isStatusFiltered;
   const activeFilterCount =
-    (search !== undefined ? 1 : 0) + (isStatusFiltered ? 1 : 0);
+    (search === undefined ? 0 : 1) + (isStatusFiltered ? 1 : 0);
 
   return (
     <div className="space-y-6">

@@ -10,7 +10,8 @@ import { VIDEO_CALENDAR_SELECT, VIDEO_LIST_SELECT } from "@/lib/data/selects";
 import { unwrap } from "@/lib/data/unwrap";
 import { SEARCH_RESULT_COUNT } from "@/lib/site";
 import { supabaseClient } from "@/lib/supabase";
-import { getVideoKinds, type VideoKindFilter } from "@/lib/video-kind-filter";
+import { getVideoKinds } from "@/lib/video-kind-filter";
+import type { VideoKindFilter } from "@/lib/video-kind-filter";
 import { hasPlatformSource } from "@/lib/video-url";
 
 /**

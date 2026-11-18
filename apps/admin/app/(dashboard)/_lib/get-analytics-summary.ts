@@ -1,10 +1,12 @@
 import { TIME_ZONE } from "@shinju-date/constants";
 import {
-  type AnalyticsSummary,
   collectAnalyticsSummary,
   readAnalyticsSnapshot,
-  type WithTrends,
   withTrends,
+} from "@shinju-date/dashboard-stats";
+import type {
+  AnalyticsSummary,
+  WithTrends,
 } from "@shinju-date/dashboard-stats";
 import { logger } from "@shinju-date/logger";
 import { formatDateKey } from "@shinju-date/temporal-fns";

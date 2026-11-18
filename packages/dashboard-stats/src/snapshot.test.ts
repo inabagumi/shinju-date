@@ -3,16 +3,15 @@ import { describe, expect, it } from "vitest";
 
 import { FakeRedis } from "../test/fake-clients.js";
 import {
-  type AnalyticsSummary,
   analyticsSummarySchema,
   readAnalyticsSnapshot,
   readSummarySnapshot,
   SNAPSHOT_TTL_SECONDS,
-  type SummaryStats,
   summaryStatsSchema,
   writeAnalyticsSnapshot,
   writeSummarySnapshot,
 } from "./index.js";
+import type { AnalyticsSummary, SummaryStats } from "./index.js";
 
 const dateKey = "20251113";
 const summaryKey = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`;

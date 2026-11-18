@@ -4,10 +4,10 @@ import {
   describeRatings,
   ENGAGEMENT_RATE_RATINGS,
   EXIT_RATE_RATINGS,
-  type Ratings,
   REPEAT_SEARCH_RATE_RATINGS,
   rate,
 } from "./metric-ratings";
+import type { Ratings } from "./metric-ratings";
 
 describe("rate", () => {
   it.each([

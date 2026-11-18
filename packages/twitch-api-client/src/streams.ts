@@ -1,5 +1,7 @@
-import { type BatchOptions, requestInBatches } from "./batches.js";
-import { type ClientOptions, getTwitchApiClient } from "./client.js";
+import { requestInBatches } from "./batches.js";
+import type { BatchOptions } from "./batches.js";
+import { getTwitchApiClient } from "./client.js";
+import type { ClientOptions } from "./client.js";
 import { mapStream } from "./mappers.js";
 import type { TwitchStream } from "./types.js";
 

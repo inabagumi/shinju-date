@@ -7,11 +7,10 @@ import {
   mockStorage,
   serveImage,
 } from "../internal/testing/images.js";
-import {
-  postgresError,
-  type SupabaseResponder,
-  type SupabaseRoutes,
-  setupSupabase,
+import { postgresError, setupSupabase } from "../internal/testing/supabase.js";
+import type {
+  SupabaseResponder,
+  SupabaseRoutes,
 } from "../internal/testing/supabase.js";
 import { createUser } from "../internal/testing/twitch.js";
 import { syncTwitchUsers, syncTwitchUsersOfTalent } from "./sync-accounts.js";
@@ -123,6 +122,7 @@ describe("syncTwitchUsers", () => {
       { twitchUserId: "1001" }
     );
   });
+
   it("loads the saved icon of every account", async () => {
     supabase.respondWith(routes);
     const { fetcher } = createFakeTwitchFetcher();
@@ -261,7 +261,7 @@ describe("syncTwitchUsers", () => {
 
       expect(changed).toBe(1);
       expect(storage.uploads).toHaveLength(1);
-      expect(reportError).toHaveBeenCalledTimes(1);
+      expect(reportError).toHaveBeenCalledOnce();
       expect(reportError).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringContaining("duplicate key value"),

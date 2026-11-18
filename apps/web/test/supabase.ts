@@ -65,12 +65,15 @@ const requests: SupabaseRequest[] = [];
 
 function roleOf(key: string | null): SupabaseRequest["role"] {
   switch (key) {
-    case process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]:
+    case process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]: {
       return "anon";
-    case process.env["SUPABASE_SERVICE_ROLE_KEY"]:
+    }
+    case process.env["SUPABASE_SERVICE_ROLE_KEY"]: {
       return "service_role";
-    default:
+    }
+    default: {
       return null;
+    }
   }
 }
 

@@ -1,5 +1,5 @@
 import { checkBotId } from "botid/server";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   BOT_DETECTED_ERROR,
@@ -37,7 +37,7 @@ describe("withBotCheck", () => {
     vi.restoreAllMocks();
   });
 
-  test("passes the form data and the submitted values to the action", async () => {
+  it("passes the form data and the submitted values to the action", async () => {
     const handler = vi.fn().mockResolvedValue({ success: true });
     const action = withBotCheck(handler, {
       errorLogMessage: "Test error:",
@@ -51,7 +51,7 @@ describe("withBotCheck", () => {
     expect(handler).toHaveBeenCalledWith(formData, { message: "こんにちは" });
   });
 
-  test("rejects a bot without running the action", async () => {
+  it("rejects a bot without running the action", async () => {
     vi.mocked(checkBotId).mockResolvedValue({
       bypassed: false,
       isBot: true,
@@ -74,7 +74,7 @@ describe("withBotCheck", () => {
     expect(handler).not.toHaveBeenCalled();
   });
 
-  test("logs an error thrown by the action and keeps the submitted values", async () => {
+  it("logs an error thrown by the action and keeps the submitted values", async () => {
     const consoleError = vi
       .spyOn(console, "error")
       .mockImplementation(() => {});
@@ -97,7 +97,7 @@ describe("withBotCheck", () => {
     expect(consoleError).toHaveBeenCalledWith("Test error:", error);
   });
 
-  test("treats a failed bot check as an unexpected error", async () => {
+  it("treats a failed bot check as an unexpected error", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.mocked(checkBotId).mockRejectedValue(new Error("botid failed"));
     const handler = vi.fn();

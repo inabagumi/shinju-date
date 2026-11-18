@@ -1,10 +1,8 @@
 import { twMerge } from "@shinju-date/ui";
 import Link from "next/link";
 
-import {
-  VIDEO_KIND_FILTER_OPTIONS,
-  type VideoKindFilter,
-} from "@/lib/video-kind-filter";
+import { VIDEO_KIND_FILTER_OPTIONS } from "@/lib/video-kind-filter";
+import type { VideoKindFilter } from "@/lib/video-kind-filter";
 
 const PILL_CLASS_NAME =
   "inline-flex h-9 items-center rounded-full border px-4 text-meta font-semibold focus-ring";

@@ -69,7 +69,7 @@ function findUsedCommands(): Map<string, Set<string>> {
   const files = execFileSync(
     "git",
     ["ls-files", "--", "apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts"],
-    { cwd: REPOSITORY_ROOT, encoding: "utf8" }
+    { cwd: REPOSITORY_ROOT, encoding: "utf-8" }
   )
     .split("\n")
     .filter(
@@ -81,7 +81,7 @@ function findUsedCommands(): Map<string, Set<string>> {
   const used = new Map<string, Set<string>>();
 
   for (const file of files) {
-    const source = readFileSync(`${REPOSITORY_ROOT}${file}`, "utf8");
+    const source = readFileSync(`${REPOSITORY_ROOT}${file}`, "utf-8");
 
     if (!/redis/i.test(source)) {
       continue;
@@ -128,6 +128,7 @@ describe("Upstash Redis commands", () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
+
   afterAll(() => server.close());
 
   describe("the commands that the apps use", () => {

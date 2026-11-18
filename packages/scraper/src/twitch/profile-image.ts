@@ -1,8 +1,10 @@
 import {
-  type ProfileImageSyncResult,
-  type SavedProfileImageRow,
   syncProfileImage,
   toStoredProfileImage,
+} from "../internal/profile-images/index.js";
+import type {
+  ProfileImageSyncResult,
+  SavedProfileImageRow,
 } from "../internal/profile-images/index.js";
 import type { TypedSupabaseClient } from "../types.js";
 import type { TwitchUser } from "./types.js";

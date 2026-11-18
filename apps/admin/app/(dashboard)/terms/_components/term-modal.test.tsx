@@ -124,7 +124,9 @@ describe("TermModal", () => {
 
       fireEvent.click(within(dialog).getByRole("button", { name: "追加" }));
 
-      expect(await within(dialog).findByText(message)).toBeInTheDocument();
+      await expect(
+        within(dialog).findByText(message)
+      ).resolves.toBeInTheDocument();
       expect(screen.getByRole("dialog")).toBe(dialog);
       expect(mocks.updateTermAction).not.toHaveBeenCalled();
     });

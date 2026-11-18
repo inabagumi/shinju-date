@@ -89,7 +89,7 @@ function getRuleName(code: string): string {
 function lint(paths: string[]): Map<string, Map<string, number[]>> {
   const result = spawnSync(oxlint, ["--format=json", ...paths], {
     cwd: root,
-    encoding: "utf8",
+    encoding: "utf-8",
   });
 
   if (!result.stdout) {
@@ -210,7 +210,7 @@ describe("oxlint.config.ts", () => {
   it("does not report the definition of TIME_ZONE", () => {
     const file = "packages/constants/src/index.ts";
 
-    expect(readFileSync(join(root, file), "utf8")).toMatch(/"Asia\/Tokyo"/u);
+    expect(readFileSync(join(root, file), "utf-8")).toMatch(/"Asia\/Tokyo"/u);
     expect(getLines(file, "shinju-date/no-hardcoded-time-zone")).toStrictEqual(
       []
     );
@@ -220,8 +220,8 @@ describe("oxlint.config.ts", () => {
     const file = "packages/ui/src/tw-merge.ts";
     const testFile = "packages/ui/src/tw-merge.test.ts";
 
-    expect(readFileSync(join(root, file), "utf8")).toMatch(/tailwind-merge/u);
-    expect(readFileSync(join(root, testFile), "utf8")).toMatch(/"text-sm"/u);
+    expect(readFileSync(join(root, file), "utf-8")).toMatch(/tailwind-merge/u);
+    expect(readFileSync(join(root, testFile), "utf-8")).toMatch(/"text-sm"/u);
     expect(getLines(file, "no-restricted-imports")).toStrictEqual([]);
     expect(
       getLines(testFile, "shinju-date/no-default-tailwind-scale")

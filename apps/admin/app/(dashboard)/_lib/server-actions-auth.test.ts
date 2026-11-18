@@ -103,7 +103,7 @@ describe('files that start with "use server"', () => {
       (path) =>
         !path.split("/").includes("_actions") &&
         /^\s*['"]use server['"]/.test(
-          readFileSync(`${APP_ROOT}${path}`, "utf8")
+          readFileSync(`${APP_ROOT}${path}`, "utf-8")
         )
     );
 

@@ -182,7 +182,7 @@ describe("GET /videos.ics", () => {
       ...videoSeed([songA, withoutSource]),
     });
 
-    expect(await eventIds(await get())).toEqual(videoIds(songA));
+    await expect(eventIds(await get())).resolves.toEqual(videoIds(songA));
   });
 
   it.each([
@@ -199,13 +199,13 @@ describe("GET /videos.ics", () => {
   it("treats an unknown kind as no kind", async () => {
     const response = await get("?kind=live");
 
-    expect(await eventIds(response)).toHaveLength(4);
+    await expect(eventIds(response)).resolves.toHaveLength(4);
   });
 
   it("combines the talents and the kind", async () => {
     const response = await get(`?kind=short&talent=${talentA.id}`);
 
-    expect(await eventIds(response)).toEqual(videoIds(shortA));
+    await expect(eventIds(response)).resolves.toEqual(videoIds(shortA));
   });
 
   it("returns a calendar without events when nothing matches", async () => {
@@ -236,7 +236,7 @@ describe("GET /videos.ics", () => {
 
     expect(response.status).toBe(500);
     expect(response.headers.get("Cache-Control")).toBe("no-store");
-    expect(await response.text()).not.toContain("relation");
+    await expect(response.text()).resolves.not.toContain("relation");
     expect(mocks.logger.error).toHaveBeenCalledOnce();
   });
 });

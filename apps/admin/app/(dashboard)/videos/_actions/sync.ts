@@ -6,12 +6,8 @@ import { revalidateTags } from "@shinju-date/web-cache";
 import { revalidatePath } from "next/cache";
 
 import { PLATFORM_LABELS } from "@/components/platform-badge";
-import {
-  ActionError,
-  type ActionResult,
-  adminAction,
-  parseActionInput,
-} from "@/lib/action";
+import { ActionError, adminAction, parseActionInput } from "@/lib/action";
+import type { ActionResult } from "@/lib/action";
 import { createAuditLog } from "@/lib/audit-log";
 import { createScraper } from "@/lib/scraper";
 
@@ -71,16 +67,18 @@ export const syncVideoAction = adminAction(
     );
 
     switch (result.status) {
-      case "not-found":
+      case "not-found": {
         throw new ActionError(NOT_FOUND_ERROR_MESSAGE);
+      }
 
-      case "unchanged":
+      case "unchanged": {
         return {
           data: { message: "動画情報は既に最新です。", unchanged: true },
           success: true,
         };
+      }
 
-      case "unavailable":
+      case "unavailable": {
         await createAuditLog(supabaseClient, "VIDEO_SYNC", videoId, {
           changes: {
             after: {
@@ -99,8 +97,9 @@ export const syncVideoAction = adminAction(
           },
           success: true,
         };
+      }
 
-      case "updated":
+      case "updated": {
         await createAuditLog(supabaseClient, "VIDEO_SYNC", videoId, {
           changes: { after: result.after, before: result.before },
           entityName: result.title,
@@ -108,6 +107,7 @@ export const syncVideoAction = adminAction(
         await revalidateVideo(videoId);
 
         return { data: { message: "動画情報を同期しました。" }, success: true };
+      }
     }
   }
 );

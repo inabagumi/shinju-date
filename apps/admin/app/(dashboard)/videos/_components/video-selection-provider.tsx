@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, type ReactNode, use, useState } from "react";
+import { createContext, use, useState } from "react";
+import type { ReactNode } from "react";
 
 import { useVideoAction } from "../_lib/use-video-action";
 import type { VideoAction, VideoActionTarget } from "../_lib/video-actions";

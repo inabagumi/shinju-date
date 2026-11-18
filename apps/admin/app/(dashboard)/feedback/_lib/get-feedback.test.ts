@@ -5,11 +5,8 @@ import {
   INVALID_TEXT_REPRESENTATION_ERROR_CODE,
   QueryError,
 } from "@/lib/supabase/query";
-import {
-  type FakeSupabase,
-  postgresError,
-  setupSupabase,
-} from "@/test/supabase";
+import { postgresError, setupSupabase } from "@/test/supabase";
+import type { FakeSupabase } from "@/test/supabase";
 
 import { getFeatureRequestById, getFeatureRequests } from "./get-feedback";
 

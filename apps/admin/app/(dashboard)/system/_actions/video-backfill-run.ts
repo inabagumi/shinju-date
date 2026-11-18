@@ -3,7 +3,8 @@
 import { logger } from "@shinju-date/logger";
 import { BackfillRuns } from "@shinju-date/video-backfill";
 
-import { ActionError, type ActionResult, adminAction } from "@/lib/action";
+import { ActionError, adminAction } from "@/lib/action";
+import type { ActionResult } from "@/lib/action";
 import { createAuditLog } from "@/lib/audit-log";
 import { getRedisClient } from "@/lib/redis";
 
@@ -11,8 +12,8 @@ import { getBackfillAccounts } from "../_lib/backfill-accounts";
 import {
   countTargets,
   readVideoBackfillRun,
-  type VideoBackfillRunState,
 } from "../_lib/get-video-backfill-run";
+import type { VideoBackfillRunState } from "../_lib/get-video-backfill-run";
 
 /** 取得漏れチェックをキューに追加できたときに、画面に知らせること */
 interface VideoBackfillRunRequestSummary {
@@ -60,18 +61,21 @@ export const requestVideoBackfillRunAction = adminAction(
     });
 
     switch (result.status) {
-      case "active":
+      case "active": {
         throw new ActionError("全タレントの取得漏れチェックは既に実行中です。");
-      case "busy":
+      }
+      case "busy": {
         throw new ActionError(
           "別の取得漏れチェックの依頼を処理しています。しばらくしてから再度お試しください。"
         );
-      case "empty":
+      }
+      case "empty": {
         throw new ActionError(
           result.failed > 0
             ? "取得漏れチェックをキューに追加できませんでした。"
             : "すべてのアカウントで過去動画の取り込みが実行中です。"
         );
+      }
     }
 
     const { failed, run, skipped } = result;

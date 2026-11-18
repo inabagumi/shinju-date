@@ -95,12 +95,12 @@ describe("POST /recommendation/queries/update", () => {
       REDIS_KEYS.QUERIES_AUTO_RECOMMENDED,
       8 * 24 * 60 * 60
     );
-    expect(multi.exec).toHaveBeenCalledTimes(1);
+    expect(multi.exec).toHaveBeenCalledOnce();
     expect(revalidateTags).toHaveBeenCalledWith(
       [CACHE_TAGS.RECOMMENDATION_QUERIES],
       expect.anything()
     );
-    expect(revalidateTags).toHaveBeenCalledTimes(1);
+    expect(revalidateTags).toHaveBeenCalledOnce();
   });
 
   it("keeps the working key of the union for 10 minutes and deletes it afterwards", async () => {

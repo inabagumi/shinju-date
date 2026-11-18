@@ -171,7 +171,7 @@ describe("YouTubeScraper", () => {
 
       await expect(scraper.addNewVideos(TEST_NOW)).resolves.toBe(true);
 
-      expect(videosList).toHaveBeenCalledTimes(1);
+      expect(videosList).toHaveBeenCalledOnce();
       expect(videosList).toHaveBeenCalledWith(
         expect.objectContaining({ id: ["new-1"] })
       );
@@ -684,12 +684,15 @@ describe("YouTubeScraper", () => {
         }
 
         switch (table) {
-          case "youtube_channels":
+          case "youtube_channels": {
             return [channelRow];
-          case "youtube_videos":
+          }
+          case "youtube_videos": {
             return [{ youtube_video_id: "saved" }];
-          default:
+          }
+          default: {
             return [];
+          }
         }
       });
       const { playlistItemsList, scraper, videosList } = createScraper({

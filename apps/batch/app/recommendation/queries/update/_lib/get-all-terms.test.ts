@@ -14,7 +14,7 @@ interface Row {
  * in ascending order of `id`, up to `limit(...)` (and at most `maxRows`, like
  * PostgREST).
  */
-function createMockSupabase(rows: Row[], { maxRows = 1_000 } = {}) {
+function createMockSupabase(rows: Row[], { maxRows = 1000 } = {}) {
   const sorted = [...rows].sort((a, b) => (a.id < b.id ? -1 : 1));
   const requests: { cursor: string | undefined; limit: number }[] = [];
 
@@ -64,18 +64,18 @@ function createRows(count: number): Row[] {
 
 describe("getAllTerms", () => {
   it("should read every term when there are more than 1,000", async () => {
-    const rows = createRows(1_202);
+    const rows = createRows(1202);
     const { client, requests } = createMockSupabase(rows);
 
     // oxlint-disable-next-line typescript/no-explicit-any -- Mocked Supabase client
     const terms = await Array.fromAsync(getAllTerms(client as any));
 
-    expect(terms).toHaveLength(1_202);
-    expect(new Set(terms.map(({ id }) => id)).size).toBe(1_202);
+    expect(terms).toHaveLength(1202);
+    expect(new Set(terms.map(({ id }) => id)).size).toBe(1202);
     expect(requests.map(({ cursor }) => cursor)).toEqual([
       undefined,
       rows[999]?.id,
-      rows[1_201]?.id,
+      rows[1201]?.id,
     ]);
   });
 
@@ -95,7 +95,9 @@ describe("getAllTerms", () => {
     const { client } = createMockSupabase([]);
 
     // oxlint-disable-next-line typescript/no-explicit-any -- Mocked Supabase client
-    expect(await Array.fromAsync(getAllTerms(client as any))).toEqual([]);
+    await expect(Array.fromAsync(getAllTerms(client as any))).resolves.toEqual(
+      []
+    );
   });
 
   it("should throw when a page does not move past the previous one", async () => {

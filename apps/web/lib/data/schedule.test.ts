@@ -1,5 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   createTalent,
@@ -71,7 +71,7 @@ describe("fetchScheduleVideos", () => {
   const video = (publishedAt: string, overrides = {}) =>
     createVideoOnYouTube(channel, { published_at: publishedAt, ...overrides });
 
-  test("returns the standard videos of every status from Sunday to Saturday in Japan, by start", async () => {
+  it("returns the standard videos of every status from Sunday to Saturday in Japan, by start", async () => {
     // 00:00 on Sunday, 8 November in Japan
     const first = video("2026-11-07T15:00:00Z", { status: "ENDED" });
     const published = video("2026-11-09T12:00:00Z", { status: "PUBLISHED" });
@@ -99,7 +99,7 @@ describe("fetchScheduleVideos", () => {
     expect(cacheTag).toHaveBeenCalledWith("videos");
   });
 
-  test("returns the theme color of the talent without the thumbnail", async () => {
+  it("returns the theme color of the talent without the thumbnail", async () => {
     const thumbnail = createThumbnail();
     const row = video("2026-11-10T12:00:00Z", { thumbnail_id: thumbnail.id });
 
@@ -120,7 +120,7 @@ describe("fetchScheduleVideos", () => {
     });
   });
 
-  test("drops the videos without a YouTube or Twitch video", async () => {
+  it("drops the videos without a YouTube or Twitch video", async () => {
     const shown = video("2026-11-10T12:00:00Z");
 
     await seedVideos([
@@ -136,7 +136,7 @@ describe("fetchScheduleVideos", () => {
     ]);
   });
 
-  test("drops the videos that cannot be linked to", async () => {
+  it("drops the videos that cannot be linked to", async () => {
     const shown = video("2026-11-10T12:00:00Z");
     // A Twitch stream whose archive is not ready, by a user without the login
     // name to link to the channel
@@ -161,7 +161,7 @@ describe("fetchScheduleVideos", () => {
     ]);
   });
 
-  test("throws when the videos cannot be fetched", async () => {
+  it("throws when the videos cannot be fetched", async () => {
     failSupabase("videos", "failed");
 
     await expect(fetchScheduleVideos("2026-11-08")).rejects.toThrow("failed");
@@ -169,7 +169,7 @@ describe("fetchScheduleVideos", () => {
 });
 
 describe("fetchOldestVideoDate", () => {
-  test("returns the date in Japan the oldest video starts on", async () => {
+  it("returns the date in Japan the oldest video starts on", async () => {
     await seedVideos([
       createVideoOnYouTube(channel, { published_at: "2020-01-01T00:00:00Z" }),
       // 00:30 on 1 April 2019 in Japan
@@ -182,13 +182,13 @@ describe("fetchOldestVideoDate", () => {
     expect(cacheTag).toHaveBeenCalledWith("videos");
   });
 
-  test("returns null without any video", async () => {
+  it("returns null without any video", async () => {
     await expect(fetchOldestVideoDate()).resolves.toBeNull();
   });
 });
 
 describe("fetchScheduleToday", () => {
-  test("returns today in Japan", async () => {
+  it("returns today in Japan", async () => {
     // 00:30 on Monday, 16 November 2026 in Japan, still Sunday in UTC
     mockNow("2026-11-15T15:30:00Z");
 

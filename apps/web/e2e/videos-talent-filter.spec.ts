@@ -1,4 +1,5 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 const TALENT_PARAM_PATTERN = /[?&]talent=[0-9a-f-]{36}/;
 

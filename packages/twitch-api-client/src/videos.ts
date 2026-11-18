@@ -1,12 +1,13 @@
 import { paginate } from "@shinju-date/helpers";
 
 import {
-  type BatchOptions,
   lookupByIds,
   requestInBatches,
   TWITCH_API_MAX_RESULTS,
 } from "./batches.js";
-import { type ClientOptions, getTwitchApiClient } from "./client.js";
+import type { BatchOptions } from "./batches.js";
+import { getTwitchApiClient } from "./client.js";
+import type { ClientOptions } from "./client.js";
 import { mapVideo } from "./mappers.js";
 import type {
   TwitchVideo,

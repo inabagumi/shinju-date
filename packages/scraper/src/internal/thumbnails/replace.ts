@@ -3,7 +3,8 @@ import type { TablesUpdate } from "@shinju-date/database";
 import type { TypedSupabaseClient, WriteContext } from "../../types.js";
 import { updateVideo } from "../database/videos.js";
 import { DatabaseError } from "../errors.js";
-import { removeThumbnail, type Thumbnail } from "./thumbnail.js";
+import { removeThumbnail } from "./thumbnail.js";
+import type { Thumbnail } from "./thumbnail.js";
 
 export interface ReplaceThumbnailOptions {
   /**

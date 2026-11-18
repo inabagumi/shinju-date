@@ -6,7 +6,8 @@ import {
   NavigationLink,
   NavigationLinkIcon,
 } from "@/components/navigation-link";
-import { fetchScheduleVideos, type ScheduleVideo } from "@/lib/data/schedule";
+import { fetchScheduleVideos } from "@/lib/data/schedule";
+import type { ScheduleVideo } from "@/lib/data/schedule";
 import { formatWeekday } from "@/lib/date-heading";
 import { groupVideosByDate } from "@/lib/group-videos-by-date";
 import {
@@ -15,14 +16,12 @@ import {
   getWeekDays,
   isWeekInRange,
   layoutDay,
-  type ScheduleLayout,
 } from "@/lib/schedule";
+import type { ScheduleLayout } from "@/lib/schedule";
 
 import { HOUR_HEIGHT_REM } from "../_lib/layout";
-import {
-  resolveScheduleWeek,
-  type SchedulePageParams,
-} from "../_lib/resolve-schedule-week";
+import { resolveScheduleWeek } from "../_lib/resolve-schedule-week";
+import type { SchedulePageParams } from "../_lib/resolve-schedule-week";
 import ScheduleDayHeader from "./schedule-day-header";
 import ScheduleItem, {
   getTitleLines,

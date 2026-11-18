@@ -1,6 +1,7 @@
 import { DUMMY_THUMBNAIL_PNG } from "@shinju-date/constants";
 import { createErrorResponse } from "@shinju-date/helpers";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -65,7 +66,7 @@ export async function GET(
       headers,
       status: res.status,
     });
-  } catch (_error) {
+  } catch {
     // If fetch throws an error (e.g., network error), return a dummy image
     return new NextResponse(DUMMY_THUMBNAIL_PNG, {
       headers: {

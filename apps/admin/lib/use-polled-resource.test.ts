@@ -3,9 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   POLLED_RESOURCE_FALLBACK_ERROR,
-  type PolledResourceFailure,
   usePolledResource,
 } from "./use-polled-resource";
+import type { PolledResourceFailure } from "./use-polled-resource";
 
 interface Progress {
   active: boolean;
@@ -13,7 +13,7 @@ interface Progress {
   success: true;
 }
 
-const INTERVAL_MS = 5_000;
+const INTERVAL_MS = 5000;
 
 function createProgress(overrides: Partial<Progress> = {}): Progress {
   return { active: false, added: 0, success: true, ...overrides };

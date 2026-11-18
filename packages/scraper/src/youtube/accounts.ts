@@ -4,10 +4,8 @@ import { YOUTUBE_CHANNELS } from "../internal/database/index.js";
 import { DatabaseError } from "../internal/errors.js";
 import type { AccountAdapter } from "../internal/operations/sync-accounts.js";
 import type { YouTubeFetcher } from "./fetcher.js";
-import {
-  type SavedYouTubeChannelIcon,
-  syncYouTubeChannelIcon,
-} from "./profile-image.js";
+import { syncYouTubeChannelIcon } from "./profile-image.js";
+import type { SavedYouTubeChannelIcon } from "./profile-image.js";
 import type { YouTubeChannel } from "./types.js";
 
 /** The columns of a channel that are kept in line with YouTube. */

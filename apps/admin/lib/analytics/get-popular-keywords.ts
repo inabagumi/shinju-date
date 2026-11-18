@@ -1,11 +1,8 @@
 import { REDIS_KEYS } from "@shinju-date/constants";
 import { cacheLife } from "next/cache";
 
-import {
-  DEFAULT_RANKING_LIMIT,
-  type RankingQuery,
-  toDateRange,
-} from "./period";
+import { DEFAULT_RANKING_LIMIT, toDateRange } from "./period";
+import type { RankingQuery } from "./period";
 import { getPopularItems } from "./popular-items";
 
 export interface PopularKeyword {

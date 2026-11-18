@@ -12,8 +12,8 @@ import { updateFeatureRequestStatusAction } from "../../_actions/update-feedback
 import {
   FEATURE_REQUEST_STATUS_LABELS,
   FEATURE_REQUEST_STATUSES,
-  type FeatureRequestStatus,
 } from "../../_lib/feature-request-status";
+import type { FeatureRequestStatus } from "../../_lib/feature-request-status";
 
 interface FeedbackStatusFormProps {
   id: string;

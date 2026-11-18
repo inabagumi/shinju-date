@@ -1,6 +1,6 @@
 import type { MultiSelectOption } from "@shinju-date/ui";
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Talent } from "@/lib/data/talents";
 
@@ -61,7 +61,7 @@ describe("VideoFilters", () => {
     push.mockClear();
   });
 
-  test("should show every talent as an option", () => {
+  it("should show every talent as an option", () => {
     render(
       <VideoFilters
         kind="all"
@@ -83,7 +83,7 @@ describe("VideoFilters", () => {
     ).not.toBeInTheDocument();
   });
 
-  test("should move to the videos of the selected talents", () => {
+  it("should move to the videos of the selected talents", () => {
     render(
       <VideoFilters
         kind="short"
@@ -101,7 +101,7 @@ describe("VideoFilters", () => {
     );
   });
 
-  test("should keep the selected talents when switching the kind", () => {
+  it("should keep the selected talents when switching the kind", () => {
     render(
       <VideoFilters
         kind="all"
@@ -123,7 +123,7 @@ describe("VideoFilters", () => {
     );
   });
 
-  test("should show a chip that removes the selected talent", () => {
+  it("should show a chip that removes the selected talent", () => {
     render(
       <VideoFilters
         kind="standard"
@@ -143,7 +143,7 @@ describe("VideoFilters", () => {
     ).not.toBeInTheDocument();
   });
 
-  test("should show a link to clear two or more talents", () => {
+  it("should show a link to clear two or more talents", () => {
     render(
       <VideoFilters
         kind="all"
@@ -172,7 +172,7 @@ describe("VideoFilters", () => {
     ).toHaveAttribute("href", `/videos/${encodeURIComponent("歌")}`);
   });
 
-  test("should link to the calendar of the selected talents and kind", () => {
+  it("should link to the calendar of the selected talents and kind", () => {
     render(
       <VideoFilters
         kind="standard"
@@ -190,7 +190,7 @@ describe("VideoFilters", () => {
     );
   });
 
-  test("should link to the calendar of every video without filters", () => {
+  it("should link to the calendar of every video without filters", () => {
     render(
       <VideoFilters
         kind="all"
@@ -205,7 +205,7 @@ describe("VideoFilters", () => {
     ).toHaveAttribute("href", "/videos.ics");
   });
 
-  test("should not link to the calendar for the search results", () => {
+  it("should not link to the calendar for the search results", () => {
     render(
       <VideoFilters
         kind="all"

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { queryKeys } from "@/lib/query-keys";
 
@@ -42,7 +42,7 @@ describe("AnnouncementBanner", () => {
     vi.clearAllMocks();
   });
 
-  test("should show the message rendered on the server as it is", () => {
+  it("should show the message rendered on the server as it is", () => {
     renderBanner(
       createAnnouncement(
         <p>
@@ -59,7 +59,7 @@ describe("AnnouncementBanner", () => {
     );
   });
 
-  test("should show the new message after the refetch", async () => {
+  it("should show the new message after the refetch", async () => {
     actions.getRenderedAnnouncement.mockResolvedValue(
       createAnnouncement(
         <p>
@@ -88,7 +88,7 @@ describe("AnnouncementBanner", () => {
     expect(screen.getByText("お知らせ", { selector: "del" })).toBeVisible();
   });
 
-  test("should hide the banner once the announcement has ended", async () => {
+  it("should hide the banner once the announcement has ended", async () => {
     actions.getRenderedAnnouncement.mockResolvedValue(null);
 
     const { queryClient } = renderBanner(

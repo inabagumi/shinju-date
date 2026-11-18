@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { Alert, type AlertTone } from "./Alert";
+import { Alert } from "./Alert";
+import type { AlertTone } from "./Alert";
 
 describe("Alert", () => {
   it("renders only the body by default", () => {

@@ -1,8 +1,5 @@
-import {
-  defineConfig,
-  devices,
-  type PlaywrightTestConfig,
-} from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
+import type { PlaywrightTestConfig } from "@playwright/test";
 
 export interface PlaywrightConfigOptions extends Omit<
   PlaywrightTestConfig,

@@ -1,8 +1,6 @@
 import { TWITCH_USERS } from "../internal/database/index.js";
-import {
-  addPastVideosWith,
-  type PastVideoAdapter,
-} from "../internal/operations/add-past-videos.js";
+import { addPastVideosWith } from "../internal/operations/add-past-videos.js";
+import type { PastVideoAdapter } from "../internal/operations/add-past-videos.js";
 import type {
   AddPastVideosOptions,
   AddPastVideosResult,

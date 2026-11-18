@@ -4,12 +4,8 @@ import { CACHE_TAGS } from "@shinju-date/constants";
 import { revalidateTags } from "@shinju-date/web-cache";
 import { revalidatePath } from "next/cache";
 
-import {
-  ActionError,
-  type ActionResult,
-  adminAction,
-  adminFormAction,
-} from "@/lib/action";
+import { ActionError, adminAction, adminFormAction } from "@/lib/action";
+import type { ActionResult } from "@/lib/action";
 import { createAuditLog } from "@/lib/audit-log";
 
 import { termSchema, updateTermSchema } from "../_lib/schema";

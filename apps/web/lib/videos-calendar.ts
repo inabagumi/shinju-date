@@ -3,7 +3,8 @@ import { createErrorResponse } from "@shinju-date/helpers";
 import { logger } from "@shinju-date/logger";
 import { startOfHour } from "@shinju-date/temporal-fns";
 
-import { type CalendarVideo, fetchCalendarVideos } from "@/lib/data/videos";
+import { fetchCalendarVideos } from "@/lib/data/videos";
+import type { CalendarVideo } from "@/lib/data/videos";
 
 import { createCalendarResponse, createEventAttributesList } from "./calendar";
 import { normalizeTalentIds } from "./talent-filter";

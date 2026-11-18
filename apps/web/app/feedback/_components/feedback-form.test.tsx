@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { FeedbackFormState } from "../_lib/actions";
 
@@ -31,7 +31,7 @@ describe("FeedbackForm", () => {
     submitFeedback.mockReset();
   });
 
-  test("keeps the entered message when the submission fails", async () => {
+  it("keeps the entered message when the submission fails", async () => {
     submitFeedback.mockImplementation(async (_, formData) => ({
       error: "送信中にエラーが発生しました。",
       success: false,
@@ -46,7 +46,7 @@ describe("FeedbackForm", () => {
     expect(getMessageTextarea().value).toBe("検索機能がほしい");
   });
 
-  test("clears the message when the submission succeeds", async () => {
+  it("clears the message when the submission succeeds", async () => {
     submitFeedback.mockResolvedValue({
       message: "機能要望を受け付けました。ありがとうございます。",
       success: true,

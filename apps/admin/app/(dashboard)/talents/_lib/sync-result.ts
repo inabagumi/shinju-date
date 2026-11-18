@@ -1,6 +1,7 @@
 import type { Enums } from "@shinju-date/database";
 
-import { ACTION_FAILED_ERROR_MESSAGE, type ActionResult } from "@/lib/action";
+import { ACTION_FAILED_ERROR_MESSAGE } from "@/lib/action";
+import type { ActionResult } from "@/lib/action";
 
 type Platform = Enums<"platform_type">;
 
@@ -52,20 +53,24 @@ export function toSyncResult(
   const { account, label, unchanged } = PLATFORMS[platform];
 
   switch (outcome.status) {
-    case "no_accounts":
+    case "no_accounts": {
       return {
         error: `このタレントに紐づく${label}${account}はありません。`,
         success: false,
       };
-    case "failed":
+    }
+    case "failed": {
       return {
         error: outcome.error ?? ACTION_FAILED_ERROR_MESSAGE,
         success: false,
       };
-    case "unchanged":
+    }
+    case "unchanged": {
       return { data: { message: unchanged, unchanged: true }, success: true };
-    case "updated":
+    }
+    case "updated": {
       return { data: { unchanged: false }, success: true };
+    }
   }
 }
 
@@ -88,17 +93,21 @@ export function toSyncSummary(
     const { account, label } = PLATFORMS[platform];
 
     switch (outcome.status) {
-      case "no_accounts":
+      case "no_accounts": {
         break;
-      case "failed":
+      }
+      case "failed": {
         failed.push(`${label}: 同期に失敗しました。${outcome.error ?? ""}`);
         break;
-      case "unchanged":
+      }
+      case "unchanged": {
         succeeded.push(`${label}: ${account}情報は既に最新です。`);
         break;
-      case "updated":
+      }
+      case "updated": {
         succeeded.push(`${label}: ${account}情報を同期しました。`);
         break;
+      }
     }
   }
 

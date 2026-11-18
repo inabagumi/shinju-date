@@ -112,7 +112,7 @@ describe("getPlaylistItems", () => {
     );
 
     expect(items.map((item) => item.contentDetails.videoId)).toEqual(["a"]);
-    expect(list).toHaveBeenCalledTimes(1);
+    expect(list).toHaveBeenCalledOnce();
     expect(list).toHaveBeenCalledWith({
       maxResults: 20,
       part: ["contentDetails"],

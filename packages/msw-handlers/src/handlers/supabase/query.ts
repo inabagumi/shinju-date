@@ -418,7 +418,7 @@ function unquote(text: string): string {
     return trimmed;
   }
 
-  return trimmed.slice(1, -1).replace(/\\(.)/g, "$1");
+  return trimmed.slice(1, -1).replaceAll(/\\(.)/g, "$1");
 }
 
 /**
@@ -440,9 +440,9 @@ function parseListValues(list: string): string[] {
  */
 function likePattern(pattern: string, flags: string): RegExp {
   const source = pattern
-    .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
-    .replace(/[*%]/g, ".*")
-    .replace(/_/g, ".");
+    .replaceAll(/[.+?^${}()|[\]\\]/g, "\\$&")
+    .replaceAll(/[*%]/g, ".*")
+    .replaceAll("_", ".");
 
   return new RegExp(`^${source}$`, `s${flags}`);
 }
@@ -494,8 +494,9 @@ function evaluateCondition(
         ? value !== expected
         : !matches(value, operand);
     }
-    default:
+    default: {
       break;
+    }
   }
 
   if (value === null) {
@@ -503,29 +504,35 @@ function evaluateCondition(
   }
 
   switch (operator) {
-    case "eq":
+    case "eq": {
       return matches(value, operand);
-    case "neq":
+    }
+    case "neq": {
       return !matches(value, operand);
+    }
     case "gt":
     case "gte":
     case "lt":
-    case "lte":
+    case "lte": {
       return COMPARISON_OPERATORS[operator](compareFilterValue(value, operand));
+    }
     case "like":
-    case "ilike":
+    case "ilike": {
       return likePattern(operand, operator === "ilike" ? "i" : "").test(
         String(value)
       );
+    }
     case "match":
-    case "imatch":
+    case "imatch": {
       return toRegExp(operand, operator === "imatch" ? "i" : "").test(
         String(value)
       );
-    case "in":
+    }
+    case "in": {
       return parseListValues(operand.slice(1, -1)).some((text) =>
         matches(value, text)
       );
+    }
   }
 }
 
@@ -684,7 +691,7 @@ export function applyOrder<Item>(
 
 /** The offset of a query, which is 0 without one. */
 export function getOffset(query: SupabaseQuery): number {
-  return query.offset ? parseInt(query.offset, 10) : 0;
+  return query.offset ? Number.parseInt(query.offset, 10) : 0;
 }
 
 /**
@@ -698,7 +705,7 @@ export function applyPagination<Row>(
   const start = getOffset(query);
 
   return query.limit
-    ? rows.slice(start, start + parseInt(query.limit, 10))
+    ? rows.slice(start, start + Number.parseInt(query.limit, 10))
     : rows.slice(start);
 }
 

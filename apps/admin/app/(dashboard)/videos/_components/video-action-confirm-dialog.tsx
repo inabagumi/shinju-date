@@ -3,10 +3,8 @@
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 import type { VideoActionDialogProps } from "../_lib/use-video-action";
-import {
-  VIDEO_ACTIONS,
-  type VideoActionConfirmConfig,
-} from "../_lib/video-actions";
+import { VIDEO_ACTIONS } from "../_lib/video-actions";
+import type { VideoActionConfirmConfig } from "../_lib/video-actions";
 
 /**
  * 動画の表示の切り替え・削除・復元を確かめてから実行するダイアログ。

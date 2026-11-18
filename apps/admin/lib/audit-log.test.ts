@@ -2,11 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { TypedSupabaseClient } from "@/lib/supabase";
 
-import {
-  type AuditLogDetails,
-  createAuditLog,
-  createAuditLogs,
-} from "./audit-log";
+import { createAuditLog, createAuditLogs } from "./audit-log";
+import type { AuditLogDetails } from "./audit-log";
 
 const mocks = vi.hoisted(() => ({
   logger: { error: vi.fn() },

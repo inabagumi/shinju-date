@@ -9,17 +9,13 @@ import {
   NextStream,
 } from "@/components/talent-stream-status";
 import { TextLink, TextLinkIcon } from "@/components/text-link";
-import {
-  fetchTalentStreamStatusesSafe,
-  type TalentDetail,
-  type TalentStreamStatus,
-} from "@/lib/data/talents";
-import { getTalentLinks, type TalentLink } from "@/lib/talent-links";
+import { fetchTalentStreamStatusesSafe } from "@/lib/data/talents";
+import type { TalentDetail, TalentStreamStatus } from "@/lib/data/talents";
+import { getTalentLinks } from "@/lib/talent-links";
+import type { TalentLink } from "@/lib/talent-links";
 
-import {
-  getShownTalent,
-  type TalentPageParams,
-} from "../_lib/get-shown-talent";
+import { getShownTalent } from "../_lib/get-shown-talent";
+import type { TalentPageParams } from "../_lib/get-shown-talent";
 
 interface TalentLinkItemProps {
   link: TalentLink;

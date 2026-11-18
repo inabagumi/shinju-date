@@ -9,13 +9,13 @@ import {
 } from "@shinju-date/ui";
 import {
   createContext,
-  type ReactNode,
   useCallback,
   useContext,
   useMemo,
   useRef,
   useState,
 } from "react";
+import type { ReactNode } from "react";
 
 /** トーストの色。`Toast` のバリアントの名前と同じにし、そのまま渡す */
 export type ActionToastType = "success" | "warning" | "danger";

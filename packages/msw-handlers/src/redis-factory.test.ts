@@ -1,7 +1,8 @@
 import { REDIS_KEYS } from "@shinju-date/constants";
 import { describe, expect, it } from "vitest";
 
-import { createRedisDataFactory, type SortedSetItem } from "./redis-factory.js";
+import { createRedisDataFactory } from "./redis-factory.js";
+import type { SortedSetItem } from "./redis-factory.js";
 
 const videos = [
   { id: "video-1", talent_id: "talent-1" },

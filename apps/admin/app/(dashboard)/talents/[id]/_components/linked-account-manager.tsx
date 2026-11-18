@@ -5,14 +5,10 @@ import { ExternalLink, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { useActionToast } from "@/components/action-toast";
-import { type ActionResult, ConfirmDialog } from "@/components/confirm-dialog";
-import {
-  ErrorMessage,
-  FormField,
-  type FormState,
-  Input,
-  Label,
-} from "@/components/form";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import type { ActionResult } from "@/components/confirm-dialog";
+import { ErrorMessage, FormField, Input, Label } from "@/components/form";
+import type { FormState } from "@/components/form";
 import { FormDialog } from "@/components/form-dialog";
 import { Panel } from "@/components/panel";
 

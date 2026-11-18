@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { withSentry } from "./next-config.js";
 
@@ -14,7 +14,7 @@ afterEach(() => {
 });
 
 describe("withSentry", () => {
-  test("wraps the config with withSentryConfig when the DSN is set", () => {
+  it("wraps the config with withSentryConfig when the DSN is set", () => {
     vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", "https://key@example.com/1");
 
     expect(withSentry({ reactStrictMode: true })).toEqual({
@@ -37,7 +37,7 @@ describe("withSentry", () => {
     );
   });
 
-  test("leaves out the options for the browser bundle without browser", () => {
+  it("leaves out the options for the browser bundle without browser", () => {
     vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", "https://key@example.com/1");
 
     withSentry({ reactStrictMode: true }, { browser: false });
@@ -53,7 +53,7 @@ describe("withSentry", () => {
     );
   });
 
-  test("returns the config as it is without the DSN", () => {
+  it("returns the config as it is without the DSN", () => {
     vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", undefined);
     const config = { reactStrictMode: true };
 

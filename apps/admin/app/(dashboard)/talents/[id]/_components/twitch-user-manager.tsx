@@ -6,10 +6,8 @@ import {
   addTwitchUserAction,
   removeTwitchUserAction,
 } from "../../_actions/twitch-users";
-import {
-  type LinkedAccountListProps,
-  LinkedAccountManager,
-} from "./linked-account-manager";
+import { LinkedAccountManager } from "./linked-account-manager";
+import type { LinkedAccountListProps } from "./linked-account-manager";
 
 type TwitchUser = Pick<
   Tables<"twitch_users">,

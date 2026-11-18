@@ -1,5 +1,6 @@
 import { formatNumber } from "@shinju-date/helpers";
-import { StatTile, type StatTileTone, twMerge } from "@shinju-date/ui";
+import { StatTile, twMerge } from "@shinju-date/ui";
+import type { StatTileTone } from "@shinju-date/ui";
 import Link from "next/link";
 import type { ReactNode } from "react";
 

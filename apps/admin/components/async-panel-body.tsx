@@ -1,7 +1,8 @@
 "use client";
 
 import { Alert, Button } from "@shinju-date/ui";
-import { type ReactNode, useTransition } from "react";
+import { useTransition } from "react";
+import type { ReactNode } from "react";
 
 interface AsyncPanelBodyProps {
   /** 最後に取得できたデータで描いた中身。取り直しに失敗しても、そのまま出す */

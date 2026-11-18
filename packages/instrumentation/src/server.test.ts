@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { onRequestError, registerServer } from "./server.js";
 
@@ -36,7 +36,7 @@ afterEach(() => {
 });
 
 describe("registerServer", () => {
-  test("initializes Sentry for Node.js with the profiler", async () => {
+  it("initializes Sentry for Node.js with the profiler", async () => {
     await registerServer(options);
 
     expect(sentry.init).toHaveBeenCalledOnce();
@@ -54,7 +54,7 @@ describe("registerServer", () => {
     });
   });
 
-  test("initializes Sentry for Edge without the profiler", async () => {
+  it("initializes Sentry for Edge without the profiler", async () => {
     vi.stubEnv("NEXT_RUNTIME", "edge");
 
     await registerServer(options);
@@ -69,7 +69,7 @@ describe("registerServer", () => {
     });
   });
 
-  test("disables Sentry outside of production", async () => {
+  it("disables Sentry outside of production", async () => {
     vi.stubEnv("VERCEL_ENV", undefined);
 
     await registerServer(options);
@@ -79,7 +79,7 @@ describe("registerServer", () => {
     );
   });
 
-  test("does not initialize Sentry without the DSN", async () => {
+  it("does not initialize Sentry without the DSN", async () => {
     vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", undefined);
 
     await registerServer(options);
@@ -87,7 +87,7 @@ describe("registerServer", () => {
     expect(sentry.init).not.toHaveBeenCalled();
   });
 
-  test("starts MSW on Node.js when enableMsw is true", async () => {
+  it("starts MSW on Node.js when enableMsw is true", async () => {
     vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", undefined);
 
     await registerServer({ ...options, enableMsw: true });
@@ -95,7 +95,7 @@ describe("registerServer", () => {
     expect(startServer).toHaveBeenCalledOnce();
   });
 
-  test("does not start MSW on Edge", async () => {
+  it("does not start MSW on Edge", async () => {
     vi.stubEnv("NEXT_RUNTIME", "edge");
 
     await registerServer({ ...options, enableMsw: true });
@@ -103,7 +103,7 @@ describe("registerServer", () => {
     expect(startServer).not.toHaveBeenCalled();
   });
 
-  test("does not start MSW when enableMsw is false", async () => {
+  it("does not start MSW when enableMsw is false", async () => {
     await registerServer(options);
 
     expect(startServer).not.toHaveBeenCalled();
@@ -121,13 +121,13 @@ describe("onRequestError", () => {
     },
   ] satisfies Parameters<typeof onRequestError>;
 
-  test("sends the error to Sentry", async () => {
+  it("sends the error to Sentry", async () => {
     await onRequestError(...args);
 
     expect(sentry.captureRequestError).toHaveBeenCalledWith(...args);
   });
 
-  test("does nothing without the DSN", async () => {
+  it("does nothing without the DSN", async () => {
     vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", undefined);
 
     await onRequestError(...args);

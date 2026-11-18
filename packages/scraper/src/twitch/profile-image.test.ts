@@ -9,10 +9,10 @@ import {
 } from "../internal/testing/images.js";
 import { setupSupabase } from "../internal/testing/supabase.js";
 import {
-  type SavedTwitchUserIcon,
   selectTwitchUserIconUrl,
   syncTwitchUserIcon,
 } from "./profile-image.js";
+import type { SavedTwitchUserIcon } from "./profile-image.js";
 
 const supabase = setupSupabase();
 

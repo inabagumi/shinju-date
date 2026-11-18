@@ -1,7 +1,5 @@
-import {
-  type RefreshScope,
-  refreshSavedVideos,
-} from "../internal/operations/refresh-saved-videos.js";
+import { refreshSavedVideos } from "../internal/operations/refresh-saved-videos.js";
+import type { RefreshScope } from "../internal/operations/refresh-saved-videos.js";
 import { sweepUnavailableVideos } from "../internal/operations/sweep-unavailable-videos.js";
 import type { CrawlContext } from "../types.js";
 import type { YouTubeFetcher } from "./fetcher.js";

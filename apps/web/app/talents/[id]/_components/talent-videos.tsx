@@ -10,13 +10,11 @@ import {
   getVideoKindName,
   parseVideoKindFilter,
   VIDEO_KIND_SEARCH_PARAM,
-  type VideoKindFilter,
 } from "@/lib/video-kind-filter";
+import type { VideoKindFilter } from "@/lib/video-kind-filter";
 
-import {
-  getShownTalent,
-  type TalentPageParams,
-} from "../_lib/get-shown-talent";
+import { getShownTalent } from "../_lib/get-shown-talent";
+import type { TalentPageParams } from "../_lib/get-shown-talent";
 
 export interface TalentVideosProps {
   params: TalentPageParams;

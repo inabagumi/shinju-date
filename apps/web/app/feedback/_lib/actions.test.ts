@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { featureRequests } from "@shinju-date/msw-handlers";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   disconnectSupabase,
@@ -36,7 +36,7 @@ describe("submitFeedback", () => {
     vi.restoreAllMocks();
   });
 
-  test.each([
+  it.each([
     ["empty", ""],
     ["whitespace only", "   \n"],
   ])(
@@ -53,14 +53,14 @@ describe("submitFeedback", () => {
     }
   );
 
-  test("returns a field error when the message is missing", async () => {
+  it("returns a field error when the message is missing", async () => {
     const result = await submitFeedback(null, new FormData());
 
     expect(result.fieldErrors?.message).toBe("機能要望を入力してください");
     expect(storedMessages()).toEqual([]);
   });
 
-  test("stores the trimmed message as a new request", async () => {
+  it("stores the trimmed message as a new request", async () => {
     const result = await submitFeedback(
       null,
       createFormData({ message: "  検索機能がほしい  " })
@@ -77,7 +77,7 @@ describe("submitFeedback", () => {
     ]);
   });
 
-  test("returns the submitted message when the insert fails", async () => {
+  it("returns the submitted message when the insert fails", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     failSupabase("feature_requests", "insert failed");
 
@@ -92,7 +92,7 @@ describe("submitFeedback", () => {
     expect(storedMessages()).toEqual([]);
   });
 
-  test("returns the submitted message when the request cannot be sent", async () => {
+  it("returns the submitted message when the request cannot be sent", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     disconnectSupabase("feature_requests");
 

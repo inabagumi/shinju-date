@@ -28,8 +28,8 @@ import {
   findSavedTwitchVideos,
   isLivePlaceholder,
   SAVED_LIVE_VIDEO_COLUMNS,
-  type SavedTwitchVideo,
 } from "./saved-video.js";
+import type { SavedTwitchVideo } from "./saved-video.js";
 import type { TwitchStream, TwitchVideo } from "./types.js";
 import { toLiveFields } from "./video.js";
 

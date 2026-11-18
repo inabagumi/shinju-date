@@ -7,10 +7,8 @@ import type { QueryData } from "@supabase/supabase-js";
 import { cacheLife } from "next/cache";
 
 import { getRedisClient } from "@/lib/redis";
-import {
-  createSupabaseServerClient,
-  type TypedSupabaseClient,
-} from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase";
+import type { TypedSupabaseClient } from "@/lib/supabase";
 import { unwrap } from "@/lib/supabase/query";
 
 import { escapeSearchString } from "./escape-search";

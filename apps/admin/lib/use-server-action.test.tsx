@@ -13,9 +13,11 @@ import { ActionToastProvider } from "@/components/action-toast";
 
 import {
   SERVER_ACTION_FALLBACK_ERROR,
-  type ServerActionResult,
-  type UseServerActionOptions,
   useServerAction,
+} from "./use-server-action";
+import type {
+  ServerActionResult,
+  UseServerActionOptions,
 } from "./use-server-action";
 
 function createDeferred<T>() {
@@ -76,9 +78,9 @@ describe("useServerAction", () => {
     expect(action).toHaveBeenCalledWith("video-1", 2);
     expect(returned).toEqual({ success: true });
     expect(onSuccess).toHaveBeenCalledWith({ success: true });
-    expect(
-      await screen.findByText("表示状態を更新しました。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("表示状態を更新しました。")
+    ).resolves.toBeInTheDocument();
   });
 
   it("builds the success text from the result", async () => {
@@ -94,9 +96,9 @@ describe("useServerAction", () => {
       await result.current.run();
     });
 
-    expect(
-      await screen.findByText("チャンネル情報は既に最新です。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("チャンネル情報は既に最新です。")
+    ).resolves.toBeInTheDocument();
   });
 
   it("shows no toast on success without successText", async () => {
@@ -126,9 +128,9 @@ describe("useServerAction", () => {
       await result.current.run();
     });
 
-    expect(
-      await screen.findByText("指定されたタレントが見つかりません。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("指定されたタレントが見つかりません。")
+    ).resolves.toBeInTheDocument();
     expect(screen.queryByText("削除しました。")).not.toBeInTheDocument();
     expect(onSuccess).not.toHaveBeenCalled();
   });
@@ -143,7 +145,9 @@ describe("useServerAction", () => {
       await result.current.run();
     });
 
-    expect(await screen.findByText("同期に失敗しました。")).toBeInTheDocument();
+    await expect(
+      screen.findByText("同期に失敗しました。")
+    ).resolves.toBeInTheDocument();
   });
 
   it("shows a warning toast for each warning", async () => {
@@ -159,7 +163,9 @@ describe("useServerAction", () => {
       await result.current.run();
     });
 
-    expect(await screen.findByText("更新しました。")).toBeInTheDocument();
+    await expect(
+      screen.findByText("更新しました。")
+    ).resolves.toBeInTheDocument();
     expect(screen.getByText("1件は更新できませんでした。")).toBeInTheDocument();
     expect(
       screen.getByText("監査ログを残せませんでした。")
@@ -183,9 +189,9 @@ describe("useServerAction", () => {
     });
 
     expect(returned).toBeUndefined();
-    expect(
-      await screen.findByText(SERVER_ACTION_FALLBACK_ERROR)
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText(SERVER_ACTION_FALLBACK_ERROR)
+    ).resolves.toBeInTheDocument();
     expect(screen.queryByText("connection reset")).not.toBeInTheDocument();
     expect(onSuccess).not.toHaveBeenCalled();
   });

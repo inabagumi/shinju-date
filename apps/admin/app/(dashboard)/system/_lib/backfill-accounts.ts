@@ -1,7 +1,5 @@
-import {
-  type BackfillRunRequest,
-  getBackfillJobId,
-} from "@shinju-date/video-backfill";
+import { getBackfillJobId } from "@shinju-date/video-backfill";
+import type { BackfillRunRequest } from "@shinju-date/video-backfill";
 
 import type { TypedSupabaseClient } from "@/lib/supabase";
 import { unwrap } from "@/lib/supabase/query";

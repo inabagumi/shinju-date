@@ -17,16 +17,21 @@ function matchesStatus(
   const isDeleted = talent.deleted_at !== null;
 
   switch (filter) {
-    case "all":
+    case "all": {
       return true;
-    case "deleted":
+    }
+    case "deleted": {
       return isDeleted;
-    case "active":
+    }
+    case "active": {
       return !isDeleted && talent.status === "active";
-    case "retired":
+    }
+    case "retired": {
       return !isDeleted && talent.status === "retired";
-    case "not_deleted":
+    }
+    case "not_deleted": {
       return !isDeleted;
+    }
   }
 }
 

@@ -164,11 +164,13 @@ function toLiveStreamingDetails({
   const start = toYouTubeTimestamp(published_at);
 
   switch (status) {
-    case "UPCOMING":
+    case "UPCOMING": {
       return { scheduledStartTime: start };
-    case "LIVE":
+    }
+    case "LIVE": {
       return { actualStartTime: start, scheduledStartTime: start };
-    case "ENDED":
+    }
+    case "ENDED": {
       return {
         actualEndTime: toYouTubeTimestamp(
           Temporal.Instant.from(published_at).add({
@@ -178,8 +180,10 @@ function toLiveStreamingDetails({
         actualStartTime: start,
         scheduledStartTime: start,
       };
-    default:
+    }
+    default: {
       return undefined;
+    }
   }
 }
 

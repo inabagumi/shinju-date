@@ -1,8 +1,8 @@
 import {
   BACKFILL_LEASE_MARGIN_SECONDS,
-  type BackfillQueue,
   getRunResultKey,
 } from "@shinju-date/video-backfill";
+import type { BackfillQueue } from "@shinju-date/video-backfill";
 import { FakeRedis } from "@shinju-date/video-backfill/testing";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -62,7 +62,7 @@ describe("POST /videos/backfill", () => {
     expect(limit).toHaveBeenCalledWith("videos:backfill");
     // Runs overlap on purpose; each job of the queue has its own lock.
     expect(acquireLock).not.toHaveBeenCalled();
-    expect(workOffBackfillQueue).toHaveBeenCalledTimes(1);
+    expect(workOffBackfillQueue).toHaveBeenCalledOnce();
     expect(revalidateTags).not.toHaveBeenCalled();
   });
 

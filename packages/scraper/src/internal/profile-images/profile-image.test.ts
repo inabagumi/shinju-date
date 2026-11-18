@@ -7,10 +7,9 @@ import { postgresError, setupSupabase } from "../testing/supabase.js";
 import {
   createProfileImage,
   downloadProfileImage,
-  type ProfileImageOwner,
   removeProfileImage,
-  type StoredProfileImage,
 } from "./profile-image.js";
+import type { ProfileImageOwner, StoredProfileImage } from "./profile-image.js";
 
 const supabase = setupSupabase();
 

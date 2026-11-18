@@ -1,6 +1,7 @@
 "use client";
 
-import { Input, type InputProps } from "@shinju-date/ui";
+import { Input } from "@shinju-date/ui";
+import type { InputProps } from "@shinju-date/ui";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 

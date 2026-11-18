@@ -1,10 +1,7 @@
 import { replaceThumbnail } from "../internal/thumbnails/index.js";
 import type { WriteContext } from "../types.js";
-import {
-  isLivePlaceholder,
-  type SavedTwitchVideo,
-  updateTwitchVideo,
-} from "./saved-video.js";
+import { isLivePlaceholder, updateTwitchVideo } from "./saved-video.js";
+import type { SavedTwitchVideo } from "./saved-video.js";
 import { createTwitchThumbnail } from "./thumbnail.js";
 import type { TwitchVideo } from "./types.js";
 import { toVideoFields } from "./video.js";

@@ -68,7 +68,7 @@ export async function checkRedisHealth(
  * Run multiple health checks and return combined result
  */
 export async function runHealthChecks(
-  checks: Array<() => Promise<HealthCheckResult>>
+  checks: (() => Promise<HealthCheckResult>)[]
 ): Promise<{ status: "ok" | "error"; results: HealthCheckResult[] }> {
   const results = await Promise.all(checks.map((check) => check()));
   const hasError = results.some((result) => result.status === "error");

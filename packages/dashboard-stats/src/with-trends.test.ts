@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { type AnalyticsSummary, withTrends } from "./index.js";
+import { withTrends } from "./index.js";
+import type { AnalyticsSummary } from "./index.js";
 
 const current: AnalyticsSummary = {
   recentClicks: 10,

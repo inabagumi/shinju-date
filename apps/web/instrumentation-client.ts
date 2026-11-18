@@ -31,7 +31,7 @@ initBotId({
 initClient({
   profileSessionSampleRate: 0.333,
   replay: {
-    onErrorSampleRate: 1.0,
+    onErrorSampleRate: 1,
     sessionSampleRate: 0.1,
   },
   tracesSampleRate: 0.333,

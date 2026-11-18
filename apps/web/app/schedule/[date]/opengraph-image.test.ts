@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/data/schedule", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/data/schedule")>()),
@@ -29,7 +29,7 @@ describe("opengraph-image of the schedule of a week", () => {
     vi.mocked(fetchScheduleToday).mockResolvedValue("2026-11-10");
   });
 
-  test("should have the title of the page", async () => {
+  it("should have the title of the page", async () => {
     // A Tuesday. The image is that of the week, as is the page.
     await render("2026-11-10");
 
@@ -45,7 +45,7 @@ describe("opengraph-image of the schedule of a week", () => {
     );
   });
 
-  test.each([
+  it.each([
     ["a date that cannot be read", "not-a-date"],
     ["a week before that of the oldest video", "2019-12-28"],
   ])("should be not found for %s", async (_, date) => {

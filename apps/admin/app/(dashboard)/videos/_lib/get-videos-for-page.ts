@@ -1,6 +1,7 @@
 import type { ParsedUrlQuery } from "node:querystring";
 
-import { getVideos, type Video } from "./get-videos";
+import { getVideos } from "./get-videos";
+import type { Video } from "./get-videos";
 import {
   defaultVideoSearchParams,
   videoSearchParamsSchema,

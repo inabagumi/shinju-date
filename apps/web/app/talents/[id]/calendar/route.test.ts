@@ -123,7 +123,7 @@ describe("GET /talents/[id].ics", () => {
     expect(response.headers.get("Cache-Control")).toBe(
       "public, max-age=300, s-maxage=900, stale-while-revalidate=3600"
     );
-    expect(await eventIds(response)).toEqual(
+    await expect(eventIds(response)).resolves.toEqual(
       [song.video.id, short.video.id].toSorted()
     );
   });
@@ -133,7 +133,7 @@ describe("GET /talents/[id].ics", () => {
     const [request] = supabaseRequests("videos");
 
     expect(response.status).toBe(200);
-    expect(await eventIds(response)).toEqual(
+    await expect(eventIds(response)).resolves.toEqual(
       [song.video.id, short.video.id].toSorted()
     );
     expect(request?.url.searchParams.get("talent_id")).toBe(
@@ -146,7 +146,7 @@ describe("GET /talents/[id].ics", () => {
     const response = await get(talent.id);
 
     expect(response.status).toBe(200);
-    expect(await eventIds(response)).toContain(song.video.id);
+    await expect(eventIds(response)).resolves.toContain(song.video.id);
     expect(supabaseRequests("talents")).toHaveLength(1);
     expect(supabaseRequests("videos")).toHaveLength(1);
   });
@@ -184,7 +184,7 @@ describe("GET /talents/[id].ics", () => {
     const response = await get(talent.id);
 
     expect(response.status).toBe(500);
-    expect(await response.text()).not.toContain("relation");
+    await expect(response.text()).resolves.not.toContain("relation");
     expect(mocks.logger.error).toHaveBeenCalledOnce();
     expect(supabaseRequests("videos")).toEqual([]);
   });
@@ -196,7 +196,7 @@ describe("GET /talents/[id].ics", () => {
 
     expect(response.status).toBe(500);
     expect(response.headers.get("Cache-Control")).toBe("no-store");
-    expect(await response.text()).not.toContain("relation");
+    await expect(response.text()).resolves.not.toContain("relation");
     expect(mocks.logger.error).toHaveBeenCalledOnce();
   });
 });

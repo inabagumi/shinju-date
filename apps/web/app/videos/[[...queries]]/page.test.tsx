@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import type { ResolvingMetadata } from "next";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Talent } from "@/lib/data/talents";
 import type { Video } from "@/lib/data/videos";
@@ -103,7 +103,7 @@ describe("VideosPage", () => {
     fetchers.countVideos.mockResolvedValue(1);
   });
 
-  test("should fetch the videos of the selected talents", async () => {
+  it("should fetch the videos of the selected talents", async () => {
     render(
       await VideosPageResults(
         createProps(["歌"], {
@@ -123,7 +123,7 @@ describe("VideosPage", () => {
     );
   });
 
-  test("should not track the keyword while filtering by talents", async () => {
+  it("should not track the keyword while filtering by talents", async () => {
     render(
       await VideosPageResults(createProps(["歌"], { talent: TALENT_A.id }))
     );
@@ -134,7 +134,7 @@ describe("VideosPage", () => {
     expect(screen.queryByTestId("search-exit-tracker")).not.toBeInTheDocument();
   });
 
-  test("should track the keyword without talents", async () => {
+  it("should track the keyword without talents", async () => {
     render(await VideosPageResults(createProps(["歌"], { talent: "invalid" })));
 
     expect(fetchers.fetchVideos).toHaveBeenCalledWith({
@@ -146,7 +146,7 @@ describe("VideosPage", () => {
     expect(screen.getByTestId("search-exit-tracker")).toHaveTextContent("歌");
   });
 
-  test("should offer to clear the talents when nothing matches", async () => {
+  it("should offer to clear the talents when nothing matches", async () => {
     fetchers.fetchVideos.mockResolvedValue([]);
 
     render(
@@ -169,7 +169,7 @@ describe("VideosPage", () => {
     ).not.toBeInTheDocument();
   });
 
-  test("should not offer to clear the talents without talents", async () => {
+  it("should not offer to clear the talents without talents", async () => {
     fetchers.fetchVideos.mockResolvedValue([]);
 
     render(await VideosPageResults(createProps(["歌"])));
@@ -183,7 +183,7 @@ describe("VideosPage", () => {
   });
 
   // 件数は Suspense の中で読み込むので、ここではスケルトンの有無で確かめる
-  test("should show the selected talents and the count", async () => {
+  it("should show the selected talents and the count", async () => {
     render(
       await VideosPageHeading(
         createProps(undefined, { talent: [TALENT_B.id, TALENT_A.id] })
@@ -203,7 +203,7 @@ describe("VideosPage", () => {
     ).toHaveLength(2);
   });
 
-  test("should not show the count without a keyword or talents", async () => {
+  it("should not show the count without a keyword or talents", async () => {
     render(await VideosPageHeading(createProps(undefined)));
 
     expect(
@@ -227,7 +227,7 @@ describe("generateMetadata", () => {
     fetchers.fetchActiveTalents.mockResolvedValue([TALENT_A, TALENT_B]);
   });
 
-  test("should index the videos page", async () => {
+  it("should index the videos page", async () => {
     const metadata = await generatePageMetadata(
       createProps(undefined, { kind: "short" })
     );
@@ -239,7 +239,7 @@ describe("generateMetadata", () => {
     });
   });
 
-  test("should offer the calendar of every video without filters", async () => {
+  it("should offer the calendar of every video without filters", async () => {
     const metadata = await generatePageMetadata(createProps(undefined));
 
     expect(metadata.alternates?.types).toEqual({
@@ -247,7 +247,7 @@ describe("generateMetadata", () => {
     });
   });
 
-  test("should not index the videos filtered by talents", async () => {
+  it("should not index the videos filtered by talents", async () => {
     const metadata = await generatePageMetadata(
       createProps(undefined, {
         kind: "standard",
@@ -262,7 +262,7 @@ describe("generateMetadata", () => {
     });
   });
 
-  test("should ignore unknown talents", async () => {
+  it("should ignore unknown talents", async () => {
     const metadata = await generatePageMetadata(
       createProps(undefined, { talent: RETIRED_TALENT_ID })
     );
@@ -273,7 +273,7 @@ describe("generateMetadata", () => {
     });
   });
 
-  test("should keep the canonical URL of the search results", async () => {
+  it("should keep the canonical URL of the search results", async () => {
     const metadata = await generatePageMetadata(
       createProps(["歌"], { talent: TALENT_A.id })
     );

@@ -1,4 +1,5 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 // Provided by the MSW mock data (packages/msw-handlers). The first talent has
 // a YouTube channel and a Twitch user with icons and finished streams within

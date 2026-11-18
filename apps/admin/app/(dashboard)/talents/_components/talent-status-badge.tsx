@@ -1,5 +1,6 @@
 import type { Tables } from "@shinju-date/database";
-import { Badge, type BadgeProps } from "@shinju-date/ui";
+import { Badge } from "@shinju-date/ui";
+import type { BadgeProps } from "@shinju-date/ui";
 
 type TalentStatus = Tables<"talents">["status"];
 

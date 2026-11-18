@@ -4,11 +4,8 @@ import { YOUTUBE_CHANNELS } from "../database/index.js";
 import type { ProfileImageSyncResult } from "../profile-images/index.js";
 import { createTestContext } from "../testing/context.js";
 import { postgresError, setupSupabase } from "../testing/supabase.js";
-import {
-  type AccountAdapter,
-  countUpdatedAccounts,
-  syncAccountsWith,
-} from "./sync-accounts.js";
+import { countUpdatedAccounts, syncAccountsWith } from "./sync-accounts.js";
+import type { AccountAdapter } from "./sync-accounts.js";
 
 interface FakeFields {
   name: string;
@@ -111,7 +108,7 @@ describe("syncAccountsWith", () => {
 
     const results = await syncAccountsWith(context, adapter);
 
-    expect(adapter.updateDetails).toHaveBeenCalledTimes(1);
+    expect(adapter.updateDetails).toHaveBeenCalledOnce();
     expect(adapter.updateDetails).toHaveBeenCalledWith(
       context,
       savedAccounts[1],
@@ -151,7 +148,7 @@ describe("syncAccountsWith", () => {
       name: "Alice",
       status: "not-found",
     });
-    expect(adapter.syncIcon).toHaveBeenCalledTimes(1);
+    expect(adapter.syncIcon).toHaveBeenCalledOnce();
   });
 
   it("still syncs the icon when the details cannot be written", async () => {
@@ -165,14 +162,14 @@ describe("syncAccountsWith", () => {
 
     const [result] = await syncAccountsWith(context, adapter);
 
-    expect(adapter.syncIcon).toHaveBeenCalledTimes(1);
+    expect(adapter.syncIcon).toHaveBeenCalledOnce();
     expect(result).toEqual({
       accountId: "row-a",
       iconUpdated: true,
       name: "Alice",
       status: "failed",
     });
-    expect(reportError).toHaveBeenCalledTimes(1);
+    expect(reportError).toHaveBeenCalledOnce();
     expect(reportError).toHaveBeenCalledWith(error, { testAccountId: "a" });
   });
 
@@ -185,7 +182,7 @@ describe("syncAccountsWith", () => {
     const [, result] = await syncAccountsWith(context, adapter);
 
     expect(result).toMatchObject({ iconUpdated: false, status: "updated" });
-    expect(adapter.updateDetails).toHaveBeenCalledTimes(1);
+    expect(adapter.updateDetails).toHaveBeenCalledOnce();
     expect(reportError).toHaveBeenCalledWith(error, {
       operation: "syncProfileImage",
       testAccountId: "b",

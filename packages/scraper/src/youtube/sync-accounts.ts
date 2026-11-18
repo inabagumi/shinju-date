@@ -3,10 +3,8 @@ import {
   syncAccountsWith,
 } from "../internal/operations/sync-accounts.js";
 import type { CrawlContext, SyncAccountResult } from "../types.js";
-import {
-  createYouTubeAccounts,
-  type YouTubeChannelFields,
-} from "./accounts.js";
+import { createYouTubeAccounts } from "./accounts.js";
+import type { YouTubeChannelFields } from "./accounts.js";
 import type { YouTubeFetcher } from "./fetcher.js";
 
 /**

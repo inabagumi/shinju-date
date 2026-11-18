@@ -46,7 +46,7 @@ describe("GET /images/profile-images/[id]", () => {
 
     const response = await get(icon.id);
 
-    expect(await response.text()).toBe("image");
+    await expect(response.text()).resolves.toBe("image");
     // The lookup is sent with the public key, so RLS applies
     expect(supabaseRequests("profile_images").map(({ role }) => role)).toEqual([
       "anon",

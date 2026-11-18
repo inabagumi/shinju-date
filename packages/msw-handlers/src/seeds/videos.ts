@@ -8,8 +8,8 @@ import {
   randomLongDuration,
   randomPast,
   randomShortDuration,
-  type SeedContext,
 } from "./context.js";
+import type { SeedContext } from "./context.js";
 
 /** The thumbnails that the videos use in turn. */
 export function createThumbnails(context: SeedContext): Tables<"thumbnails">[] {

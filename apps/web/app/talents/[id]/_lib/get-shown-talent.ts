@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
-import { fetchTalent, type TalentDetail } from "@/lib/data/talents";
+import { fetchTalent } from "@/lib/data/talents";
+import type { TalentDetail } from "@/lib/data/talents";
 
 export type TalentPageParams = PageProps<"/talents/[id]">["params"];
 

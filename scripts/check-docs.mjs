@@ -23,9 +23,8 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const root = resolve(import.meta.dirname, "..");
 
 /** Files placed by the `skills` CLI, which are not edited by hand */
 const IGNORED_FILES = [/^\.agents\//, /^\.claude\//];
@@ -60,7 +59,7 @@ function listFiles(pathspecs = []) {
       "--",
       ...pathspecs,
     ],
-    { cwd: root, encoding: "utf8" }
+    { cwd: root, encoding: "utf-8" }
   );
 
   return output.split("\0").filter(Boolean);
@@ -102,7 +101,7 @@ function globToRegExp(pattern) {
         return "[^/]*";
       }
 
-      return part.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+      return part.replaceAll(/[.+?^${}()|[\]\\]/g, "\\$&");
     })
     .join("");
 
@@ -184,8 +183,8 @@ function blankFences(lines) {
  * @param {string} text - Markdown text
  */
 function blankInlineCode(text) {
-  return text.replace(INLINE_CODE_PATTERN, (match) =>
-    match.replace(/[^\n]/g, " ")
+  return text.replaceAll(INLINE_CODE_PATTERN, (match) =>
+    match.replaceAll(/[^\n]/g, " ")
   );
 }
 
@@ -270,12 +269,12 @@ function findLinks(text) {
  * @param {string} heading - Text of a heading
  */
 function slugify(heading) {
-  let text = heading.replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1");
+  let text = heading.replaceAll(/!?\[([^\]]*)\]\([^)]*\)/g, "$1");
   let previous;
 
   do {
     previous = text;
-    text = text.replace(/<[^<>]*>/g, "");
+    text = text.replaceAll(/<[^<>]*>/g, "");
   } while (text !== previous);
 
   // Remove the emphasis marks, but keep the content of code spans as it is.
@@ -284,20 +283,23 @@ function slugify(heading) {
   const codeSpans = [];
 
   text = text
-    .replace(/(`+)([^`]*?)\1/g, (_match, _ticks, content) => {
+    .replaceAll(/(`+)([^`]*?)\1/g, (_match, _ticks, content) => {
       codeSpans.push(content);
 
       return `\uE000${codeSpans.length - 1}\uE001`;
     })
-    .replace(/\*/g, "")
-    .replace(/(^|[^\p{L}\p{N}_])_+([^_]+?)_+(?=$|[^\p{L}\p{N}_])/gu, "$1$2")
-    .replace(/\uE000(\d+)\uE001/g, (_match, index) => codeSpans[Number(index)]);
+    .replaceAll("*", "")
+    .replaceAll(/(^|[^\p{L}\p{N}_])_+([^_]+?)_+(?=$|[^\p{L}\p{N}_])/gu, "$1$2")
+    .replaceAll(
+      /\uE000(\d+)\uE001/g,
+      (_match, index) => codeSpans[Number(index)]
+    );
 
   return text
     .trim()
     .toLowerCase()
-    .replace(/[^\p{L}\p{M}\p{N}\p{Pc}\- ]/gu, "")
-    .replace(/ /g, "-");
+    .replaceAll(/[^\p{L}\p{M}\p{N}\p{Pc}\- ]/gu, "")
+    .replaceAll(" ", "-");
 }
 
 /**
@@ -313,7 +315,7 @@ function getAnchors(path) {
   const anchors = new Set();
   const occurrences = new Map();
   // Headings in block quotes also get anchors, so drop the quote markers
-  const lines = blankFences(readFileSync(path, "utf8").split("\n")).map(
+  const lines = blankFences(readFileSync(path, "utf-8").split("\n")).map(
     (line) => line.replace(/^(?: {0,3}>[ \t]?)+/, "")
   );
 
@@ -387,12 +389,12 @@ function checkFile(file) {
   const errors = [];
   const filePath = join(root, file);
   const baseDir = dirname(filePath);
-  const lines = blankFences(readFileSync(filePath, "utf8").split("\n"));
+  const lines = blankFences(readFileSync(filePath, "utf-8").split("\n"));
   const text = lines.join("\n");
   const lineStarts = [0];
 
   for (const line of lines) {
-    lineStarts.push(lineStarts[lineStarts.length - 1] + line.length + 1);
+    lineStarts.push(lineStarts.at(-1) + line.length + 1);
   }
 
   const lineAt = (offset) =>

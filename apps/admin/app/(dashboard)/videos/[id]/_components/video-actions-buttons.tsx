@@ -3,7 +3,8 @@
 import type { Tables } from "@shinju-date/database";
 import { Button } from "@shinju-date/ui";
 import { Loader2, Trash2 } from "lucide-react";
-import { createContext, type ReactNode, use } from "react";
+import { createContext, use } from "react";
+import type { ReactNode } from "react";
 
 import { useServerAction } from "@/lib/use-server-action";
 

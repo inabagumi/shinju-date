@@ -1,4 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { isAdminUser } from "@/lib/admin-user";
 import { createAuditLog } from "@/lib/audit-log";

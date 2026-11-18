@@ -9,14 +9,13 @@ import {
 import {
   BACKFILL_JOB_TTL_SECONDS,
   BACKFILL_RUN_LOCK_SECONDS,
-  type BackfillClaim,
   BackfillQueue,
-  type BackfillRunRequest,
   BackfillRuns,
   getBackfillJobId,
   getBackfillRunResultKeys,
   getRunResultKey,
 } from "./index.js";
+import type { BackfillClaim, BackfillRunRequest } from "./index.js";
 
 const now = Temporal.Instant.from("2026-11-14T00:00:00Z");
 const later = (minutes: number) => now.add({ minutes });
@@ -154,16 +153,18 @@ describeOnEachRedis((createClient) => {
         skipped: 0,
         status: "started",
       });
-      expect(
-        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-      ).toHaveLength(3);
+      await expect(
+        redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
+      ).resolves.toHaveLength(3);
       await expectTtl(
         redis,
         REDIS_KEYS.VIDEO_BACKFILL_RUN,
         BACKFILL_JOB_TTL_SECONDS
       );
       // The lock is released once the check is saved.
-      expect(await redis.exists(REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK)).toBe(0);
+      await expect(
+        redis.exists(REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK)
+      ).resolves.toBe(0);
 
       const progress = await runs.getLatest(now);
 
@@ -216,9 +217,9 @@ describeOnEachRedis((createClient) => {
         progress: { active: true, run: { id: run.id } },
         status: "active",
       });
-      expect(
-        (await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)).length
-      ).toBe(queued);
+      await expect(
+        redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
+      ).resolves.toHaveLength(queued);
     });
 
     it("refuses a check while another request for one is being handled", async () => {
@@ -232,9 +233,13 @@ describeOnEachRedis((createClient) => {
       await expect(
         runs.start(requests, { requestedBy: "user-1" }, now)
       ).resolves.toEqual({ status: "busy" });
-      expect(await redis.exists(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)).toBe(0);
+      await expect(redis.exists(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)).resolves.toBe(
+        0
+      );
       // Another request's lock is left alone.
-      expect(await redis.get(REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK)).toBe("other");
+      await expect(redis.get(REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK)).resolves.toBe(
+        "other"
+      );
     });
 
     it("starts requests for a check made at the same moment once", async () => {
@@ -283,8 +288,12 @@ describeOnEachRedis((createClient) => {
       await expect(
         runs.start(requests, { requestedBy: "user-1" }, now)
       ).resolves.toEqual({ failed: 0, skipped: 3, status: "empty" });
-      expect(await redis.exists(REDIS_KEYS.VIDEO_BACKFILL_RUN)).toBe(0);
-      expect(await redis.exists(REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK)).toBe(0);
+      await expect(redis.exists(REDIS_KEYS.VIDEO_BACKFILL_RUN)).resolves.toBe(
+        0
+      );
+      await expect(
+        redis.exists(REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK)
+      ).resolves.toBe(0);
     });
 
     it("reports the accounts that could not be queued and starts the rest", async () => {
@@ -324,7 +333,9 @@ describeOnEachRedis((createClient) => {
       await expect(
         runs.start(requests, { requestedBy: "user-1" }, now)
       ).resolves.toMatchObject({ status: "started" });
-      expect(await redis.get(REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK)).toBe("other");
+      await expect(redis.get(REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK)).resolves.toBe(
+        "other"
+      );
     });
 
     it("releases the lock when the check cannot be saved", async () => {
@@ -340,7 +351,9 @@ describeOnEachRedis((createClient) => {
       await expect(
         runs.start(requests, { requestedBy: "user-1" }, now)
       ).rejects.toThrow("Redis is down");
-      expect(await redis.exists(REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK)).toBe(0);
+      await expect(
+        redis.exists(REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK)
+      ).resolves.toBe(0);
     });
 
     it("counts the jobs by status and the videos they added", async () => {
@@ -487,7 +500,7 @@ describeOnEachRedis((createClient) => {
       const done = await recordPage(queue, job, 3, null, later(2));
       const resultKey = getRunResultKey(run.id, youtubeJobId);
 
-      expect(await redis.get(resultKey)).toEqual(done.job);
+      await expect(redis.get(resultKey)).resolves.toEqual(done.job);
       await expectTtl(redis, resultKey, BACKFILL_JOB_TTL_SECONDS);
     });
 

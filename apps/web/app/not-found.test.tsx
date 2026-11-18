@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   SearchModalProvider,
@@ -27,7 +27,7 @@ function renderNotFound() {
 }
 
 describe("NotFound", () => {
-  test("should render the heading in Japanese", () => {
+  it("should render the heading in Japanese", () => {
     renderNotFound();
 
     expect(
@@ -35,7 +35,7 @@ describe("NotFound", () => {
     ).toBeInTheDocument();
   });
 
-  test("should render links to the top page and the video list", () => {
+  it("should render links to the top page and the video list", () => {
     renderNotFound();
 
     expect(
@@ -46,7 +46,7 @@ describe("NotFound", () => {
     ).toHaveAttribute("href", "/videos");
   });
 
-  test("should open the search modal when the search button is clicked", () => {
+  it("should open the search modal when the search button is clicked", () => {
     renderNotFound();
 
     expect(screen.getByRole("status")).toHaveTextContent("closed");

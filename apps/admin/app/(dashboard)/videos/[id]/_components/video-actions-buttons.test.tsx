@@ -83,9 +83,9 @@ describe("VideoActionsProvider", () => {
     fireEvent.click(screen.getByRole("button", { name: "非表示にする" }));
     fireEvent.click(screen.getByRole("button", { name: "切り替える" }));
 
-    expect(
-      await screen.findByText("動画を非表示に変更しました。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("動画を非表示に変更しました。")
+    ).resolves.toBeInTheDocument();
     expect(toggleVisibilityAction).toHaveBeenCalledWith([VIDEO_ID]);
   });
 
@@ -99,7 +99,9 @@ describe("VideoActionsProvider", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "削除する" }));
 
-    expect(await screen.findByText("動画を削除しました。")).toBeInTheDocument();
+    await expect(
+      screen.findByText("動画を削除しました。")
+    ).resolves.toBeInTheDocument();
     expect(softDeleteAction).toHaveBeenCalledWith([VIDEO_ID]);
   });
 
@@ -113,9 +115,9 @@ describe("VideoActionsProvider", () => {
     fireEvent.click(screen.getByRole("button", { name: "復元" }));
     fireEvent.click(screen.getByRole("button", { name: "復元する" }));
 
-    expect(
-      await screen.findByText("復元できませんでした。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("復元できませんでした。")
+    ).resolves.toBeInTheDocument();
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     );

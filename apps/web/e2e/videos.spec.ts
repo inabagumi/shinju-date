@@ -1,4 +1,5 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 // Provided by the MSW mock data (packages/msw-handlers): several videos have
 // `歌枠` in their titles, and no video matches `NO_RESULTS_QUERY`.

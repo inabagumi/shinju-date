@@ -1,4 +1,5 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 // Keyboard modifier for Cmd/Ctrl+K shortcut
 const KEYBOARD_MODIFIER = process.platform === "darwin" ? "Meta" : "Control";
@@ -92,7 +93,7 @@ test.describe("Search Modal - Opening and Closing", () => {
     // the dialog closes
     await expect(async () => {
       await page.mouse.click((viewportSize?.width ?? 0) - 10, 10);
-      await expect(searchInput).toBeHidden({ timeout: 1_000 });
+      await expect(searchInput).toBeHidden({ timeout: 1000 });
     }).toPass();
   });
 

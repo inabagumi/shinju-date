@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import FormattedTime from "./formatted-time";
 
@@ -18,7 +18,7 @@ describe("FormattedTime", () => {
     vi.restoreAllMocks();
   });
 
-  test("renders the time with a zero-padded hour", () => {
+  it("renders the time with a zero-padded hour", () => {
     render(<FormattedTime dateTime={dateTime} />);
 
     const time = screen.getByText("01:22");
@@ -27,7 +27,7 @@ describe("FormattedTime", () => {
     expect(time).toHaveAttribute("title", "2026/03/26 01:22:03");
   });
 
-  test("renders the date and time without the year in the current year", () => {
+  it("renders the date and time without the year in the current year", () => {
     render(
       <FormattedTime
         dateTime={dateTime}
@@ -38,7 +38,7 @@ describe("FormattedTime", () => {
     expect(screen.getByText("03/26 01:22")).toBeInTheDocument();
   });
 
-  test("renders the year when it differs from the current year", () => {
+  it("renders the year when it differs from the current year", () => {
     render(
       <FormattedTime
         dateTime={dateTime.with({ year: 2025 })}
@@ -49,7 +49,7 @@ describe("FormattedTime", () => {
     expect(screen.getByText("2025/03/26 01:22")).toBeInTheDocument();
   });
 
-  test("renders seconds when timeStyle is not short", () => {
+  it("renders seconds when timeStyle is not short", () => {
     render(
       <FormattedTime dateTime={dateTime} options={{ timeStyle: "medium" }} />
     );

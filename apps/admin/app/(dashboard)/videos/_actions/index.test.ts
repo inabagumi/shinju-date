@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import { setupActionTest } from "@/test/action-harness";
 import { createVideo } from "@/test/factories";
-import { postgresError, type SupabaseRequest } from "@/test/supabase";
+import { postgresError } from "@/test/supabase";
+import type { SupabaseRequest } from "@/test/supabase";
 
 import {
   restoreAction,
@@ -345,7 +346,7 @@ describe("toggleVisibilityAction", () => {
     { changedIds = [] }: UpdateOptions = {}
   ) {
     const targetIds = (request.query["id"] ?? "")
-      .replace(/^in\.\(|\)$/g, "")
+      .replaceAll(/^in\.\(|\)$/g, "")
       .split(",");
     const currentVisible = request.query["visible"] === "eq.true";
 

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { type Page, paginate } from "./paginate.js";
+import { paginate } from "./paginate.js";
+import type { Page } from "./paginate.js";
 
 function pages<T>(...list: Page<T>[]) {
   const fetchPage = vi.fn(async (cursor: string | undefined) => {
@@ -22,7 +23,7 @@ describe("paginate", () => {
     const fetchPage = pages({ items: [1, 2], next: null });
 
     await expect(Array.fromAsync(paginate(fetchPage))).resolves.toEqual([1, 2]);
-    expect(fetchPage).toHaveBeenCalledTimes(1);
+    expect(fetchPage).toHaveBeenCalledOnce();
     expect(fetchPage).toHaveBeenCalledWith(undefined);
   });
 
@@ -33,7 +34,7 @@ describe("paginate", () => {
       await expect(Array.fromAsync(paginate(fetchPage))).resolves.toEqual([
         "a",
       ]);
-      expect(fetchPage).toHaveBeenCalledTimes(1);
+      expect(fetchPage).toHaveBeenCalledOnce();
     }
   });
 
@@ -79,6 +80,6 @@ describe("paginate", () => {
       break;
     }
 
-    expect(fetchPage).toHaveBeenCalledTimes(1);
+    expect(fetchPage).toHaveBeenCalledOnce();
   });
 });

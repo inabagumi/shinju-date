@@ -3,7 +3,8 @@ import { logger } from "@shinju-date/logger";
 
 import { trackSearchExitWithoutClick } from "@/lib/session-analytics";
 
-import { type Payload, payloadSchema } from "./_lib/schemas";
+import { payloadSchema } from "./_lib/schemas";
+import type { Payload } from "./_lib/schemas";
 
 /**
  * 検索の結果から、動画を開かずに離れたことを記録する。ページを閉じる途中でも

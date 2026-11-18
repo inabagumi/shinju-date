@@ -16,10 +16,8 @@ import { Panel, PanelSkeleton } from "@/components/panel";
 import { PLATFORM_LABELS } from "@/components/platform-badge";
 import { formatDateTimeFromISO } from "@/lib/format";
 import { useBackfillRequest } from "@/lib/use-backfill-request";
-import {
-  type PolledResourceFailure,
-  usePolledResource,
-} from "@/lib/use-polled-resource";
+import { usePolledResource } from "@/lib/use-polled-resource";
+import type { PolledResourceFailure } from "@/lib/use-polled-resource";
 
 import {
   getVideoBackfillStatusAction,
@@ -28,7 +26,7 @@ import {
 import type { VideoBackfillStatus } from "../../_lib/get-video-backfill-status";
 
 /** How often progress is refreshed while a job is queued or running. */
-const POLL_INTERVAL_MS = 5_000;
+const POLL_INTERVAL_MS = 5000;
 
 const TITLE = "過去動画の取り込み";
 const DESCRIPTION =

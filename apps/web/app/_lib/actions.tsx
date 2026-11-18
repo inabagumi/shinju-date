@@ -4,19 +4,16 @@ import { logger } from "@shinju-date/logger";
 import { cookies } from "next/headers";
 
 import { selectCurrentAnnouncement } from "@/lib/announcement";
-import {
-  type Announcement,
-  fetchActiveAnnouncements,
-} from "@/lib/data/announcements";
-import { fetchActiveTalents, type Talent } from "@/lib/data/talents";
+import { fetchActiveAnnouncements } from "@/lib/data/announcements";
+import type { Announcement } from "@/lib/data/announcements";
+import { fetchActiveTalents } from "@/lib/data/talents";
+import type { Talent } from "@/lib/data/talents";
 import { getDisplayRecommendationQueries } from "@/lib/recommendations/get-display-queries";
 import { COOKIE_NAMES } from "@/lib/site";
 import { supabaseClient } from "@/lib/supabase";
 
-import {
-  type RenderedAnnouncement,
-  renderAnnouncement,
-} from "../_components/announcement-message";
+import { renderAnnouncement } from "../_components/announcement-message";
+import type { RenderedAnnouncement } from "../_components/announcement-message";
 
 const ONE_DAY_IN_SECONDS = 60 * 60 * 24;
 
@@ -89,8 +86,8 @@ export async function fetchSuggestions(query: string): Promise<Suggestion[]> {
     }
 
     return data || [];
-  } catch (err) {
-    logger.error("Failed to fetch suggestions", { error: err, query });
+  } catch (error) {
+    logger.error("Failed to fetch suggestions", { error, query });
     return [];
   }
 }
@@ -102,8 +99,8 @@ export async function fetchSuggestions(query: string): Promise<Suggestion[]> {
 export async function fetchRecommendedQueries(): Promise<string[]> {
   try {
     return await getDisplayRecommendationQueries();
-  } catch (err) {
-    logger.error("Failed to fetch recommended queries", { error: err });
+  } catch (error) {
+    logger.error("Failed to fetch recommended queries", { error });
     return [];
   }
 }
@@ -115,8 +112,8 @@ export async function fetchRecommendedQueries(): Promise<string[]> {
 export async function fetchSearchModalTalents(): Promise<Talent[]> {
   try {
     return await fetchActiveTalents();
-  } catch (err) {
-    logger.error("Failed to fetch talents", { error: err });
+  } catch (error) {
+    logger.error("Failed to fetch talents", { error });
     return [];
   }
 }

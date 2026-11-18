@@ -7,12 +7,8 @@ import { toDBString } from "@shinju-date/temporal-fns";
 import { revalidateTags } from "@shinju-date/web-cache";
 import { revalidatePath } from "next/cache";
 
-import {
-  ActionError,
-  type ActionResult,
-  adminAction,
-  parseActionInput,
-} from "@/lib/action";
+import { ActionError, adminAction, parseActionInput } from "@/lib/action";
+import type { ActionResult } from "@/lib/action";
 import { createAuditLogs } from "@/lib/audit-log";
 import type { AuthenticatedContext } from "@/lib/auth";
 

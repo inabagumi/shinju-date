@@ -8,13 +8,16 @@ import {
   within,
 } from "@testing-library/react";
 import { redirect } from "next/navigation";
-import { Component, type ReactNode } from "react";
+import { Component } from "react";
+import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { SERVER_ACTION_FALLBACK_ERROR } from "@/lib/use-server-action";
 
-import { ErrorMessage, FormField, type FormState, Input, Label } from "./form";
-import { FormDialog, type FormDialogProps } from "./form-dialog";
+import { ErrorMessage, FormField, Input, Label } from "./form";
+import type { FormState } from "./form";
+import { FormDialog } from "./form-dialog";
+import type { FormDialogProps } from "./form-dialog";
 
 type Action = FormDialogProps["action"];
 
@@ -185,9 +188,9 @@ describe("FormDialog", () => {
 
     submit(dialog);
 
-    expect(
-      await within(dialog).findByText("用語を入力してください。")
-    ).toBeInTheDocument();
+    await expect(
+      within(dialog).findByText("用語を入力してください。")
+    ).resolves.toBeInTheDocument();
     expect(getTermInput(dialog)).toBeInvalid();
     expect(screen.getByRole("dialog")).toBe(dialog);
     expect(onSuccess).not.toHaveBeenCalled();
@@ -214,9 +217,9 @@ describe("FormDialog", () => {
     const message = state.error ?? state.errors?.["generic"]?.[0];
 
     if (message) {
-      expect(await within(dialog).findByRole("alert")).toHaveTextContent(
-        message
-      );
+      await expect(
+        within(dialog).findByRole("alert")
+      ).resolves.toHaveTextContent(message);
     }
 
     await waitFor(() =>
@@ -237,9 +240,9 @@ describe("FormDialog", () => {
     fireEvent.change(getTermInput(dialog), { target: { value: "長い用語" } });
     submit(dialog);
 
-    expect(
-      await within(dialog).findByText("用語の追加に失敗しました。")
-    ).toBeInTheDocument();
+    await expect(
+      within(dialog).findByText("用語の追加に失敗しました。")
+    ).resolves.toBeInTheDocument();
     expect(within(dialog).getByText("用語が長すぎます。")).toBeInTheDocument();
     expect(getTermInput(dialog)).toHaveValue("長い用語");
 
@@ -292,7 +295,7 @@ describe("FormDialog", () => {
     fireEvent.change(getTermInput(dialog), { target: { value: "歌枠" } });
     submit(dialog);
 
-    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+    await expect(within(dialog).findByRole("alert")).resolves.toHaveTextContent(
       SERVER_ACTION_FALLBACK_ERROR
     );
     expect(screen.getByRole("dialog")).toBe(dialog);
@@ -323,7 +326,9 @@ describe("FormDialog", () => {
 
     submit(dialog);
 
-    expect(await within(dialog).findByRole("alert")).toBeInTheDocument();
+    await expect(
+      within(dialog).findByRole("alert")
+    ).resolves.toBeInTheDocument();
 
     fireEvent.keyDown(dialog, { code: "Escape", key: "Escape" });
 
@@ -356,9 +361,9 @@ describe("FormDialog", () => {
 
       submit(openDialog());
 
-      expect(
-        await screen.findByText("caught: NEXT_REDIRECT")
-      ).toBeInTheDocument();
+      await expect(
+        screen.findByText("caught: NEXT_REDIRECT")
+      ).resolves.toBeInTheDocument();
       expect(
         screen.queryByText(SERVER_ACTION_FALLBACK_ERROR)
       ).not.toBeInTheDocument();
@@ -419,7 +424,9 @@ describe("FormDialog", () => {
       await deferred.promise;
     });
 
-    expect(await within(dialog).findByRole("alert")).toBeInTheDocument();
+    await expect(
+      within(dialog).findByRole("alert")
+    ).resolves.toBeInTheDocument();
 
     fireEvent.keyDown(dialog, { code: "Escape", key: "Escape" });
 

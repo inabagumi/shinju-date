@@ -7,5 +7,5 @@
  */
 export function escapeSearchString(search: string): string {
   // Escape backslashes first to prevent double-escaping
-  return search.replace(/\\/g, "\\\\").replace(/[%_]/g, "\\$&");
+  return search.replaceAll("\\", "\\\\").replaceAll(/[%_]/g, "\\$&");
 }

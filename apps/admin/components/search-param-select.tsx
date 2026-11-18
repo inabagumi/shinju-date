@@ -1,6 +1,7 @@
 "use client";
 
-import { Select, type SelectProps } from "@shinju-date/ui";
+import { Select } from "@shinju-date/ui";
+import type { SelectProps } from "@shinju-date/ui";
 
 import { useUpdateSearchParams } from "@/lib/use-update-search-params";
 

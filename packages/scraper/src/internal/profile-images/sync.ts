@@ -3,10 +3,9 @@ import { DatabaseError } from "../errors.js";
 import {
   createProfileImage,
   downloadProfileImage,
-  type ProfileImageOwner,
   removeProfileImage,
-  type StoredProfileImage,
 } from "./profile-image.js";
+import type { ProfileImageOwner, StoredProfileImage } from "./profile-image.js";
 
 /**
  * What {@link syncProfileImage} did:

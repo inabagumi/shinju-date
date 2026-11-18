@@ -96,7 +96,7 @@ describe("createCsvExportRoute", () => {
     const response = await GET(request(query));
 
     expect(response.status).toBe(400);
-    expect(await response.json()).toEqual({
+    await expect(response.json()).resolves.toEqual({
       error: "Invalid parameters provided",
     });
     expect(fetchItems).not.toHaveBeenCalled();
@@ -108,7 +108,7 @@ describe("createCsvExportRoute", () => {
     const response = await GET(request("date=2026-11-05"));
 
     expect(response.status).toBe(404);
-    expect(await response.json()).toEqual({
+    await expect(response.json()).resolves.toEqual({
       error: "No data available for the specified date range",
     });
   });
@@ -120,7 +120,7 @@ describe("createCsvExportRoute", () => {
     const response = await GET(request("date=2026-11-05"));
 
     expect(response.status).toBe(500);
-    expect(await response.json()).toEqual({
+    await expect(response.json()).resolves.toEqual({
       error: "Failed to generate CSV export",
     });
     expect(logger.error).toHaveBeenCalledWith(

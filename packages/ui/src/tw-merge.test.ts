@@ -16,7 +16,7 @@ import {
 const require = createRequire(import.meta.url);
 const themeCSS = readFileSync(
   require.resolve("@shinju-date/tailwind-config/theme.css"),
-  "utf8"
+  "utf-8"
 );
 
 function extractThemeKeys(namespace: string): string[] {

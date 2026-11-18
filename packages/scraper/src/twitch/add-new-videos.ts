@@ -2,21 +2,15 @@ import { getArchivedStreamId } from "@shinju-date/twitch-api-client";
 
 import { countChanges } from "../internal/concurrency.js";
 import { WRITE_CONCURRENCY } from "../internal/constants.js";
-import {
-  getActiveAccounts,
-  type TalentAccount,
-  TWITCH_USERS,
-} from "../internal/database/index.js";
+import { getActiveAccounts, TWITCH_USERS } from "../internal/database/index.js";
+import type { TalentAccount } from "../internal/database/index.js";
 import { saveVideoWithThumbnail } from "../internal/operations/save-video.js";
 import type { CrawlContext, WriteContext } from "../types.js";
 import { attachArchive } from "./attach-archive.js";
 import type { TwitchFetcher } from "./fetcher.js";
 import { TWITCH_NEW_VIDEOS } from "./platform.js";
-import {
-  findSavedTwitchVideos,
-  isLivePlaceholder,
-  type SavedTwitchVideo,
-} from "./saved-video.js";
+import { findSavedTwitchVideos, isLivePlaceholder } from "./saved-video.js";
+import type { SavedTwitchVideo } from "./saved-video.js";
 import type { TwitchStream, TwitchVideo } from "./types.js";
 import { toLiveFields, toVideoFields } from "./video.js";
 
