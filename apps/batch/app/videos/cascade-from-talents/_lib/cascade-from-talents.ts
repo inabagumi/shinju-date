@@ -3,11 +3,6 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import { BATCH_LIMIT } from './constants'
 
-interface CascadeVideoRow {
-  id: string
-  thumbnail_id: string | null
-}
-
 export interface CascadeFromTalentsResult {
   softDeleted: number
   restored: number
@@ -66,7 +61,7 @@ export async function cascadeVideosFromTalents(
   }
 
   try {
-    restored = await restoreCascadeDeletedVideos(supabaseClient, now, limit)
+    restored = await restoreCascadeDeletedVideos(supabaseClient, limit)
   } catch (error) {
     phaseErrors.push(toError(error))
   }
@@ -98,10 +93,10 @@ async function softDeleteVideosOfDeletedTalents(
   limit: number,
 ): Promise<number> {
   // Join filter: non-deleted videos whose parent talent is soft-deleted.
-  const data = throwIfError(
+  const videos = throwIfError(
     await supabaseClient
       .from('videos')
-      .select('id, thumbnail_id, talents!inner(deleted_at)')
+      .select('id, talents!inner(deleted_at)')
       .is('deleted_at', null)
       .not('talents.deleted_at', 'is', null)
       .order('id', { ascending: true })
@@ -109,28 +104,34 @@ async function softDeleteVideosOfDeletedTalents(
     'Failed to load videos of deleted talents',
   )
 
-  const videos: CascadeVideoRow[] = data.map((row) => ({
-    id: row.id,
-    thumbnail_id: row.thumbnail_id,
-  }))
-
   if (videos.length === 0) {
     return 0
   }
 
-  return softDeleteVideos(supabaseClient, videos, now)
+  // The function deletes the thumbnails with the videos in one transaction,
+  // and skips videos deleted meanwhile (by an admin or the sync) so their
+  // reason is not overwritten.
+  const deletedIds = throwIfError(
+    await supabaseClient.rpc('soft_delete_videos', {
+      p_deleted_at: toDBString(now),
+      p_reason: 'talent_deleted',
+      p_video_ids: videos.map((video) => video.id),
+    }),
+    'Failed to soft-delete videos of deleted talents',
+  )
+
+  return deletedIds.length
 }
 
 async function restoreCascadeDeletedVideos(
   supabaseClient: TypedSupabaseClient,
-  now: Temporal.Instant,
   limit: number,
 ): Promise<number> {
   // Only talent_deleted under restored (non-deleted) talents.
-  const data = throwIfError(
+  const videos = throwIfError(
     await supabaseClient
       .from('videos')
-      .select('id, thumbnail_id, talents!inner(deleted_at)')
+      .select('id, talents!inner(deleted_at)')
       .eq('deleted_reason', 'talent_deleted')
       .not('deleted_at', 'is', null)
       .is('talents.deleted_at', null)
@@ -139,105 +140,20 @@ async function restoreCascadeDeletedVideos(
     'Failed to load videos of restored talents',
   )
 
-  const videos: CascadeVideoRow[] = data.map((row) => ({
-    id: row.id,
-    thumbnail_id: row.thumbnail_id,
-  }))
-
   if (videos.length === 0) {
     return 0
   }
 
-  return restoreVideos(supabaseClient, videos, now)
-}
-
-async function softDeleteVideos(
-  supabaseClient: TypedSupabaseClient,
-  videos: CascadeVideoRow[],
-  now: Temporal.Instant,
-): Promise<number> {
-  const videoIds = videos.map((video) => video.id)
-  const timestamp = toDBString(now)
-
-  // Re-check deleted_at so concurrent admin/sync deletes are not overwritten.
-  const updatedVideos = throwIfError(
-    await supabaseClient
-      .from('videos')
-      .update({
-        deleted_at: timestamp,
-        deleted_reason: 'talent_deleted',
-        updated_at: timestamp,
-      })
-      .in('id', videoIds)
-      .is('deleted_at', null)
-      .select('id'),
-    'Failed to soft-delete videos of deleted talents',
-  )
-
-  const updatedIds = new Set(updatedVideos.map((video) => video.id))
-  const thumbnailIds = videos
-    .filter((video) => updatedIds.has(video.id))
-    .map((video) => video.thumbnail_id)
-    .filter((id): id is string => id !== null)
-
-  if (thumbnailIds.length > 0) {
-    throwIfError(
-      await supabaseClient
-        .from('thumbnails')
-        .update({
-          deleted_at: timestamp,
-          updated_at: timestamp,
-        })
-        .in('id', thumbnailIds)
-        .is('deleted_at', null),
-      'Failed to soft-delete thumbnails of deleted talents',
-    )
-  }
-
-  return updatedIds.size
-}
-
-async function restoreVideos(
-  supabaseClient: TypedSupabaseClient,
-  videos: CascadeVideoRow[],
-  now: Temporal.Instant,
-): Promise<number> {
-  const videoIds = videos.map((video) => video.id)
-  const timestamp = toDBString(now)
-
-  // Re-check deleted_reason so concurrent admin changes are not overwritten.
-  const updatedVideos = throwIfError(
-    await supabaseClient
-      .from('videos')
-      .update({
-        deleted_at: null,
-        deleted_reason: null,
-        updated_at: timestamp,
-      })
-      .in('id', videoIds)
-      .eq('deleted_reason', 'talent_deleted')
-      .select('id'),
+  // The function restores the thumbnails with the videos in one transaction,
+  // and only the videos still deleted as talent_deleted, so a video an admin
+  // withdrew meanwhile stays deleted.
+  const restoredIds = throwIfError(
+    await supabaseClient.rpc('restore_videos', {
+      p_reason: 'talent_deleted',
+      p_video_ids: videos.map((video) => video.id),
+    }),
     'Failed to restore videos of restored talents',
   )
 
-  const updatedIds = new Set(updatedVideos.map((video) => video.id))
-  const thumbnailIds = videos
-    .filter((video) => updatedIds.has(video.id))
-    .map((video) => video.thumbnail_id)
-    .filter((id): id is string => id !== null)
-
-  if (thumbnailIds.length > 0) {
-    throwIfError(
-      await supabaseClient
-        .from('thumbnails')
-        .update({
-          deleted_at: null,
-          updated_at: timestamp,
-        })
-        .in('id', thumbnailIds),
-      'Failed to restore thumbnails of restored talents',
-    )
-  }
-
-  return updatedIds.size
+  return restoredIds.length
 }
