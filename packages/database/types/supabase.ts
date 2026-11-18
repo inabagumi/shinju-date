@@ -287,6 +287,9 @@ isOneToOne: false
 "insert_audit_logs":
 { Args: { "p_entries": Json }; Returns: undefined
                            },
+"insert_video":
+{ Args: { "p_platform": Database["public"]['Enums']["platform_type"],"p_platform_video": Json,"p_video": Json }; Returns: string
+                           },
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
