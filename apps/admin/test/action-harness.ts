@@ -9,7 +9,7 @@ import { type FakeSupabase, setupSupabase } from "./supabase";
  * The modules every Server Action talks to, replaced for the action tests.
  *
  * `vi.mock()` registers when this module is evaluated, so a test file must
- * import this module before the action under test. Biome sorts `@/test/*`
+ * import this module before the action under test. oxfmt sorts `@/test/*`
  * ahead of relative imports, so importing the action with a relative path
  * is enough. Read the mocks from what `setupActionTest()` returns instead of
  * importing the mocked modules in the test file.

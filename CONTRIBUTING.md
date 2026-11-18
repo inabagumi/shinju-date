@@ -37,11 +37,19 @@ Dev Container設定（`.devcontainer/`）を変更する場合は、`@devcontain
 pnpm run fix
 ```
 
-リントは Biome、整形（import の並べ替えと Tailwind のクラスの並べ替えを含む）は [Ultracite](https://www.ultracite.ai/) のプリセットを使った oxfmt で行います。`pnpm run fix` は自動修正と整形をし、`pnpm run check` は直さずに確かめるだけです（CI と同じ）。
+リントは oxlint と Stylelint（CSS）、整形（import の並べ替えと Tailwind のクラスの並べ替えを含む）は oxfmt で行い、どれも [Ultracite](https://www.ultracite.ai/) のプリセットを使います。`pnpm run fix` は自動修正と整形をし、`pnpm run check` は直さずに確かめるだけです（CI と同じ）。
 
-Biome の組み込みのルールで確かめられない決まりは、`config/biome/` に GritQL のプラグインとして置き、`biome.json` の `plugins` で有効にしています。プラグインと `scripts/` のスクリプトを変えたら、テストを実行してください。
+oxlint の設定は、ルートの `oxlint.config.ts` に置いています。`apps/web`、`apps/admin`、`apps/batch`、`packages/ui` の `oxlint.config.ts` は、React と Next.js のプリセットを足し、最後にルートの設定を引き継ぎます（ルートの設定が、プリセットより優先されます）。
+
+- このプロジェクトの決まり（`Date` の禁止、`temporal-polyfill` と `tailwind-merge` の import の禁止など）は、ルートの `oxlint.config.ts` の `rules` と `overrides` に書いています
+- 組み込みのルールで確かめられない決まりは、`packages/oxlint-plugin/`（`@shinju-date/oxlint-plugin`）に TypeScript で書いた oxlint の JS プラグインとして置き、ルートの `oxlint.config.ts` の `jsPlugins` で読み込んでいます
+- ルールを無効にする行には、`// oxlint-disable-next-line <ルール> -- <理由>` のように、理由を書きます
+- 今のコードが違反しているプリセットのルールは、ルートの `oxlint.config.ts` の `temporarilyDisabled` で、一時的に無効にしています（[#7400](https://github.com/inabagumi/shinju-date/issues/7400) で、コードを直して1つずつ戻します）
+
+`packages/oxlint-plugin/` のルールと設定を変えたら、テストを実行してください。`scripts/` のスクリプトを変えたら、そのテストも実行してください。
 
 ```bash
+pnpm run test --filter=@shinju-date/oxlint-plugin
 pnpm run test:scripts
 ```
 
@@ -69,7 +77,7 @@ pnpm run typecheck --filter=@shinju-date/msw-handlers
 pnpm run check:cache-directives
 ```
 
-- Biome のプラグインは空行を判定できないため、`scripts/check-cache-directives.mjs` で確かめます
+- oxlint のルールではまだ確かめていないため、`scripts/check-cache-directives.mjs` で確かめます
 
 #### ドキュメントのリンク
 
@@ -201,7 +209,7 @@ pnpm run build
 
 CI は、プルリクエストごとに次のことを確かめます。どれかが失敗すると、マージできません。
 
-- **リント**: Biome のリントと oxfmt の整形に違反がないこと。Markdown の中の、リポジトリの中へのリンクとファイルのパスが実在すること
+- **リント**: oxlint と Stylelint のリントと oxfmt の整形に違反がないこと（oxlint の結果は、プルリクエストの該当の行に出ます）。Markdown の中の、リポジトリの中へのリンクとファイルのパスが実在すること
 - **URL**: タイトル、本文、コミットのメッセージに、ほとんどの人が開けない URL がないこと（[コミットメッセージ](#コミットメッセージ)）
 - **型チェック**: テストのファイルを含めて、すべてのパッケージとアプリケーションの型に誤りがないこと
 - **テスト**: パッケージとアプリケーションのユニットテストが通ること

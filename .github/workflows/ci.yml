@@ -129,17 +129,15 @@ jobs:
 
       - uses: ./.github/actions/setup
 
+      # Runs Stylelint, oxfmt and oxlint. oxlint reports to the lines of the pull request
       - name: Run Node.js lint
-        run: pnpm biome ci --reporter=github .
+        run: pnpm run check --format=github
 
-      - name: Check format
-        run: pnpm oxfmt --check
-
-      # Checks the blank lines after the cache directives, which the Biome plugins cannot check
+      # Checks the blank lines after the cache directives, which oxlint does not check yet
       - name: Check cache directives
         run: pnpm run check:cache-directives
 
-      # Tests the Biome plugins in config/biome/ and the check scripts
+      # Tests the check scripts (the oxlint rules in packages/oxlint-plugin/ are tested in the test job)
       - name: Test scripts
         run: pnpm run test:scripts
 

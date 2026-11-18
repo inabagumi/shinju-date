@@ -37,7 +37,7 @@ function createMockSupabase(rows: Row[], { maxRows = 1_000 } = {}) {
       select() {
         return builder;
       },
-      // biome-ignore lint/suspicious/noThenProperty: Mimics the awaitable query builder of Supabase
+      // oxlint-disable-next-line unicorn/no-thenable -- Mimics the awaitable query builder of Supabase
       then<T>(resolve: (value: { data: Row[]; error: null }) => T) {
         requests.push({ cursor, limit });
         const data = sorted
@@ -67,7 +67,7 @@ describe("getAllTerms", () => {
     const rows = createRows(1_202);
     const { client, requests } = createMockSupabase(rows);
 
-    // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
+    // oxlint-disable-next-line typescript/no-explicit-any -- Mocked Supabase client
     const terms = await Array.fromAsync(getAllTerms(client as any));
 
     expect(terms).toHaveLength(1_202);
@@ -84,7 +84,7 @@ describe("getAllTerms", () => {
     const { client } = createMockSupabase(rows, { maxRows: 10 });
 
     const terms = await Array.fromAsync(
-      // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
+      // oxlint-disable-next-line typescript/no-explicit-any -- Mocked Supabase client
       getAllTerms(client as any, { pageSize: 20 })
     );
 
@@ -94,7 +94,7 @@ describe("getAllTerms", () => {
   it("should return no terms when there are none", async () => {
     const { client } = createMockSupabase([]);
 
-    // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
+    // oxlint-disable-next-line typescript/no-explicit-any -- Mocked Supabase client
     expect(await Array.fromAsync(getAllTerms(client as any))).toEqual([]);
   });
 
@@ -105,14 +105,14 @@ describe("getAllTerms", () => {
       limit: () => builder,
       order: () => builder,
       select: () => builder,
-      // biome-ignore lint/suspicious/noThenProperty: Mimics the awaitable query builder of Supabase
+      // oxlint-disable-next-line unicorn/no-thenable -- Mimics the awaitable query builder of Supabase
       then: <T>(resolve: (value: { data: Row[]; error: null }) => T) =>
         Promise.resolve(resolve({ data: rows, error: null })),
     };
     const client = { from: () => builder };
 
     await expect(
-      // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
+      // oxlint-disable-next-line typescript/no-explicit-any -- Mocked Supabase client
       Array.fromAsync(getAllTerms(client as any))
     ).rejects.toThrow("Pagination did not advance");
   });
@@ -123,13 +123,13 @@ describe("getAllTerms", () => {
       limit: () => builder,
       order: () => builder,
       select: () => builder,
-      // biome-ignore lint/suspicious/noThenProperty: Mimics the awaitable query builder of Supabase
+      // oxlint-disable-next-line unicorn/no-thenable -- Mimics the awaitable query builder of Supabase
       then: <T>(resolve: (value: { data: null; error: typeof error }) => T) =>
         Promise.resolve(resolve({ data: null, error })),
     };
     const client = { from: () => builder };
 
-    // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
+    // oxlint-disable-next-line typescript/no-explicit-any -- Mocked Supabase client
     const result = Array.fromAsync(getAllTerms(client as any));
 
     await expect(result).rejects.toBeInstanceOf(DatabaseError);

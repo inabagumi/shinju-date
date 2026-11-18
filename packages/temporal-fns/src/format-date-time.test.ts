@@ -1,4 +1,4 @@
-// biome-ignore lint/style/noRestrictedImports: this test compares the native Temporal with the polyfill, so it needs the polyfill's implementation.
+// oxlint-disable-next-line no-restricted-imports -- this test compares the native Temporal with the polyfill, so it needs the polyfill's implementation.
 import { Temporal as PolyfillTemporal } from "temporal-polyfill/implementation";
 import { describe, expect, it } from "vitest";
 

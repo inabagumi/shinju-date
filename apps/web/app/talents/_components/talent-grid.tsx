@@ -48,7 +48,6 @@ export function TalentGridSkeleton() {
   return (
     <ul aria-hidden="true" className={GRID_CLASS_NAME}>
       {Array.from({ length: SKELETON_COUNT }, (_, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: 件数が決まっていて並びも変わらないスケルトンなので、インデックスをキーにする
         <li key={index}>
           <TalentCardSkeleton />
         </li>

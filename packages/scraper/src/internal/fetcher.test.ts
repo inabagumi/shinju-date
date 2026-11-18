@@ -174,7 +174,7 @@ describe("Fetcher", () => {
         ): Promise<VideoLookupResult<Video>> {
           const { found, missingIds } = await this.fetchByIds(
             videoIds,
-            // biome-ignore lint/correctness/useYield: a request that fails yields nothing
+            // oxlint-disable-next-line require-yield -- a request that fails yields nothing
             async function* (): AsyncGenerator<Video> {
               throw new Error("boom");
             }

@@ -14,6 +14,18 @@
     "test": {
       "dependsOn": ["^build"]
     },
+    "@shinju-date/oxlint-plugin#test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/apps/*/oxlint.config.ts",
+        "$TURBO_ROOT$/packages/*/oxlint.config.ts",
+        "$TURBO_ROOT$/packages/constants/src/index.ts",
+        "$TURBO_ROOT$/packages/ui/src/tw-merge.ts",
+        "$TURBO_ROOT$/packages/ui/src/tw-merge.test.ts"
+      ]
+    },
     "test:e2e": {
       "cache": false,
       "dependsOn": ["^build"]

@@ -1,0 +1,7 @@
+# Commits that only reformat the code. `git blame` skips them when
+# `blame.ignoreRevsFile` is set to this file (GitHub reads it by default):
+#
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# build: format with oxfmt instead of Biome (#7404)
+ad47899bbf1d342550fa08d398336f41e41a2185

@@ -17,7 +17,6 @@ export function ShortsCarouselSkeleton() {
   return (
     <div className="flex gap-4 overflow-hidden md:gap-6">
       {Array.from({ length: 4 }, (_, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: 件数が決まっていて並びも変わらないスケルトンなので、インデックスをキーにする
         <div className={SLIDE_CLASS_NAME} key={index}>
           <VideoCardSkeleton variant="short" />
         </div>

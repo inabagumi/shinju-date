@@ -13,8 +13,8 @@ import { findExportsProblems } from "./check-package-exports.mjs";
 const always = () => true;
 
 /**
- * Build an `exports` entry whose conditions keep the given order (Biome sorts
- * the keys of object literals, and the order is what the check looks at).
+ * Build an `exports` entry whose conditions keep the given order, which is
+ * what the check looks at.
  * @param {[string, string][]} conditions
  */
 function entry(...conditions) {

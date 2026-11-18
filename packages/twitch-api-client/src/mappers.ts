@@ -12,7 +12,6 @@ import type {
   TwitchVideo,
 } from "./types.js";
 
-// biome-ignore lint/style/noRestrictedGlobals: twurple returns timestamps as Date, so the mappers have to accept it.
 function toIsoString(date: Date): string {
   return Temporal.Instant.fromEpochMilliseconds(date.getTime()).toString();
 }

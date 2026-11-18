@@ -5,10 +5,11 @@
    * （docs/design-guidelines.md）。
    */
   --font-emoji:
-    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-sans:
-    var(--font-lato, Lato), Helvetica Neue, Arial, Hiragino Kaku Gothic ProN,
-    Hiragino Sans, BIZ UDPGothic, Meiryo, sans-serif, var(--font-emoji);
+    var(--font-lato, "Lato"), "Helvetica Neue", "Arial",
+    "Hiragino Kaku Gothic ProN", "Hiragino Sans", "BIZ UDPGothic", "Meiryo",
+    sans-serif, var(--font-emoji);
 
   /*
    * 文字サイズと行間の組。役割ごとの太さとの組み合わせは
@@ -35,17 +36,20 @@
    * 角丸と影。使い分けは docs/design-guidelines.md を参照。ここに追加したら
    * packages/ui/src/tw-merge.ts の一覧にも追加する。
    */
+
   /* 操作部品（ボタン、入力欄、バッジ、メニュー項目） */
   --radius-control: var(--radius-md);
+
   /* 入れ物（サムネイル、モーダル、表、パネル、メニュー） */
   --radius-container: var(--radius-xl);
+
   /*
    * 重なるもの（モーダル、ドロップダウン、お知らせバナー）。`var()` で既定の影を
    * 参照すると、Tailwind が値の中の色を `--tw-shadow-color` に置き換えられず、
    * 影の色のクラス（`shadow-black/20` など）が効かなくなるため、値を直接書く。
    */
   --shadow-overlay:
-    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%);
 
   /*
    * 重なるもの（ダイアログ、トースト、ポップオーバー）の開閉の動き。使い分けは
@@ -59,14 +63,18 @@
    *   `-translate-x-1/2` などは `translate` を使うので、打ち消し合わない）
    * - 閉じる動きは `forwards` で、終わった姿のまま要素が取り除かれるのを待つ
    */
+
   /* オーバーレイ（ダイアログの後ろの幕） */
   --animate-fade-in: fade-in 150ms ease-out;
   --animate-fade-out: fade-out 100ms ease-in forwards;
+
   /* ダイアログの本体、ポップオーバー */
   --animate-scale-in: scale-in 150ms ease-out;
   --animate-scale-out: scale-out 100ms ease-in forwards;
+
   /* トースト。画面の下端から少し上がって現れる */
   --animate-slide-in: slide-in 150ms ease-out;
+
   /* スワイプで閉じたトースト。指を離した位置から、スワイプした向きへ出ていく */
   --animate-swipe-out: swipe-out 100ms ease-in forwards;
 
@@ -107,6 +115,7 @@
     from {
       translate: var(--radix-toast-swipe-end-x) 0;
     }
+
     to {
       opacity: 0;
       translate: 100% 0;
@@ -213,17 +222,12 @@
     :root:not([data-color-scheme="light"]) {
       --color-background: var(--color-zinc-950);
       --color-foreground: var(--color-zinc-100);
-
       --color-surface: var(--color-zinc-900);
-
       --color-muted: var(--color-zinc-800);
       --text-color-muted: var(--color-zinc-400);
-
       --color-border: var(--color-zinc-700);
-
       --color-accent: var(--color-774-nevy-300);
       --color-accent-foreground: var(--color-zinc-950);
-
       --color-danger: var(--color-red-300);
       --color-success: var(--color-green-300);
       --color-warning: var(--color-yellow-300);
