@@ -28,6 +28,8 @@ export async function generateMetadata({
   }
 
   const metadata = createPageMetadata({
+    // `opengraph-image.tsx` of this segment
+    hasOwnImage: true,
     path: getTalentPath(talent.id),
     title: talent.name,
     type: 'profile',
@@ -40,10 +42,6 @@ export async function generateMetadata({
       types: {
         'text/calendar': getTalentCalendarPath(talent.id),
       },
-    },
-    twitter: {
-      ...metadata.twitter,
-      card: 'summary_large_image',
     },
   }
 }

@@ -17,24 +17,12 @@ import {
   ShortsSectionSkeleton,
 } from './_components/home-sections'
 
-const pageMetadata = createPageMetadata({
+export const metadata: Metadata = createPageMetadata({
   absoluteTitle: `${SITE_NAME} - ${SITE_TAGLINE}`,
   description: SITE_DESCRIPTION,
   path: '/',
   title: SITE_NAME,
 })
-
-export const metadata: Metadata = {
-  ...pageMetadata,
-  openGraph: {
-    ...pageMetadata.openGraph,
-    url: '/',
-  },
-  twitter: {
-    ...pageMetadata.twitter,
-    card: 'summary_large_image',
-  },
-}
 
 interface DashboardSectionProps {
   dashboardVideos: Promise<DashboardVideos>

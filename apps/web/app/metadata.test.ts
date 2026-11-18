@@ -1,6 +1,15 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { SITE_DESCRIPTION, SITE_TAGLINE } from '@/lib/site'
 
+// Vite imports an image as its URL, which Next.js imports as its data
+vi.mock('@/app/opengraph-image.jpg', () => ({
+  default: {
+    height: 630,
+    src: '/_next/static/media/opengraph-image.0123456789abc.jpg',
+    width: 1200,
+  },
+}))
+
 vi.mock('@/lib/data/schedule', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/data/schedule')>()),
   fetchOldestVideoDate: vi.fn(),
@@ -28,6 +37,16 @@ import { metadata as termsMetadata } from './terms/layout'
 import { generateMetadata as generateVideosMetadata } from './videos/[[...queries]]/page'
 
 const TALENT_ID = '00000000-0000-4000-8000-000000000001'
+
+/** The image of the site, which the pages without their own image have. */
+const SITE_IMAGES = [
+  {
+    height: 630,
+    type: 'image/jpeg',
+    url: '/_next/static/media/opengraph-image.0123456789abc.jpg',
+    width: 1200,
+  },
+]
 
 function generateVideosPageMetadata(
   queries: string[] | undefined,
@@ -61,6 +80,7 @@ describe('metadata of the pages', () => {
       description: SITE_DESCRIPTION,
       openGraph: {
         description: SITE_DESCRIPTION,
+        images: SITE_IMAGES,
         title: 'SHINJU DATE',
         type: 'website',
         url: '/',
@@ -117,12 +137,15 @@ describe('metadata of the pages', () => {
         canonical: path,
       },
       openGraph: {
+        images: SITE_IMAGES,
         siteName: 'SHINJU DATE',
         title,
         type,
+        url: path,
       },
       title,
       twitter: {
+        card: 'summary_large_image',
         title: `${title} - SHINJU DATE`,
       },
     })
@@ -139,15 +162,18 @@ describe('metadata of the pages', () => {
         canonical: '/schedule/2026-11-08',
       },
       openGraph: {
+        images: SITE_IMAGES,
         siteName: 'SHINJU DATE',
         title: '2026年11月8日〜11月14日の配信スケジュール',
         type: 'article',
+        url: '/schedule/2026-11-08',
       },
       robots: {
         index: false,
       },
       title: '2026年11月8日〜11月14日の配信スケジュール',
       twitter: {
+        card: 'summary_large_image',
         title: '2026年11月8日〜11月14日の配信スケジュール - SHINJU DATE',
       },
     })
@@ -174,6 +200,7 @@ describe('metadata of the pages', () => {
         siteName: 'SHINJU DATE',
         title: '朝霧ミオ',
         type: 'profile',
+        url: `/talents/${TALENT_ID}`,
       },
       title: '朝霧ミオ',
       twitter: {
@@ -196,15 +223,18 @@ describe('metadata of the pages', () => {
         },
       },
       openGraph: {
+        images: SITE_IMAGES,
         siteName: 'SHINJU DATE',
         title: '動画一覧',
         type: 'article',
+        url: '/videos',
       },
       robots: {
         index: true,
       },
       title: '動画一覧',
       twitter: {
+        card: 'summary_large_image',
         title: '動画一覧 - SHINJU DATE',
       },
     })
@@ -221,15 +251,18 @@ describe('metadata of the pages', () => {
         },
       },
       openGraph: {
+        images: SITE_IMAGES,
         siteName: 'SHINJU DATE',
         title: '『マイクラ』の検索結果',
         type: 'article',
+        url: `/videos/${encodeURIComponent('マイクラ')}`,
       },
       robots: {
         index: false,
       },
       title: '『マイクラ』の検索結果',
       twitter: {
+        card: 'summary_large_image',
         title: '『マイクラ』の検索結果 - SHINJU DATE',
       },
     })
@@ -259,12 +292,15 @@ describe('metadata of the pages', () => {
       openGraph: {
         description:
           'SHINJU DATEに関するお問い合わせフォームです。不具合報告や機能要望をお寄せください。',
+        images: SITE_IMAGES,
         siteName: 'SHINJU DATE',
         title: 'お問い合わせ',
         type: 'website',
+        url: '/contact',
       },
       title: 'お問い合わせ',
       twitter: {
+        card: 'summary_large_image',
         title: 'お問い合わせ - SHINJU DATE',
       },
     })
@@ -280,12 +316,15 @@ describe('metadata of the pages', () => {
       openGraph: {
         description:
           'SHINJU DATEへの機能要望を送信できます。こんな機能があったらいいな、というアイデアをお寄せください。',
+        images: SITE_IMAGES,
         siteName: 'SHINJU DATE',
         title: '機能要望',
         type: 'website',
+        url: '/feedback',
       },
       title: '機能要望',
       twitter: {
+        card: 'summary_large_image',
         title: '機能要望 - SHINJU DATE',
       },
     })
