@@ -41,7 +41,8 @@ export async function POST(request: NextRequest): Promise<Response> {
       },
       // Jobs expire in Redis; the history keeps what they did.
       onFinish: (job) => recordBackfillJob(supabaseClient, job),
-      queue: new BackfillQueue(redisClient),
+      // A job is locked for as long as this run may last, and a little more.
+      queue: new BackfillQueue(redisClient, { maxRunSeconds: maxDuration }),
     })
 
     if (added > 0) {
