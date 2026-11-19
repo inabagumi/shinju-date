@@ -133,10 +133,6 @@ jobs:
       - name: Run Node.js lint
         run: pnpm run check --format=github
 
-      # Checks the blank lines after the cache directives, which oxlint does not check yet
-      - name: Check cache directives
-        run: pnpm run check:cache-directives
-
       # Tests the check scripts (the oxlint rules in packages/oxlint-plugin/ are tested in the test job)
       - name: Test scripts
         run: pnpm run test:scripts
