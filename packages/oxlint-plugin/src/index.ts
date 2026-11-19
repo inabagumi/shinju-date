@@ -1,5 +1,6 @@
 import type { Plugin } from "@oxlint/plugins";
 
+import { cacheDirectiveBlankLine } from "./cache-directive-blank-line.ts";
 import { noDefaultTailwindScale } from "./no-default-tailwind-scale.ts";
 import { noHardcodedTimeZone } from "./no-hardcoded-time-zone.ts";
 
@@ -12,6 +13,7 @@ const plugin = {
     name: "shinju-date",
   },
   rules: {
+    "cache-directive-blank-line": cacheDirectiveBlankLine,
     "no-default-tailwind-scale": noDefaultTailwindScale,
     "no-hardcoded-time-zone": noHardcodedTimeZone,
   },

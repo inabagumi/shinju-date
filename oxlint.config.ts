@@ -93,6 +93,7 @@ export default defineConfig({
         ],
       },
     ],
+    "shinju-date/cache-directive-blank-line": "error",
     "shinju-date/no-default-tailwind-scale": "error",
     "shinju-date/no-hardcoded-time-zone": "error",
   },

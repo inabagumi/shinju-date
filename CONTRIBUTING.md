@@ -68,16 +68,6 @@ pnpm run typecheck --filter=@shinju-date/msw-handlers
 - 依存パッケージのビルド（`^build`）と、Next.js のアプリケーションでは `next typegen` による型の生成（`PageProps`、`LayoutProps`、`RouteContext` など）を先に実行します
 - 新しいパッケージやアプリケーションを追加した場合は、`package.json` に `"typecheck": "tsc --noEmit"` を追加してください
 
-#### キャッシュのディレクティブの空行
-
-`'use cache'`、`cacheLife()`、`cacheTag()` を書いた後は、その後ろに空行があるかを確かめてください（[キャッシュのディレクティブ](docs/coding-guidelines.md#キャッシュのディレクティブ)）。
-
-```bash
-pnpm run check:cache-directives
-```
-
-- oxlint のルールではまだ確かめていないため、`scripts/check-cache-directives.mjs` で確かめます
-
 #### ドキュメントのリンク
 
 Markdown のファイルを変更した後は、リポジトリの中へのリンクとファイルのパスが実在するかを確かめてください。

@@ -10,7 +10,6 @@
   "scripts": {
     "build": "turbo build",
     "check": "stylelint \"**/*.css\" && ultracite check",
-    "check:cache-directives": "node scripts/check-cache-directives.mjs",
     "check:dev-secrets": "node scripts/check-dev-secrets.mjs",
     "check:docs": "node scripts/check-docs.mjs",
     "check:package-exports": "node scripts/check-package-exports.mjs",

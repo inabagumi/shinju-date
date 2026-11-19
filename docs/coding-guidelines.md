@@ -241,7 +241,7 @@ refactor(admin): convert type definitions to interface
 - `'use cache'`（`'use cache: remote'` / `'use cache: private'` を含む）の直後に、空行を1行入れる
 - `cacheLife()` や `cacheTag()` などのキャッシュ設定の並びの後にも、空行を1行入れる
 - この2つは、例外なく、すべてのファイルに適用する
-- `pnpm run check:cache-directives`（`scripts/check-cache-directives.mjs`）が確かめる（oxlint のルールでは、まだ確かめていないため）
+- `pnpm run check`（oxlint の `shinju-date/cache-directive-blank-line`）が確かめ、`pnpm run fix` が空行を入れる
 
 ディレクティブとキャッシュの設定を、本文から一目で区別できるようにするためです。過去に、まとめて直しています。
 
