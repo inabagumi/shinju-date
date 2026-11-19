@@ -1,13 +1,13 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { TalentStreamStatus } from "@/lib/data/talents";
 import { createTalentListItem } from "@/test/factories";
 
-vi.mock("@/lib/data/talents", () => ({}));
-
 import TalentCard from "./talent-card";
 import TalentGrid from "./talent-grid";
+
+vi.mock(import("@/lib/data/talents"), () => ({}));
 
 const TALENT_ID = "00000000-0000-4000-8000-000000000001";
 
@@ -17,8 +17,8 @@ const TALENT = createTalentListItem({
   youtube_channels: [{ profile_image: { blur_data_url: "", id: "icon-1" } }],
 });
 
-describe("TalentCard", () => {
-  test("should link to the page of the talent by its name", () => {
+describe(TalentCard, () => {
+  it("should link to the page of the talent by its name", () => {
     render(<TalentCard talent={TALENT} />);
 
     expect(screen.getByRole("link", { name: "朝霧ミオ" })).toHaveAttribute(
@@ -27,7 +27,7 @@ describe("TalentCard", () => {
     );
   });
 
-  test("should show the icon as a decoration", () => {
+  it("should show the icon as a decoration", () => {
     const { container } = render(<TalentCard talent={TALENT} />);
 
     expect(screen.getByTestId("talent-icon")).toHaveClass(
@@ -41,7 +41,7 @@ describe("TalentCard", () => {
     );
   });
 
-  test("should show the default icon for a talent without icons", () => {
+  it("should show the default icon for a talent without icons", () => {
     render(
       <TalentCard
         talent={createTalentListItem({ ...TALENT, youtube_channels: [] })}
@@ -51,7 +51,7 @@ describe("TalentCard", () => {
     expect(screen.getByTestId("talent-default-icon")).toBeInTheDocument();
   });
 
-  test("should wrap a long name", () => {
+  it("should wrap a long name", () => {
     render(
       <TalentCard
         talent={createTalentListItem({
@@ -75,18 +75,18 @@ describe("TalentCard with the stream status", () => {
     nextStreamAt: "2026-11-16T11:00:00Z",
   };
 
-  test("should show neither the badge nor the next stream by default", () => {
+  it("should show neither the badge nor the next stream by default", () => {
     render(<TalentCard talent={TALENT} />);
 
     const link = screen.getByRole("link", { name: "朝霧ミオ" });
 
     expect(link).not.toHaveAttribute("aria-describedby");
     expect(screen.queryByText("配信中")).not.toBeInTheDocument();
-    expect(screen.queryByText(/次回/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/次回/u)).not.toBeInTheDocument();
     expect(screen.getByTestId("talent-icon")).not.toHaveClass("ring-live");
   });
 
-  test("should show the ring and the badge while live", () => {
+  it("should show the ring and the badge while live", () => {
     render(<TalentCard streamStatus={live} talent={TALENT} />);
 
     const link = screen.getByRole("link", { name: "朝霧ミオ" });
@@ -107,7 +107,7 @@ describe("TalentCard with the stream status", () => {
     );
   });
 
-  test("should show the ring around the default icon too", () => {
+  it("should show the ring around the default icon too", () => {
     render(
       <TalentCard
         streamStatus={live}
@@ -118,11 +118,11 @@ describe("TalentCard with the stream status", () => {
     expect(screen.getByTestId("talent-default-icon")).toHaveClass("ring-live");
   });
 
-  test("should show the start of the next stream in Japan time", () => {
+  it("should show the start of the next stream in Japan time", () => {
     render(<TalentCard streamStatus={upcoming} talent={TALENT} />);
 
     const link = screen.getByRole("link", { name: "朝霧ミオ" });
-    const nextStream = screen.getByText(/^次回/);
+    const nextStream = screen.getByText(/^次回/u);
 
     expect(link).toHaveAccessibleDescription("次回 11/16 20:00");
     expect(nextStream).toHaveTextContent("次回 11/16 20:00");
@@ -135,11 +135,16 @@ describe("TalentCard with the stream status", () => {
       "dateTime",
       "2026-11-16T20:00:00+09:00"
     );
+  });
+
+  it("should not show the live status before the next stream", () => {
+    render(<TalentCard streamStatus={upcoming} talent={TALENT} />);
+
     expect(screen.queryByText("配信中")).not.toBeInTheDocument();
     expect(screen.getByTestId("talent-icon")).not.toHaveClass("ring-live");
   });
 
-  test("should not show the next stream while live", () => {
+  it("should not show the next stream while live", () => {
     render(
       <TalentCard
         streamStatus={{ isLive: true, nextStreamAt: "2026-11-16T11:00:00Z" }}
@@ -148,12 +153,12 @@ describe("TalentCard with the stream status", () => {
     );
 
     expect(screen.getByText("配信中")).toBeInTheDocument();
-    expect(screen.queryByText(/次回/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/次回/u)).not.toBeInTheDocument();
   });
 });
 
-describe("TalentGrid", () => {
-  test("should list the talents in order", () => {
+describe(TalentGrid, () => {
+  it("should list the talents in order", () => {
     render(
       <TalentGrid
         talents={[
@@ -170,13 +175,13 @@ describe("TalentGrid", () => {
     const items = screen.getAllByRole("listitem");
 
     expect(items).toHaveLength(2);
-    expect(items.map((item) => item.textContent)).toEqual([
+    expect(items.map((item) => item.textContent)).toStrictEqual([
       "朝霧ミオ",
       "夜宵ルナ",
     ]);
   });
 
-  test("should keep the order of the talents while some are live", () => {
+  it("should keep the order of the talents while some are live", () => {
     const secondId = "00000000-0000-4000-8000-000000000002";
 
     render(
@@ -193,7 +198,7 @@ describe("TalentGrid", () => {
 
     const links = screen.getAllByRole("link");
 
-    expect(links.map((link) => link.getAttribute("href"))).toEqual([
+    expect(links.map((link) => link.getAttribute("href"))).toStrictEqual([
       `/talents/${TALENT_ID}`,
       `/talents/${secondId}`,
     ]);
@@ -201,7 +206,7 @@ describe("TalentGrid", () => {
     expect(links[1]).toHaveAccessibleDescription("配信中");
   });
 
-  test("should show the empty state without any talent", () => {
+  it("should show the empty state without any talent", () => {
     render(<TalentGrid talents={[]} />);
 
     expect(screen.queryByRole("list")).not.toBeInTheDocument();

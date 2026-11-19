@@ -8,47 +8,52 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ActionToastProvider } from "@/components/action-toast";
+import type { AppRouter } from "@/test/next-navigation";
 
+import type {
+  getVideoBackfillStatusAction,
+  requestVideoBackfillAction,
+} from "../../_actions/backfill";
 import type { VideoBackfillAccount } from "../../_lib/get-video-backfill-status";
 
 const mocks = vi.hoisted(() => ({
-  getVideoBackfillStatusAction: vi.fn(),
-  requestVideoBackfillAction: vi.fn(),
+  getVideoBackfillStatusAction: vi.fn<typeof getVideoBackfillStatusAction>(),
+  requestVideoBackfillAction: vi.fn<typeof requestVideoBackfillAction>(),
   // The same instance on every render, like the router of Next.js.
-  router: { refresh: vi.fn() },
+  router: {
+    refresh: vi.fn<AppRouter["refresh"]>(),
+  } as Partial<AppRouter> as AppRouter,
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   useRouter: () => mocks.router,
 }));
-vi.mock("../../_actions/backfill", () => ({
+vi.mock(import("../../_actions/backfill"), () => ({
   getVideoBackfillStatusAction: mocks.getVideoBackfillStatusAction,
   requestVideoBackfillAction: mocks.requestVideoBackfillAction,
 }));
 
 const { VideoBackfillPanel } = await import("./video-backfill-panel");
 
-function createAccount(
+const createAccount = (
   overrides: Partial<VideoBackfillAccount> = {}
-): VideoBackfillAccount {
-  return {
-    accountId: "channel-row-1",
-    active: false,
-    added: 0,
-    error: null,
-    finishedAt: null,
-    name: "Main",
-    pages: 0,
-    provider: "youtube",
-    requestedAt: null,
-    status: null,
-    updatedAt: null,
-    ...overrides,
-  };
-}
+): VideoBackfillAccount => ({
+  accountId: "channel-row-1",
+  active: false,
+  added: 0,
+  error: null,
+  finishedAt: null,
+  name: "Main",
+  pages: 0,
+  provider: "youtube",
+  requestedAt: null,
+  status: null,
+  updatedAt: null,
+  ...overrides,
+});
 
-function renderPanel(accounts: VideoBackfillAccount[]) {
-  return render(
+const renderPanel = (accounts: VideoBackfillAccount[]) =>
+  render(
     <VideoBackfillPanel
       initialData={{ accounts, success: true }}
       talentId="talent-1"
@@ -56,7 +61,6 @@ function renderPanel(accounts: VideoBackfillAccount[]) {
     />,
     { wrapper: ActionToastProvider }
   );
-}
 
 describe("VideoBackfillPanel", () => {
   beforeEach(() => {
@@ -204,16 +208,18 @@ describe("VideoBackfillPanel", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "取り込む" }));
 
-    expect(await screen.findByText("キューに追加しました。")).toBeTruthy();
+    await expect(
+      screen.findByText("キューに追加しました。")
+    ).resolves.toBeTruthy();
     expect(mocks.requestVideoBackfillAction).toHaveBeenCalledWith(
       "talent-1",
       "youtube"
     );
 
     // The job that was just queued shows up without reloading the page.
-    expect(
-      await screen.findByRole("button", { name: "YouTube: 実行中" })
-    ).toBeTruthy();
+    await expect(
+      screen.findByRole("button", { name: "YouTube: 実行中" })
+    ).resolves.toBeTruthy();
     expect(mocks.getVideoBackfillStatusAction).toHaveBeenCalledWith("talent-1");
   });
 
@@ -259,7 +265,7 @@ describe("VideoBackfillPanel", () => {
     );
 
     // The server rendered the list of videos together with this progress.
-    expect(screen.getByText(/15件追加/)).toBeTruthy();
+    expect(screen.getByText(/15件追加/u)).toBeTruthy();
     expect(mocks.router.refresh).not.toHaveBeenCalled();
   });
 });

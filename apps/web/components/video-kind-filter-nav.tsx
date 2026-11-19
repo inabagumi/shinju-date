@@ -1,10 +1,8 @@
 import { twMerge } from "@shinju-date/ui";
 import Link from "next/link";
 
-import {
-  VIDEO_KIND_FILTER_OPTIONS,
-  type VideoKindFilter,
-} from "@/lib/video-kind-filter";
+import { VIDEO_KIND_FILTER_OPTIONS } from "@/lib/video-kind-filter";
+import type { VideoKindFilter } from "@/lib/video-kind-filter";
 
 const PILL_CLASS_NAME =
   "inline-flex h-9 items-center rounded-full border px-4 text-meta font-semibold focus-ring";
@@ -59,15 +57,13 @@ export default function VideoKindFilterNav({
   );
 }
 
-export function VideoKindFilterNavSkeleton() {
-  return (
-    <div aria-hidden="true" className="flex gap-2">
-      {VIDEO_KIND_FILTER_OPTIONS.map((option) => (
-        <div
-          className="h-9 w-20 animate-pulse rounded-full bg-muted"
-          key={option.value}
-        />
-      ))}
-    </div>
-  );
-}
+export const VideoKindFilterNavSkeleton = () => (
+  <div aria-hidden="true" className="flex gap-2">
+    {VIDEO_KIND_FILTER_OPTIONS.map((option) => (
+      <div
+        className="h-9 w-20 animate-pulse rounded-full bg-muted"
+        key={option.value}
+      />
+    ))}
+  </div>
+);

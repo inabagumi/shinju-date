@@ -7,7 +7,7 @@ import { useFormStatus } from "react-dom";
  * Submit button for a form. It is disabled and shows a pending label while
  * the form is being submitted.
  */
-export function FormSubmitButton() {
+export const FormSubmitButton = () => {
   const { pending } = useFormStatus();
 
   return (
@@ -21,4 +21,4 @@ export function FormSubmitButton() {
       {pending ? "送信中..." : "送信する"}
     </Button>
   );
-}
+};

@@ -43,7 +43,7 @@ const ACTION_LABELS: Record<Enums<"audit_action">, string> = {
   YOUTUBE_CHANNEL_DELETE: "YouTubeチャンネルを削除",
 };
 
-function LogMessage({ log }: { log: Log }) {
+const LogMessage = ({ log }: { log: Log }) => {
   const actionLabel = ACTION_LABELS[log.action] ?? log.action;
 
   return (
@@ -52,9 +52,9 @@ function LogMessage({ log }: { log: Log }) {
       <span className="text-muted"> が{actionLabel}しました</span>
     </p>
   );
-}
+};
 
-function ChangeDetails({ log }: { log: Log }) {
+const ChangeDetails = ({ log }: { log: Log }) => {
   const changes = getChanges(log.details);
 
   if (!changes) {
@@ -87,24 +87,22 @@ function ChangeDetails({ log }: { log: Log }) {
       ))}
     </div>
   );
-}
+};
 
-export function LogItem({ log }: { log: Log }) {
-  return (
-    <li className="border-b border-border py-3 last:border-b-0">
-      <div className="flex items-start justify-between">
-        <div className="flex flex-col">
-          <LogMessage log={log} />
-          <AuditLogTarget log={log} />
-          <ChangeDetails log={log} />
-        </div>
-        <time
-          className="ml-4 shrink-0 text-right text-caption text-muted tabular-nums"
-          dateTime={log.created_at}
-        >
-          {formatRelativeTime(Temporal.Instant.from(log.created_at))}
-        </time>
+export const LogItem = ({ log }: { log: Log }) => (
+  <li className="border-b border-border py-3 last:border-b-0">
+    <div className="flex items-start justify-between">
+      <div className="flex flex-col">
+        <LogMessage log={log} />
+        <AuditLogTarget log={log} />
+        <ChangeDetails log={log} />
       </div>
-    </li>
-  );
-}
+      <time
+        className="ml-4 shrink-0 text-right text-caption text-muted tabular-nums"
+        dateTime={log.created_at}
+      >
+        {formatRelativeTime(Temporal.Instant.from(log.created_at))}
+      </time>
+    </div>
+  </li>
+);

@@ -4,7 +4,8 @@ import type { TablesInsert } from "@shinju-date/database";
 import { z } from "zod";
 
 import { UNEXPECTED_ERROR, withBotCheck } from "@/lib/form-action";
-import { type FormState, toValidationErrorState } from "@/lib/form-state";
+import { toValidationErrorState } from "@/lib/form-state";
+import type { FormState } from "@/lib/form-state";
 import { supabaseClient } from "@/lib/supabase";
 
 const MESSAGE_REQUIRED_ERROR = "機能要望を入力してください";

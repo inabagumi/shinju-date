@@ -1,17 +1,16 @@
-import {
-  type BackfillProvider,
-  type BackfillRunJobStatus,
-  BackfillRuns,
+import { BackfillRuns } from "@shinju-date/video-backfill";
+import type {
+  BackfillProvider,
+  BackfillRunJobStatus,
 } from "@shinju-date/video-backfill";
 import { cacheLife } from "next/cache";
 
 import { getRedisClient } from "@/lib/redis";
-import {
-  createSupabaseServerClient,
-  type TypedSupabaseClient,
-} from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase";
+import type { TypedSupabaseClient } from "@/lib/supabase";
 
-import { type BackfillAccount, getBackfillAccounts } from "./backfill-accounts";
+import { getBackfillAccounts } from "./backfill-accounts";
+import type { BackfillAccount } from "./backfill-accounts";
 
 /** Progress of the backfill of one account in a check of all talents. */
 export interface VideoBackfillRunAccount {
@@ -61,14 +60,12 @@ export interface VideoBackfillRunState {
   targets: VideoBackfillTargets;
 }
 
-export function countTargets(
+export const countTargets = (
   targets: readonly BackfillAccount[]
-): VideoBackfillTargets {
-  return {
-    twitch: targets.filter((account) => account.provider === "twitch").length,
-    youtube: targets.filter((account) => account.provider === "youtube").length,
-  };
-}
+): VideoBackfillTargets => ({
+  twitch: targets.filter((account) => account.provider === "twitch").length,
+  youtube: targets.filter((account) => account.provider === "youtube").length,
+});
 
 /**
  * 全タレントの取得漏れチェックの対象数と、最新のチェックの進捗を読む。
@@ -76,9 +73,9 @@ export function countTargets(
  * キャッシュする `getVideoBackfillRun` を通して呼ぶ（Cache Components の
  * プリレンダリングでは、キャッシュの外で時刻を読めない）
  */
-export async function readVideoBackfillRun(
+export const readVideoBackfillRun = async (
   supabaseClient: TypedSupabaseClient
-): Promise<VideoBackfillRunState> {
+): Promise<VideoBackfillRunState> => {
   const [{ all, targets }, progress] = await Promise.all([
     getBackfillAccounts(supabaseClient),
     new BackfillRuns(getRedisClient()).getLatest(),
@@ -113,13 +110,13 @@ export async function readVideoBackfillRun(
     success: true,
     targets: countTargets(targets),
   };
-}
+};
 
 /**
  * 全タレントの取得漏れチェックの対象数と、最新のチェックの進捗を返す。
  * 進捗は刻々と変わるので、`seconds` でキャッシュする
  */
-export async function getVideoBackfillRun(): Promise<VideoBackfillRunState> {
+export const getVideoBackfillRun = async (): Promise<VideoBackfillRunState> => {
   "use cache: private";
 
   cacheLife("seconds");
@@ -127,4 +124,4 @@ export async function getVideoBackfillRun(): Promise<VideoBackfillRunState> {
   const supabaseClient = await createSupabaseServerClient();
 
   return readVideoBackfillRun(supabaseClient);
-}
+};

@@ -22,7 +22,7 @@
     "fix": "stylelint --fix \"**/*.css\" && ultracite fix",
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
-    "test:scripts": "node --test 'scripts/**/*.test.mjs'",
+    "test:scripts": "vitest run --dir scripts",
     "typecheck": "turbo typecheck",
     "typegen": "turbo typegen"
   },
@@ -36,7 +36,8 @@
     "supabase": "3.2.0",
     "turbo": "2.11.11",
     "typescript": "catalog:",
-    "ultracite": "8.2.1"
+    "ultracite": "8.2.1",
+    "vitest": "catalog:"
   },
   "devEngines": {
     "packageManager": {

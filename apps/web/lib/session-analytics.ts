@@ -16,7 +16,7 @@ import { getRedisClient } from "./redis";
  * Generate a simple session ID based on IP address and User-Agent
  * This creates a stable identifier for the same user session across pages
  */
-async function generateSessionId(): Promise<string> {
+const generateSessionId = async (): Promise<string> => {
   const headersList = await headers();
   const ip =
     headersList.get("x-forwarded-for") ||
@@ -29,19 +29,23 @@ async function generateSessionId(): Promise<string> {
 
   // Simple hash function to create a short session ID
   let hash = 0;
-  for (let i = 0; i < sessionData.length; i++) {
-    const char = sessionData.charCodeAt(i);
+  for (let i = 0; i < sessionData.length; i += 1) {
+    // Header values are byte strings, so every character is a single code unit
+    const char = sessionData.codePointAt(i) ?? 0;
+    // oxlint-disable-next-line eslint/no-bitwise -- A 32-bit string hash (hash * 31 + char), where the bit operations are the point
     hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32-bit integer
+    // Convert to 32-bit integer
+    // oxlint-disable-next-line eslint/no-bitwise -- `&=` wraps the hash to a signed 32-bit integer, which `Math.trunc` does not
+    hash &= hash;
   }
 
   return Math.abs(hash).toString(36);
-}
+};
 
 /**
  * Track a page visit (session activity)
  */
-export async function trackPageVisit(): Promise<void> {
+export const trackPageVisit = async (): Promise<void> => {
   try {
     const redisClient = getRedisClient();
     const sessionId = await generateSessionId();
@@ -62,12 +66,12 @@ export async function trackPageVisit(): Promise<void> {
     // Log error but don't throw - we don't want analytics to break functionality
     logger.error("ページ訪問の追跡に失敗しました", { error });
   }
-}
+};
 
 /**
  * Track that a session performed a search
  */
-export async function trackSearchSession(query: string): Promise<void> {
+export const trackSearchSession = async (query: string): Promise<void> => {
   if (!query || query.trim().length === 0) {
     return;
   }
@@ -100,14 +104,14 @@ export async function trackSearchSession(query: string): Promise<void> {
   } catch (error) {
     logger.error("検索セッションの追跡に失敗しました", { error });
   }
-}
+};
 
 /**
  * Track that a user exited after searching without clicking any results
  */
-export async function trackSearchExitWithoutClick(
+export const trackSearchExitWithoutClick = async (
   query: string
-): Promise<void> {
+): Promise<void> => {
   if (!query || query.trim().length === 0) {
     return;
   }
@@ -133,4 +137,4 @@ export async function trackSearchExitWithoutClick(
   } catch (error) {
     logger.error("検索離脱の追跡に失敗しました", { error });
   }
-}
+};

@@ -1,10 +1,8 @@
 import type { QueryData } from "@supabase/supabase-js";
 import { cacheLife } from "next/cache";
 
-import {
-  createSupabaseServerClient,
-  type TypedSupabaseClient,
-} from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase";
+import type { TypedSupabaseClient } from "@/lib/supabase";
 import { unwrapOrNull } from "@/lib/supabase/query";
 
 const TALENT_SELECT = `
@@ -20,17 +18,12 @@ const TALENT_SELECT = `
   twitch_users (id, name, twitch_user_id, twitch_login_name)
 `;
 
-function selectTalent(supabaseClient: TypedSupabaseClient, id: string) {
-  return supabaseClient
-    .from("talents")
-    .select(TALENT_SELECT)
-    .eq("id", id)
-    .single();
-}
+const selectTalent = (supabaseClient: TypedSupabaseClient, id: string) =>
+  supabaseClient.from("talents").select(TALENT_SELECT).eq("id", id).single();
 
 export type Talent = QueryData<ReturnType<typeof selectTalent>>;
 
-export async function getTalent(id: string): Promise<Talent | null> {
+export const getTalent = async (id: string): Promise<Talent | null> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -38,4 +31,4 @@ export async function getTalent(id: string): Promise<Talent | null> {
   const supabaseClient = await createSupabaseServerClient();
 
   return unwrapOrNull(await selectTalent(supabaseClient, id), "getTalent");
-}
+};

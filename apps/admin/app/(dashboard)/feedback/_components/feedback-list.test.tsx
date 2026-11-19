@@ -1,36 +1,41 @@
 import type { Tables } from "@shinju-date/database";
 import { fireEvent, render, screen, within } from "@testing-library/react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { AppRouter } from "@/test/next-navigation";
 
 import { FeatureRequestList } from "./feedback-list";
 
 const mocks = vi.hoisted(() => ({
-  replace: vi.fn(),
+  replace: vi.fn<AppRouter["replace"]>(),
   searchParams: new URLSearchParams(),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => "/feedback",
-  useRouter: () => ({ push: vi.fn(), replace: mocks.replace }),
-  useSearchParams: () => mocks.searchParams,
+  useRouter: () =>
+    ({
+      push: vi.fn<AppRouter["push"]>(),
+      replace: mocks.replace,
+    }) as Partial<AppRouter> as AppRouter,
+  useSearchParams: () => mocks.searchParams as ReadonlyURLSearchParams,
 }));
 
-function createFeatureRequest(
+const createFeatureRequest = (
   overrides: Partial<Tables<"feature_requests">> = {}
-): Tables<"feature_requests"> {
-  return {
-    admin_memo: null,
-    created_at: "2025-01-01T00:00:00Z",
-    id: "00000000-0000-4000-8000-000000000001",
-    is_read: false,
-    message: "配信予定をカレンダーに登録したい",
-    status: "pending",
-    updated_at: "2025-01-01T00:00:00Z",
-    ...overrides,
-  };
-}
+): Tables<"feature_requests"> => ({
+  admin_memo: null,
+  created_at: "2025-01-01T00:00:00Z",
+  id: "00000000-0000-4000-8000-000000000001",
+  is_read: false,
+  message: "配信予定をカレンダーに登録したい",
+  status: "pending",
+  updated_at: "2025-01-01T00:00:00Z",
+  ...overrides,
+});
 
-describe("FeatureRequestList", () => {
+describe(FeatureRequestList, () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.searchParams = new URLSearchParams();

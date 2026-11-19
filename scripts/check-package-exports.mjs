@@ -21,10 +21,9 @@
  */
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import path from "node:path";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const root = path.resolve(import.meta.dirname, "..");
 
 const PACKAGES_DIR = "packages";
 
@@ -32,7 +31,7 @@ const CONDITIONS = ["types", "default"];
 
 const REPLACED_FIELDS = ["main", "module", "types", "typings", "typesVersions"];
 
-const SCRIPT_PATTERN = /\.[cm]?[jt]sx?$/;
+const SCRIPT_PATTERN = /\.[cm]?[jt]sx?$/u;
 
 /**
  * Find the problems in the `exports` of a `package.json`.
@@ -41,7 +40,7 @@ const SCRIPT_PATTERN = /\.[cm]?[jt]sx?$/;
  *   the package exists
  * @returns {string[]} The problems
  */
-export function findExportsProblems(pkg, fileExists) {
+export const findExportsProblems = (pkg, fileExists) => {
   /** @type {string[]} */
   const problems = [];
 
@@ -120,32 +119,34 @@ export function findExportsProblems(pkg, fileExists) {
   }
 
   return problems;
-}
+};
 
-function main() {
+const main = () => {
   let count = 0;
 
-  const names = readdirSync(join(root, PACKAGES_DIR), { withFileTypes: true })
+  const names = readdirSync(path.join(root, PACKAGES_DIR), {
+    withFileTypes: true,
+  })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
-    .sort();
+    .toSorted();
 
   for (const name of names) {
-    const dir = join(root, PACKAGES_DIR, name);
-    const file = join(dir, "package.json");
+    const dir = path.join(root, PACKAGES_DIR, name);
+    const file = path.join(dir, "package.json");
 
     if (!existsSync(file)) {
       continue;
     }
 
-    const pkg = JSON.parse(readFileSync(file, "utf8"));
+    const pkg = JSON.parse(readFileSync(file, "utf-8"));
     const problems = findExportsProblems(pkg, (target) =>
-      existsSync(join(dir, target))
+      existsSync(path.join(dir, target))
     );
 
     for (const problem of problems) {
       console.error(`${PACKAGES_DIR}/${name}/package.json: ${problem}`);
-      count++;
+      count += 1;
     }
   }
 
@@ -155,11 +156,8 @@ function main() {
     );
     process.exitCode = 1;
   }
-}
+};
 
-if (
-  process.argv[1] &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-) {
+if (process.argv[1] && path.resolve(process.argv[1]) === import.meta.filename) {
   main();
 }

@@ -1,7 +1,8 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ContactFormState } from "../_lib/actions";
+import { ContactForm } from "./contact-form";
 
 const { submitContactForm } = vi.hoisted(() => ({
   submitContactForm:
@@ -10,43 +11,47 @@ const { submitContactForm } = vi.hoisted(() => ({
     >(),
 }));
 
-vi.mock("../_lib/actions", () => ({ submitContactForm }));
+vi.mock(import("../_lib/actions"), () => ({ submitContactForm }));
 
-import { ContactForm } from "./contact-form";
+const failWithSubmittedValues = () => {
+  submitContactForm.mockImplementation((_, formData) =>
+    Promise.resolve({
+      error: "送信中にエラーが発生しました。",
+      success: false,
+      values: Object.fromEntries(
+        [...formData].filter(
+          (entry): entry is [string, string] => typeof entry[1] === "string"
+        )
+      ),
+    })
+  );
+};
 
-function failWithSubmittedValues() {
-  submitContactForm.mockImplementation(async (_, formData) => ({
-    error: "送信中にエラーが発生しました。",
-    success: false,
-    values: Object.fromEntries(
-      [...formData].filter(
-        (entry): entry is [string, string] => typeof entry[1] === "string"
-      )
-    ),
-  }));
-}
+const getTypeSelect = () =>
+  screen.getByLabelText(/お問い合わせ種別/u) as HTMLSelectElement;
 
-function getTypeSelect() {
-  return screen.getByLabelText(/お問い合わせ種別/) as HTMLSelectElement;
-}
+const getNameInput = () =>
+  screen.getByLabelText("お名前（任意）") as HTMLInputElement;
 
-function getNameInput() {
-  return screen.getByLabelText("お名前（任意）") as HTMLInputElement;
-}
+const getReplyCheckbox = () =>
+  screen.getByLabelText("返信を希望する") as HTMLInputElement;
 
-function getReplyCheckbox() {
-  return screen.getByLabelText("返信を希望する") as HTMLInputElement;
-}
+const queryEmailInput = () =>
+  screen.queryByLabelText(/メールアドレス/u) as HTMLInputElement | null;
 
-function queryEmailInput() {
-  return screen.queryByLabelText(/メールアドレス/) as HTMLInputElement | null;
-}
+const getMessageTextarea = () =>
+  screen.getByLabelText(/お問い合わせ内容/u) as HTMLTextAreaElement;
 
-function getMessageTextarea() {
-  return screen.getByLabelText(/お問い合わせ内容/) as HTMLTextAreaElement;
-}
+/** The values of the fields, with `email` undefined when it is not shown. */
+const getFormValues = () => ({
+  email: queryEmailInput()?.value,
+  message: getMessageTextarea().value,
+  name: getNameInput().value,
+  type: getTypeSelect().value,
+  wantsReply: getReplyCheckbox().checked,
+});
 
-function fillForm() {
+const fillForm = () => {
   fireEvent.change(getTypeSelect(), { target: { value: "bug" } });
   fireEvent.change(getNameInput(), { target: { value: "山田花子" } });
   fireEvent.click(getReplyCheckbox());
@@ -56,20 +61,23 @@ function fillForm() {
   fireEvent.change(getMessageTextarea(), {
     target: { value: "動画が表示されません" },
   });
-}
+};
 
-async function submit(container: HTMLElement) {
-  await act(async () => {
+const submit = async (container: HTMLElement) => {
+  // Returning a promise makes `act` wait for the submission as well
+  await act(() => {
     fireEvent.submit(container.querySelector("form") as HTMLFormElement);
-  });
-}
 
-describe("ContactForm", () => {
+    return Promise.resolve();
+  });
+};
+
+describe(ContactForm, () => {
   beforeEach(() => {
     submitContactForm.mockReset();
   });
 
-  test("keeps the entered values when the submission fails", async () => {
+  it("keeps the entered values when the submission fails", async () => {
     failWithSubmittedValues();
 
     const { container } = render(<ContactForm />);
@@ -78,14 +86,16 @@ describe("ContactForm", () => {
     await submit(container);
 
     expect(screen.getByText("送信中にエラーが発生しました。")).toBeVisible();
-    expect(getTypeSelect().value).toBe("bug");
-    expect(getNameInput().value).toBe("山田花子");
-    expect(getReplyCheckbox().checked).toBe(true);
-    expect(queryEmailInput()?.value).toBe("hanako@example.com");
-    expect(getMessageTextarea().value).toBe("動画が表示されません");
+    expect(getFormValues()).toStrictEqual({
+      email: "hanako@example.com",
+      message: "動画が表示されません",
+      name: "山田花子",
+      type: "bug",
+      wantsReply: true,
+    });
   });
 
-  test("keeps the values changed after a failed submission", async () => {
+  it("keeps the values changed after a failed submission", async () => {
     failWithSubmittedValues();
 
     const { container } = render(<ContactForm />);
@@ -98,12 +108,12 @@ describe("ContactForm", () => {
     await submit(container);
 
     expect(getTypeSelect().value).toBe("other");
-    expect(getReplyCheckbox().checked).toBe(false);
+    expect(getReplyCheckbox().checked).toBeFalsy();
     expect(queryEmailInput()).toBeNull();
     expect(getMessageTextarea().value).toBe("動画が表示されません");
   });
 
-  test("clears the form when the submission succeeds", async () => {
+  it("clears the form when the submission succeeds", async () => {
     submitContactForm.mockResolvedValue({
       message: "お問い合わせを受け付けました。ありがとうございます。",
       success: true,
@@ -117,10 +127,13 @@ describe("ContactForm", () => {
     expect(
       screen.getByText("お問い合わせを受け付けました。ありがとうございます。")
     ).toBeVisible();
-    expect(getTypeSelect().value).toBe("");
-    expect(getNameInput().value).toBe("");
-    expect(getReplyCheckbox().checked).toBe(false);
     expect(queryEmailInput()).toBeNull();
-    expect(getMessageTextarea().value).toBe("");
+    expect(getFormValues()).toStrictEqual({
+      email: undefined,
+      message: "",
+      name: "",
+      type: "",
+      wantsReply: false,
+    });
   });
 });

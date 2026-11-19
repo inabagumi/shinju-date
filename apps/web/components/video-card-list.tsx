@@ -3,10 +3,8 @@ import type { ComponentPropsWithoutRef } from "react";
 
 import type { Video } from "@/lib/data/videos";
 
-import VideoCard, {
-  VideoCardSkeleton,
-  type VideoCardVariant,
-} from "./video-card";
+import VideoCard, { VideoCardSkeleton } from "./video-card";
+import type { VideoCardVariant } from "./video-card";
 
 type VideoCardListVariant = Exclude<VideoCardVariant, "short">;
 
@@ -27,24 +25,22 @@ interface VideoCardListSkeletonProps {
   variant?: VideoCardListVariant;
 }
 
-export function VideoCardListSkeleton({
+export const VideoCardListSkeleton = ({
   className,
   count = 2,
   itemClassName,
   variant = "row",
-}: VideoCardListSkeletonProps) {
-  return (
-    <div className={twMerge(VIDEO_CARD_LIST_CLASS_NAMES[variant], className)}>
-      {Array.from({ length: count }, (_, index) => (
-        <VideoCardSkeleton
-          className={itemClassName?.(index)}
-          key={index}
-          variant={variant}
-        />
-      ))}
-    </div>
-  );
-}
+}: VideoCardListSkeletonProps) => (
+  <div className={twMerge(VIDEO_CARD_LIST_CLASS_NAMES[variant], className)}>
+    {Array.from({ length: count }, (_, index) => (
+      <VideoCardSkeleton
+        className={itemClassName?.(index)}
+        key={index}
+        variant={variant}
+      />
+    ))}
+  </div>
+);
 
 interface VideoCardListProps extends Omit<
   ComponentPropsWithoutRef<typeof VideoCard>,

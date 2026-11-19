@@ -57,10 +57,9 @@ export const z = format('text-sm')
 `;
 
 /** The lines (1-based) that end with the report marker */
-export function getReportedLines(source: string): number[] {
-  return source
+export const getReportedLines = (source: string): number[] =>
+  source
     .split("\n")
     .flatMap((line, index) =>
       line.trimEnd().endsWith(REPORT_MARKER) ? [index + 1] : []
     );
-}

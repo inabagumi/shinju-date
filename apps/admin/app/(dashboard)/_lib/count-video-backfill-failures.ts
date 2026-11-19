@@ -7,7 +7,7 @@ import { unwrapCount } from "@/lib/supabase/query";
  * Counts the accounts whose latest backfill job failed. Accounts that were
  * deleted, or whose talent was deleted, are left out by the view.
  */
-export async function countVideoBackfillFailures(): Promise<number> {
+export const countVideoBackfillFailures = async (): Promise<number> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -21,4 +21,4 @@ export async function countVideoBackfillFailures(): Promise<number> {
       .eq("status", "failed"),
     "countVideoBackfillFailures"
   );
-}
+};

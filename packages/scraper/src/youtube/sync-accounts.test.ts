@@ -7,12 +7,10 @@ import {
   mockStorage,
   serveImage,
 } from "../internal/testing/images.js";
-import {
-  postgresError,
-  type SupabaseRoutes,
-  setupSupabase,
-} from "../internal/testing/supabase.js";
+import { postgresError, setupSupabase } from "../internal/testing/supabase.js";
+import type { SupabaseRoutes } from "../internal/testing/supabase.js";
 import { createChannel } from "../internal/testing/youtube.js";
+import type { ErrorReporter } from "../types.js";
 import type { YouTubeFetcher } from "./fetcher.js";
 import {
   syncYouTubeChannels,
@@ -20,7 +18,7 @@ import {
 } from "./sync-accounts.js";
 
 const supabase = setupSupabase();
-const reportError = vi.fn();
+const reportError = vi.fn<ErrorReporter>();
 const createContext = <T>(fetcher: T) =>
   createTestContext({
     fetcher,
@@ -63,7 +61,7 @@ const routes = {
   "PATCH youtube_channels": [{ id: "channel-row" }],
 } satisfies SupabaseRoutes;
 
-describe("syncYouTubeChannels", () => {
+describe(syncYouTubeChannels, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -81,7 +79,7 @@ describe("syncYouTubeChannels", () => {
 
     expect(changed).toBeGreaterThan(0);
     expect(getAccounts).toHaveBeenCalledWith(["UCaaa", "UCbbb"]);
-    expect(supabase.written("PATCH", "youtube_channels")).toEqual([
+    expect(supabase.written("PATCH", "youtube_channels")).toStrictEqual([
       expect.objectContaining({
         body: { name: "Bob Ch.", youtube_handle: "@bob" },
         query: { id: "eq.channel-row-2" },
@@ -100,7 +98,9 @@ describe("syncYouTubeChannels", () => {
     const changed = await syncYouTubeChannels(createContext(fetcher));
 
     expect(changed).toBeGreaterThan(0);
-    expect(supabase.written("PATCH", "youtube_channels")[0]?.body).toEqual({
+    expect(
+      supabase.written("PATCH", "youtube_channels")[0]?.body
+    ).toStrictEqual({
       name: "Alice",
       youtube_handle: "@alice_new",
     });
@@ -120,7 +120,7 @@ describe("syncYouTubeChannels", () => {
     expect(changed).toBe(0);
     expect(
       supabase.requests.map(({ method, table }) => `${method} ${table}`)
-    ).toEqual(["GET talents"]);
+    ).toStrictEqual(["GET talents"]);
   });
 
   it("reports a channel that could not be updated and handles the rest", async () => {
@@ -141,7 +141,7 @@ describe("syncYouTubeChannels", () => {
     const changed = await syncYouTubeChannels(createContext(fetcher));
 
     expect(changed).toBe(1);
-    expect(supabase.written("PATCH", "youtube_channels")).toEqual([
+    expect(supabase.written("PATCH", "youtube_channels")).toStrictEqual([
       expect.objectContaining({ query: { id: "eq.channel-row-1" } }),
       expect.objectContaining({
         body: { name: "Bob Ch.", youtube_handle: "@bob" },
@@ -222,7 +222,7 @@ describe("syncYouTubeChannels", () => {
       expect(changed).toBe(1);
       expect(storage.uploads).toHaveLength(1);
       expect(inserted.source_url).toBe(ICON_URL);
-      expect(supabase.written("PATCH", "youtube_channels")).toEqual([
+      expect(supabase.written("PATCH", "youtube_channels")).toStrictEqual([
         expect.objectContaining({
           body: { profile_image_id: inserted.id },
           query: { id: "eq.channel-row-1", select: "id" },
@@ -266,7 +266,9 @@ describe("syncYouTubeChannels", () => {
       const changed = await syncYouTubeChannels(createContext(fetcher));
 
       expect(changed).toBe(0);
-      expect(requests).toEqual([{ ifNoneMatch: '"etag-1"', url: ICON_URL }]);
+      expect(requests).toStrictEqual([
+        { ifNoneMatch: '"etag-1"', url: ICON_URL },
+      ]);
       expect(storage.uploads).toHaveLength(0);
       expect(supabase.written("PATCH", "youtube_channels")).toHaveLength(0);
     });
@@ -291,7 +293,7 @@ describe("syncYouTubeChannels", () => {
       const changed = await syncYouTubeChannels(createContext(fetcher));
 
       expect(changed).toBe(1);
-      expect(supabase.written("PATCH", "youtube_channels")).toEqual([
+      expect(supabase.written("PATCH", "youtube_channels")).toStrictEqual([
         expect.objectContaining({
           body: { name: "Bob Ch.", youtube_handle: "@bob" },
         }),
@@ -337,8 +339,7 @@ describe("syncYouTubeChannels", () => {
           query: { id: "eq.channel-row-1", select: "id" },
         })
       );
-      expect(reportError).toHaveBeenCalledTimes(1);
-      expect(reportError).toHaveBeenCalledWith(
+      expect(reportError).toHaveBeenCalledExactlyOnceWith(
         expect.objectContaining({
           message: expect.stringContaining("duplicate key value"),
         }),
@@ -348,7 +349,7 @@ describe("syncYouTubeChannels", () => {
   });
 });
 
-describe("syncYouTubeChannelsOfTalent", () => {
+describe(syncYouTubeChannelsOfTalent, () => {
   const ICON_URL = "https://yt3.ggpht.com/bob=s800-c-k-c0x00ffffff-no-rj";
   const thumbnails = { high: { height: 800, url: ICON_URL, width: 800 } };
 
@@ -395,7 +396,7 @@ describe("syncYouTubeChannelsOfTalent", () => {
       id: "eq.talent-2",
     });
     expect(getAccounts).toHaveBeenCalledWith(["UCbbb", "UCccc"]);
-    expect(results).toEqual([
+    expect(results).toStrictEqual([
       {
         accountId: "channel-row-2",
         changes: {
@@ -413,7 +414,7 @@ describe("syncYouTubeChannelsOfTalent", () => {
         status: "unchanged",
       },
     ]);
-    expect(supabase.written("PATCH", "youtube_channels")).toEqual([
+    expect(supabase.written("PATCH", "youtube_channels")).toStrictEqual([
       expect.objectContaining({
         body: { name: "Bob Ch.", youtube_handle: "@bob" },
         query: { id: "eq.channel-row-2" },
@@ -432,7 +433,7 @@ describe("syncYouTubeChannelsOfTalent", () => {
       "talent-2"
     );
 
-    expect(result?.changes).toEqual({
+    expect(result?.changes).toStrictEqual({
       after: { youtube_handle: "@bob" },
       before: { youtube_handle: null },
     });
@@ -452,14 +453,14 @@ describe("syncYouTubeChannelsOfTalent", () => {
       "talent-2"
     );
 
-    expect(results.map(({ status }) => status)).toEqual([
+    expect(results.map(({ status }) => status)).toStrictEqual([
       "unchanged",
       "unchanged",
     ]);
     // Unused icons are left to the scheduled sync
     expect(
       supabase.requests.map(({ method, table }) => `${method} ${table}`)
-    ).toEqual(["GET talents"]);
+    ).toStrictEqual(["GET talents"]);
   });
 
   it("reports a channel YouTube does not return as not found", async () => {
@@ -475,7 +476,7 @@ describe("syncYouTubeChannelsOfTalent", () => {
       "talent-2"
     );
 
-    expect(results[0]).toEqual({
+    expect(results[0]).toStrictEqual({
       accountId: "channel-row-2",
       iconUpdated: false,
       name: "Bob",
@@ -503,10 +504,12 @@ describe("syncYouTubeChannelsOfTalent", () => {
       "talent-2"
     );
 
-    expect(results.map(({ name, status }) => ({ name, status }))).toEqual([
-      { name: "Bob", status: "failed" },
-      { name: "Bob Sub!", status: "updated" },
-    ]);
+    expect(results.map(({ name, status }) => ({ name, status }))).toStrictEqual(
+      [
+        { name: "Bob", status: "failed" },
+        { name: "Bob Sub!", status: "updated" },
+      ]
+    );
     expect(reportError).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.stringContaining("duplicate key value"),
@@ -528,7 +531,7 @@ describe("syncYouTubeChannelsOfTalent", () => {
       "talent-2"
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       accountId: "channel-row-2",
       iconUpdated: true,
       name: "Bob",
@@ -558,7 +561,7 @@ describe("syncYouTubeChannelsOfTalent", () => {
       "talent-2"
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       accountId: "channel-row-2",
       iconUpdated: true,
       name: "Bob",
@@ -573,7 +576,7 @@ describe("syncYouTubeChannelsOfTalent", () => {
 
     await expect(
       syncYouTubeChannelsOfTalent(createContext(fetcher), "talent-9")
-    ).resolves.toEqual([]);
+    ).resolves.toStrictEqual([]);
     expect(getAccounts).not.toHaveBeenCalled();
   });
 

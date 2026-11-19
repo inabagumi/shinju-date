@@ -1,5 +1,4 @@
-import type Database from "@shinju-date/database";
-import type { Tables } from "@shinju-date/database";
+import type { Database, Tables } from "@shinju-date/database";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Logger } from "./internal/logger.js";

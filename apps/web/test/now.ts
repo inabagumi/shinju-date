@@ -5,11 +5,11 @@ import { vi } from "vitest";
  * any time zone (`Temporal.Now.zonedDateTimeISO()`). Restore it with
  * `vi.restoreAllMocks()`.
  */
-export function mockNow(value: string): void {
+export const mockNow = (value: string): void => {
   const now = Temporal.Instant.from(value);
 
   vi.spyOn(Temporal.Now, "instant").mockReturnValue(now);
   vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockImplementation((timeZone) =>
     now.toZonedDateTimeISO(timeZone ?? "UTC")
   );
-}
+};

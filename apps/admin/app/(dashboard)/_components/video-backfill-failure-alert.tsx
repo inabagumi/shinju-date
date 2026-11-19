@@ -10,7 +10,7 @@ import { countVideoBackfillFailures } from "../_lib/count-video-backfill-failure
  * can request them again. Renders nothing while there is no failure, or when
  * the failures cannot be counted.
  */
-export async function VideoBackfillFailureAlert() {
+export const VideoBackfillFailureAlert = async () => {
   let failures: number;
 
   try {
@@ -41,4 +41,4 @@ export async function VideoBackfillFailureAlert() {
       件あります。
     </Alert>
   );
-}
+};

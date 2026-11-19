@@ -5,7 +5,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useId, useMemo } from "react";
 import { useInView } from "react-intersection-observer";
 
-import { fetchVideos, type Video } from "@/lib/data/videos";
+import { fetchVideos } from "@/lib/data/videos";
+import type { Video } from "@/lib/data/videos";
 import { formatRelativeDate } from "@/lib/date-heading";
 import { groupVideosByDate } from "@/lib/group-videos-by-date";
 import { queryKeys } from "@/lib/query-keys";
@@ -21,27 +22,25 @@ const LIST_CLASS_NAME = "lg:grid-cols-4";
 /**
  * スケルトンを1段ぶんだけ表示する。モバイルは1件、タブレットは2件、PC は4件。
  */
-function getRowSkeletonItemClassName(index: number): string | undefined {
+const getRowSkeletonItemClassName = (index: number): string | undefined => {
   if (index === 0) {
     return undefined;
   }
 
   return index === 1 ? "hidden sm:flex" : "hidden lg:flex";
-}
+};
 
 interface VideoCardRowSkeletonProps {
   className?: string | undefined;
 }
 
-function VideoCardRowSkeleton({ className }: VideoCardRowSkeletonProps) {
-  return (
-    <VideoCardListSkeleton
-      className={twMerge(LIST_CLASS_NAME, className)}
-      count={4}
-      itemClassName={getRowSkeletonItemClassName}
-    />
-  );
-}
+const VideoCardRowSkeleton = ({ className }: VideoCardRowSkeletonProps) => (
+  <VideoCardListSkeleton
+    className={twMerge(LIST_CLASS_NAME, className)}
+    count={4}
+    itemClassName={getRowSkeletonItemClassName}
+  />
+);
 
 /**
  * 日付の見出し。スクロール中はサイトのヘッダー（高さ 56px）の下に固定する。
@@ -52,16 +51,14 @@ function VideoCardRowSkeleton({ className }: VideoCardRowSkeletonProps) {
 const DATE_HEADING_CLASS_NAME =
   "sticky top-14 z-10 -mx-4 mb-4 bg-background px-4 py-2 text-heading font-bold";
 
-export function SearchResultsSkeleton() {
-  return (
-    <div aria-hidden="true">
-      <div className={DATE_HEADING_CLASS_NAME}>
-        <div className="h-[1lh] w-32 animate-pulse rounded-control bg-muted" />
-      </div>
-      <VideoCardRowSkeleton />
+export const SearchResultsSkeleton = () => (
+  <div aria-hidden="true">
+    <div className={DATE_HEADING_CLASS_NAME}>
+      <div className="h-[1lh] w-32 animate-pulse rounded-control bg-muted" />
     </div>
-  );
-}
+    <VideoCardRowSkeleton />
+  </div>
+);
 
 interface DateSectionProps {
   date: Temporal.PlainDate;
@@ -69,7 +66,7 @@ interface DateSectionProps {
   values: Video[];
 }
 
-function DateSection({ date, today, values }: DateSectionProps) {
+const DateSection = ({ date, today, values }: DateSectionProps) => {
   const headingId = useId();
 
   return (
@@ -87,7 +84,7 @@ function DateSection({ date, today, values }: DateSectionProps) {
       />
     </section>
   );
-}
+};
 
 interface SearchResultsProps {
   kind?: VideoKindFilter;
@@ -115,11 +112,11 @@ export default function SearchResults({
     useInfiniteQuery({
       getNextPageParam: (lastPage) => {
         if (lastPage.length < SEARCH_RESULT_COUNT) {
-          return undefined;
+          return;
         }
         const lastVideo = lastPage.at(-1);
         if (!lastVideo) {
-          return undefined;
+          return;
         }
         return Temporal.Instant.from(lastVideo.published_at).subtract({
           nanoseconds: 1,
@@ -134,14 +131,13 @@ export default function SearchResults({
           }
         : {}),
       initialPageParam: undefined as bigint | undefined,
-      queryFn: ({ pageParam }) => {
-        return fetchVideos({
+      queryFn: ({ pageParam }) =>
+        fetchVideos({
           kind,
           query,
           talentIds,
           until: pageParam,
-        });
-      },
+        }),
       queryKey: queryKeys.videos({ kind, query, talentIds }),
     });
 
@@ -169,7 +165,8 @@ export default function SearchResults({
   }
 
   if (items.length === 0) {
-    return null; // Let the parent handle empty state
+    // Let the parent handle empty state
+    return null;
   }
 
   return (

@@ -1,11 +1,12 @@
-import type { default as Database } from "@shinju-date/database";
+import type { Database } from "@shinju-date/database";
 import retryableFetch from "@shinju-date/retryable-fetch";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { publicEnv, serverEnv } from "@/lib/env";
 
-function createSupabaseClient(key: string): SupabaseClient<Database> {
-  return createClient<Database>(publicEnv.NEXT_PUBLIC_SUPABASE_URL, key, {
+const createSupabaseClient = (key: string): SupabaseClient<Database> =>
+  createClient<Database>(publicEnv.NEXT_PUBLIC_SUPABASE_URL, key, {
     global: {
       fetch(requestInfo, requestInit) {
         return retryableFetch(requestInfo, {
@@ -14,7 +15,6 @@ function createSupabaseClient(key: string): SupabaseClient<Database> {
       },
     },
   });
-}
 
 /** The client with the anonymous key, which RLS restricts. */
 export const supabaseClient = createSupabaseClient(
@@ -30,10 +30,10 @@ let supabaseAdminClient: SupabaseClient<Database> | undefined;
  * Created on first use and reused afterwards, so that importing this module
  * in the browser does not read the server-only key.
  */
-export function getSupabaseAdminClient(): SupabaseClient<Database> {
+export const getSupabaseAdminClient = (): SupabaseClient<Database> => {
   supabaseAdminClient ??= createSupabaseClient(
     serverEnv.SUPABASE_SERVICE_ROLE_KEY
   );
 
   return supabaseAdminClient;
-}
+};

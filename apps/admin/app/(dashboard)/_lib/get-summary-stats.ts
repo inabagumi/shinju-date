@@ -2,10 +2,9 @@ import { TIME_ZONE } from "@shinju-date/constants";
 import {
   countSummaryStats,
   readSummarySnapshot,
-  type SummaryStats,
-  type WithTrends,
   withTrends,
 } from "@shinju-date/dashboard-stats";
+import type { SummaryStats, WithTrends } from "@shinju-date/dashboard-stats";
 import { formatDateKey } from "@shinju-date/temporal-fns";
 import { cacheLife } from "next/cache";
 
@@ -20,7 +19,7 @@ import { createSupabaseServerClient } from "@/lib/supabase";
  * The widgets of the dashboard share one result, so that the counts run once
  * for each display.
  */
-export async function getSummaryStats(): Promise<WithTrends<SummaryStats>> {
+export const getSummaryStats = async (): Promise<WithTrends<SummaryStats>> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -42,4 +41,4 @@ export async function getSummaryStats(): Promise<WithTrends<SummaryStats>> {
   ]);
 
   return withTrends(current, yesterday, lastWeek);
-}
+};

@@ -1,5 +1,8 @@
 // @vitest-environment node
+import type { logger } from "@sentry/nextjs";
 import { REDIS_KEYS, TIME_ZONE } from "@shinju-date/constants";
+import type { Pipeline, Redis } from "@upstash/redis";
+import type { track } from "@vercel/analytics/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -8,33 +11,39 @@ import {
   createVideoOnTwitch,
   createVideoOnYouTube,
   createYouTubeChannel,
-  type VideoOnTwitch,
-  type VideoOnYouTube,
 } from "@/test/factories";
+import type { VideoOnTwitch, VideoOnYouTube } from "@/test/factories";
 import { seedSupabase, setupSupabase, videoSeed } from "@/test/supabase";
+
+import { POST } from "./route";
 
 const mocks = vi.hoisted(() => ({
   pipeline: {
-    exec: vi.fn(),
-    expire: vi.fn(),
-    zincrby: vi.fn(),
+    // One of the overloads of `exec`, which is generic
+    exec: vi.fn<() => Promise<unknown[]>>(),
+    expire: vi.fn<Pipeline["expire"]>(),
+    zincrby: vi.fn<Pipeline["zincrby"]>(),
   },
-  track: vi.fn(),
+  track: vi.fn<typeof track>(),
 }));
 
-vi.mock("@/lib/redis", () => ({
-  getRedisClient: () => ({ multi: () => mocks.pipeline }),
+vi.mock(import("@/lib/redis"), () => ({
+  getRedisClient: () =>
+    ({
+      multi: () => mocks.pipeline as Partial<Pipeline> as Pipeline,
+    }) as Partial<Redis> as Redis,
 }));
 
-vi.mock("@vercel/analytics/server", () => ({
+vi.mock(import("@vercel/analytics/server"), () => ({
   track: mocks.track,
 }));
 
-vi.mock("@sentry/nextjs", () => ({
-  logger: { info: vi.fn(), warn: vi.fn() },
+vi.mock(import("@sentry/nextjs"), () => ({
+  logger: {
+    info: vi.fn<typeof logger.info>(),
+    warn: vi.fn<typeof logger.warn>(),
+  } as Partial<typeof logger> as typeof logger,
 }));
-
-import { POST } from "./route";
 
 setupSupabase();
 
@@ -78,23 +87,22 @@ const otherVideo = createVideoOnTwitch(
 );
 
 /** Saves the talents, their accounts and the given videos. */
-function seed(
+const seed = (
   videos: readonly (VideoOnTwitch | VideoOnYouTube)[],
   twitchUsers = [fooBar, fooxbar, noLogin]
-): Promise<void> {
-  return seedSupabase({
+): Promise<void> =>
+  seedSupabase({
     talents: [talentA, talentB],
     twitchUsers,
     youtubeChannels: [channel],
     ...videoSeed(videos),
   });
-}
 
 /** The videos saved before each test. */
 const SAVED_VIDEOS = [youtubeVideo, vod, clip, otherVideo];
 
-function ping(url: string): Promise<Response> {
-  return POST(
+const ping = (url: string): Promise<Response> =>
+  POST(
     new Request("https://shinju.date/api/ping", {
       body: "PING",
       headers: {
@@ -107,14 +115,12 @@ function ping(url: string): Promise<Response> {
       method: "POST",
     })
   );
-}
 
 /** The ID of the video whose click was counted, if any. */
-function countedVideoId(): unknown {
-  return mocks.pipeline.zincrby.mock.calls.find(([key]) =>
+const countedVideoId = (): unknown =>
+  mocks.pipeline.zincrby.mock.calls.find(([key]) =>
     String(key).startsWith(REDIS_KEYS.CLICK_VIDEO_PREFIX)
   )?.[2];
-}
 
 describe("POST /api/ping", () => {
   beforeEach(async () => {
@@ -296,26 +302,14 @@ describe("POST /api/ping", () => {
     const videoKey = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}20261117`;
     const talentKey = `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}20261117`;
 
-    expect(mocks.pipeline.zincrby).toHaveBeenCalledTimes(2);
-    expect(mocks.pipeline.zincrby).toHaveBeenCalledWith(
-      videoKey,
-      1,
-      otherVideo.video.id
-    );
-    expect(mocks.pipeline.zincrby).toHaveBeenCalledWith(
-      talentKey,
-      1,
-      talentB.id
-    );
-    expect(mocks.pipeline.expire).toHaveBeenCalledTimes(2);
-    expect(mocks.pipeline.expire).toHaveBeenCalledWith(
-      videoKey,
-      90 * 24 * 60 * 60
-    );
-    expect(mocks.pipeline.expire).toHaveBeenCalledWith(
-      talentKey,
-      90 * 24 * 60 * 60
-    );
+    expect(mocks.pipeline.zincrby.mock.calls).toStrictEqual([
+      [videoKey, 1, otherVideo.video.id],
+      [talentKey, 1, talentB.id],
+    ]);
+    expect(mocks.pipeline.expire.mock.calls).toStrictEqual([
+      [videoKey, 90 * 24 * 60 * 60],
+      [talentKey, 90 * 24 * 60 * 60],
+    ]);
     expect(mocks.pipeline.exec).toHaveBeenCalledOnce();
     expect(mocks.track).toHaveBeenCalledWith(
       "Link click",

@@ -6,7 +6,7 @@ export type ParseFormDataResult<T> =
   | { data: T; success: true }
   | { state: FormState; success: false };
 
-const INDEXED_KEY_PATTERN = /^(.+)\[(\d+)\]$/;
+const INDEXED_KEY_PATTERN = /^(?<name>.+)\[(?<index>\d+)\]$/u;
 
 export interface ZodErrorToFormStateOptions {
   /**
@@ -21,48 +21,40 @@ export interface ZodErrorToFormStateOptions {
  * zod の検証エラーを、項目ごとのエラーの `FormState` に直す。同じ項目の同じ文は
  * 1つにまとめる（`hiddenFields` の項目が、同じ文で `generic` に集まるときなど）
  */
-export function zodErrorToFormState(
+export const zodErrorToFormState = (
   error: z.ZodError,
   { hiddenFields = [] }: ZodErrorToFormStateOptions = {}
-): FormState {
-  return error.issues.reduce<FormState>(
-    ({ errors: previousErrors = {} }, issue) => {
-      const path = issue.path.join(".");
-      const name = hiddenFields.includes(path) ? "generic" : path;
-      const previousMessages = previousErrors[name] ?? [];
+): FormState => {
+  const errors = new Map<string, string[]>();
 
-      if (previousMessages.includes(issue.message)) {
-        return { errors: previousErrors };
-      }
+  for (const issue of error.issues) {
+    const path = issue.path.join(".");
+    const name = hiddenFields.includes(path) ? "generic" : path;
+    const previousMessages = errors.get(name) ?? [];
 
-      return {
-        errors: {
-          ...previousErrors,
-          [name]: [...previousMessages, issue.message],
-        },
-      };
-    },
-    {}
-  );
-}
+    if (!previousMessages.includes(issue.message)) {
+      errors.set(name, [...previousMessages, issue.message]);
+    }
+  }
+
+  return error.issues.length > 0 ? { errors: Object.fromEntries(errors) } : {};
+};
 
 /**
  * `ActionError` を `FormState` に直す。項目（`field`）があればその項目のエラーに、
  * なければ項目に結び付かないエラー（`generic`）にする。
  */
-export function actionErrorToFormState(error: ActionError): FormState {
-  return {
-    errors: {
-      [error.field ?? "generic"]: [error.message],
-    },
-  };
-}
+export const actionErrorToFormState = (error: ActionError): FormState => ({
+  errors: {
+    [error.field ?? "generic"]: [error.message],
+  },
+});
 
 /**
  * `FormData` をオブジェクトに直す。`readings[0]`、`readings[1]` のような
  * `名前[添字]` の形のキーは、添字の順に並べた `名前` の配列にまとめる。
  */
-function formDataToObject(formData: FormData): Record<string, unknown> {
+const formDataToObject = (formData: FormData): Record<string, unknown> => {
   const values = new Map<string, FormDataEntryValue>();
   const indexedValues = new Map<string, [number, FormDataEntryValue][]>();
 
@@ -70,7 +62,7 @@ function formDataToObject(formData: FormData): Record<string, unknown> {
     const match = INDEXED_KEY_PATTERN.exec(key);
 
     if (match) {
-      const [, name = key, index = "0"] = match;
+      const { name = key, index = "0" } = match.groups ?? {};
       const entries = indexedValues.get(name) ?? [];
 
       entries.push([Number(index), value]);
@@ -85,20 +77,20 @@ function formDataToObject(formData: FormData): Record<string, unknown> {
     ...values,
     ...[...indexedValues].map(([name, entries]) => [
       name,
-      entries.sort(([a], [b]) => a - b).map(([, value]) => value),
+      entries.toSorted(([a], [b]) => a - b).map(([, value]) => value),
     ]),
   ]);
-}
+};
 
 /**
  * `FormData` をスキーマで検証する。失敗したときは、そのまま返せる
  * `FormState` を `state` に入れて返す。
  */
-export function parseFormData<T extends z.ZodType>(
+export const parseFormData = <T extends z.ZodType>(
   schema: T,
   formData: FormData,
   options?: ZodErrorToFormStateOptions
-): ParseFormDataResult<z.output<T>> {
+): ParseFormDataResult<z.output<T>> => {
   const result = schema.safeParse(formDataToObject(formData));
 
   if (!result.success) {
@@ -109,4 +101,4 @@ export function parseFormData<T extends z.ZodType>(
   }
 
   return { data: result.data, success: true };
-}
+};

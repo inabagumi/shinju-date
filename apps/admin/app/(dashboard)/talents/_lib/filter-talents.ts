@@ -10,25 +10,34 @@ interface FilterableTalent {
   updated_at: string;
 }
 
-function matchesStatus(
+const matchesStatus = (
   talent: FilterableTalent,
   filter: TalentStatusFilter
-): boolean {
+): boolean => {
   const isDeleted = talent.deleted_at !== null;
 
   switch (filter) {
-    case "all":
+    case "all": {
       return true;
-    case "deleted":
+    }
+    case "deleted": {
       return isDeleted;
-    case "active":
+    }
+    case "active": {
       return !isDeleted && talent.status === "active";
-    case "retired":
+    }
+    case "retired": {
       return !isDeleted && talent.status === "retired";
-    case "not_deleted":
+    }
+    case "not_deleted": {
       return !isDeleted;
+    }
+    default: {
+      const unexpected: never = filter;
+      throw new Error(`Unknown status filter: ${String(unexpected)}`);
+    }
   }
-}
+};
 
 /**
  * タレントの一覧を、URL のパラメータで絞り込み、最終更新日時で並べ替える。
@@ -37,10 +46,10 @@ function matchesStatus(
  * - `search`: 名前か ID に含むもの（大文字と小文字を区別しない）
  * - `sort`: 最終更新日時の向き
  */
-export function filterTalents<T extends FilterableTalent>(
+export const filterTalents = <T extends FilterableTalent>(
   talents: readonly T[],
   { search, sort, status }: TalentSearchParams
-): T[] {
+): T[] => {
   const query = search?.toLowerCase();
 
   return talents
@@ -51,7 +60,7 @@ export function filterTalents<T extends FilterableTalent>(
           talent.name.toLowerCase().includes(query) ||
           talent.id.toLowerCase().includes(query))
     )
-    .sort((a, b) => {
+    .toSorted((a, b) => {
       const order = Temporal.Instant.compare(
         Temporal.Instant.from(a.updated_at),
         Temporal.Instant.from(b.updated_at)
@@ -59,4 +68,4 @@ export function filterTalents<T extends FilterableTalent>(
 
       return sort === "desc" ? -order : order;
     });
-}
+};

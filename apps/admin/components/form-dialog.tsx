@@ -13,7 +13,8 @@ import {
   twMerge,
 } from "@shinju-date/ui";
 import { unstable_rethrow } from "next/navigation";
-import { type ReactElement, type ReactNode, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 
 import type { FormState } from "@/components/form";
@@ -61,7 +62,7 @@ interface FormDialogFooterProps {
   submitLabel: string;
 }
 
-function FormDialogFooter({ submitLabel }: FormDialogFooterProps) {
+const FormDialogFooter = ({ submitLabel }: FormDialogFooterProps) => {
   const { pending } = useFormStatus();
 
   return (
@@ -74,14 +75,14 @@ function FormDialogFooter({ submitLabel }: FormDialogFooterProps) {
       <SubmitButton>{submitLabel}</SubmitButton>
     </div>
   );
-}
+};
 
 /**
  * 作成と編集に使う、フォームを載せたダイアログ。
  * 開くボタン、見出し、取り消しと保存のボタンを持ち、入力欄だけを `children` で
  * 受け取る。
  */
-export function FormDialog({
+export const FormDialog = ({
   trigger,
   title,
   description,
@@ -90,7 +91,7 @@ export function FormDialog({
   size = "md",
   children,
   onSuccess,
-}: FormDialogProps) {
+}: FormDialogProps) => {
   const [open, setOpen] = useState(false);
   // 開くたびにフォームを作り直して、前回の入力とエラーを消す。閉じるアニメー
   // ションの途中で開き直しても消えるよう、`key` で作り直す
@@ -123,13 +124,15 @@ export function FormDialog({
     try {
       result = await action(currentState, formData);
     } catch (error) {
+      isPendingRef.current = false;
+
       // `redirect()` などの Next.js が使う例外は、そのまま Next.js に渡す
       unstable_rethrow(error);
 
       return { error: SERVER_ACTION_FALLBACK_ERROR };
-    } finally {
-      isPendingRef.current = false;
     }
+
+    isPendingRef.current = false;
 
     if (result.success) {
       setOpen(false);
@@ -167,4 +170,4 @@ export function FormDialog({
       </DialogPortal>
     </Dialog>
   );
-}
+};

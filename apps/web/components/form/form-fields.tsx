@@ -1,8 +1,7 @@
 import { Input, Select, Textarea, twMerge } from "@shinju-date/ui";
 
-function getErrorId(inputId: string | undefined): string | undefined {
-  return inputId ? `${inputId}-error` : undefined;
-}
+const getErrorId = (inputId: string | undefined): string | undefined =>
+  inputId ? `${inputId}-error` : undefined;
 
 interface FieldLabelProps {
   htmlFor: string | undefined;
@@ -10,28 +9,26 @@ interface FieldLabelProps {
   required: boolean | undefined;
 }
 
-function FieldLabel({ htmlFor, label, required }: FieldLabelProps) {
-  return (
-    <label
-      className="mb-2 block text-meta font-semibold text-foreground"
-      htmlFor={htmlFor}
-    >
-      {label}{" "}
-      {required && (
-        <span aria-hidden="true" className="text-danger">
-          *
-        </span>
-      )}
-    </label>
-  );
-}
+const FieldLabel = ({ htmlFor, label, required }: FieldLabelProps) => (
+  <label
+    className="mb-2 block text-meta font-semibold text-foreground"
+    htmlFor={htmlFor}
+  >
+    {label}{" "}
+    {required && (
+      <span aria-hidden="true" className="text-danger">
+        *
+      </span>
+    )}
+  </label>
+);
 
 interface FieldErrorProps {
   error: string | undefined;
   id: string | undefined;
 }
 
-function FieldError({ error, id }: FieldErrorProps) {
+const FieldError = ({ error, id }: FieldErrorProps) => {
   if (!error) {
     return null;
   }
@@ -41,7 +38,7 @@ function FieldError({ error, id }: FieldErrorProps) {
       {error}
     </p>
   );
-}
+};
 
 interface InputFieldProps extends Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
@@ -52,7 +49,7 @@ interface InputFieldProps extends Omit<
   error?: string | undefined;
 }
 
-export function InputField({
+export const InputField = ({
   label,
   required,
   error,
@@ -60,7 +57,7 @@ export function InputField({
   id,
   ref,
   ...props
-}: InputFieldProps & { ref?: React.Ref<HTMLInputElement> }) {
+}: InputFieldProps & { ref?: React.Ref<HTMLInputElement> }) => {
   const inputId = id || props.name;
   const errorId = error ? getErrorId(inputId) : undefined;
 
@@ -83,7 +80,7 @@ export function InputField({
       <FieldError error={error} id={errorId} />
     </div>
   );
-}
+};
 
 interface TextareaFieldProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
@@ -91,7 +88,7 @@ interface TextareaFieldProps extends React.TextareaHTMLAttributes<HTMLTextAreaEl
   error?: string | undefined;
 }
 
-export function TextareaField({
+export const TextareaField = ({
   label,
   required,
   error,
@@ -99,7 +96,7 @@ export function TextareaField({
   id,
   ref,
   ...props
-}: TextareaFieldProps & { ref?: React.Ref<HTMLTextAreaElement> }) {
+}: TextareaFieldProps & { ref?: React.Ref<HTMLTextAreaElement> }) => {
   const inputId = id || props.name;
   const errorId = error ? getErrorId(inputId) : undefined;
 
@@ -121,7 +118,7 @@ export function TextareaField({
       <FieldError error={error} id={errorId} />
     </div>
   );
-}
+};
 
 interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
@@ -130,7 +127,7 @@ interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectElement>
   children: React.ReactNode;
 }
 
-export function SelectField({
+export const SelectField = ({
   label,
   required,
   error,
@@ -139,7 +136,7 @@ export function SelectField({
   children,
   ref,
   ...props
-}: SelectFieldProps & { ref?: React.Ref<HTMLSelectElement> }) {
+}: SelectFieldProps & { ref?: React.Ref<HTMLSelectElement> }) => {
   const inputId = id || props.name;
   const errorId = error ? getErrorId(inputId) : undefined;
 
@@ -164,20 +161,20 @@ export function SelectField({
       <FieldError error={error} id={errorId} />
     </div>
   );
-}
+};
 
 interface CheckboxFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: React.ReactNode;
   error?: string | undefined;
 }
 
-export function CheckboxField({
+export const CheckboxField = ({
   label,
   error,
   className,
   id,
   ...props
-}: CheckboxFieldProps) {
+}: CheckboxFieldProps) => {
   const inputId = id || props.name;
   const errorId = error ? getErrorId(inputId) : undefined;
 
@@ -197,4 +194,4 @@ export function CheckboxField({
       <FieldError error={error} id={errorId} />
     </div>
   );
-}
+};

@@ -1,11 +1,9 @@
 import type { youtube_v3 as youtube } from "@googleapis/youtube";
 
-import {
-  type BatchOptions,
-  requestInBatches,
-  YOUTUBE_DATA_API_MAX_RESULTS,
-} from "./batches.js";
-import { type ClientOptions, getYouTubeClient } from "./client.js";
+import { requestInBatches, YOUTUBE_DATA_API_MAX_RESULTS } from "./batches.js";
+import type { BatchOptions } from "./batches.js";
+import { getYouTubeClient } from "./client.js";
+import type { ClientOptions } from "./client.js";
 import type { FilteredYouTubeVideo } from "./types.js";
 
 interface GetVideosOptions extends ClientOptions, BatchOptions {
@@ -23,21 +21,18 @@ interface GetVideoIdsOptions extends ClientOptions, BatchOptions {
  * `contentDetails` is not checked: the requests ask for that part, so YouTube
  * returns it with every video.
  */
-export function isFilteredYouTubeVideo(
+export const isFilteredYouTubeVideo = (
   video: youtube.Schema$Video
-): video is FilteredYouTubeVideo {
-  return (
-    typeof video.id === "string" &&
-    typeof video.snippet?.publishedAt === "string"
-  );
-}
+): video is FilteredYouTubeVideo =>
+  typeof video.id === "string" &&
+  typeof video.snippet?.publishedAt === "string";
 
 /**
  * Gets YouTube videos by their IDs
  * @param options - The options for getting videos
- * @yields YouTube video objects
+ * @yields {FilteredYouTubeVideo} YouTube video objects
  */
-export async function* getVideos({
+export const getVideos = async function* getVideos({
   client = getYouTubeClient(),
   ids,
   schedule,
@@ -53,16 +48,16 @@ export async function* getVideos({
 
     return (items ?? []).filter(isFilteredYouTubeVideo);
   });
-}
+};
 
 /**
  * Gets the IDs of the videos that still exist on YouTube.
  * Requests only the `id` part, so it is the cheapest way to detect videos
  * that were deleted or made private (those are omitted from the response).
  * @param options - The options for getting video IDs
- * @yields IDs of the videos YouTube returned
+ * @yields {string} IDs of the videos YouTube returned
  */
-export async function* getVideoIds({
+export const getVideoIds = async function* getVideoIds({
   client = getYouTubeClient(),
   ids,
   schedule,
@@ -80,4 +75,4 @@ export async function* getVideoIds({
       typeof item.id === "string" ? [item.id] : []
     );
   });
-}
+};

@@ -1,7 +1,8 @@
 import { HttpResponse } from "msw";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { TalentAccount } from "../database/index.js";
+import type { ErrorReporter } from "../../types.js";
+import type { TalentAccount } from "../database/talents.js";
 import { createTestContext } from "../testing/context.js";
 import { createImage, mockStorage, serveImage } from "../testing/images.js";
 import {
@@ -10,7 +11,8 @@ import {
   setupSupabase,
 } from "../testing/supabase.js";
 import { createThumbnail, THUMBNAILS_BUCKET } from "../thumbnails/thumbnail.js";
-import { type NewVideoAdapter, saveVideoWithThumbnail } from "./save-video.js";
+import { saveVideoWithThumbnail } from "./save-video.js";
+import type { NewVideoAdapter } from "./save-video.js";
 
 interface FakeVideo {
   id: string;
@@ -20,7 +22,7 @@ interface FakeVideo {
 }
 
 const supabase = setupSupabase();
-const reportError = vi.fn();
+const reportError = vi.fn<ErrorReporter>();
 const context = createTestContext({
   fetcher: null,
   reportError,
@@ -58,14 +60,12 @@ const adapter: NewVideoAdapter<FakeVideo> = {
 
 const THUMBNAIL_URL = "https://img.example.test/video-1.jpg";
 
-function createFakeVideo(overrides: Partial<FakeVideo> = {}): FakeVideo {
-  return {
-    id: "video-1",
-    thumbnailUrl: THUMBNAIL_URL,
-    title: "Video 1",
-    ...overrides,
-  };
-}
+const createFakeVideo = (overrides: Partial<FakeVideo> = {}): FakeVideo => ({
+  id: "video-1",
+  thumbnailUrl: THUMBNAIL_URL,
+  title: "Video 1",
+  ...overrides,
+});
 
 interface Row {
   id: string;
@@ -78,7 +78,7 @@ interface Row {
  * inserts nothing and returns `NULL` for a platform video ID that is already
  * saved, like the function does.
  */
-function mockDatabase() {
+const mockDatabase = () => {
   const rows = {
     thumbnails: new Map<string, Row>(),
     videos: new Map<string, Row>(),
@@ -87,15 +87,19 @@ function mockDatabase() {
   };
 
   supabase.respond(({ body, method, query, table }) => {
-    const id = query["id"]?.replace(/^eq\./, "");
+    const id = query["id"]?.replace(/^eq\./u, "");
 
     switch (`${method} ${table}`) {
-      case "POST thumbnails":
+      case "POST thumbnails": {
         rows.thumbnails.set((body as Row).id, body as Row);
         return [];
-      case "DELETE thumbnails":
-        if (id) rows.thumbnails.delete(id);
+      }
+      case "DELETE thumbnails": {
+        if (id) {
+          rows.thumbnails.delete(id);
+        }
         return [];
+      }
       case "POST rpc/insert_video": {
         const { p_platform_video, p_video } = body as {
           p_platform_video: { youtube_video_id: string };
@@ -112,15 +116,16 @@ function mockDatabase() {
         rows.youtubeVideos.set(p_platform_video.youtube_video_id, videoId);
         return HttpResponse.json(videoId);
       }
-      default:
+      default: {
         return [];
+      }
     }
   });
 
   return rows;
-}
+};
 
-describe("saveVideoWithThumbnail", () => {
+describe(saveVideoWithThumbnail, () => {
   let image: Buffer;
 
   beforeAll(async () => {
@@ -138,31 +143,33 @@ describe("saveVideoWithThumbnail", () => {
 
     await expect(
       saveVideoWithThumbnail(context, adapter, createFakeVideo(), account)
-    ).resolves.toBe(true);
+    ).resolves.toBeTruthy();
 
     const [thumbnail] = [...rows.thumbnails.values()];
     const [inserted] = supabase.insertedVideos();
 
-    expect(storage.uploads).toEqual([
-      expect.objectContaining({ path: expect.stringMatching(/^video-1\//) }),
+    expect(storage.uploads).toStrictEqual([
+      expect.objectContaining({ path: expect.stringMatching(/^video-1\//u) }),
     ]);
-    expect(inserted?.video).toEqual({
-      created_at: "2024-05-01T12:00:00Z",
-      duration: "PT10M",
+    expect(inserted).toStrictEqual({
       platform: "youtube",
-      published_at: "2024-05-01T10:00:00Z",
-      status: "PUBLISHED",
-      talent_id: "talent-1",
-      thumbnail_id: thumbnail?.id,
-      title: "Video 1",
-      updated_at: "2024-05-01T12:00:00Z",
-      video_kind: "standard",
-      visible: true,
-    });
-    expect(inserted?.platform).toBe("youtube");
-    expect(inserted?.platformVideo).toEqual({
-      youtube_channel_id: "channel-row-1",
-      youtube_video_id: "video-1",
+      platformVideo: {
+        youtube_channel_id: "channel-row-1",
+        youtube_video_id: "video-1",
+      },
+      video: {
+        created_at: "2024-05-01T12:00:00Z",
+        duration: "PT10M",
+        platform: "youtube",
+        published_at: "2024-05-01T10:00:00Z",
+        status: "PUBLISHED",
+        talent_id: "talent-1",
+        thumbnail_id: thumbnail?.id,
+        title: "Video 1",
+        updated_at: "2024-05-01T12:00:00Z",
+        video_kind: "standard",
+        visible: true,
+      },
     });
     expect(rows.videos.size).toBe(1);
     expect(reportError).not.toHaveBeenCalled();
@@ -179,7 +186,7 @@ describe("saveVideoWithThumbnail", () => {
         createFakeVideo({ thumbnailUrl: null }),
         account
       )
-    ).resolves.toBe(true);
+    ).resolves.toBeTruthy();
 
     expect(storage.uploads).toHaveLength(0);
     expect(rows.thumbnails.size).toBe(0);
@@ -198,22 +205,24 @@ describe("saveVideoWithThumbnail", () => {
       saveVideoWithThumbnail(context, adapter, createFakeVideo(), account),
     ]);
 
-    expect(results.sort()).toEqual([false, true]);
-
-    // Each run stored a thumbnail; the run that lost removed its own.
     const [video] = [...rows.videos.values()];
     const kept = rows.thumbnails.get(video?.thumbnail_id ?? "");
     const uploadedPaths = storage.uploads.map((upload) => upload.path);
+    const lostPaths = uploadedPaths.filter((path) => path !== kept?.path);
 
-    expect(rows.videos.size).toBe(1);
+    expect({
+      saved: results.toSorted(),
+      thumbnails: rows.thumbnails.size,
+      videos: rows.videos.size,
+    }).toStrictEqual({ saved: [false, true], thumbnails: 1, videos: 1 });
     // The video that is left is the one its platform row points at.
-    expect(rows.youtubeVideos).toEqual(new Map([["video-1", video?.id]]));
-    expect(rows.thumbnails.size).toBe(1);
-    expect(uploadedPaths).toHaveLength(2);
-    expect(uploadedPaths).toContain(kept?.path);
-    expect(storage.removed).toEqual([
-      uploadedPaths.filter((path) => path !== kept?.path),
-    ]);
+    expect(rows.youtubeVideos).toStrictEqual(new Map([["video-1", video?.id]]));
+    // Each run stored a thumbnail; the run that lost removed its own.
+    expect({
+      lost: lostPaths.length,
+      uploaded: uploadedPaths.length,
+    }).toStrictEqual({ lost: 1, uploaded: 2 });
+    expect(storage.removed).toStrictEqual([lostPaths]);
     expect(reportError).not.toHaveBeenCalled();
   });
 
@@ -230,7 +239,7 @@ describe("saveVideoWithThumbnail", () => {
     ).rejects.toThrow("null value in column");
 
     expect(supabase.written("DELETE", "thumbnails")).toHaveLength(1);
-    expect(storage.removed).toEqual([[storage.uploads[0]?.path]]);
+    expect(storage.removed).toStrictEqual([[storage.uploads[0]?.path]]);
     expect(reportError).not.toHaveBeenCalled();
   });
 });

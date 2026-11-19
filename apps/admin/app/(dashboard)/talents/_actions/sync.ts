@@ -14,11 +14,10 @@ import { touchTalent } from "@/lib/talent-accounts";
 
 import {
   accountsNotFoundError,
-  type PlatformSyncOutcome,
-  type SyncResult,
   toSyncResult,
   toSyncSummary,
 } from "../_lib/sync-result";
+import type { PlatformSyncOutcome, SyncResult } from "../_lib/sync-result";
 import { talentIdSchema } from "../_lib/talent-schema";
 
 type Platform = Enums<"platform_type">;
@@ -30,11 +29,11 @@ type Talent = Pick<Tables<"talents">, "id" | "name">;
  * 変更があれば、タレントの更新日時を進め、監査ログを残し、再検証する。
  * 例外は投げず、失敗は `failed` として返す（まとめて同期するとき、片方の失敗でもう片方を止めない）。
  */
-async function syncPlatform(
+const syncPlatform = async (
   { supabaseClient }: AuthenticatedContext,
   talent: Talent,
   platform: Platform
-): Promise<PlatformSyncOutcome> {
+): Promise<PlatformSyncOutcome> => {
   try {
     const now = Temporal.Now.instant();
     const scraper = createScraper(platform);
@@ -87,14 +86,14 @@ async function syncPlatform(
 
     return { status: "failed" };
   }
-}
+};
 
 /** タレントの ID を検証し、削除されていないタレントを読み、`run` で同期して結果を返す。 */
-async function syncTalent(
+const syncTalent = async (
   { supabaseClient }: AuthenticatedContext,
   id: string,
   run: (talent: Talent) => Promise<SyncResult>
-): Promise<SyncResult> {
+): Promise<SyncResult> => {
   const talentId = parseActionInput(talentIdSchema, id);
   const { data: talent, error } = await supabaseClient
     .from("talents")
@@ -112,7 +111,7 @@ async function syncTalent(
   }
 
   return run(talent);
-}
+};
 
 /**
  * タレントに紐づく YouTube チャンネルを YouTube に合わせる（名前、ハンドル、アイコン）。

@@ -51,7 +51,10 @@ export const exportSearchParamsSchema = z
       .string()
       .optional()
       .transform((val) => {
-        if (!val) return 50;
+        if (!val) {
+          return 50;
+        }
+        // oxlint-disable-next-line unicorn/prefer-number-coercion -- parseInt() reads the leading digits of values such as "10abc", which Number() rejects
         const num = Number.parseInt(val, 10);
         return Number.isNaN(num) || num <= 0 ? 50 : Math.min(num, 1000);
       }),
@@ -67,7 +70,9 @@ export const exportSearchParamsSchema = z
     for (const key of DATE_KEYS) {
       const value = data[key];
 
-      if (value === undefined) continue;
+      if (value === undefined) {
+        continue;
+      }
 
       const date = parseDateFormat(value);
       const error = date ? validateDate(date) : "invalid-format";
@@ -92,7 +97,9 @@ export const exportSearchParamsSchema = z
     }
 
     // `date` takes the place of the range
-    if (data.date || !dates.from || !dates.to) return;
+    if (data.date || !dates.from || !dates.to) {
+      return;
+    }
 
     const rangeError = validateRange(dates.from, dates.to);
 

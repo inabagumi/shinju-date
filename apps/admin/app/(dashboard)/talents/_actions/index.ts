@@ -9,12 +9,13 @@ import { revalidatePath } from "next/cache";
 
 import {
   ActionError,
-  type ActionResult,
   adminAction,
   adminFormAction,
   parseActionInput,
 } from "@/lib/action";
-import { type AuditAction, createAuditLog } from "@/lib/audit-log";
+import type { ActionResult } from "@/lib/action";
+import { createAuditLog } from "@/lib/audit-log";
+import type { AuditAction } from "@/lib/audit-log";
 import type { AuthenticatedContext } from "@/lib/auth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isNotFoundError } from "@/lib/supabase/query";
@@ -35,12 +36,12 @@ export const createTalentAction = adminFormAction(
   ) => {
     // タレントを作る前に、チャンネルを解決し、登録済みでないことを確かめる
     const account =
-      channelInput !== undefined
-        ? await resolveAccount("youtube", {
+      channelInput === undefined
+        ? null
+        : await resolveAccount("youtube", {
             input: channelInput,
             supabaseClient,
-          })
-        : null;
+          });
 
     const { data: newTalent, error } = await supabaseClient
       .from("talents")
@@ -95,7 +96,7 @@ export const createTalentAction = adminFormAction(
  * チャンネルを結び付けられなかったタレントを削除し、作成をなかったことにする。
  * `talents` には管理者向けの DELETE のポリシーがないため、サービスロールのクライアントを使う。
  */
-async function deleteTalentSafely(id: string): Promise<void> {
+const deleteTalentSafely = async (id: string): Promise<void> => {
   const { error } = await getSupabaseAdminClient()
     .from("talents")
     .delete()
@@ -104,7 +105,7 @@ async function deleteTalentSafely(id: string): Promise<void> {
   if (error) {
     logger.error("作成したタレントの削除に失敗しました", { error, id });
   }
-}
+};
 
 export const updateTalentAction = adminFormAction(
   "updateTalentAction",
@@ -206,11 +207,11 @@ const TALENT_LIFECYCLE_TRANSITIONS = {
  * タレントの削除・復活・引退・アクティブ化に共通する処理。
  * 遷移前の状態を条件に含めて更新し、監査ログの記録とキャッシュの再検証を行う。
  */
-async function transitionTalentLifecycle(
+const transitionTalentLifecycle = async (
   { supabaseClient }: AuthenticatedContext,
   talentId: string,
   transition: TalentLifecycleTransition
-): Promise<ActionResult> {
+): Promise<ActionResult> => {
   const id = parseActionInput(talentIdSchema, talentId);
   const now = toDBString(Temporal.Now.instant());
 
@@ -253,7 +254,7 @@ async function transitionTalentLifecycle(
   await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS]);
 
   return { success: true };
-}
+};
 
 export const deleteTalentAction = adminAction(
   "deleteTalentAction",

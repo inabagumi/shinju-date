@@ -5,35 +5,40 @@ import type { SummaryStats } from "@shinju-date/dashboard-stats";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getRedisClient } from "@/lib/redis";
-import {
-  postgresError,
-  type SupabaseRequest,
-  setupSupabase,
-  withCount,
-} from "@/test/supabase";
+import type {
+  createSupabaseServerClient,
+  TypedSupabaseClient,
+} from "@/lib/supabase";
+import { createMockRedisClient } from "@/test/mock-redis-pipeline";
+import { postgresError, setupSupabase, withCount } from "@/test/supabase";
+import type { SupabaseRequest } from "@/test/supabase";
 
 import { getSummaryStats } from "./get-summary-stats";
-import {
-  VIDEO_SUMMARY_FILTERS,
-  type VideoSummaryFilter,
-  type VideoSummaryTile,
+import { VIDEO_SUMMARY_FILTERS } from "./video-summary-filters";
+import type {
+  VideoSummaryFilter,
+  VideoSummaryTile,
 } from "./video-summary-filters";
 
 const mocks = vi.hoisted(() => ({
-  createSupabaseServerClient: vi.fn(),
+  createSupabaseServerClient: vi.fn<() => Promise<TypedSupabaseClient>>(),
 }));
 
-vi.mock("next/cache", () => ({
-  cacheLife: vi.fn(),
+vi.mock(import("next/cache"), () => ({
+  cacheLife: vi.fn<() => void>(),
 }));
-vi.mock("@shinju-date/logger", () => ({
-  logger: { error: vi.fn(), warn: vi.fn() },
+vi.mock(import("@shinju-date/logger"), async () => {
+  const { createMockLogger } = await import("@/test/logger");
+
+  return { logger: createMockLogger() };
+});
+vi.mock(import("@/lib/supabase"), () => ({
+  // Always resolves to the client of the default database
+  createSupabaseServerClient:
+    mocks.createSupabaseServerClient as typeof createSupabaseServerClient,
 }));
-vi.mock("@/lib/supabase", () => ({
-  createSupabaseServerClient: mocks.createSupabaseServerClient,
-}));
-vi.mock("@/lib/redis", () => ({
-  getRedisClient: vi.fn(),
+vi.mock(import("@/lib/redis"), () => ({
+  getRedisClient: vi.fn<typeof getRedisClient>(),
 }));
 
 const supabase = setupSupabase();
@@ -50,7 +55,7 @@ const current: SummaryStats = {
 };
 
 /** Read the conditions of a count of the videos back from its request. */
-function readVideoFilter({ query }: SupabaseRequest): VideoSummaryFilter {
+const readVideoFilter = ({ query }: SupabaseRequest): VideoSummaryFilter => {
   const { deleted_at: deletedAt, status, visible } = query;
 
   if (deletedAt !== "is.null" && deletedAt !== "not.is.null") {
@@ -63,20 +68,20 @@ function readVideoFilter({ query }: SupabaseRequest): VideoSummaryFilter {
       ? {
           status: (status.startsWith("in.(")
             ? status.slice("in.(".length, -1).split(",")
-            : [status.replace(/^eq\./, "")]) as NonNullable<
+            : [status.replace(/^eq\./u, "")]) as NonNullable<
             VideoSummaryFilter["status"]
           >,
         }
       : {}),
     ...(visible ? { visible: visible === "eq.true" } : {}),
   };
-}
+};
 
 /**
  * Answer the counts of the videos by the tile whose link lists the same
  * videos. A count with conditions that no tile links to fails the test.
  */
-function answerVideoCount(request: SupabaseRequest): Response {
+const answerVideoCount = (request: SupabaseRequest): Response => {
   const filter = readVideoFilter(request);
   const tile = (Object.keys(VIDEO_SUMMARY_FILTERS) as VideoSummaryTile[]).find(
     (key) => isDeepStrictEqual(VIDEO_SUMMARY_FILTERS[key], filter)
@@ -87,21 +92,22 @@ function answerVideoCount(request: SupabaseRequest): Response {
   }
 
   return withCount([], current[tile]);
-}
+};
 
 /** Keep the snapshots of the given days (`YYYYMMDD`) in Redis. */
-function mockSnapshots(snapshots: Record<string, unknown> = {}) {
-  const get = vi.fn(
-    async (key: string) =>
+const mockSnapshots = (snapshots: Record<string, unknown> = {}) => {
+  const get = vi.fn<(key: string) => Promise<unknown>>((key) =>
+    Promise.resolve(
       snapshots[key.slice(REDIS_KEYS.SUMMARY_STATS_PREFIX.length)] ?? null
+    )
   );
 
-  vi.mocked(getRedisClient).mockReturnValue({ get } as never);
+  vi.mocked(getRedisClient).mockReturnValue(createMockRedisClient({ get }));
 
   return get;
-}
+};
 
-describe("getSummaryStats", () => {
+describe(getSummaryStats, () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.createSupabaseServerClient.mockResolvedValue(supabase.client);
@@ -127,7 +133,7 @@ describe("getSummaryStats", () => {
       Object.fromEntries(
         Object.entries(result).map(([key, trend]) => [key, trend.current])
       )
-    ).toEqual(current);
+    ).toStrictEqual(current);
   });
 
   it("runs one set of the count queries", async () => {
@@ -135,7 +141,9 @@ describe("getSummaryStats", () => {
 
     await getSummaryStats();
 
-    expect(supabase.requests.map(({ table }) => table).sort()).toEqual([
+    expect(
+      supabase.requests.map(({ table }) => table).toSorted()
+    ).toStrictEqual([
       "talents",
       "terms",
       "videos",
@@ -154,16 +162,16 @@ describe("getSummaryStats", () => {
 
     const result = await getSummaryStats();
 
-    expect(get.mock.calls.map(([key]) => key).sort()).toEqual([
+    expect(get.mock.calls.map(([key]) => key).toSorted()).toStrictEqual([
       `${REDIS_KEYS.SUMMARY_STATS_PREFIX}20251106`,
       `${REDIS_KEYS.SUMMARY_STATS_PREFIX}20251112`,
     ]);
-    expect(result.totalVideos).toEqual({
+    expect(result.totalVideos).toStrictEqual({
       current: 31,
       dayChange: 3,
       weekChange: 11,
     });
-    expect(result.visibleVideos).toEqual({
+    expect(result.visibleVideos).toStrictEqual({
       current: 25,
       dayChange: 0,
       weekChange: -5,
@@ -189,7 +197,7 @@ describe("getSummaryStats", () => {
 
     const result = await getSummaryStats();
 
-    expect(result.totalVideos).toEqual({
+    expect(result.totalVideos).toStrictEqual({
       current: 31,
       dayChange: null,
       weekChange: null,

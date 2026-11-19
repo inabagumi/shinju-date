@@ -1,4 +1,6 @@
-import { CACHE_TAGS, type CacheTag } from "@shinju-date/constants";
+import { CACHE_TAGS } from "@shinju-date/constants";
+import type { CacheTag } from "@shinju-date/constants";
+import type { logger } from "@shinju-date/logger";
 import {
   afterEach,
   beforeEach,
@@ -11,14 +13,16 @@ import {
 
 import { revalidateTags } from "./index.js";
 
-vi.mock("@shinju-date/logger", () => ({
+vi.mock(import("@shinju-date/logger"), () => ({
   logger: {
-    error: vi.fn(),
-    info: vi.fn(),
+    debug: vi.fn<typeof logger.debug>(),
+    error: vi.fn<typeof logger.error>(),
+    info: vi.fn<typeof logger.info>(),
+    warn: vi.fn<typeof logger.warn>(),
   },
 }));
 
-describe("revalidateTags", () => {
+describe(revalidateTags, () => {
   const fetchMock = vi.fn<typeof fetch>();
 
   beforeEach(() => {

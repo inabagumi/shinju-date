@@ -1,27 +1,29 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { unstable_rethrow } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { signOutAction } from "@/app/login/_actions/sign-out";
 import { ActionToastProvider } from "@/components/action-toast";
 
 const mocks = vi.hoisted(() => ({
   pathname: "/videos",
-  signOutAction: vi.fn(),
+  signOutAction: vi.fn<typeof signOutAction>(),
 }));
 
-vi.mock("next/navigation", () => ({
-  unstable_rethrow: vi.fn(),
+vi.mock(import("next/navigation"), () => ({
+  unstable_rethrow: vi.fn<typeof unstable_rethrow>(),
   usePathname: () => mocks.pathname,
 }));
 
-vi.mock("@/app/login/_actions/sign-out", () => ({
+vi.mock(import("@/app/login/_actions/sign-out"), () => ({
   signOutAction: mocks.signOutAction,
 }));
 
 const { NavigationBar } = await import("./navigation-bar");
 
-function renderNavigationBar() {
-  return render(
+const renderNavigationBar = () =>
+  render(
     <ActionToastProvider>
       <NavigationBar />
       <main>
@@ -29,7 +31,6 @@ function renderNavigationBar() {
       </main>
     </ActionToastProvider>
   );
-}
 
 describe("NavigationBar", () => {
   beforeEach(() => {
@@ -121,13 +122,14 @@ describe("NavigationBar", () => {
 
     const item = screen.getByRole("menuitem", { name: "ログアウト" });
 
-    expect(mocks.signOutAction).toHaveBeenCalledTimes(1);
+    expect(mocks.signOutAction).toHaveBeenCalledOnce();
     // 終わるまでメニューを開いたままにし、項目を無効にする
     expect(item).toHaveAttribute("aria-disabled", "true");
 
     // 終わらないままだと、ほかのテストの transition も終わらなくなる
     await act(async () => {
       result.resolve({});
+      await result.promise;
     });
 
     expect(item).not.toHaveAttribute("aria-disabled");
@@ -144,8 +146,8 @@ describe("NavigationBar", () => {
     await user.click(screen.getByRole("button", { name: "ユーザーメニュー" }));
     await user.click(screen.getByRole("menuitem", { name: "ログアウト" }));
 
-    expect(
-      await screen.findByText("ログアウトに失敗しました。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("ログアウトに失敗しました。")
+    ).resolves.toBeInTheDocument();
   });
 });

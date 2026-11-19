@@ -8,8 +8,8 @@ const MAX_LENGTH = 40;
  * that an emoji at the end is not cut in half. Half of a surrogate pair is
  * not valid in `jsonb`, and the audit log entry would not be recorded.
  */
-export function createEntityNameFromMessage(message: string): string {
-  const characters = Array.from(message.replaceAll(/\s+/g, " ").trim());
+export const createEntityNameFromMessage = (message: string): string => {
+  const characters = [...message.replaceAll(/\s+/gu, " ").trim()];
 
   return characters.slice(0, MAX_LENGTH).join("");
-}
+};

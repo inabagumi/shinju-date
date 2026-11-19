@@ -1,15 +1,11 @@
-import {
-  isValidElement,
-  type ReactElement,
-  type ReactNode,
-  Suspense,
-} from "react";
+import { isValidElement, Suspense } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 /**
  * サーバーコンポーネントの戻り値をたどり、最初の `<Suspense>` の子を返す。
  * ページが Suspense の中で描く部品を、レンダリングせずに取り出すために使う
  */
-export function findSuspenseChildren(node: ReactNode): unknown {
+export const findSuspenseChildren = (node: ReactNode): unknown => {
   if (!isValidElement(node)) {
     return undefined;
   }
@@ -29,14 +25,14 @@ export function findSuspenseChildren(node: ReactNode): unknown {
   }
 
   return undefined;
-}
+};
 
 /**
  * サーバーコンポーネントの戻り値をたどり、すべての `<Suspense>` の子を、
  * 現れた順に返す。`children` だけでなく、ほかの props（`PageHeader` の
  * `description` など）に渡した要素もたどる
  */
-export function findAllSuspenseChildren(node: ReactNode): unknown[] {
+export const findAllSuspenseChildren = (node: ReactNode): unknown[] => {
   if (Array.isArray(node)) {
     return node.flatMap((child: ReactNode) => findAllSuspenseChildren(child));
   }
@@ -57,17 +53,20 @@ export function findAllSuspenseChildren(node: ReactNode): unknown[] {
   return Object.values(props).flatMap((value) =>
     findAllSuspenseChildren(value as ReactNode)
   );
-}
+};
 
 /**
  * 非同期のサーバーコンポーネントの要素を、関数として呼んで実行する
  */
-export async function runServerComponent(element: unknown): Promise<ReactNode> {
+export const runServerComponent = async (
+  element: unknown
+): Promise<ReactNode> => {
   if (!isValidElement(element) || typeof element.type !== "function") {
     throw new Error("The element is not a function component.");
   }
 
   const component = element.type as (props: unknown) => Promise<ReactNode>;
+  const node = await component(element.props);
 
-  return component(element.props);
-}
+  return node;
+};

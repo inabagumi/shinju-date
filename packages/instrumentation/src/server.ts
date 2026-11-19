@@ -20,16 +20,16 @@ export interface RegisterServerOptions {
  * The checks on `NEXT_RUNTIME` are written out in full, so that Next.js can
  * drop the code of the other runtime when it builds the bundle.
  */
-export async function registerServer({
+export const registerServer = async ({
   enableMsw,
   profileSessionSampleRate,
   tracesSampleRate,
-}: RegisterServerOptions): Promise<void> {
-  if (enableMsw) {
-    if (process.env["NEXT_RUNTIME"] === "nodejs") {
-      const { startServer } = await import("@shinju-date/msw-handlers/server");
-      startServer();
-    }
+}: RegisterServerOptions): Promise<void> => {
+  // The check on NEXT_RUNTIME comes first, so that the bundle of the Edge
+  // runtime folds the condition to `false` and drops the import.
+  if (process.env["NEXT_RUNTIME"] === "nodejs" && enableMsw) {
+    const { startServer } = await import("@shinju-date/msw-handlers/server");
+    startServer();
   }
 
   const dsn = process.env["NEXT_PUBLIC_SENTRY_DSN"];
@@ -91,15 +91,15 @@ export async function registerServer({
       ],
     });
   }
-}
+};
 
 /**
  * `onRequestError` of `instrumentation.ts`. Sends the error of a request to
  * Sentry when `NEXT_PUBLIC_SENTRY_DSN` is set.
  */
-export async function onRequestError(
+export const onRequestError = async (
   ...args: Parameters<typeof captureRequestError>
-): Promise<void> {
+): Promise<void> => {
   const dsn = process.env["NEXT_PUBLIC_SENTRY_DSN"];
 
   if (dsn) {
@@ -107,4 +107,4 @@ export async function onRequestError(
 
     Sentry.captureRequestError(...args);
   }
-}
+};

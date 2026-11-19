@@ -7,7 +7,7 @@ import { getRedisClient } from "@/lib/redis";
 /**
  * メンテナンスモードが有効かどうかを返す。読めなかったときは、無効として扱う。
  */
-export async function getMaintenanceModeStatus(): Promise<boolean> {
+export const getMaintenanceModeStatus = async (): Promise<boolean> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -20,4 +20,4 @@ export async function getMaintenanceModeStatus(): Promise<boolean> {
     logger.error("メンテナンスモードの状態の取得に失敗しました", { error });
     return false;
   }
-}
+};

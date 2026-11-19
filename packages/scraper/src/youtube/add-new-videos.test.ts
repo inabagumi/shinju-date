@@ -9,21 +9,23 @@ import {
   setupSupabase,
 } from "../internal/testing/supabase.js";
 import { createVideo, YOUTUBE_TALENTS } from "../internal/testing/youtube.js";
+import type * as Thumbnails from "../internal/thumbnails/index.js";
 import {
   createThumbnail,
   removeThumbnail,
 } from "../internal/thumbnails/index.js";
+import type { ErrorReporter } from "../types.js";
 import { addNewYouTubeVideos } from "./add-new-videos.js";
 import type { YouTubeFetcher } from "./fetcher.js";
 
-vi.mock("../internal/thumbnails/index.js", () => ({
-  createThumbnail: vi.fn(),
-  removeThumbnail: vi.fn(),
+vi.mock(import("../internal/thumbnails/index.js"), () => ({
+  createThumbnail: vi.fn<typeof Thumbnails.createThumbnail>(),
+  removeThumbnail: vi.fn<typeof Thumbnails.removeThumbnail>(),
 }));
 
 const supabase = setupSupabase();
 const now = Temporal.Instant.from("2024-05-01T12:00:00.500Z");
-const reportError = vi.fn();
+const reportError = vi.fn<ErrorReporter>();
 const createContext = <T>(fetcher: T) =>
   createTestContext({
     fetcher,
@@ -32,7 +34,7 @@ const createContext = <T>(fetcher: T) =>
     supabaseClient: supabase.supabaseClient,
   });
 
-describe("addNewYouTubeVideos", () => {
+describe(addNewYouTubeVideos, () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(createThumbnail).mockResolvedValue({
@@ -63,23 +65,25 @@ describe("addNewYouTubeVideos", () => {
 
     const [inserted] = supabase.insertedVideos();
 
-    expect(inserted?.video).toEqual({
-      created_at: "2024-05-01T12:00:00Z",
-      duration: "PT10M",
+    expect(inserted).toStrictEqual({
       platform: "youtube",
-      published_at: "2024-05-01T10:00:00Z",
-      status: "PUBLISHED",
-      talent_id: "talent-1",
-      thumbnail_id: "thumb-1",
-      title: "Video new-1",
-      updated_at: "2024-05-01T12:00:00Z",
-      video_kind: "standard",
-      visible: true,
-    });
-    expect(inserted?.platform).toBe("youtube");
-    expect(inserted?.platformVideo).toEqual({
-      youtube_channel_id: "channel-row-1",
-      youtube_video_id: "new-1",
+      platformVideo: {
+        youtube_channel_id: "channel-row-1",
+        youtube_video_id: "new-1",
+      },
+      video: {
+        created_at: "2024-05-01T12:00:00Z",
+        duration: "PT10M",
+        platform: "youtube",
+        published_at: "2024-05-01T10:00:00Z",
+        status: "PUBLISHED",
+        talent_id: "talent-1",
+        thumbnail_id: "thumb-1",
+        title: "Video new-1",
+        updated_at: "2024-05-01T12:00:00Z",
+        video_kind: "standard",
+        visible: true,
+      },
     });
     expect(createThumbnail).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -109,8 +113,8 @@ describe("addNewYouTubeVideos", () => {
       supabase
         .insertedVideos()
         .map(({ platformVideo }) => platformVideo)
-        .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))
-    ).toEqual(
+        .toSorted((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))
+    ).toStrictEqual(
       expect.arrayContaining([
         expect.objectContaining({
           youtube_channel_id: "channel-row-1",
@@ -208,7 +212,7 @@ describe("addNewYouTubeVideos", () => {
       }),
       { youtubeVideoId: "bad-1" }
     );
-    expect(removeThumbnail).toHaveBeenCalledTimes(1);
+    expect(removeThumbnail).toHaveBeenCalledOnce();
   });
 
   it("reports channels that could not be read and handles the rest", async () => {

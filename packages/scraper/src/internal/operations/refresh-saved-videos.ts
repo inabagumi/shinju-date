@@ -1,8 +1,8 @@
 import type { VideoFields, WriteContext } from "../../types.js";
 import { countChanges } from "../concurrency.js";
 import { RECENT_VIDEO_COUNT, WRITE_CONCURRENCY } from "../constants.js";
-import { updateVideo } from "../database/index.js";
-import { DatabaseError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
+import { updateVideo } from "../database/videos.js";
 import type { PlatformAdapter, SavedVideoBase } from "../platform.js";
 import { deleteMissingVideos } from "./delete-missing-videos.js";
 import { diffVideoFields } from "./diff-video-fields.js";
@@ -42,11 +42,11 @@ export interface VideoRefresh {
 /**
  * Loads the videos a refresh looks at, for active talents only.
  */
-async function getVideosToRefresh<TVideo, TSaved extends SavedVideoBase>(
+const getVideosToRefresh = async <TVideo, TSaved extends SavedVideoBase>(
   { supabaseClient }: WriteContext,
   adapter: PlatformAdapter<TVideo, TSaved>,
   scope: RefreshScope
-): Promise<TSaved[]> {
+): Promise<TSaved[]> => {
   const query = supabaseClient
     .from("videos")
     // The talent is embedded only to filter on its status.
@@ -74,19 +74,19 @@ async function getVideosToRefresh<TVideo, TSaved extends SavedVideoBase>(
   // `savedVideoColumns` is a plain string here, so the rows cannot be typed
   // from it; the adapter guarantees they are `TSaved`.
   return data as unknown as TSaved[];
-}
+};
 
 /**
  * Writes what changed on the platform to a saved video, then runs
  * `afterRefresh`.
  */
-async function applyRefresh<TVideo, TSaved extends SavedVideoBase>(
+const applyRefresh = async <TVideo, TSaved extends SavedVideoBase>(
   { now, supabaseClient }: WriteContext,
   adapter: PlatformAdapter<TVideo, TSaved>,
   saved: TSaved,
   fetched: TVideo,
   { afterRefresh }: RefreshVideoHooks<TVideo, TSaved>
-): Promise<VideoRefresh> {
+): Promise<VideoRefresh> => {
   const changes = diffVideoFields(saved, adapter.toFields(fetched, now));
   const fieldsChanged = Object.keys(changes).length > 0;
 
@@ -97,7 +97,7 @@ async function applyRefresh<TVideo, TSaved extends SavedVideoBase>(
   const hookChanged = afterRefresh ? await afterRefresh(saved, fetched) : false;
 
   return { changed: fieldsChanged || hookChanged, changes };
-}
+};
 
 /**
  * Brings saved videos in line with the platform: updates what changed
@@ -106,11 +106,11 @@ async function applyRefresh<TVideo, TSaved extends SavedVideoBase>(
  *
  * @returns The number of videos updated or deleted.
  */
-export async function refreshSavedVideos<TVideo, TSaved extends SavedVideoBase>(
+export const refreshSavedVideos = async <TVideo, TSaved extends SavedVideoBase>(
   context: WriteContext,
   adapter: PlatformAdapter<TVideo, TSaved>,
   { scope, ...hooks }: RefreshSavedVideosOptions<TVideo, TSaved>
-): Promise<number> {
+): Promise<number> => {
   const { logger, reportError } = context;
   const savedVideos = await getVideosToRefresh(context, adapter, scope);
 
@@ -129,9 +129,19 @@ export async function refreshSavedVideos<TVideo, TSaved extends SavedVideoBase>(
     async ([id, fetched]) => {
       const saved = savedById.get(id);
 
-      return saved
-        ? (await applyRefresh(context, adapter, saved, fetched, hooks)).changed
-        : false;
+      if (!saved) {
+        return false;
+      }
+
+      const { changed } = await applyRefresh(
+        context,
+        adapter,
+        saved,
+        fetched,
+        hooks
+      );
+
+      return changed;
     },
     (error, [id]) => reportError(error, { [`${adapter.platform}VideoId`]: id })
   );
@@ -152,7 +162,7 @@ export async function refreshSavedVideos<TVideo, TSaved extends SavedVideoBase>(
   );
 
   return updatedCount + deletedCount;
-}
+};
 
 /**
  * Brings one saved video in line with the platform, the same way
@@ -163,12 +173,12 @@ export async function refreshSavedVideos<TVideo, TSaved extends SavedVideoBase>(
  *   because the platform no longer returns it, or `null` when the platform
  *   cannot be asked about it.
  */
-export async function refreshSavedVideo<TVideo, TSaved extends SavedVideoBase>(
+export const refreshSavedVideo = async <TVideo, TSaved extends SavedVideoBase>(
   context: WriteContext,
   adapter: PlatformAdapter<TVideo, TSaved>,
   saved: TSaved,
   hooks: RefreshVideoHooks<TVideo, TSaved> = {}
-): Promise<VideoRefresh | "unavailable" | null> {
+): Promise<VideoRefresh | "unavailable" | null> => {
   const { fetchedById, missingIds } = await adapter.lookUp([saved]);
   const fetched = fetchedById.get(adapter.getPlatformVideoId(saved));
 
@@ -183,4 +193,4 @@ export async function refreshSavedVideo<TVideo, TSaved extends SavedVideoBase>(
   await deleteMissingVideos(context, adapter, missingIds, [saved]);
 
   return "unavailable";
-}
+};

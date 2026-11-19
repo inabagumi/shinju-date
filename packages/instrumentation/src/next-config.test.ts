@@ -1,63 +1,70 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import type * as SentryConfig from "@sentry/nextjs/config";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { withSentry } from "./next-config.js";
 
 const withSentryConfig = vi.hoisted(() =>
-  vi.fn((config: object) => ({ ...config, wrapped: true }))
+  vi.fn<typeof SentryConfig.withSentryConfig>(
+    <C>(config?: C) => ({ ...config, wrapped: true }) as C
+  )
 );
 
-vi.mock("@sentry/nextjs/config", () => ({ withSentryConfig }));
+vi.mock(import("@sentry/nextjs/config"), () => ({
+  withSentryConfig: withSentryConfig as typeof SentryConfig.withSentryConfig,
+}));
 
-afterEach(() => {
-  vi.unstubAllEnvs();
-  vi.clearAllMocks();
-});
+describe("Next.js config", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.clearAllMocks();
+  });
 
-describe("withSentry", () => {
-  test("wraps the config with withSentryConfig when the DSN is set", () => {
-    vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", "https://key@example.com/1");
+  describe(withSentry, () => {
+    it("wraps the config with withSentryConfig when the DSN is set", () => {
+      vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", "https://key@example.com/1");
 
-    expect(withSentry({ reactStrictMode: true })).toEqual({
-      reactStrictMode: true,
-      wrapped: true,
+      expect(withSentry({ reactStrictMode: true })).toStrictEqual({
+        reactStrictMode: true,
+        wrapped: true,
+      });
+      expect(withSentryConfig).toHaveBeenCalledWith(
+        { reactStrictMode: true },
+        {
+          bundleSizeOptimizations: {
+            excludeDebugStatements: true,
+          },
+          reactComponentAnnotation: {
+            enabled: true,
+          },
+          silent: true,
+          tunnelRoute: "/monitoring",
+          widenClientFileUpload: true,
+        }
+      );
     });
-    expect(withSentryConfig).toHaveBeenCalledWith(
-      { reactStrictMode: true },
-      {
-        bundleSizeOptimizations: {
-          excludeDebugStatements: true,
-        },
-        reactComponentAnnotation: {
-          enabled: true,
-        },
-        silent: true,
-        tunnelRoute: "/monitoring",
-        widenClientFileUpload: true,
-      }
-    );
-  });
 
-  test("leaves out the options for the browser bundle without browser", () => {
-    vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", "https://key@example.com/1");
+    it("leaves out the options for the browser bundle without browser", () => {
+      vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", "https://key@example.com/1");
 
-    withSentry({ reactStrictMode: true }, { browser: false });
+      withSentry({ reactStrictMode: true }, { browser: false });
 
-    expect(withSentryConfig).toHaveBeenCalledWith(
-      { reactStrictMode: true },
-      {
-        bundleSizeOptimizations: {
-          excludeDebugStatements: true,
-        },
-        silent: true,
-      }
-    );
-  });
+      expect(withSentryConfig).toHaveBeenCalledWith(
+        { reactStrictMode: true },
+        {
+          bundleSizeOptimizations: {
+            excludeDebugStatements: true,
+          },
+          silent: true,
+        }
+      );
+    });
 
-  test("returns the config as it is without the DSN", () => {
-    vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", undefined);
-    const config = { reactStrictMode: true };
+    it("returns the config as it is without the DSN", () => {
+      vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", undefined);
+      const config = { reactStrictMode: true };
 
-    expect(withSentry(config)).toBe(config);
-    expect(withSentryConfig).not.toHaveBeenCalled();
+      expect(withSentry(config)).toBe(config);
+      expect(withSentryConfig).not.toHaveBeenCalled();
+    });
   });
 });

@@ -34,7 +34,7 @@ export interface CronJob {
    * job that keeps its overlapping runs from doing the same work by itself.
    */
   ratelimit?: {
-    limit(identifier: string): Promise<{ success: boolean }>;
+    limit: (identifier: string) => Promise<{ success: boolean }>;
   };
   /** Crontab expression in UTC. Must match the entry in `vercel.json`. */
   schedule: string;
@@ -46,7 +46,7 @@ export interface CronJob {
  * (`/videos/check?provider=twitch&mode=all` is
  * `videos:check:mode=all:provider=twitch`).
  */
-export function getCronJobIdentifier(path: string): string {
+export const getCronJobIdentifier = (path: string): string => {
   const url = new URL(path, "http://localhost");
 
   url.searchParams.sort();
@@ -55,7 +55,7 @@ export function getCronJobIdentifier(path: string): string {
     ...url.pathname.split("/").filter(Boolean),
     ...[...url.searchParams].map(([name, value]) => `${name}=${value}`),
   ].join(":");
-}
+};
 
 export interface RunCronJobOptions {
   /**
@@ -75,10 +75,10 @@ interface VerifyCronRequestOptions {
  * Whether the request carries the cron secret in its `Authorization` header
  * (`Bearer <secret>`).
  */
-export function verifyCronRequest(
+export const verifyCronRequest = (
   request: Request,
   { cronSecure }: VerifyCronRequestOptions
-): boolean {
+): boolean => {
   const authHeader = request.headers.get("Authorization");
 
   if (!authHeader) {
@@ -86,11 +86,11 @@ export function verifyCronRequest(
   }
 
   const [type, credentials] = authHeader
-    .split(/\s+/)
+    .split(/\s+/u)
     .map((value) => value.trim());
 
   return type === "Bearer" && credentials === cronSecure;
-}
+};
 
 /**
  * Runs a cron route handler with the plumbing every job needs:
@@ -107,12 +107,12 @@ export function verifyCronRequest(
  * returns is sent as JSON with 200; when it returns nothing, the response is
  * 204.
  */
-export async function runCronJob<T>(
+export const runCronJob = async <T>(
   request: Request,
   job: CronJob,
   run: () => Promise<T>,
   { onError }: RunCronJobOptions = {}
-): Promise<Response> {
+): Promise<Response> => {
   const cronSecure = serverEnv.CRON_SECRET;
 
   if (cronSecure && !verifyCronRequest(request, { cronSecure })) {
@@ -161,17 +161,17 @@ export async function runCronJob<T>(
       logger.error("ロックを外せませんでした", { error, path: job.path });
     }
   }
-}
+};
 
 /**
  * Runs the job and reports it to Sentry Cron Monitoring. A thrown error
  * becomes a 500.
  */
-async function runAndReport<T>(
+const runAndReport = async <T>(
   job: CronJob,
   run: () => Promise<T>,
   onError: RunCronJobOptions["onError"]
-): Promise<Response> {
+): Promise<Response> => {
   const checkInId = Sentry.captureCheckIn(
     {
       monitorSlug: job.path,
@@ -228,4 +228,4 @@ async function runAndReport<T>(
   }
 
   return Response.json(result, { status: 200 });
-}
+};

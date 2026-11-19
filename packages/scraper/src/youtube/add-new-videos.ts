@@ -1,11 +1,11 @@
 import { countChanges } from "../internal/concurrency.js";
 import { WRITE_CONCURRENCY } from "../internal/constants.js";
 import {
-  findSavedYouTubeVideoIds,
   getActiveAccounts,
-  type TalentAccount,
   YOUTUBE_CHANNELS,
-} from "../internal/database/index.js";
+} from "../internal/database/talents.js";
+import type { TalentAccount } from "../internal/database/talents.js";
+import { findSavedYouTubeVideoIds } from "../internal/database/videos.js";
 import { saveVideoWithThumbnail } from "../internal/operations/save-video.js";
 import type { CrawlContext } from "../types.js";
 import type { YouTubeFetcher } from "./fetcher.js";
@@ -21,9 +21,9 @@ import { YOUTUBE_NEW_VIDEOS } from "./platform.js";
  *
  * @returns The number of videos added.
  */
-export async function addNewYouTubeVideos(
+export const addNewYouTubeVideos = async (
   context: CrawlContext<YouTubeFetcher>
-): Promise<number> {
+): Promise<number> => {
   const { fetcher, logger, reportError, supabaseClient } = context;
   const channels = await getActiveAccounts(supabaseClient, YOUTUBE_CHANNELS);
 
@@ -59,7 +59,7 @@ export async function addNewYouTubeVideos(
   }
 
   return saveNewYouTubeVideos(context, channelByVideoId);
-}
+};
 
 /**
  * Saves the listed videos that are not saved yet. Details are requested only
@@ -71,11 +71,11 @@ export async function addNewYouTubeVideos(
  * @param concurrency - Videos saved at once.
  * @returns The number of videos added.
  */
-export async function saveNewYouTubeVideos(
+export const saveNewYouTubeVideos = async (
   context: CrawlContext<YouTubeFetcher>,
   channelByVideoId: ReadonlyMap<string, TalentAccount>,
   concurrency = WRITE_CONCURRENCY
-): Promise<number> {
+): Promise<number> => {
   const { fetcher, logger, reportError, supabaseClient } = context;
   const listedIds = [...channelByVideoId.keys()];
 
@@ -119,6 +119,6 @@ export async function saveNewYouTubeVideos(
 
       return true;
     },
-    (error, video) => reportError(error, { youtubeVideoId: video.id })
+    (failure, video) => reportError(failure, { youtubeVideoId: video.id })
   );
-}
+};

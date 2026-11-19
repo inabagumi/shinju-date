@@ -16,9 +16,9 @@ export interface ScoredMember {
  * looks like a number (a keyword of digits only, for example) into a number,
  * so it is turned back.
  */
-export function parseScoredMembers(
+export const parseScoredMembers = (
   result: readonly unknown[] | null | undefined
-): ScoredMember[] {
+): ScoredMember[] => {
   const members: ScoredMember[] = [];
 
   if (!result) {
@@ -29,7 +29,7 @@ export function parseScoredMembers(
     const member = result[i];
     const score = Number(result[i + 1]);
 
-    if (member == null || Number.isNaN(score)) {
+    if (member === null || member === undefined || Number.isNaN(score)) {
       continue;
     }
 
@@ -37,19 +37,15 @@ export function parseScoredMembers(
   }
 
   return members;
-}
+};
 
 /**
  * Sum the scores of the result of `zrange(..., { withScores: true })`.
  */
-export function sumScores(
+export const sumScores = (
   result: readonly unknown[] | null | undefined
-): number {
-  return parseScoredMembers(result).reduce(
-    (total, { score }) => total + score,
-    0
-  );
-}
+): number =>
+  parseScoredMembers(result).reduce((total, { score }) => total + score, 0);
 
 export interface DateRange {
   end: Temporal.PlainDate;
@@ -62,8 +58,8 @@ export interface DateRange {
  *
  * Returns an empty array when `start` is after `end`.
  */
-export function dailyKeys(prefix: string, { end, start }: DateRange): string[] {
-  return listDatesInRange(start, end).map(
-    (date) => `${prefix}${formatDateKey(date)}`
-  );
-}
+export const dailyKeys = (
+  prefix: string,
+  { end, start }: DateRange
+): string[] =>
+  listDatesInRange(start, end).map((date) => `${prefix}${formatDateKey(date)}`);

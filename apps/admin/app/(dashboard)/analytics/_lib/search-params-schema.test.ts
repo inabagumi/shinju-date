@@ -5,7 +5,7 @@ import { getDefaultDateRange } from "@/lib/analytics/date-window";
 
 import { analyticsSearchParamsSchema } from "./search-params-schema";
 
-describe("analyticsSearchParamsSchema", () => {
+describe("analyticsSearchParamsSchema.parse", () => {
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate();
   const yesterday = today.subtract({ days: 1 });
   const weekAgo = today.subtract({ days: 7 });
@@ -18,7 +18,7 @@ describe("analyticsSearchParamsSchema", () => {
 
     const result = analyticsSearchParamsSchema.parse(input);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       dateRange: {
         endDate: yesterday.toString(),
         startDate: weekAgo.toString(),
@@ -36,7 +36,7 @@ describe("analyticsSearchParamsSchema", () => {
     const result = analyticsSearchParamsSchema.parse(input);
     const defaultRange = getDefaultDateRange();
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       dateRange: defaultRange,
       selectedDate: yesterday.toString(),
       tab: null,
@@ -51,7 +51,7 @@ describe("analyticsSearchParamsSchema", () => {
 
     const result = analyticsSearchParamsSchema.parse(input);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       dateRange: {
         endDate: yesterday.toString(),
         startDate: yesterday.toString(),
@@ -67,7 +67,7 @@ describe("analyticsSearchParamsSchema", () => {
 
     const result = analyticsSearchParamsSchema.parse(input);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       dateRange: defaultRange,
       selectedDate: null,
       tab: null,
@@ -95,7 +95,7 @@ describe("analyticsSearchParamsSchema", () => {
     const result = analyticsSearchParamsSchema.parse(input);
     const defaultRange = getDefaultDateRange();
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       dateRange: defaultRange,
       selectedDate: null,
       tab: null,
@@ -111,7 +111,7 @@ describe("analyticsSearchParamsSchema", () => {
     const result = analyticsSearchParamsSchema.parse(input);
     const defaultRange = getDefaultDateRange();
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       dateRange: defaultRange,
       selectedDate: null,
       tab: null,
@@ -121,13 +121,14 @@ describe("analyticsSearchParamsSchema", () => {
   it("should reject ranges where start date is after end date", () => {
     const input = {
       from: yesterday.toString(),
-      to: weekAgo.toString(), // start > end
+      // start > end
+      to: weekAgo.toString(),
     };
 
     const result = analyticsSearchParamsSchema.parse(input);
     const defaultRange = getDefaultDateRange();
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       dateRange: defaultRange,
       selectedDate: null,
       tab: null,
@@ -147,7 +148,7 @@ describe("analyticsSearchParamsSchema", () => {
     const result = analyticsSearchParamsSchema.parse(input);
     const defaultRange = getDefaultDateRange();
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       dateRange: defaultRange,
       selectedDate: null,
       tab: null,
@@ -162,7 +163,7 @@ describe("analyticsSearchParamsSchema", () => {
     const result = analyticsSearchParamsSchema.parse(input);
     const defaultRange = getDefaultDateRange();
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       dateRange: defaultRange,
       selectedDate: null,
       tab: null,
@@ -178,7 +179,7 @@ describe("analyticsSearchParamsSchema", () => {
 
     const result = analyticsSearchParamsSchema.parse(input);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       dateRange: {
         endDate: yesterday.toString(),
         startDate: weekAgo.toString(),
@@ -197,7 +198,7 @@ describe("analyticsSearchParamsSchema", () => {
     const result = analyticsSearchParamsSchema.parse(input);
     const defaultRange = getDefaultDateRange();
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       dateRange: defaultRange,
       selectedDate: null,
       tab: null,
@@ -213,7 +214,7 @@ describe("analyticsSearchParamsSchema", () => {
 
     const result = analyticsSearchParamsSchema.parse(input);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       dateRange: {
         endDate: yesterday.toString(),
         startDate: weekAgo.toString(),
@@ -232,7 +233,7 @@ describe("analyticsSearchParamsSchema", () => {
 
     const result = analyticsSearchParamsSchema.parse(input);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       dateRange: {
         endDate: yesterday.toString(),
         startDate: weekAgo.toString(),

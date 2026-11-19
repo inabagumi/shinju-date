@@ -3,7 +3,8 @@
 import { twMerge } from "@shinju-date/ui";
 import { useState } from "react";
 
-import { type ActionResult, ConfirmDialog } from "@/components/confirm-dialog";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import type { ActionResult } from "@/components/confirm-dialog";
 import { Panel } from "@/components/panel";
 import ToggleSwitch from "@/components/toggle-switch";
 
@@ -38,9 +39,9 @@ const MAINTENANCE_MODE_OPERATIONS = {
   },
 } as const;
 
-export function MaintenanceModeWidget({
+export const MaintenanceModeWidget = ({
   initialStatus,
-}: MaintenanceModeWidgetProps) {
+}: MaintenanceModeWidgetProps) => {
   const [isEnabled, setIsEnabled] = useState(initialStatus);
   // 閉じるアニメーションの間も文言を保つため、開閉とは別に操作を持つ
   const [operation, setOperation] =
@@ -118,4 +119,4 @@ export function MaintenanceModeWidget({
       />
     </Panel>
   );
-}
+};

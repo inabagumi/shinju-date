@@ -5,6 +5,5 @@ const numberFormatter = new Intl.NumberFormat("ja-JP");
  * @param value フォーマットする数値
  * @returns フォーマット済みの文字列
  */
-export function formatNumber(value: number): string {
-  return numberFormatter.format(value);
-}
+export const formatNumber = (value: number): string =>
+  numberFormatter.format(value);

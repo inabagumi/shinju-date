@@ -13,7 +13,7 @@ interface Props {
  * Server component that renders popular videos and talents tabs
  * Uses Activity component to show/hide content based on tab parameter
  */
-export async function PopularRankingsTabs({ searchParams }: Props) {
+export const PopularRankingsTabs = async ({ searchParams }: Props) => {
   const { tab } = await searchParams;
   const activeTab = tab || "videos";
 
@@ -36,4 +36,4 @@ export async function PopularRankingsTabs({ searchParams }: Props) {
       </Activity>
     </div>
   );
-}
+};

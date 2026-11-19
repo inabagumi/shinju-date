@@ -34,13 +34,14 @@ interface GetAuditLogsParams {
  * Mirrors `get_audit_logs`: the audit logs with the email of the user who
  * recorded them, sorted by `created_at` or `user_email` and then newest first.
  */
-async function getMockAuditLogs({
+const getMockAuditLogs = async ({
   p_limit: limit = 50,
   p_offset: offset = 0,
   p_sort_by: sortBy = "created_at",
   p_sort_direction: sortDirection = "desc",
-}: GetAuditLogsParams) {
-  const logs = (await auditLogs.findMany()).map((log) => ({
+}: GetAuditLogsParams) => {
+  const savedLogs = await auditLogs.findMany();
+  const logs = savedLogs.map((log) => ({
     ...log,
     user_email:
       log.user_id === MOCK_SUPABASE_USER.id ? MOCK_SUPABASE_USER.email : null,
@@ -48,18 +49,20 @@ async function getMockAuditLogs({
   const direction = sortDirection === "asc" ? 1 : -1;
 
   return logs
-    .sort((a, b) => {
-      const order =
-        sortBy === "created_at"
-          ? a.created_at.localeCompare(b.created_at) * direction
-          : sortBy === "user_email"
-            ? (a.user_email ?? "").localeCompare(b.user_email ?? "") * direction
-            : 0;
+    .toSorted((a, b) => {
+      let order = 0;
+
+      if (sortBy === "created_at") {
+        order = a.created_at.localeCompare(b.created_at) * direction;
+      } else if (sortBy === "user_email") {
+        order =
+          (a.user_email ?? "").localeCompare(b.user_email ?? "") * direction;
+      }
 
       return order || b.created_at.localeCompare(a.created_at);
     })
     .slice(offset, offset + limit);
-}
+};
 
 interface SearchVideosParams {
   p_perpage?: number;
@@ -94,26 +97,24 @@ const DEFAULT_SEARCH_VIDEOS_SELECT = [
  * Normalize text roughly like PGroonga's `NormalizerAuto`: NFKC and lower
  * case.
  */
-function normalizeSearchText(text: string): string {
-  return text.normalize("NFKC").toLowerCase();
-}
+const normalizeSearchText = (text: string): string =>
+  text.normalize("NFKC").toLowerCase();
 
 /**
  * Normalize text for a prefix search on readings (`&^~`), which also matches
  * katakana with hiragana.
  */
-function normalizeReadingText(text: string): string {
-  return normalizeSearchText(text).replace(/[\u30a1-\u30f6]/g, (char) =>
-    String.fromCharCode(char.charCodeAt(0) - 0x60)
+const normalizeReadingText = (text: string): string =>
+  normalizeSearchText(text).replaceAll(/[\u30A1-\u30F6]/gu, (char) =>
+    String.fromCodePoint((char.codePointAt(0) ?? 0) - 0x60)
   );
-}
 
 /**
  * Mirrors `pgroonga_query_expand('terms', 'synonyms', 'synonyms', query)`:
  * the query and, when a term lists it as a synonym, the other synonyms of
  * that term.
  */
-async function expandMockQuery(query: string): Promise<string[]> {
+const expandMockQuery = (query: string): string[] => {
   const normalizedQuery = normalizeSearchText(query);
   const expanded = new Set([normalizedQuery]);
 
@@ -128,19 +129,19 @@ async function expandMockQuery(query: string): Promise<string[]> {
   }
 
   return [...expanded];
-}
+};
 
 /**
  * The visible videos of the given talents and kinds whose titles contain the
  * query or one of its synonyms and that were published before `p_until`.
  */
-async function filterMockVideos({
+const filterMockVideos = ({
   p_query: query = "",
   p_talent_ids: talentIds = [],
   p_until: until,
   p_video_kinds: videoKinds,
-}: SearchVideosParams) {
-  const keywords = query === "" ? [] : await expandMockQuery(query);
+}: SearchVideosParams) => {
+  const keywords = query === "" ? [] : expandMockQuery(query);
 
   return videos
     .findMany()
@@ -156,7 +157,7 @@ async function filterMockVideos({
         (!videoKinds || videoKinds.includes(video.video_kind)) &&
         (!until || Temporal.Instant.compare(video.published_at, until) < 0)
     );
-}
+};
 
 /**
  * The videos of `filterMockVideos` that the site shows: the ones whose talent
@@ -165,8 +166,8 @@ async function filterMockVideos({
  * name of its user or an ID that is not the placeholder of an archive that is
  * not ready yet (`live:{stream_id}`), unless it is a clip.
  */
-async function filterShownMockVideos(params: SearchVideosParams) {
-  const matchedVideos = await filterMockVideos(params);
+const filterShownMockVideos = (params: SearchVideosParams) => {
+  const matchedVideos = filterMockVideos(params);
   const visibleTalentIds = new Set(
     talents
       .findMany()
@@ -204,38 +205,46 @@ async function filterShownMockVideos(params: SearchVideosParams) {
         ? linkableTwitchVideoIds.has(video.id)
         : linkableYouTubeVideoIds.has(video.id))
   );
-}
+};
 
 /** The first `perpage` of the given videos, newest first. */
-function pageMockVideos<T extends { published_at: string }>(
+const pageMockVideos = <T extends { published_at: string }>(
   matchedVideos: T[],
   perpage = 10
-): T[] {
-  return matchedVideos
-    .sort((a, b) => Temporal.Instant.compare(b.published_at, a.published_at))
+): T[] =>
+  matchedVideos
+    .toSorted((a, b) =>
+      Temporal.Instant.compare(b.published_at, a.published_at)
+    )
     .slice(0, perpage);
-}
 
 /**
  * Mirrors `search_videos_v4`: the videos of `filterShownMockVideos`, newest
  * first. The videos the site does not show are left out before the page size
  * is applied.
  */
-async function searchShownMockVideos({
+const searchShownMockVideos = ({
   p_perpage: perpage,
   ...params
-}: SearchVideosParams) {
-  return pageMockVideos(await filterShownMockVideos(params), perpage);
-}
+}: SearchVideosParams) =>
+  pageMockVideos(filterShownMockVideos(params), perpage);
 
 /** Mirrors `count_videos_v2`: the number of the videos the site shows. */
-async function countMockVideos(params: SearchVideosParams) {
-  return (await filterShownMockVideos(params)).length;
-}
+const countMockVideos = (params: SearchVideosParams) =>
+  filterShownMockVideos(params).length;
 
 interface SuggestionsParams {
   p_query?: string;
 }
+
+/** Compare two strings by their UTF-16 code units, like `Array#sort`. */
+const compareCodeUnits = (a: string, b: string): number => {
+  if (a < b) {
+    return -1;
+  }
+
+  return a > b ? 1 : 0;
+};
 
 /**
  * Mirrors `suggestions_v2`: up to 10 terms that start with the query, then
@@ -243,7 +252,7 @@ interface SuggestionsParams {
  * it. The popularity of the mock terms is not used, so shorter terms come
  * first.
  */
-async function suggestMockTerms({ p_query: query = "" }: SuggestionsParams) {
+const suggestMockTerms = ({ p_query: query = "" }: SuggestionsParams) => {
   const normalizedQuery = normalizeReadingText(query);
   const startsWithQuery = (text: string) =>
     normalizeReadingText(text).startsWith(normalizedQuery);
@@ -260,14 +269,14 @@ async function suggestMockTerms({ p_query: query = "" }: SuggestionsParams) {
   }
 
   return suggestions
-    .sort(
+    .toSorted(
       (a, b) =>
         a.priority - b.priority ||
         a.term.length - b.term.length ||
-        (a.term < b.term ? -1 : a.term > b.term ? 1 : 0)
+        compareCodeUnits(a.term, b.term)
     )
     .slice(0, 10);
-}
+};
 
 interface UpdateTermsPopularityParams {
   p_items?: { score?: number; term?: string }[];
@@ -278,9 +287,9 @@ interface UpdateTermsPopularityParams {
  * terms, ignoring the case. The popularity of the mock terms is not used, so
  * nothing is written.
  */
-async function updateMockTermsPopularity({
+const updateMockTermsPopularity = ({
   p_items: items = [],
-}: UpdateTermsPopularityParams) {
+}: UpdateTermsPopularityParams) => {
   const givenTerms = new Set(
     items.flatMap(({ score, term }) =>
       typeof term === "string" && typeof score === "number"
@@ -292,7 +301,7 @@ async function updateMockTermsPopularity({
   return terms
     .findMany()
     .filter(({ term }) => givenTerms.has(term.toLowerCase())).length;
-}
+};
 
 type VideoDeletedReason = NonNullable<Tables<"videos">["deleted_reason"]>;
 
@@ -312,10 +321,10 @@ interface RestoreVideosParams {
  * of the table does. Only the thumbnails whose `deleted_at` is not yet in the
  * wanted state (deleted or not) are updated.
  */
-async function setMockThumbnailsDeletedAt(
+const setMockThumbnailsDeletedAt = async (
   thumbnailIds: readonly (string | null)[],
   deletedAt: string | null
-) {
+) => {
   const ids = new Set(thumbnailIds);
   const updatedAt = toDBString(Temporal.Now.instant());
 
@@ -324,6 +333,7 @@ async function setMockThumbnailsDeletedAt(
       ids.has(thumbnail.id) &&
       (thumbnail.deleted_at === null) !== (deletedAt === null)
     ) {
+      // oxlint-disable-next-line no-await-in-loop -- the rows are written one by one, like the statements of the database function
       await thumbnails.update(thumbnail, {
         data(draft) {
           draft.deleted_at = deletedAt;
@@ -332,26 +342,27 @@ async function setMockThumbnailsDeletedAt(
       });
     }
   }
-}
+};
 
 /**
  * Mirrors `soft_delete_videos`: soft-deletes the given videos that are not
  * deleted yet, with their thumbnails, and returns the IDs of the deleted
  * videos. The reason and the time of the videos deleted earlier are kept.
  */
-async function softDeleteMockVideos({
+const softDeleteMockVideos = async ({
   p_deleted_at: deletedAt,
   p_reason: reason,
   p_video_ids: videoIds,
-}: SoftDeleteVideosParams) {
+}: SoftDeleteVideosParams) => {
   const ids = new Set(videoIds);
   const updatedAt = toDBString(Temporal.Now.instant());
   const targets = videos
     .findMany()
     .filter((video) => ids.has(video.id) && video.deleted_at === null)
-    .sort((a, b) => a.id.localeCompare(b.id));
+    .toSorted((a, b) => a.id.localeCompare(b.id));
 
   for (const video of targets) {
+    // oxlint-disable-next-line no-await-in-loop -- the rows are written one by one, like the statements of the database function
     await videos.update(video, {
       data(draft) {
         draft.deleted_at = deletedAt;
@@ -367,17 +378,17 @@ async function softDeleteMockVideos({
   );
 
   return targets.map((video) => video.id);
-}
+};
 
 /**
  * Mirrors `restore_videos`: restores the given deleted videos (only those
  * deleted for `p_reason`, unless it is `null`), with their thumbnails, and
  * returns the IDs of the restored videos.
  */
-async function restoreMockVideos({
+const restoreMockVideos = async ({
   p_reason: reason = null,
   p_video_ids: videoIds,
-}: RestoreVideosParams) {
+}: RestoreVideosParams) => {
   const ids = new Set(videoIds);
   const updatedAt = toDBString(Temporal.Now.instant());
   const targets = videos
@@ -388,9 +399,10 @@ async function restoreMockVideos({
         video.deleted_at !== null &&
         (reason === null || video.deleted_reason === reason)
     )
-    .sort((a, b) => a.id.localeCompare(b.id));
+    .toSorted((a, b) => a.id.localeCompare(b.id));
 
   for (const video of targets) {
+    // oxlint-disable-next-line no-await-in-loop -- the rows are written one by one, like the statements of the database function
     await videos.update(video, {
       data(draft) {
         draft.deleted_at = null;
@@ -406,7 +418,7 @@ async function restoreMockVideos({
   );
 
   return targets.map((video) => video.id);
-}
+};
 
 interface InsertVideoParams {
   p_platform: Tables<"videos">["platform"];
@@ -429,16 +441,17 @@ const PLATFORM_VIDEO_KEYS = {
  * platform video is already saved. The function sets the ID and the
  * platform of the video and the `video_id` of the platform row.
  */
-async function insertMockVideo({
+const insertMockVideo = async ({
   p_platform: platform,
   p_platform_video: platformVideo,
   p_video: video,
-}: InsertVideoParams): Promise<string | null> {
+}: InsertVideoParams): Promise<string | null> => {
   const savedRows: readonly Record<string, unknown>[] =
     platform === "twitch" ? twitchVideos.findMany() : youtubeVideos.findMany();
   const alreadySaved = PLATFORM_VIDEO_KEYS[platform].some(
     (column) =>
-      platformVideo[column] != null &&
+      platformVideo[column] !== null &&
+      platformVideo[column] !== undefined &&
       savedRows.some((row) => row[column] === platformVideo[column])
   );
 
@@ -461,70 +474,74 @@ async function insertMockVideo({
     platform,
   } as Tables<"videos">);
 
-  if (platform === "twitch") {
-    await twitchVideos.create({
-      id: crypto.randomUUID(),
-      stream_id: null,
-      type: null,
-      ...platformValues,
-      video_id: videoId,
-    } as Tables<"twitch_videos">);
-  } else {
-    await youtubeVideos.create({
-      id: crypto.randomUUID(),
-      ...platformValues,
-      video_id: videoId,
-    } as Tables<"youtube_videos">);
-  }
+  await (platform === "twitch"
+    ? twitchVideos.create({
+        id: crypto.randomUUID(),
+        stream_id: null,
+        type: null,
+        ...platformValues,
+        video_id: videoId,
+      } as Tables<"twitch_videos">)
+    : youtubeVideos.create({
+        id: crypto.randomUUID(),
+        ...platformValues,
+        video_id: videoId,
+      } as Tables<"youtube_videos">));
 
   return videoId;
-}
+};
 
 /**
  * Mirrors `touch_talent`: moves `updated_at` of the talent to the current
  * time, as the trigger of the table does, without changing anything else.
  */
-async function touchMockTalent({ p_talent_id: id }: { p_talent_id: string }) {
+const touchMockTalent = async ({
+  p_talent_id: id,
+}: {
+  p_talent_id: string;
+}) => {
   const updatedAt = toDBString(Temporal.Now.instant());
 
   for (const talent of talents.findMany().filter((row) => row.id === id)) {
+    // oxlint-disable-next-line no-await-in-loop -- the rows are written one by one, like the statements of the database function
     await talents.update(talent, {
       data(draft) {
         draft.updated_at = updatedAt;
       },
     });
   }
-}
+};
 
 /**
  * Mirrors `touch_thumbnail`: moves `updated_at` of the thumbnail to the
  * current time, as the trigger of the table does, without changing anything
  * else.
  */
-async function touchMockThumbnail({
+const touchMockThumbnail = async ({
   p_thumbnail_id: id,
 }: {
   p_thumbnail_id: string;
-}) {
+}) => {
   const updatedAt = toDBString(Temporal.Now.instant());
 
   for (const thumbnail of thumbnails
     .findMany()
     .filter((row) => row.id === id)) {
+    // oxlint-disable-next-line no-await-in-loop -- the rows are written one by one, like the statements of the database function
     await thumbnails.update(thumbnail, {
       data(draft) {
         draft.updated_at = updatedAt;
       },
     });
   }
-}
+};
 
 /** The handlers of the database functions (`/rest/v1/rpc/<name>`). */
 export const rpcHandlers = [
   rest.post(`${REST_URL}/rpc/suggestions_v2`, async ({ request }) => {
     const body = (await request.json()) as SuggestionsParams;
 
-    return HttpResponse.json(await suggestMockTerms(body));
+    return HttpResponse.json(suggestMockTerms(body));
   }),
 
   rest.post(`${REST_URL}/rpc/search_videos_v4`, async ({ request }) => {
@@ -537,7 +554,7 @@ export const rpcHandlers = [
       url.searchParams.get("select") ?? DEFAULT_SEARCH_VIDEOS_SELECT;
     const selected = await selectRows(
       applySupabaseConditions(
-        await searchShownMockVideos(body),
+        searchShownMockVideos(body),
         query,
         videosTable.uuidColumns
       ),
@@ -557,7 +574,7 @@ export const rpcHandlers = [
   rest.post(`${REST_URL}/rpc/update_terms_popularity`, async ({ request }) => {
     const body = (await request.json()) as UpdateTermsPopularityParams;
 
-    return HttpResponse.json(await updateMockTermsPopularity(body));
+    return HttpResponse.json(updateMockTermsPopularity(body));
   }),
 
   rest.post(`${REST_URL}/rpc/soft_delete_videos`, async ({ request }) => {
@@ -595,7 +612,7 @@ export const rpcHandlers = [
   rest.post(`${REST_URL}/rpc/count_videos_v2`, async ({ request }) => {
     const body = (await request.json()) as SearchVideosParams;
 
-    return HttpResponse.json(await countMockVideos(body));
+    return HttpResponse.json(countMockVideos(body));
   }),
 
   rest.post(`${REST_URL}/rpc/get_audit_logs`, async ({ request }) => {
@@ -638,6 +655,7 @@ export const rpcHandlers = [
     const createdAt = toDBString(Temporal.Now.instant());
 
     for (const entry of entries) {
+      // oxlint-disable-next-line no-await-in-loop -- the logs are inserted one by one to keep their order in the collection
       await auditLogs.create({
         action: entry.action,
         created_at: createdAt,

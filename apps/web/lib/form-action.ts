@@ -1,6 +1,7 @@
 import { checkBotId } from "botid/server";
 
-import { type FormState, getFormValues } from "@/lib/form-state";
+import { getFormValues } from "@/lib/form-state";
+import type { FormState } from "@/lib/form-state";
 
 export const BOT_DETECTED_ERROR =
   "送信を完了できませんでした。しばらく時間をおいて再度お試しください。";
@@ -31,11 +32,15 @@ export type FormActionHandler<FieldName extends string> = (
  * thrown by the action is logged and turned into a generic failure. Both keep
  * the submitted values.
  */
-export function withBotCheck<FieldName extends string>(
-  action: FormActionHandler<FieldName>,
-  { errorLogMessage, fields }: WithBotCheckOptions<FieldName>
-): (prevState: unknown, formData: FormData) => Promise<FormState<FieldName>> {
-  return async (_prevState, formData) => {
+export const withBotCheck =
+  <FieldName extends string>(
+    action: FormActionHandler<FieldName>,
+    { errorLogMessage, fields }: WithBotCheckOptions<FieldName>
+  ): ((
+    prevState: unknown,
+    formData: FormData
+  ) => Promise<FormState<FieldName>>) =>
+  async (_prevState, formData) => {
     const values = getFormValues(formData, fields);
 
     try {
@@ -58,4 +63,3 @@ export function withBotCheck<FieldName extends string>(
       return { error: UNEXPECTED_ERROR, success: false, values };
     }
   };
-}

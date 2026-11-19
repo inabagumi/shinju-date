@@ -27,6 +27,34 @@ export interface PerAccountResult<T> {
 }
 
 /**
+ * Looks resources up by their ID and reports the IDs that were not returned.
+ * `fetch` gets the IDs once each; splitting them into batches is left to the
+ * API client. Rejects when a request fails.
+ *
+ * @param ids - The IDs to look up
+ * @param fetch - Looks up the IDs, without duplicates
+ * @returns The resources found, and the IDs that were not
+ */
+export const fetchByIds = async <T extends { id: string }>(
+  ids: readonly string[],
+  fetch: (ids: string[]) => AsyncIterable<T>
+): Promise<LookupResult<T>> => {
+  const requestedIds = unique(ids);
+
+  if (requestedIds.length === 0) {
+    return { found: [], missingIds: [] };
+  }
+
+  const found = await Array.fromAsync(fetch(requestedIds));
+  const foundIds = new Set(found.map((item) => item.id));
+
+  return {
+    found,
+    missingIds: requestedIds.filter((id) => !foundIds.has(id)),
+  };
+};
+
+/**
  * Reads accounts and videos from a video platform.
  *
  * This is the half of a scraper that talks to the platform; what is read is
@@ -98,30 +126,6 @@ export abstract class Fetcher<
    */
   protected readonly request = <T>(task: () => Promise<T>): Promise<T> =>
     this.#queue.run(task);
-
-  /**
-   * Looks resources up by their ID and reports the IDs that were not
-   * returned. `fetch` gets the IDs once each; splitting them into batches is
-   * left to the API client. Rejects when a request fails.
-   */
-  protected async fetchByIds<T extends { id: string }>(
-    ids: readonly string[],
-    fetch: (ids: string[]) => AsyncIterable<T>
-  ): Promise<LookupResult<T>> {
-    const requestedIds = unique(ids);
-
-    if (requestedIds.length === 0) {
-      return { found: [], missingIds: [] };
-    }
-
-    const found = await Array.fromAsync(fetch(requestedIds));
-    const foundIds = new Set(found.map((item) => item.id));
-
-    return {
-      found,
-      missingIds: requestedIds.filter((id) => !foundIds.has(id)),
-    };
-  }
 
   /**
    * Fetches something for each account without letting one account stop the

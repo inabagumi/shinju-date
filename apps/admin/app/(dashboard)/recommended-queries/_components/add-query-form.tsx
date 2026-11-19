@@ -8,7 +8,7 @@ import { useServerAction } from "@/lib/use-server-action";
 import { addQueryAction } from "../_actions";
 
 /** 手動のおすすめクエリを追加するフォーム。成功したら、入力を空にしてトーストで知らせる */
-export function AddQueryForm() {
+export const AddQueryForm = () => {
   const [newQuery, setNewQuery] = useState("");
   const addQuery = useServerAction(addQueryAction, {
     errorText: "追加に失敗しました。",
@@ -53,4 +53,4 @@ export function AddQueryForm() {
       </Button>
     </div>
   );
-}
+};

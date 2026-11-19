@@ -10,13 +10,13 @@ test.describe("Dashboard", () => {
       page.getByRole("heading", { level: 1, name: "ダッシュボード" })
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: /^総動画数 \d+/ })
+      page.getByRole("link", { name: /^総動画数 \d+/u })
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: /^総タレント数 \d+/ })
+      page.getByRole("link", { name: /^総タレント数 \d+/u })
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: /^本日のクリック数 \d+/ })
+      page.getByRole("link", { name: /^本日のクリック数 \d+/u })
     ).toBeVisible();
 
     await expect(

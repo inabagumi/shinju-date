@@ -11,17 +11,15 @@ interface Props {
  * (e.g. no session was recorded in the period). It deliberately carries no
  * rating so that "no data" is not mistaken for a low score.
  */
-export function MetricNoData({ description, label }: Props) {
-  return (
-    <StatTile
-      change={
-        <>
-          <span className="font-semibold text-foreground">データなし</span>
-          <span className="block">{description}</span>
-        </>
-      }
-      label={label}
-      value={<span aria-hidden="true">—</span>}
-    />
-  );
-}
+export const MetricNoData = ({ description, label }: Props) => (
+  <StatTile
+    change={
+      <>
+        <span className="font-semibold text-foreground">データなし</span>
+        <span className="block">{description}</span>
+      </>
+    }
+    label={label}
+    value={<span aria-hidden="true">—</span>}
+  />
+);

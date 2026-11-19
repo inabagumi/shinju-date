@@ -1,8 +1,6 @@
-import { TWITCH_USERS } from "../internal/database/index.js";
-import {
-  addPastVideosWith,
-  type PastVideoAdapter,
-} from "../internal/operations/add-past-videos.js";
+import { TWITCH_USERS } from "../internal/database/talents.js";
+import { addPastVideosWith } from "../internal/operations/add-past-videos.js";
+import type { PastVideoAdapter } from "../internal/operations/add-past-videos.js";
 import type {
   AddPastVideosOptions,
   AddPastVideosResult,
@@ -64,9 +62,8 @@ const TWITCH_PAST_VIDEOS: PastVideoAdapter<TwitchFetcher, TwitchVideo> = {
  * @throws {StalledPaginationError} When Twitch returns the requested cursor
  *   as the next one.
  */
-export function addPastTwitchVideos(
+export const addPastTwitchVideos = (
   context: CrawlContext<TwitchFetcher>,
   options: Pick<AddPastVideosOptions, "accountId" | "cursor">
-): Promise<AddPastVideosResult> {
-  return addPastVideosWith(context, TWITCH_PAST_VIDEOS, options);
-}
+): Promise<AddPastVideosResult> =>
+  addPastVideosWith(context, TWITCH_PAST_VIDEOS, options);

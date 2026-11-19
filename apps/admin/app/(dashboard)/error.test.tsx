@@ -1,19 +1,22 @@
+import type { captureException } from "@sentry/nextjs";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import DashboardError from "./error";
 
 const mocks = vi.hoisted(() => ({
-  captureException: vi.fn(),
+  captureException: vi.fn<typeof captureException>(),
 }));
 
-vi.mock("@sentry/nextjs", () => ({
+vi.mock(import("@sentry/nextjs"), () => ({
   captureException: mocks.captureException,
 }));
 
-describe("DashboardError", () => {
+describe(DashboardError, () => {
   it("shows the error and a link back to the dashboard", () => {
-    render(<DashboardError error={new Error("failed")} retry={vi.fn()} />);
+    render(
+      <DashboardError error={new Error("failed")} retry={vi.fn<() => void>()} />
+    );
 
     expect(
       screen.getByRole("heading", {
@@ -27,7 +30,7 @@ describe("DashboardError", () => {
   });
 
   it("retries when the retry button is clicked", () => {
-    const retry = vi.fn();
+    const retry = vi.fn<() => void>();
 
     render(<DashboardError error={new Error("failed")} retry={retry} />);
 
@@ -39,7 +42,7 @@ describe("DashboardError", () => {
   it("shows the digest so that the error can be found in the logs", () => {
     const error = Object.assign(new Error("failed"), { digest: "1234567890" });
 
-    render(<DashboardError error={error} retry={vi.fn()} />);
+    render(<DashboardError error={error} retry={vi.fn<() => void>()} />);
 
     expect(screen.getByText("1234567890")).toBeInTheDocument();
   });
@@ -47,7 +50,7 @@ describe("DashboardError", () => {
   it("reports the error to Sentry", () => {
     const error = new Error("failed");
 
-    render(<DashboardError error={error} retry={vi.fn()} />);
+    render(<DashboardError error={error} retry={vi.fn<() => void>()} />);
 
     expect(mocks.captureException).toHaveBeenCalledWith(error);
   });

@@ -14,9 +14,9 @@ interface TermPopularity {
  * Fetch search popularity data from Redis
  * Uses the all-time search popularity sorted set
  */
-async function fetchSearchPopularityFromRedis(
+const fetchSearchPopularityFromRedis = async (
   redis: Redis
-): Promise<TermPopularity[]> {
+): Promise<TermPopularity[]> => {
   try {
     // Fetch all terms from the all-time popularity sorted set
     // withScores: true returns a flat array [member1, score1, member2, score2, ...]
@@ -42,7 +42,8 @@ async function fetchSearchPopularityFromRedis(
 
       if (typeof term === "string" && typeof score === "number") {
         popularityData.push({
-          score: Math.floor(score), // Ensure integer
+          // Ensure integer
+          score: Math.floor(score),
           term,
         });
       }
@@ -57,7 +58,7 @@ async function fetchSearchPopularityFromRedis(
     logger.error("Redisからの検索人気度データの取得に失敗しました", { error });
     throw error;
   }
-}
+};
 
 /**
  * How many terms one call of `update_terms_popularity` updates. Keeps each
@@ -73,10 +74,10 @@ export const UPDATE_BATCH_SIZE = 500;
  * `update_terms_popularity` function, in batches of `UPDATE_BATCH_SIZE`, so
  * there is no limit on the number of terms.
  */
-async function updateTermsPopularityInDatabase(
+const updateTermsPopularityInDatabase = async (
   supabase: TypedSupabaseClient,
   popularityData: TermPopularity[]
-): Promise<{ updated: number; notFound: number }> {
+): Promise<{ updated: number; notFound: number }> => {
   let updated = 0;
 
   for (let i = 0; i < popularityData.length; i += UPDATE_BATCH_SIZE) {
@@ -85,6 +86,7 @@ async function updateTermsPopularityInDatabase(
       .map(({ score, term }) => ({ score, term }));
 
     updated += throwIfError(
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the batches are sent one at a time to keep the load on the database small
       await supabase.rpc("update_terms_popularity", { p_items: items }),
       "Failed to update the popularity of terms"
     );
@@ -99,15 +101,15 @@ async function updateTermsPopularityInDatabase(
   }
 
   return { notFound, updated };
-}
+};
 
 /**
  * Main function to update term popularity from Redis to database
  */
-export async function updateTermPopularity(
+export const updateTermPopularity = async (
   redis: Redis,
   supabase: TypedSupabaseClient
-): Promise<{ updated: number; notFound: number; total: number }> {
+): Promise<{ updated: number; notFound: number; total: number }> => {
   // Fetch popularity data from Redis
   const popularityData = await fetchSearchPopularityFromRedis(redis);
 
@@ -131,4 +133,4 @@ export async function updateTermPopularity(
     ...result,
     total: popularityData.length,
   };
-}
+};

@@ -90,13 +90,13 @@ const TALENT_DETAIL_SELECT = `
   )
 `;
 
-function compareStrings(a: string, b: string): number {
+const compareStrings = (a: string, b: string): number => {
   if (a === b) {
     return 0;
   }
 
   return a < b ? -1 : 1;
-}
+};
 
 /**
  * Fetch an active talent (`status = 'active'` and not deleted).
@@ -272,7 +272,12 @@ export const fetchTalentStreamStatuses = async (): Promise<
   const statuses: Record<string, TalentStreamStatus> = {};
 
   for (const video of videos) {
-    if (video.youtube_video == null && video.twitch_video == null) {
+    const hasYouTubeVideo =
+      video.youtube_video !== null && video.youtube_video !== undefined;
+    const hasTwitchVideo =
+      video.twitch_video !== null && video.twitch_video !== undefined;
+
+    if (!hasYouTubeVideo && !hasTwitchVideo) {
       continue;
     }
 

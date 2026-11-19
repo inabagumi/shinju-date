@@ -6,7 +6,8 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import type { ReadonlyURLSearchParams, useRouter } from "next/navigation";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Talent } from "@/lib/data/talents";
 
@@ -27,7 +28,7 @@ const MYOSOTIS: Talent = {
 
 const navigation = vi.hoisted(() => ({
   pathname: "/",
-  push: vi.fn(),
+  push: vi.fn<ReturnType<typeof useRouter>["push"]>(),
   searchParams: new URLSearchParams(),
 }));
 
@@ -37,34 +38,31 @@ const actions = vi.hoisted(() => ({
   fetchSuggestions: vi.fn<(query: string) => Promise<{ term: string }[]>>(),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => navigation.pathname,
-  useRouter: () => ({ push: navigation.push }),
-  useSearchParams: () => navigation.searchParams,
+  useRouter: () =>
+    ({ push: navigation.push }) as Partial<
+      ReturnType<typeof useRouter>
+    > as ReturnType<typeof useRouter>,
+  useSearchParams: () => navigation.searchParams as ReadonlyURLSearchParams,
 }));
 
-vi.mock("@/app/_lib/actions", () => actions);
+vi.mock(import("@/app/_lib/actions"), () => actions);
 
-function getInput() {
-  return screen.getByRole("searchbox");
-}
+const getInput = () => screen.getByRole("searchbox");
 
-function getChipList() {
-  return screen.getByRole("list", { name: "選んでいるタレント" });
-}
+const getChipList = () =>
+  screen.getByRole("list", { name: "選んでいるタレント" });
 
-function getTalentSection() {
-  return screen.getByRole("region", { name: "タレント" });
-}
+const getTalentSection = () => screen.getByRole("region", { name: "タレント" });
 
-function createQueryClient() {
-  return new QueryClient({
+const createQueryClient = () =>
+  new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-}
 
-async function renderContent(queryClient = createQueryClient()) {
-  const onClose = vi.fn();
+const renderContent = async (queryClient = createQueryClient()) => {
+  const onClose = vi.fn<() => void>();
 
   const { unmount } = render(
     <QueryClientProvider client={queryClient}>
@@ -73,26 +71,26 @@ async function renderContent(queryClient = createQueryClient()) {
   );
 
   await waitFor(() =>
-    expect(actions.fetchSearchModalTalents).toHaveBeenCalledTimes(1)
+    expect(actions.fetchSearchModalTalents).toHaveBeenCalledOnce()
   );
   // おすすめの検索キーワードの読み込みが終わるまで待つ
   await screen.findByRole("link", { name: "歌枠" });
 
   return { onClose, unmount };
-}
+};
 
-async function selectTalent(query: string, name: string) {
+const selectTalent = async (query: string, name: string) => {
   fireEvent.change(getInput(), { target: { value: query } });
   fireEvent.click(
     await within(getTalentSection()).findByRole("button", { name })
   );
-}
+};
 
-function submit() {
+const submit = () => {
   fireEvent.submit(getInput().closest("form") as HTMLFormElement);
-}
+};
 
-describe("SearchModalContent", () => {
+describe(SearchModalContent, () => {
   beforeEach(() => {
     navigation.pathname = "/";
     navigation.push.mockReset();
@@ -104,7 +102,7 @@ describe("SearchModalContent", () => {
     actions.fetchSuggestions.mockReset().mockResolvedValue([]);
   });
 
-  test("should not refetch the recommended queries and talents when reopened", async () => {
+  it("should not refetch the recommended queries and talents when reopened", async () => {
     const queryClient = createQueryClient();
 
     const { unmount } = await renderContent(queryClient);
@@ -113,8 +111,8 @@ describe("SearchModalContent", () => {
     // モーダルを閉じて開き直す
     await renderContent(queryClient);
 
-    expect(actions.fetchRecommendedQueries).toHaveBeenCalledTimes(1);
-    expect(actions.fetchSearchModalTalents).toHaveBeenCalledTimes(1);
+    expect(actions.fetchRecommendedQueries).toHaveBeenCalledOnce();
+    expect(actions.fetchSearchModalTalents).toHaveBeenCalledOnce();
 
     fireEvent.change(getInput(), { target: { value: "朝霧" } });
     expect(
@@ -122,12 +120,12 @@ describe("SearchModalContent", () => {
     ).toBeInTheDocument();
   });
 
-  test("should hide the recommended queries when they fail to load", async () => {
+  it("should hide the recommended queries when they fail to load", async () => {
     actions.fetchRecommendedQueries.mockRejectedValue(new Error("failed"));
 
     render(
       <QueryClientProvider client={createQueryClient()}>
-        <SearchModalContent onClose={vi.fn()} />
+        <SearchModalContent onClose={vi.fn<() => void>()} />
       </QueryClientProvider>
     );
 
@@ -137,22 +135,22 @@ describe("SearchModalContent", () => {
     );
   });
 
-  test("should show the hint to search when the suggestions fail to load", async () => {
+  it("should show the hint to search when the suggestions fail to load", async () => {
     actions.fetchSuggestions.mockRejectedValue(new Error("failed"));
 
     await renderContent();
 
     fireEvent.change(getInput(), { target: { value: "test query" } });
     expect(screen.getByText("読み込み中...")).toBeInTheDocument();
-    expect(
-      await screen.findByText("Enterキーを押して「test query」を検索")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("Enterキーを押して「test query」を検索")
+    ).resolves.toBeInTheDocument();
   });
 
-  test("should keep showing the previous suggestions while fetching the new ones", async () => {
-    actions.fetchSuggestions.mockImplementation(async (query) => [
-      { term: `${query} 歌枠` },
-    ]);
+  it("should keep showing the previous suggestions while fetching the new ones", async () => {
+    actions.fetchSuggestions.mockImplementation((query) =>
+      Promise.resolve([{ term: `${query} 歌枠` }])
+    );
 
     await renderContent();
 
@@ -161,12 +159,12 @@ describe("SearchModalContent", () => {
 
     fireEvent.change(getInput(), { target: { value: "ミオソ" } });
     expect(screen.getByRole("link", { name: "ミオ 歌枠" })).toBeInTheDocument();
-    expect(
-      await screen.findByRole("link", { name: "ミオソ 歌枠" })
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByRole("link", { name: "ミオソ 歌枠" })
+    ).resolves.toBeInTheDocument();
   });
 
-  test("should show the matching talents above the keyword suggestions", async () => {
+  it("should show the matching talents above the keyword suggestions", async () => {
     actions.fetchSuggestions.mockResolvedValue([{ term: "ミオ" }]);
 
     await renderContent();
@@ -181,16 +179,17 @@ describe("SearchModalContent", () => {
       within(section)
         .getAllByRole("button")
         .map((button) => button.textContent)
-    ).toEqual(["朝霧ミオ", "ミオソティス"]);
+    ).toStrictEqual(["朝霧ミオ", "ミオソティス"]);
 
     const suggestion = await screen.findByRole("link", { name: "ミオ" });
     expect(
+      // oxlint-disable-next-line eslint/no-bitwise -- compareDocumentPosition returns a bit mask
       section.compareDocumentPosition(suggestion) &
         Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
   });
 
-  test("should turn the selected talent into a chip and clear the input", async () => {
+  it("should turn the selected talent into a chip and clear the input", async () => {
     await renderContent();
 
     await selectTalent("朝霧", "朝霧ミオ");
@@ -205,10 +204,10 @@ describe("SearchModalContent", () => {
       within(getTalentSection())
         .getAllByRole("button")
         .map((button) => button.textContent)
-    ).toEqual(["ミオソティス"]);
+    ).toStrictEqual(["ミオソティス"]);
   });
 
-  test("should search the keyword within the selected talents", async () => {
+  it("should search the keyword within the selected talents", async () => {
     const { onClose } = await renderContent();
 
     await selectTalent("朝霧", "朝霧ミオ");
@@ -217,13 +216,13 @@ describe("SearchModalContent", () => {
     fireEvent.change(getInput(), { target: { value: " 歌枠 " } });
     submit();
 
-    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledOnce();
     expect(navigation.push).toHaveBeenCalledWith(
       `/videos/${encodeURIComponent("歌枠")}?talent=${MIO.id}&talent=${YURA.id}`
     );
   });
 
-  test("should open the video list of the selected talents without a keyword", async () => {
+  it("should open the video list of the selected talents without a keyword", async () => {
     await renderContent();
 
     await selectTalent("朝霧", "朝霧ミオ");
@@ -237,7 +236,7 @@ describe("SearchModalContent", () => {
     expect(navigation.push).toHaveBeenCalledWith(`/videos?talent=${MIO.id}`);
   });
 
-  test("should keep the search without chips as before", async () => {
+  it("should keep the search without chips as before", async () => {
     const { onClose } = await renderContent();
 
     submit();
@@ -245,9 +244,9 @@ describe("SearchModalContent", () => {
     expect(onClose).not.toHaveBeenCalled();
 
     fireEvent.change(getInput(), { target: { value: "test query" } });
-    expect(
-      await screen.findByText("Enterキーを押して「test query」を検索")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("Enterキーを押して「test query」を検索")
+    ).resolves.toBeInTheDocument();
     submit();
 
     expect(navigation.push).toHaveBeenCalledWith(
@@ -255,7 +254,7 @@ describe("SearchModalContent", () => {
     );
   });
 
-  test("should remove the last chip with Backspace on an empty input", async () => {
+  it("should remove the last chip with Backspace on an empty input", async () => {
     await renderContent();
 
     await selectTalent("朝霧", "朝霧ミオ");
@@ -276,7 +275,7 @@ describe("SearchModalContent", () => {
     ).toBeNull();
   });
 
-  test("should remove a chip with its remove button", async () => {
+  it("should remove a chip with its remove button", async () => {
     await renderContent();
 
     await selectTalent("朝霧", "朝霧ミオ");
@@ -289,7 +288,7 @@ describe("SearchModalContent", () => {
     expect(getInput()).toHaveFocus();
   });
 
-  test("should carry the chips over to the keyword suggestions and recommended queries", async () => {
+  it("should carry the chips over to the keyword suggestions and recommended queries", async () => {
     actions.fetchSuggestions.mockResolvedValue([{ term: "歌枠" }]);
 
     await renderContent();
@@ -303,13 +302,15 @@ describe("SearchModalContent", () => {
 
     fireEvent.change(getInput(), { target: { value: "うた" } });
 
-    expect(await screen.findByRole("link", { name: "歌枠" })).toHaveAttribute(
+    await expect(
+      screen.findByRole("link", { name: "歌枠" })
+    ).resolves.toHaveAttribute(
       "href",
       `/videos/${encodeURIComponent("歌枠")}?talent=${MIO.id}`
     );
   });
 
-  test("should keep the links without chips as before", async () => {
+  it("should keep the links without chips as before", async () => {
     actions.fetchSuggestions.mockResolvedValue([{ term: "歌枠" }]);
 
     await renderContent();
@@ -321,13 +322,12 @@ describe("SearchModalContent", () => {
 
     fireEvent.change(getInput(), { target: { value: "うた" } });
 
-    expect(await screen.findByRole("link", { name: "歌枠" })).toHaveAttribute(
-      "href",
-      `/videos/${encodeURIComponent("歌枠")}`
-    );
+    await expect(
+      screen.findByRole("link", { name: "歌枠" })
+    ).resolves.toHaveAttribute("href", `/videos/${encodeURIComponent("歌枠")}`);
   });
 
-  test("should start with the chips of the talent filter on the video list", async () => {
+  it("should start with the chips of the talent filter on the video list", async () => {
     navigation.pathname = `/videos/${encodeURIComponent("歌枠")}`;
     navigation.searchParams = new URLSearchParams([
       ["kind", "short"],
@@ -342,7 +342,7 @@ describe("SearchModalContent", () => {
       within(await screen.findByRole("list", { name: "選んでいるタレント" }))
         .getAllByRole("listitem")
         .map((item) => item.textContent)
-    ).toEqual(["朝霧ミオ", "凪沢ユラ"]);
+    ).toStrictEqual(["朝霧ミオ", "凪沢ユラ"]);
 
     submit();
 
@@ -352,7 +352,7 @@ describe("SearchModalContent", () => {
     );
   });
 
-  test("should not start with chips outside the video list", async () => {
+  it("should not start with chips outside the video list", async () => {
     navigation.pathname = "/talents";
     navigation.searchParams = new URLSearchParams([["talent", MIO.id]]);
 
@@ -363,7 +363,7 @@ describe("SearchModalContent", () => {
     ).toBeNull();
   });
 
-  test("should move between the talent and keyword suggestions with the arrow keys", async () => {
+  it("should move between the talent and keyword suggestions with the arrow keys", async () => {
     actions.fetchSuggestions.mockResolvedValue([
       { term: "ミオ" },
       { term: "ミオ 歌枠" },
@@ -385,7 +385,7 @@ describe("SearchModalContent", () => {
     fireEvent.keyDown(getInput(), { key: "ArrowDown" });
     expect(options[0]).toHaveFocus();
 
-    for (let index = 1; index < options.length; index++) {
+    for (let index = 1; index < options.length; index += 1) {
       fireEvent.keyDown(document.activeElement as Element, {
         key: "ArrowDown",
       });
@@ -396,7 +396,7 @@ describe("SearchModalContent", () => {
     fireEvent.keyDown(document.activeElement as Element, { key: "ArrowDown" });
     expect(options.at(-1)).toHaveFocus();
 
-    for (let index = options.length - 2; index >= 0; index--) {
+    for (let index = options.length - 2; index >= 0; index -= 1) {
       fireEvent.keyDown(document.activeElement as Element, { key: "ArrowUp" });
       expect(options[index]).toHaveFocus();
     }

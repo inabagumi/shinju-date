@@ -8,15 +8,12 @@ const FEATURE_REQUESTS = [
   { id: "resolved-read", is_read: true, status: "resolved" },
 ] as const;
 
-function ids(filters: Parameters<typeof filterFeatureRequests>[1]) {
-  return filterFeatureRequests(FEATURE_REQUESTS, filters).map(
-    (item) => item.id
-  );
-}
+const ids = (filters: Parameters<typeof filterFeatureRequests>[1]) =>
+  filterFeatureRequests(FEATURE_REQUESTS, filters).map((item) => item.id);
 
-describe("filterFeatureRequests", () => {
+describe(filterFeatureRequests, () => {
   it("keeps every feature request without filters", () => {
-    expect(ids({ read: undefined, status: undefined })).toEqual([
+    expect(ids({ read: undefined, status: undefined })).toStrictEqual([
       "pending-unread",
       "pending-read",
       "resolved-read",
@@ -24,24 +21,26 @@ describe("filterFeatureRequests", () => {
   });
 
   it("filters by the status", () => {
-    expect(ids({ read: undefined, status: "pending" })).toEqual([
+    expect(ids({ read: undefined, status: "pending" })).toStrictEqual([
       "pending-unread",
       "pending-read",
     ]);
-    expect(ids({ read: undefined, status: "rejected" })).toEqual([]);
+    expect(ids({ read: undefined, status: "rejected" })).toStrictEqual([]);
   });
 
   it("filters by whether it is read", () => {
-    expect(ids({ read: "read", status: undefined })).toEqual([
+    expect(ids({ read: "read", status: undefined })).toStrictEqual([
       "pending-read",
       "resolved-read",
     ]);
-    expect(ids({ read: "unread", status: undefined })).toEqual([
+    expect(ids({ read: "unread", status: undefined })).toStrictEqual([
       "pending-unread",
     ]);
   });
 
   it("combines the filters", () => {
-    expect(ids({ read: "read", status: "pending" })).toEqual(["pending-read"]);
+    expect(ids({ read: "read", status: "pending" })).toStrictEqual([
+      "pending-read",
+    ]);
   });
 });

@@ -17,7 +17,7 @@ export interface VideoCreatorInfo {
  * When the platform account is missing or has no name, the talent name is
  * used instead, so related data being absent never hides the card.
  */
-export function getVideoCreator(video: Video): VideoCreatorInfo | null {
+export const getVideoCreator = (video: Video): VideoCreatorInfo | null => {
   if (video.platform === "twitch") {
     const twitchUser = video.twitch_video?.twitch_user;
     const name = findFirstNonBlank(
@@ -41,4 +41,4 @@ export function getVideoCreator(video: Video): VideoCreatorInfo | null {
   return name
     ? { name, profileImage: youtubeChannel?.profile_image ?? null }
     : null;
-}
+};

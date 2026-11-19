@@ -7,13 +7,13 @@
  * @param items - Items to shuffle
  * @param random - Returns a number in [0, 1). Defaults to `Math.random`
  */
-export function shuffle<T>(
+export const shuffle = <T>(
   items: readonly T[],
   random: () => number = Math.random
-): T[] {
+): T[] => {
   const result = [...items];
 
-  for (let i = result.length - 1; i > 0; i--) {
+  for (let i = result.length - 1; i > 0; i -= 1) {
     const j = Math.floor(random() * (i + 1));
     const current = result[i] as T;
     result[i] = result[j] as T;
@@ -21,4 +21,4 @@ export function shuffle<T>(
   }
 
   return result;
-}
+};

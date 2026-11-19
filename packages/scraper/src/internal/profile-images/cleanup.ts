@@ -1,7 +1,7 @@
 import { toDBString } from "@shinju-date/temporal-fns";
 
 import type { TypedSupabaseClient } from "../../types.js";
-import { DatabaseError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
 import { removeProfileImage } from "./profile-image.js";
 
 /**
@@ -24,12 +24,12 @@ export interface RemoveUnusedProfileImagesOptions {
  * refused by the database and kept.
  *
  * @returns The number of icons deleted.
- * @throws When unused icons cannot be listed or deleted.
+ * @throws {Error} When unused icons cannot be listed or deleted.
  */
-export async function removeUnusedProfileImages(
+export const removeUnusedProfileImages = async (
   supabaseClient: TypedSupabaseClient,
   { now }: RemoveUnusedProfileImagesOptions
-): Promise<number> {
+): Promise<number> => {
   const before = now.subtract(UNUSED_PROFILE_IMAGE_GRACE_PERIOD);
   const { data, error } = await supabaseClient
     .from("profile_images")
@@ -46,10 +46,11 @@ export async function removeUnusedProfileImages(
   let removedCount = 0;
 
   for (const image of data) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- the images are removed one at a time to keep the load on Storage and the database small
     if (await removeProfileImage(supabaseClient, image)) {
       removedCount += 1;
     }
   }
 
   return removedCount;
-}
+};

@@ -16,7 +16,7 @@ import { TIME_ZONE } from "@shinju-date/constants";
 /** 選べる期間の最長の日数（両端を含む）。集計を保存している日数でもある */
 export const MAX_RANGE_DAYS = 90;
 
-const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
+const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/u;
 
 /** 日付が選べない理由。`'future'` は今日より先、`'too-old'` は保存している期間より前 */
 export type DateError = "future" | "too-old";
@@ -25,35 +25,35 @@ export type DateError = "future" | "too-old";
 export type DateRangeError = "reversed" | "too-long";
 
 /** `TIME_ZONE` での今日 */
-export function getToday(): Temporal.PlainDate {
-  return Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate();
-}
+export const getToday = (): Temporal.PlainDate =>
+  Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate();
 
 /** 選べるいちばん古い日付。今日を含めて `MAX_RANGE_DAYS` 日ぶんをさかのぼった日 */
-export function getEarliestDate(
+export const getEarliestDate = (
   today: Temporal.PlainDate = getToday()
-): Temporal.PlainDate {
-  return today.subtract({ days: MAX_RANGE_DAYS - 1 });
-}
+): Temporal.PlainDate => today.subtract({ days: MAX_RANGE_DAYS - 1 });
 
 /** 期間の指定がないときの期間（今日までの7日間） */
-export function getDefaultDateRange(): { startDate: string; endDate: string } {
+export const getDefaultDateRange = (): {
+  startDate: string;
+  endDate: string;
+} => {
   const today = getToday();
 
   return {
     endDate: today.toString(),
     startDate: today.subtract({ days: 6 }).toString(),
   };
-}
+};
 
 /**
  * 日付が、選べる範囲（いちばん古い日付から今日まで）にあるかを確かめる。
  * 問題がなければ `null`、あれば理由を返す
  */
-export function validateDate(
+export const validateDate = (
   date: Temporal.PlainDate,
   today: Temporal.PlainDate = getToday()
-): DateError | null {
+): DateError | null => {
   if (Temporal.PlainDate.compare(date, today) > 0) {
     return "future";
   }
@@ -63,13 +63,13 @@ export function validateDate(
   }
 
   return null;
-}
+};
 
 /**
  * 文字列の形式（`YYYY-MM-DD`）だけを確かめる。選べる範囲にあるかは確かめない。
  * 問題がなければ日付、あれば（空の文字列を含む）`null` を返す
  */
-export function parseDateFormat(value: string): Temporal.PlainDate | null {
+export const parseDateFormat = (value: string): Temporal.PlainDate | null => {
   if (!DATE_FORMAT.test(value)) {
     return null;
   }
@@ -80,16 +80,16 @@ export function parseDateFormat(value: string): Temporal.PlainDate | null {
     // 2月30日のような、実在しない日付
     return null;
   }
-}
+};
 
 /**
  * 文字列の形式（`YYYY-MM-DD`）と、選べる範囲にあるかを確かめる。
  * 問題がなければ日付、あれば `null` を返す
  */
-export function parseDate(
+export const parseDate = (
   value: string,
   today: Temporal.PlainDate = getToday()
-): Temporal.PlainDate | null {
+): Temporal.PlainDate | null => {
   const date = parseDateFormat(value);
 
   if (!date) {
@@ -97,16 +97,16 @@ export function parseDate(
   }
 
   return validateDate(date, today) === null ? date : null;
-}
+};
 
 /**
  * 期間の順序と長さを確かめる。問題がなければ `null`、あれば理由を返す。
  * それぞれの日付が選べる範囲にあるかは、`parseDate` か `validateDate` で確かめる
  */
-export function validateRange(
+export const validateRange = (
   start: Temporal.PlainDate,
   end: Temporal.PlainDate
-): DateRangeError | null {
+): DateRangeError | null => {
   if (Temporal.PlainDate.compare(start, end) > 0) {
     return "reversed";
   }
@@ -118,4 +118,4 @@ export function validateRange(
   }
 
   return null;
-}
+};

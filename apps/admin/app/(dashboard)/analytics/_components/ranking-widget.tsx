@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { ExportLink, type ExportType } from "./export-link";
+import { ExportLink } from "./export-link";
+import type { ExportType } from "./export-link";
 import { RankingTable, RankingTableSkeleton } from "./ranking-table";
 import { WidgetHeader, WidgetHeaderSkeleton } from "./widget-header";
 
@@ -28,7 +29,7 @@ interface RankingWidgetProps<T> {
  * アナリティクスのランキングのウィジェット。見出し・CSV のエクスポート・ランキングの表を並べる。
  * 取得した行と、行から名前・リンク先・値を取り出す関数を受け取る。
  */
-export function RankingWidget<T>({
+export const RankingWidget = <T,>({
   dateRange,
   description,
   exportType,
@@ -41,44 +42,42 @@ export function RankingWidget<T>({
   selectedDate,
   title,
   valueHeading,
-}: RankingWidgetProps<T>) {
-  return (
-    <div>
-      <WidgetHeader
-        actions={
-          <ExportLink
-            dateRange={dateRange}
-            selectedDate={selectedDate}
-            type={exportType}
-          />
-        }
-        dateRange={dateRange}
-        description={description}
-        selectedDate={selectedDate}
-        title={title}
-      />
-      <RankingTable
-        items={rows.map((row) => {
-          const label = getLabel(row);
+}: RankingWidgetProps<T>) => (
+  <div>
+    <WidgetHeader
+      actions={
+        <ExportLink
+          dateRange={dateRange}
+          selectedDate={selectedDate}
+          type={exportType}
+        />
+      }
+      dateRange={dateRange}
+      description={description}
+      selectedDate={selectedDate}
+      title={title}
+    />
+    <RankingTable
+      items={rows.map((row) => {
+        const label = getLabel(row);
 
-          return {
-            key: getKey(row),
-            label: getHref ? (
-              <Link className="text-accent hover:underline" href={getHref(row)}>
-                {label}
-              </Link>
-            ) : (
-              label
-            ),
-            value: getValue(row),
-          };
-        })}
-        labelHeading={labelHeading}
-        valueHeading={valueHeading}
-      />
-    </div>
-  );
-}
+        return {
+          key: getKey(row),
+          label: getHref ? (
+            <Link className="text-accent hover:underline" href={getHref(row)}>
+              {label}
+            </Link>
+          ) : (
+            label
+          ),
+          value: getValue(row),
+        };
+      })}
+      labelHeading={labelHeading}
+      valueHeading={valueHeading}
+    />
+  </div>
+);
 
 interface RankingWidgetSkeletonProps {
   /** 見出し。読み込み後と同じ文言を渡す */
@@ -86,11 +85,11 @@ interface RankingWidgetSkeletonProps {
 }
 
 /** 読み込み中の `RankingWidget`。見出しとエクスポートのボタン、ランキングの表を並べる */
-export function RankingWidgetSkeleton({ title }: RankingWidgetSkeletonProps) {
-  return (
-    <div aria-hidden="true">
-      <WidgetHeaderSkeleton actions title={title} />
-      <RankingTableSkeleton />
-    </div>
-  );
-}
+export const RankingWidgetSkeleton = ({
+  title,
+}: RankingWidgetSkeletonProps) => (
+  <div aria-hidden="true">
+    <WidgetHeaderSkeleton actions title={title} />
+    <RankingTableSkeleton />
+  </div>
+);

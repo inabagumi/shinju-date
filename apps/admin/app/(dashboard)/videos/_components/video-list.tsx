@@ -20,20 +20,15 @@ import Link from "next/link";
 
 import { getExternalVideoUrl } from "@/components/external-video-link";
 import { PlatformBadge } from "@/components/platform-badge";
-import {
-  TableSkeleton,
-  type TableSkeletonColumn,
-} from "@/components/table-skeleton";
+import { TableSkeleton } from "@/components/table-skeleton";
+import type { TableSkeletonColumn } from "@/components/table-skeleton";
 import { VideoStatusBadge } from "@/components/video-status-badge";
 import { VideoThumbnail } from "@/components/video-thumbnail";
 import { formatDateTimeFromISO } from "@/lib/format";
 
 import type { Video, VideoSortField } from "../_lib/get-videos";
-import {
-  getVideoSortHref,
-  toAriaSort,
-  type VideoSort,
-} from "../_lib/video-sort";
+import { getVideoSortHref, toAriaSort } from "../_lib/video-sort";
+import type { VideoSort } from "../_lib/video-sort";
 import { VideoBulkActions } from "./video-bulk-actions";
 import { VideoKindBadge } from "./video-kind-badge";
 import { VideoRowActions } from "./video-row-actions";
@@ -59,13 +54,10 @@ interface SortLinkProps {
 }
 
 /** 見出しの並べ替えのリンク。今の並べ替えの項目には、向きの矢印を付ける */
-function SortLink({ field, label, sort, searchParams }: SortLinkProps) {
+const SortLink = ({ field, label, sort, searchParams }: SortLinkProps) => {
   const isCurrent = sort.field === field;
-  const Icon = !isCurrent
-    ? ArrowUpDown
-    : sort.order === "asc"
-      ? ArrowUp
-      : ArrowDown;
+  const currentIcon = sort.order === "asc" ? ArrowUp : ArrowDown;
+  const Icon = isCurrent ? currentIcon : ArrowUpDown;
 
   return (
     <Link
@@ -84,7 +76,7 @@ function SortLink({ field, label, sort, searchParams }: SortLinkProps) {
       />
     </Link>
   );
-}
+};
 
 /**
  * 動画の一覧の表。表、行、サムネイル、バッジ、日時はサーバーで描き、選択と操作
@@ -268,13 +260,11 @@ interface VideoListSkeletonProps {
 }
 
 /** 読み込み中の `VideoList`。一括操作のバーと、同じ列の表を並べる */
-export function VideoListSkeleton({ rows }: VideoListSkeletonProps) {
-  return (
-    <TableSkeleton
-      columns={VIDEO_LIST_SKELETON_COLUMNS}
-      filterBar={<Skeleton className="mb-4 h-14 w-full rounded-container" />}
-      rows={rows}
-      tableClassName="min-w-5xl"
-    />
-  );
-}
+export const VideoListSkeleton = ({ rows }: VideoListSkeletonProps) => (
+  <TableSkeleton
+    columns={VIDEO_LIST_SKELETON_COLUMNS}
+    filterBar={<Skeleton className="mb-4 h-14 w-full rounded-container" />}
+    rows={rows}
+    tableClassName="min-w-5xl"
+  />
+);

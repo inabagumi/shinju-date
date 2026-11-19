@@ -24,12 +24,12 @@ export interface SearchParamsHrefOptions {
 /**
  * 現在のパラメータを引き継いで、指定したパラメータだけを書き換えた URL を返す。
  */
-export function buildSearchParamsHref(
+export const buildSearchParamsHref = (
   pathname: string,
   searchParams: URLSearchParams | string,
   updates: SearchParamUpdates,
   { resetPage = true }: SearchParamsHrefOptions = {}
-): string {
+): string => {
   const params = new URLSearchParams(searchParams);
 
   for (const [name, value] of Object.entries(updates)) {
@@ -59,13 +59,13 @@ export function buildSearchParamsHref(
   const queryString = params.toString();
 
   return queryString ? `${pathname}?${queryString}` : pathname;
-}
+};
 
 /**
  * ページの `searchParams`（`ParsedUrlQuery`）を `URLSearchParams` にする。
  * 配列は同じ名前の複数の値にし、`undefined` の値は除く
  */
-export function toURLSearchParams(query: ParsedUrlQuery): URLSearchParams {
+export const toURLSearchParams = (query: ParsedUrlQuery): URLSearchParams => {
   const params = new URLSearchParams();
 
   for (const [name, value] of Object.entries(query)) {
@@ -77,4 +77,4 @@ export function toURLSearchParams(query: ParsedUrlQuery): URLSearchParams {
   }
 
   return params;
-}
+};

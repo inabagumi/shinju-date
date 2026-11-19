@@ -20,7 +20,7 @@ test.describe("Talent calendar", () => {
 
     const body = await response.text();
 
-    expect(body).toMatch(/^BEGIN:VCALENDAR\r?\n/);
+    expect(body).toMatch(/^BEGIN:VCALENDAR\r?\n/u);
     expect(body).toContain("BEGIN:VEVENT");
   });
 

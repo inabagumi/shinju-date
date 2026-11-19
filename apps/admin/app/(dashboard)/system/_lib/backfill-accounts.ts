@@ -1,7 +1,5 @@
-import {
-  type BackfillRunRequest,
-  getBackfillJobId,
-} from "@shinju-date/video-backfill";
+import { getBackfillJobId } from "@shinju-date/video-backfill";
+import type { BackfillRunRequest } from "@shinju-date/video-backfill";
 
 import type { TypedSupabaseClient } from "@/lib/supabase";
 import { unwrap } from "@/lib/supabase/query";
@@ -25,9 +23,9 @@ export interface BackfillAccounts {
  * earlier backfills; the targets of a check are the accounts of active
  * talents.
  */
-export async function getBackfillAccounts(
+export const getBackfillAccounts = async (
   supabaseClient: TypedSupabaseClient
-): Promise<BackfillAccounts> {
+): Promise<BackfillAccounts> => {
   const data = unwrap(
     await supabaseClient
       .from("talents")
@@ -70,4 +68,4 @@ export async function getBackfillAccounts(
   }
 
   return { all, targets };
-}
+};

@@ -9,13 +9,13 @@ export const SCHEDULE_PATH = "/schedule";
 export const SCHEDULE_WEEKS_AHEAD = 4;
 
 /** `YYYY-MM-DD`, the only form `/schedule/[date]` accepts */
-const SCHEDULE_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const SCHEDULE_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/u;
 
 /**
  * Parse the date of `/schedule/[date]`. Returns `null` for values that are not
  * `YYYY-MM-DD` or are not a real date (such as `2026-02-30`).
  */
-export function parseScheduleDate(value: string): Temporal.PlainDate | null {
+export const parseScheduleDate = (value: string): Temporal.PlainDate | null => {
   if (!SCHEDULE_DATE_PATTERN.test(value)) {
     return null;
   }
@@ -25,38 +25,34 @@ export function parseScheduleDate(value: string): Temporal.PlainDate | null {
   } catch {
     return null;
   }
-}
+};
 
 /**
  * The Sunday of the week that includes the date. Weeks start on Sunday, as
  * most calendars in Japan do.
  */
-export function getWeekStart(date: Temporal.PlainDate): Temporal.PlainDate {
+export const getWeekStart = (date: Temporal.PlainDate): Temporal.PlainDate =>
   // `dayOfWeek` is 1 for Monday and 7 for Sunday
-  return date.subtract({ days: date.dayOfWeek % 7 });
-}
+  date.subtract({ days: date.dayOfWeek % 7 });
 
 /** The 7 days of the week that starts on `weekStart`, from Sunday to Saturday */
-export function getWeekDays(
+export const getWeekDays = (
   weekStart: Temporal.PlainDate
-): Temporal.PlainDate[] {
-  return Array.from({ length: 7 }, (_, index) =>
-    weekStart.add({ days: index })
-  );
-}
+): Temporal.PlainDate[] =>
+  Array.from({ length: 7 }, (_, index) => weekStart.add({ days: index }));
 
 /**
  * The path of the schedule. Without a date, it is the week that includes
  * today (`/schedule`). With one, it always points to the Sunday of the week,
  * so each week has a single URL.
  */
-export function getSchedulePath(weekStart?: Temporal.PlainDate): string {
+export const getSchedulePath = (weekStart?: Temporal.PlainDate): string => {
   if (!weekStart) {
     return SCHEDULE_PATH;
   }
 
   return `${SCHEDULE_PATH}/${getWeekStart(weekStart).toString()}`;
-}
+};
 
 export interface ScheduleWeekRange {
   /** The Sunday of the first week that can be shown */
@@ -76,10 +72,10 @@ interface GetScheduleWeekRangeOptions {
  * `SCHEDULE_WEEKS_AHEAD` weeks after the current week. Without any video, the
  * first week is the current week.
  */
-export function getScheduleWeekRange({
+export const getScheduleWeekRange = ({
   oldestDate,
   today,
-}: GetScheduleWeekRangeOptions): ScheduleWeekRange {
+}: GetScheduleWeekRangeOptions): ScheduleWeekRange => {
   const currentWeekStart = getWeekStart(today);
   const first = oldestDate ? getWeekStart(oldestDate) : currentWeekStart;
 
@@ -90,18 +86,15 @@ export function getScheduleWeekRange({
         : first,
     last: currentWeekStart.add({ weeks: SCHEDULE_WEEKS_AHEAD }),
   };
-}
+};
 
 /** Whether the week that starts on `weekStart` is in the range */
-export function isWeekInRange(
+export const isWeekInRange = (
   weekStart: Temporal.PlainDate,
   { first, last }: ScheduleWeekRange
-): boolean {
-  return (
-    Temporal.PlainDate.compare(weekStart, first) >= 0 &&
-    Temporal.PlainDate.compare(weekStart, last) <= 0
-  );
-}
+): boolean =>
+  Temporal.PlainDate.compare(weekStart, first) >= 0 &&
+  Temporal.PlainDate.compare(weekStart, last) <= 0;
 
 interface FormatWeekRangeOptions {
   /** Add the weekdays, as in `2026年11月8日（日）〜11月14日（土）` */
@@ -113,10 +106,10 @@ interface FormatWeekRangeOptions {
  * `2026年11月8日〜11月14日`. The year of the last day is written only when it
  * differs from that of the first day.
  */
-export function formatWeekRange(
+export const formatWeekRange = (
   weekStart: Temporal.PlainDate,
   { withWeekdays = false }: FormatWeekRangeOptions = {}
-): string {
+): string => {
   const weekEnd = weekStart.add({ days: 6 });
   const start = formatLongDate(weekStart, {
     weekday: withWeekdays,
@@ -128,7 +121,7 @@ export function formatWeekRange(
   });
 
   return `${start}〜${end}`;
-}
+};
 
 /** Minutes in a day, the height of the column of a day */
 export const MINUTES_IN_DAY = 24 * 60;
@@ -153,7 +146,7 @@ interface PlacedVideo {
  * ended stream or a published video, and `DEFAULT_LENGTH_MINUTES` for an
  * upcoming or live one or one without a duration.
  */
-export function getLengthMinutes(video: PlacedVideo): number {
+export const getLengthMinutes = (video: PlacedVideo): number => {
   if (video.status === "ENDED" || video.status === "PUBLISHED") {
     const minutes = Temporal.Duration.from(video.duration).total({
       unit: "minute",
@@ -165,7 +158,7 @@ export function getLengthMinutes(video: PlacedVideo): number {
   }
 
   return DEFAULT_LENGTH_MINUTES;
-}
+};
 
 export interface ScheduleLayout<T> {
   /** The column of the item among the overlapping items, from 0 */
@@ -185,9 +178,9 @@ export interface ScheduleLayout<T> {
  * `MIN_LENGTH_MINUTES`, and cut at the end of the day). The videos that
  * overlap share the width of the day side by side.
  */
-export function layoutDay<T extends PlacedVideo>(
+export const layoutDay = <T extends PlacedVideo>(
   videos: readonly T[]
-): ScheduleLayout<T>[] {
+): ScheduleLayout<T>[] => {
   const placed = videos
     .map((item) => {
       const startAt = Temporal.Instant.from(
@@ -201,7 +194,7 @@ export function layoutDay<T extends PlacedVideo>(
 
       return { column: 0, columns: 1, item, length, start };
     })
-    .sort((a, b) => a.start - b.start || b.length - a.length);
+    .toSorted((a, b) => a.start - b.start || b.length - a.length);
 
   // Split the videos into clusters of the ones that overlap each other, and
   // give each video the first column that is free at its start
@@ -237,4 +230,4 @@ export function layoutDay<T extends PlacedVideo>(
   closeCluster();
 
   return placed;
-}
+};

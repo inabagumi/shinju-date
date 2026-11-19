@@ -1,6 +1,7 @@
 "use client";
 
-import { Select, type SelectProps } from "@shinju-date/ui";
+import { Select } from "@shinju-date/ui";
+import type { SelectProps } from "@shinju-date/ui";
 
 import { useUpdateSearchParams } from "@/lib/use-update-search-params";
 
@@ -20,12 +21,12 @@ export interface SearchParamSelectProps extends Omit<
  * 選んだ値を URL のパラメータに書くセレクトボックス（`replace`、`page` を消す）。
  * 選択肢（`<option>`）は、サーバーコンポーネントから `children` で渡す。
  */
-export function SearchParamSelect({
+export const SearchParamSelect = ({
   defaultValue,
   paramName,
   value,
   ...props
-}: SearchParamSelectProps) {
+}: SearchParamSelectProps) => {
   const updateSearchParams = useUpdateSearchParams();
 
   return (
@@ -41,4 +42,4 @@ export function SearchParamSelect({
       value={value}
     />
   );
-}
+};

@@ -2,23 +2,21 @@
  * Tests for `scripts/check-cache-directives.mjs`.
  *
  * Usage:
- *   node --test scripts/check-cache-directives.test.mjs
+ *   pnpm exec vitest run scripts/check-cache-directives.test.mjs
  */
 
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, expect, it } from "vitest";
 
 import { findMissingBlankLines } from "./check-cache-directives.mjs";
 
 /**
- * @param {string} source
- * @param {string} [fileName]
+ * @param {string} source - Source code to check
+ * @param {string} [fileName] - Name of the file, which chooses the parser
  */
-function lines(source, fileName = "fixture.ts") {
-  return findMissingBlankLines(source, fileName).map(({ line }) => line);
-}
+const lines = (source, fileName = "fixture.ts") =>
+  findMissingBlankLines(source, fileName).map(({ line }) => line);
 
-describe("findMissingBlankLines", () => {
+describe(findMissingBlankLines, () => {
   it("accepts blank lines after the directive and the cache functions", () => {
     const source = `export async function getTalent() {
   'use cache: remote'
@@ -30,7 +28,7 @@ describe("findMissingBlankLines", () => {
 }
 `;
 
-    assert.deepEqual(lines(source), []);
+    expect(lines(source)).toStrictEqual([]);
   });
 
   it("reports a statement right after the directive", () => {
@@ -40,7 +38,7 @@ describe("findMissingBlankLines", () => {
 }
 `;
 
-    assert.deepEqual(lines(source), [3]);
+    expect(lines(source)).toStrictEqual([3]);
   });
 
   it("reports the cache functions right after the directive", () => {
@@ -52,7 +50,7 @@ describe("findMissingBlankLines", () => {
 }
 `;
 
-    assert.deepEqual(lines(source), [3]);
+    expect(lines(source)).toStrictEqual([3]);
   });
 
   it("reports a statement right after the cache functions", () => {
@@ -65,7 +63,7 @@ describe("findMissingBlankLines", () => {
 }
 `;
 
-    assert.deepEqual(lines(source), [6]);
+    expect(lines(source)).toStrictEqual([6]);
   });
 
   it("reports a comment that is not separated by a blank line", () => {
@@ -78,7 +76,7 @@ describe("findMissingBlankLines", () => {
 }
 `;
 
-    assert.deepEqual(lines(source), [4]);
+    expect(lines(source)).toStrictEqual([4]);
   });
 
   it("accepts the directive and the cache functions at the end of a block", () => {
@@ -91,7 +89,7 @@ export async function tag(id) {
 }
 `;
 
-    assert.deepEqual(lines(source, "fixture.js"), []);
+    expect(lines(source, "fixture.js")).toStrictEqual([]);
   });
 
   it("checks the directive at the top of a file", () => {
@@ -99,7 +97,7 @@ export async function tag(id) {
 export async function getTalent() {}
 `;
 
-    assert.deepEqual(lines(source), [2]);
+    expect(lines(source)).toStrictEqual([2]);
   });
 
   it("checks arrow functions, methods and nested blocks in TSX", () => {
@@ -120,7 +118,7 @@ class Repository {
 }
 `;
 
-    assert.deepEqual(lines(source, "fixture.tsx"), [3, 12]);
+    expect(lines(source, "fixture.tsx")).toStrictEqual([3, 12]);
   });
 
   it("ignores other directives and other functions", () => {
@@ -134,6 +132,6 @@ export async function getTalent() {
 }
 `;
 
-    assert.deepEqual(lines(source), []);
+    expect(lines(source)).toStrictEqual([]);
   });
 });

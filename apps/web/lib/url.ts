@@ -1,3 +1,2 @@
-export function parseQueries(queries?: string[]): string {
-  return queries ? queries.map(decodeURIComponent).join("/") : "";
-}
+export const parseQueries = (queries?: string[]): string =>
+  queries ? queries.map(decodeURIComponent).join("/") : "";

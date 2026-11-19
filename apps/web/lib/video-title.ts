@@ -18,7 +18,7 @@ export interface ParseVideoTitleOptions {
 
 const SPACE = String.raw`[\s]`;
 const TAG_NAME = String.raw`[\p{L}\p{M}\p{N}_〜～]`;
-const BRACKET = /[【〖]([^【】〖〗]*)[】〗]/g;
+const BRACKET = /[【〖](?<content>[^【】〖〗]*)[】〗]/gu;
 // 直前が文字や数字のもの（`C#` など）はハッシュタグとして扱わない
 const HASHTAG = new RegExp(`(?<![\\p{L}\\p{N}])[#＃](${TAG_NAME}+)`, "gu");
 // 末尾の並びの中のハッシュタグ。`#` だけのものも含む
@@ -31,8 +31,8 @@ const HASHTAG_ONLY = new RegExp(`^[#＃](${TAG_NAME}+)$`, "u");
 // 数字だけのハッシュタグ（`#11` などの回数の表記）しかない本文
 const NUMBER_HASHTAGS_ONLY = new RegExp(`^(?:[#＃]\\p{N}+${SPACE}*)+$`, "u");
 const SPACES = new RegExp(`${SPACE}+`, "gu");
-const SEGMENT_SEPARATOR = /[/／￤┋┊|｜]/;
-const TRAILING_SEPARATORS = /[\s\-–—/／|｜]+$/;
+const SEGMENT_SEPARATOR = /[/／￤┋┊|｜]/u;
+const TRAILING_SEPARATORS = /[\s\-–—/／|｜]+$/u;
 const EXCLUDED_HASHTAGS: ReadonlySet<string> = new Set([
   "short",
   "shorts",
@@ -40,20 +40,16 @@ const EXCLUDED_HASHTAGS: ReadonlySet<string> = new Set([
   "新人vtuber",
 ]);
 
-function isNumber(name: string): boolean {
-  return /^\p{N}+$/u.test(name);
-}
+const isNumber = (name: string): boolean => /^\p{N}+$/u.test(name);
 
-function toHashtagKey(name: string): string {
-  return name.normalize("NFKC").toLowerCase();
-}
+const toHashtagKey = (name: string): string =>
+  name.normalize("NFKC").toLowerCase();
 
-function toCreditKey(value: string): string {
-  return value
+const toCreditKey = (value: string): string =>
+  value
     .normalize("NFKC")
     .toLowerCase()
-    .replace(/[\s・]/g, "");
-}
+    .replaceAll(/[\s・]/gu, "");
 
 /**
  * 動画のタイトルを、本文・ラベル（【】と〖〗の中身）・末尾のハッシュタグに
@@ -68,10 +64,10 @@ function toCreditKey(value: string): string {
  * - 本文が空になったときは、先頭のラベルを本文にする。ラベルもなければ、元の
  *   タイトルを本文にする
  */
-export function parseVideoTitle(
+export const parseVideoTitle = (
   title: string,
   { creditKeywords = [], creditNames = [] }: ParseVideoTitleOptions = {}
-): ParsedVideoTitle {
+): ParsedVideoTitle => {
   const keywords = creditKeywords.map(toCreditKey).filter(Boolean);
   const names = new Set(
     [...creditKeywords, ...creditNames].map(toCreditKey).filter(Boolean)
@@ -80,7 +76,7 @@ export function parseVideoTitle(
   const trailingTags: string[] = [];
   const labels: string[] = [];
 
-  let text = title.replace(BRACKET, (_match: string, content: string) => {
+  let text = title.replaceAll(BRACKET, (_match: string, content: string) => {
     contents.push(content);
 
     return " ";
@@ -91,7 +87,7 @@ export function parseVideoTitle(
   // 末尾に並ぶハッシュタグだけを切り出す。数字だけのもの（`#11` などの
   // 回数の表記）は残す
   text = text.replace(TRAILING_RUN, (run) =>
-    run.replace(HASHTAG_IN_RUN, (match: string, name: string) => {
+    run.replaceAll(HASHTAG_IN_RUN, (match: string, name: string) => {
       if (isNumber(name)) {
         return match;
       }
@@ -101,12 +97,12 @@ export function parseVideoTitle(
       return " ";
     })
   );
-  text = text.replace(SPACES, " ").trim();
+  text = text.replaceAll(SPACES, " ").trim();
 
   // 【】の外がハッシュタグだけで、切り出すと回数の表記しか残らないものは、
   // 切り出さずにそのまま本文にする
   if (trailingTags.length > 0 && NUMBER_HASHTAGS_ONLY.test(text)) {
-    text = textWithHashtags.replace(SPACES, " ").trim();
+    text = textWithHashtags.replaceAll(SPACES, " ").trim();
     trailingTags.length = 0;
   }
 
@@ -118,7 +114,7 @@ export function parseVideoTitle(
   for (const content of contents) {
     const label = content
       .split(SEGMENT_SEPARATOR)
-      .map((segment) => segment.replace(SPACES, " ").trim())
+      .map((segment) => segment.replaceAll(SPACES, " ").trim())
       .filter((segment) => {
         if (segment === "") {
           return false;
@@ -186,8 +182,12 @@ export function parseVideoTitle(
     return { hashtags, labels: restLabels, text: firstLabel };
   }
 
-  return { hashtags: [], labels: [], text: title.replace(SPACES, " ").trim() };
-}
+  return {
+    hashtags: [],
+    labels: [],
+    text: title.replaceAll(SPACES, " ").trim(),
+  };
+};
 
 /** ラベルとハッシュタグの行に出すハッシュタグの数 */
 const MAX_HASHTAGS = 3;
@@ -207,10 +207,10 @@ export interface VideoTitleParts {
  *
  * 【】の中の出演者の表記（所属の名前を含む部分と、タレントの名前）は出さない。
  */
-export function getVideoTitleParts(
+export const getVideoTitleParts = (
   title: string,
   talentName?: string | null | undefined
-): VideoTitleParts {
+): VideoTitleParts => {
   const { hashtags, labels, text } = parseVideoTitle(title, {
     creditKeywords: [TALENT_AFFILIATION_NAME],
     creditNames: talentName ? [talentName] : [],
@@ -221,4 +221,4 @@ export function getVideoTitleParts(
   ].join(" ");
 
   return { tags, text };
-}
+};

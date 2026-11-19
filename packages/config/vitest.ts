@@ -1,5 +1,6 @@
-import react from "@vitejs/plugin-react";
-import { mergeConfig, type ViteUserConfig } from "vitest/config";
+import reactPlugin from "@vitejs/plugin-react";
+import { mergeConfig } from "vitest/config";
+import type { ViteUserConfig } from "vitest/config";
 
 /**
  * The Vitest settings that every package and app shares. The tests import
@@ -16,14 +17,12 @@ const defaults = {
  * `@vitejs/plugin-react` and a DOM from jsdom. A function, so that each
  * configuration gets its own instance of the plugin.
  */
-function reactDefaults(): ViteUserConfig {
-  return {
-    plugins: [react()],
-    test: {
-      environment: "jsdom",
-    },
-  };
-}
+const reactDefaults = (): ViteUserConfig => ({
+  plugins: [reactPlugin()],
+  test: {
+    environment: "jsdom",
+  },
+});
 
 /**
  * Returns the Vitest configuration for code that runs on Node.
@@ -39,11 +38,9 @@ function reactDefaults(): ViteUserConfig {
  * export default defineVitestConfig()
  * ```
  */
-export function defineVitestConfig(
+export const defineVitestConfig = (
   overrides: ViteUserConfig = {}
-): ViteUserConfig {
-  return mergeConfig(defaults, overrides);
-}
+): ViteUserConfig => mergeConfig(defaults, overrides);
 
 /**
  * Returns the Vitest configuration for React components, which run in jsdom.
@@ -59,7 +56,7 @@ export function defineVitestConfig(
  * })
  * ```
  */
-defineVitestConfig.react = function defineReactVitestConfig(
+defineVitestConfig.react = function react(
   overrides: ViteUserConfig = {}
 ): ViteUserConfig {
   return defineVitestConfig(mergeConfig(reactDefaults(), overrides));

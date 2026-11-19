@@ -8,11 +8,13 @@ import {
   randomLongDuration,
   randomPast,
   randomShortDuration,
-  type SeedContext,
 } from "./context.js";
+import type { SeedContext } from "./context.js";
 
 /** The thumbnails that the videos use in turn. */
-export function createThumbnails(context: SeedContext): Tables<"thumbnails">[] {
+export const createThumbnails = (
+  context: SeedContext
+): Tables<"thumbnails">[] => {
   const { faker } = context;
 
   return Array.from({ length: 10 }, () => {
@@ -30,10 +32,10 @@ export function createThumbnails(context: SeedContext): Tables<"thumbnails">[] {
       width: 1280,
     };
   });
-}
+};
 
 /** The item of `items` at `index`, going round them. */
-function pick<Item>(items: readonly Item[], index: number): Item {
+const pick = <Item>(items: readonly Item[], index: number): Item => {
   const item = items[index % items.length];
 
   if (item === undefined) {
@@ -41,7 +43,7 @@ function pick<Item>(items: readonly Item[], index: number): Item {
   }
 
   return item;
-}
+};
 
 interface VideoValues extends Pick<
   Tables<"videos">,
@@ -56,22 +58,20 @@ interface VideoValues extends Pick<
 }
 
 /** A video that is not deleted. */
-export function createVideo(
+export const createVideo = (
   { faker }: SeedContext,
   { created_at: createdAt, updated_at: updatedAt, ...values }: VideoValues
-): Tables<"videos"> {
-  return {
-    created_at: createdAt ?? values.published_at,
-    deleted_at: null,
-    deleted_reason: null,
-    id: faker.string.uuid(),
-    platform: "youtube",
-    updated_at: updatedAt ?? createdAt ?? values.published_at,
-    video_kind: "standard",
-    visible: true,
-    ...values,
-  };
-}
+): Tables<"videos"> => ({
+  created_at: createdAt ?? values.published_at,
+  deleted_at: null,
+  deleted_reason: null,
+  id: faker.string.uuid(),
+  platform: "youtube",
+  updated_at: updatedAt ?? createdAt ?? values.published_at,
+  video_kind: "standard",
+  visible: true,
+  ...values,
+});
 
 const STANDARD_TITLES = [
   "【歌枠】アニソン縛り歌ってみた！",
@@ -110,10 +110,10 @@ interface YouTubeVideosDependencies {
  * The first one is always `UPCOMING` (and hidden), so the seed data has a
  * hidden video.
  */
-function createStandardVideos(
+const createStandardVideos = (
   context: SeedContext,
   { talents, thumbnails }: YouTubeVideosDependencies
-): Tables<"videos">[] {
+): Tables<"videos">[] => {
   const { faker } = context;
 
   return STANDARD_TITLES.map((title, index) => {
@@ -169,14 +169,14 @@ function createStandardVideos(
       video_kind: videoKind,
     });
   });
-}
+};
 
 /** Shorts published within 2 days, so that there are enough of them. */
-function createShorts(
+const createShorts = (
   context: SeedContext,
   { talents, thumbnails }: YouTubeVideosDependencies
-): Tables<"videos">[] {
-  return Array.from({ length: 15 }, (_, index) =>
+): Tables<"videos">[] =>
+  Array.from({ length: 15 }, (_, index) =>
     createVideo(context, {
       duration: randomShortDuration(context),
       published_at: randomPast(context, 2),
@@ -187,17 +187,16 @@ function createShorts(
       video_kind: "short",
     })
   );
-}
 
 /**
  * The finished streams of the first talent within 90 days before today in
  * Japan, for the tendency of its streams on its page: 10 on Saturdays at
  * 21:00 and 2 on Fridays at 22:00.
  */
-function createFinishedStreams(
+const createFinishedStreams = (
   context: SeedContext,
   { talents, thumbnails }: YouTubeVideosDependencies
-): Tables<"videos">[] {
+): Tables<"videos">[] => {
   const [talent] = talents;
 
   if (!talent) {
@@ -230,22 +229,20 @@ function createFinishedStreams(
       title,
     })
   );
-}
+};
 
 /**
  * The videos on YouTube other than the schedule: videos and streams of
  * every status, shorts, and the finished streams of the first talent.
  */
-export function createYouTubeVideos(
+export const createYouTubeVideos = (
   context: SeedContext,
   dependencies: YouTubeVideosDependencies
-): Tables<"videos">[] {
-  return [
-    ...createStandardVideos(context, dependencies),
-    ...createShorts(context, dependencies),
-    ...createFinishedStreams(context, dependencies),
-  ];
-}
+): Tables<"videos">[] => [
+  ...createStandardVideos(context, dependencies),
+  ...createShorts(context, dependencies),
+  ...createFinishedStreams(context, dependencies),
+];
 
 interface LinkYouTubeVideosDependencies {
   videos: readonly Tables<"videos">[];
@@ -257,11 +254,11 @@ interface LinkYouTubeVideosDependencies {
  * channel of its talent, so the page of a talent shows its own channel on
  * the cards.
  */
-export function linkYouTubeVideos(
+export const linkYouTubeVideos = (
   { faker }: SeedContext,
   { videos, youtubeChannels }: LinkYouTubeVideosDependencies
-): Tables<"youtube_videos">[] {
-  return videos.flatMap((video) => {
+): Tables<"youtube_videos">[] =>
+  videos.flatMap((video) => {
     const channel = youtubeChannels.find(
       (candidate) => candidate.talent_id === video.talent_id
     );
@@ -277,7 +274,6 @@ export function linkYouTubeVideos(
         ]
       : [];
   });
-}
 
 interface TwitchVideosDependencies {
   thumbnails: readonly Tables<"thumbnails">[];
@@ -296,10 +292,10 @@ export interface SeedTwitchVideos {
  * links differently. Both Twitch users have some, so the icon and its
  * fallback can be checked.
  */
-export function createTwitchVideos(
+export const createTwitchVideos = (
   context: SeedContext,
   { thumbnails, twitchUsers }: TwitchVideosDependencies
-): SeedTwitchVideos {
+): SeedTwitchVideos => {
   const { faker, now } = context;
   const [userWithIcon, userWithoutIcon] = twitchUsers;
 
@@ -404,4 +400,4 @@ export function createTwitchVideos(
     }),
     videos,
   };
-}
+};

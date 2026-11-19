@@ -1,11 +1,8 @@
 import { REDIS_KEYS } from "@shinju-date/constants";
 import { cacheLife } from "next/cache";
 
-import {
-  DEFAULT_RANKING_LIMIT,
-  type RankingQuery,
-  toDateRange,
-} from "./period";
+import { DEFAULT_RANKING_LIMIT, toDateRange } from "./period";
+import type { RankingQuery } from "./period";
 import { getPopularItems } from "./popular-items";
 
 export interface PopularKeyword {
@@ -18,10 +15,10 @@ export interface PopularKeyword {
  * @param query.range - The date range (both ends inclusive). Pass the same date as `start` and `end` for a single date
  * @param query.limit - Maximum number to return (`DEFAULT_RANKING_LIMIT` by default)
  */
-export async function getPopularKeywords({
+export const getPopularKeywords = async ({
   limit = DEFAULT_RANKING_LIMIT,
   range,
-}: RankingQuery): Promise<PopularKeyword[]> {
+}: RankingQuery): Promise<PopularKeyword[]> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -38,4 +35,4 @@ export async function getPopularKeywords({
     count: Math.round(count),
     keyword,
   }));
-}
+};

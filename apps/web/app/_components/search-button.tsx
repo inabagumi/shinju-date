@@ -1,20 +1,29 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 import { useSearchModal } from "./search-modal-context";
 
-export function SearchButton() {
-  const [isMac, setIsMac] = useState<boolean | undefined>(undefined);
-  const { openModal } = useSearchModal();
+// The platform does not change while the page is open
+const subscribeNothing = () => () => {
+  // Nothing to unsubscribe from
+};
 
-  useEffect(() => {
-    setIsMac(
-      typeof window !== "undefined" &&
-        navigator.userAgent.toUpperCase().includes("MAC")
-    );
-  }, []);
+const getIsMac = (): boolean | undefined =>
+  typeof window !== "undefined" &&
+  navigator.userAgent.toUpperCase().includes("MAC");
+
+// Unknown on the server and while hydrating, so that the markup matches
+const getServerIsMac = (): boolean | undefined => undefined;
+
+export const SearchButton = () => {
+  const isMac = useSyncExternalStore(
+    subscribeNothing,
+    getIsMac,
+    getServerIsMac
+  );
+  const { openModal } = useSearchModal();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -45,4 +54,4 @@ export function SearchButton() {
       )}
     </button>
   );
-}
+};

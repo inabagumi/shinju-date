@@ -19,7 +19,7 @@ interface SelectedDateParam {
 /**
  * グラフで選んだ日を、URL の `date` パラメータとして読み書きする。
  */
-export function useSelectedDateParam(): SelectedDateParam {
+export const useSelectedDateParam = (): SelectedDateParam => {
   const searchParams = useSearchParams();
   const updateSearchParams = useUpdateSearchParams();
   const selectedDate = searchParams.get(SELECTED_DATE_PARAM);
@@ -32,4 +32,4 @@ export function useSelectedDateParam(): SelectedDateParam {
   };
 
   return { selectedDate, toggleDate };
-}
+};

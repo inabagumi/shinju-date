@@ -1,16 +1,20 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { countVideoBackfillFailures } from "../_lib/count-video-backfill-failures";
+
 const mocks = vi.hoisted(() => ({
-  countVideoBackfillFailures: vi.fn(),
+  countVideoBackfillFailures: vi.fn<typeof countVideoBackfillFailures>(),
 }));
 
-vi.mock("../_lib/count-video-backfill-failures", () => ({
+vi.mock(import("../_lib/count-video-backfill-failures"), () => ({
   countVideoBackfillFailures: mocks.countVideoBackfillFailures,
 }));
-vi.mock("@shinju-date/logger", () => ({
-  logger: { error: vi.fn(), warn: vi.fn() },
-}));
+vi.mock(import("@shinju-date/logger"), async () => {
+  const { createMockLogger } = await import("@/test/logger");
+
+  return { logger: createMockLogger() };
+});
 
 const { VideoBackfillFailureAlert } =
   await import("./video-backfill-failure-alert");

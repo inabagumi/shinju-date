@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { formatDuration } from "./format-duration.js";
 
-describe("formatDuration", () => {
+describe(formatDuration, () => {
   it("formats duration with hours, minutes, and seconds", () => {
     const duration = Temporal.Duration.from({
       hours: 1,

@@ -30,7 +30,7 @@ interface HelixUser {
   view_count: number;
 }
 
-function toHelixUser({
+const toHelixUser = ({
   defaultIcon,
   displayName,
   id,
@@ -40,49 +40,46 @@ function toHelixUser({
   displayName: string;
   id: string;
   login: string;
-}): HelixUser {
-  return {
-    broadcaster_type: "affiliate",
-    created_at: "2020-01-01T00:00:00Z",
-    description: `${displayName}のチャンネルです。`,
-    display_name: displayName,
-    id,
-    login,
-    offline_image_url: "",
-    profile_image_url: defaultIcon
-      ? TWITCH_DEFAULT_ICON_URL
-      : getTwitchUserIconUrl(id),
-    type: "",
-    view_count: 0,
-  };
-}
+}): HelixUser => ({
+  broadcaster_type: "affiliate",
+  created_at: "2020-01-01T00:00:00Z",
+  description: `${displayName}のチャンネルです。`,
+  display_name: displayName,
+  id,
+  login,
+  offline_image_url: "",
+  profile_image_url: defaultIcon
+    ? TWITCH_DEFAULT_ICON_URL
+    : getTwitchUserIconUrl(id),
+  type: "",
+  view_count: 0,
+});
 
 /**
  * A user of the Supabase mock as the Helix API returns it. A user without an
  * icon (`profile_image_id`) has the default icon of Twitch, so that syncing
  * the user keeps it without one.
  */
-function toSavedHelixUser(user: Tables<"twitch_users">): HelixUser {
-  return toHelixUser({
+const toSavedHelixUser = (user: Tables<"twitch_users">): HelixUser =>
+  toHelixUser({
     defaultIcon: user.profile_image_id === null,
     displayName: user.name ?? "",
     id: user.twitch_user_id,
     login: user.twitch_login_name ?? "",
   });
-}
 
 /** The format of the ID of a user: digits only. */
-const USER_ID_PATTERN = /^\d+$/;
+const USER_ID_PATTERN = /^\d+$/u;
 
 /**
  * The users of the Supabase mock (`twitch_users`), so that the apps find the
  * users that they saved.
  */
-async function getSavedUsers(): Promise<Tables<"twitch_users">[]> {
+const getSavedUsers = async (): Promise<Tables<"twitch_users">[]> => {
   await ensureCollectionsSeeded();
 
   return twitchUsers.findMany();
-}
+};
 
 /**
  * Finds a user by ID. A user of the Supabase mock is answered as it is
@@ -90,10 +87,10 @@ async function getSavedUsers(): Promise<Tables<"twitch_users">[]> {
  * generated user without videos, so that a new user can be added in the
  * admin app.
  */
-function findUserById(
+const findUserById = (
   savedUsers: readonly Tables<"twitch_users">[],
   id: string
-): HelixUser | null {
+): HelixUser | null => {
   const user = savedUsers.find((candidate) => candidate.twitch_user_id === id);
 
   if (user) {
@@ -108,7 +105,7 @@ function findUserById(
         login: `user${id}`,
       })
     : null;
-}
+};
 
 /** The most items that a page of the Helix API has (`first`). */
 const MAX_PAGE_SIZE = 100;
@@ -121,32 +118,29 @@ const THUMBNAIL_DIRECTORIES = [
 ] as const;
 
 /** An error response of the Helix API. */
-function helixError(status: 400 | 404, message: string): Response {
-  return HttpResponse.json(
+const helixError = (status: 400 | 404, message: string): Response =>
+  HttpResponse.json(
     { error: status === 400 ? "Bad Request" : "Not Found", message, status },
     { status }
   );
-}
 
 /** A timestamp as the Helix API returns it, such as `2026-01-01T00:00:00Z`. */
-function toHelixTimestamp(text: string): string {
-  return Temporal.Instant.from(text).toString({ smallestUnit: "second" });
-}
+const toHelixTimestamp = (text: string): string =>
+  Temporal.Instant.from(text).toString({ smallestUnit: "second" });
 
 /** The seconds of an ISO 8601 duration, such as `PT2H34M12S`. */
-function toSeconds(duration: string): number {
-  return Temporal.Duration.from(duration).total("seconds");
-}
+const toSeconds = (duration: string): number =>
+  Temporal.Duration.from(duration).total("seconds");
 
 /** A duration as the Helix API returns it for videos, such as `2h34m12s`. */
-function toHelixDuration(duration: string): string {
+const toHelixDuration = (duration: string): string => {
   const total = Math.floor(toSeconds(duration));
   const hours = Math.floor(total / 3600);
   const minutes = Math.floor((total % 3600) / 60);
   const seconds = total % 60;
 
   return `${hours > 0 ? `${hours}h` : ""}${hours > 0 || minutes > 0 ? `${minutes}m` : ""}${seconds}s`;
-}
+};
 
 /** A Twitch video of the Supabase mock, with its video and its user. */
 interface MockTwitchVideo {
@@ -161,7 +155,7 @@ interface MockTwitchVideo {
  * them. The Helix API answers with these, so that the apps find the videos
  * that they saved.
  */
-async function getMockTwitchVideos(): Promise<MockTwitchVideo[]> {
+const getMockTwitchVideos = async (): Promise<MockTwitchVideo[]> => {
   await ensureCollectionsSeeded();
 
   const usersById = new Map(
@@ -181,13 +175,13 @@ async function getMockTwitchVideos(): Promise<MockTwitchVideo[]> {
         ? [{ twitchVideo, user, video }]
         : [];
     })
-    .sort((a, b) =>
+    .toSorted((a, b) =>
       Temporal.Instant.compare(b.video.published_at, a.video.published_at)
     );
-}
+};
 
 /** A video as returned by the Helix API (`GET /helix/videos`). */
-function toHelixVideo({ twitchVideo, user, video }: MockTwitchVideo) {
+const toHelixVideo = ({ twitchVideo, user, video }: MockTwitchVideo) => {
   const id = twitchVideo.twitch_video_id;
 
   return {
@@ -209,10 +203,10 @@ function toHelixVideo({ twitchVideo, user, video }: MockTwitchVideo) {
     view_count: 0,
     viewable: "public",
   };
-}
+};
 
 /** A stream as returned by the Helix API (`GET /helix/streams`). */
-function toHelixStream({ twitchVideo, user, video }: MockTwitchVideo) {
+const toHelixStream = ({ twitchVideo, user, video }: MockTwitchVideo) => {
   const login = user.twitch_login_name ?? "";
 
   return {
@@ -232,10 +226,10 @@ function toHelixStream({ twitchVideo, user, video }: MockTwitchVideo) {
     user_name: user.name ?? "",
     viewer_count: 0,
   };
-}
+};
 
 /** A clip as returned by the Helix API (`GET /helix/clips`). */
-function toHelixClip({ twitchVideo, user, video }: MockTwitchVideo) {
+const toHelixClip = ({ twitchVideo, user, video }: MockTwitchVideo) => {
   const id = twitchVideo.twitch_video_id;
 
   return {
@@ -257,17 +251,17 @@ function toHelixClip({ twitchVideo, user, video }: MockTwitchVideo) {
     view_count: 0,
     vod_offset: null,
   };
-}
+};
 
 /**
  * A page of items with the `first` and `after` parameters of the Helix API.
  * The cursor of the next page is only given when there is one.
  */
-function paginate<Item>(
+const paginate = <Item>(
   items: readonly Item[],
   searchParams: URLSearchParams,
   defaultSize = 20
-): Response {
+): Response => {
   const first = searchParams.get("first");
   const size = first === null ? defaultSize : Number(first);
 
@@ -291,7 +285,7 @@ function paginate<Item>(
     data: items.slice(offset, next),
     pagination: next < items.length ? { cursor: btoa(String(next)) } : {},
   });
-}
+};
 
 /** The types of videos that `GET /helix/videos` lists. */
 const HELIX_VIDEO_TYPES = ["archive", "highlight", "upload"] as const;
@@ -301,7 +295,7 @@ export const twitchHandlers = [
   http.post("https://id.twitch.tv/oauth2/token", () =>
     HttpResponse.json({
       access_token: "mock-twitch-app-access-token",
-      expires_in: 5011271,
+      expires_in: 5_011_271,
       token_type: "bearer",
     })
   ),
@@ -374,7 +368,8 @@ export const twitchHandlers = [
       return helixError(400, `The value of "type" is not valid: ${type}`);
     }
 
-    const helixVideos = (await getMockTwitchVideos())
+    const mockVideos = await getMockTwitchVideos();
+    const helixVideos = mockVideos
       .filter(({ twitchVideo }) =>
         (HELIX_VIDEO_TYPES as readonly (string | null)[]).includes(
           twitchVideo.type
@@ -419,7 +414,8 @@ export const twitchHandlers = [
       );
     }
 
-    const streams = (await getMockTwitchVideos())
+    const mockVideos = await getMockTwitchVideos();
+    const streams = mockVideos
       .filter(
         ({ twitchVideo, video }) =>
           video.status === "LIVE" && twitchVideo.stream_id !== null
@@ -459,7 +455,8 @@ export const twitchHandlers = [
       );
     }
 
-    const clips = (await getMockTwitchVideos())
+    const mockVideos = await getMockTwitchVideos();
+    const clips = mockVideos
       .filter(({ twitchVideo }) => twitchVideo.type === "clip")
       .map(toHelixClip);
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { toDBString } from "./to-db-string.js";
 
-describe("toDBString", () => {
+describe(toDBString, () => {
   it("Temporal.Instant with fractional seconds should be truncated to the second", () => {
     const instantWithMillis = Temporal.Instant.from(
       "2025-11-02T10:30:00.123456Z"

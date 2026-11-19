@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { DatabaseError, StorageError, throwIfError } from "./errors.js";
+import { DatabaseError } from "./database-error.js";
+import { throwIfError } from "./errors.js";
+import { StorageError } from "./storage-error.js";
 
-describe("throwIfError", () => {
+describe(throwIfError, () => {
   it("returns data when the query succeeded", () => {
-    expect(throwIfError({ data: [{ id: "a" }], error: null }, "Load")).toEqual([
-      { id: "a" },
-    ]);
+    expect(
+      throwIfError({ data: [{ id: "a" }], error: null }, "Load")
+    ).toStrictEqual([{ id: "a" }]);
   });
 
   it("returns null data of a query that selects nothing", () => {
@@ -33,7 +35,7 @@ describe("throwIfError", () => {
   });
 });
 
-describe("StorageError", () => {
+describe(StorageError, () => {
   it("keeps the operation and the cause", () => {
     const cause = new Error("The resource already exists");
     const error = new StorageError("Failed to upload a thumbnail", cause);

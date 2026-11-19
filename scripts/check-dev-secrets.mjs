@@ -15,10 +15,9 @@
  */
 
 import { readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import path from "node:path";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const root = path.resolve(import.meta.dirname, "..");
 
 const SECRETS_FILE = "config/dev-secrets.env";
 const SAMPLE_FILES = [
@@ -33,19 +32,22 @@ const SAMPLE_FILES = [
  * @param {string} name - Variable name
  * @returns {string | undefined} The value without surrounding quotes
  */
-function readVariable(file, name) {
-  const content = readFileSync(join(root, file), "utf8");
+const readVariable = (file, name) => {
+  const content = readFileSync(path.join(root, file), "utf-8");
 
   for (const line of content.split("\n")) {
-    const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/);
+    const match = line.match(
+      /^\s*(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?<value>.*?)\s*$/u
+    );
 
-    if (match?.[1] === name) {
-      return match[2].replace(/^(["'])(.*)\1$/, "$2");
+    if (match?.groups.name === name) {
+      return match.groups.value.replace(
+        /^(?<quote>["'])(?<unquoted>.*)\k<quote>$/u,
+        "$<unquoted>"
+      );
     }
   }
-
-  return undefined;
-}
+};
 
 const expected = readVariable(SECRETS_FILE, "SRH_TOKEN");
 

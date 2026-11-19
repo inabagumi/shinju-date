@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type {
   TalentTwitchUser,
@@ -15,45 +15,41 @@ import {
 
 const TALENT_ID = "00000000-0000-4000-8000-000000000001";
 
-function createYouTubeChannel(
+const createYouTubeChannel = (
   overrides: Partial<TalentYouTubeChannel> = {}
-): TalentYouTubeChannel {
-  return {
-    name: "メインチャンネル",
-    profile_image: null,
-    youtube_channel_id: "UCmain",
-    youtube_handle: "@main",
-    ...overrides,
-  };
-}
+): TalentYouTubeChannel => ({
+  name: "メインチャンネル",
+  profile_image: null,
+  youtube_channel_id: "UCmain",
+  youtube_handle: "@main",
+  ...overrides,
+});
 
-function createTwitchUser(
+const createTwitchUser = (
   overrides: Partial<TalentTwitchUser> = {}
-): TalentTwitchUser {
-  return {
-    name: "Twitch表示名",
-    profile_image: null,
-    twitch_login_name: "login",
-    twitch_user_id: "100",
-    ...overrides,
-  };
-}
+): TalentTwitchUser => ({
+  name: "Twitch表示名",
+  profile_image: null,
+  twitch_login_name: "login",
+  twitch_user_id: "100",
+  ...overrides,
+});
 
-describe("findFirstNonBlank", () => {
-  test("should return the first value that is not blank, trimmed", () => {
+describe(findFirstNonBlank, () => {
+  it("should return the first value that is not blank, trimmed", () => {
     expect(findFirstNonBlank(null, undefined, " ", " name ", "other")).toBe(
       "name"
     );
   });
 
-  test("should return null without any value that is not blank", () => {
+  it("should return null without any value that is not blank", () => {
     expect(findFirstNonBlank()).toBeNull();
     expect(findFirstNonBlank(null, undefined, "", "  ")).toBeNull();
   });
 });
 
-describe("getTalentLinks", () => {
-  test("should link to each channel and the calendar", () => {
+describe(getTalentLinks, () => {
+  it("should link to each channel and the calendar", () => {
     expect(
       getTalentLinks(
         createTalentDetail({
@@ -61,7 +57,7 @@ describe("getTalentLinks", () => {
           youtube_channels: [createYouTubeChannel()],
         })
       )
-    ).toEqual([
+    ).toStrictEqual([
       {
         external: true,
         href: "https://www.youtube.com/channel/UCmain",
@@ -80,7 +76,7 @@ describe("getTalentLinks", () => {
     ]);
   });
 
-  test("should tell several accounts of the same platform apart", () => {
+  it("should tell several accounts of the same platform apart", () => {
     const links = getTalentLinks(
       createTalentDetail({
         twitch_users: [
@@ -107,7 +103,7 @@ describe("getTalentLinks", () => {
       })
     );
 
-    expect(links.map((link) => link.label)).toEqual([
+    expect(links.map((link) => link.label)).toStrictEqual([
       "YouTube チャンネル（メインチャンネル）",
       "YouTube チャンネル（@sub）",
       "YouTube チャンネル（UCthird）",
@@ -117,7 +113,7 @@ describe("getTalentLinks", () => {
     ]);
   });
 
-  test("should skip Twitch users without a login", () => {
+  it("should skip Twitch users without a login", () => {
     const links = getTalentLinks(
       createTalentDetail({
         twitch_users: [
@@ -127,7 +123,7 @@ describe("getTalentLinks", () => {
       })
     );
 
-    expect(links).toEqual([
+    expect(links).toStrictEqual([
       {
         external: true,
         href: "https://www.twitch.tv/login2",
@@ -142,8 +138,8 @@ describe("getTalentLinks", () => {
   });
 });
 
-describe("getTalentPath", () => {
-  test("should add the kind of videos except for all", () => {
+describe(getTalentPath, () => {
+  it("should add the kind of videos except for all", () => {
     expect(getTalentPath(TALENT_ID, "all")).toBe(`/talents/${TALENT_ID}`);
     expect(getTalentPath(TALENT_ID, "short")).toBe(
       `/talents/${TALENT_ID}?kind=short`
@@ -153,7 +149,7 @@ describe("getTalentPath", () => {
     );
   });
 
-  test("should return the paths of the page and the calendar", () => {
+  it("should return the paths of the page and the calendar", () => {
     expect(getTalentPath(TALENT_ID)).toBe(`/talents/${TALENT_ID}`);
     expect(getTalentCalendarPath(TALENT_ID)).toBe(`/talents/${TALENT_ID}.ics`);
   });

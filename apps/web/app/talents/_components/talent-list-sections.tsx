@@ -10,30 +10,28 @@ import TalentGrid from "./talent-grid";
  * `fetchTalentList` is cached, so the talents are fetched only once with
  * `TalentListGrid`.
  */
-export async function TalentCount() {
+export const TalentCount = async () => {
   const talents = await fetchTalentList();
 
   return <p className="tabular-nums">{talents.length}人</p>;
-}
+};
 
-export function TalentCountSkeleton() {
-  return (
-    <div
-      aria-hidden="true"
-      className="h-[1lh] w-12 animate-pulse rounded-control bg-muted"
-    />
-  );
-}
+export const TalentCountSkeleton = () => (
+  <div
+    aria-hidden="true"
+    className="h-[1lh] w-12 animate-pulse rounded-control bg-muted"
+  />
+);
 
 /**
  * The list is still shown with the icons and the names when the stream
  * statuses cannot be fetched.
  */
-export async function TalentListGrid() {
+export const TalentListGrid = async () => {
   const [talents, streamStatuses] = await Promise.all([
     fetchTalentList(),
     fetchTalentStreamStatusesSafe(),
   ]);
 
   return <TalentGrid streamStatuses={streamStatuses} talents={talents} />;
-}
+};

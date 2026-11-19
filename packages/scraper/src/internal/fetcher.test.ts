@@ -1,3 +1,6 @@
+// oxlint-disable-next-line eslint/max-classes-per-file -- the fetchers of the tests are small subclasses of the example fetcher
+import { setTimeout as delay } from "node:timers/promises";
+
 import { describe, expect, it, vi } from "vitest";
 
 import type {
@@ -5,7 +8,8 @@ import type {
   RecentVideosResult,
   VideoLookupResult,
 } from "./fetcher-types.js";
-import { Fetcher } from "./fetcher.js";
+import { Fetcher, fetchByIds } from "./fetcher.js";
+import type { Logger } from "./logger.js";
 
 interface Account {
   id: string;
@@ -51,7 +55,7 @@ class ExampleFetcher extends Fetcher<Account, Video> {
   }
 
   async getAccounts(accountIds: readonly string[]): Promise<Account[]> {
-    const { found } = await this.fetchByIds(accountIds, (ids) =>
+    const { found } = await fetchByIds(accountIds, (ids) =>
       this.#lookUp(ids, Object.keys(this.#platform.accounts), (id) => ({
         id,
         name: `Account ${id}`,
@@ -66,14 +70,16 @@ class ExampleFetcher extends Fetcher<Account, Video> {
   ): Promise<RecentVideosResult<Video>> {
     const { failures, results } = await this.fetchPerAccount(
       accountIds,
-      async (accountId) => {
+      (accountId) => {
         const videoIds = this.#platform.accounts[accountId] ?? [];
 
         if (videoIds instanceof Error) {
-          throw videoIds;
+          return Promise.reject(videoIds);
         }
 
-        return videoIds.map((id) => ({ id, title: `Video ${id}` }));
+        return Promise.resolve(
+          videoIds.map((id) => ({ id, title: `Video ${id}` }))
+        );
       }
     );
 
@@ -83,7 +89,7 @@ class ExampleFetcher extends Fetcher<Account, Video> {
   async getVideos(
     videoIds: readonly string[]
   ): Promise<VideoLookupResult<Video>> {
-    const { found, missingIds } = await this.fetchByIds(videoIds, (ids) =>
+    const { found, missingIds } = await fetchByIds(videoIds, (ids) =>
       this.#lookUp(ids, this.#platform.videoIds, (id) => ({
         id,
         title: `Video ${id}`,
@@ -94,7 +100,7 @@ class ExampleFetcher extends Fetcher<Account, Video> {
   }
 }
 
-describe("Fetcher", () => {
+describe(Fetcher, () => {
   describe("lookups by ID", () => {
     it("passes each ID once and leaves batching to the API client", async () => {
       const fetcher = new ExampleFetcher({
@@ -104,18 +110,18 @@ describe("Fetcher", () => {
 
       const result = await fetcher.getVideos(["v1", "v2", "v1", "v3", "v2"]);
 
-      expect(result.videos.map((video) => video.id)).toEqual([
+      expect(result.videos.map((video) => video.id)).toStrictEqual([
         "v1",
         "v2",
         "v3",
       ]);
-      expect(fetcher.requests).toEqual([["v1", "v2", "v3"]]);
+      expect(fetcher.requests).toStrictEqual([["v1", "v2", "v3"]]);
     });
 
     it("reports the IDs the platform did not return", async () => {
       const fetcher = new ExampleFetcher({ accounts: {}, videoIds: ["v1"] });
 
-      await expect(fetcher.getVideos(["v1", "gone"])).resolves.toEqual({
+      await expect(fetcher.getVideos(["v1", "gone"])).resolves.toStrictEqual({
         missingIds: ["gone"],
         videos: [{ id: "v1", title: "Video v1" }],
       });
@@ -124,8 +130,8 @@ describe("Fetcher", () => {
     it("makes no request without IDs", async () => {
       const fetcher = new ExampleFetcher({ accounts: {}, videoIds: [] });
 
-      await expect(fetcher.getAccounts([])).resolves.toEqual([]);
-      expect(fetcher.requests).toEqual([]);
+      await expect(fetcher.getAccounts([])).resolves.toStrictEqual([]);
+      expect(fetcher.requests).toStrictEqual([]);
     });
   });
 
@@ -139,8 +145,8 @@ describe("Fetcher", () => {
 
       const result = await fetcher.getRecentVideos(["a", "b"]);
 
-      expect(result.failures).toEqual([{ accountId: "a", error }]);
-      expect(result.videos).toEqual([{ id: "v3", title: "Video v3" }]);
+      expect(result.failures).toStrictEqual([{ accountId: "a", error }]);
+      expect(result.videos).toStrictEqual([{ id: "v3", title: "Video v3" }]);
     });
   });
 
@@ -148,10 +154,10 @@ describe("Fetcher", () => {
     it("logs the account and platform of a failed listing", async () => {
       const error = new Error("rate limited");
       const logger = {
-        debug: vi.fn(),
-        error: vi.fn(),
-        info: vi.fn(),
-        warn: vi.fn(),
+        debug: vi.fn<Logger["debug"]>(),
+        error: vi.fn<Logger["error"]>(),
+        info: vi.fn<Logger["info"]>(),
+        warn: vi.fn<Logger["warn"]>(),
       };
 
       const fetcher = new ExampleFetcher(
@@ -169,13 +175,14 @@ describe("Fetcher", () => {
 
     it("rejects a lookup when a request fails", async () => {
       class FailingFetcher extends ExampleFetcher {
+        // oxlint-disable-next-line eslint/class-methods-use-this -- overrides a method of the fetcher
         override async getVideos(
           videoIds: readonly string[]
         ): Promise<VideoLookupResult<Video>> {
-          const { found, missingIds } = await this.fetchByIds(
+          const { found, missingIds } = await fetchByIds(
             videoIds,
             // oxlint-disable-next-line require-yield -- a request that fails yields nothing
-            async function* (): AsyncGenerator<Video> {
+            async function* failingRequest(): AsyncGenerator<Video> {
               throw new Error("boom");
             }
           );
@@ -195,10 +202,10 @@ describe("Fetcher", () => {
       let running = 0;
       let peak = 0;
       const task = async () => {
-        running++;
+        running += 1;
         peak = Math.max(peak, running);
-        await new Promise((resolve) => setTimeout(resolve, 5));
-        running--;
+        await delay(5);
+        running -= 1;
       };
 
       class SlowFetcher extends ExampleFetcher {

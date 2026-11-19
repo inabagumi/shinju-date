@@ -2,27 +2,32 @@ import type { SummaryStats, WithTrends } from "@shinju-date/dashboard-stats";
 import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { getHistoricalStats } from "../_lib/get-historical-stats";
+import type { getSummaryStats } from "../_lib/get-summary-stats";
+
 const mocks = vi.hoisted(() => ({
-  getHistoricalStats: vi.fn(),
-  getSummaryStats: vi.fn(),
+  getHistoricalStats: vi.fn<typeof getHistoricalStats>(),
+  getSummaryStats: vi.fn<typeof getSummaryStats>(),
 }));
 
-vi.mock("../_lib/get-historical-stats", () => ({
+vi.mock(import("../_lib/get-historical-stats"), () => ({
   getHistoricalStats: mocks.getHistoricalStats,
 }));
-vi.mock("../_lib/get-summary-stats", () => ({
+vi.mock(import("../_lib/get-summary-stats"), () => ({
   getSummaryStats: mocks.getSummaryStats,
 }));
-vi.mock("./video-stats-chart-ui", () => ({
-  VideoStatsChartUI: () => null,
+vi.mock(import("./video-stats-chart-ui"), () => ({
+  VideoStatsChartUI: () => <div />,
 }));
 
 const { ContentSummaryWidget, VideoSummaryWidget } =
   await import("./summary-widget");
 
-function trend(current: number, dayChange: number | null = null) {
-  return { current, dayChange, weekChange: null };
-}
+const trend = (current: number, dayChange: number | null = null) => ({
+  current,
+  dayChange,
+  weekChange: null,
+});
 
 /** The counts of a day without the snapshots to compare with. */
 const stats: WithTrends<SummaryStats> = {
@@ -35,9 +40,8 @@ const stats: WithTrends<SummaryStats> = {
   visibleVideos: trend(25),
 };
 
-function getTile(label: string): HTMLElement {
-  return screen.getByRole("link", { name: new RegExp(`^${label}`) });
-}
+const getTile = (label: string): HTMLElement =>
+  screen.getByRole("link", { name: new RegExp(`^${label}`, "u") });
 
 describe("VideoSummaryWidget", () => {
   beforeEach(() => {
@@ -118,6 +122,6 @@ describe("ContentSummaryWidget", () => {
 
     // The same call without arguments, which `'use cache: private'` of
     // `getSummaryStats` runs once for a display
-    expect(mocks.getSummaryStats.mock.calls).toEqual([[], []]);
+    expect(mocks.getSummaryStats.mock.calls).toStrictEqual([[], []]);
   });
 });

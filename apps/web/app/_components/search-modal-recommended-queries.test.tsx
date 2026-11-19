@@ -1,10 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { SearchModalRecommendedQueries } from "./search-modal-recommended-queries";
 
-describe("SearchModalRecommendedQueries", () => {
-  test("should render the heading and a skeleton while loading", () => {
+describe(SearchModalRecommendedQueries, () => {
+  it("should render the heading and a skeleton while loading", () => {
     render(<SearchModalRecommendedQueries queries={null} />);
 
     expect(
@@ -14,7 +14,7 @@ describe("SearchModalRecommendedQueries", () => {
     expect(screen.queryAllByRole("link")).toHaveLength(0);
   });
 
-  test("should render nothing, including the heading, when there are no queries", () => {
+  it("should render nothing, including the heading, when there are no queries", () => {
     const { container } = render(
       <SearchModalRecommendedQueries queries={[]} />
     );
@@ -22,8 +22,8 @@ describe("SearchModalRecommendedQueries", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  test("should render the heading and the queries when loaded", () => {
-    const onClickLink = vi.fn();
+  it("should render the heading and the queries when loaded", () => {
+    const onClickLink = vi.fn<() => void>();
 
     render(
       <SearchModalRecommendedQueries
@@ -45,10 +45,10 @@ describe("SearchModalRecommendedQueries", () => {
     expect(screen.getByRole("link", { name: "ゲーム" })).toBeInTheDocument();
 
     fireEvent.click(link);
-    expect(onClickLink).toHaveBeenCalledTimes(1);
+    expect(onClickLink).toHaveBeenCalledOnce();
   });
 
-  test("should carry the talents over to the links", () => {
+  it("should carry the talents over to the links", () => {
     render(
       <SearchModalRecommendedQueries
         queries={["歌枠"]}

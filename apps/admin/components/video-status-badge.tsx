@@ -1,5 +1,6 @@
 import type { Tables } from "@shinju-date/database";
-import { Badge, type BadgeProps, twMerge } from "@shinju-date/ui";
+import { Badge, twMerge } from "@shinju-date/ui";
+import type { BadgeProps } from "@shinju-date/ui";
 
 type VideoStatus = Tables<"videos">["status"];
 
@@ -16,7 +17,7 @@ const STATUS_LABELS: Record<VideoStatus, string> = {
   UPCOMING: "待機中",
 };
 
-function getBadgeVariant(video: VideoStatusInfo): BadgeProps["variant"] {
+const getBadgeVariant = (video: VideoStatusInfo): BadgeProps["variant"] => {
   // Priority 1: If deleted, show "削除済み" with danger variant (red)
   if (video.deleted_at) {
     return "danger";
@@ -36,9 +37,9 @@ function getBadgeVariant(video: VideoStatusInfo): BadgeProps["variant"] {
   };
 
   return statusVariantMap[video.status] ?? "neutral";
-}
+};
 
-function getStatusText(video: VideoStatusInfo): string {
+const getStatusText = (video: VideoStatusInfo): string => {
   // Priority 1: If deleted, show "削除済み"
   if (video.deleted_at) {
     return "削除済み";
@@ -51,14 +52,17 @@ function getStatusText(video: VideoStatusInfo): string {
 
   // Priority 3: Show the status field content
   return STATUS_LABELS[video.status] ?? video.status;
-}
+};
 
 interface VideoStatusBadgeProps {
   video: VideoStatusInfo;
   className?: string;
 }
 
-export function VideoStatusBadge({ video, className }: VideoStatusBadgeProps) {
+export const VideoStatusBadge = ({
+  video,
+  className,
+}: VideoStatusBadgeProps) => {
   const variant = getBadgeVariant(video);
   const text = getStatusText(video);
   // 配信中は公開サイトと同じ `live` の色（ピンク）で示す
@@ -75,4 +79,4 @@ export function VideoStatusBadge({ video, className }: VideoStatusBadgeProps) {
       {text}
     </Badge>
   );
-}
+};

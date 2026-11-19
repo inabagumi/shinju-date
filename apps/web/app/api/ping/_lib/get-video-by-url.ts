@@ -8,14 +8,13 @@ import {
 import { supabaseClient } from "@/lib/supabase";
 
 /** The query of the video a click is tracked for, which the type is derived from */
-function selectVideos() {
-  return supabaseClient.from("videos").select(VIDEO_CLICK_SELECT);
-}
+const selectVideos = () =>
+  supabaseClient.from("videos").select(VIDEO_CLICK_SELECT);
 
 /** The video a click is tracked for */
 export type Video = QueryData<ReturnType<typeof selectVideos>>[number];
 
-function getYouTubeVideoID(url: URL): string {
+const getYouTubeVideoID = (url: URL): string => {
   let videoID: string | undefined;
 
   if (url.host === "youtu.be") {
@@ -31,22 +30,16 @@ function getYouTubeVideoID(url: URL): string {
   }
 
   return videoID;
-}
+};
 
-function isYouTubeHost(host: string): boolean {
-  return (
-    host === "www.youtube.com" || host === "youtube.com" || host === "youtu.be"
-  );
-}
+const isYouTubeHost = (host: string): boolean =>
+  host === "www.youtube.com" || host === "youtube.com" || host === "youtu.be";
 
-function isTwitchHost(host: string): boolean {
-  return (
-    host === "www.twitch.tv" ||
-    host === "twitch.tv" ||
-    host === "m.twitch.tv" ||
-    host === "clips.twitch.tv"
-  );
-}
+const isTwitchHost = (host: string): boolean =>
+  host === "www.twitch.tv" ||
+  host === "twitch.tv" ||
+  host === "m.twitch.tv" ||
+  host === "clips.twitch.tv";
 
 /**
  * Path segments reserved by Twitch that are not channel logins.
@@ -64,7 +57,7 @@ const TWITCH_RESERVED_PATHS = new Set([
   "wallet",
 ]);
 
-async function getYouTubeVideoByURL(url: URL): Promise<Video> {
+const getYouTubeVideoByURL = async (url: URL): Promise<Video> => {
   const videoID = getYouTubeVideoID(url);
 
   const { data: video, error } = await supabaseClient
@@ -84,11 +77,11 @@ async function getYouTubeVideoByURL(url: URL): Promise<Video> {
   }
 
   return video;
-}
+};
 
-async function getTwitchVideoByPlatformId(
+const getTwitchVideoByPlatformId = async (
   twitchVideoId: string
-): Promise<Video> {
+): Promise<Video> => {
   const { data: video, error } = await supabaseClient
     .from("videos")
     .select(VIDEO_CLICK_SELECT_BY_TWITCH_VIDEO)
@@ -106,14 +99,14 @@ async function getTwitchVideoByPlatformId(
   }
 
   return video;
-}
+};
 
-async function getTwitchVideoByURL(url: URL): Promise<Video> {
+const getTwitchVideoByURL = async (url: URL): Promise<Video> => {
   const pathSegments = url.pathname.split("/").filter(Boolean);
 
   // clips.twitch.tv/<slug>
   if (url.host === "clips.twitch.tv") {
-    const clipId = pathSegments[0];
+    const [clipId] = pathSegments;
     if (!clipId) {
       throw new TypeError("Clip ID is unknown.");
     }
@@ -210,15 +203,15 @@ async function getTwitchVideoByURL(url: URL): Promise<Video> {
   }
 
   return recentVideo;
-}
+};
 
 export default async function getVideoByURL(url: URL): Promise<Video> {
   if (isYouTubeHost(url.host)) {
-    return getYouTubeVideoByURL(url);
+    return await getYouTubeVideoByURL(url);
   }
 
   if (isTwitchHost(url.host)) {
-    return getTwitchVideoByURL(url);
+    return await getTwitchVideoByURL(url);
   }
 
   throw new TypeError("URLs not supported were given.");

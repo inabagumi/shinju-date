@@ -14,11 +14,11 @@ interface Row {
  * in ascending order of `id`, up to `limit(...)` (and at most `maxRows`, like
  * PostgREST).
  */
-function createMockSupabase(rows: Row[], { maxRows = 1_000 } = {}) {
-  const sorted = [...rows].sort((a, b) => (a.id < b.id ? -1 : 1));
+const createMockSupabase = (rows: Row[], { maxRows = 1000 } = {}) => {
+  const sorted = rows.toSorted((a, b) => (a.id < b.id ? -1 : 1));
   const requests: { cursor: string | undefined; limit: number }[] = [];
 
-  const from = vi.fn(() => {
+  const createBuilder = () => {
     let cursor: string | undefined;
     let limit = Number.POSITIVE_INFINITY;
 
@@ -49,33 +49,35 @@ function createMockSupabase(rows: Row[], { maxRows = 1_000 } = {}) {
     };
 
     return builder;
-  });
+  };
+
+  const from =
+    vi.fn<(table: string) => ReturnType<typeof createBuilder>>(createBuilder);
 
   return { client: { from }, requests };
-}
+};
 
-function createRows(count: number): Row[] {
-  return Array.from({ length: count }, (_, i) => ({
+const createRows = (count: number): Row[] =>
+  Array.from({ length: count }, (_, i) => ({
     id: `00000000-0000-0000-0000-${String(i).padStart(12, "0")}`,
     synonyms: [`synonym-${i}`],
     term: `term-${i}`,
   }));
-}
 
-describe("getAllTerms", () => {
+describe(getAllTerms, () => {
   it("should read every term when there are more than 1,000", async () => {
-    const rows = createRows(1_202);
+    const rows = createRows(1202);
     const { client, requests } = createMockSupabase(rows);
 
     // oxlint-disable-next-line typescript/no-explicit-any -- Mocked Supabase client
     const terms = await Array.fromAsync(getAllTerms(client as any));
 
-    expect(terms).toHaveLength(1_202);
-    expect(new Set(terms.map(({ id }) => id)).size).toBe(1_202);
-    expect(requests.map(({ cursor }) => cursor)).toEqual([
+    expect(terms).toHaveLength(1202);
+    expect(new Set(terms.map(({ id }) => id)).size).toBe(1202);
+    expect(requests.map(({ cursor }) => cursor)).toStrictEqual([
       undefined,
       rows[999]?.id,
-      rows[1_201]?.id,
+      rows[1201]?.id,
     ]);
   });
 
@@ -88,14 +90,18 @@ describe("getAllTerms", () => {
       getAllTerms(client as any, { pageSize: 20 })
     );
 
-    expect(terms.map(({ term }) => term)).toEqual(rows.map(({ term }) => term));
+    expect(terms.map(({ term }) => term)).toStrictEqual(
+      rows.map(({ term }) => term)
+    );
   });
 
   it("should return no terms when there are none", async () => {
     const { client } = createMockSupabase([]);
 
-    // oxlint-disable-next-line typescript/no-explicit-any -- Mocked Supabase client
-    expect(await Array.fromAsync(getAllTerms(client as any))).toEqual([]);
+    await expect(
+      // oxlint-disable-next-line typescript/no-explicit-any -- Mocked Supabase client
+      Array.fromAsync(getAllTerms(client as any))
+    ).resolves.toStrictEqual([]);
   });
 
   it("should throw when a page does not move past the previous one", async () => {

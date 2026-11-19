@@ -25,7 +25,7 @@ import { registerServer } from "@shinju-date/instrumentation/server";
 
 export { onRequestError } from "@shinju-date/instrumentation/server";
 
-export async function register() {
+export const register = async () => {
   const { serverEnv } = await import("./lib/env");
 
   await registerServer({
@@ -33,7 +33,7 @@ export async function register() {
     profileSessionSampleRate: 1.0,
     tracesSampleRate: 1.0,
   });
-}
+};
 ```
 
 `enableMsw` が `true` なら、Node.js のランタイムで MSW のサーバーを起動します（[MSWガイド](../../docs/msw-guide.md)）。

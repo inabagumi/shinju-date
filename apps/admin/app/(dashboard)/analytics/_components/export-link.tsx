@@ -17,11 +17,11 @@ interface ExportLinkProps {
  * CSV のエクスポート（`/api/export/*`）の URL を作る。
  * 日付が選ばれているときはその1日、そうでなければ期間全体を指定する。
  */
-export function buildExportHref({
+export const buildExportHref = ({
   dateRange,
   selectedDate,
   type,
-}: ExportLinkProps): string {
+}: ExportLinkProps): string => {
   const params = new URLSearchParams();
 
   if (selectedDate) {
@@ -34,21 +34,19 @@ export function buildExportHref({
   }
 
   return `/api/export/${type}?${params.toString()}`;
-}
+};
 
 /** ウィジェットの見出しに置く、CSV をダウンロードするリンク */
-export function ExportLink(props: ExportLinkProps) {
-  return (
-    <Button
-      asChild
-      className="shrink-0 gap-1.5 whitespace-nowrap"
-      size="sm"
-      variant="secondary"
-    >
-      <a href={buildExportHref(props)}>
-        <Download aria-hidden="true" className="size-4" />
-        CSV をダウンロード
-      </a>
-    </Button>
-  );
-}
+export const ExportLink = (props: ExportLinkProps) => (
+  <Button
+    asChild
+    className="shrink-0 gap-1.5 whitespace-nowrap"
+    size="sm"
+    variant="secondary"
+  >
+    <a href={buildExportHref(props)}>
+      <Download aria-hidden="true" className="size-4" />
+      CSV をダウンロード
+    </a>
+  </Button>
+);

@@ -1,16 +1,17 @@
 "use client";
 
-import { Button, type ButtonProps } from "@shinju-date/ui";
+import { Button } from "@shinju-date/ui";
+import type { ButtonProps } from "@shinju-date/ui";
 import { Search } from "lucide-react";
 
 import { useSearchModal } from "./search-modal-context";
 
 type OpenSearchModalButtonProps = Omit<ButtonProps, "onClick" | "type">;
 
-export function OpenSearchModalButton({
+export const OpenSearchModalButton = ({
   children = "検索する",
   ...props
-}: OpenSearchModalButtonProps) {
+}: OpenSearchModalButtonProps) => {
   const { openModal } = useSearchModal();
 
   return (
@@ -19,4 +20,4 @@ export function OpenSearchModalButton({
       {children}
     </Button>
   );
-}
+};

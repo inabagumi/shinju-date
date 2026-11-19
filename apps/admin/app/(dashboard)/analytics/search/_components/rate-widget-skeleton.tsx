@@ -13,18 +13,16 @@ interface RateWidgetSkeletonProps {
  * 読み込み中の、率を1つ出すウィジェット（`SearchEngagementRateWidget`・
  * `RepeatSearchRateWidget`）。見出し、値のタイル、4つの基準を並べる
  */
-export function RateWidgetSkeleton({ title }: RateWidgetSkeletonProps) {
-  return (
-    <div aria-hidden="true">
-      <WidgetHeaderSkeleton title={title} />
-      <StatTileSkeleton />
-      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-0.5">
-        <Skeleton className="col-span-2 h-4 w-16" />
-        <Skeleton className="h-4 w-28" />
-        <Skeleton className="h-4 w-28" />
-        <Skeleton className="h-4 w-28" />
-        <Skeleton className="h-4 w-28" />
-      </div>
+export const RateWidgetSkeleton = ({ title }: RateWidgetSkeletonProps) => (
+  <div aria-hidden="true">
+    <WidgetHeaderSkeleton title={title} />
+    <StatTileSkeleton />
+    <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-0.5">
+      <Skeleton className="col-span-2 h-4 w-16" />
+      <Skeleton className="h-4 w-28" />
+      <Skeleton className="h-4 w-28" />
+      <Skeleton className="h-4 w-28" />
+      <Skeleton className="h-4 w-28" />
     </div>
-  );
-}
+  </div>
+);

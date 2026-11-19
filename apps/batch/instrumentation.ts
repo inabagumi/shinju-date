@@ -2,7 +2,7 @@ import { registerServer } from "@shinju-date/instrumentation/server";
 
 export { onRequestError } from "@shinju-date/instrumentation/server";
 
-export async function register() {
+export const register = async () => {
   // Checks the environment variables on start, so that a missing one stops
   // the server with its name instead of failing the first cron run that needs
   // it.
@@ -10,7 +10,7 @@ export async function register() {
 
   await registerServer({
     enableMsw: serverEnv.ENABLE_MSW,
-    profileSessionSampleRate: 1.0,
-    tracesSampleRate: 1.0,
+    profileSessionSampleRate: 1,
+    tracesSampleRate: 1,
   });
-}
+};

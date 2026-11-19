@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, type ReactNode, useContext, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
+import type { ReactNode } from "react";
 
 interface SearchModalContextType {
   isOpen: boolean;
@@ -12,23 +19,27 @@ const SearchModalContext = createContext<SearchModalContextType | undefined>(
   undefined
 );
 
-export function SearchModalProvider({ children }: { children: ReactNode }) {
+export const SearchModalProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const openModal = () => setIsOpen(true);
-  const closeModal = () => setIsOpen(false);
+  const openModal = useCallback(() => setIsOpen(true), []);
+  const closeModal = useCallback(() => setIsOpen(false), []);
+  const value = useMemo(
+    () => ({ closeModal, isOpen, openModal }),
+    [closeModal, isOpen, openModal]
+  );
 
   return (
-    <SearchModalContext.Provider value={{ closeModal, isOpen, openModal }}>
+    <SearchModalContext.Provider value={value}>
       {children}
     </SearchModalContext.Provider>
   );
-}
+};
 
-export function useSearchModal() {
+export const useSearchModal = () => {
   const context = useContext(SearchModalContext);
   if (context === undefined) {
     throw new Error("useSearchModal must be used within a SearchModalProvider");
   }
   return context;
-}
+};

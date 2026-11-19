@@ -1,6 +1,7 @@
 import { HttpResponse, http } from "msw";
 import { describe, expect, it, vi } from "vitest";
 
+import type { ErrorReporter } from "../../types.js";
 import { createTestContext } from "../testing/context.js";
 import { postgresError, setupSupabase } from "../testing/supabase.js";
 import { replaceThumbnail } from "./replace.js";
@@ -11,8 +12,8 @@ const STORAGE_DELETE_URL =
   "https://fake.supabase.test/storage/v1/object/thumbnails";
 const created = { id: "thumb-new", path: "vod-1/new.jpg" };
 
-function setup() {
-  const reportError = vi.fn();
+const setup = () => {
+  const reportError = vi.fn<ErrorReporter>();
   const removedPaths: unknown[] = [];
   supabase.server.use(
     http.delete(STORAGE_DELETE_URL, async ({ request }) => {
@@ -31,37 +32,35 @@ function setup() {
     removedPaths,
     reportError,
   };
-}
+};
 
-function deletedThumbnailIds(): (string | undefined)[] {
-  return supabase
+const deletedThumbnailIds = (): (string | undefined)[] =>
+  supabase
     .written("DELETE", "thumbnails")
     .map((request) => request.query["id"]);
-}
 
-describe("replaceThumbnail", () => {
+describe(replaceThumbnail, () => {
   it("points the video at the new thumbnail and leaves the previous one for the cleanup", async () => {
     const { context, removedPaths, reportError } = setup();
     supabase.respond(() => []);
 
     const thumbnail = await replaceThumbnail(context, {
-      create: async () => created,
+      create: () => Promise.resolve(created),
       fields: { title: "Archive" },
       previousThumbnailId: "thumb-old",
       videoId: "video-1",
     });
 
-    expect(thumbnail).toEqual(created);
+    expect(thumbnail).toStrictEqual(created);
 
     const [update] = supabase.written("PATCH", "videos");
 
-    expect(update?.query["id"]).toBe("eq.video-1");
-    expect(update?.body).toEqual({
-      thumbnail_id: "thumb-new",
-      title: "Archive",
+    expect({ body: update?.body, id: update?.query["id"] }).toStrictEqual({
+      body: { thumbnail_id: "thumb-new", title: "Archive" },
+      id: "eq.video-1",
     });
-    expect(deletedThumbnailIds()).toEqual([]);
-    expect(removedPaths).toEqual([]);
+    expect(deletedThumbnailIds()).toStrictEqual([]);
+    expect(removedPaths).toStrictEqual([]);
     expect(reportError).not.toHaveBeenCalled();
   });
 
@@ -70,7 +69,7 @@ describe("replaceThumbnail", () => {
     supabase.respond(() => []);
 
     await replaceThumbnail(context, {
-      create: async () => created,
+      create: () => Promise.resolve(created),
       fields: {},
       previousThumbnailId: "thumb-old",
       videoId: "video-1",
@@ -78,11 +77,11 @@ describe("replaceThumbnail", () => {
 
     expect(
       supabase.requests.map(({ method, table }) => `${method} ${table}`)
-    ).toEqual(["POST rpc/touch_thumbnail", "PATCH videos"]);
-    expect(supabase.written("POST", "rpc/touch_thumbnail")).toEqual([
+    ).toStrictEqual(["POST rpc/touch_thumbnail", "PATCH videos"]);
+    expect(supabase.written("POST", "rpc/touch_thumbnail")).toStrictEqual([
       expect.objectContaining({ body: { p_thumbnail_id: "thumb-old" } }),
     ]);
-    expect(supabase.written("PATCH", "thumbnails")).toEqual([]);
+    expect(supabase.written("PATCH", "thumbnails")).toStrictEqual([]);
   });
 
   it("touches no thumbnail when the video had none", async () => {
@@ -90,13 +89,13 @@ describe("replaceThumbnail", () => {
     supabase.respond(() => []);
 
     await replaceThumbnail(context, {
-      create: async () => created,
+      create: () => Promise.resolve(created),
       fields: {},
       previousThumbnailId: null,
       videoId: "video-1",
     });
 
-    expect(supabase.written("POST", "rpc/touch_thumbnail")).toEqual([]);
+    expect(supabase.written("POST", "rpc/touch_thumbnail")).toStrictEqual([]);
     expect(supabase.written("PATCH", "videos")).toHaveLength(1);
   });
 
@@ -110,15 +109,15 @@ describe("replaceThumbnail", () => {
 
     await expect(
       replaceThumbnail(context, {
-        create: async () => created,
+        create: () => Promise.resolve(created),
         fields: { title: "Archive" },
         previousThumbnailId: "thumb-old",
         videoId: "video-1",
       })
     ).rejects.toThrow("Failed to update a replaced thumbnail");
-    expect(supabase.written("PATCH", "videos")).toEqual([]);
-    expect(deletedThumbnailIds()).toEqual(["eq.thumb-new"]);
-    expect(removedPaths).toEqual([{ prefixes: ["vod-1/new.jpg"] }]);
+    expect(supabase.written("PATCH", "videos")).toStrictEqual([]);
+    expect(deletedThumbnailIds()).toStrictEqual(["eq.thumb-new"]);
+    expect(removedPaths).toStrictEqual([{ prefixes: ["vod-1/new.jpg"] }]);
   });
 
   it("updates only the other columns when no new thumbnail is stored", async () => {
@@ -126,14 +125,14 @@ describe("replaceThumbnail", () => {
     supabase.respond(() => []);
 
     const thumbnail = await replaceThumbnail(context, {
-      create: async () => null,
+      create: () => Promise.resolve(null),
       fields: { title: "Archive" },
       previousThumbnailId: "thumb-old",
       videoId: "video-1",
     });
 
     expect(thumbnail).toBeNull();
-    expect(supabase.written("PATCH", "videos")[0]?.body).toEqual({
+    expect(supabase.written("PATCH", "videos")[0]?.body).toStrictEqual({
       title: "Archive",
     });
   });
@@ -143,13 +142,13 @@ describe("replaceThumbnail", () => {
     supabase.respond(() => []);
 
     await replaceThumbnail(context, {
-      create: async () => null,
+      create: () => Promise.resolve(null),
       fields: {},
       previousThumbnailId: "thumb-old",
       videoId: "video-1",
     });
 
-    expect(supabase.requests).toEqual([]);
+    expect(supabase.requests).toStrictEqual([]);
   });
 
   it("removes the new thumbnail when the video cannot be updated", async () => {
@@ -160,14 +159,14 @@ describe("replaceThumbnail", () => {
 
     await expect(
       replaceThumbnail(context, {
-        create: async () => created,
+        create: () => Promise.resolve(created),
         fields: { title: "Archive" },
         previousThumbnailId: "thumb-old",
         videoId: "video-1",
       })
     ).rejects.toThrow("statement timeout");
-    expect(deletedThumbnailIds()).toEqual(["eq.thumb-new"]);
-    expect(removedPaths).toEqual([{ prefixes: ["vod-1/new.jpg"] }]);
+    expect(deletedThumbnailIds()).toStrictEqual(["eq.thumb-new"]);
+    expect(removedPaths).toStrictEqual([{ prefixes: ["vod-1/new.jpg"] }]);
   });
 
   it("still throws the update failure when the new thumbnail cannot be removed", async () => {
@@ -178,13 +177,13 @@ describe("replaceThumbnail", () => {
 
     await expect(
       replaceThumbnail(context, {
-        create: async () => created,
+        create: () => Promise.resolve(created),
         fields: {},
         previousThumbnailId: null,
         videoId: "video-1",
       })
     ).rejects.toThrow("statement timeout on videos");
-    expect(removedPaths).toEqual([]);
+    expect(removedPaths).toStrictEqual([]);
     expect(reportError).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.stringContaining("statement timeout on thumbnails"),

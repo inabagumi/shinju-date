@@ -15,10 +15,10 @@ interface RevalidateOptions {
  * @param tags - 再検証するキャッシュタグの配列（`CACHE_TAGS` の値）
  * @param options - オプション (signal: AbortSignal)
  */
-export async function revalidateTags(
+export const revalidateTags = async (
   tags: CacheTag[],
   { signal }: RevalidateOptions = {}
-): Promise<void> {
+): Promise<void> => {
   const revalidateUrl = process.env["REVALIDATE_URL"];
   const secretToken = process.env["REVALIDATE_SECRET_TOKEN"];
 
@@ -57,4 +57,4 @@ export async function revalidateTags(
     // エラーをスローせず、ログのみ記録する
     // これにより、キャッシュ再検証の失敗がメイン処理に影響しない
   }
-}
+};

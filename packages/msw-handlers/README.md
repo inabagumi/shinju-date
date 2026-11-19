@@ -311,10 +311,10 @@ Add it to `COLLECTIONS` in the same file, so that `seedCollections()` empties it
 2. **Add a scenario** in `src/seeds/`, which returns the rows from the context (faker with the fixed seed and `now`) and the data that it needs, and insert its rows in `seedCollections()`:
 
 ```typescript
-export function createMyRows(
+export const createMyRows = (
   context: SeedContext,
   { talents }: { talents: readonly Tables<"talents">[] }
-): Tables<"my_table">[] {
+): Tables<"my_table">[] => {
   return talents.map((talent) => {
     const createdAt = randomPast(context, 30);
 
@@ -326,7 +326,7 @@ export function createMyRows(
       updated_at: createdAt,
     };
   });
-}
+};
 ```
 
 Make the times from `context.now` with `toDBString()` (or `randomPast()` and `randomFuture()` of `src/seeds/context.ts`), not from the current time or `Date`, so that the data stays the same for the same `now`.

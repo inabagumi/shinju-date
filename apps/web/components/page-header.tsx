@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
-import Breadcrumbs, { type BreadcrumbItem } from "./breadcrumbs";
+import Breadcrumbs from "./breadcrumbs";
+import type { BreadcrumbItem } from "./breadcrumbs";
 
 interface PageHeaderProps {
   /** トップページより下の階層。最後の項目が現在のページになる */
@@ -43,10 +44,10 @@ interface PageHeaderSkeletonProps {
   icon?: boolean;
 }
 
-export function PageHeaderSkeleton({
+export const PageHeaderSkeleton = ({
   description = false,
   icon = false,
-}: PageHeaderSkeletonProps) {
+}: PageHeaderSkeletonProps) => {
   const title = (
     <div className="h-[2.1rem] w-64 animate-pulse rounded-control bg-muted md:h-[2.8rem]" />
   );
@@ -67,4 +68,4 @@ export function PageHeaderSkeleton({
       )}
     </div>
   );
-}
+};

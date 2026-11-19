@@ -8,15 +8,15 @@ import {
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  type ActionResult,
-  ConfirmDialog,
-  type ConfirmDialogProps,
-} from "./confirm-dialog";
+import { ConfirmDialog } from "./confirm-dialog";
+import type { ActionResult, ConfirmDialogProps } from "./confirm-dialog";
 
-function renderDialog() {
-  const onConfirm = vi.fn();
-  const onOpenChange = vi.fn();
+type OnConfirm = ConfirmDialogProps["onConfirm"];
+type OnOpenChange = NonNullable<ConfirmDialogProps["onOpenChange"]>;
+
+const renderDialog = () => {
+  const onConfirm = vi.fn<OnConfirm>();
+  const onOpenChange = vi.fn<OnOpenChange>();
 
   render(
     <ConfirmDialog
@@ -33,18 +33,7 @@ function renderDialog() {
   );
 
   return { onConfirm, onOpenChange };
-}
-
-function createDeferred<T>() {
-  let resolve!: (value: T) => void;
-  let reject!: (reason?: unknown) => void;
-  const promise = new Promise<T>((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-
-  return { promise, reject, resolve };
-}
+};
 
 type DialogOverrides = Partial<
   Pick<
@@ -53,8 +42,17 @@ type DialogOverrides = Partial<
   >
 >;
 
-function renderWithTrigger(overrides: DialogOverrides = {}) {
-  const onConfirm = vi.fn(overrides.onConfirm);
+const openDialog = () => {
+  fireEvent.click(screen.getByRole("button", { name: "開く" }));
+};
+
+const renderWithTrigger = ({
+  onConfirm: confirm,
+  onOpenChange,
+  pendingLabel,
+  requireKeyword,
+}: DialogOverrides = {}) => {
+  const onConfirm = vi.fn<OnConfirm>(confirm);
 
   render(
     <ConfirmDialog
@@ -62,24 +60,20 @@ function renderWithTrigger(overrides: DialogOverrides = {}) {
       confirmVariant="danger"
       description="削除してもよろしいですか？"
       onConfirm={onConfirm}
-      onOpenChange={overrides.onOpenChange}
-      pendingLabel={overrides.pendingLabel}
-      requireKeyword={overrides.requireKeyword}
+      onOpenChange={onOpenChange}
+      pendingLabel={pendingLabel}
+      requireKeyword={requireKeyword}
       title="項目を削除"
       trigger={<button type="button">開く</button>}
     />
   );
 
-  const openDialog = () => {
-    fireEvent.click(screen.getByRole("button", { name: "開く" }));
-  };
-
   openDialog();
 
-  return { onConfirm, openDialog };
-}
+  return { onConfirm };
+};
 
-function ControlledConfirmDialog() {
+const ControlledConfirmDialog = () => {
   const [open, setOpen] = useState(true);
 
   return (
@@ -90,23 +84,39 @@ function ControlledConfirmDialog() {
       <ConfirmDialog
         confirmLabel="削除"
         description="削除してもよろしいですか？"
-        onConfirm={async () => ({ error: "失敗", success: false })}
+        onConfirm={() => Promise.resolve({ error: "失敗", success: false })}
         onOpenChange={setOpen}
         open={open}
         title="項目を削除"
       />
     </>
   );
-}
+};
 
-describe("ConfirmDialog", () => {
+const renderWithSize = (size?: ConfirmDialogProps["size"]) => {
+  render(
+    <ConfirmDialog
+      confirmLabel="削除"
+      description="削除してもよろしいですか？"
+      onConfirm={vi.fn<OnConfirm>()}
+      onOpenChange={vi.fn<OnOpenChange>()}
+      open
+      size={size}
+      title="項目を削除"
+    />
+  );
+
+  return screen.getByRole("dialog");
+};
+
+describe(ConfirmDialog, () => {
   it("shows the message and the target", () => {
     renderDialog();
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("項目を削除")).toBeInTheDocument();
     expect(
-      screen.getByText(/削除してもよろしいですか？\s*元には戻せません。/)
+      screen.getByText(/削除してもよろしいですか？\s*元には戻せません。/u)
     ).toBeInTheDocument();
     expect(screen.getByText("対象の名前")).toBeInTheDocument();
   });
@@ -141,8 +151,8 @@ describe("ConfirmDialog", () => {
 
   describe("when onConfirm returns a promise", () => {
     it("disables the buttons while pending and closes on success", async () => {
-      const deferred = createDeferred<ActionResult>();
-      const onOpenChange = vi.fn();
+      const deferred = Promise.withResolvers<ActionResult>();
+      const onOpenChange = vi.fn<OnOpenChange>();
       renderWithTrigger({ onConfirm: () => deferred.promise, onOpenChange });
 
       fireEvent.click(screen.getByRole("button", { name: "削除" }));
@@ -154,6 +164,7 @@ describe("ConfirmDialog", () => {
 
       await act(async () => {
         deferred.resolve({ success: true });
+        await deferred.promise;
       });
 
       await waitFor(() => {
@@ -163,7 +174,7 @@ describe("ConfirmDialog", () => {
     });
 
     it("uses pendingLabel while pending", async () => {
-      const deferred = createDeferred<void>();
+      const deferred = Promise.withResolvers<undefined>();
       renderWithTrigger({
         onConfirm: () => deferred.promise,
         pendingLabel: "削除しています...",
@@ -176,7 +187,8 @@ describe("ConfirmDialog", () => {
       ).toBeDisabled();
 
       await act(async () => {
-        deferred.resolve();
+        deferred.resolve(undefined);
+        await deferred.promise;
       });
 
       await waitFor(() => {
@@ -185,7 +197,7 @@ describe("ConfirmDialog", () => {
     });
 
     it("does not close with Escape while pending", async () => {
-      const deferred = createDeferred<void>();
+      const deferred = Promise.withResolvers<undefined>();
       renderWithTrigger({ onConfirm: () => deferred.promise });
 
       fireEvent.click(screen.getByRole("button", { name: "削除" }));
@@ -194,21 +206,23 @@ describe("ConfirmDialog", () => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
 
       await act(async () => {
-        deferred.resolve();
+        deferred.resolve(undefined);
+        await deferred.promise;
       });
     });
 
     it("keeps the dialog open and shows the error on failure", async () => {
       renderWithTrigger({
-        onConfirm: async () => ({
-          error: "削除できませんでした。",
-          success: false,
-        }),
+        onConfirm: () =>
+          Promise.resolve({
+            error: "削除できませんでした。",
+            success: false,
+          }),
       });
 
       fireEvent.click(screen.getByRole("button", { name: "削除" }));
 
-      expect(await screen.findByRole("alert")).toHaveTextContent(
+      await expect(screen.findByRole("alert")).resolves.toHaveTextContent(
         "削除できませんでした。"
       );
       expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -218,29 +232,28 @@ describe("ConfirmDialog", () => {
 
     it("shows the fallback error when onConfirm throws", async () => {
       renderWithTrigger({
-        onConfirm: async () => {
-          throw new Error("network error");
-        },
+        onConfirm: () => Promise.reject(new Error("network error")),
       });
 
       fireEvent.click(screen.getByRole("button", { name: "削除" }));
 
-      expect(await screen.findByRole("alert")).toHaveTextContent(
+      await expect(screen.findByRole("alert")).resolves.toHaveTextContent(
         "処理に失敗しました。"
       );
       expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
     it("clears the error when the dialog is reopened", async () => {
-      const { openDialog } = renderWithTrigger({
-        onConfirm: async () => ({
-          error: "削除できませんでした。",
-          success: false,
-        }),
+      renderWithTrigger({
+        onConfirm: () =>
+          Promise.resolve({
+            error: "削除できませんでした。",
+            success: false,
+          }),
       });
 
       fireEvent.click(screen.getByRole("button", { name: "削除" }));
-      expect(await screen.findByRole("alert")).toBeInTheDocument();
+      await expect(screen.findByRole("alert")).resolves.toBeInTheDocument();
 
       fireEvent.click(screen.getByRole("button", { name: "キャンセル" }));
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -255,7 +268,7 @@ describe("ConfirmDialog", () => {
       render(<ControlledConfirmDialog />);
 
       fireEvent.click(screen.getByRole("button", { name: "削除" }));
-      expect(await screen.findByRole("alert")).toBeInTheDocument();
+      await expect(screen.findByRole("alert")).resolves.toBeInTheDocument();
 
       fireEvent.click(screen.getByRole("button", { name: "キャンセル" }));
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -292,7 +305,7 @@ describe("ConfirmDialog", () => {
     });
 
     it("clears the keyword when the dialog is reopened", () => {
-      const { openDialog } = renderWithTrigger({ requireKeyword: "DELETE" });
+      renderWithTrigger({ requireKeyword: "DELETE" });
 
       fireEvent.change(
         screen.getByLabelText("続行するには「DELETE」と入力してください"),
@@ -310,22 +323,6 @@ describe("ConfirmDialog", () => {
   });
 
   describe("size", () => {
-    function renderWithSize(size?: ConfirmDialogProps["size"]) {
-      render(
-        <ConfirmDialog
-          confirmLabel="削除"
-          description="削除してもよろしいですか？"
-          onConfirm={vi.fn()}
-          onOpenChange={vi.fn()}
-          open
-          size={size}
-          title="項目を削除"
-        />
-      );
-
-      return screen.getByRole("dialog");
-    }
-
     it("uses the default width when omitted", () => {
       const dialog = renderWithSize();
 

@@ -1,3 +1,4 @@
+import type { Redis } from "@upstash/redis";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const redis = await vi.hoisted(async () => {
@@ -6,7 +7,9 @@ const redis = await vi.hoisted(async () => {
   return new FakeLockRedis();
 });
 
-vi.mock("./redis", () => ({ redisClient: redis }));
+vi.mock(import("./redis"), () => ({
+  redisClient: redis as Partial<Redis> as Redis,
+}));
 
 const { acquireLock, releaseLock } = await import("./lock");
 
@@ -18,7 +21,7 @@ describe("acquireLock", () => {
   it("takes the lock with a random value that runs out after the TTL", async () => {
     const value = await acquireLock("videos:check", 130);
 
-    expect(value).toEqual(expect.any(String));
+    expect(value).toStrictEqual(expect.any(String));
     expect(redis.values.get("cron:lock:videos:check")).toBe(value);
     expect(redis.ttls.get("cron:lock:videos:check")).toBe(130);
   });
@@ -44,7 +47,7 @@ describe("acquireLock", () => {
 
     await expect(
       acquireLock("videos:check:provider=twitch", 130)
-    ).resolves.toEqual(expect.any(String));
+    ).resolves.toStrictEqual(expect.any(String));
   });
 });
 
@@ -56,8 +59,10 @@ describe("releaseLock", () => {
   it("releases the lock it holds", async () => {
     const value = await acquireLock("videos:check", 130);
 
-    await expect(releaseLock("videos:check", value ?? "")).resolves.toBe(true);
-    expect(redis.values.has("cron:lock:videos:check")).toBe(false);
+    await expect(
+      releaseLock("videos:check", value ?? "")
+    ).resolves.toBeTruthy();
+    expect(redis.values.has("cron:lock:videos:check")).toBeFalsy();
     await expect(acquireLock("videos:check", 130)).resolves.not.toBeNull();
   });
 
@@ -66,7 +71,7 @@ describe("releaseLock", () => {
     redis.delete("cron:lock:videos:check");
     const other = await acquireLock("videos:check", 130);
 
-    await expect(releaseLock("videos:check", value ?? "")).resolves.toBe(false);
+    await expect(releaseLock("videos:check", value ?? "")).resolves.toBeFalsy();
     expect(redis.values.get("cron:lock:videos:check")).toBe(other);
   });
 });

@@ -4,16 +4,15 @@ import { describe, expect, it } from "vitest";
 import { getLiveScheduleStart } from "./seeds/schedule.js";
 
 /** `time` on Sunday, 15 November 2026 in `TIME_ZONE` */
-function at(time: string) {
-  return Temporal.PlainDate.from("2026-11-15").toZonedDateTime({
+const at = (time: string) =>
+  Temporal.PlainDate.from("2026-11-15").toZonedDateTime({
     plainTime: Temporal.PlainTime.from(time),
     timeZone: TIME_ZONE,
   });
-}
 
-describe("getLiveScheduleStart", () => {
+describe(getLiveScheduleStart, () => {
   it("should start 30 minutes before now", () => {
-    expect(getLiveScheduleStart(at("21:00")).equals(at("20:30"))).toBe(true);
+    expect(getLiveScheduleStart(at("21:00")).equals(at("20:30"))).toBeTruthy();
   });
 
   it.each([
@@ -31,7 +30,7 @@ describe("getLiveScheduleStart", () => {
     const start = getLiveScheduleStart(now);
 
     expect(Temporal.ZonedDateTime.compare(start, now)).toBeLessThanOrEqual(0);
-    expect(start.toPlainDate().equals(now.toPlainDate())).toBe(true);
+    expect(start.toPlainDate().equals(now.toPlainDate())).toBeTruthy();
     expect(
       Temporal.ZonedDateTime.compare(
         start.add({ hours: 1 }),
@@ -41,10 +40,10 @@ describe("getLiveScheduleStart", () => {
   });
 
   it("should start at the start of the day right after midnight", () => {
-    expect(getLiveScheduleStart(at("00:06")).equals(at("00:00"))).toBe(true);
+    expect(getLiveScheduleStart(at("00:06")).equals(at("00:00"))).toBeTruthy();
   });
 
   it("should start at 23:00 late at night", () => {
-    expect(getLiveScheduleStart(at("23:52")).equals(at("23:00"))).toBe(true);
+    expect(getLiveScheduleStart(at("23:52")).equals(at("23:00"))).toBeTruthy();
   });
 });

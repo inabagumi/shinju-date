@@ -6,12 +6,8 @@ import { cacheLife } from "next/cache";
 import { getRedisClient } from "@/lib/redis";
 
 import { listDatesInRange } from "./list-dates-in-range";
-import {
-  DEFAULT_RANKING_LIMIT,
-  type PeriodQuery,
-  type RankingQuery,
-  toDateRange,
-} from "./period";
+import { DEFAULT_RANKING_LIMIT, toDateRange } from "./period";
+import type { PeriodQuery, RankingQuery } from "./period";
 import { dailyKeys, parseScoredMembers } from "./redis";
 
 /**
@@ -20,9 +16,9 @@ import { dailyKeys, parseScoredMembers } from "./redis";
  * @returns The rate in percent, or `null` when there is no session to
  * measure it against (or it could not be calculated)
  */
-export async function getSearchEngagementRate({
+export const getSearchEngagementRate = async ({
   range,
-}: PeriodQuery): Promise<number | null> {
+}: PeriodQuery): Promise<number | null> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -64,19 +60,19 @@ export async function getSearchEngagementRate({
     logger.error("検索利用率の計算に失敗しました", { error });
     return null;
   }
-}
+};
 
 /**
  * Calculate search exit rates by keyword for a single date or date range
  * @param query.range - The date range (both ends inclusive). Pass the same date as `start` and `end` for a single date
  * @param query.limit - Maximum number of keywords to return (`DEFAULT_RANKING_LIMIT` by default)
  */
-export async function getSearchExitRates({
+export const getSearchExitRates = async ({
   limit = DEFAULT_RANKING_LIMIT,
   range,
 }: RankingQuery): Promise<
-  Array<{ keyword: string; exitRate: number; searchCount: number }>
-> {
+  { keyword: string; exitRate: number; searchCount: number }[]
+> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -144,11 +140,11 @@ export async function getSearchExitRates({
     }
 
     // Calculate exit rates for each keyword
-    const exitRates: Array<{
+    const exitRates: {
       keyword: string;
       exitRate: number;
       searchCount: number;
-    }> = [];
+    }[] = [];
 
     for (const [keyword, searchCount] of searchCounts.entries()) {
       const exitCount = exitCounts.get(keyword) ?? 0;
@@ -163,13 +159,13 @@ export async function getSearchExitRates({
 
     // Sort by search count (most popular first) and limit results
     return exitRates
-      .sort((a, b) => b.searchCount - a.searchCount)
+      .toSorted((a, b) => b.searchCount - a.searchCount)
       .slice(0, limit);
   } catch (error) {
     logger.error("検索離脱率の計算に失敗しました", { error });
     return [];
   }
-}
+};
 
 /**
  * Calculate repeat search rate (average searches per session) for a single date or date range
@@ -177,9 +173,9 @@ export async function getSearchExitRates({
  * @returns The average number of searches per session, or `null` when there
  * is no search session to measure it against (or it could not be calculated)
  */
-export async function getRepeatSearchRate({
+export const getRepeatSearchRate = async ({
   range,
-}: PeriodQuery): Promise<number | null> {
+}: PeriodQuery): Promise<number | null> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -226,4 +222,4 @@ export async function getRepeatSearchRate({
     logger.error("リピート検索率の計算に失敗しました", { error });
     return null;
   }
-}
+};

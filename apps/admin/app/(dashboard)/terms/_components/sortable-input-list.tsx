@@ -3,12 +3,12 @@
 import {
   closestCenter,
   DndContext,
-  type DragEndEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
@@ -19,12 +19,8 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Button, Input } from "@shinju-date/ui";
 import { GripVertical, X } from "lucide-react";
-import {
-  type ChangeEvent,
-  type ClipboardEvent,
-  useCallback,
-  useState,
-} from "react";
+import { useCallback, useState } from "react";
+import type { ChangeEvent, ClipboardEvent } from "react";
 
 interface SortableItemProps {
   id: string;
@@ -36,7 +32,7 @@ interface SortableItemProps {
   showRemove: boolean;
 }
 
-function SortableItem({
+const SortableItem = ({
   id,
   onChange,
   onPaste,
@@ -44,7 +40,7 @@ function SortableItem({
   placeholder,
   showRemove,
   value,
-}: SortableItemProps) {
+}: SortableItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
 
@@ -109,7 +105,7 @@ function SortableItem({
       )}
     </div>
   );
-}
+};
 
 interface Item {
   id: string;
@@ -123,12 +119,14 @@ interface SortableInputListProps {
   addButtonLabel?: string;
 }
 
-export function SortableInputList({
+const NO_DEFAULT_VALUES: string[] = [];
+
+export const SortableInputList = ({
   addButtonLabel = "追加",
-  defaultValues = [],
+  defaultValues = NO_DEFAULT_VALUES,
   name,
   placeholder,
-}: SortableInputListProps) {
+}: SortableInputListProps) => {
   const [items, setItems] = useState<Item[]>(() =>
     defaultValues.length > 0
       ? defaultValues.map((value, index) => ({
@@ -154,31 +152,41 @@ export function SortableInputList({
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      setItems((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
+      setItems((currentItems) => {
+        const oldIndex = currentItems.findIndex(
+          (item) => item.id === active.id
+        );
+        const newIndex = currentItems.findIndex((item) => item.id === over.id);
+        return arrayMove(currentItems, oldIndex, newIndex);
       });
     }
   }, []);
 
   const handleChange = useCallback((id: string, value: string) => {
-    setItems((items) =>
-      items.map((item) => (item.id === id ? { ...item, value } : item))
+    setItems((currentItems) =>
+      currentItems.map((item) => (item.id === id ? { ...item, value } : item))
     );
   }, []);
 
   const handlePaste = useCallback((id: string, text: string) => {
     const lines = text.split("\n").filter((line) => line.trim() !== "");
-    if (lines.length === 0) return;
+    if (lines.length === 0) {
+      return;
+    }
 
-    setItems((items) => {
-      const currentIndex = items.findIndex((item) => item.id === id);
-      if (currentIndex === -1) return items; // Item not found, return unchanged
+    setItems((currentItems) => {
+      const currentIndex = currentItems.findIndex((item) => item.id === id);
+      if (currentIndex === -1) {
+        // Item not found, return unchanged
+        return currentItems;
+      }
 
-      const newItems = [...items];
+      const newItems = [...currentItems];
       const currentItem = newItems[currentIndex];
-      if (!currentItem) return items; // Safety check, should never happen
+      if (!currentItem) {
+        // Safety check, should never happen
+        return currentItems;
+      }
 
       // Set first line to current field
       // We know lines[0] exists because we checked lines.length > 0
@@ -203,8 +211,8 @@ export function SortableInputList({
 
   const handleRemove = useCallback(
     (id: string) => {
-      setItems((items) => {
-        const filtered = items.filter((item) => item.id !== id);
+      setItems((currentItems) => {
+        const filtered = currentItems.filter((item) => item.id !== id);
         // Keep at least one empty field
         return filtered.length > 0
           ? filtered
@@ -220,10 +228,10 @@ export function SortableInputList({
   );
 
   const handleAdd = useCallback(() => {
-    setItems((items) => [
-      ...items,
+    setItems((currentItems) => [
+      ...currentItems,
       {
-        id: `${name}-${items.length}-${Temporal.Now.instant().epochMilliseconds}`,
+        id: `${name}-${currentItems.length}-${Temporal.Now.instant().epochMilliseconds}`,
         value: "",
       },
     ]);
@@ -270,4 +278,4 @@ export function SortableInputList({
       ))}
     </div>
   );
-}
+};

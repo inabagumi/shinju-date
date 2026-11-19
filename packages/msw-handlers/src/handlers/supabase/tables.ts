@@ -1,5 +1,4 @@
-import type Database from "@shinju-date/database";
-import type { Tables, TablesInsert } from "@shinju-date/database";
+import type { Database, Tables, TablesInsert } from "@shinju-date/database";
 import { toDBString } from "@shinju-date/temporal-fns";
 
 import {
@@ -39,12 +38,17 @@ type Column<Name extends TableName> = Name extends TableName
  * copies of them.
  */
 export interface MockCollection<Row, Rec extends Row = Row> {
+  // Methods (unlike properties) are checked bivariantly, so that a collection
+  // of one table can be used where the tables are a union.
+  // oxlint-disable-next-line typescript/method-signature-style -- needs the bivariant check of a method
   create(values: Row): Promise<NoInfer<Rec>>;
+  // oxlint-disable-next-line typescript/method-signature-style -- needs the bivariant check of a method
   delete(record: NoInfer<Rec>): unknown;
-  findMany(): Rec[];
+  findMany: () => Rec[];
+  // oxlint-disable-next-line typescript/method-signature-style -- needs the bivariant check of a method
   update(
     record: NoInfer<Rec>,
-    options: { data(draft: Row): void }
+    options: { data: (draft: Row) => void }
   ): Promise<NoInfer<Rec> | undefined>;
 }
 
@@ -52,11 +56,9 @@ export interface MockCollection<Row, Rec extends Row = Row> {
  * Check that a collection holds the rows of a table, so that it can be used
  * as a `MockCollection` of them.
  */
-function asMockCollection<Row, Rec extends Row>(
+const asMockCollection = <Row, Rec extends Row>(
   collection: MockCollection<NoInfer<Row>, Rec>
-): MockCollection<Row> {
-  return collection;
-}
+): MockCollection<Row> => collection;
 
 /**
  * A relation that `select` can embed, such as `talent:talents(id,name)`. The
@@ -105,11 +107,10 @@ type NotNullColumn<Name extends TableName> = Name extends TableName
  * List the `NOT NULL` columns of a table. The type of the argument checks
  * that every such column is listed.
  */
-function notNullColumns<Name extends WritableTableName>(
+const notNullColumns = <Name extends WritableTableName>(
   columns: Record<NotNullColumn<Name>, true>
-): readonly NotNullColumn<Name>[] {
-  return Object.keys(columns) as NotNullColumn<Name>[];
-}
+): readonly NotNullColumn<Name>[] =>
+  Object.keys(columns) as NotNullColumn<Name>[];
 
 interface BaseTableDefinition<Name extends TableName> {
   name: Name;
@@ -162,15 +163,13 @@ export type AnyTableDefinition = {
 }[TableName];
 
 /** The current time as it is saved in a `TIMESTAMPTZ` column. */
-function now(): string {
-  return toDBString(Temporal.Now.instant());
-}
+const now = (): string => toDBString(Temporal.Now.instant());
 
 /**
  * Parse a `TIMESTAMPTZ` value like PostgreSQL does. A value without an offset
  * is in the time zone of the session, which is UTC on Supabase.
  */
-function parseTimestamp(text: string): Temporal.Instant | null {
+const parseTimestamp = (text: string): Temporal.Instant | null => {
   try {
     return Temporal.Instant.from(text);
   } catch {
@@ -182,14 +181,14 @@ function parseTimestamp(text: string): Temporal.Instant | null {
       return null;
     }
   }
-}
+};
 
 /**
  * Compare two `TIMESTAMPTZ` values as instants. Values that cannot be parsed
  * come before the others, so in descending order (the latest first) they
  * come last and are never picked as the latest.
  */
-function compareTimestamps(a: string, b: string): number {
+const compareTimestamps = (a: string, b: string): number => {
   const instantA = parseTimestamp(a);
   const instantB = parseTimestamp(b);
 
@@ -198,46 +197,45 @@ function compareTimestamps(a: string, b: string): number {
   }
 
   return Temporal.Instant.compare(instantA, instantB);
-}
+};
 
 /**
  * Mirrors the `video_backfill_latest_jobs` view: the latest finished job of
  * each account that still exists, of talents that are not deleted.
  */
-async function getLatestVideoBackfillJobs(): Promise<
-  Tables<"video_backfill_latest_jobs">[]
-> {
-  const talentIds = new Set(
-    talents
+const getLatestVideoBackfillJobs =
+  (): Tables<"video_backfill_latest_jobs">[] => {
+    const talentIds = new Set(
+      talents
+        .findMany()
+        .filter((talent) => talent.deleted_at === null)
+        .map((talent) => talent.id)
+    );
+    const accountIds = {
+      twitch: new Set(twitchUsers.findMany().map((user) => user.id)),
+      youtube: new Set(youtubeChannels.findMany().map((channel) => channel.id)),
+    };
+    const seen = new Set<string>();
+
+    return videoBackfillJobs
       .findMany()
-      .filter((talent) => talent.deleted_at === null)
-      .map((talent) => talent.id)
-  );
-  const accountIds = {
-    twitch: new Set(twitchUsers.findMany().map((user) => user.id)),
-    youtube: new Set(youtubeChannels.findMany().map((channel) => channel.id)),
+      .toSorted((a, b) => compareTimestamps(b.finished_at, a.finished_at))
+      .filter((job) => {
+        const key = `${job.platform}:${job.account_id}`;
+
+        if (
+          seen.has(key) ||
+          !talentIds.has(job.talent_id) ||
+          !accountIds[job.platform].has(job.account_id)
+        ) {
+          return false;
+        }
+
+        seen.add(key);
+
+        return true;
+      });
   };
-  const seen = new Set<string>();
-
-  return videoBackfillJobs
-    .findMany()
-    .toSorted((a, b) => compareTimestamps(b.finished_at, a.finished_at))
-    .filter((job) => {
-      const key = `${job.platform}:${job.account_id}`;
-
-      if (
-        seen.has(key) ||
-        !talentIds.has(job.talent_id) ||
-        !accountIds[job.platform].has(job.account_id)
-      ) {
-        return false;
-      }
-
-      seen.add(key);
-
-      return true;
-    });
-}
 
 /** A relation to `talents` from its `talent_id`. */
 const TALENT_RELATION = {
@@ -561,7 +559,7 @@ const videoBackfillLatestJobsView: ReadOnlyTableDefinition<"video_backfill_lates
     kind: "view",
     name: "video_backfill_latest_jobs",
     relations: [TALENT_RELATION],
-    rows: getLatestVideoBackfillJobs,
+    rows: () => Promise.resolve(getLatestVideoBackfillJobs()),
     uuidColumns: VIDEO_BACKFILL_JOB_UUID_COLUMNS,
   };
 
@@ -703,15 +701,11 @@ export const TABLES: readonly AnyTableDefinition[] = [
 ];
 
 /** The definition of a table, if the mock serves it. */
-export function findTable(name: string): AnyTableDefinition | undefined {
-  return TABLES.find((table) => table.name === name);
-}
+export const findTable = (name: string): AnyTableDefinition | undefined =>
+  TABLES.find((table) => table.name === name);
 
 /** The current rows of a table. */
-export async function getRows<Name extends TableName>(
+export const getRows = async <Name extends TableName>(
   table: TableDefinition<Name>
-): Promise<Tables<Name>[]> {
-  return table.kind === "view"
-    ? await table.rows()
-    : table.collection.findMany();
-}
+): Promise<Tables<Name>[]> =>
+  table.kind === "view" ? await table.rows() : table.collection.findMany();

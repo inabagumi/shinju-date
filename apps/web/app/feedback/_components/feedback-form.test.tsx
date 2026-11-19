@@ -1,7 +1,8 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { FeedbackFormState } from "../_lib/actions";
+import { FeedbackForm } from "./feedback-form";
 
 const { submitFeedback } = vi.hoisted(() => ({
   submitFeedback:
@@ -10,33 +11,35 @@ const { submitFeedback } = vi.hoisted(() => ({
     >(),
 }));
 
-vi.mock("../_lib/actions", () => ({ submitFeedback }));
+vi.mock(import("../_lib/actions"), () => ({ submitFeedback }));
 
-import { FeedbackForm } from "./feedback-form";
+const getMessageTextarea = () =>
+  screen.getByLabelText(/機能要望/u) as HTMLTextAreaElement;
 
-function getMessageTextarea() {
-  return screen.getByLabelText(/機能要望/) as HTMLTextAreaElement;
-}
-
-async function submitMessage(container: HTMLElement, message: string) {
+const submitMessage = async (container: HTMLElement, message: string) => {
   fireEvent.change(getMessageTextarea(), { target: { value: message } });
 
-  await act(async () => {
+  // Returning a promise makes `act` wait for the submission as well
+  await act(() => {
     fireEvent.submit(container.querySelector("form") as HTMLFormElement);
-  });
-}
 
-describe("FeedbackForm", () => {
+    return Promise.resolve();
+  });
+};
+
+describe(FeedbackForm, () => {
   beforeEach(() => {
     submitFeedback.mockReset();
   });
 
-  test("keeps the entered message when the submission fails", async () => {
-    submitFeedback.mockImplementation(async (_, formData) => ({
-      error: "送信中にエラーが発生しました。",
-      success: false,
-      values: { message: String(formData.get("message")) },
-    }));
+  it("keeps the entered message when the submission fails", async () => {
+    submitFeedback.mockImplementation((_, formData) =>
+      Promise.resolve({
+        error: "送信中にエラーが発生しました。",
+        success: false,
+        values: { message: String(formData.get("message")) },
+      })
+    );
 
     const { container } = render(<FeedbackForm />);
 
@@ -46,7 +49,7 @@ describe("FeedbackForm", () => {
     expect(getMessageTextarea().value).toBe("検索機能がほしい");
   });
 
-  test("clears the message when the submission succeeds", async () => {
+  it("clears the message when the submission succeeds", async () => {
     submitFeedback.mockResolvedValue({
       message: "機能要望を受け付けました。ありがとうございます。",
       success: true,

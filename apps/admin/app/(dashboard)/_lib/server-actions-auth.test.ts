@@ -32,8 +32,14 @@ const actionModules = import.meta.glob<Record<string, unknown>>([
 
 const actions: [string, (...args: unknown[]) => Promise<unknown>][] = [];
 
-for (const [path, load] of Object.entries(actionModules)) {
-  for (const [name, value] of Object.entries(await load())) {
+const loadedModules = await Promise.all(
+  Object.entries(actionModules).map(
+    async ([path, load]) => [path, await load()] as const
+  )
+);
+
+for (const [path, moduleExports] of loadedModules) {
+  for (const [name, value] of Object.entries(moduleExports)) {
     if (typeof value === "function") {
       actions.push([
         `${path}#${name}`,
@@ -61,14 +67,14 @@ const cases = actions.flatMap(([name, action]) =>
   )
 );
 
-function expectNoSideEffects() {
+const expectNoSideEffects = () => {
   expect(test.createSupabaseServerClient).not.toHaveBeenCalled();
   // No PostgREST request at all, through either client
-  expect(supabase.requests).toEqual([]);
+  expect(supabase.requests).toStrictEqual([]);
   expect(test.getRedisClient).not.toHaveBeenCalled();
   test.expectNoAuditLog();
   test.expectNotRevalidated();
-}
+};
 
 describe("mutation Server Actions without an authenticated user", () => {
   beforeEach(() => {
@@ -102,11 +108,11 @@ describe('files that start with "use server"', () => {
     }).filter(
       (path) =>
         !path.split("/").includes("_actions") &&
-        /^\s*['"]use server['"]/.test(
-          readFileSync(`${APP_ROOT}${path}`, "utf8")
+        /^\s*['"]use server['"]/u.test(
+          readFileSync(`${APP_ROOT}${path}`, "utf-8")
         )
     );
 
-    expect(files).toEqual([]);
+    expect(files).toStrictEqual([]);
   });
 });

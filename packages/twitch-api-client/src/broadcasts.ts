@@ -23,11 +23,10 @@ interface GetBroadcastOptions extends ClientOptions {
  * Archives and highlights are past broadcasts; uploads and clips are regular
  * videos.
  */
-export function getTwitchVideoStatus(
+export const getTwitchVideoStatus = (
   type: Enums<"twitch_video_type">
-): TwitchVideoStatus {
-  return type === "upload" || type === "clip" ? "PUBLISHED" : "ENDED";
-}
+): TwitchVideoStatus =>
+  type === "upload" || type === "clip" ? "PUBLISHED" : "ENDED";
 
 /**
  * The ID of the stream a video is the archive of, or `null` for any other
@@ -37,20 +36,19 @@ export function getTwitchVideoStatus(
  * while the stream is still on air: an archive alone does not mean the
  * broadcast ended.
  */
-export function getArchivedStreamId(video: TwitchVideo): string | null {
-  return video.type === "archive" && video.stream_id ? video.stream_id : null;
-}
+export const getArchivedStreamId = (video: TwitchVideo): string | null =>
+  video.type === "archive" && video.stream_id ? video.stream_id : null;
 
 /**
  * Gets the stream of a broadcast while it is on air.
  *
  * @returns `null` once the broadcast is offline.
  */
-export async function getLiveStream({
+export const getLiveStream = async ({
   client,
   streamId,
   userId,
-}: GetBroadcastOptions): Promise<TwitchStream | null> {
+}: GetBroadcastOptions): Promise<TwitchStream | null> => {
   for await (const stream of getStreamsByUserIds({
     client,
     userIds: [userId],
@@ -61,7 +59,7 @@ export async function getLiveStream({
   }
 
   return null;
-}
+};
 
 /**
  * Finds the archive (VOD) of a broadcast among the broadcaster's newest
@@ -70,11 +68,11 @@ export async function getLiveStream({
  * @returns `null` when Twitch keeps no archive of it (VODs disabled, expired
  *   or deleted) or it is older than the newest {@link TWITCH_API_MAX_RESULTS}.
  */
-export async function getArchiveOfStream({
+export const getArchiveOfStream = async ({
   client,
   streamId,
   userId,
-}: GetBroadcastOptions): Promise<TwitchVideo | null> {
+}: GetBroadcastOptions): Promise<TwitchVideo | null> => {
   for await (const video of getVideosByUser({
     client,
     limit: TWITCH_API_MAX_RESULTS,
@@ -87,4 +85,4 @@ export async function getArchiveOfStream({
   }
 
   return null;
-}
+};

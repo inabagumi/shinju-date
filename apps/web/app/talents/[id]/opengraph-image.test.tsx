@@ -1,5 +1,6 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import type { cacheTag } from "next/cache";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   createProfileImage,
@@ -8,13 +9,14 @@ import {
 } from "@/test/factories";
 import { seedSupabase, setupSupabase, supabaseRequests } from "@/test/supabase";
 
-// Vitest does not run `'use cache'`, so `fetchTalent` queries every time
-vi.mock("next/cache", () => ({
-  cacheLife: vi.fn(),
-  cacheTag: vi.fn(),
-}));
-
 import Image, { contentType, size } from "./opengraph-image";
+
+// Vitest does not run `'use cache'`, so `fetchTalent` queries every time
+vi.mock(import("next/cache"), () => ({
+  // A name of a profile or an object, which every overload of cacheLife takes
+  cacheLife: vi.fn<(profile: string | object) => void>(),
+  cacheTag: vi.fn<typeof cacheTag>(),
+}));
 
 setupSupabase();
 
@@ -29,16 +31,15 @@ const CHANNEL = createYouTubeChannel({
   youtube_handle: "@mio",
 });
 
-function render(id = TALENT.id): Promise<Response> {
-  return Image({ params: Promise.resolve({ id }) });
-}
+const render = (id = TALENT.id): Promise<Response> =>
+  Image({ params: Promise.resolve({ id }) });
 
 /** The width and height in the IHDR chunk of a PNG */
-function getPNGSize(buffer: ArrayBuffer) {
+const getPNGSize = (buffer: ArrayBuffer) => {
   const view = new DataView(buffer);
 
   return { height: view.getUint32(20), width: view.getUint32(16) };
-}
+};
 
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 
@@ -53,27 +54,30 @@ describe("opengraph-image of a talent", () => {
     });
   });
 
-  test("should be a 1200x630 PNG with the icon of the talent", async () => {
+  it("should declare a 1200x630 PNG", () => {
+    expect(contentType).toBe("image/png");
+    expect(size).toStrictEqual({ height: 630, width: 1200 });
+  });
+
+  it("should be a 1200x630 PNG with the icon of the talent", async () => {
     const response = await render();
 
-    expect(contentType).toBe("image/png");
-    expect(size).toEqual({ height: 630, width: 1200 });
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/png");
 
     const body = await response.arrayBuffer();
 
-    expect([...new Uint8Array(body.slice(0, 8))]).toEqual(PNG_SIGNATURE);
-    expect(getPNGSize(body)).toEqual({ height: 630, width: 1200 });
+    expect([...new Uint8Array(body.slice(0, 8))]).toStrictEqual(PNG_SIGNATURE);
+    expect(getPNGSize(body)).toStrictEqual({ height: 630, width: 1200 });
     // The icon of the channel is looked up to be drawn
     expect(
       supabaseRequests("profile_images").map(({ url }) =>
         url.searchParams.get("id")
       )
-    ).toEqual([`eq.${ICON.id}`]);
+    ).toStrictEqual([`eq.${ICON.id}`]);
   });
 
-  test("should not be cached as immutable", async () => {
+  it("should not be cached as immutable", async () => {
     const response = await render();
 
     expect(response.headers.get("cache-control")).toBe(
@@ -81,26 +85,26 @@ describe("opengraph-image of a talent", () => {
     );
   });
 
-  test("should be generated without a theme color or an icon", async () => {
+  it("should be generated without a theme color or an icon", async () => {
     await seedSupabase({ talents: [{ ...TALENT, theme_color: null }] });
 
     const response = await render();
 
     expect(response.status).toBe(200);
-    expect(getPNGSize(await response.arrayBuffer())).toEqual({
+    expect(getPNGSize(await response.arrayBuffer())).toStrictEqual({
       height: 630,
       width: 1200,
     });
-    expect(supabaseRequests("profile_images")).toEqual([]);
+    expect(supabaseRequests("profile_images")).toStrictEqual([]);
   });
 
-  test.each([
+  it.each([
     ["an ID that is not a UUID", "not-a-uuid"],
     ["a talent that does not exist", crypto.randomUUID()],
   ])("should be not found for %s", async (_, id) => {
     await expect(render(id)).rejects.toMatchObject({
       digest: "NEXT_HTTP_ERROR_FALLBACK;404",
     });
-    expect(supabaseRequests("profile_images")).toEqual([]);
+    expect(supabaseRequests("profile_images")).toStrictEqual([]);
   });
 });

@@ -1,4 +1,4 @@
-import { DatabaseError } from "../internal/errors.js";
+import { DatabaseError } from "../internal/database-error.js";
 import { compareVideoFields } from "../internal/operations/diff-video-fields.js";
 import { refreshSavedVideo } from "../internal/operations/refresh-saved-videos.js";
 import type { CrawlContext, RefreshVideoResult } from "../types.js";
@@ -15,10 +15,10 @@ import { refreshYouTubeThumbnail } from "./thumbnail.js";
  * Unlike the scheduled refreshes, the video is refreshed whatever its status
  * and whatever the status of its talent.
  */
-export async function refreshYouTubeVideo(
+export const refreshYouTubeVideo = async (
   context: CrawlContext<YouTubeFetcher>,
   videoId: string
-): Promise<RefreshVideoResult> {
+): Promise<RefreshVideoResult> => {
   const { fetcher, logger, supabaseClient } = context;
   const { data: saved, error } = await supabaseClient
     .from("videos")
@@ -63,4 +63,4 @@ export async function refreshYouTubeVideo(
     status: "updated",
     title: after.title,
   };
-}
+};

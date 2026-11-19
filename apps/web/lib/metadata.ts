@@ -61,14 +61,14 @@ export interface PageMetadata extends Metadata {
  * sharing. Open Graph has `og:site_name` for it, and X has nothing, so the
  * site name is added to the title for X here.
  */
-export function createPageMetadata({
+export const createPageMetadata = ({
   absoluteTitle,
   description,
   index,
   path,
   title,
   type = "website",
-}: PageMetadataOptions): PageMetadata {
+}: PageMetadataOptions): PageMetadata => {
   const hasSiteName = absoluteTitle === undefined;
 
   return {
@@ -90,4 +90,4 @@ export function createPageMetadata({
       title: hasSiteName ? `${title} - ${SITE_NAME}` : title,
     },
   };
-}
+};

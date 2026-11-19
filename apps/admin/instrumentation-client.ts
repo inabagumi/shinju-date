@@ -6,10 +6,10 @@ import { initClient } from "@shinju-date/instrumentation/client";
 export { onRouterTransitionStart } from "@shinju-date/instrumentation/client";
 
 initClient({
-  profileSessionSampleRate: 1.0,
+  profileSessionSampleRate: 1,
   replay: {
-    onErrorSampleRate: 1.0,
+    onErrorSampleRate: 1,
     sessionSampleRate: 0.1,
   },
-  tracesSampleRate: 1.0,
+  tracesSampleRate: 1,
 });

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { getErrorStatus } from "./errors.js";
 
-describe("getErrorStatus", () => {
+describe(getErrorStatus, () => {
   it("reads `status`", () => {
     expect(getErrorStatus({ status: 404 })).toBe(404);
   });

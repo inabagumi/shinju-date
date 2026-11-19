@@ -4,7 +4,7 @@
  *
  * twurple sets the status as `statusCode` on the errors of failed requests.
  */
-export function getErrorStatus(error: unknown): number | undefined {
+export const getErrorStatus = (error: unknown): number | undefined => {
   if (typeof error !== "object" || error === null || !("statusCode" in error)) {
     return undefined;
   }
@@ -14,4 +14,4 @@ export function getErrorStatus(error: unknown): number | undefined {
   return typeof statusCode === "number" && Number.isInteger(statusCode)
     ? statusCode
     : undefined;
-}
+};

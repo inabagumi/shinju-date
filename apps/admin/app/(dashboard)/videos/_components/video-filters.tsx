@@ -2,11 +2,8 @@
 
 import type { Tables } from "@shinju-date/database";
 import { range } from "@shinju-date/helpers";
-import {
-  FilterBar,
-  MultiSelect,
-  type MultiSelectOption,
-} from "@shinju-date/ui";
+import { FilterBar, MultiSelect } from "@shinju-date/ui";
+import type { MultiSelectOption } from "@shinju-date/ui";
 import { useSearchParams } from "next/navigation";
 
 import { SearchInput } from "@/components/search-input";
@@ -38,7 +35,7 @@ interface Props {
   talents: Talent[];
 }
 
-export function VideoFilters({ talents }: Props) {
+export const VideoFilters = ({ talents }: Props) => {
   const updateSearchParams = useUpdateSearchParams();
   const searchParams = useSearchParams();
 
@@ -172,21 +169,19 @@ export function VideoFilters({ talents }: Props) {
       </FilterBar>
     </div>
   );
-}
+};
 
 /** 読み込み中の `VideoFilters`。検索欄と、6つの絞り込み（`filters`）を並べる */
-export function VideoFiltersSkeleton() {
-  return (
-    <div aria-hidden="true" className="mb-4 flex flex-col gap-3">
-      <FieldSkeleton className="w-full sm:max-w-md" />
-      <FilterBarSkeleton>
-        {range(6).map((filter) => (
-          <FieldSkeleton
-            className="md:w-48"
-            key={`video-filter-skeleton-${filter}`}
-          />
-        ))}
-      </FilterBarSkeleton>
-    </div>
-  );
-}
+export const VideoFiltersSkeleton = () => (
+  <div aria-hidden="true" className="mb-4 flex flex-col gap-3">
+    <FieldSkeleton className="w-full sm:max-w-md" />
+    <FilterBarSkeleton>
+      {range(6).map((filter) => (
+        <FieldSkeleton
+          className="md:w-48"
+          key={`video-filter-skeleton-${filter}`}
+        />
+      ))}
+    </FilterBarSkeleton>
+  </div>
+);

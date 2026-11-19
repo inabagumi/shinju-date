@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { ENV_NAMES, type EnvSource, parseEnv } from "./env";
+import { ENV_NAMES, parseEnv } from "./env";
+import type { EnvSource } from "./env";
 
 const API_KEYS = {
   GOOGLE_API_KEY: "google-api-key",
@@ -20,17 +21,16 @@ const REQUIRED_ENV = {
 
 type RequiredName = keyof typeof REQUIRED_ENV;
 
-function without(...names: RequiredName[]): EnvSource {
-  return Object.fromEntries(
+const without = (...names: RequiredName[]): EnvSource =>
+  Object.fromEntries(
     Object.entries(REQUIRED_ENV).filter(
       ([name]) => !names.includes(name as RequiredName)
     )
   );
-}
 
-function errorOf(callback: () => unknown): Error {
+const errorOf = (action: () => unknown): Error => {
   try {
-    callback();
+    action();
   } catch (error) {
     if (error instanceof Error) {
       return error;
@@ -38,27 +38,27 @@ function errorOf(callback: () => unknown): Error {
   }
 
   throw new Error("Expected an error to be thrown.");
-}
+};
 
-describe("parseEnv", () => {
-  test("returns the variables when every required one is set", () => {
+describe(parseEnv, () => {
+  it("returns the variables when every required one is set", () => {
     expect(parseEnv(REQUIRED_ENV)).toMatchObject(REQUIRED_ENV);
   });
 
-  test.each(Object.keys(REQUIRED_ENV) as RequiredName[])(
+  it.each(Object.keys(REQUIRED_ENV) as RequiredName[])(
     "throws an error naming %s when it is missing",
     (name) => {
       expect(() => parseEnv(without(name))).toThrow(name);
     }
   );
 
-  test("treats an empty variable as missing", () => {
+  it("treats an empty variable as missing", () => {
     expect(() =>
       parseEnv({ ...REQUIRED_ENV, SUPABASE_SERVICE_ROLE_KEY: "" })
     ).toThrow("SUPABASE_SERVICE_ROLE_KEY: is not set");
   });
 
-  test("names every missing variable at once", () => {
+  it("names every missing variable at once", () => {
     const { message } = errorOf(() => parseEnv({}));
 
     for (const name of Object.keys(REQUIRED_ENV)) {
@@ -66,7 +66,7 @@ describe("parseEnv", () => {
     }
   });
 
-  test.each(["NEXT_PUBLIC_SUPABASE_URL", "UPSTASH_REDIS_REST_URL"] as const)(
+  it.each(["NEXT_PUBLIC_SUPABASE_URL", "UPSTASH_REDIS_REST_URL"] as const)(
     "throws an error naming %s when it is not a URL",
     (name) => {
       expect(() => parseEnv({ ...REQUIRED_ENV, [name]: "not a url" })).toThrow(
@@ -75,7 +75,7 @@ describe("parseEnv", () => {
     }
   );
 
-  test("does not need the API keys when ENABLE_MSW is true", () => {
+  it("does not need the API keys when ENABLE_MSW is true", () => {
     const env = parseEnv({
       ...without("GOOGLE_API_KEY", "TWITCH_CLIENT_ID", "TWITCH_CLIENT_SECRET"),
       ENABLE_MSW: "true",
@@ -86,7 +86,7 @@ describe("parseEnv", () => {
     expect(env.TWITCH_CLIENT_SECRET).toBeUndefined();
   });
 
-  test.each(Object.keys(API_KEYS) as (keyof typeof API_KEYS)[])(
+  it.each(Object.keys(API_KEYS) as (keyof typeof API_KEYS)[])(
     "still needs %s when ENABLE_MSW is not true",
     (name) => {
       expect(() => parseEnv({ ...without(name), ENABLE_MSW: "false" })).toThrow(
@@ -95,7 +95,7 @@ describe("parseEnv", () => {
     }
   );
 
-  test("leaves the optional variables unset", () => {
+  it("leaves the optional variables unset", () => {
     const env = parseEnv(REQUIRED_ENV);
 
     expect(env.CRON_SECRET).toBeUndefined();
@@ -103,16 +103,16 @@ describe("parseEnv", () => {
     expect(env.REVALIDATE_URL).toBeUndefined();
   });
 
-  test("treats an empty CRON_SECRET as unset", () => {
-    expect(parseEnv({ ...REQUIRED_ENV, CRON_SECRET: "" }).CRON_SECRET).toBe(
-      undefined
-    );
+  it("treats an empty CRON_SECRET as unset", () => {
+    expect(
+      parseEnv({ ...REQUIRED_ENV, CRON_SECRET: "" }).CRON_SECRET
+    ).toBeUndefined();
     expect(
       parseEnv({ ...REQUIRED_ENV, CRON_SECRET: "secret" }).CRON_SECRET
     ).toBe("secret");
   });
 
-  test.each([
+  it.each([
     ["true", true],
     ["false", false],
     [undefined, false],
@@ -128,12 +128,11 @@ interface TurboConfig {
   tasks?: Record<string, { env?: string[] }>;
 }
 
-function readTurboConfig(path: string): TurboConfig {
-  return JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8"));
-}
+const readTurboConfig = (path: string): TurboConfig =>
+  JSON.parse(readFileSync(new URL(path, import.meta.url), "utf-8"));
 
-describe("ENV_NAMES", () => {
-  test("are all passed to the build by turbo.json", () => {
+describe("the names in ENV_NAMES", () => {
+  it("are all passed to the build by turbo.json", () => {
     const appConfig = readTurboConfig("../turbo.json");
     const rootConfig = readTurboConfig("../../../turbo.json");
     const passedNames = new Set([
@@ -142,6 +141,8 @@ describe("ENV_NAMES", () => {
     ]);
 
     expect(ENV_NAMES).toContain("UPSTASH_REDIS_REST_URL");
-    expect(ENV_NAMES.filter((name) => !passedNames.has(name))).toEqual([]);
+    expect(ENV_NAMES.filter((name) => !passedNames.has(name))).toStrictEqual(
+      []
+    );
   });
 });

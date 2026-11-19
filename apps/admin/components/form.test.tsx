@@ -5,24 +5,15 @@ import Form, {
   Checkbox,
   ErrorMessage,
   FormField,
-  type FormState,
   Input,
   Label,
   Select,
   SubmitButton,
   SuccessMessage,
 } from "./form";
+import type { FormState } from "./form";
 
-function createDeferred<T>() {
-  let resolve!: (value: T) => void;
-  const promise = new Promise<T>((res) => {
-    resolve = res;
-  });
-
-  return { promise, resolve };
-}
-
-function renderForm(action: () => FormState | Promise<FormState>) {
+const renderForm = (action: () => FormState | Promise<FormState>) => {
   render(
     <Form action={action}>
       <FormField name="email">
@@ -34,13 +25,13 @@ function renderForm(action: () => FormState | Promise<FormState>) {
       <SubmitButton>保存</SubmitButton>
     </Form>
   );
-}
+};
 
-function submit() {
+const submit = () => {
   fireEvent.click(screen.getByRole("button", { name: "保存" }));
-}
+};
 
-describe("Form", () => {
+describe(Form, () => {
   it("shows `error` of the state at the top of the form", async () => {
     renderForm(() => ({ error: "保存に失敗しました。" }));
 
@@ -88,70 +79,83 @@ describe("Form", () => {
 
     submit();
 
-    expect(await screen.findByRole("status")).toHaveTextContent(
+    await expect(screen.findByRole("status")).resolves.toHaveTextContent(
       "更新が完了しました。"
     );
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });
 
+const renderFieldsForm = (
+  action: (
+    currentState: FormState,
+    formData: FormData
+  ) => FormState | Promise<FormState>
+) => {
+  render(
+    <Form action={action}>
+      <FormField name="level">
+        <Label>レベル</Label>
+        <Select defaultValue="info">
+          <option value="info">情報</option>
+          <option value="alert">重要</option>
+        </Select>
+        <ErrorMessage />
+      </FormField>
+      {/* 制御されていない入力欄 */}
+      <label>
+        <input
+          defaultChecked={false}
+          name="enabled"
+          type="checkbox"
+          value="true"
+        />
+        有効化
+      </label>
+      <label>
+        メモ
+        <input defaultValue="" name="note" />
+      </label>
+      <SubmitButton>保存</SubmitButton>
+    </Form>
+  );
+};
+
+/** Fills the fields and submits them to an action that rejects them. */
+const fillAndSubmit = () => {
+  const action = vi.fn<
+    (currentState: FormState, formData: FormData) => FormState
+  >(() => ({ errors: { level: ["レベルが正しくありません。"] } }));
+  renderFieldsForm(action);
+
+  fireEvent.change(screen.getByLabelText("レベル"), {
+    target: { value: "alert" },
+  });
+  fireEvent.click(screen.getByLabelText("有効化"));
+  fireEvent.change(screen.getByLabelText("メモ"), {
+    target: { value: "メモの内容" },
+  });
+  submit();
+
+  return action;
+};
+
 describe("Form after a failed submission", () => {
-  function renderFieldsForm(
-    action: (
-      currentState: FormState,
-      formData: FormData
-    ) => FormState | Promise<FormState>
-  ) {
-    render(
-      <Form action={action}>
-        <FormField name="level">
-          <Label>レベル</Label>
-          <Select defaultValue="info">
-            <option value="info">情報</option>
-            <option value="alert">重要</option>
-          </Select>
-          <ErrorMessage />
-        </FormField>
-        {/* 制御されていない入力欄 */}
-        <label>
-          <input
-            defaultChecked={false}
-            name="enabled"
-            type="checkbox"
-            value="true"
-          />
-          有効化
-        </label>
-        <label>
-          メモ
-          <input defaultValue="" name="note" />
-        </label>
-        <SubmitButton>保存</SubmitButton>
-      </Form>
-    );
-  }
-
   it("keeps the select, the checkbox and uncontrolled inputs", async () => {
-    const action = vi.fn<
-      (currentState: FormState, formData: FormData) => FormState
-    >(() => ({ errors: { level: ["レベルが正しくありません。"] } }));
-    renderFieldsForm(action);
+    fillAndSubmit();
 
-    fireEvent.change(screen.getByLabelText("レベル"), {
-      target: { value: "alert" },
-    });
-    fireEvent.click(screen.getByLabelText("有効化"));
-    fireEvent.change(screen.getByLabelText("メモ"), {
-      target: { value: "メモの内容" },
-    });
-    submit();
-
-    expect(await screen.findByRole("alert")).toHaveTextContent(
+    await expect(screen.findByRole("alert")).resolves.toHaveTextContent(
       "レベルが正しくありません。"
     );
     expect(screen.getByLabelText("レベル")).toHaveValue("alert");
     expect(screen.getByLabelText("有効化")).toBeChecked();
     expect(screen.getByLabelText("メモ")).toHaveValue("メモの内容");
+  });
+
+  it("sends the kept values when submitted again", async () => {
+    const action = fillAndSubmit();
+
+    await screen.findByRole("alert");
 
     // そのまま送り直すと、選んだ内容が送られる
     submit();
@@ -177,12 +181,12 @@ describe("Form after a failed submission", () => {
 
     submit();
 
-    await vi.waitFor(() => expect(action).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(action).toHaveBeenCalledOnce());
     expect(action.mock.calls[0]?.[1].get("intent")).toBe("save");
   });
 
   it("disables the fields and the submit button while submitting", async () => {
-    const deferred = createDeferred<FormState>();
+    const deferred = Promise.withResolvers<FormState>();
     renderFieldsForm(() => deferred.promise);
 
     submit();
@@ -193,9 +197,10 @@ describe("Form after a failed submission", () => {
 
     await act(async () => {
       deferred.resolve({ error: "保存に失敗しました。" });
+      await deferred.promise;
     });
 
-    expect(await screen.findByRole("alert")).toHaveTextContent(
+    await expect(screen.findByRole("alert")).resolves.toHaveTextContent(
       "保存に失敗しました。"
     );
     expect(button).toBeEnabled();
@@ -203,7 +208,7 @@ describe("Form after a failed submission", () => {
   });
 });
 
-describe("ErrorMessage", () => {
+describe(ErrorMessage, () => {
   it("shows the error of a field next to the field", async () => {
     renderForm(() => ({
       errors: { email: ["メールアドレスを入力してください。"] },
@@ -221,27 +226,27 @@ describe("ErrorMessage", () => {
   });
 });
 
-describe("Checkbox", () => {
-  function renderCheckboxForm(
-    action: (
-      currentState: FormState,
-      formData: FormData
-    ) => FormState | Promise<FormState>
-  ) {
-    render(
-      <Form action={action}>
-        <FormField name="enabled">
-          <Label className="mb-0 flex items-center gap-2">
-            <Checkbox defaultChecked={false} />
-            有効化
-          </Label>
-          <ErrorMessage />
-        </FormField>
-        <SubmitButton>保存</SubmitButton>
-      </Form>
-    );
-  }
+const renderCheckboxForm = (
+  action: (
+    currentState: FormState,
+    formData: FormData
+  ) => FormState | Promise<FormState>
+) => {
+  render(
+    <Form action={action}>
+      <FormField name="enabled">
+        <Label className="mb-0 flex items-center gap-2">
+          <Checkbox defaultChecked={false} />
+          有効化
+        </Label>
+        <ErrorMessage />
+      </FormField>
+      <SubmitButton>保存</SubmitButton>
+    </Form>
+  );
+};
 
+describe(Checkbox, () => {
   it("is named by the label of the field", () => {
     renderCheckboxForm(() => ({}));
 
@@ -271,7 +276,7 @@ describe("Checkbox", () => {
     renderCheckboxForm(action);
 
     submit();
-    await vi.waitFor(() => expect(action).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(action).toHaveBeenCalledOnce());
     expect(action.mock.calls[0]?.[1].get("enabled")).toBeNull();
 
     fireEvent.click(screen.getByText("有効化"));
@@ -281,7 +286,7 @@ describe("Checkbox", () => {
   });
 
   it("is disabled while submitting", async () => {
-    const deferred = createDeferred<FormState>();
+    const deferred = Promise.withResolvers<FormState>();
     renderCheckboxForm(() => deferred.promise);
 
     submit();
@@ -291,6 +296,7 @@ describe("Checkbox", () => {
 
     await act(async () => {
       deferred.resolve({});
+      await deferred.promise;
     });
 
     expect(checkbox).toBeEnabled();
@@ -310,7 +316,7 @@ describe("Checkbox", () => {
   });
 });
 
-describe("SubmitButton", () => {
+describe(SubmitButton, () => {
   it("submits the form by default", () => {
     render(
       <form>
@@ -325,7 +331,7 @@ describe("SubmitButton", () => {
   });
 });
 
-describe("Label", () => {
+describe(Label, () => {
   it("has the default classes", () => {
     render(
       <FormField name="email">

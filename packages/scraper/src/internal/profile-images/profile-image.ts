@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import sharp from "sharp";
 
 import type { TypedSupabaseClient } from "../../types.js";
-import { DatabaseError, StorageError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
 import {
   createBlurDataURL,
   downloadImage,
@@ -12,6 +12,7 @@ import {
   removeStoredImages,
   storeImage,
 } from "../images/index.js";
+import { StorageError } from "../storage-error.js";
 
 export const PROFILE_IMAGES_BUCKET = "profile-images";
 
@@ -55,13 +56,13 @@ export interface DownloadedProfileImage {
  * version-like ETags that are the same for different images.
  *
  * @returns `null` when the icon is unchanged.
- * @throws When the icon cannot be downloaded (including an error response)
+ * @throws {Error} When the icon cannot be downloaded (including an error response)
  *   or is not an image.
  */
-export async function downloadProfileImage(
+export const downloadProfileImage = async (
   sourceUrl: string,
   saved: StoredProfileImage | null
-): Promise<DownloadedProfileImage | null> {
+): Promise<DownloadedProfileImage | null> => {
   const savedEtag = saved?.sourceUrl === sourceUrl ? saved.etag : null;
 
   if (saved?.sourceUrl === sourceUrl && !savedEtag) {
@@ -76,15 +77,15 @@ export async function downloadProfileImage(
   }
 
   return { body: downloaded.body, etag: downloaded.etag, sourceUrl };
-}
+};
 
 /**
  * Crops an image to a centred square no larger than
  * {@link MAX_PROFILE_IMAGE_SIZE} and encodes it as WebP.
  */
-async function toSquareWebP(
+const toSquareWebP = async (
   image: ArrayBuffer
-): Promise<{ body: Buffer; size: number }> {
+): Promise<{ body: Buffer; size: number }> => {
   const { height, width } = await sharp(image).metadata();
   const size = Math.min(width, height, MAX_PROFILE_IMAGE_SIZE);
   const body = await sharp(image)
@@ -94,7 +95,7 @@ async function toSquareWebP(
     .toBuffer();
 
   return { body, size };
-}
+};
 
 export interface CreateProfileImageOptions {
   image: DownloadedProfileImage;
@@ -107,15 +108,15 @@ export interface CreateProfileImageOptions {
  * Stores a downloaded icon in the profile-images bucket and registers it in
  * the `profile_images` table. The icon is not assigned to its owner yet.
  *
- * @throws When the image cannot be decoded, stored or registered. Nothing is
+ * @throws {Error} When the image cannot be decoded, stored or registered. Nothing is
  *   left behind in that case.
  */
-export async function createProfileImage({
+export const createProfileImage = async ({
   image,
   now,
   owner,
   supabaseClient,
-}: CreateProfileImageOptions): Promise<StoredProfileImage> {
+}: CreateProfileImageOptions): Promise<StoredProfileImage> => {
   // Decoding first means a broken image is rejected before anything is stored.
   const { body, size } = await toSquareWebP(image.body);
   const blurDataURL = await createBlurDataURL(body);
@@ -161,7 +162,7 @@ export async function createProfileImage({
   }
 
   return stored;
-}
+};
 
 /**
  * Deletes an icon that is no longer used: first its row, then its object.
@@ -171,13 +172,13 @@ export async function createProfileImage({
  * only removed once the row is gone, so a used icon never loses its image.
  *
  * @returns Whether the icon was deleted (`false` when it is still in use).
- * @throws When the row cannot be deleted for another reason. A failure to
+ * @throws {Error} When the row cannot be deleted for another reason. A failure to
  *   remove the object is ignored: without its row it is never served.
  */
-export async function removeProfileImage(
+export const removeProfileImage = async (
   supabaseClient: TypedSupabaseClient,
   image: Pick<StoredProfileImage, "id" | "path">
-): Promise<boolean> {
+): Promise<boolean> => {
   try {
     return await removeImage(supabaseClient, {
       bucket: PROFILE_IMAGES_BUCKET,
@@ -192,4 +193,4 @@ export async function removeProfileImage(
 
     throw error;
   }
-}
+};

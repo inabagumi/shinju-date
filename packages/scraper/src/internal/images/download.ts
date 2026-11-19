@@ -21,16 +21,17 @@ export interface DownloadedImage {
  * Downloads an image, unless it is unchanged since `etag` was received.
  *
  * @returns `null` when the image is unchanged.
- * @throws When the image cannot be downloaded (including an error response)
+ * @throws {Error} When the image cannot be downloaded (including an error response)
  *   or the response is not an image.
  */
-export async function downloadImage(
+export const downloadImage = async (
   url: string,
   { etag }: DownloadImageOptions = {}
-): Promise<DownloadedImage | null> {
-  const response = await retryableFetch(url, {
-    ...(etag ? { headers: { "If-None-Match": etag } } : {}),
-  });
+): Promise<DownloadedImage | null> => {
+  const response = await retryableFetch(
+    url,
+    etag ? { headers: { "If-None-Match": etag } } : {}
+  );
 
   if (!response.ok && response.status !== 304) {
     // The body is read to reuse the socket.
@@ -59,4 +60,4 @@ export async function downloadImage(
   }
 
   return { body, contentType, etag: responseEtag };
-}
+};

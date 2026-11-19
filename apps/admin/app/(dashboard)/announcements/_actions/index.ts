@@ -5,12 +5,8 @@ import { toDBString } from "@shinju-date/temporal-fns";
 import { revalidateTags } from "@shinju-date/web-cache";
 import { revalidatePath } from "next/cache";
 
-import {
-  ActionError,
-  type ActionResult,
-  adminAction,
-  adminFormAction,
-} from "@/lib/action";
+import { ActionError, adminAction, adminFormAction } from "@/lib/action";
+import type { ActionResult } from "@/lib/action";
 import { createAuditLog } from "@/lib/audit-log";
 
 import {
@@ -21,11 +17,11 @@ import {
 
 const ID_REQUIRED_ERROR = "IDが指定されていません。";
 
-async function revalidateAnnouncements(): Promise<void> {
+const revalidateAnnouncements = async (): Promise<void> => {
   revalidatePath("/announcements");
   revalidatePath("/", "page");
   await revalidateTags([CACHE_TAGS.ANNOUNCEMENTS]);
-}
+};
 
 export const createAnnouncementAction = adminFormAction(
   "createAnnouncementAction",
@@ -55,7 +51,7 @@ export const createAnnouncementAction = adminFormAction(
       "ANNOUNCEMENT_CREATE",
       newAnnouncement.id,
       {
-        entityName: newAnnouncement.message.substring(0, 50),
+        entityName: newAnnouncement.message.slice(0, 50),
       }
     );
 
@@ -89,7 +85,7 @@ export const updateAnnouncementAction = adminFormAction(
     }
 
     await createAuditLog(supabaseClient, "ANNOUNCEMENT_UPDATE", id, {
-      entityName: updatedAnnouncement.message.substring(0, 50),
+      entityName: updatedAnnouncement.message.slice(0, 50),
     });
 
     await revalidateAnnouncements();
@@ -117,7 +113,7 @@ export const deleteAnnouncementAction = adminAction(
     }
 
     await createAuditLog(supabaseClient, "ANNOUNCEMENT_DELETE", id, {
-      entityName: deletedAnnouncement.message.substring(0, 50),
+      entityName: deletedAnnouncement.message.slice(0, 50),
     });
 
     await revalidateAnnouncements();

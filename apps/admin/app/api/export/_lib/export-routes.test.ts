@@ -1,5 +1,6 @@
 import { TIME_ZONE } from "@shinju-date/constants";
 import { NextRequest } from "next/server";
+import type { connection } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getPopularKeywords } from "@/lib/analytics/get-popular-keywords";
@@ -12,47 +13,49 @@ import { GET as exportSearchExitRates } from "../search-exit-rates/route";
 import { GET as exportTalents } from "../talents/route";
 import { GET as exportVideos } from "../videos/route";
 
-vi.mock("next/server", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("next/server")>()),
-  connection: vi.fn(async () => {}),
+vi.mock(import("next/server"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  connection: vi.fn<typeof connection>(async () => {}),
 }));
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: { debug: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn() },
-}));
+vi.mock(import("@shinju-date/logger"), async () => {
+  const { createMockLogger } = await import("@/test/logger");
 
-vi.mock("@/lib/analytics/get-popular-keywords", () => ({
-  getPopularKeywords: vi.fn(),
+  return { logger: createMockLogger() };
+});
+
+vi.mock(import("@/lib/analytics/get-popular-keywords"), () => ({
+  getPopularKeywords: vi.fn<typeof getPopularKeywords>(),
 }));
-vi.mock("@/lib/analytics/get-popular-talents", () => ({
-  getPopularTalents: vi.fn(),
+vi.mock(import("@/lib/analytics/get-popular-talents"), () => ({
+  getPopularTalents: vi.fn<typeof getPopularTalents>(),
 }));
-vi.mock("@/lib/analytics/get-popular-videos", () => ({
-  getPopularVideos: vi.fn(),
+vi.mock(import("@/lib/analytics/get-popular-videos"), () => ({
+  getPopularVideos: vi.fn<typeof getPopularVideos>(),
 }));
-vi.mock("@/lib/analytics/get-search-quality-metrics", () => ({
-  getSearchExitRates: vi.fn(),
+vi.mock(import("@/lib/analytics/get-search-quality-metrics"), () => ({
+  getSearchExitRates: vi.fn<typeof getSearchExitRates>(),
 }));
 
 const BOM = [0xef, 0xbb, 0xbf];
 
-async function exportCsv(
+const exportCsv = async (
   handler: (request: NextRequest) => Promise<Response>,
   query: string
-) {
+) => {
   const response = await handler(
     new NextRequest(`http://localhost/api/export/any?${query}`)
   );
   const body = new Uint8Array(await response.arrayBuffer());
 
   return {
-    bom: Array.from(body.slice(0, 3)),
+    bom: [...body.subarray(0, 3)],
     contentDisposition: response.headers.get("Content-Disposition"),
     contentType: response.headers.get("Content-Type"),
     status: response.status,
     text: new TextDecoder().decode(body),
   };
-}
+};
 
 describe("CSV export routes", () => {
   beforeEach(() => {
@@ -68,9 +71,9 @@ describe("CSV export routes", () => {
       { count: 3, keyword: "歌枠, 雑談" },
     ]);
 
-    expect(
-      await exportCsv(exportKeywords, "from=2026-11-08&to=2026-11-14")
-    ).toEqual({
+    await expect(
+      exportCsv(exportKeywords, "from=2026-11-08&to=2026-11-14")
+    ).resolves.toStrictEqual({
       bom: BOM,
       contentDisposition:
         'attachment; filename="search-analytics-keywords-2026-11-08_2026-11-14.csv"',
@@ -90,7 +93,9 @@ describe("CSV export routes", () => {
       { exitRate: 0, keyword: "歌枠", searchCount: 5 },
     ]);
 
-    expect(await exportCsv(exportSearchExitRates, "date=2026-11-10")).toEqual({
+    await expect(
+      exportCsv(exportSearchExitRates, "date=2026-11-10")
+    ).resolves.toStrictEqual({
       bom: BOM,
       contentDisposition:
         'attachment; filename="search-exit-rates-2026-11-10.csv"',
@@ -106,7 +111,9 @@ describe("CSV export routes", () => {
       { clicks: 8, id: "talent-2", name: "タレントB" },
     ] as Awaited<ReturnType<typeof getPopularTalents>>);
 
-    expect(await exportCsv(exportTalents, "from=2026-11-03")).toEqual({
+    await expect(
+      exportCsv(exportTalents, "from=2026-11-03")
+    ).resolves.toStrictEqual({
       bom: BOM,
       contentDisposition:
         'attachment; filename="click-analytics-talent-2026-11-03.csv"',
@@ -126,9 +133,9 @@ describe("CSV export routes", () => {
       { clicks: 2, title: "動画B", youtube_video: null },
     ] as Awaited<ReturnType<typeof getPopularVideos>>);
 
-    expect(
-      await exportCsv(exportVideos, "from=2026-11-01&to=2026-11-10&limit=2")
-    ).toEqual({
+    await expect(
+      exportCsv(exportVideos, "from=2026-11-01&to=2026-11-10&limit=2")
+    ).resolves.toStrictEqual({
       bom: BOM,
       contentDisposition:
         'attachment; filename="click-analytics-videos-2026-11-01_2026-11-10.csv"',

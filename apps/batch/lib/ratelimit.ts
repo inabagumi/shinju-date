@@ -3,7 +3,7 @@ import { REDIS_KEYS } from "@shinju-date/constants";
 import { redisClient } from "./redis";
 
 export interface OncePerWindowLimiter {
-  limit(identifier: string): Promise<{ success: boolean }>;
+  limit: (identifier: string) => Promise<{ success: boolean }>;
 }
 
 /**
@@ -19,10 +19,10 @@ export interface OncePerWindowLimiter {
  * local Redis, which rejects the `#!lua flags=allow-key-locking` shebang that
  * only Upstash accepts.
  */
-export async function limitOncePerWindow(
+export const limitOncePerWindow = async (
   identifier: string,
   windowSeconds: number
-): Promise<{ success: boolean }> {
+): Promise<{ success: boolean }> => {
   const windowMilliseconds = windowSeconds * 1000;
   const window = Math.floor(
     Temporal.Now.instant().epochMilliseconds / windowMilliseconds
@@ -36,15 +36,15 @@ export async function limitOncePerWindow(
     .exec<[number, number]>();
 
   return { success: count === 1 };
-}
+};
 
-function oncePer(duration: Temporal.DurationLike): OncePerWindowLimiter {
+const oncePer = (duration: Temporal.DurationLike): OncePerWindowLimiter => {
   const windowSeconds = Temporal.Duration.from(duration).total("seconds");
 
   return {
     limit: (identifier) => limitOncePerWindow(identifier, windowSeconds),
   };
-}
+};
 
 /**
  * `/videos/backfill` lets its runs overlap, so it is limited to one run in

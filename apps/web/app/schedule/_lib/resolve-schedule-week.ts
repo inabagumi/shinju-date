@@ -6,8 +6,8 @@ import {
   getWeekStart,
   isWeekInRange,
   parseScheduleDate,
-  type ScheduleWeekRange,
 } from "@/lib/schedule";
+import type { ScheduleWeekRange } from "@/lib/schedule";
 
 /**
  * `params` of `/schedule/[date]`. `/schedule` has none, and shows the week
@@ -32,9 +32,9 @@ export interface ScheduleWeek {
  * Each section of the page calls this inside its own `<Suspense>`. The
  * fetchers are cached, so they run only once.
  */
-export async function resolveScheduleWeek(
+export const resolveScheduleWeek = async (
   params?: SchedulePageParams | undefined
-): Promise<ScheduleWeek> {
+): Promise<ScheduleWeek> => {
   let day: Temporal.PlainDate | null = null;
 
   if (params) {
@@ -63,4 +63,4 @@ export async function resolveScheduleWeek(
   }
 
   return { range, today, weekStart };
-}
+};

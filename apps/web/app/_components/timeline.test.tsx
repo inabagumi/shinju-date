@@ -1,28 +1,28 @@
 import { render, screen, within } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { VideoCardSkeleton } from "@/components/video-card";
 import type { Video } from "@/lib/data/videos";
 import { createVideoItem } from "@/test/factories";
 
 import Timeline from "./timeline";
 
-vi.mock("@/components/video-card", () => ({
+vi.mock(import("@/components/video-card"), () => ({
   default: ({ value }: { value: Video }) => <article>{value.title}</article>,
-  VideoCardSkeleton: () => null,
+  // Renders nothing
+  VideoCardSkeleton: vi.fn<typeof VideoCardSkeleton>(),
 }));
 
-function getGroup(name: RegExp | string) {
-  return screen.getByRole("region", { name });
-}
+const getGroup = (name: RegExp | string) =>
+  screen.getByRole("region", { name });
 
-function getCardTitles(group: HTMLElement) {
-  return within(group)
+const getCardTitles = (group: HTMLElement) =>
+  within(group)
     .getAllByRole("article")
     .map((card) => card.textContent);
-}
 
-describe("Timeline", () => {
+describe(Timeline, () => {
   beforeEach(() => {
     vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(
       Temporal.ZonedDateTime.from("2026-11-14T12:00:00+09:00[Asia/Tokyo]")
@@ -33,7 +33,7 @@ describe("Timeline", () => {
     vi.restoreAllMocks();
   });
 
-  test("should keep each single-video date next to its own card", () => {
+  it("should keep each single-video date next to its own card", () => {
     render(
       <Timeline
         referenceDate="2026-11-14"
@@ -65,17 +65,17 @@ describe("Timeline", () => {
     expect(groups).toHaveLength(3);
     expect(
       groups.map((group) => within(group).getByRole("heading").textContent)
-    ).toEqual(["今日", "明日", "11/16（月）"]);
+    ).toStrictEqual(["今日", "明日", "11/16（月）"]);
 
     for (const [index, title] of ["video-a", "video-b", "video-c"].entries()) {
       const group = groups[index] as HTMLElement;
 
-      expect(getCardTitles(group)).toEqual([title]);
+      expect(getCardTitles(group)).toStrictEqual([title]);
       expect(within(group).getByText("1件")).toBeInTheDocument();
     }
   });
 
-  test("should group multiple videos on the same date in order of start time", () => {
+  it("should group multiple videos on the same date in order of start time", () => {
     render(
       <Timeline
         referenceDate="2026-11-14"
@@ -111,17 +111,17 @@ describe("Timeline", () => {
     const firstGroup = getGroup("今日");
     const secondGroup = getGroup("明日");
 
-    expect(getCardTitles(firstGroup)).toEqual([
+    expect(getCardTitles(firstGroup)).toStrictEqual([
       "video-a",
       "video-b",
       "video-c",
     ]);
     expect(within(firstGroup).getByText("3件")).toBeInTheDocument();
-    expect(getCardTitles(secondGroup)).toEqual(["video-d"]);
+    expect(getCardTitles(secondGroup)).toStrictEqual(["video-d"]);
     expect(within(secondGroup).getByText("1件")).toBeInTheDocument();
   });
 
-  test("should place the date heading before its cards", () => {
+  it("should place the date heading before its cards", () => {
     render(
       <Timeline
         referenceDate="2026-11-14"
@@ -140,6 +140,7 @@ describe("Timeline", () => {
     const [card] = within(group).getAllByRole("article");
 
     expect(
+      // oxlint-disable-next-line eslint/no-bitwise -- compareDocumentPosition returns a bit mask
       heading.compareDocumentPosition(card as HTMLElement) &
         Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
@@ -149,7 +150,7 @@ describe("Timeline", () => {
     );
   });
 
-  test("should show the start time next to each card", () => {
+  it("should show the start time next to each card", () => {
     render(
       <Timeline
         referenceDate="2026-11-14"
@@ -171,7 +172,7 @@ describe("Timeline", () => {
     );
   });
 
-  test("should label dates from the reference date when rendered on the server", () => {
+  it("should label dates from the reference date when rendered on the server", () => {
     // サーバーでキャッシュを作ったのは 2026-11-14 で、描画した時点では日付が変わっている
     vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(
       Temporal.ZonedDateTime.from("2026-11-15T00:30:00+09:00[Asia/Tokyo]")
@@ -193,7 +194,7 @@ describe("Timeline", () => {
     expect(html).toContain(">今日</time>");
   });
 
-  test("should label dates from the current time after hydration", () => {
+  it("should label dates from the current time after hydration", () => {
     vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(
       Temporal.ZonedDateTime.from("2026-11-15T00:30:00+09:00[Asia/Tokyo]")
     );
@@ -220,6 +221,6 @@ describe("Timeline", () => {
       screen
         .getAllByRole("region")
         .map((group) => within(group).getByRole("heading").textContent)
-    ).toEqual(["11/14（土）", "今日"]);
+    ).toStrictEqual(["11/14（土）", "今日"]);
   });
 });

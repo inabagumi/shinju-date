@@ -5,21 +5,18 @@ import type { Announcement } from "@/lib/data/announcements";
  * 最初の1件（作成の新しい順に並んでいるので、いちばん新しいもの）を選ぶ。
  * 該当するものがなければ `null` を返す。
  */
-export function selectCurrentAnnouncement(
+export const selectCurrentAnnouncement = (
   announcements: readonly Announcement[],
   now: Temporal.Instant
-): Announcement | null {
-  return (
-    announcements.find(
-      (announcement) =>
-        Temporal.Instant.compare(
-          Temporal.Instant.from(announcement.start_at),
-          now
-        ) <= 0 &&
-        Temporal.Instant.compare(
-          now,
-          Temporal.Instant.from(announcement.end_at)
-        ) <= 0
-    ) ?? null
-  );
-}
+): Announcement | null =>
+  announcements.find(
+    (announcement) =>
+      Temporal.Instant.compare(
+        Temporal.Instant.from(announcement.start_at),
+        now
+      ) <= 0 &&
+      Temporal.Instant.compare(
+        now,
+        Temporal.Instant.from(announcement.end_at)
+      ) <= 0
+  ) ?? null;

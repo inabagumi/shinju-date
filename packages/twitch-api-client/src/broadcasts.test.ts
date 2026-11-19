@@ -9,7 +9,7 @@ import {
 } from "./broadcasts.js";
 import type { TwitchVideo } from "./types.js";
 
-describe("getTwitchVideoStatus", () => {
+describe(getTwitchVideoStatus, () => {
   it("treats archives and highlights as ended broadcasts", () => {
     expect(getTwitchVideoStatus("archive")).toBe("ENDED");
     expect(getTwitchVideoStatus("highlight")).toBe("ENDED");
@@ -21,7 +21,7 @@ describe("getTwitchVideoStatus", () => {
   });
 });
 
-describe("getArchivedStreamId", () => {
+describe(getArchivedStreamId, () => {
   it("returns the stream ID of an archive", () => {
     expect(
       getArchivedStreamId({
@@ -47,53 +47,55 @@ describe("getArchivedStreamId", () => {
   });
 });
 
+const helixStream = (id: string, userId = "user-1") => ({
+  gameId: "1",
+  gameName: "Just Chatting",
+  id,
+  isMature: false,
+  language: "ja",
+  startDate: new Date("2024-01-01T00:00:00Z"),
+  tags: [],
+  thumbnailUrl: "https://example.com/{width}x{height}.jpg",
+  title: `Stream ${id}`,
+  type: "live",
+  userDisplayName: "Alice",
+  userId,
+  userName: "alice",
+  viewers: 10,
+});
+
+const helixArchive = (id: string, streamId: string | null) => ({
+  creationDate: new Date("2024-01-01T00:00:00Z"),
+  description: "",
+  durationInSeconds: 3600,
+  id,
+  isPublic: true,
+  language: "ja",
+  publishDate: new Date("2024-01-01T00:00:00Z"),
+  streamId,
+  thumbnailUrl: "",
+  title: `Archive ${id}`,
+  type: "archive",
+  url: `https://www.twitch.tv/videos/${id}`,
+  userDisplayName: "Alice",
+  userId: "user-1",
+  userName: "alice",
+  views: 1,
+});
+
 describe("broadcast lookups", () => {
-  const getStreamsByUserIds = vi.fn();
-  const getVideosByUser = vi.fn();
+  const getStreamsByUserIds =
+    vi.fn<(userIds: string[]) => Promise<ReturnType<typeof helixStream>[]>>();
+  const getVideosByUser =
+    vi.fn<
+      (
+        ...args: Parameters<ApiClient["videos"]["getVideosByUser"]>
+      ) => Promise<{ data: ReturnType<typeof helixArchive>[] }>
+    >();
   const client = {
     streams: { getStreamsByUserIds },
     videos: { getVideosByUser },
   } as unknown as ApiClient;
-
-  function helixStream(id: string, userId = "user-1") {
-    return {
-      gameId: "1",
-      gameName: "Just Chatting",
-      id,
-      isMature: false,
-      language: "ja",
-      startDate: new Date("2024-01-01T00:00:00Z"),
-      tags: [],
-      thumbnailUrl: "https://example.com/{width}x{height}.jpg",
-      title: `Stream ${id}`,
-      type: "live",
-      userDisplayName: "Alice",
-      userId,
-      userName: "alice",
-      viewers: 10,
-    };
-  }
-
-  function helixArchive(id: string, streamId: string | null) {
-    return {
-      creationDate: new Date("2024-01-01T00:00:00Z"),
-      description: "",
-      durationInSeconds: 3600,
-      id,
-      isPublic: true,
-      language: "ja",
-      publishDate: new Date("2024-01-01T00:00:00Z"),
-      streamId,
-      thumbnailUrl: "",
-      title: `Archive ${id}`,
-      type: "archive",
-      url: `https://www.twitch.tv/videos/${id}`,
-      userDisplayName: "Alice",
-      userId: "user-1",
-      userName: "alice",
-      views: 1,
-    };
-  }
 
   beforeEach(() => {
     getStreamsByUserIds.mockReset();

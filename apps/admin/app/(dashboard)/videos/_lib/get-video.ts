@@ -6,23 +6,20 @@ import type { QueryData } from "@supabase/supabase-js";
 import { cacheLife } from "next/cache";
 
 import { getRedisClient } from "@/lib/redis";
-import {
-  createSupabaseServerClient,
-  type TypedSupabaseClient,
-} from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase";
+import type { TypedSupabaseClient } from "@/lib/supabase";
 import { unwrapOrNull } from "@/lib/supabase/query";
 
 import { VIDEO_SELECT } from "./video-select";
 
 const VIDEO_DETAIL_SELECT = `${VIDEO_SELECT}, created_at` as const;
 
-function selectVideo(supabaseClient: TypedSupabaseClient, id: string) {
-  return supabaseClient
+const selectVideo = (supabaseClient: TypedSupabaseClient, id: string) =>
+  supabaseClient
     .from("videos")
     .select(VIDEO_DETAIL_SELECT)
     .eq("id", id)
     .single();
-}
 
 type VideoDetailRow = QueryData<ReturnType<typeof selectVideo>>;
 

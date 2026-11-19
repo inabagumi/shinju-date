@@ -1,35 +1,45 @@
+import type * as Sentry from "@sentry/nextjs";
+import type { Scraper } from "@shinju-date/scraper";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const acquireLock = vi.fn();
-const releaseLock = vi.fn();
-const scraper = { cleanUpImages: vi.fn() };
-const createScraper = vi.fn(() => scraper);
+import type * as Lock from "@/lib/lock";
+import type * as ScraperModule from "@/lib/scraper";
 
-vi.mock("@/lib/lock", () => ({ acquireLock, releaseLock }));
-vi.mock("@/lib/scraper", () => ({ createScraper }));
+const { createAfterMock, createLoggerMock } = await vi.hoisted(
+  () => import("@/test/mocks")
+);
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
+const acquireLock = vi.fn<typeof Lock.acquireLock>();
+const releaseLock = vi.fn<typeof Lock.releaseLock>();
+const scraper = { cleanUpImages: vi.fn<Scraper["cleanUpImages"]>() };
+const createScraper = vi.fn<typeof ScraperModule.createScraper>(
+  () => scraper as Partial<Scraper> as Scraper
+);
+
+vi.mock(import("@/lib/lock"), () => ({ acquireLock, releaseLock }));
+vi.mock(import("@/lib/scraper"), () => ({ createScraper }));
+
+vi.mock(import("@shinju-date/logger"), () => ({
+  logger: createLoggerMock(),
 }));
 
-vi.mock("@sentry/nextjs", () => ({
-  captureCheckIn: vi.fn(() => "check-in-id"),
-  captureException: vi.fn(),
-  flush: vi.fn(),
+vi.mock(import("@sentry/nextjs"), () => ({
+  captureCheckIn: vi.fn<typeof Sentry.captureCheckIn>(() => "check-in-id"),
+  captureException: vi.fn<typeof Sentry.captureException>(),
+  flush: vi.fn<typeof Sentry.flush>(),
 }));
 
-vi.mock("next/server", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("next/server")>()),
-  after: vi.fn((callback: () => unknown) => callback()),
+vi.mock(import("next/server"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  after: createAfterMock(),
 }));
 
 const { POST } = await import("./route");
 
-function createRequest(): Request {
-  return new Request("http://localhost:5000/images/cleanup", {
+const createRequest = (): Request =>
+  new Request("http://localhost:5000/images/cleanup", {
     method: "POST",
   });
-}
 
 describe("POST /images/cleanup", () => {
   beforeEach(() => {
@@ -44,8 +54,8 @@ describe("POST /images/cleanup", () => {
 
     expect(response.status).toBe(204);
     expect(acquireLock).toHaveBeenCalledWith("images:cleanup", 70);
-    expect(createScraper).toHaveBeenCalledTimes(1);
-    expect(scraper.cleanUpImages).toHaveBeenCalledTimes(1);
+    expect(createScraper).toHaveBeenCalledOnce();
+    expect(scraper.cleanUpImages).toHaveBeenCalledOnce();
   });
 
   it("does not run while the previous run holds the lock", async () => {

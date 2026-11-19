@@ -12,16 +12,14 @@ import {
 } from "./date-window";
 
 /** Fix the current time. The date is derived from the time zone that is asked for */
-function mockNow(instant: string) {
+const mockNow = (instant: string) => {
   vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockImplementation(
     (timeZone = "UTC") =>
       Temporal.Instant.from(instant).toZonedDateTimeISO(timeZone)
   );
-}
+};
 
-function plainDate(value: string) {
-  return Temporal.PlainDate.from(value);
-}
+const plainDate = (value: string) => Temporal.PlainDate.from(value);
 
 describe("date-window", () => {
   beforeEach(() => {
@@ -30,7 +28,7 @@ describe("date-window", () => {
     mockNow("2026-11-14T03:00:00Z");
   });
 
-  describe("getToday", () => {
+  describe(getToday, () => {
     it("returns the date of the time zone", () => {
       expect(getToday().toString()).toBe("2026-11-14");
     });
@@ -50,7 +48,7 @@ describe("date-window", () => {
     });
   });
 
-  describe("getEarliestDate", () => {
+  describe(getEarliestDate, () => {
     it("returns the first day of the window that ends today", () => {
       const earliest = getEarliestDate();
 
@@ -59,16 +57,16 @@ describe("date-window", () => {
     });
   });
 
-  describe("getDefaultDateRange", () => {
+  describe(getDefaultDateRange, () => {
     it("returns the 7 days that end today", () => {
-      expect(getDefaultDateRange()).toEqual({
+      expect(getDefaultDateRange()).toStrictEqual({
         endDate: "2026-11-14",
         startDate: "2026-11-08",
       });
     });
   });
 
-  describe("parseDateFormat", () => {
+  describe(parseDateFormat, () => {
     it("returns the date for a valid string", () => {
       expect(parseDateFormat("2026-11-10")?.toString()).toBe("2026-11-10");
     });
@@ -88,7 +86,7 @@ describe("date-window", () => {
     });
   });
 
-  describe("parseDate", () => {
+  describe(parseDate, () => {
     it("returns the date for a valid string", () => {
       const date = parseDate("2026-11-10");
 
@@ -144,7 +142,7 @@ describe("date-window", () => {
     });
   });
 
-  describe("validateDate", () => {
+  describe(validateDate, () => {
     it("returns null for a date within the window", () => {
       expect(validateDate(plainDate("2026-11-14"))).toBeNull();
       expect(validateDate(plainDate("2026-10-01"))).toBeNull();
@@ -160,7 +158,7 @@ describe("date-window", () => {
     });
   });
 
-  describe("validateRange", () => {
+  describe(validateRange, () => {
     it("accepts a single day", () => {
       expect(
         validateRange(plainDate("2026-11-10"), plainDate("2026-11-10"))

@@ -42,14 +42,12 @@ export interface FakeFetcherOptions<TAccount, TVideo, TRecentVideo = TVideo> {
   videos?: TVideo[];
 }
 
-function pick<T extends Resource>(
+const pick = <T extends Resource>(
   items: readonly T[],
   ids: readonly string[]
-): T[] {
-  return items.filter((item) => ids.includes(item.id));
-}
+): T[] => items.filter((item) => ids.includes(item.id));
 
-function createFakeMethods<
+const createFakeMethods = <
   TAccount extends Resource,
   TVideo extends Resource,
   TRecentVideo,
@@ -59,30 +57,33 @@ function createFakeMethods<
   missingVideoIds = [],
   recentVideos = [],
   videos = [],
-}: FakeFetcherOptions<TAccount, TVideo, TRecentVideo>) {
+}: FakeFetcherOptions<TAccount, TVideo, TRecentVideo>) => {
   const findMissing = (videoIds: readonly string[]) =>
     missingVideoIds.filter((id) => videoIds.includes(id));
 
   return {
-    findMissingVideoIds: vi.fn(async (videoIds: readonly string[]) =>
-      findMissing(videoIds)
+    findMissingVideoIds: vi.fn((videoIds: readonly string[]) =>
+      Promise.resolve(findMissing(videoIds))
     ),
-    getAccounts: vi.fn(async (accountIds: readonly string[]) =>
-      pick(accounts, accountIds)
+    getAccounts: vi.fn((accountIds: readonly string[]) =>
+      Promise.resolve(pick(accounts, accountIds))
     ),
     getRecentVideos: vi.fn(
-      async (_accountIds: readonly string[], _options?: unknown) => ({
-        failures,
-        missingAccountIds: [] as string[],
-        videos: recentVideos,
+      (_accountIds: readonly string[], _options?: unknown) =>
+        Promise.resolve({
+          failures,
+          missingAccountIds: [] as string[],
+          videos: recentVideos,
+        })
+    ),
+    getVideos: vi.fn((videoIds: readonly string[]) =>
+      Promise.resolve({
+        missingIds: findMissing(videoIds),
+        videos: pick(videos, videoIds),
       })
     ),
-    getVideos: vi.fn(async (videoIds: readonly string[]) => ({
-      missingIds: findMissing(videoIds),
-      videos: pick(videos, videoIds),
-    })),
   };
-}
+};
 
 /**
  * Stands in for the fetcher of a platform. What it returns is given by the
@@ -94,17 +95,17 @@ function createFakeMethods<
  * })
  * ```
  */
-export function createFakeFetcher<TFetcher extends AnyFetcher>(
+export const createFakeFetcher = <TFetcher extends AnyFetcher>(
   options: FakeFetcherOptions<
     AccountOf<TFetcher>,
     VideoOf<TFetcher>,
     RecentVideoOf<TFetcher>
   > = {}
-) {
+) => {
   const methods = createFakeMethods(options);
 
   return { ...methods, fetcher: methods as unknown as TFetcher };
-}
+};
 
 export interface FakeTwitchFetcherOptions extends Omit<
   FakeFetcherOptions<TwitchUser, TwitchVideo>,
@@ -126,32 +127,35 @@ export interface FakeTwitchFetcherOptions extends Omit<
  * {@link createFakeFetcher} with the calls only Twitch has: live streams,
  * clips and the newest videos by type.
  */
-export function createFakeTwitchFetcher({
+export const createFakeTwitchFetcher = ({
   archives = [],
   clips = [],
   liveStreams = [],
   missingClipIds = [],
   uploads = [],
   ...options
-}: FakeTwitchFetcherOptions = {}) {
+}: FakeTwitchFetcherOptions = {}) => {
   const { failures = [] } = options;
   const methods = {
     ...createFakeMethods(options),
-    getClips: vi.fn(async (clipIds: readonly string[]) => ({
-      clips: pick(clips, clipIds),
-      missingIds: missingClipIds.filter((id) => clipIds.includes(id)),
-    })),
-    getLiveStreams: vi.fn(async (_userIds: readonly string[]) => liveStreams),
+    getClips: vi.fn((clipIds: readonly string[]) =>
+      Promise.resolve({
+        clips: pick(clips, clipIds),
+        missingIds: missingClipIds.filter((id) => clipIds.includes(id)),
+      })
+    ),
+    getLiveStreams: vi.fn((_userIds: readonly string[]) =>
+      Promise.resolve(liveStreams)
+    ),
     getRecentVideos: vi.fn(
-      async (
-        _userIds: readonly string[],
-        { type }: TwitchRecentVideosOptions = {}
-      ) =>
-        type === "upload"
-          ? { failures: [], videos: uploads }
-          : { failures, videos: archives }
+      (_userIds: readonly string[], { type }: TwitchRecentVideosOptions = {}) =>
+        Promise.resolve(
+          type === "upload"
+            ? { failures: [], videos: uploads }
+            : { failures, videos: archives }
+        )
     ),
   };
 
   return { ...methods, fetcher: methods as unknown as TwitchFetcher };
-}
+};

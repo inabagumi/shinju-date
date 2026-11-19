@@ -44,27 +44,23 @@ export interface InsertedVideo {
 }
 
 /** The response of `insert_video` when it inserts the video: a new video ID. */
-export function newVideoId(): Response {
-  return HttpResponse.json(crypto.randomUUID());
-}
+export const newVideoId = (): Response =>
+  HttpResponse.json(crypto.randomUUID());
 
 /**
  * The response of `insert_video` when the platform video already exists
  * (another run saved it first): `NULL`, and nothing is inserted.
  */
-export function alreadySaved(): Response {
-  return HttpResponse.json(null);
-}
+export const alreadySaved = (): Response => HttpResponse.json(null);
 
 /**
  * Builds the response PostgREST sends when a statement fails.
  */
-export function postgresError(code: string, message: string): Response {
-  return HttpResponse.json(
+export const postgresError = (code: string, message: string): Response =>
+  HttpResponse.json(
     { code, details: null, hint: null, message },
     { status: code === "23505" ? 409 : 400 }
   );
-}
 
 /**
  * Starts a mock Supabase for the current test file.
@@ -73,7 +69,7 @@ export function postgresError(code: string, message: string): Response {
  * `requests` to assert on what was written. Requests to anything else fail
  * the test, so nothing can reach the network by accident.
  */
-export function setupSupabase() {
+export const setupSupabase = () => {
   const server = setupServer();
   const requests: SupabaseRequest[] = [];
 
@@ -91,8 +87,8 @@ export function setupSupabase() {
   });
 
   /** Defines how the database answers during the current test. */
-  function respond(responder: SupabaseResponder): void {
-    async function handle(request: Request, table: string) {
+  const respond = (responder: SupabaseResponder): void => {
+    const handle = async (request: Request, table: string) => {
       const text = await request.text();
       const recorded: SupabaseRequest = {
         body: text ? JSON.parse(text) : undefined,
@@ -108,7 +104,7 @@ export function setupSupabase() {
       return result instanceof Response
         ? result
         : HttpResponse.json(result ?? []);
-    }
+    };
 
     server.use(
       http.all(`${SUPABASE_URL}/rest/v1/rpc/:name`, ({ params, request }) =>
@@ -118,7 +114,7 @@ export function setupSupabase() {
         handle(request, String(params["table"]))
       )
     );
-  }
+  };
 
   return {
     /** The videos inserted with `insert_video` so far in the current test. */
@@ -178,4 +174,4 @@ export function setupSupabase() {
       );
     },
   };
-}
+};

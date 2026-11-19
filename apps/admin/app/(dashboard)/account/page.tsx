@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: "アカウント設定",
 };
 
-async function UserEmailData() {
+const UserEmailData = async () => {
   const currentEmail = await getCurrentUserEmail();
 
   if (currentEmail === null) {
@@ -22,7 +22,7 @@ async function UserEmailData() {
   }
 
   return <EmailUpdateForm currentEmail={currentEmail} />;
-}
+};
 
 export default function AccountPage() {
   return (

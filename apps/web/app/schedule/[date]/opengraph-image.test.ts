@@ -1,16 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
-
-vi.mock("@/lib/data/schedule", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/data/schedule")>()),
-  fetchOldestVideoDate: vi.fn(),
-  fetchScheduleToday: vi.fn(),
-}));
-
-// The title is in Japanese, whose fonts `ImageResponse` would fetch
-vi.mock("@/lib/og-image", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/og-image")>()),
-  createOgImage: vi.fn(),
-}));
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fetchOldestVideoDate, fetchScheduleToday } from "@/lib/data/schedule";
 import { createOgImage } from "@/lib/og-image";
@@ -18,9 +6,19 @@ import { createOgImage } from "@/lib/og-image";
 import Image from "./opengraph-image";
 import { generateMetadata } from "./page";
 
-function render(date: string) {
-  return Image({ params: Promise.resolve({ date }) });
-}
+vi.mock(import("@/lib/data/schedule"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  fetchOldestVideoDate: vi.fn<typeof fetchOldestVideoDate>(),
+  fetchScheduleToday: vi.fn<typeof fetchScheduleToday>(),
+}));
+
+// The title is in Japanese, whose fonts `ImageResponse` would fetch
+vi.mock(import("@/lib/og-image"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  createOgImage: vi.fn<typeof createOgImage>(),
+}));
+
+const render = (date: string) => Image({ params: Promise.resolve({ date }) });
 
 describe("opengraph-image of the schedule of a week", () => {
   beforeEach(() => {
@@ -29,7 +27,7 @@ describe("opengraph-image of the schedule of a week", () => {
     vi.mocked(fetchScheduleToday).mockResolvedValue("2026-11-10");
   });
 
-  test("should have the title of the page", async () => {
+  it("should have the title of the page", async () => {
     // A Tuesday. The image is that of the week, as is the page.
     await render("2026-11-10");
 
@@ -45,7 +43,7 @@ describe("opengraph-image of the schedule of a week", () => {
     );
   });
 
-  test.each([
+  it.each([
     ["a date that cannot be read", "not-a-date"],
     ["a week before that of the oldest video", "2019-12-28"],
   ])("should be not found for %s", async (_, date) => {

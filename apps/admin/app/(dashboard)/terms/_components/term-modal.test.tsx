@@ -16,28 +16,27 @@ import {
   vi,
 } from "vitest";
 
+import type { createTermAction, updateTermAction } from "../_actions";
+
 const mocks = vi.hoisted(() => {
-  let release: () => void = () => {};
-  const sortableInputListLoaded = new Promise<void>((resolve) => {
-    release = resolve;
-  });
+  const sortableInputListLoaded = Promise.withResolvers<undefined>();
 
   return {
-    createTermAction: vi.fn(),
-    releaseSortableInputList: () => release(),
-    sortableInputListLoaded,
-    updateTermAction: vi.fn(),
+    createTermAction: vi.fn<typeof createTermAction>(),
+    releaseSortableInputList: () => sortableInputListLoaded.resolve(undefined),
+    sortableInputListLoaded: sortableInputListLoaded.promise,
+    updateTermAction: vi.fn<typeof updateTermAction>(),
   };
 });
 
-vi.mock("../_actions", () => ({
+vi.mock(import("../_actions"), () => ({
   createTermAction: mocks.createTermAction,
   updateTermAction: mocks.updateTermAction,
 }));
 
 // モーダルを開いてから dnd-kit を読み込み終えるまでの状態を確かめるため、
 // 読み込みが終わる時点をテストから決められるようにする
-vi.mock("./sortable-input-list", async (importOriginal) => {
+vi.mock(import("./sortable-input-list"), async (importOriginal) => {
   await mocks.sortableInputListLoaded;
 
   return importOriginal();
@@ -52,31 +51,55 @@ const term = {
   term: "SHINJU",
 };
 
-function getReadingInputs(dialog: HTMLElement) {
-  return within(dialog).getAllByPlaceholderText<HTMLInputElement>(
-    "読み方を入力"
-  );
-}
+const getReadingInputs = (dialog: HTMLElement) =>
+  within(dialog).getAllByPlaceholderText<HTMLInputElement>("読み方を入力");
 
-function getSynonymInputs(dialog: HTMLElement) {
-  return within(dialog).getAllByPlaceholderText<HTMLInputElement>(
-    "類義語を入力"
-  );
-}
+const getSynonymInputs = (dialog: HTMLElement) =>
+  within(dialog).getAllByPlaceholderText<HTMLInputElement>("類義語を入力");
 
-function getSubmittedValues(formData: FormData, name: string) {
-  return [...formData.entries()]
+const getSubmittedValues = (formData: FormData, name: string) =>
+  [...formData.entries()]
     .filter(([key]) => key.startsWith(`${name}[`))
     .map(([, value]) => value);
-}
 
-async function waitForSortableInputList(dialog: HTMLElement) {
+const waitForSortableInputList = async (dialog: HTMLElement) => {
   await waitFor(() => {
     expect(
       within(dialog).getByRole("button", { name: "読み方を追加" })
     ).toBeEnabled();
   });
-}
+};
+
+/**
+ * jsdom はレイアウトを計算しないため、キーボードでの並べ替えに必要な位置を、
+ * 兄弟要素の中の順番から決める
+ */
+const getBoundingClientRect = function getBoundingClientRect(
+  this: HTMLElement
+): DOMRect {
+  const siblings = this.parentElement ? [...this.parentElement.children] : [];
+  const index = Math.max(siblings.indexOf(this), 0);
+
+  return new DOMRect(0, index * 40, 300, 40);
+};
+
+/** Waits for the next animation frame. */
+const waitForAnimationFrame = async (): Promise<void> => {
+  const frame = Promise.withResolvers<number>();
+  requestAnimationFrame(frame.resolve);
+  await frame.promise;
+};
+
+const openEditDialog = () => {
+  render(<TermModal term={term} />);
+
+  fireEvent.click(screen.getByRole("button", { name: "編集" }));
+
+  const dialog = screen.getByRole("dialog", { name: "用語を編集" });
+  const termInput = within(dialog).getByDisplayValue("SHINJU");
+
+  return { dialog, termInput };
+};
 
 describe("TermModal", () => {
   beforeEach(() => {
@@ -124,38 +147,38 @@ describe("TermModal", () => {
 
       fireEvent.click(within(dialog).getByRole("button", { name: "追加" }));
 
-      expect(await within(dialog).findByText(message)).toBeInTheDocument();
+      await expect(
+        within(dialog).findByText(message)
+      ).resolves.toBeInTheDocument();
       expect(screen.getByRole("dialog")).toBe(dialog);
       expect(mocks.updateTermAction).not.toHaveBeenCalled();
     });
   });
 
   describe("while the sortable list is loading", () => {
-    it("keeps what is typed right after opening and submits the current values", async () => {
-      render(<TermModal term={term} />);
-
-      fireEvent.click(screen.getByRole("button", { name: "編集" }));
-
-      const dialog = screen.getByRole("dialog", { name: "用語を編集" });
-      const termInput = within(dialog).getByDisplayValue("SHINJU");
+    it("shows the current values that cannot be edited yet right after opening", () => {
+      const { dialog, termInput } = openEditDialog();
 
       // フォーカスは最初の入力欄（用語）に移る
       expect(termInput).toHaveFocus();
 
       // 並べ替えの部品を読み込むまでは、同じ位置に操作できない入力欄を出す
-      expect(getReadingInputs(dialog).map((input) => input.value)).toEqual([
-        "しんじゅ",
-      ]);
-      expect(getSynonymInputs(dialog).map((input) => input.value)).toEqual([
-        "真珠",
-        "パール",
-      ]);
+      expect(
+        getReadingInputs(dialog).map((input) => input.value)
+      ).toStrictEqual(["しんじゅ"]);
+      expect(
+        getSynonymInputs(dialog).map((input) => input.value)
+      ).toStrictEqual(["真珠", "パール"]);
       for (const input of [
         ...getReadingInputs(dialog),
         ...getSynonymInputs(dialog),
       ]) {
         expect(input).toBeDisabled();
       }
+    });
+
+    it("keeps what is typed right after opening and submits the current values", async () => {
+      const { dialog, termInput } = openEditDialog();
 
       fireEvent.change(termInput, { target: { value: "SHINJU DATE" } });
 
@@ -169,8 +192,10 @@ describe("TermModal", () => {
       const formData = mocks.updateTermAction.mock.calls[0]?.[1] as FormData;
 
       expect(formData.get("term")).toBe("SHINJU DATE");
-      expect(getSubmittedValues(formData, "readings")).toEqual(["しんじゅ"]);
-      expect(getSubmittedValues(formData, "synonyms")).toEqual([
+      expect(getSubmittedValues(formData, "readings")).toStrictEqual([
+        "しんじゅ",
+      ]);
+      expect(getSubmittedValues(formData, "synonyms")).toStrictEqual([
         "真珠",
         "パール",
       ]);
@@ -209,16 +234,7 @@ describe("TermModal", () => {
     beforeAll(() => {
       mocks.releaseSortableInputList();
 
-      // jsdom はレイアウトを計算しないため、キーボードでの並べ替えに必要な
-      // 位置を、兄弟要素の中の順番から決める
-      HTMLElement.prototype.getBoundingClientRect = function () {
-        const siblings = this.parentElement
-          ? [...this.parentElement.children]
-          : [];
-        const index = Math.max(siblings.indexOf(this), 0);
-
-        return new DOMRect(0, index * 40, 300, 40);
-      };
+      HTMLElement.prototype.getBoundingClientRect = getBoundingClientRect;
     });
 
     afterAll(() => {
@@ -248,19 +264,18 @@ describe("TermModal", () => {
         target: { value: "い" },
       });
 
-      expect(getReadingInputs(dialog).map((input) => input.value)).toEqual([
-        "あ",
-        "い",
-      ]);
+      expect(
+        getReadingInputs(dialog).map((input) => input.value)
+      ).toStrictEqual(["あ", "い"]);
 
       const [firstRemoveButton] = within(dialog).getAllByRole("button", {
         name: "削除",
       });
       fireEvent.click(firstRemoveButton as HTMLElement);
 
-      expect(getReadingInputs(dialog).map((input) => input.value)).toEqual([
-        "い",
-      ]);
+      expect(
+        getReadingInputs(dialog).map((input) => input.value)
+      ).toStrictEqual(["い"]);
       // 入力欄が1つのときは削除のボタンを出さない
       expect(
         within(dialog).queryByRole("button", { name: "削除" })
@@ -288,17 +303,17 @@ describe("TermModal", () => {
 
       // dnd-kit はキーを押すたびに位置を測り直すため、1回ずつ反映を待つ
       for (const code of ["Space", "ArrowDown", "Space"]) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- each key has to be reflected before the next one is pressed
         await act(async () => {
           fireEvent.keyDown(firstSynonymHandle, { code });
-          await new Promise((resolve) => requestAnimationFrame(resolve));
+          await waitForAnimationFrame();
         });
       }
 
       await waitFor(() => {
-        expect(getSynonymInputs(dialog).map((input) => input.value)).toEqual([
-          "パール",
-          "真珠",
-        ]);
+        expect(
+          getSynonymInputs(dialog).map((input) => input.value)
+        ).toStrictEqual(["パール", "真珠"]);
       });
 
       fireEvent.click(within(dialog).getByRole("button", { name: "更新" }));
@@ -309,7 +324,7 @@ describe("TermModal", () => {
 
       const formData = mocks.updateTermAction.mock.calls[0]?.[1] as FormData;
 
-      expect(getSubmittedValues(formData, "synonyms")).toEqual([
+      expect(getSubmittedValues(formData, "synonyms")).toStrictEqual([
         "パール",
         "真珠",
       ]);

@@ -2,7 +2,8 @@ import type { youtube_v3 as youtube } from "@googleapis/youtube";
 import { paginate } from "@shinju-date/helpers";
 
 import { YOUTUBE_DATA_API_MAX_RESULTS } from "./batches.js";
-import { type ClientOptions, getYouTubeClient } from "./client.js";
+import { getYouTubeClient } from "./client.js";
+import type { ClientOptions } from "./client.js";
 import type {
   FilteredYouTubePlaylistItem,
   YouTubePlaylistItemsPage,
@@ -20,18 +21,17 @@ interface GetPlaylistItemsOptions extends ClientOptions {
  * Returns true when the playlist item has the video ID that
  * {@link FilteredYouTubePlaylistItem} requires.
  */
-export function isFilteredYouTubePlaylistItem(
+export const isFilteredYouTubePlaylistItem = (
   item: youtube.Schema$PlaylistItem
-): item is FilteredYouTubePlaylistItem {
-  return typeof item.contentDetails?.videoId === "string";
-}
+): item is FilteredYouTubePlaylistItem =>
+  typeof item.contentDetails?.videoId === "string";
 
 /**
  * Gets YouTube playlist items by playlist ID
  * @param options - The options for getting playlist items
- * @yields YouTube playlist item objects
+ * @yields {FilteredYouTubePlaylistItem} YouTube playlist item objects
  */
-export async function* getPlaylistItems({
+export const getPlaylistItems = async function* getPlaylistItems({
   all = false,
   client = getYouTubeClient(),
   maxResults = all ? YOUTUBE_DATA_API_MAX_RESULTS : 20,
@@ -63,7 +63,7 @@ export async function* getPlaylistItems({
 
     return { items, next: nextPageToken };
   });
-}
+};
 
 interface GetPlaylistItemsPageOptions extends ClientOptions {
   /** Page size (default: the API maximum). */
@@ -79,12 +79,12 @@ interface GetPlaylistItemsPageOptions extends ClientOptions {
  * Unlike {@link getPlaylistItems} with `all`, the caller keeps the page token,
  * so a long playlist can be walked across several runs.
  */
-export async function getPlaylistItemsPage({
+export const getPlaylistItemsPage = async ({
   client = getYouTubeClient(),
   maxResults = YOUTUBE_DATA_API_MAX_RESULTS,
   pageToken,
   playlistID,
-}: GetPlaylistItemsPageOptions): Promise<YouTubePlaylistItemsPage> {
+}: GetPlaylistItemsPageOptions): Promise<YouTubePlaylistItemsPage> => {
   const {
     data: { items, nextPageToken },
   } = await client.playlistItems.list({
@@ -100,4 +100,4 @@ export async function getPlaylistItemsPage({
     nextPageToken:
       items && items.length > 0 && nextPageToken ? nextPageToken : null,
   };
-}
+};

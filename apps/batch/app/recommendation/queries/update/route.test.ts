@@ -1,133 +1,164 @@
+import type * as Sentry from "@sentry/nextjs";
 import { CACHE_TAGS, REDIS_KEYS } from "@shinju-date/constants";
+import type * as WebCache from "@shinju-date/web-cache";
+import type { Redis } from "@upstash/redis";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const acquireLock = vi.fn();
-const releaseLock = vi.fn();
-const revalidateTags = vi.fn();
+import type * as Lock from "@/lib/lock";
+import type { TypedSupabaseClient } from "@/lib/supabase";
+
+import type * as GetAllTerms from "./_lib/get-all-terms";
+
+type Pipeline = ReturnType<Redis["multi"]>;
+
+const { createAfterMock, createLoggerMock } = await vi.hoisted(
+  () => import("@/test/mocks")
+);
+
+const acquireLock = vi.fn<typeof Lock.acquireLock>();
+const releaseLock = vi.fn<typeof Lock.releaseLock>();
+const revalidateTags = vi.fn<typeof WebCache.revalidateTags>();
 const multi = {
-  del: vi.fn(),
-  exec: vi.fn(),
-  expire: vi.fn(),
-  zadd: vi.fn(),
+  del: vi.fn<Pipeline["del"]>(),
+  // `exec` is overloaded; the route calls it without arguments.
+  exec: vi.fn<() => Promise<unknown[]>>(),
+  expire: vi.fn<Pipeline["expire"]>(),
+  zadd: vi.fn<Pipeline["zadd"]>(),
 };
 const redisClient = {
-  del: vi.fn(),
-  exists: vi.fn(),
-  expire: vi.fn(),
-  multi: vi.fn(() => multi),
-  zrange: vi.fn(),
-  zunionstore: vi.fn(),
+  del: vi.fn<Redis["del"]>(),
+  exists: vi.fn<Redis["exists"]>(),
+  expire: vi.fn<Redis["expire"]>(),
+  multi: vi.fn<Redis["multi"]>(() => multi as Partial<Pipeline> as Pipeline),
+  zrange: vi.fn<Redis["zrange"]>(),
+  zunionstore: vi.fn<Redis["zunionstore"]>(),
 };
-const getAllTerms = vi.fn();
+const getAllTerms = vi.fn<typeof GetAllTerms.getAllTerms>();
 
-vi.mock("@/lib/lock", () => ({ acquireLock, releaseLock }));
-vi.mock("@/lib/redis", () => ({ redisClient }));
-vi.mock("@/lib/supabase", () => ({ supabaseClient: {} }));
-vi.mock("./_lib/get-all-terms", () => ({ getAllTerms }));
-vi.mock("@shinju-date/web-cache", () => ({ revalidateTags }));
+vi.mock(import("@/lib/lock"), () => ({ acquireLock, releaseLock }));
+vi.mock(import("@/lib/redis"), () => ({
+  redisClient: redisClient as Partial<Redis> as Redis,
+}));
+vi.mock(import("@/lib/supabase"), () => ({
+  supabaseClient: {} as Partial<TypedSupabaseClient> as TypedSupabaseClient,
+}));
+vi.mock(import("./_lib/get-all-terms"), () => ({ getAllTerms }));
+vi.mock(import("@shinju-date/web-cache"), () => ({ revalidateTags }));
 
-const captureCheckIn = vi.fn(() => "check-in-id");
-const captureException = vi.fn();
+const captureCheckIn = vi.fn<typeof Sentry.captureCheckIn>(() => "check-in-id");
+const captureException = vi.fn<typeof Sentry.captureException>();
 
-vi.mock("@sentry/nextjs", () => ({
+vi.mock(import("@sentry/nextjs"), () => ({
   captureCheckIn,
   captureException,
-  flush: vi.fn(),
+  flush: vi.fn<typeof Sentry.flush>(),
 }));
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
+vi.mock(import("@shinju-date/logger"), () => ({
+  logger: createLoggerMock(),
 }));
 
-vi.mock("next/server", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("next/server")>()),
-  after: vi.fn((callback: () => unknown) => callback()),
+vi.mock(import("next/server"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  after: createAfterMock(),
 }));
 
 const { POST } = await import("./route");
 
-function createRequest(): NextRequest {
-  return new NextRequest(
-    "http://localhost:5000/recommendation/queries/update",
-    {
-      method: "POST",
-    }
-  );
-}
+const createRequest = (): NextRequest =>
+  new NextRequest("http://localhost:5000/recommendation/queries/update", {
+    method: "POST",
+  });
 
 describe("POST /recommendation/queries/update", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     acquireLock.mockResolvedValue("lock-value");
     redisClient.del.mockResolvedValue(1);
-    getAllTerms.mockImplementation(async function* () {
-      yield { synonyms: ["ほげ"], term: "Hoge" };
-      yield { synonyms: [], term: "Fuga" };
+    getAllTerms.mockImplementation(async function* getAllTermsMock() {
+      yield { id: "1", synonyms: ["ほげ"], term: "Hoge" };
+      yield { id: "2", synonyms: [], term: "Fuga" };
     });
   });
 
-  it("saves the matching queries and revalidates the recommendation queries", async () => {
-    redisClient.exists.mockResolvedValue(1);
-    redisClient.zrange.mockResolvedValue([
-      "ほげ",
-      "30",
-      "fuga",
-      "20",
-      "unknown",
-      "10",
-    ]);
+  describe("when the popular queries match terms", () => {
+    beforeEach(() => {
+      redisClient.exists.mockResolvedValue(1);
+      redisClient.zrange.mockResolvedValue([
+        "ほげ",
+        "30",
+        "fuga",
+        "20",
+        "unknown",
+        "10",
+      ]);
+    });
 
-    const response = await POST(createRequest());
+    it("saves the matching queries", async () => {
+      const response = await POST(createRequest());
 
-    expect(response.status).toBe(204);
-    expect(multi.del).toHaveBeenCalledWith(REDIS_KEYS.QUERIES_AUTO_RECOMMENDED);
-    expect(multi.zadd).toHaveBeenCalledWith(
-      REDIS_KEYS.QUERIES_AUTO_RECOMMENDED,
-      { member: "Hoge", score: 30 }
-    );
-    expect(multi.zadd).toHaveBeenCalledWith(
-      REDIS_KEYS.QUERIES_AUTO_RECOMMENDED,
-      { member: "Fuga", score: 20 }
-    );
-    expect(multi.zadd).toHaveBeenCalledTimes(2);
-    expect(multi.expire).toHaveBeenCalledWith(
-      REDIS_KEYS.QUERIES_AUTO_RECOMMENDED,
-      8 * 24 * 60 * 60
-    );
-    expect(multi.exec).toHaveBeenCalledTimes(1);
-    expect(revalidateTags).toHaveBeenCalledWith(
-      [CACHE_TAGS.RECOMMENDATION_QUERIES],
-      expect.anything()
-    );
-    expect(revalidateTags).toHaveBeenCalledTimes(1);
+      expect(response.status).toBe(204);
+      expect(multi.del).toHaveBeenCalledWith(
+        REDIS_KEYS.QUERIES_AUTO_RECOMMENDED
+      );
+      expect(multi.zadd.mock.calls).toStrictEqual([
+        [REDIS_KEYS.QUERIES_AUTO_RECOMMENDED, { member: "Hoge", score: 30 }],
+        [REDIS_KEYS.QUERIES_AUTO_RECOMMENDED, { member: "Fuga", score: 20 }],
+      ]);
+      expect(multi.expire).toHaveBeenCalledWith(
+        REDIS_KEYS.QUERIES_AUTO_RECOMMENDED,
+        8 * 24 * 60 * 60
+      );
+      expect(multi.exec).toHaveBeenCalledOnce();
+    });
+
+    it("revalidates the recommendation queries", async () => {
+      const response = await POST(createRequest());
+
+      expect(response.status).toBe(204);
+      expect(revalidateTags).toHaveBeenCalledExactlyOnceWith(
+        [CACHE_TAGS.RECOMMENDATION_QUERIES],
+        expect.anything()
+      );
+    });
   });
 
-  it("keeps the working key of the union for 10 minutes and deletes it afterwards", async () => {
-    redisClient.exists.mockResolvedValue(1);
-    redisClient.zrange.mockResolvedValue(["ほげ", "30"]);
+  describe("the working key of the union", () => {
+    beforeEach(() => {
+      redisClient.exists.mockResolvedValue(1);
+      redisClient.zrange.mockResolvedValue(["ほげ", "30"]);
+    });
 
-    const response = await POST(createRequest());
+    it("is kept for 10 minutes", async () => {
+      const response = await POST(createRequest());
 
-    expect(response.status).toBe(204);
-    expect(redisClient.zunionstore).toHaveBeenCalledWith(
-      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
-      3,
-      expect.any(Array)
-    );
-    expect(redisClient.expire).toHaveBeenCalledWith(
-      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
-      10 * 60
-    );
-    expect(redisClient.expire.mock.invocationCallOrder[0]).toBeGreaterThan(
-      redisClient.zunionstore.mock.invocationCallOrder[0] ?? 0
-    );
-    expect(redisClient.del).toHaveBeenCalledWith(
-      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION
-    );
-    expect(multi.del).not.toHaveBeenCalledWith(
-      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION
-    );
+      expect(response.status).toBe(204);
+      expect(redisClient.zunionstore).toHaveBeenCalledWith(
+        REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
+        3,
+        expect.any(Array)
+      );
+      expect(redisClient.expire).toHaveBeenCalledWith(
+        REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
+        10 * 60
+      );
+      expect(redisClient.expire.mock.invocationCallOrder[0]).toBeGreaterThan(
+        redisClient.zunionstore.mock.invocationCallOrder[0] ?? 0
+      );
+    });
+
+    it("is deleted afterwards", async () => {
+      const response = await POST(createRequest());
+
+      expect(response.status).toBe(204);
+      expect(redisClient.del).toHaveBeenCalledWith(
+        REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION
+      );
+      expect(multi.del).not.toHaveBeenCalledWith(
+        REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION
+      );
+    });
   });
 
   it("does not set an expiry on the auto recommended queries when none match", async () => {
@@ -151,7 +182,9 @@ describe("POST /recommendation/queries/update", () => {
     const response = await POST(createRequest());
 
     expect(response.status).toBe(500);
-    await expect(response.json()).resolves.toEqual({ error: "Redis is down" });
+    await expect(response.json()).resolves.toStrictEqual({
+      error: "Redis is down",
+    });
     expect(redisClient.del).toHaveBeenCalledWith(
       REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION
     );
@@ -169,7 +202,9 @@ describe("POST /recommendation/queries/update", () => {
     const response = await POST(createRequest());
 
     expect(response.status).toBe(500);
-    await expect(response.json()).resolves.toEqual({ error: "Redis is down" });
+    await expect(response.json()).resolves.toStrictEqual({
+      error: "Redis is down",
+    });
     expect(captureException).toHaveBeenCalledWith(error);
   });
 
@@ -199,7 +234,9 @@ describe("POST /recommendation/queries/update", () => {
     const response = await POST(createRequest());
 
     expect(response.status).toBe(500);
-    await expect(response.json()).resolves.toEqual({ error: "Redis is down" });
+    await expect(response.json()).resolves.toStrictEqual({
+      error: "Redis is down",
+    });
     expect(revalidateTags).not.toHaveBeenCalled();
     expect(captureException).toHaveBeenCalledWith(error);
     expect(captureCheckIn).toHaveBeenLastCalledWith({

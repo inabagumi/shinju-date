@@ -1,7 +1,8 @@
 import { REDIS_KEYS } from "@shinju-date/constants";
 import { describe, expect, it } from "vitest";
 
-import { createRedisDataFactory, type SortedSetItem } from "./redis-factory.js";
+import { createRedisDataFactory } from "./redis-factory.js";
+import type { SortedSetItem } from "./redis-factory.js";
 
 const videos = [
   { id: "video-1", talent_id: "talent-1" },
@@ -9,10 +10,10 @@ const videos = [
   { id: "video-3", talent_id: "talent-2" },
 ];
 
-function getSortedSet(
+const getSortedSet = (
   store: ReturnType<typeof createRedisDataFactory>,
   key: string
-): SortedSetItem[] {
+): SortedSetItem[] => {
   const value = store.get(key);
 
   if (!Array.isArray(value)) {
@@ -20,9 +21,9 @@ function getSortedSet(
   }
 
   return value;
-}
+};
 
-describe("createRedisDataFactory", () => {
+describe(createRedisDataFactory, () => {
   it("creates the keys of each day up to today in YYYYMMDD format", () => {
     const store = createRedisDataFactory(3, {
       today: Temporal.PlainDate.from("2026-03-01"),
@@ -30,15 +31,15 @@ describe("createRedisDataFactory", () => {
     });
 
     for (const dateKey of ["20260301", "20260228", "20260227"]) {
-      expect(store.has(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`)).toBe(
-        true
-      );
-      expect(store.has(`${REDIS_KEYS.CLICK_CHANNEL_PREFIX}${dateKey}`)).toBe(
-        true
-      );
+      expect(
+        store.has(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`)
+      ).toBeTruthy();
+      expect(
+        store.has(`${REDIS_KEYS.CLICK_CHANNEL_PREFIX}${dateKey}`)
+      ).toBeTruthy();
     }
 
-    expect(store.has(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}20260226`)).toBe(false);
+    expect(store.has(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}20260226`)).toBeFalsy();
   });
 
   it("uses the given videos and sums up the clicks of each talent", () => {
@@ -69,7 +70,7 @@ describe("createRedisDataFactory", () => {
 
     expect(
       new Map(talentClicks.map(({ member, score }) => [member, score]))
-    ).toEqual(expected);
+    ).toStrictEqual(expected);
   });
 
   it("creates no click data without videos", () => {
@@ -78,7 +79,7 @@ describe("createRedisDataFactory", () => {
       videos: [],
     });
 
-    expect(store.has(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}20260301`)).toBe(false);
-    expect(store.has(`${REDIS_KEYS.CLICK_CHANNEL_PREFIX}20260301`)).toBe(false);
+    expect(store.has(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}20260301`)).toBeFalsy();
+    expect(store.has(`${REDIS_KEYS.CLICK_CHANNEL_PREFIX}20260301`)).toBeFalsy();
   });
 });

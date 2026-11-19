@@ -19,27 +19,27 @@ const ACTION_FAILED_ERROR =
 
 const ID = "80000000-0000-0000-0000-000000000001";
 
-function termForm(
+const termForm = (
   entries: Record<string, string>,
   { readings = [], synonyms = [] }: { readings?: string[]; synonyms?: string[] }
-): FormData {
+): FormData => {
   const formData = new FormData();
 
   for (const [key, value] of Object.entries(entries)) {
     formData.set(key, value);
   }
 
-  readings.forEach((reading, index) => {
+  for (const [index, reading] of readings.entries()) {
     formData.set(`readings[${index}]`, reading);
-  });
-  synonyms.forEach((synonym, index) => {
+  }
+  for (const [index, synonym] of synonyms.entries()) {
     formData.set(`synonyms[${index}]`, synonym);
-  });
+  }
 
   return formData;
-}
+};
 
-describe("createTermAction", () => {
+describe("createTermAction()", () => {
   it("adds the term with the trimmed, non-empty readings and synonyms", async () => {
     supabase.on("insert", "terms", { id: ID, term: "配信" });
 
@@ -54,7 +54,7 @@ describe("createTermAction", () => {
       )
     );
 
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(supabase.calls("insert", "terms")).toMatchObject([
       {
         body: {
@@ -95,8 +95,10 @@ describe("createTermAction", () => {
       termForm(term === null ? {} : { term }, {})
     );
 
-    expect(result).toEqual({ errors: { term: ["用語を入力してください。"] } });
-    expect(supabase.requests).toEqual([]);
+    expect(result).toStrictEqual({
+      errors: { term: ["用語を入力してください。"] },
+    });
+    expect(supabase.requests).toStrictEqual([]);
     test.expectNotRevalidated();
   });
 
@@ -105,13 +107,13 @@ describe("createTermAction", () => {
 
     const result = await createTermAction({}, termForm({ term: "Term" }, {}));
 
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR });
+    expect(result).toStrictEqual({ error: ACTION_FAILED_ERROR });
     test.expectNoAuditLog();
     test.expectNotRevalidated();
   });
 });
 
-describe("updateTermAction", () => {
+describe("updateTermAction()", () => {
   it("updates the term", async () => {
     supabase.on("update", "terms", { term: "配信" });
 
@@ -123,7 +125,7 @@ describe("updateTermAction", () => {
       )
     );
 
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(supabase.calls("update", "terms")).toMatchObject([
       {
         body: {
@@ -154,10 +156,10 @@ describe("updateTermAction", () => {
       termForm({ ...entries, term: "Term" }, {})
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       errors: { generic: ["有効なIDではありません。"] },
     });
-    expect(supabase.requests).toEqual([]);
+    expect(supabase.requests).toStrictEqual([]);
   });
 
   it("returns the fixed message when the update fails", async () => {
@@ -168,19 +170,19 @@ describe("updateTermAction", () => {
       termForm({ id: ID, term: "Term" }, {})
     );
 
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR });
+    expect(result).toStrictEqual({ error: ACTION_FAILED_ERROR });
     test.expectNoAuditLog();
     test.expectNotRevalidated();
   });
 });
 
-describe("deleteTermAction", () => {
+describe("deleteTermAction()", () => {
   it("deletes the term", async () => {
     supabase.on("delete", "terms", { term: "配信" });
 
     const result = await deleteTermAction(ID);
 
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(supabase.calls("delete", "terms")).toMatchObject([
       { query: { id: `eq.${ID}` } },
     ]);
@@ -194,11 +196,11 @@ describe("deleteTermAction", () => {
   it("returns an error without the ID", async () => {
     const result = await deleteTermAction("");
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: "IDが指定されていません。",
       success: false,
     });
-    expect(supabase.requests).toEqual([]);
+    expect(supabase.requests).toStrictEqual([]);
   });
 
   it("returns the fixed message when the delete fails", async () => {
@@ -206,7 +208,10 @@ describe("deleteTermAction", () => {
 
     const result = await deleteTermAction(ID);
 
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false });
+    expect(result).toStrictEqual({
+      error: ACTION_FAILED_ERROR,
+      success: false,
+    });
     test.expectNoAuditLog();
     test.expectNotRevalidated();
   });

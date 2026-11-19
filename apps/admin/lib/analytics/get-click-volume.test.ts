@@ -1,32 +1,34 @@
 import { REDIS_KEYS } from "@shinju-date/constants";
+import type { Redis } from "@upstash/redis";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { getRedisClient } from "@/lib/redis";
 
 import { getClickVolume } from "./get-click-volume";
 
-vi.mock("next/cache", () => ({
-  cacheLife: vi.fn(),
+vi.mock(import("next/cache"), () => ({
+  cacheLife: vi.fn<() => void>(),
 }));
-vi.mock("@/lib/redis", async () => {
-  const { createMockPipeline } = await import("@/test/mock-redis-pipeline");
-  const mockedRedisClient = {
-    pipeline: vi.fn(),
-    zrange: vi.fn(),
-  };
-  mockedRedisClient.pipeline.mockImplementation(() =>
-    createMockPipeline(mockedRedisClient)
-  );
+vi.mock(import("@/lib/redis"), async () => {
+  const { createMockRedisClient } = await import("@/test/mock-redis-pipeline");
+  const mockedRedisClient = createMockRedisClient({
+    zrange: vi.fn<Redis["zrange"]>(),
+  });
+
   return {
-    getRedisClient: vi.fn().mockReturnValue(mockedRedisClient),
+    getRedisClient: vi
+      .fn<typeof getRedisClient>()
+      .mockReturnValue(mockedRedisClient),
   };
 });
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: {
-    error: vi.fn(),
-  },
-}));
+vi.mock(import("@shinju-date/logger"), async () => {
+  const { createMockLogger } = await import("@/test/logger");
 
-describe("getClickVolume", async () => {
+  return { logger: createMockLogger() };
+});
+
+describe(getClickVolume, async () => {
   const { getRedisClient } = await import("@/lib/redis");
   const redisClient = getRedisClient();
 
@@ -49,13 +51,13 @@ describe("getClickVolume", async () => {
       range: { end: "2024-02-01", start: "2024-01-30" },
     });
 
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       { clicks: 5, date: "2024-01-30" },
       { clicks: 0, date: "2024-01-31" },
       { clicks: 10, date: "2024-02-01" },
     ]);
-    expect(redisClient.pipeline).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(redisClient.zrange).mock.calls).toEqual([
+    expect(redisClient.pipeline).toHaveBeenCalledOnce();
+    expect(vi.mocked(redisClient.zrange).mock.calls).toStrictEqual([
       [
         `${REDIS_KEYS.CLICK_VIDEO_PREFIX}20240130`,
         0,
@@ -82,7 +84,7 @@ describe("getClickVolume", async () => {
       range: { end: "2024-01-31", start: "2024-02-01" },
     });
 
-    expect(result).toEqual([]);
+    expect(result).toStrictEqual([]);
     expect(redisClient.pipeline).not.toHaveBeenCalled();
   });
 
@@ -93,6 +95,6 @@ describe("getClickVolume", async () => {
       range: { end: "2024-02-01", start: "2024-01-30" },
     });
 
-    expect(result).toEqual([]);
+    expect(result).toStrictEqual([]);
   });
 });

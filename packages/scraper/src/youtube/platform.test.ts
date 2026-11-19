@@ -7,7 +7,7 @@ import { createYouTubePlatform } from "./platform.js";
 
 const now = Temporal.Instant.from("2024-05-01T12:00:00Z");
 
-describe("createYouTubePlatform", () => {
+describe(createYouTubePlatform, () => {
   it("identifies a saved video by its YouTube video ID", () => {
     const { fetcher } = createFakeFetcher<YouTubeFetcher>();
     const platform = createYouTubePlatform(fetcher);
@@ -29,7 +29,7 @@ describe("createYouTubePlatform", () => {
     ]);
 
     expect(getVideos).toHaveBeenCalledExactlyOnceWith(["yt-1", "yt-gone"]);
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       fetchedById: new Map([["yt-1", video]]),
       missingIds: ["yt-gone"],
     });
@@ -49,7 +49,7 @@ describe("createYouTubePlatform", () => {
       "yt-gone",
     ]);
     expect(getVideos).not.toHaveBeenCalled();
-    expect(missingIds).toEqual(["yt-gone"]);
+    expect(missingIds).toStrictEqual(["yt-gone"]);
   });
 
   it("maps a video to its fields", () => {
@@ -57,7 +57,7 @@ describe("createYouTubePlatform", () => {
 
     expect(
       createYouTubePlatform(fetcher).toFields(createVideo({ id: "yt-1" }), now)
-    ).toEqual({
+    ).toStrictEqual({
       duration: "PT10M",
       published_at: "2024-05-01T10:00:00Z",
       status: "PUBLISHED",

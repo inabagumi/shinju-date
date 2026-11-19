@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { FormStatus } from "./form-status";
 
-describe("FormStatus", () => {
-  test("shows the success message as a status", () => {
+describe(FormStatus, () => {
+  it("shows the success message as a status", () => {
     render(
       <FormStatus state={{ message: "受け付けました。", success: true }} />
     );
@@ -13,7 +13,7 @@ describe("FormStatus", () => {
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
-  test("shows the error as an alert", () => {
+  it("shows the error as an alert", () => {
     render(
       <FormStatus
         state={{ error: "送信中にエラーが発生しました。", success: false }}
@@ -26,7 +26,7 @@ describe("FormStatus", () => {
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
-  test.each([
+  it.each([
     ["no state", null],
     [
       "only field errors",

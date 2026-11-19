@@ -3,7 +3,8 @@
 import * as Sentry from "@sentry/nextjs";
 import { Button } from "@shinju-date/ui";
 import { AlertTriangle } from "lucide-react";
-import { catchError, type ErrorInfo } from "next/error";
+import { catchError } from "next/error";
+import type { ErrorInfo } from "next/error";
 import { useEffect } from "react";
 
 import { Panel } from "./panel";
@@ -22,11 +23,11 @@ interface WidgetErrorFallbackProps extends WidgetErrorBoundaryProps {
  * Takes the place of a widget whose data could not be loaded. The heading
  * stays, so that admins can tell which widget failed.
  */
-export function WidgetErrorFallback({
+export const WidgetErrorFallback = ({
   error,
   retry,
   title,
-}: WidgetErrorFallbackProps) {
+}: WidgetErrorFallbackProps) => {
   useEffect(() => {
     Sentry.captureException(error);
   }, [error]);
@@ -44,14 +45,12 @@ export function WidgetErrorFallback({
       </div>
     </Panel>
   );
-}
+};
 
-function renderFallback(
+const renderFallback = (
   props: WidgetErrorBoundaryProps,
   { error, retry }: ErrorInfo
-) {
-  return <WidgetErrorFallback {...props} error={error} retry={retry} />;
-}
+) => <WidgetErrorFallback {...props} error={error} retry={retry} />;
 
 /**
  * Keeps an error thrown by one widget inside that widget, so that the rest

@@ -1,10 +1,7 @@
 import { replaceThumbnail } from "../internal/thumbnails/index.js";
 import type { WriteContext } from "../types.js";
-import {
-  isLivePlaceholder,
-  type SavedTwitchVideo,
-  updateTwitchVideo,
-} from "./saved-video.js";
+import { isLivePlaceholder, updateTwitchVideo } from "./saved-video.js";
+import type { SavedTwitchVideo } from "./saved-video.js";
 import { createTwitchThumbnail } from "./thumbnail.js";
 import type { TwitchVideo } from "./types.js";
 import { toVideoFields } from "./video.js";
@@ -25,12 +22,12 @@ export interface AttachArchiveOptions {
  *
  * @returns Whether the row took over the archive's details.
  */
-export async function attachArchive(
+export const attachArchive = async (
   context: WriteContext,
   saved: SavedTwitchVideo,
   archive: TwitchVideo,
   { stillLive }: AttachArchiveOptions
-): Promise<boolean> {
+): Promise<boolean> => {
   // Link first: should a later step fail, the row keeps its status and a
   // later run finishes the job, instead of leaving an ended row without its
   // archive.
@@ -60,4 +57,4 @@ export async function attachArchive(
   });
 
   return true;
-}
+};

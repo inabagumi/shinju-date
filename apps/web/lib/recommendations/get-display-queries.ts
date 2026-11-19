@@ -2,9 +2,12 @@ import { shuffle } from "../shuffle";
 import { TOTAL_DISPLAY_COUNT } from "./constants";
 import { getCombinedRecommendationQueries } from "./get-combined-queries";
 
-const CHAMPION_COUNT = 2; // Top 1-2 queries always shown
-const RANDOM_POOL_START = 2; // Start index for random pool (0-based, so 3rd position)
-const RANDOM_POOL_END = 20; // End index for random pool (up to 20th position)
+// Top 1-2 queries always shown
+const CHAMPION_COUNT = 2;
+// Start index for random pool (0-based, so 3rd position)
+const RANDOM_POOL_START = 2;
+// End index for random pool (up to 20th position)
+const RANDOM_POOL_END = 20;
 
 /**
  * Get recommendation queries for display with diversity
@@ -22,7 +25,7 @@ const RANDOM_POOL_END = 20; // End index for random pool (up to 20th position)
  *
  * @returns Array of query strings to display (max `TOTAL_DISPLAY_COUNT`)
  */
-export async function getDisplayRecommendationQueries(): Promise<string[]> {
+export const getDisplayRecommendationQueries = async (): Promise<string[]> => {
   const allQueries = await getCombinedRecommendationQueries();
 
   // If we have few enough queries, just return them all
@@ -41,4 +44,4 @@ export async function getDisplayRecommendationQueries(): Promise<string[]> {
   const randomQueries = shuffle(randomPool).slice(0, randomCount);
 
   return [...championQueries, ...randomQueries];
-}
+};

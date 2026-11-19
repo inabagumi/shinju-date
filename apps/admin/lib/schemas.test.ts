@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { MAX_UUID_LIST_LENGTH, uuidListSchema, uuidSchema } from "./schemas";
 
-describe("uuidSchema", () => {
+describe("uuidSchema.safeParse", () => {
   it.each([
     // supabase/seed.sql のタレントの ID（バージョンとバリアントの桁が 0）
     "00000000-0000-0000-0000-000000000001",
@@ -10,7 +10,7 @@ describe("uuidSchema", () => {
     "123e4567-e89b-12d3-a456-426614174000",
     "A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11",
   ])("accepts %s", (value) => {
-    expect(uuidSchema.safeParse(value).success).toBe(true);
+    expect(uuidSchema.safeParse(value).success).toBeTruthy();
   });
 
   it.each([
@@ -20,21 +20,20 @@ describe("uuidSchema", () => {
     "00000000000000000000000000000001",
     "g0000000-0000-0000-0000-000000000001",
   ])("rejects %j", (value) => {
-    expect(uuidSchema.safeParse(value).success).toBe(false);
+    expect(uuidSchema.safeParse(value).success).toBeFalsy();
   });
 });
 
-describe("uuidListSchema", () => {
-  /** `n` 件の、重複しない UUID */
-  function uuids(n: number): string[] {
-    return Array.from(
-      { length: n },
-      (_, index) => `00000000-0000-0000-0000-${String(index).padStart(12, "0")}`
-    );
-  }
+/** `n` 件の、重複しない UUID */
+const uuids = (n: number): string[] =>
+  Array.from(
+    { length: n },
+    (_, index) => `00000000-0000-0000-0000-${String(index).padStart(12, "0")}`
+  );
 
+describe("uuidListSchema.safeParse", () => {
   it.each([1, 2, MAX_UUID_LIST_LENGTH])("accepts %i ids", (n) => {
-    expect(uuidListSchema.safeParse(uuids(n)).success).toBe(true);
+    expect(uuidListSchema.safeParse(uuids(n)).success).toBeTruthy();
   });
 
   it.each([
@@ -61,6 +60,6 @@ describe("uuidListSchema", () => {
     ["a string", "00000000-0000-0000-0000-000000000001"],
     ["null", null],
   ])("rejects %s", (_, value) => {
-    expect(uuidListSchema.safeParse(value).success).toBe(false);
+    expect(uuidListSchema.safeParse(value).success).toBeFalsy();
   });
 });

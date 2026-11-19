@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type { Talent } from "@/lib/data/talents";
 
@@ -14,34 +14,40 @@ const TALENTS: Talent[] = [
   { id: "00000000-0000-4000-8000-000000000004", name: "ミオソティス" },
 ];
 
-describe("findMatchingTalents", () => {
-  test("should return the talents whose name contains the query", () => {
-    expect(findMatchingTalents(TALENTS, "ミオ")).toEqual([
+describe(findMatchingTalents, () => {
+  it("should return the talents whose name contains the query", () => {
+    expect(findMatchingTalents(TALENTS, "ミオ")).toStrictEqual([
       TALENTS[0],
       TALENTS[3],
     ]);
-    expect(findMatchingTalents(TALENTS, "朝霧")).toEqual([TALENTS[0]]);
+    expect(findMatchingTalents(TALENTS, "朝霧")).toStrictEqual([TALENTS[0]]);
   });
 
-  test("should ignore the difference between full-width and half-width characters", () => {
-    expect(findMatchingTalents(TALENTS, "yura")).toEqual([TALENTS[1]]);
-    expect(findMatchingTalents(TALENTS, "カタカナ")).toEqual([TALENTS[2]]);
-    expect(findMatchingTalents(TALENTS, "ｶﾀｶﾅ")).toEqual([TALENTS[2]]);
+  it("should ignore the difference between full-width and half-width characters", () => {
+    expect(findMatchingTalents(TALENTS, "yura")).toStrictEqual([TALENTS[1]]);
+    expect(findMatchingTalents(TALENTS, "カタカナ")).toStrictEqual([
+      TALENTS[2],
+    ]);
+    expect(findMatchingTalents(TALENTS, "ｶﾀｶﾅ")).toStrictEqual([TALENTS[2]]);
   });
 
-  test("should ignore the difference between upper and lower case", () => {
-    expect(findMatchingTalents(TALENTS, "NAGISAWA")).toEqual([TALENTS[1]]);
-    expect(findMatchingTalents(TALENTS, "ｎａｇｉ")).toEqual([TALENTS[1]]);
+  it("should ignore the difference between upper and lower case", () => {
+    expect(findMatchingTalents(TALENTS, "NAGISAWA")).toStrictEqual([
+      TALENTS[1],
+    ]);
+    expect(findMatchingTalents(TALENTS, "ｎａｇｉ")).toStrictEqual([
+      TALENTS[1],
+    ]);
   });
 
-  test("should return nothing for an empty query", () => {
-    expect(findMatchingTalents(TALENTS, "")).toEqual([]);
-    expect(findMatchingTalents(TALENTS, "　 ")).toEqual([]);
+  it("should return nothing for an empty query", () => {
+    expect(findMatchingTalents(TALENTS, "")).toStrictEqual([]);
+    expect(findMatchingTalents(TALENTS, "　 ")).toStrictEqual([]);
   });
 
-  test("should not return the excluded talents", () => {
+  it("should not return the excluded talents", () => {
     expect(
       findMatchingTalents(TALENTS, "ミオ", [TALENTS[0]?.id ?? ""])
-    ).toEqual([TALENTS[3]]);
+    ).toStrictEqual([TALENTS[3]]);
   });
 });

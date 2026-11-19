@@ -1,16 +1,13 @@
-import {
-  type BackfillProvider,
-  BackfillQueue,
-  type BackfillRunJobStatus,
-  getBackfillJobId,
+import { BackfillQueue, getBackfillJobId } from "@shinju-date/video-backfill";
+import type {
+  BackfillProvider,
+  BackfillRunJobStatus,
 } from "@shinju-date/video-backfill";
 import { cacheLife } from "next/cache";
 
 import { getRedisClient } from "@/lib/redis";
-import {
-  createSupabaseServerClient,
-  type TypedSupabaseClient,
-} from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase";
+import type { TypedSupabaseClient } from "@/lib/supabase";
 
 /** Progress of the backfill of one account of a talent. */
 export interface VideoBackfillAccount {
@@ -50,10 +47,10 @@ interface TalentAccounts {
  * Loads a talent that is not deleted, with its YouTube channels and Twitch
  * accounts.
  */
-export async function getTalentAccounts(
+export const getTalentAccounts = async (
   supabaseClient: TypedSupabaseClient,
   talentId: string
-): Promise<TalentAccounts | null> {
+): Promise<TalentAccounts | null> => {
   const { data, error } = await supabaseClient
     .from("talents")
     .select(
@@ -86,7 +83,7 @@ export async function getTalentAccounts(
     ],
     name: data.name,
   };
-}
+};
 
 /**
  * タレントの各アカウントの過去動画の取り込み状況を読む。
@@ -96,10 +93,10 @@ export async function getTalentAccounts(
  *
  * @returns タレントが見つからない（削除された）ときは `null`
  */
-export async function readVideoBackfillStatus(
+export const readVideoBackfillStatus = async (
   supabaseClient: TypedSupabaseClient,
   talentId: string
-): Promise<VideoBackfillStatus | null> {
+): Promise<VideoBackfillStatus | null> => {
   const talent = await getTalentAccounts(supabaseClient, talentId);
 
   if (!talent) {
@@ -131,7 +128,7 @@ export async function readVideoBackfillStatus(
     }),
     success: true,
   };
-}
+};
 
 /**
  * タレントの各アカウントの過去動画の取り込み状況を返す。状況は刻々と変わるので、
@@ -139,9 +136,9 @@ export async function readVideoBackfillStatus(
  *
  * @returns タレントが見つからない（削除された）ときは `null`
  */
-export async function getVideoBackfillStatus(
+export const getVideoBackfillStatus = async (
   talentId: string
-): Promise<VideoBackfillStatus | null> {
+): Promise<VideoBackfillStatus | null> => {
   "use cache: private";
 
   cacheLife("seconds");
@@ -149,4 +146,4 @@ export async function getVideoBackfillStatus(
   const supabaseClient = await createSupabaseServerClient();
 
   return readVideoBackfillStatus(supabaseClient, talentId);
-}
+};

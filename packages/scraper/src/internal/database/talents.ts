@@ -1,5 +1,5 @@
 import type { TypedSupabaseClient } from "../../types.js";
-import { DatabaseError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
 
 /**
  * A table of platform accounts, with the column that holds the ID of an
@@ -39,10 +39,10 @@ type TalentRow = { id: string } & Partial<
 /**
  * Gets the accounts to crawl: those of active, non-deleted talents.
  */
-export async function getActiveAccounts(
+export const getActiveAccounts = async (
   supabaseClient: TypedSupabaseClient,
   { platformIdColumn, table }: AccountTable
-): Promise<TalentAccount[]> {
+): Promise<TalentAccount[]> => {
   const { data, error } = await supabaseClient
     .from("talents")
     .select(`id, ${table}!inner(id, ${platformIdColumn})`)
@@ -63,18 +63,18 @@ export async function getActiveAccounts(
       talentId: talent.id,
     }))
   );
-}
+};
 
 /**
  * Gets one account by the primary key of its row, provided its talent is not
  * deleted. Retired talents are included: their past videos are still listed
  * on the site.
  */
-export async function findAccount(
+export const findAccount = async (
   supabaseClient: TypedSupabaseClient,
   { platformIdColumn, table }: AccountTable,
   id: string
-): Promise<TalentAccount | null> {
+): Promise<TalentAccount | null> => {
   const { data, error } = await supabaseClient
     .from(table)
     .select(`id, talent_id, ${platformIdColumn}, talents!inner(id)`)
@@ -96,4 +96,4 @@ export async function findAccount(
         talentId: account["talent_id"] as string,
       }
     : null;
-}
+};

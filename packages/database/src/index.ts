@@ -1,4 +1,5 @@
 export type {
+  Database,
   Database as default,
   Enums,
   Tables,

@@ -7,7 +7,8 @@ import { ActionToastProvider } from "@/components/action-toast";
 import { lato } from "./fonts";
 
 export const viewport: Viewport = {
-  themeColor: "#1e0064", // var(--color-primary)
+  // var(--color-primary)
+  themeColor: "#1e0064",
 };
 
 export const metadata: Metadata = {

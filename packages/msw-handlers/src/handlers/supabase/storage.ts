@@ -7,7 +7,7 @@ import { HttpResponse, http } from "msw";
 export const storageHandlers = [
   http.post(
     "https://fake.supabase.test/storage/v1/object/sign/thumbnails/:path*",
-    async ({ request, params }) => {
+    ({ request, params }) => {
       const url = new URL(request.url);
       // Log the full URL for debugging
       console.error("[MSW Storage] createSignedUrl called with URL:", url.href);
@@ -78,7 +78,7 @@ export const storageHandlers = [
   // Use :path* to match any path including nested directories
   http.get(
     "https://fake.supabase.test/storage/v1/object/public/thumbnails/:path*",
-    async ({ request }) => {
+    ({ request }) => {
       console.error("[MSW Storage] GET thumbnail image called:", request.url);
       const dummyImage =
         '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" />';

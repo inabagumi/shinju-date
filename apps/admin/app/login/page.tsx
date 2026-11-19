@@ -23,18 +23,18 @@ export const metadata: Metadata = {
  * `searchParams` はリクエスト時にしか分からないため、フォームの外枠とは
  * 分けて `Suspense` の中で描画する。
  */
-async function RedirectPathInput({
+const RedirectPathInput = async ({
   searchParams,
-}: Pick<PageProps<"/login">, "searchParams">) {
-  const { [REDIRECT_PARAM]: value } = await searchParams;
-  const redirectPath = getSafeRedirectPath(value);
+}: Pick<PageProps<"/login">, "searchParams">) => {
+  const params = await searchParams;
+  const redirectPath = getSafeRedirectPath(params[REDIRECT_PARAM]);
 
   if (redirectPath === "/") {
     return null;
   }
 
   return <input name={REDIRECT_PARAM} type="hidden" value={redirectPath} />;
-}
+};
 
 export default function Login({ searchParams }: PageProps<"/login">) {
   return (

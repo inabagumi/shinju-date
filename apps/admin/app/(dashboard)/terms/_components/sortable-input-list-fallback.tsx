@@ -8,18 +8,20 @@ interface SortableInputListFallbackProps {
   addButtonLabel?: string;
 }
 
+const NO_DEFAULT_VALUES: string[] = [];
+
 /**
  * `SortableInputList`（dnd-kit）を読み込むまでの表示。読み込んだ後と同じ行数・
  * 同じ並びで部品を置き、入力欄の位置がずれないようにする。入力した内容が
  * 読み込み後に失われないよう、入力欄とボタンは操作できないようにしておく。
  * 読み込み中に送信されても値が消えないよう、送信用の値は読み込み後と同じ形で置く。
  */
-export function SortableInputListFallback({
+export const SortableInputListFallback = ({
   addButtonLabel = "追加",
-  defaultValues = [],
+  defaultValues = NO_DEFAULT_VALUES,
   name,
   placeholder,
-}: SortableInputListFallbackProps) {
+}: SortableInputListFallbackProps) => {
   const values = defaultValues.length > 0 ? defaultValues : [""];
 
   return (
@@ -70,4 +72,4 @@ export function SortableInputListFallback({
       ))}
     </div>
   );
-}
+};

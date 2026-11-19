@@ -14,11 +14,11 @@ export type WithTrends<T> = { [K in keyof T]: TrendValue };
  * Pair each value with its changes from `yesterday` and `lastWeek` (the
  * snapshots). The change from a snapshot that is `null` is `null`.
  */
-export function withTrends<T extends { [K in keyof T]: number }>(
+export const withTrends = <T extends { [K in keyof T]: number }>(
   current: T,
   yesterday: T | null,
   lastWeek: T | null
-): WithTrends<T> {
+): WithTrends<T> => {
   const change = (key: keyof T, previous: T | null): number | null =>
     previous === null ? null : current[key] - previous[key];
 
@@ -33,4 +33,4 @@ export function withTrends<T extends { [K in keyof T]: number }>(
   }
 
   return trends;
-}
+};

@@ -9,23 +9,19 @@ import {
   NextStream,
 } from "@/components/talent-stream-status";
 import { TextLink, TextLinkIcon } from "@/components/text-link";
-import {
-  fetchTalentStreamStatusesSafe,
-  type TalentDetail,
-  type TalentStreamStatus,
-} from "@/lib/data/talents";
-import { getTalentLinks, type TalentLink } from "@/lib/talent-links";
+import { fetchTalentStreamStatusesSafe } from "@/lib/data/talents";
+import type { TalentDetail, TalentStreamStatus } from "@/lib/data/talents";
+import { getTalentLinks } from "@/lib/talent-links";
+import type { TalentLink } from "@/lib/talent-links";
 
-import {
-  getShownTalent,
-  type TalentPageParams,
-} from "../_lib/get-shown-talent";
+import { getShownTalent } from "../_lib/get-shown-talent";
+import type { TalentPageParams } from "../_lib/get-shown-talent";
 
 interface TalentLinkItemProps {
   link: TalentLink;
 }
 
-function TalentLinkItem({ link }: TalentLinkItemProps) {
+const TalentLinkItem = ({ link }: TalentLinkItemProps) => {
   if (link.external) {
     return (
       <TextLink href={link.href} rel="noopener noreferrer" target="_blank">
@@ -46,7 +42,7 @@ function TalentLinkItem({ link }: TalentLinkItemProps) {
       {link.label}
     </TextLink>
   );
-}
+};
 
 interface StreamStatusLineProps {
   streamStatus?: TalentStreamStatus | undefined;
@@ -58,7 +54,7 @@ interface StreamStatusLineProps {
  * no space is left for it. It is only shown, not linked to the stream, which
  * the videos below link to.
  */
-function StreamStatusLine({ streamStatus }: StreamStatusLineProps) {
+const StreamStatusLine = ({ streamStatus }: StreamStatusLineProps) => {
   if (streamStatus?.isLive) {
     return (
       <p className="mb-2">
@@ -79,7 +75,7 @@ function StreamStatusLine({ streamStatus }: StreamStatusLineProps) {
   }
 
   return null;
-}
+};
 
 interface TalentPageHeaderProps {
   /** Whether the talent is live and when it streams next, if known */
@@ -95,10 +91,10 @@ interface TalentPageHeaderProps {
  * a stream within a week gets its start, as in the list of talents. They are
  * put above the links, outside the `h1`, so they are not a part of the name.
  */
-export function TalentPageHeader({
+export const TalentPageHeader = ({
   streamStatus,
   talent,
-}: TalentPageHeaderProps) {
+}: TalentPageHeaderProps) => {
   const isLive = streamStatus?.isLive ?? false;
 
   return (
@@ -133,7 +129,7 @@ export function TalentPageHeader({
       }
     />
   );
-}
+};
 
 interface TalentPageHeadingProps {
   params: TalentPageParams;
@@ -145,7 +141,7 @@ interface TalentPageHeadingProps {
  * links down. The heading is still shown without the stream status when it
  * cannot be fetched.
  */
-export async function TalentPageHeading({ params }: TalentPageHeadingProps) {
+export const TalentPageHeading = async ({ params }: TalentPageHeadingProps) => {
   const [talent, streamStatuses] = await Promise.all([
     getShownTalent(params),
     fetchTalentStreamStatusesSafe(),
@@ -157,8 +153,8 @@ export async function TalentPageHeading({ params }: TalentPageHeadingProps) {
       talent={talent}
     />
   );
-}
+};
 
-export function TalentPageHeadingSkeleton() {
-  return <PageHeaderSkeleton description icon />;
-}
+export const TalentPageHeadingSkeleton = () => (
+  <PageHeaderSkeleton description icon />
+);

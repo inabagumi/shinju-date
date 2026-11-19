@@ -10,19 +10,28 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ActionToastProvider } from "@/components/action-toast";
 
+import type {
+  addYouTubeChannelAction,
+  removeYouTubeChannelAction,
+} from "../../_actions/channels";
+import type {
+  addTwitchUserAction,
+  removeTwitchUserAction,
+} from "../../_actions/twitch-users";
+
 const mocks = vi.hoisted(() => ({
-  addTwitchUserAction: vi.fn(),
-  addYouTubeChannelAction: vi.fn(),
-  removeTwitchUserAction: vi.fn(),
-  removeYouTubeChannelAction: vi.fn(),
+  addTwitchUserAction: vi.fn<typeof addTwitchUserAction>(),
+  addYouTubeChannelAction: vi.fn<typeof addYouTubeChannelAction>(),
+  removeTwitchUserAction: vi.fn<typeof removeTwitchUserAction>(),
+  removeYouTubeChannelAction: vi.fn<typeof removeYouTubeChannelAction>(),
 }));
 
-vi.mock("../../_actions/channels", () => ({
+vi.mock(import("../../_actions/channels"), () => ({
   addYouTubeChannelAction: mocks.addYouTubeChannelAction,
   removeYouTubeChannelAction: mocks.removeYouTubeChannelAction,
 }));
 
-vi.mock("../../_actions/twitch-users", () => ({
+vi.mock(import("../../_actions/twitch-users"), () => ({
   addTwitchUserAction: mocks.addTwitchUserAction,
   removeTwitchUserAction: mocks.removeTwitchUserAction,
 }));
@@ -111,11 +120,8 @@ const definitions: Definition[] = [
 describe.each(definitions)("LinkedAccountManager ($name)", (definition) => {
   const removeLabel = `${definition.account}を削除`;
 
-  function renderManager() {
-    return render(
-      <ActionToastProvider>{definition.element}</ActionToastProvider>
-    );
-  }
+  const renderManager = () =>
+    render(<ActionToastProvider>{definition.element}</ActionToastProvider>);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -163,9 +169,9 @@ describe.each(definitions)("LinkedAccountManager ($name)", (definition) => {
     fireEvent.click(screen.getByRole("button", { name: removeLabel }));
     fireEvent.click(screen.getByRole("button", { name: "削除" }));
 
-    expect(
-      await screen.findByText(`${definition.account}を削除しました。`)
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText(`${definition.account}を削除しました。`)
+    ).resolves.toBeInTheDocument();
     expect(definition.removeAction).toHaveBeenCalledWith(
       definition.accountRowId,
       "talent-1"
@@ -187,7 +193,7 @@ describe.each(definitions)("LinkedAccountManager ($name)", (definition) => {
 
     fireEvent.click(within(dialog).getByRole("button", { name: "削除" }));
 
-    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+    await expect(within(dialog).findByRole("alert")).resolves.toHaveTextContent(
       "削除できませんでした。"
     );
     expect(screen.getByRole("dialog")).toBe(dialog);
@@ -204,7 +210,7 @@ describe.each(definitions)("LinkedAccountManager ($name)", (definition) => {
 
     fireEvent.click(within(dialog).getByRole("button", { name: "削除" }));
 
-    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+    await expect(within(dialog).findByRole("alert")).resolves.toHaveTextContent(
       "処理に失敗しました。"
     );
     expect(screen.getByRole("dialog")).toBe(dialog);
@@ -250,7 +256,7 @@ describe.each(definitions)("LinkedAccountManager ($name)", (definition) => {
 
     fireEvent.click(within(dialog).getByRole("button", { name: "追加" }));
 
-    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+    await expect(within(dialog).findByRole("alert")).resolves.toHaveTextContent(
       `${definition.account}の追加に失敗しました。`
     );
     expect(screen.getByRole("dialog")).toBe(dialog);

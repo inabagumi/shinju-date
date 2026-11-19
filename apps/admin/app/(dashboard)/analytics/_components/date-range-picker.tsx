@@ -16,8 +16,10 @@ import {
 import { formatDateRange } from "../_lib/format-date";
 
 export interface DateRange {
-  startDate: string; // ISO 8601 date string
-  endDate: string; // ISO 8601 date string
+  // ISO 8601 date string
+  startDate: string;
+  // ISO 8601 date string
+  endDate: string;
 }
 
 interface DateRangePickerProps {
@@ -25,9 +27,8 @@ interface DateRangePickerProps {
   onChange: (range: DateRange) => void;
 }
 
-function isSameRange(a: DateRange, b: DateRange): boolean {
-  return a.startDate === b.startDate && a.endDate === b.endDate;
-}
+const isSameRange = (a: DateRange, b: DateRange): boolean =>
+  a.startDate === b.startDate && a.endDate === b.endDate;
 
 export default function DateRangePicker({
   value,
@@ -39,7 +40,8 @@ export default function DateRangePicker({
   const [validationError, setValidationError] = useState("");
 
   const today = getToday();
-  const maxStartDate = getEarliestDate(today); // Allow up to 90 days ago
+  // Allow up to 90 days ago
+  const maxStartDate = getEarliestDate(today);
 
   const presets = [
     {
@@ -175,13 +177,13 @@ export default function DateRangePicker({
     setIsCustomMode(false);
   };
 
-  const handleCustomStartChange = (value: string) => {
-    setCustomStart(value);
+  const handleCustomStartChange = (nextStart: string) => {
+    setCustomStart(nextStart);
     setValidationError("");
   };
 
-  const handleCustomEndChange = (value: string) => {
-    setCustomEnd(value);
+  const handleCustomEndChange = (nextEnd: string) => {
+    setCustomEnd(nextEnd);
     setValidationError("");
   };
 
@@ -189,36 +191,7 @@ export default function DateRangePicker({
     <div className="rounded-container border border-border bg-surface p-4">
       <h2 className="mb-3 text-meta font-semibold">期間選択</h2>
 
-      {!isCustomMode ? (
-        <div className="space-y-2">
-          <div className="flex flex-wrap gap-2">
-            {presets.map((preset) => {
-              const isSelected = isSameRange(resolvePresetRange(preset), value);
-
-              return (
-                <Button
-                  aria-pressed={isSelected}
-                  key={preset.label}
-                  onClick={() => handlePresetClick(preset)}
-                  size="sm"
-                  variant={isSelected ? "primary" : "secondary"}
-                >
-                  {preset.label}
-                </Button>
-              );
-            })}
-          </div>
-          <Button
-            aria-pressed={isCustomRange}
-            className="w-full"
-            onClick={handleCustomOpen}
-            size="sm"
-            variant={isCustomRange ? "primary" : "secondary"}
-          >
-            カスタム期間を選択
-          </Button>
-        </div>
-      ) : (
+      {isCustomMode ? (
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -281,6 +254,35 @@ export default function DateRangePicker({
               適用
             </Button>
           </div>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-2">
+            {presets.map((preset) => {
+              const isSelected = isSameRange(resolvePresetRange(preset), value);
+
+              return (
+                <Button
+                  aria-pressed={isSelected}
+                  key={preset.label}
+                  onClick={() => handlePresetClick(preset)}
+                  size="sm"
+                  variant={isSelected ? "primary" : "secondary"}
+                >
+                  {preset.label}
+                </Button>
+              );
+            })}
+          </div>
+          <Button
+            aria-pressed={isCustomRange}
+            className="w-full"
+            onClick={handleCustomOpen}
+            size="sm"
+            variant={isCustomRange ? "primary" : "secondary"}
+          >
+            カスタム期間を選択
+          </Button>
         </div>
       )}
 

@@ -1,7 +1,5 @@
-import {
-  createThumbnail,
-  type Thumbnail,
-} from "../internal/thumbnails/index.js";
+import { createThumbnail } from "../internal/thumbnails/index.js";
+import type { Thumbnail } from "../internal/thumbnails/index.js";
 import type { WriteContext } from "../types.js";
 import { getThumbnailSource } from "./video.js";
 
@@ -17,10 +15,10 @@ export interface CreateTwitchThumbnailOptions {
  * cannot be stored. A video without a thumbnail is still worth listing, so
  * failures are reported instead of thrown.
  */
-export async function createTwitchThumbnail(
+export const createTwitchThumbnail = async (
   { now, reportError, supabaseClient }: WriteContext,
   { thumbnailUrl, twitchVideoId }: CreateTwitchThumbnailOptions
-): Promise<Thumbnail | null> {
+): Promise<Thumbnail | null> => {
   const source = getThumbnailSource(thumbnailUrl);
 
   if (!source) {
@@ -39,4 +37,4 @@ export async function createTwitchThumbnail(
 
     return null;
   }
-}
+};

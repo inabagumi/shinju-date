@@ -1,20 +1,23 @@
 import { renderHook } from "@testing-library/react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { AppRouter } from "@/test/next-navigation";
 
 import { useSelectedDateParam } from "./use-selected-date-param";
 
 const mocks = vi.hoisted(() => ({
-  push: vi.fn(),
+  push: vi.fn<AppRouter["push"]>(),
   searchParams: new URLSearchParams(),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => "/analytics/search",
-  useRouter: () => ({ push: mocks.push }),
-  useSearchParams: () => mocks.searchParams,
+  useRouter: () => ({ push: mocks.push }) as Partial<AppRouter> as AppRouter,
+  useSearchParams: () => mocks.searchParams as ReadonlyURLSearchParams,
 }));
 
-describe("useSelectedDateParam", () => {
+describe(useSelectedDateParam, () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.searchParams = new URLSearchParams();

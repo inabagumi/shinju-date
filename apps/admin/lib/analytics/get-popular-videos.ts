@@ -4,16 +4,11 @@ import type { QueryData } from "@supabase/supabase-js";
 import { cacheLife } from "next/cache";
 
 import { isNonNullable } from "@/lib/is-non-nullable";
-import {
-  createSupabaseServerClient,
-  type TypedSupabaseClient,
-} from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase";
+import type { TypedSupabaseClient } from "@/lib/supabase";
 
-import {
-  DEFAULT_RANKING_LIMIT,
-  type RankingQuery,
-  toDateRange,
-} from "./period";
+import { DEFAULT_RANKING_LIMIT, toDateRange } from "./period";
+import type { RankingQuery } from "./period";
 import { getPopularItems } from "./popular-items";
 
 const POPULAR_VIDEO_SELECT = `
@@ -30,15 +25,11 @@ const POPULAR_VIDEO_SELECT = `
   )
 `;
 
-function selectPopularVideos(
+const selectPopularVideos = (
   supabaseClient: TypedSupabaseClient,
   videoIds: string[]
-) {
-  return supabaseClient
-    .from("videos")
-    .select(POPULAR_VIDEO_SELECT)
-    .in("id", videoIds);
-}
+) =>
+  supabaseClient.from("videos").select(POPULAR_VIDEO_SELECT).in("id", videoIds);
 
 type PopularVideoRow = QueryData<
   ReturnType<typeof selectPopularVideos>
@@ -48,10 +39,10 @@ export interface PopularVideo extends PopularVideoRow {
   clicks: number;
 }
 
-export async function getPopularVideos({
+export const getPopularVideos = async ({
   limit = DEFAULT_RANKING_LIMIT,
   range,
-}: RankingQuery): Promise<PopularVideo[]> {
+}: RankingQuery): Promise<PopularVideo[]> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -87,9 +78,11 @@ export async function getPopularVideos({
   return videoScores
     .map(([id, clicks]) => {
       const video = videoMap.get(id);
-      if (!video) return null;
+      if (!video) {
+        return null;
+      }
 
       return { ...video, clicks };
     })
     .filter(isNonNullable);
-}
+};

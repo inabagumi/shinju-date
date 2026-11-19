@@ -1,8 +1,5 @@
-import {
-  defineConfig,
-  devices,
-  type PlaywrightTestConfig,
-} from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
+import type { PlaywrightTestConfig } from "@playwright/test";
 
 export interface PlaywrightConfigOptions extends Omit<
   PlaywrightTestConfig,
@@ -57,12 +54,12 @@ const fakeServiceEnv = {
  * })
  * ```
  */
-export function definePlaywrightConfig({
+export const definePlaywrightConfig = ({
   env = {},
   port,
   readyPath = "/",
   ...overrides
-}: PlaywrightConfigOptions): PlaywrightTestConfig {
+}: PlaywrightConfigOptions): PlaywrightTestConfig => {
   const isCI = !!process.env["CI"];
   const baseURL = `http://localhost:${port}`;
 
@@ -100,4 +97,4 @@ export function definePlaywrightConfig({
       url: new URL(readyPath, baseURL).toString(),
     },
   });
-}
+};

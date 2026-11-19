@@ -33,9 +33,9 @@ import {
   VideoBackfillPanelSkeleton,
 } from "./_components/video-backfill-panel";
 
-export async function generateMetadata({
+export const generateMetadata = async ({
   params,
-}: Pick<PageProps<"/talents/[id]">, "params">): Promise<Metadata> {
+}: Pick<PageProps<"/talents/[id]">, "params">): Promise<Metadata> => {
   const { id } = await params;
 
   const talent = await getTalent(id);
@@ -49,7 +49,7 @@ export async function generateMetadata({
   return {
     title: `${talent.name} - タレント詳細`,
   };
-}
+};
 
 interface VideoBackfillProps {
   talentId: string;
@@ -57,7 +57,7 @@ interface VideoBackfillProps {
 }
 
 /** 過去動画の取り込みの最初の状況をサーバーで取得して、パネルに渡す */
-async function VideoBackfill({ talentId, talentName }: VideoBackfillProps) {
+const VideoBackfill = async ({ talentId, talentName }: VideoBackfillProps) => {
   const initialData = await getVideoBackfillStatus(talentId);
 
   if (!initialData) {
@@ -71,11 +71,11 @@ async function VideoBackfill({ talentId, talentName }: VideoBackfillProps) {
       talentName={talentName}
     />
   );
-}
+};
 
-async function TalentProfile({
+const TalentProfile = async ({
   params,
-}: Pick<PageProps<"/talents/[id]">, "params">) {
+}: Pick<PageProps<"/talents/[id]">, "params">) => {
   const { id } = await params;
 
   const talent = await getTalent(id);
@@ -127,9 +127,7 @@ async function TalentProfile({
         )}
 
         {/* Talent information - Editable form */}
-        {!isDeleted ? (
-          <EditTalentForm talent={talent} />
-        ) : (
+        {isDeleted ? (
           <Panel
             description="削除済みのため編集できません。"
             title="タレント情報"
@@ -143,6 +141,8 @@ async function TalentProfile({
               </DetailRow>
             </DetailList>
           </Panel>
+        ) : (
+          <EditTalentForm talent={talent} />
         )}
 
         {/* YouTube Channel Management */}
@@ -217,14 +217,14 @@ async function TalentProfile({
       </div>
     </>
   );
-}
+};
 
 /** 「最新動画」に表示する件数 */
 const RECENT_VIDEOS_LIMIT = 5;
 
-async function RecentVideosSection({
+const RecentVideosSection = async ({
   params,
-}: Pick<PageProps<"/talents/[id]">, "params">) {
+}: Pick<PageProps<"/talents/[id]">, "params">) => {
   const { id } = await params;
   const recentVideos = await getRecentVideosForTalent(id, RECENT_VIDEOS_LIMIT);
 
@@ -269,7 +269,7 @@ async function RecentVideosSection({
       )}
     </Panel>
   );
-}
+};
 
 /** 読み込み中の、YouTube チャンネルと Twitch ユーザーの管理の区画。1件ぶんの枠を置く */
 interface AccountManagerSkeletonProps {
@@ -277,115 +277,109 @@ interface AccountManagerSkeletonProps {
   title: string;
 }
 
-function AccountManagerSkeleton({
+const AccountManagerSkeleton = ({
   description,
   title,
-}: AccountManagerSkeletonProps) {
-  return (
-    <PanelSkeleton
-      actions={<Skeleton className="h-9 w-40" />}
-      description={description}
-      title={title}
-    >
-      <div className="flex items-start justify-between gap-4 rounded-container border border-border p-4">
-        <div className="min-w-0 flex-1 space-y-2">
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-5 w-48" />
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-6 w-full max-w-sm" />
-        </div>
-        <Skeleton className="size-8 shrink-0" />
+}: AccountManagerSkeletonProps) => (
+  <PanelSkeleton
+    actions={<Skeleton className="h-9 w-40" />}
+    description={description}
+    title={title}
+  >
+    <div className="flex items-start justify-between gap-4 rounded-container border border-border p-4">
+      <div className="min-w-0 flex-1 space-y-2">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-5 w-48" />
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-6 w-full max-w-sm" />
       </div>
-    </PanelSkeleton>
-  );
-}
+      <Skeleton className="size-8 shrink-0" />
+    </div>
+  </PanelSkeleton>
+);
 
 /**
  * 読み込み中の `TalentProfile`。見出しと、タレント情報・YouTube チャンネル・Twitch ユーザー・
  * 過去動画の取り込み・メタデータ・状態の変更の区画を、1列に並べる
  */
-function TalentProfileSkeleton() {
-  return (
-    <div aria-hidden="true">
-      <PageHeader
-        actions={<Skeleton className="h-9 w-28" />}
-        description={
-          <div className="flex flex-wrap items-center gap-2">
-            <Skeleton className="h-5 w-16" />
-            <span>タレント詳細</span>
-          </div>
-        }
-        title={<Skeleton className="h-8 w-64 max-w-full" />}
+const TalentProfileSkeleton = () => (
+  <div aria-hidden="true">
+    <PageHeader
+      actions={<Skeleton className="h-9 w-28" />}
+      description={
+        <div className="flex flex-wrap items-center gap-2">
+          <Skeleton className="h-5 w-16" />
+          <span>タレント詳細</span>
+        </div>
+      }
+      title={<Skeleton className="h-8 w-64 max-w-full" />}
+    />
+
+    <div className="space-y-6">
+      <PanelSkeleton
+        actions={<Skeleton className="h-9 w-16" />}
+        description="現在データベースに保存されている情報"
+        title="タレント情報"
+      >
+        <DetailListSkeleton rows={4} />
+      </PanelSkeleton>
+
+      <AccountManagerSkeleton
+        description="タレントに紐づけられたYouTubeチャンネルの追加・削除"
+        title="YouTubeチャンネル管理"
       />
 
-      <div className="space-y-6">
-        <PanelSkeleton
-          actions={<Skeleton className="h-9 w-16" />}
-          description="現在データベースに保存されている情報"
-          title="タレント情報"
-        >
-          <DetailListSkeleton rows={4} />
-        </PanelSkeleton>
+      <AccountManagerSkeleton
+        description="タレントに紐づけられたTwitchユーザーの追加・削除"
+        title="Twitchユーザー管理"
+      />
 
-        <AccountManagerSkeleton
-          description="タレントに紐づけられたYouTubeチャンネルの追加・削除"
-          title="YouTubeチャンネル管理"
-        />
+      <VideoBackfillPanelSkeleton />
 
-        <AccountManagerSkeleton
-          description="タレントに紐づけられたTwitchユーザーの追加・削除"
-          title="Twitchユーザー管理"
-        />
+      <PanelSkeleton title="メタデータ">
+        <DetailListSkeleton rows={4} />
+      </PanelSkeleton>
 
-        <VideoBackfillPanelSkeleton />
-
-        <PanelSkeleton title="メタデータ">
-          <DetailListSkeleton rows={4} />
-        </PanelSkeleton>
-
-        <PanelSkeleton
-          actions={
-            <>
-              <Skeleton className="h-9 w-24" />
-              <Skeleton className="h-9 w-16" />
-            </>
-          }
-          description={
-            <Skeleton className="inline-block h-4 w-96 max-w-full align-middle" />
-          }
-          title="状態の変更"
-        />
-      </div>
+      <PanelSkeleton
+        actions={
+          <>
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-16" />
+          </>
+        }
+        description={
+          <Skeleton className="inline-block h-4 w-96 max-w-full align-middle" />
+        }
+        title="状態の変更"
+      />
     </div>
-  );
-}
+  </div>
+);
 
 /** 読み込み中の `RecentVideosSection`。取得する件数ぶんの行を並べる */
-function RecentVideosSectionSkeleton() {
-  return (
-    <PanelSkeleton
-      className="mt-6"
-      description="直近に公開された動画一覧"
-      title="最新動画"
-    >
-      <div className="-mx-6 -mb-6 divide-y divide-border border-t border-border">
-        {range(RECENT_VIDEOS_LIMIT).map((row) => (
-          <div
-            className="flex items-center gap-4 px-6 py-4"
-            key={`recent-video-skeleton-${row}`}
-          >
-            <Skeleton className="aspect-video w-20 shrink-0 rounded-container" />
-            <div className="min-w-0 flex-1 space-y-1">
-              <Skeleton className="h-5 w-3/4" />
-              <Skeleton className="h-5 w-40" />
-            </div>
-            <Skeleton className="h-5 w-16 shrink-0" />
+const RecentVideosSectionSkeleton = () => (
+  <PanelSkeleton
+    className="mt-6"
+    description="直近に公開された動画一覧"
+    title="最新動画"
+  >
+    <div className="-mx-6 -mb-6 divide-y divide-border border-t border-border">
+      {range(RECENT_VIDEOS_LIMIT).map((row) => (
+        <div
+          className="flex items-center gap-4 px-6 py-4"
+          key={`recent-video-skeleton-${row}`}
+        >
+          <Skeleton className="aspect-video w-20 shrink-0 rounded-container" />
+          <div className="min-w-0 flex-1 space-y-1">
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-5 w-40" />
           </div>
-        ))}
-      </div>
-    </PanelSkeleton>
-  );
-}
+          <Skeleton className="h-5 w-16 shrink-0" />
+        </div>
+      ))}
+    </div>
+  </PanelSkeleton>
+);
 
 export default function TalentDetailPage({
   params,

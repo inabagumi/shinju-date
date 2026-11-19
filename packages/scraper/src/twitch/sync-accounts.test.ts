@@ -7,17 +7,17 @@ import {
   mockStorage,
   serveImage,
 } from "../internal/testing/images.js";
-import {
-  postgresError,
-  type SupabaseResponder,
-  type SupabaseRoutes,
-  setupSupabase,
+import { postgresError, setupSupabase } from "../internal/testing/supabase.js";
+import type {
+  SupabaseResponder,
+  SupabaseRoutes,
 } from "../internal/testing/supabase.js";
 import { createUser } from "../internal/testing/twitch.js";
+import type { ErrorReporter } from "../types.js";
 import { syncTwitchUsers, syncTwitchUsersOfTalent } from "./sync-accounts.js";
 
 const supabase = setupSupabase();
-const reportError = vi.fn();
+const reportError = vi.fn<ErrorReporter>();
 const createContext = <T>(fetcher: T) =>
   createTestContext({
     fetcher,
@@ -55,7 +55,7 @@ const routes = {
   "PATCH twitch_users": [{ id: "user-row" }],
 } satisfies SupabaseRoutes;
 
-describe("syncTwitchUsers", () => {
+describe(syncTwitchUsers, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -73,7 +73,7 @@ describe("syncTwitchUsers", () => {
 
     expect(changed).toBeGreaterThan(0);
     expect(getAccounts).toHaveBeenCalledWith(["1001", "1002"]);
-    expect(supabase.written("PATCH", "twitch_users")).toEqual([
+    expect(supabase.written("PATCH", "twitch_users")).toStrictEqual([
       expect.objectContaining({
         body: { name: "Alice 2nd", twitch_login_name: "alice_2nd" },
         query: { id: "eq.user-row-2" },
@@ -123,6 +123,7 @@ describe("syncTwitchUsers", () => {
       { twitchUserId: "1001" }
     );
   });
+
   it("loads the saved icon of every account", async () => {
     supabase.respondWith(routes);
     const { fetcher } = createFakeTwitchFetcher();
@@ -160,10 +161,13 @@ describe("syncTwitchUsers", () => {
       };
 
       expect(changed).toBe(1);
-      expect(storage.uploads).toHaveLength(1);
-      expect(storage.uploads[0]?.path).toMatch(/^twitch\/1001\//);
+      expect(storage.uploads).toStrictEqual([
+        expect.objectContaining({
+          path: expect.stringMatching(/^twitch\/1001\//u),
+        }),
+      ]);
       expect(inserted.source_url).toBe(ICON_URL);
-      expect(supabase.written("PATCH", "twitch_users")).toEqual([
+      expect(supabase.written("PATCH", "twitch_users")).toStrictEqual([
         expect.objectContaining({
           body: { profile_image_id: inserted.id },
           query: { id: "eq.user-row-1", select: "id" },
@@ -201,7 +205,9 @@ describe("syncTwitchUsers", () => {
       const changed = await syncTwitchUsers(createContext(fetcher));
 
       expect(changed).toBe(0);
-      expect(requests).toEqual([{ ifNoneMatch: '"etag-1"', url: ICON_URL }]);
+      expect(requests).toStrictEqual([
+        { ifNoneMatch: '"etag-1"', url: ICON_URL },
+      ]);
       expect(storage.uploads).toHaveLength(0);
       expect(supabase.written("PATCH", "twitch_users")).toHaveLength(0);
     });
@@ -226,7 +232,7 @@ describe("syncTwitchUsers", () => {
       const changed = await syncTwitchUsers(createContext(fetcher));
 
       expect(changed).toBe(1);
-      expect(supabase.written("PATCH", "twitch_users")).toEqual([
+      expect(supabase.written("PATCH", "twitch_users")).toStrictEqual([
         expect.objectContaining({
           body: { name: "Alice 2nd", twitch_login_name: "alice_2nd" },
         }),
@@ -261,8 +267,7 @@ describe("syncTwitchUsers", () => {
 
       expect(changed).toBe(1);
       expect(storage.uploads).toHaveLength(1);
-      expect(reportError).toHaveBeenCalledTimes(1);
-      expect(reportError).toHaveBeenCalledWith(
+      expect(reportError).toHaveBeenCalledExactlyOnceWith(
         expect.objectContaining({
           message: expect.stringContaining("duplicate key value"),
         }),
@@ -291,18 +296,18 @@ describe("syncTwitchUsers", () => {
   });
 });
 
-describe("syncTwitchUsersOfTalent", () => {
+/** Fails to write the display name and login of `user-row-1`. */
+const failDetailsOfFirstUser: SupabaseResponder = ({ body, query }) =>
+  query["id"] === "eq.user-row-1" &&
+  body !== null &&
+  typeof body === "object" &&
+  "name" in body
+    ? postgresError("23505", "duplicate key value")
+    : routes["PATCH twitch_users"];
+
+describe(syncTwitchUsersOfTalent, () => {
   const ICON_URL =
     "https://static-cdn.jtvnw.net/jtv_user_pictures/alice-profile_image-300x300.png";
-
-  /** Fails to write the display name and login of `user-row-1`. */
-  const failDetailsOfFirstUser: SupabaseResponder = ({ body, query }) =>
-    query["id"] === "eq.user-row-1" &&
-    body !== null &&
-    typeof body === "object" &&
-    "name" in body
-      ? postgresError("23505", "duplicate key value")
-      : routes["PATCH twitch_users"];
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -327,7 +332,7 @@ describe("syncTwitchUsersOfTalent", () => {
       id: "eq.talent-1",
     });
     expect(getAccounts).toHaveBeenCalledWith(["1001", "1002"]);
-    expect(results).toEqual([
+    expect(results).toStrictEqual([
       {
         accountId: "user-row-1",
         iconUpdated: false,
@@ -345,7 +350,7 @@ describe("syncTwitchUsersOfTalent", () => {
         status: "updated",
       },
     ]);
-    expect(supabase.written("PATCH", "twitch_users")).toEqual([
+    expect(supabase.written("PATCH", "twitch_users")).toStrictEqual([
       expect.objectContaining({
         body: { name: "Alice Sub", twitch_login_name: "alice_2nd" },
         query: { id: "eq.user-row-2" },
@@ -367,7 +372,7 @@ describe("syncTwitchUsersOfTalent", () => {
       "talent-1"
     );
 
-    expect(results.map(({ status }) => status)).toEqual([
+    expect(results.map(({ status }) => status)).toStrictEqual([
       "unchanged",
       "unchanged",
     ]);
@@ -387,7 +392,7 @@ describe("syncTwitchUsersOfTalent", () => {
       "talent-1"
     );
 
-    expect(results[0]).toEqual({
+    expect(results[0]).toStrictEqual({
       accountId: "user-row-1",
       iconUpdated: false,
       name: "Alice",
@@ -412,10 +417,12 @@ describe("syncTwitchUsersOfTalent", () => {
       "talent-1"
     );
 
-    expect(results.map(({ name, status }) => ({ name, status }))).toEqual([
-      { name: "Alice", status: "failed" },
-      { name: "Alice Sub!", status: "updated" },
-    ]);
+    expect(results.map(({ name, status }) => ({ name, status }))).toStrictEqual(
+      [
+        { name: "Alice", status: "failed" },
+        { name: "Alice Sub!", status: "updated" },
+      ]
+    );
     expect(reportError).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.stringContaining("duplicate key value"),
@@ -445,7 +452,7 @@ describe("syncTwitchUsersOfTalent", () => {
       "talent-1"
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       accountId: "user-row-1",
       iconUpdated: true,
       name: "Alice",
@@ -459,7 +466,7 @@ describe("syncTwitchUsersOfTalent", () => {
 
     await expect(
       syncTwitchUsersOfTalent(createContext(fetcher), "talent-9")
-    ).resolves.toEqual([]);
+    ).resolves.toStrictEqual([]);
     expect(getAccounts).not.toHaveBeenCalled();
   });
 

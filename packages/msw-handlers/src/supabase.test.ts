@@ -12,6 +12,87 @@ import { seedCollections } from "./collections.js";
 import { MOCK_DELETED_TALENT_ID } from "./seeds/accounts.js";
 import { server } from "./server.js";
 
+/** Fetch a URL and read the body of the response as JSON. */
+const readJson = async (
+  input: string,
+  init?: RequestInit
+): Promise<unknown> => {
+  const response = await fetch(input, init);
+
+  return response.json();
+};
+
+/** The titles of the videos that `search_videos_v4` finds for the query. */
+const searchVideoTitles = async (query: string) => {
+  const response = await fetch(
+    "https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=title",
+    {
+      body: JSON.stringify({ p_perpage: 100, p_query: query }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    }
+  );
+
+  expect(response.ok).toBeTruthy();
+
+  return ((await response.json()) as { title: string }[]).map(
+    (video) => video.title
+  );
+};
+
+/** The kinds of the videos that `search_videos_v4` finds for the given kinds. */
+const searchVideoKinds = async (videoKinds?: string[]) => {
+  const response = await fetch(
+    "https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=video_kind",
+    {
+      body: JSON.stringify({
+        p_perpage: 1000,
+        p_query: "",
+        ...(videoKinds ? { p_video_kinds: videoKinds } : {}),
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    }
+  );
+
+  expect(response.ok).toBeTruthy();
+
+  return new Set(
+    ((await response.json()) as { video_kind: string }[]).map(
+      (video) => video.video_kind
+    )
+  );
+};
+
+/** POST a JSON body to a URL and read the JSON of the response. */
+const postJson = async (url: string, body: object) => {
+  const response = await fetch(url, {
+    body: JSON.stringify(body),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+
+  expect(response.ok).toBeTruthy();
+
+  return (await response.json()) as unknown;
+};
+
+/** The suggestions of `suggestions_v2` for the query. */
+const suggest = async (query: string) => {
+  const response = await fetch(
+    "https://fake.supabase.test/rest/v1/rpc/suggestions_v2",
+    {
+      body: JSON.stringify({ p_query: query }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    }
+  );
+
+  expect(response.ok).toBeTruthy();
+
+  return (await response.json()) as { priority: number; term: string }[];
+};
+
 describe("Supabase Handlers", () => {
   beforeAll(() => {
     server.listen();
@@ -20,6 +101,7 @@ describe("Supabase Handlers", () => {
     server.resetHandlers();
     delete process.env["MSW_SUPABASE_AUTHENTICATED"];
   });
+
   afterAll(() => {
     server.close();
   });
@@ -118,8 +200,8 @@ describe("Supabase Handlers", () => {
       );
       const data = (await response.json()) as unknown[];
 
-      expect(response.ok).toBe(true);
-      expect(Array.isArray(data)).toBe(true);
+      expect(response.ok).toBeTruthy();
+      expect(Array.isArray(data)).toBeTruthy();
       expect(data).toHaveLength(2);
       expect(data[0]).toHaveProperty("id");
       expect(data[0]).toHaveProperty("title");
@@ -129,20 +211,19 @@ describe("Supabase Handlers", () => {
       const response = await fetch(
         "https://fake.supabase.test/rest/v1/videos?select=id,title,thumbnails(path,blur_data_url)"
       );
-      const data = (await response.json()) as {
-        thumbnail_id?: string | null;
-      }[];
+      const data = (await response.json()) as unknown[];
 
-      expect(response.ok).toBe(true);
-      expect(Array.isArray(data)).toBe(true);
+      expect(response.ok).toBeTruthy();
+      expect(Array.isArray(data)).toBeTruthy();
       // The relation handling should return thumbnails for videos that have them
-      if (data[0]?.thumbnail_id) {
-        expect(data[0]).toHaveProperty("thumbnails");
-      } else {
-        // Just verify the basic structure is there
-        expect(data[0]).toHaveProperty("id");
-        expect(data[0]).toHaveProperty("title");
-      }
+      expect(data[0]).toStrictEqual({
+        id: expect.any(String),
+        thumbnails: expect.toBeOneOf([
+          null,
+          expect.objectContaining({ path: expect.any(String) }),
+        ]),
+        title: expect.any(String),
+      });
     });
 
     it("should resolve aliased relations used by the admin video list", async () => {
@@ -164,47 +245,57 @@ describe("Supabase Handlers", () => {
         youtube_video: unknown;
       }[];
 
-      expect(response.ok).toBe(true);
-      expect(data.some((video) => video.youtube_video)).toBe(true);
-      expect(data.some((video) => video.twitch_video)).toBe(true);
+      expect(response.ok).toBeTruthy();
+      expect({
+        twitch: data.some((video) => video.twitch_video),
+        youtube: data.some((video) => video.youtube_video),
+      }).toStrictEqual({ twitch: true, youtube: true });
       for (const video of data) {
-        expect(Object.keys(video).sort()).toEqual(
-          [
+        expect({
+          keys: Object.keys(video).toSorted(),
+          talent: video.talent,
+          thumbnailKeys:
+            video.thumbnail && Object.keys(video.thumbnail).toSorted(),
+        }).toStrictEqual({
+          keys: [
             "id",
             "talent",
             "thumbnail",
             "title",
             "twitch_video",
             "youtube_video",
-          ].sort()
-        );
-        expect(video.talent).toEqual({
-          id: expect.any(String),
-          name: expect.any(String),
+          ].toSorted(),
+          talent: {
+            id: expect.any(String),
+            name: expect.any(String),
+          },
+          thumbnailKeys: expect.toBeOneOf([
+            null,
+            ["blur_data_url", "id", "path"].toSorted(),
+          ]),
         });
-        if (video.thumbnail) {
-          expect(Object.keys(video.thumbnail).sort()).toEqual(
-            ["blur_data_url", "id", "path"].sort()
-          );
-        }
-        if (video.youtube_video) {
-          expect(video.youtube_video).toEqual({
-            youtube_video_id: expect.any(String),
-          });
-          expect(video.twitch_video).toBeNull();
-        } else {
-          expect(video.twitch_video).toEqual({
-            twitch_user: { twitch_login_name: expect.any(String) },
-            twitch_video_id: expect.any(String),
-            type: expect.toBeOneOf([
-              "archive",
-              "highlight",
-              "upload",
-              "clip",
-              null,
-            ]),
-          });
-        }
+      }
+      for (const video of data.filter((row) => row.youtube_video)) {
+        expect({
+          twitch_video: video.twitch_video,
+          youtube_video: video.youtube_video,
+        }).toStrictEqual({
+          twitch_video: null,
+          youtube_video: { youtube_video_id: expect.any(String) },
+        });
+      }
+      for (const video of data.filter((row) => !row.youtube_video)) {
+        expect(video.twitch_video).toStrictEqual({
+          twitch_user: { twitch_login_name: expect.any(String) },
+          twitch_video_id: expect.any(String),
+          type: expect.toBeOneOf([
+            "archive",
+            "highlight",
+            "upload",
+            "clip",
+            null,
+          ]),
+        });
       }
     });
 
@@ -215,8 +306,8 @@ describe("Supabase Handlers", () => {
       );
       const data = (await response.json()) as { video: unknown }[];
 
-      expect(response.ok).toBe(true);
-      expect(data[0]?.video).toEqual(
+      expect(response.ok).toBeTruthy();
+      expect(data[0]?.video).toStrictEqual(
         expect.objectContaining({
           id: expect.any(String),
           title: expect.any(String),
@@ -237,14 +328,14 @@ describe("Supabase Handlers", () => {
       );
       const data = await response.json();
 
-      expect(data).toEqual(all.slice(1, 3));
+      expect(data).toStrictEqual(all.slice(1, 3));
     });
 
     it("should handle filtering with id=in", async () => {
       const ids = (
-        (await (
-          await fetch("https://fake.supabase.test/rest/v1/videos?select=id")
-        ).json()) as { id: string }[]
+        (await readJson(
+          "https://fake.supabase.test/rest/v1/videos?select=id"
+        )) as { id: string }[]
       )
         .slice(0, 2)
         .map((video) => video.id);
@@ -255,16 +346,16 @@ describe("Supabase Handlers", () => {
       );
       const data = (await response.json()) as { id: string }[];
 
-      expect(response.ok).toBe(true);
-      expect(data.map((video) => video.id).sort()).toEqual([...ids].sort());
+      expect(response.ok).toBeTruthy();
+      expect(data.map((video) => video.id).toSorted()).toStrictEqual(
+        ids.toSorted()
+      );
     });
 
     it("should apply both ends of a range on the same column, sorted", async () => {
-      const all = (await (
-        await fetch(
-          "https://fake.supabase.test/rest/v1/videos?select=id,published_at&order=published_at.asc,id.asc"
-        )
-      ).json()) as { id: string; published_at: string }[];
+      const all = (await readJson(
+        "https://fake.supabase.test/rest/v1/videos?select=id,published_at&order=published_at.asc,id.asc"
+      )) as { id: string; published_at: string }[];
       const instants = all.map((video) =>
         Temporal.Instant.from(video.published_at)
       );
@@ -283,9 +374,9 @@ describe("Supabase Handlers", () => {
         ["published_at", `lt.${until.toString()}`],
         ["order", "published_at.desc"],
       ]);
-      const data = (await (
-        await fetch(`https://fake.supabase.test/rest/v1/videos?${params}`)
-      ).json()) as { id: string; published_at: string }[];
+      const data = (await readJson(
+        `https://fake.supabase.test/rest/v1/videos?${params}`
+      )) as { id: string; published_at: string }[];
 
       const expected = all
         .filter((video) => {
@@ -300,10 +391,10 @@ describe("Supabase Handlers", () => {
 
       expect(expected.length).toBeGreaterThan(0);
       expect(expected.length).toBeLessThan(all.length);
-      expect(data.map((video) => video.id).sort()).toEqual(
-        [...expected].sort()
+      expect(data.map((video) => video.id).toSorted()).toStrictEqual(
+        expected.toSorted()
       );
-      expect(data.map((video) => video.published_at)).toEqual(
+      expect(data.map((video) => video.published_at)).toStrictEqual(
         data
           .map((video) => video.published_at)
           .toSorted((a, b) =>
@@ -316,22 +407,18 @@ describe("Supabase Handlers", () => {
     });
 
     it("should exclude rows with neq", async () => {
-      const data = (await (
-        await fetch(
-          "https://fake.supabase.test/rest/v1/videos?select=id,video_kind&video_kind=neq.short"
-        )
-      ).json()) as { id: string; video_kind: string }[];
+      const data = (await readJson(
+        "https://fake.supabase.test/rest/v1/videos?select=id,video_kind&video_kind=neq.short"
+      )) as { id: string; video_kind: string }[];
 
       expect(data.length).toBeGreaterThan(0);
-      expect(data.every((video) => video.video_kind !== "short")).toBe(true);
+      expect(data.every((video) => video.video_kind !== "short")).toBeTruthy();
     });
 
     it("should seed at least one hidden video", async () => {
-      const data = (await (
-        await fetch(
-          "https://fake.supabase.test/rest/v1/videos?select=id&visible=eq.false"
-        )
-      ).json()) as { id: string }[];
+      const data = (await readJson(
+        "https://fake.supabase.test/rest/v1/videos?select=id&visible=eq.false"
+      )) as { id: string }[];
 
       expect(data.length).toBeGreaterThan(0);
     });
@@ -339,7 +426,7 @@ describe("Supabase Handlers", () => {
     it("should update only the rows that match all the filters", async () => {
       const url = "https://fake.supabase.test/rest/v1/videos";
       const listVideos = async (filters: string) =>
-        (await (await fetch(`${url}?select=id,visible${filters}`)).json()) as {
+        (await readJson(`${url}?select=id,visible${filters}`)) as {
           id: string;
           visible: boolean;
         }[];
@@ -377,7 +464,7 @@ describe("Supabase Handlers", () => {
         );
 
         expect(response.status).toBe(200);
-        expect(await response.json()).toEqual(
+        await expect(response.json()).resolves.toStrictEqual(
           targets.map(({ id }) => ({ id }))
         );
 
@@ -387,12 +474,12 @@ describe("Supabase Handlers", () => {
         );
 
         for (const { id } of targets) {
-          expect(visibleById.get(id)).toBe(false);
+          expect(visibleById.get(id)).toBeFalsy();
         }
         for (const { id } of untouched) {
-          expect(visibleById.get(id)).toBe(true);
+          expect(visibleById.get(id)).toBeTruthy();
         }
-        expect(visibleById.get(hiddenVideo?.id ?? "")).toBe(false);
+        expect(visibleById.get(hiddenVideo?.id ?? "")).toBeFalsy();
       } finally {
         await setVisible(
           [hiddenVideo, ...targets].map((video) => video?.id ?? ""),
@@ -405,18 +492,30 @@ describe("Supabase Handlers", () => {
   describe("Table handlers", () => {
     const restUrl = "https://fake.supabase.test/rest/v1";
 
-    async function listIds(table: string, filters = ""): Promise<string[]> {
-      const rows = (await (
-        await fetch(`${restUrl}/${table}?select=id${filters}`)
-      ).json()) as { id: string }[];
+    /** Upsert terms, merging the duplicates. */
+    const upsertTerms = (body: unknown) =>
+      fetch(`${restUrl}/terms?select=term,updated_at`, {
+        body: JSON.stringify(body),
+        headers: {
+          "Content-Type": "application/json",
+          prefer: "resolution=merge-duplicates,return=representation",
+        },
+        method: "POST",
+      });
+
+    const listIds = async (table: string, filters = ""): Promise<string[]> => {
+      const rows = (await readJson(
+        `${restUrl}/${table}?select=id${filters}`
+      )) as { id: string }[];
 
       return rows.map(({ id }) => id);
-    }
+    };
 
     it.each(["videos", "talents", "terms"])(
       "should count every row of %s, not only the page",
       async (table) => {
-        const total = (await listIds(table)).length;
+        const allIds = await listIds(table);
+        const total = allIds.length;
 
         expect(total).toBeGreaterThan(3);
 
@@ -425,7 +524,7 @@ describe("Supabase Handlers", () => {
           { headers: { prefer: "count=exact" } }
         );
 
-        expect(await response.json()).toHaveLength(3);
+        await expect(response.json()).resolves.toHaveLength(3);
         expect(response.headers.get("content-range")).toBe(`0-2/${total}`);
 
         const head = await fetch(
@@ -444,7 +543,7 @@ describe("Supabase Handlers", () => {
         { headers: { prefer: "count=exact" } }
       );
 
-      expect(await response.json()).toEqual(
+      await expect(response.json()).resolves.toStrictEqual(
         visible.slice(2, 7).map((id) => ({ id }))
       );
       expect(response.headers.get("content-range")).toBe(
@@ -458,20 +557,21 @@ describe("Supabase Handlers", () => {
         { headers: { prefer: "count=exact" } }
       );
 
-      expect(await response.json()).toEqual([]);
+      await expect(response.json()).resolves.toStrictEqual([]);
       expect(response.headers.get("content-range")).toBe("*/0");
     });
 
     it("should update nothing when no row matches all the filters", async () => {
-      const [video] = (await (
-        await fetch(`${restUrl}/videos?select=id,title,visible&limit=1`)
-      ).json()) as { id: string; title: string; visible: boolean }[];
+      const [video] = (await readJson(
+        `${restUrl}/videos?select=id,title,visible&limit=1`
+      )) as { id: string; title: string; visible: boolean }[];
 
       expect(video).toBeDefined();
 
-      const before = (await (
-        await fetch(`${restUrl}/videos?select=id,title`)
-      ).json()) as { id: string; title: string }[];
+      const before = (await readJson(`${restUrl}/videos?select=id,title`)) as {
+        id: string;
+        title: string;
+      }[];
       const response = await fetch(
         `${restUrl}/videos?id=eq.${video?.id}&visible=eq.${!video?.visible}&select=id`,
         {
@@ -485,16 +585,16 @@ describe("Supabase Handlers", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual([]);
-      expect(
-        await (await fetch(`${restUrl}/videos?select=id,title`)).json()
-      ).toEqual(before);
+      await expect(response.json()).resolves.toStrictEqual([]);
+      await expect(
+        readJson(`${restUrl}/videos?select=id,title`)
+      ).resolves.toStrictEqual(before);
     });
 
     it("should update every row of an in filter", async () => {
-      const [first, second, third] = (await (
-        await fetch(`${restUrl}/talents?select=id,theme_color&limit=3`)
-      ).json()) as { id: string; theme_color: string | null }[];
+      const [first, second, third] = (await readJson(
+        `${restUrl}/talents?select=id,theme_color&limit=3`
+      )) as { id: string; theme_color: string | null }[];
 
       expect(third).toBeDefined();
 
@@ -514,23 +614,22 @@ describe("Supabase Handlers", () => {
         );
 
         expect(response.status).toBe(200);
-        expect(await response.json()).toEqual(
+        await expect(response.json()).resolves.toStrictEqual(
           targets.map((id) => ({ id, theme_color: "#000000" }))
         );
 
-        const after = (await (
-          await fetch(
-            `${restUrl}/talents?select=id,theme_color&id=in.(${[...targets, third?.id].join(",")})`
-          )
-        ).json()) as { id: string; theme_color: string | null }[];
+        const after = (await readJson(
+          `${restUrl}/talents?select=id,theme_color&id=in.(${[...targets, third?.id].join(",")})`
+        )) as { id: string; theme_color: string | null }[];
 
-        expect(after).toEqual([
+        expect(after).toStrictEqual([
           { id: first?.id, theme_color: "#000000" },
           { id: second?.id, theme_color: "#000000" },
           { id: third?.id, theme_color: third?.theme_color },
         ]);
       } finally {
         for (const talent of [first, second]) {
+          // oxlint-disable-next-line no-await-in-loop -- the rows are restored one by one, like the updates of the test
           await fetch(`${restUrl}/talents?id=eq.${talent?.id}`, {
             body: JSON.stringify({ theme_color: talent?.theme_color }),
             headers: { "Content-Type": "application/json" },
@@ -541,9 +640,9 @@ describe("Supabase Handlers", () => {
     });
 
     it("should set updated_at when a trigger of the table does", async () => {
-      const [term] = (await (
-        await fetch(`${restUrl}/terms?select=id,synonyms,updated_at&limit=1`)
-      ).json()) as { id: string; synonyms: string[]; updated_at: string }[];
+      const [term] = (await readJson(
+        `${restUrl}/terms?select=id,synonyms,updated_at&limit=1`
+      )) as { id: string; synonyms: string[]; updated_at: string }[];
 
       expect(term).toBeDefined();
 
@@ -562,7 +661,7 @@ describe("Supabase Handlers", () => {
 
       expect(updated?.updated_at).not.toBe(term?.updated_at);
       expect(updated?.updated_at).toMatch(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u
       );
     });
 
@@ -592,28 +691,32 @@ describe("Supabase Handlers", () => {
         { method: "DELETE" }
       );
 
-      expect(unmatched.status).toBe(204);
-      expect(await listIds("terms")).toEqual(before);
+      expect({
+        ids: await listIds("terms"),
+        status: unmatched.status,
+      }).toStrictEqual({ ids: before, status: 204 });
 
       const deleted = await fetch(
         `${restUrl}/terms?id=in.(${first?.id},${second?.id})&select=term`,
         { headers: { prefer: "return=representation" }, method: "DELETE" }
       );
 
-      expect(deleted.status).toBe(200);
-      expect(await deleted.json()).toEqual([
-        { term: first?.term },
-        { term: second?.term },
-      ]);
-      expect(await listIds("terms")).toEqual(
+      expect({
+        body: await deleted.json(),
+        status: deleted.status,
+      }).toStrictEqual({
+        body: [{ term: first?.term }, { term: second?.term }],
+        status: 200,
+      });
+      await expect(listIds("terms")).resolves.toStrictEqual(
         before.filter((id) => id !== first?.id && id !== second?.id)
       );
     });
 
     it("should merge or ignore duplicates in an upsert", async () => {
-      const [user] = (await (
-        await fetch(`${restUrl}/twitch_users?select=*&limit=1`)
-      ).json()) as {
+      const [user] = (await readJson(
+        `${restUrl}/twitch_users?select=*&limit=1`
+      )) as {
         id: string;
         name: string | null;
         talent_id: string;
@@ -632,7 +735,7 @@ describe("Supabase Handlers", () => {
         });
 
         expect(ignored.status).toBe(201);
-        expect(await ignored.json()).toEqual([]);
+        await expect(ignored.json()).resolves.toStrictEqual([]);
 
         const merged = await fetch(
           `${restUrl}/twitch_users?on_conflict=twitch_user_id&select=id,name`,
@@ -650,7 +753,9 @@ describe("Supabase Handlers", () => {
         );
 
         expect(merged.status).toBe(201);
-        expect(await merged.json()).toEqual([{ id: user?.id, name: "Merged" }]);
+        await expect(merged.json()).resolves.toStrictEqual([
+          { id: user?.id, name: "Merged" },
+        ]);
       } finally {
         await fetch(`${restUrl}/twitch_users?id=eq.${user?.id}`, {
           body: JSON.stringify({ name: user?.name }),
@@ -661,9 +766,9 @@ describe("Supabase Handlers", () => {
     });
 
     it("should reject an update that breaks a unique constraint", async () => {
-      const [first, second] = (await (
-        await fetch(`${restUrl}/terms?select=id,term&limit=2`)
-      ).json()) as { id: string; term: string }[];
+      const [first, second] = (await readJson(
+        `${restUrl}/terms?select=id,term&limit=2`
+      )) as { id: string; term: string }[];
 
       expect(second).toBeDefined();
 
@@ -674,21 +779,19 @@ describe("Supabase Handlers", () => {
       });
 
       expect(response.status).toBe(409);
-      expect(await response.json()).toMatchObject({
+      await expect(response.json()).resolves.toMatchObject({
         code: "23505",
         message:
           'duplicate key value violates unique constraint "terms_term_key"',
       });
-      expect(
-        await (
-          await fetch(`${restUrl}/terms?select=term&id=eq.${second?.id}`)
-        ).json()
-      ).toEqual([{ term: second?.term }]);
+      await expect(
+        readJson(`${restUrl}/terms?select=term&id=eq.${second?.id}`)
+      ).resolves.toStrictEqual([{ term: second?.term }]);
     });
 
-    async function createTerms(
+    const createTerms = async (
       terms: { id?: string; popularity?: number | null; term: string }[]
-    ): Promise<{ id: string; term: string; updated_at: string }[]> {
+    ): Promise<{ id: string; term: string; updated_at: string }[]> => {
       const response = await fetch(
         `${restUrl}/terms?select=id,term,updated_at`,
         {
@@ -710,35 +813,37 @@ describe("Supabase Handlers", () => {
         term: string;
         updated_at: string;
       }[];
-    }
+    };
 
-    async function deleteTerms(ids: string[]) {
+    const deleteTerms = async (ids: string[]) => {
       await fetch(`${restUrl}/terms?id=in.(${ids.join(",")})`, {
         method: "DELETE",
       });
-    }
+    };
 
     it("should not match null with eq.null, as in SQL", async () => {
-      expect(await listIds("videos", "&deleted_at=eq.null")).toEqual([]);
-      expect(
-        (await listIds("videos", "&deleted_at=is.null")).length
-      ).toBeGreaterThan(0);
+      await expect(
+        listIds("videos", "&deleted_at=eq.null")
+      ).resolves.toStrictEqual([]);
+      const notDeleted = await listIds("videos", "&deleted_at=is.null");
+
+      expect(notDeleted.length).toBeGreaterThan(0);
     });
 
     it("should match booleans and quoted values with commas in an in filter", async () => {
-      expect(await listIds("videos", "&visible=in.(true)")).toEqual(
-        await listIds("videos", "&visible=eq.true")
-      );
+      await expect(
+        listIds("videos", "&visible=in.(true)")
+      ).resolves.toStrictEqual(await listIds("videos", "&visible=eq.true"));
 
       const [term] = await createTerms([{ term: "カンマ,入りの用語" }]);
 
       try {
-        expect(
-          await listIds(
+        await expect(
+          listIds(
             "terms",
             `&term=in.(${encodeURIComponent('"カンマ,入りの用語",ほかの用語')})`
           )
-        ).toEqual([term?.id]);
+        ).resolves.toStrictEqual([term?.id]);
       } finally {
         await deleteTerms([term?.id ?? ""]);
       }
@@ -772,13 +877,11 @@ describe("Supabase Handlers", () => {
 
         expect(patched.status).toBe(406);
         expect(deleted.status).toBe(406);
-        expect(
-          await (
-            await fetch(
-              `${restUrl}/terms?select=id,synonyms&id=in.(${ids.join(",")})`
-            )
-          ).json()
-        ).toEqual(ids.map((id) => ({ id, synonyms: [] })));
+        await expect(
+          readJson(
+            `${restUrl}/terms?select=id,synonyms&id=in.(${ids.join(",")})`
+          )
+        ).resolves.toStrictEqual(ids.map((id) => ({ id, synonyms: [] })));
       } finally {
         await deleteTerms(ids);
       }
@@ -800,7 +903,7 @@ describe("Supabase Handlers", () => {
 
       try {
         expect(response.status).toBe(201);
-        expect(await response.json()).toEqual([
+        await expect(response.json()).resolves.toStrictEqual([
           { id, term: "重複のテスト用の用語1" },
         ]);
       } finally {
@@ -813,18 +916,9 @@ describe("Supabase Handlers", () => {
         { term: "マージのテスト用の用語1" },
         { term: "マージのテスト用の用語2" },
       ]);
-      const upsert = (body: unknown) =>
-        fetch(`${restUrl}/terms?select=term,updated_at`, {
-          body: JSON.stringify(body),
-          headers: {
-            "Content-Type": "application/json",
-            prefer: "resolution=merge-duplicates,return=representation",
-          },
-          method: "POST",
-        });
 
       try {
-        const twice = await upsert([
+        const twice = await upsertTerms([
           {
             id: first?.id,
             readings: [],
@@ -835,14 +929,12 @@ describe("Supabase Handlers", () => {
         ]);
 
         expect(twice.status).toBe(400);
-        expect(await twice.json()).toMatchObject({ code: "21000" });
-        expect(
-          await (
-            await fetch(
-              `${restUrl}/terms?select=id,term&id=in.(${first?.id},${second?.id})&order=term.asc`
-            )
-          ).json()
-        ).toEqual([
+        await expect(twice.json()).resolves.toMatchObject({ code: "21000" });
+        await expect(
+          readJson(
+            `${restUrl}/terms?select=id,term&id=in.(${first?.id},${second?.id})&order=term.asc`
+          )
+        ).resolves.toStrictEqual([
           { id: first?.id, term: first?.term },
           { id: second?.id, term: second?.term },
         ]);
@@ -851,7 +943,7 @@ describe("Supabase Handlers", () => {
           Temporal.Instant.from("2099-01-01T00:00:00Z")
         );
 
-        const merged = await upsert({
+        const merged = await upsertTerms({
           id: first?.id,
           readings: [],
           synonyms: [],
@@ -859,7 +951,7 @@ describe("Supabase Handlers", () => {
         });
 
         expect(merged.status).toBe(201);
-        expect(await merged.json()).toEqual([
+        await expect(merged.json()).resolves.toStrictEqual([
           {
             term: "マージのテスト用の用語3",
             updated_at: "2099-01-01T00:00:00Z",
@@ -888,12 +980,12 @@ describe("Supabase Handlers", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(await response.json()).toMatchObject({
+      await expect(response.json()).resolves.toMatchObject({
         code: "23502",
         message:
           'null value in column "popularity" of relation "terms" violates not-null constraint',
       });
-      expect(await listIds("terms")).toEqual(before);
+      await expect(listIds("terms")).resolves.toStrictEqual(before);
     });
 
     it("should undo a write when a row does not match the schema", async () => {
@@ -915,19 +1007,17 @@ describe("Supabase Handlers", () => {
         });
 
         expect(response.status).toBe(400);
-        expect(await response.json()).toMatchObject({ code: "22P02" });
-        expect(await listIds("terms")).toEqual(before);
+        await expect(response.json()).resolves.toMatchObject({ code: "22P02" });
+        await expect(listIds("terms")).resolves.toStrictEqual(before);
       } finally {
         error.mockRestore();
       }
     });
 
     it("should pick the latest backfill job by instant, not by text", async () => {
-      const [latest] = (await (
-        await fetch(
-          `${restUrl}/video_backfill_latest_jobs?select=*&platform=eq.youtube`
-        )
-      ).json()) as {
+      const [latest] = (await readJson(
+        `${restUrl}/video_backfill_latest_jobs?select=*&platform=eq.youtube`
+      )) as {
         account_id: string;
         platform: string;
         talent_id: string;
@@ -968,13 +1058,11 @@ describe("Supabase Handlers", () => {
 
       try {
         expect(created.status).toBe(201);
-        expect(
-          await (
-            await fetch(
-              `${restUrl}/video_backfill_latest_jobs?select=status&account_id=eq.${latest?.account_id}`
-            )
-          ).json()
-        ).toEqual([{ status: "failed" }]);
+        await expect(
+          readJson(
+            `${restUrl}/video_backfill_latest_jobs?select=status&account_id=eq.${latest?.account_id}`
+          )
+        ).resolves.toStrictEqual([{ status: "failed" }]);
       } finally {
         await fetch(`${restUrl}/video_backfill_jobs?id=in.(${ids.join(",")})`, {
           method: "DELETE",
@@ -983,13 +1071,15 @@ describe("Supabase Handlers", () => {
     });
 
     it("should match nothing with an empty in list and compare quoted values by type", async () => {
-      expect(await listIds("terms", "&popularity=in.()")).toEqual([]);
-      expect(
-        await listIds("terms", `&popularity=in.(${encodeURIComponent('"0"')})`)
-      ).toEqual(await listIds("terms", "&popularity=in.(0)"));
-      expect(
-        (await listIds("terms", "&popularity=in.(0)")).length
-      ).toBeGreaterThan(0);
+      await expect(
+        listIds("terms", "&popularity=in.()")
+      ).resolves.toStrictEqual([]);
+      await expect(
+        listIds("terms", `&popularity=in.(${encodeURIComponent('"0"')})`)
+      ).resolves.toStrictEqual(await listIds("terms", "&popularity=in.(0)"));
+      const unpopular = await listIds("terms", "&popularity=in.(0)");
+
+      expect(unpopular.length).toBeGreaterThan(0);
     });
 
     it("should check NOT NULL columns of rows that an upsert ignores", async () => {
@@ -1014,16 +1104,14 @@ describe("Supabase Handlers", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(await response.json()).toMatchObject({ code: "23502" });
-      expect(await listIds("terms")).toEqual(before);
+      await expect(response.json()).resolves.toMatchObject({ code: "23502" });
+      await expect(listIds("terms")).resolves.toStrictEqual(before);
     });
 
     it("should read the latest backfill jobs with a timestamp without an offset", async () => {
-      const [latest] = (await (
-        await fetch(
-          `${restUrl}/video_backfill_latest_jobs?select=*&platform=eq.youtube`
-        )
-      ).json()) as {
+      const [latest] = (await readJson(
+        `${restUrl}/video_backfill_latest_jobs?select=*&platform=eq.youtube`
+      )) as {
         account_id: string;
         platform: string;
         talent_id: string;
@@ -1051,7 +1139,7 @@ describe("Supabase Handlers", () => {
         );
 
         expect(response.status).toBe(200);
-        expect(await response.json()).toEqual([{ id: job?.id }]);
+        await expect(response.json()).resolves.toStrictEqual([{ id: job?.id }]);
       } finally {
         await fetch(`${restUrl}/video_backfill_jobs?id=eq.${job?.id}`, {
           method: "DELETE",
@@ -1063,7 +1151,7 @@ describe("Supabase Handlers", () => {
       const response = await fetch(`${restUrl}/channels?select=id`);
 
       expect(response.status).toBe(404);
-      expect(await response.json()).toEqual({
+      await expect(response.json()).resolves.toStrictEqual({
         code: "PGRST205",
         details: null,
         hint: expect.any(String),
@@ -1109,20 +1197,20 @@ describe("Supabase Handlers", () => {
         profile_image: unknown;
       }[];
 
-      expect(response.ok).toBe(true);
+      expect(response.ok).toBeTruthy();
       expect(data.length).toBeGreaterThan(1);
 
       const withIcon = data.filter((channel) => channel.profile_image);
 
       expect(withIcon.length).toBeGreaterThan(0);
       expect(withIcon.length).toBeLessThan(data.length);
-      expect(withIcon[0]).toEqual({
+      expect(withIcon[0]).toStrictEqual({
         id: expect.any(String),
         profile_image: {
-          blur_data_url: expect.stringMatching(/^data:image\/jpeg;base64,/),
+          blur_data_url: expect.stringMatching(/^data:image\/jpeg;base64,/u),
           height: 256,
           id: expect.any(String),
-          path: expect.stringMatching(/^youtube\/UC\w+\/\w+\.webp$/),
+          path: expect.stringMatching(/^youtube\/UC\w+\/\w+\.webp$/u),
           width: 256,
         },
       });
@@ -1145,17 +1233,17 @@ describe("Supabase Handlers", () => {
         } | null;
       }[];
 
-      expect(response.ok).toBe(true);
+      expect(response.ok).toBeTruthy();
 
       const channels = data.map(
         (video) => video.youtube_video?.youtube_channel
       );
 
-      expect(channels.every((channel) => channel?.name)).toBe(true);
-      expect(channels.some((channel) => channel?.profile_image)).toBe(true);
-      expect(channels.some((channel) => channel?.profile_image === null)).toBe(
-        true
-      );
+      expect(channels.every((channel) => channel?.name)).toBeTruthy();
+      expect(channels.some((channel) => channel?.profile_image)).toBeTruthy();
+      expect(
+        channels.some((channel) => channel?.profile_image === null)
+      ).toBeTruthy();
     });
 
     it("should apply the select of search_videos_v4", async () => {
@@ -1171,7 +1259,7 @@ describe("Supabase Handlers", () => {
           }
         );
 
-        expect(response.ok).toBe(true);
+        expect(response.ok).toBeTruthy();
 
         return (await response.json()) as Record<string, unknown>[];
       };
@@ -1179,14 +1267,15 @@ describe("Supabase Handlers", () => {
       const data = await search(3);
 
       expect(data).toHaveLength(3);
-      expect(Object.keys(data[0] ?? {}).sort()).toEqual([
+      expect(Object.keys(data[0] ?? {}).toSorted()).toStrictEqual([
         "id",
         "talent",
         "youtube_video",
       ]);
-      expect(
-        (await search(100)).find((video) => video["youtube_video"])
-      ).toMatchObject({
+
+      const page = await search(100);
+
+      expect(page.find((video) => video["youtube_video"])).toMatchObject({
         youtube_video: {
           youtube_channel: { name: expect.any(String) },
           youtube_video_id: expect.any(String),
@@ -1195,11 +1284,9 @@ describe("Supabase Handlers", () => {
     });
 
     it("should look up a profile image by id", async () => {
-      const channels = (await (
-        await fetch(
-          "https://fake.supabase.test/rest/v1/youtube_channels?select=profile_image_id"
-        )
-      ).json()) as { profile_image_id: string | null }[];
+      const channels = (await readJson(
+        "https://fake.supabase.test/rest/v1/youtube_channels?select=profile_image_id"
+      )) as { profile_image_id: string | null }[];
       const id = channels.find(
         (channel) => channel.profile_image_id
       )?.profile_image_id;
@@ -1209,8 +1296,8 @@ describe("Supabase Handlers", () => {
       );
       const data = await response.json();
 
-      expect(response.ok).toBe(true);
-      expect(data).toEqual([{ path: expect.stringMatching(/\.webp$/) }]);
+      expect(response.ok).toBeTruthy();
+      expect(data).toStrictEqual([{ path: expect.stringMatching(/\.webp$/u) }]);
     });
 
     it("should sign and serve objects in the profile-images bucket", async () => {
@@ -1228,9 +1315,11 @@ describe("Supabase Handlers", () => {
 
       const imageResponse = await fetch(signedURL);
 
-      expect(imageResponse.ok).toBe(true);
+      expect(imageResponse.ok).toBeTruthy();
       expect(imageResponse.headers.get("content-type")).toBe("image/svg+xml");
-      expect(await imageResponse.text()).toContain('width="256" height="256"');
+      await expect(imageResponse.text()).resolves.toContain(
+        'width="256" height="256"'
+      );
     });
 
     it("should download objects in the profile-images bucket", async () => {
@@ -1238,9 +1327,9 @@ describe("Supabase Handlers", () => {
         "https://fake.supabase.test/storage/v1/object/profile-images/youtube/UC1/a.webp"
       );
 
-      expect(response.ok).toBe(true);
+      expect(response.ok).toBeTruthy();
       expect(response.headers.get("content-type")).toBe("image/svg+xml");
-      expect(await response.text()).toContain("<rect");
+      await expect(response.text()).resolves.toContain("<rect");
     });
   });
 
@@ -1252,22 +1341,22 @@ describe("Supabase Handlers", () => {
       twitch_user_id: string;
     }
 
-    async function getTwitchUsers(): Promise<TwitchUserRow[]> {
+    const getTwitchUsers = async (): Promise<TwitchUserRow[]> => {
       const response = await fetch(
         "https://fake.supabase.test/rest/v1/twitch_users?select=id,twitch_user_id,twitch_login_name,profile_image:profile_images(path,width)"
       );
 
       return (await response.json()) as TwitchUserRow[];
-    }
+    };
 
     it("should return Twitch users with and without an icon", async () => {
       const users = await getTwitchUsers();
 
       expect(users).toHaveLength(2);
-      expect(users.map((user) => user.profile_image)).toEqual(
+      expect(users.map((user) => user.profile_image)).toStrictEqual(
         expect.arrayContaining([
           {
-            path: expect.stringMatching(/^twitch\/\d+\/\w+\.webp$/),
+            path: expect.stringMatching(/^twitch\/\d+\/\w+\.webp$/u),
             width: 256,
           },
           null,
@@ -1289,25 +1378,21 @@ describe("Supabase Handlers", () => {
     it("should match digit-only IDs and case-insensitive logins", async () => {
       const [user] = await getTwitchUsers();
 
-      const byId = (await (
-        await fetch(
-          `https://fake.supabase.test/rest/v1/twitch_users?select=id&twitch_user_id=eq.${user?.twitch_user_id}`
-        )
-      ).json()) as { id: string }[];
-      const byLogin = (await (
-        await fetch(
-          `https://fake.supabase.test/rest/v1/twitch_users?select=id&twitch_login_name=ilike.${user?.twitch_login_name.toUpperCase()}`
-        )
-      ).json()) as { id: string }[];
+      const byId = (await readJson(
+        `https://fake.supabase.test/rest/v1/twitch_users?select=id&twitch_user_id=eq.${user?.twitch_user_id}`
+      )) as { id: string }[];
+      const byLogin = (await readJson(
+        `https://fake.supabase.test/rest/v1/twitch_users?select=id&twitch_login_name=ilike.${user?.twitch_login_name.toUpperCase()}`
+      )) as { id: string }[];
 
-      expect(byId).toEqual([{ id: user?.id }]);
-      expect(byLogin).toEqual([{ id: user?.id }]);
+      expect(byId).toStrictEqual([{ id: user?.id }]);
+      expect(byLogin).toStrictEqual([{ id: user?.id }]);
     });
 
     it("should insert, reject duplicates and delete Twitch users", async () => {
-      const [talent] = (await (
-        await fetch("https://fake.supabase.test/rest/v1/talents?select=id")
-      ).json()) as { id: string }[];
+      const [talent] = (await readJson(
+        "https://fake.supabase.test/rest/v1/talents?select=id"
+      )) as { id: string }[];
       const newUser = {
         name: "New User",
         talent_id: talent?.id,
@@ -1344,7 +1429,7 @@ describe("Supabase Handlers", () => {
       );
 
       expect(deleted.status).toBe(204);
-      expect(await getTwitchUsers()).toHaveLength(2);
+      await expect(getTwitchUsers()).resolves.toHaveLength(2);
     });
   });
 
@@ -1378,9 +1463,9 @@ describe("Supabase Handlers", () => {
       youtube_video: { youtube_video_id: string } | null;
     }
 
-    async function searchVideos(
+    const searchVideos = async (
       body: Record<string, unknown>
-    ): Promise<VideoRow[]> {
+    ): Promise<VideoRow[]> => {
       const response = await fetch(
         `https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=${encodeURIComponent(select)}`,
         {
@@ -1390,10 +1475,10 @@ describe("Supabase Handlers", () => {
         }
       );
 
-      expect(response.ok).toBe(true);
+      expect(response.ok).toBeTruthy();
 
       return (await response.json()) as VideoRow[];
-    }
+    };
 
     it("should seed Twitch videos of each type and status", async () => {
       const response = await fetch(
@@ -1406,12 +1491,12 @@ describe("Supabase Handlers", () => {
         video: { platform: string; status: string };
       }[];
 
-      expect(response.ok).toBe(true);
-      expect(data.every((row) => row.video.platform === "twitch")).toBe(true);
-      expect(new Set(data.map((row) => row.type))).toEqual(
+      expect(response.ok).toBeTruthy();
+      expect(data.every((row) => row.video.platform === "twitch")).toBeTruthy();
+      expect(new Set(data.map((row) => row.type))).toStrictEqual(
         new Set(["archive", "clip", "highlight", "upload", null])
       );
-      expect(new Set(data.map((row) => row.video.status))).toEqual(
+      expect(new Set(data.map((row) => row.video.status))).toStrictEqual(
         new Set(["ENDED", "LIVE", "PUBLISHED", "UPCOMING"])
       );
 
@@ -1427,15 +1512,17 @@ describe("Supabase Handlers", () => {
       );
       const data = (await response.json()) as VideoRow[];
 
-      expect(response.ok).toBe(true);
+      expect(response.ok).toBeTruthy();
 
       const twitchVideos = data.filter((video) => video.platform === "twitch");
 
       expect(twitchVideos.length).toBeGreaterThan(0);
-      for (const video of data) {
-        if (video.platform === "twitch") {
-          expect(video.youtube_video).toBeNull();
-          expect(video.twitch_video).toEqual({
+      for (const video of twitchVideos) {
+        expect({
+          twitch_video: video.twitch_video,
+          youtube_video: video.youtube_video,
+        }).toStrictEqual({
+          twitch_video: {
             twitch_user: {
               name: video.talent.name,
               profile_image: expect.toBeOneOf([
@@ -1452,30 +1539,34 @@ describe("Supabase Handlers", () => {
               "clip",
               null,
             ]),
-          });
-        } else {
-          expect(video.twitch_video).toBeNull();
-          expect(video.youtube_video).not.toBeNull();
-        }
+          },
+          youtube_video: null,
+        });
+      }
+      for (const video of data.filter((row) => row.platform !== "twitch")) {
+        expect({
+          hasYouTubeVideo: video.youtube_video !== null,
+          twitch_video: video.twitch_video,
+        }).toStrictEqual({ hasYouTubeVideo: true, twitch_video: null });
       }
 
       const profileImages = twitchVideos.map(
         (video) => video.twitch_video?.twitch_user?.profile_image
       );
 
-      expect(profileImages.some((image) => image)).toBe(true);
-      expect(profileImages.some((image) => image === null)).toBe(true);
+      expect({
+        withImage: profileImages.some(Boolean),
+        withoutImage: profileImages.some((image) => image === null),
+      }).toStrictEqual({ withImage: true, withoutImage: true });
     });
 
     it("should embed Twitch videos from Twitch users and filter by user", async () => {
-      const users = (await (
-        await fetch(
-          "https://fake.supabase.test/rest/v1/twitch_users?select=id,twitch_videos(id)"
-        )
-      ).json()) as { id: string; twitch_videos: { id: string }[] }[];
+      const users = (await readJson(
+        "https://fake.supabase.test/rest/v1/twitch_users?select=id,twitch_videos(id)"
+      )) as { id: string; twitch_videos: { id: string }[] }[];
 
       expect(users).toHaveLength(2);
-      expect(users.every((user) => user.twitch_videos.length > 0)).toBe(true);
+      expect(users.every((user) => user.twitch_videos.length > 0)).toBeTruthy();
 
       const [user] = users;
       const response = await fetch(
@@ -1490,12 +1581,12 @@ describe("Supabase Handlers", () => {
       const data = await searchVideos({ p_perpage: 100 });
       const publishedAt = data.map((video) => video.published_at);
 
-      expect(publishedAt).toEqual(
-        [...publishedAt].sort((a, b) => Temporal.Instant.compare(b, a))
+      expect(publishedAt).toStrictEqual(
+        publishedAt.toSorted((a, b) => Temporal.Instant.compare(b, a))
       );
       expect(
         data.some((video) => video.twitch_video?.twitch_user?.twitch_login_name)
-      ).toBe(true);
+      ).toBeTruthy();
 
       // The Twitch videos are among the latest up to now, so the first page
       // shows them. Upcoming streams of the schedule come later than now.
@@ -1512,9 +1603,9 @@ describe("Supabase Handlers", () => {
           p_until: now.toString(),
         });
 
-        expect(firstPage.some((video) => video.platform === "twitch")).toBe(
-          true
-        );
+        expect(
+          firstPage.some((video) => video.platform === "twitch")
+        ).toBeTruthy();
       } finally {
         await seedCollections();
       }
@@ -1529,8 +1620,8 @@ describe("Supabase Handlers", () => {
         data.every(
           (video) => Temporal.Instant.compare(video.published_at, until) < 0
         )
-      ).toBe(true);
-      expect(data.some((video) => video.status === "UPCOMING")).toBe(false);
+      ).toBeTruthy();
+      expect(data.some((video) => video.status === "UPCOMING")).toBeFalsy();
     });
 
     it("should search only videos of the given talents", async () => {
@@ -1541,29 +1632,12 @@ describe("Supabase Handlers", () => {
       });
 
       expect(data.length).toBeGreaterThan(0);
-      expect(data.every((row) => row.talent.id === video?.talent.id)).toBe(
-        true
-      );
+      expect(
+        data.every((row) => row.talent.id === video?.talent.id)
+      ).toBeTruthy();
     });
 
     it("should search only videos whose titles match the query", async () => {
-      const searchTitles = async (query: string) => {
-        const response = await fetch(
-          "https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=title",
-          {
-            body: JSON.stringify({ p_perpage: 100, p_query: query }),
-            headers: { "Content-Type": "application/json" },
-            method: "POST",
-          }
-        );
-
-        expect(response.ok).toBe(true);
-
-        return ((await response.json()) as { title: string }[]).map(
-          (video) => video.title
-        );
-      };
-
       // The seeded Twitch videos always have these titles and are visible,
       // unlike the YouTube videos whose statuses are random.
       const twitchTitles = [
@@ -1574,10 +1648,14 @@ describe("Supabase Handlers", () => {
         "【Twitch】アップロード動画：自己紹介",
       ];
 
-      expect(await searchTitles("Twitch")).toEqual(twitchTitles);
+      await expect(searchVideoTitles("Twitch")).resolves.toStrictEqual(
+        twitchTitles
+      );
       // Full-width and lower-case letters match like PGroonga's normalizer.
-      expect(await searchTitles("ｔｗｉｔｃｈ")).toEqual(twitchTitles);
-      expect(await searchTitles("zzzzzzzzqqq")).toEqual([]);
+      await expect(searchVideoTitles("ｔｗｉｔｃｈ")).resolves.toStrictEqual(
+        twitchTitles
+      );
+      await expect(searchVideoTitles("zzzzzzzzqqq")).resolves.toStrictEqual([]);
     });
 
     it("should embed Twitch videos in search_videos_v4 without a select", async () => {
@@ -1591,7 +1669,7 @@ describe("Supabase Handlers", () => {
       );
       const data = (await response.json()) as VideoRow[];
 
-      expect(response.ok).toBe(true);
+      expect(response.ok).toBeTruthy();
       expect(data.find((video) => video.platform === "twitch")).toMatchObject({
         twitch_video: {
           twitch_user: { twitch_login_name: expect.any(String) },
@@ -1602,83 +1680,59 @@ describe("Supabase Handlers", () => {
     });
 
     it("should search only videos of the given kinds in search_videos_v4", async () => {
-      const searchKinds = async (videoKinds?: string[]) => {
-        const response = await fetch(
-          "https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=video_kind",
-          {
-            body: JSON.stringify({
-              p_perpage: 1000,
-              p_query: "",
-              ...(videoKinds ? { p_video_kinds: videoKinds } : {}),
-            }),
-            headers: { "Content-Type": "application/json" },
-            method: "POST",
-          }
-        );
-
-        expect(response.ok).toBe(true);
-
-        return new Set(
-          ((await response.json()) as { video_kind: string }[]).map(
-            (video) => video.video_kind
-          )
-        );
-      };
-
-      expect(await searchKinds()).toEqual(new Set(["short", "standard"]));
-      expect(await searchKinds(["short"])).toEqual(new Set(["short"]));
-      expect(await searchKinds(["standard"])).toEqual(new Set(["standard"]));
+      await expect(searchVideoKinds()).resolves.toStrictEqual(
+        new Set(["short", "standard"])
+      );
+      await expect(searchVideoKinds(["short"])).resolves.toStrictEqual(
+        new Set(["short"])
+      );
+      await expect(searchVideoKinds(["standard"])).resolves.toStrictEqual(
+        new Set(["standard"])
+      );
     });
 
     it("should count the videos the site shows in count_videos_v2", async () => {
-      const post = async (url: string, body: object) => {
-        const response = await fetch(url, {
-          body: JSON.stringify(body),
-          headers: { "Content-Type": "application/json" },
-          method: "POST",
-        });
-
-        expect(response.ok).toBe(true);
-
-        return (await response.json()) as unknown;
-      };
-      const select =
+      const shownVideosSelect =
         "id,talent:talents(deleted_at),youtube_video:youtube_videos(youtube_video_id),twitch_video:twitch_videos(twitch_video_id)";
 
-      for (const body of [
+      const bodies = [
         { p_query: "" },
         { p_query: "Twitch" },
         { p_query: "", p_video_kinds: ["short"] },
-      ]) {
-        const videos = (await post(
-          `https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=${encodeURIComponent(select)}`,
-          { ...body, p_perpage: 1000 }
-        )) as {
-          talent: { deleted_at: string | null } | null;
-          twitch_video: unknown;
-          youtube_video: unknown;
-        }[];
-        // The site drops the videos of deleted talents and the videos with
-        // neither a YouTube nor a Twitch video.
-        const shownVideos = videos.filter(
-          (video) =>
-            video.talent?.deleted_at === null &&
-            (video.youtube_video !== null || video.twitch_video !== null)
-        );
+      ];
 
-        expect(shownVideos.length).toBeGreaterThan(0);
-        expect(
-          await post(
-            "https://fake.supabase.test/rest/v1/rpc/count_videos_v2",
-            body
-          )
-        ).toBe(shownVideos.length);
-      }
+      await Promise.all(
+        bodies.map(async (body) => {
+          const videos = (await postJson(
+            `https://fake.supabase.test/rest/v1/rpc/search_videos_v4?select=${encodeURIComponent(shownVideosSelect)}`,
+            { ...body, p_perpage: 1000 }
+          )) as {
+            talent: { deleted_at: string | null } | null;
+            twitch_video: unknown;
+            youtube_video: unknown;
+          }[];
+          // The site drops the videos of deleted talents and the videos with
+          // neither a YouTube nor a Twitch video.
+          const shownVideos = videos.filter(
+            (video) =>
+              video.talent?.deleted_at === null &&
+              (video.youtube_video !== null || video.twitch_video !== null)
+          );
+
+          expect(shownVideos.length).toBeGreaterThan(0);
+          await expect(
+            postJson(
+              "https://fake.supabase.test/rest/v1/rpc/count_videos_v2",
+              body
+            )
+          ).resolves.toBe(shownVideos.length);
+        })
+      );
     });
 
     it("should leave out the videos the site does not show before the page size in search_videos_v4", async () => {
       const restUrl = "https://fake.supabase.test/rest/v1";
-      const select =
+      const shownVideosSelect =
         "id,talent:talents(deleted_at),youtube_video:youtube_videos(youtube_video_id),twitch_video:twitch_videos(twitch_video_id)";
       const search = async (perpage: number) => {
         const response = await fetch(
@@ -1690,15 +1744,15 @@ describe("Supabase Handlers", () => {
           }
         );
 
-        expect(response.ok).toBe(true);
+        expect(response.ok).toBeTruthy();
 
         return ((await response.json()) as { id: string }[]).map(
           (video) => video.id
         );
       };
-      const [shownVideo] = (await (
-        await fetch(`${restUrl}/videos?select=id,talent_id&limit=1`)
-      ).json()) as { id: string; talent_id: string }[];
+      const [shownVideo] = (await readJson(
+        `${restUrl}/videos?select=id,talent_id&limit=1`
+      )) as { id: string; talent_id: string }[];
 
       expect(shownVideo).toBeDefined();
 
@@ -1730,11 +1784,9 @@ describe("Supabase Handlers", () => {
       try {
         // The videos the search matches, newest first, before the videos the
         // site does not show are left out
-        const matchedVideos = (await (
-          await fetch(
-            `${restUrl}/videos?select=${encodeURIComponent(select)}&deleted_at=is.null&visible=is.true&order=published_at.desc`
-          )
-        ).json()) as {
+        const matchedVideos = (await readJson(
+          `${restUrl}/videos?select=${encodeURIComponent(shownVideosSelect)}&deleted_at=is.null&visible=is.true&order=published_at.desc`
+        )) as {
           id: string;
           talent: { deleted_at: string | null } | null;
           twitch_video: unknown;
@@ -1750,11 +1802,13 @@ describe("Supabase Handlers", () => {
 
         expect(shownVideoIds.length).toBeGreaterThan(2);
 
-        expect(matchedVideos.slice(0, 2).map((video) => video.id)).toEqual(
-          hiddenVideoIds.toReversed()
+        expect(
+          matchedVideos.slice(0, 2).map((video) => video.id)
+        ).toStrictEqual(hiddenVideoIds.toReversed());
+        await expect(search(2)).resolves.toStrictEqual(
+          shownVideoIds.slice(0, 2)
         );
-        expect(await search(2)).toEqual(shownVideoIds.slice(0, 2));
-        expect(await search(1000)).toEqual(shownVideoIds);
+        await expect(search(1000)).resolves.toStrictEqual(shownVideoIds);
       } finally {
         await fetch(`${restUrl}/videos?id=in.(${hiddenVideoIds.join(",")})`, {
           method: "DELETE",
@@ -1766,7 +1820,7 @@ describe("Supabase Handlers", () => {
   describe("Soft-deleting and restoring videos", () => {
     const restUrl = "https://fake.supabase.test/rest/v1";
 
-    async function callRpc(name: string, params: Record<string, unknown>) {
+    const callRpc = async (name: string, params: Record<string, unknown>) => {
       const response = await fetch(`${restUrl}/rpc/${name}`, {
         body: JSON.stringify(params),
         headers: { "Content-Type": "application/json" },
@@ -1776,79 +1830,79 @@ describe("Supabase Handlers", () => {
       expect(response.status).toBe(200);
 
       return (await response.json()) as string[];
-    }
+    };
 
-    async function getStates(ids: string[]) {
-      return (await (
-        await fetch(
-          `${restUrl}/videos?select=id,deleted_at,deleted_reason,thumbnail:thumbnails(deleted_at)&id=in.(${ids.join(",")})&order=id.asc`
-        )
-      ).json()) as {
+    const getStates = async (ids: string[]) =>
+      (await readJson(
+        `${restUrl}/videos?select=id,deleted_at,deleted_reason,thumbnail:thumbnails(deleted_at)&id=in.(${ids.join(",")})&order=id.asc`
+      )) as {
         deleted_at: string | null;
         deleted_reason: string | null;
         id: string;
         thumbnail: { deleted_at: string | null } | null;
       }[];
-    }
 
     it("should delete and restore the videos with their thumbnails, like the functions", async () => {
-      const videos = (await (
-        await fetch(
-          `${restUrl}/videos?select=id&deleted_at=is.null&thumbnail_id=not.is.null&order=id.asc&limit=2`
-        )
-      ).json()) as { id: string }[];
+      const videos = (await readJson(
+        `${restUrl}/videos?select=id&deleted_at=is.null&thumbnail_id=not.is.null&order=id.asc&limit=2`
+      )) as { id: string }[];
       const ids = videos.map((video) => video.id);
       const deletedAt = "2026-11-18T00:00:00Z";
 
       expect(ids).toHaveLength(2);
 
       try {
-        await expect(
-          callRpc("soft_delete_videos", {
-            p_deleted_at: deletedAt,
-            p_reason: "withdrawn",
-            p_video_ids: ids,
-          })
-        ).resolves.toEqual(ids);
-        expect(await getStates(ids)).toEqual(
-          ids.map((id) => ({
+        const deleted = await callRpc("soft_delete_videos", {
+          p_deleted_at: deletedAt,
+          p_reason: "withdrawn",
+          p_video_ids: ids,
+        });
+
+        expect({ deleted, states: await getStates(ids) }).toStrictEqual({
+          deleted: ids,
+          states: ids.map((id) => ({
             deleted_at: deletedAt,
             deleted_reason: "withdrawn",
             id,
             thumbnail: { deleted_at: deletedAt },
-          }))
-        );
+          })),
+        });
 
         // A deleted video keeps its reason and time.
-        await expect(
-          callRpc("soft_delete_videos", {
-            p_deleted_at: "2026-11-19T00:00:00Z",
-            p_reason: "talent_deleted",
-            p_video_ids: ids,
-          })
-        ).resolves.toEqual([]);
+        const deletedAgain = await callRpc("soft_delete_videos", {
+          p_deleted_at: "2026-11-19T00:00:00Z",
+          p_reason: "talent_deleted",
+          p_video_ids: ids,
+        });
         // A video deleted for another reason is not restored with a reason.
-        await expect(
-          callRpc("restore_videos", {
-            p_reason: "talent_deleted",
-            p_video_ids: ids,
-          })
-        ).resolves.toEqual([]);
-        expect(
-          (await getStates(ids)).map((video) => video.deleted_reason)
-        ).toEqual(["withdrawn", "withdrawn"]);
+        const restoredWithReason = await callRpc("restore_videos", {
+          p_reason: "talent_deleted",
+          p_video_ids: ids,
+        });
 
-        await expect(
-          callRpc("restore_videos", { p_video_ids: ids })
-        ).resolves.toEqual(ids);
-        expect(await getStates(ids)).toEqual(
-          ids.map((id) => ({
+        const states = await getStates(ids);
+
+        expect({
+          deletedAgain,
+          reasons: states.map((video) => video.deleted_reason),
+          restoredWithReason,
+        }).toStrictEqual({
+          deletedAgain: [],
+          reasons: ["withdrawn", "withdrawn"],
+          restoredWithReason: [],
+        });
+
+        const restored = await callRpc("restore_videos", { p_video_ids: ids });
+
+        expect({ restored, states: await getStates(ids) }).toStrictEqual({
+          restored: ids,
+          states: ids.map((id) => ({
             deleted_at: null,
             deleted_reason: null,
             id,
             thumbnail: { deleted_at: null },
-          }))
-        );
+          })),
+        });
       } finally {
         await callRpc("restore_videos", { p_video_ids: ids });
       }
@@ -1864,12 +1918,9 @@ describe("Supabase Handlers", () => {
     ])(
       "should move updated_at of the row with %s, like the trigger",
       async (name, table, param) => {
-        const [row] = (await (
-          await fetch(`${restUrl}/${table}?select=*&limit=1`)
-        ).json()) as ({ id: string; updated_at: string } & Record<
-          string,
-          unknown
-        >)[];
+        const [row] = (await readJson(
+          `${restUrl}/${table}?select=*&limit=1`
+        )) as ({ id: string; updated_at: string } & Record<string, unknown>)[];
 
         expect(row).toBeDefined();
 
@@ -1881,15 +1932,15 @@ describe("Supabase Handlers", () => {
 
         expect(response.status).toBe(204);
 
-        const [touched] = (await (
-          await fetch(`${restUrl}/${table}?select=*&id=eq.${row?.id}`)
-        ).json()) as ({ updated_at: string } & Record<string, unknown>)[];
+        const [touched] = (await readJson(
+          `${restUrl}/${table}?select=*&id=eq.${row?.id}`
+        )) as ({ updated_at: string } & Record<string, unknown>)[];
 
         expect(touched?.updated_at).not.toBe(row?.updated_at);
         expect(touched?.updated_at).toMatch(
-          /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
+          /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u
         );
-        expect({ ...touched, updated_at: undefined }).toEqual({
+        expect({ ...touched, updated_at: undefined }).toStrictEqual({
           ...row,
           updated_at: undefined,
         });
@@ -1900,10 +1951,10 @@ describe("Supabase Handlers", () => {
   describe("Inserting videos", () => {
     const restUrl = "https://fake.supabase.test/rest/v1";
 
-    async function insertVideo(
+    const insertVideo = async (
       youtubeVideoId: string,
       channel: { id: string; talent_id: string }
-    ) {
+    ) => {
       const response = await fetch(`${restUrl}/rpc/insert_video`, {
         body: JSON.stringify({
           p_platform: "youtube",
@@ -1927,15 +1978,15 @@ describe("Supabase Handlers", () => {
       expect(response.status).toBe(200);
 
       return (await response.json()) as string | null;
-    }
+    };
 
     it("should insert the video with its platform row, and nothing when it is already saved", async () => {
-      const [channel] = (await (
-        await fetch(`${restUrl}/youtube_channels?select=id,talent_id&limit=1`)
-      ).json()) as { id: string; talent_id: string }[];
-      const [saved] = (await (
-        await fetch(`${restUrl}/youtube_videos?select=youtube_video_id&limit=1`)
-      ).json()) as { youtube_video_id: string }[];
+      const [channel] = (await readJson(
+        `${restUrl}/youtube_channels?select=id,talent_id&limit=1`
+      )) as { id: string; talent_id: string }[];
+      const [saved] = (await readJson(
+        `${restUrl}/youtube_videos?select=youtube_video_id&limit=1`
+      )) as { youtube_video_id: string }[];
 
       if (!channel || !saved) {
         throw new Error("The seed has no YouTube channels or videos");
@@ -1944,14 +1995,12 @@ describe("Supabase Handlers", () => {
       const videoId = await insertVideo("inserted-video-1", channel);
 
       try {
-        expect(videoId).toEqual(expect.any(String));
-        expect(
-          await (
-            await fetch(
-              `${restUrl}/videos?select=title,status,visible,youtube_video:youtube_videos(youtube_channel_id,youtube_video_id)&id=eq.${videoId}`
-            )
-          ).json()
-        ).toEqual([
+        expect(videoId).toStrictEqual(expect.any(String));
+        await expect(
+          readJson(
+            `${restUrl}/videos?select=title,status,visible,youtube_video:youtube_videos(youtube_channel_id,youtube_video_id)&id=eq.${videoId}`
+          )
+        ).resolves.toStrictEqual([
           {
             status: "PUBLISHED",
             title: "Inserted video",
@@ -1965,14 +2014,14 @@ describe("Supabase Handlers", () => {
 
         const count = async () =>
           (
-            (await (
-              await fetch(`${restUrl}/videos?select=id&title=eq.Inserted video`)
-            ).json()) as unknown[]
+            (await readJson(
+              `${restUrl}/videos?select=id&title=eq.Inserted video`
+            )) as unknown[]
           ).length;
 
-        await expect(insertVideo("inserted-video-1", channel)).resolves.toBe(
-          null
-        );
+        await expect(
+          insertVideo("inserted-video-1", channel)
+        ).resolves.toBeNull();
         await expect(
           insertVideo(saved.youtube_video_id, channel)
         ).resolves.toBeNull();
@@ -2004,57 +2053,56 @@ describe("Supabase Handlers", () => {
         }
       );
 
-      expect(response.ok).toBe(true);
-      expect(await response.json()).toBe(2);
+      expect(response.ok).toBeTruthy();
+      await expect(response.json()).resolves.toBe(2);
     });
   });
 
   describe("Search suggestions", () => {
-    async function suggest(query: string) {
-      const response = await fetch(
-        "https://fake.supabase.test/rest/v1/rpc/suggestions_v2",
-        {
-          body: JSON.stringify({ p_query: query }),
-          headers: { "Content-Type": "application/json" },
-          method: "POST",
-        }
-      );
-
-      expect(response.ok).toBe(true);
-
-      return (await response.json()) as { priority: number; term: string }[];
-    }
-
     it("should suggest terms that start with the query", async () => {
-      expect(await suggest("歌")).toEqual([{ priority: 1, term: "歌枠" }]);
-      expect(await suggest("asm")).toEqual([{ priority: 1, term: "ASMR" }]);
+      await expect(suggest("歌")).resolves.toStrictEqual([
+        { priority: 1, term: "歌枠" },
+      ]);
+      await expect(suggest("asm")).resolves.toStrictEqual([
+        { priority: 1, term: "ASMR" },
+      ]);
     });
 
     it("should suggest terms whose readings start with the query", async () => {
-      expect(await suggest("うた")).toEqual([{ priority: 2, term: "歌枠" }]);
-      expect(await suggest("コラ")).toEqual([{ priority: 1, term: "コラボ" }]);
-      expect(await suggest("こら")).toEqual([{ priority: 1, term: "コラボ" }]);
+      await expect(suggest("うた")).resolves.toStrictEqual([
+        { priority: 2, term: "歌枠" },
+      ]);
+      await expect(suggest("コラ")).resolves.toStrictEqual([
+        { priority: 1, term: "コラボ" },
+      ]);
+      await expect(suggest("こら")).resolves.toStrictEqual([
+        { priority: 1, term: "コラボ" },
+      ]);
     });
 
     it("should suggest terms whose synonyms start with the query", async () => {
-      expect(await suggest("歌配")).toEqual([{ priority: 3, term: "歌枠" }]);
-      expect(await suggest("カラオケ")).toEqual([
+      await expect(suggest("歌配")).resolves.toStrictEqual([
         { priority: 3, term: "歌枠" },
       ]);
-      expect(await suggest("共")).toEqual([{ priority: 3, term: "コラボ" }]);
+      await expect(suggest("カラオケ")).resolves.toStrictEqual([
+        { priority: 3, term: "歌枠" },
+      ]);
+      await expect(suggest("共")).resolves.toStrictEqual([
+        { priority: 3, term: "コラボ" },
+      ]);
     });
 
     it("should suggest a term once with its best priority", async () => {
-      expect(await suggest("コラボ")).toEqual([
+      await expect(suggest("コラボ")).resolves.toStrictEqual([
         { priority: 1, term: "コラボ" },
       ]);
-      expect(await suggest("ゲーム")).toEqual([
+      await expect(suggest("ゲーム")).resolves.toStrictEqual([
         { priority: 1, term: "ゲーム配信" },
       ]);
     });
 
     it("should suggest nothing when no term matches", async () => {
-      expect(await suggest("zzzzzzzzqqq")).toEqual([]);
+      await expect(suggest("zzzzzzzzqqq")).resolves.toStrictEqual([]);
     });
   });
 
@@ -2074,15 +2122,15 @@ describe("Supabase Handlers", () => {
       const rows = (await response.json()) as BackfillRow[];
 
       expect(rows).toHaveLength(3);
-      expect(rows.map((row) => row.finished_at)).toEqual(
+      expect(rows.map((row) => row.finished_at)).toStrictEqual(
         rows
           .map((row) => row.finished_at)
-          .sort()
-          .reverse()
+          .toSorted()
+          .toReversed()
       );
-      expect(rows.every((row) => typeof row.talents?.name === "string")).toBe(
-        true
-      );
+      expect(
+        rows.every((row) => typeof row.talents?.name === "string")
+      ).toBeTruthy();
     });
 
     it("should return only the latest job of each account", async () => {
@@ -2093,7 +2141,7 @@ describe("Supabase Handlers", () => {
 
       expect(
         rows.map(({ platform, status }) => ({ platform, status }))
-      ).toEqual(
+      ).toStrictEqual(
         expect.arrayContaining([
           { platform: "twitch", status: "failed" },
           { platform: "youtube", status: "done" },
@@ -2108,7 +2156,7 @@ describe("Supabase Handlers", () => {
         { headers: { prefer: "count=exact" } }
       );
 
-      expect(await response.json()).toHaveLength(1);
+      await expect(response.json()).resolves.toHaveLength(1);
       expect(response.headers.get("content-range")).toBe("0-0/3");
     });
 
@@ -2144,23 +2192,23 @@ describe("Supabase Handlers", () => {
 
     const url = "https://fake.supabase.test/rest/v1/feature_requests";
 
-    async function listFeatureRequests(search = "") {
+    const listFeatureRequests = async (search = "") => {
       const response = await fetch(
         `${url}?select=*&order=created_at.desc${search}`
       );
 
       return (await response.json()) as FeatureRequestRow[];
-    }
+    };
 
     it("should return the seeded feature requests newest first", async () => {
       const rows = await listFeatureRequests();
 
       expect(rows.length).toBeGreaterThanOrEqual(2);
-      expect(rows.map((row) => row.created_at)).toEqual(
+      expect(rows.map((row) => row.created_at)).toStrictEqual(
         rows
           .map((row) => row.created_at)
-          .sort()
-          .reverse()
+          .toSorted()
+          .toReversed()
       );
     });
 
@@ -2181,24 +2229,27 @@ describe("Supabase Handlers", () => {
 
       expect(latest).toMatchObject({
         admin_memo: null,
+        created_at: expect.stringMatching(
+          /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u
+        ),
         is_read: false,
         message,
         status: "pending",
       });
-      expect(latest?.created_at).toMatch(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
-      );
 
       const unread = await listFeatureRequests("&is_read=eq.false");
 
-      expect(unread.some((row) => row.id === latest?.id)).toBe(true);
+      expect(unread.some((row) => row.id === latest?.id)).toBeTruthy();
 
       const detail = await fetch(`${url}?select=*&id=eq.${latest?.id}`, {
         headers: { accept: "application/vnd.pgrst.object+json" },
       });
 
       expect(detail.status).toBe(200);
-      expect(await detail.json()).toMatchObject({ id: latest?.id, message });
+      await expect(detail.json()).resolves.toMatchObject({
+        id: latest?.id,
+        message,
+      });
     });
 
     it("should return the inserted row when representation is requested", async () => {
@@ -2216,7 +2267,7 @@ describe("Supabase Handlers", () => {
       >[];
 
       expect(response.status).toBe(201);
-      expect(rows).toEqual([
+      expect(rows).toStrictEqual([
         { id: expect.any(String), message: "一覧の並び順を変えたい" },
       ]);
     });
@@ -2242,6 +2293,7 @@ describe("Supabase Handlers", () => {
         { admin_memo: "検討中" },
         { is_read: true },
       ]) {
+        // oxlint-disable-next-line no-await-in-loop -- the updates of the same row are applied one by one
         const response = await fetch(`${url}?id=eq.${target?.id}`, {
           body: JSON.stringify(body),
           headers: { "Content-Type": "application/json" },
@@ -2273,7 +2325,7 @@ describe("Supabase Handlers", () => {
       user_id: string | null;
     }
 
-    async function getAuditLogs(params: Record<string, unknown>) {
+    const getAuditLogs = async (params: Record<string, unknown>) => {
       const response = await fetch(
         "https://fake.supabase.test/rest/v1/rpc/get_audit_logs",
         {
@@ -2286,31 +2338,33 @@ describe("Supabase Handlers", () => {
       expect(response.status).toBe(200);
 
       return (await response.json()) as AuditLogRow[];
-    }
+    };
 
     it("should return the seeded audit logs newest first with emails", async () => {
       const logs = await getAuditLogs({ p_limit: 10 });
 
       expect(logs.length).toBeGreaterThan(0);
-      expect(logs.map((log) => log.created_at)).toEqual(
+      expect(logs.map((log) => log.created_at)).toStrictEqual(
         logs
           .map((log) => log.created_at)
-          .sort()
-          .reverse()
+          .toSorted()
+          .toReversed()
       );
-      expect(logs.every((log) => log.user_email === "admin@example.com")).toBe(
-        true
-      );
+      expect(
+        logs.every((log) => log.user_email === "admin@example.com")
+      ).toBeTruthy();
     });
 
     it("should apply the limit, offset and sort direction", async () => {
       const all = await getAuditLogs({});
 
       expect(all.length).toBeGreaterThanOrEqual(2);
-      expect(await getAuditLogs({ p_limit: 1, p_offset: 1 })).toEqual([all[1]]);
-      expect(await getAuditLogs({ p_sort_direction: "asc" })).toEqual(
-        [...all].reverse()
-      );
+      await expect(
+        getAuditLogs({ p_limit: 1, p_offset: 1 })
+      ).resolves.toStrictEqual([all[1]]);
+      await expect(
+        getAuditLogs({ p_sort_direction: "asc" })
+      ).resolves.toStrictEqual(all.toReversed());
     });
 
     it("should record an audit log that get_audit_logs returns", async () => {
@@ -2369,7 +2423,7 @@ describe("Supabase Handlers", () => {
 
       // Logs recorded within the same second have the same `created_at`,
       // so the log is looked up by its record instead of as the latest one.
-      expect(await getAuditLogs({})).toContainEqual(
+      await expect(getAuditLogs({})).resolves.toContainEqual(
         expect.objectContaining({
           action: "FEATURE_REQUEST_UPDATE",
           details,
@@ -2423,7 +2477,7 @@ describe("Supabase Handlers", () => {
       );
       const data = await response.json();
 
-      expect(response.ok).toBe(true);
+      expect(response.ok).toBeTruthy();
       expect(data).toHaveLength(1);
     });
   });
@@ -2432,9 +2486,9 @@ describe("Supabase Handlers", () => {
     const headers = { accept: "application/vnd.pgrst.object+json" };
 
     it("should return the only row as an object", async () => {
-      const [video] = (await (
-        await fetch("https://fake.supabase.test/rest/v1/videos?limit=1")
-      ).json()) as [{ id: string; title: string }];
+      const [video] = (await readJson(
+        "https://fake.supabase.test/rest/v1/videos?limit=1"
+      )) as [{ id: string; title: string }];
       const response = await fetch(
         `https://fake.supabase.test/rest/v1/videos?select=id,title,talent:talents(name)&id=eq.${video.id}`,
         { headers }
@@ -2445,15 +2499,15 @@ describe("Supabase Handlers", () => {
       expect(response.headers.get("content-type")).toContain(
         "application/vnd.pgrst.object+json"
       );
-      expect(Array.isArray(data)).toBe(false);
+      expect(Array.isArray(data)).toBeFalsy();
       expect(data).toMatchObject({ id: video.id, title: video.title });
       expect(data.talent).toHaveProperty("name");
     });
 
     it("should accept the media type with nulls stripped", async () => {
-      const [talent] = (await (
-        await fetch("https://fake.supabase.test/rest/v1/talents?limit=1")
-      ).json()) as [{ id: string; name: string }];
+      const [talent] = (await readJson(
+        "https://fake.supabase.test/rest/v1/talents?limit=1"
+      )) as [{ id: string; name: string }];
       const response = await fetch(
         `https://fake.supabase.test/rest/v1/talents?select=id,name&id=eq.${talent.id}`,
         {
@@ -2464,7 +2518,7 @@ describe("Supabase Handlers", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual({
+      await expect(response.json()).resolves.toStrictEqual({
         id: talent.id,
         name: talent.name,
       });
@@ -2477,7 +2531,7 @@ describe("Supabase Handlers", () => {
       );
 
       expect(response.status).toBe(406);
-      expect(await response.json()).toMatchObject({
+      await expect(response.json()).resolves.toMatchObject({
         code: "PGRST116",
         details: "The result contains 0 rows",
       });
@@ -2495,13 +2549,13 @@ describe("Supabase Handlers", () => {
 
       expect(response.status).toBe(406);
       expect(data.code).toBe("PGRST116");
-      expect(data.details).toMatch(/^The result contains \d+ rows$/);
+      expect(data.details).toMatch(/^The result contains \d+ rows$/u);
     });
 
     it("should return the updated row as an object", async () => {
-      const [talent] = (await (
-        await fetch("https://fake.supabase.test/rest/v1/talents?limit=1")
-      ).json()) as [{ id: string; name: string }];
+      const [talent] = (await readJson(
+        "https://fake.supabase.test/rest/v1/talents?limit=1"
+      )) as [{ id: string; name: string }];
       const response = await fetch(
         `https://fake.supabase.test/rest/v1/talents?id=eq.${talent.id}`,
         {
@@ -2521,7 +2575,7 @@ describe("Supabase Handlers", () => {
         "https://fake.supabase.test/rest/v1/videos?limit=1"
       );
 
-      expect(Array.isArray(await response.json())).toBe(true);
+      expect(Array.isArray(await response.json())).toBeTruthy();
     });
   });
 
@@ -2536,7 +2590,7 @@ describe("Supabase Handlers", () => {
         );
         const data = (await response.json()) as { signedURL: string };
 
-        expect(response.ok).toBe(true);
+        expect(response.ok).toBeTruthy();
         expect(data).toHaveProperty("signedURL");
         expect(data.signedURL).toContain(
           "https://fake.supabase.test/storage/v1/object/public/thumbnails/test.jpg"
@@ -2552,7 +2606,7 @@ describe("Supabase Handlers", () => {
         );
         const data = (await response.json()) as { signedURL: string };
 
-        expect(response.ok).toBe(true);
+        expect(response.ok).toBeTruthy();
         expect(data).toHaveProperty("signedURL");
         expect(data.signedURL).toContain(
           "https://fake.supabase.test/storage/v1/object/public/thumbnails/subfolder/test.jpg"
@@ -2566,7 +2620,7 @@ describe("Supabase Handlers", () => {
           "https://fake.supabase.test/storage/v1/object/public/thumbnails/test.jpg"
         );
 
-        expect(response.ok).toBe(true);
+        expect(response.ok).toBeTruthy();
         expect(response.headers.get("content-type")).toBe("image/svg+xml");
         const text = await response.text();
         expect(text).toContain("<svg");
@@ -2577,7 +2631,7 @@ describe("Supabase Handlers", () => {
           "https://fake.supabase.test/storage/v1/object/public/thumbnails/subfolder/test.jpg"
         );
 
-        expect(response.ok).toBe(true);
+        expect(response.ok).toBeTruthy();
         expect(response.headers.get("content-type")).toBe("image/svg+xml");
         const text = await response.text();
         expect(text).toContain("<svg");
@@ -2589,7 +2643,7 @@ describe("Supabase Handlers", () => {
           "https://fake.supabase.test/storage/v1/object/public/thumbnails/thumbnails/uuid-123.jpg"
         );
 
-        expect(response.ok).toBe(true);
+        expect(response.ok).toBeTruthy();
         expect(response.headers.get("content-type")).toBe("image/svg+xml");
         const text = await response.text();
         expect(text).toContain("<svg");

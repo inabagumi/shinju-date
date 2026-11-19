@@ -1,9 +1,7 @@
 import type { TypedSupabaseClient } from "../../types.js";
-import {
-  DatabaseError,
-  isForeignKeyViolation,
-  StorageError,
-} from "../errors.js";
+import { DatabaseError } from "../database-error.js";
+import { isForeignKeyViolation } from "../errors.js";
+import { StorageError } from "../storage-error.js";
 
 /**
  * `Cache-Control` of stored images, in seconds: one year. Stored objects are
@@ -28,10 +26,10 @@ export interface StoreImageOptions {
  *
  * @throws {StorageError} When the image cannot be uploaded.
  */
-export async function storeImage(
+export const storeImage = async (
   supabaseClient: TypedSupabaseClient,
   { bucket, contentType, image, path }: StoreImageOptions
-): Promise<void> {
+): Promise<void> => {
   const { error } = await supabaseClient.storage
     .from(bucket)
     .upload(path, image, {
@@ -43,7 +41,7 @@ export async function storeImage(
   if (error) {
     throw new StorageError(`Failed to upload an image to ${bucket}`, error);
   }
-}
+};
 
 export interface RemoveStoredImagesOptions {
   bucket: string;
@@ -55,10 +53,10 @@ export interface RemoveStoredImagesOptions {
  *
  * @throws {StorageError} When the images cannot be removed.
  */
-export async function removeStoredImages(
+export const removeStoredImages = async (
   supabaseClient: TypedSupabaseClient,
   { bucket, paths }: RemoveStoredImagesOptions
-): Promise<void> {
+): Promise<void> => {
   const { error } = await supabaseClient.storage
     .from(bucket)
     .remove([...paths]);
@@ -66,7 +64,7 @@ export async function removeStoredImages(
   if (error) {
     throw new StorageError(`Failed to remove images from ${bucket}`, error);
   }
-}
+};
 
 export interface RemoveImageOptions {
   bucket: string;
@@ -86,10 +84,10 @@ export interface RemoveImageOptions {
  * @throws {StorageError} When the object cannot be removed. The row is gone
  *   by then, so the object is never served.
  */
-export async function removeImage(
+export const removeImage = async (
   supabaseClient: TypedSupabaseClient,
   { bucket, image, table }: RemoveImageOptions
-): Promise<boolean> {
+): Promise<boolean> => {
   const { error } = await supabaseClient
     .from(table)
     .delete()
@@ -106,4 +104,4 @@ export async function removeImage(
   await removeStoredImages(supabaseClient, { bucket, paths: [image.path] });
 
   return true;
-}
+};

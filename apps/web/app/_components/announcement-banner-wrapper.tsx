@@ -7,7 +7,7 @@ import { getAnnouncement } from "../_lib/actions";
 import { AnnouncementBanner } from "./announcement-banner";
 import { renderAnnouncement } from "./announcement-message";
 
-async function AnnouncementContent() {
+const AnnouncementContent = async () => {
   const cookieStore = await cookies();
   const announcement = await getAnnouncement();
 
@@ -25,12 +25,10 @@ async function AnnouncementContent() {
   }
 
   return <AnnouncementBanner announcement={renderAnnouncement(announcement)} />;
-}
+};
 
-export function AnnouncementBannerWrapper() {
-  return (
-    <Suspense fallback={null}>
-      <AnnouncementContent />
-    </Suspense>
-  );
-}
+export const AnnouncementBannerWrapper = () => (
+  <Suspense fallback={null}>
+    <AnnouncementContent />
+  </Suspense>
+);

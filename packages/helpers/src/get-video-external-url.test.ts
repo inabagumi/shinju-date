@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { getVideoExternalUrl } from "./get-video-external-url.js";
 
-describe("getVideoExternalUrl", () => {
+describe(getVideoExternalUrl, () => {
   describe("youtube", () => {
     it("returns a watch URL for a YouTube video id", () => {
       expect(

@@ -1,4 +1,5 @@
 import { CACHE_TAGS, REDIS_KEYS } from "@shinju-date/constants";
+import type { Redis } from "@upstash/redis";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { setupActionTest } from "@/test/action-harness";
@@ -19,113 +20,128 @@ const ACTION_FAILED_ERROR =
 const INVALID_INPUT_ERROR = "入力が正しくありません。";
 
 const redisClient = {
-  sadd: vi.fn(async () => 1),
-  srem: vi.fn(async () => 1),
+  sadd: vi.fn<Redis["sadd"]>(() => Promise.resolve(1)),
+  srem: vi.fn<Redis["srem"]>(() => Promise.resolve(1)),
 };
 
-beforeEach(() => {
-  redisClient.sadd.mockImplementation(async () => 1);
-  redisClient.srem.mockImplementation(async () => 1);
-  test.getRedisClient.mockImplementation(() => redisClient);
-});
-
-describe("addQueryAction", () => {
-  it.each([
-    ["an empty query", ""],
-    ["a query of only spaces", "   "],
-    ["a query longer than 100 characters", "a".repeat(101)],
-    ["a value that is not a string", 1],
-  ])("should return error without adding anything for %s", async (_, query) => {
-    const result = await addQueryAction(query as string);
-
-    expect(result).toEqual({ error: INVALID_INPUT_ERROR, success: false });
-    expect(redisClient.sadd).not.toHaveBeenCalled();
-    test.expectNoAuditLog();
-    test.expectNotRevalidated();
+describe("recommended query actions", () => {
+  beforeEach(() => {
+    redisClient.sadd.mockResolvedValue(1);
+    redisClient.srem.mockResolvedValue(1);
+    test.getRedisClient.mockReturnValue(redisClient);
   });
 
-  it("should accept a query of 100 characters without the spaces around it", async () => {
-    const query = "a".repeat(100);
+  describe("addQueryAction()", () => {
+    it.each([
+      ["an empty query", ""],
+      ["a query of only spaces", "   "],
+      ["a query longer than 100 characters", "a".repeat(101)],
+      ["a value that is not a string", 1],
+    ])(
+      "should return error without adding anything for %s",
+      async (_, query) => {
+        const result = await addQueryAction(query as string);
 
-    const result = await addQueryAction(`  ${query}  `);
-
-    expect(result).toEqual({ success: true });
-    expect(redisClient.sadd).toHaveBeenCalledWith(
-      REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED,
-      query
+        expect(result).toStrictEqual({
+          error: INVALID_INPUT_ERROR,
+          success: false,
+        });
+        expect(redisClient.sadd).not.toHaveBeenCalled();
+        test.expectNoAuditLog();
+        test.expectNotRevalidated();
+      }
     );
-  });
 
-  it("should add the trimmed query and revalidate the recommendation queries", async () => {
-    const result = await addQueryAction("  Hoge  ");
+    it("should accept a query of 100 characters without the spaces around it", async () => {
+      const query = "a".repeat(100);
 
-    expect(result).toEqual({ success: true });
-    expect(redisClient.sadd).toHaveBeenCalledWith(
-      REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED,
-      "Hoge"
-    );
-    test.expectAuditLog("RECOMMENDED_QUERY_CREATE", null, {
-      entityName: "Hoge",
+      const result = await addQueryAction(`  ${query}  `);
+
+      expect(result).toStrictEqual({ success: true });
+      expect(redisClient.sadd).toHaveBeenCalledWith(
+        REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED,
+        query
+      );
     });
-    expect(test.revalidateTags).toHaveBeenCalledTimes(1);
-    expect(test.revalidateTags).toHaveBeenCalledWith([
-      CACHE_TAGS.RECOMMENDATION_QUERIES,
-    ]);
-  });
 
-  it("should return error when Redis fails", async () => {
-    redisClient.sadd.mockRejectedValue(new Error("Redis error"));
+    it("should add the trimmed query and revalidate the recommendation queries", async () => {
+      const result = await addQueryAction("  Hoge  ");
 
-    const result = await addQueryAction("Hoge");
+      expect(result).toStrictEqual({ success: true });
+      expect(redisClient.sadd).toHaveBeenCalledWith(
+        REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED,
+        "Hoge"
+      );
+      test.expectAuditLog("RECOMMENDED_QUERY_CREATE", null, {
+        entityName: "Hoge",
+      });
+      expect(test.revalidateTags).toHaveBeenCalledExactlyOnceWith([
+        CACHE_TAGS.RECOMMENDATION_QUERIES,
+      ]);
+    });
 
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false });
-    test.expectNoAuditLog();
-    test.expectNotRevalidated();
-  });
-});
+    it("should return error when Redis fails", async () => {
+      redisClient.sadd.mockRejectedValue(new Error("Redis error"));
 
-describe("deleteQueryAction", () => {
-  it.each([
-    ["an empty query", ""],
-    ["a query of only spaces", "   "],
-    ["a query longer than 100 characters", "a".repeat(101)],
-    ["a value that is not a string", null],
-  ])(
-    "should return error without deleting anything for %s",
-    async (_, query) => {
-      const result = await deleteQueryAction(query as string);
+      const result = await addQueryAction("Hoge");
 
-      expect(result).toEqual({ error: INVALID_INPUT_ERROR, success: false });
-      expect(redisClient.srem).not.toHaveBeenCalled();
+      expect(result).toStrictEqual({
+        error: ACTION_FAILED_ERROR,
+        success: false,
+      });
       test.expectNoAuditLog();
       test.expectNotRevalidated();
-    }
-  );
-
-  it("should delete the query and revalidate the recommendation queries", async () => {
-    const result = await deleteQueryAction("Hoge");
-
-    expect(result).toEqual({ success: true });
-    expect(redisClient.srem).toHaveBeenCalledWith(
-      REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED,
-      "Hoge"
-    );
-    test.expectAuditLog("RECOMMENDED_QUERY_DELETE", null, {
-      entityName: "Hoge",
     });
-    expect(test.revalidateTags).toHaveBeenCalledTimes(1);
-    expect(test.revalidateTags).toHaveBeenCalledWith([
-      CACHE_TAGS.RECOMMENDATION_QUERIES,
-    ]);
   });
 
-  it("should return error when Redis fails", async () => {
-    redisClient.srem.mockRejectedValue(new Error("Redis error"));
+  describe("deleteQueryAction()", () => {
+    it.each([
+      ["an empty query", ""],
+      ["a query of only spaces", "   "],
+      ["a query longer than 100 characters", "a".repeat(101)],
+      ["a value that is not a string", null],
+    ])(
+      "should return error without deleting anything for %s",
+      async (_, query) => {
+        const result = await deleteQueryAction(query as string);
 
-    const result = await deleteQueryAction("Hoge");
+        expect(result).toStrictEqual({
+          error: INVALID_INPUT_ERROR,
+          success: false,
+        });
+        expect(redisClient.srem).not.toHaveBeenCalled();
+        test.expectNoAuditLog();
+        test.expectNotRevalidated();
+      }
+    );
 
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false });
-    test.expectNoAuditLog();
-    test.expectNotRevalidated();
+    it("should delete the query and revalidate the recommendation queries", async () => {
+      const result = await deleteQueryAction("Hoge");
+
+      expect(result).toStrictEqual({ success: true });
+      expect(redisClient.srem).toHaveBeenCalledWith(
+        REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED,
+        "Hoge"
+      );
+      test.expectAuditLog("RECOMMENDED_QUERY_DELETE", null, {
+        entityName: "Hoge",
+      });
+      expect(test.revalidateTags).toHaveBeenCalledExactlyOnceWith([
+        CACHE_TAGS.RECOMMENDATION_QUERIES,
+      ]);
+    });
+
+    it("should return error when Redis fails", async () => {
+      redisClient.srem.mockRejectedValue(new Error("Redis error"));
+
+      const result = await deleteQueryAction("Hoge");
+
+      expect(result).toStrictEqual({
+        error: ACTION_FAILED_ERROR,
+        success: false,
+      });
+      test.expectNoAuditLog();
+      test.expectNotRevalidated();
+    });
   });
 });

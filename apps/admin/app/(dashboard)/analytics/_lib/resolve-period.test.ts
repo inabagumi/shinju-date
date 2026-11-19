@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { resolvePeriod } from "./resolve-period";
 
-describe("resolvePeriod", () => {
+describe(resolvePeriod, () => {
   it("returns the whole date range when no date is selected", () => {
     const period = resolvePeriod({
       dateRange: { endDate: "2026-11-14", startDate: "2026-11-08" },

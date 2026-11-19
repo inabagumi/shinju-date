@@ -1,7 +1,5 @@
-import {
-  type RefreshScope,
-  refreshSavedVideos,
-} from "../internal/operations/refresh-saved-videos.js";
+import { refreshSavedVideos } from "../internal/operations/refresh-saved-videos.js";
+import type { RefreshScope } from "../internal/operations/refresh-saved-videos.js";
 import { sweepUnavailableVideos } from "../internal/operations/sweep-unavailable-videos.js";
 import type { CrawlContext } from "../types.js";
 import type { YouTubeFetcher } from "./fetcher.js";
@@ -16,10 +14,10 @@ import { refreshYouTubeThumbnail } from "./thumbnail.js";
  *
  * @returns The number of videos updated or deleted.
  */
-export function refreshYouTubeVideos(
+export const refreshYouTubeVideos = (
   context: CrawlContext<YouTubeFetcher>,
   scope: RefreshScope
-): Promise<number> {
+): Promise<number> => {
   const platform = createYouTubePlatform(context.fetcher);
 
   return refreshSavedVideos(context, platform, {
@@ -27,7 +25,7 @@ export function refreshYouTubeVideos(
       refreshYouTubeThumbnail(context, saved, fetched),
     scope,
   });
-}
+};
 
 /**
  * Checks every saved video of non-deleted talents (retired ones included) and
@@ -35,11 +33,7 @@ export function refreshYouTubeVideos(
  *
  * @returns The number of videos deleted.
  */
-export function removeUnavailableYouTubeVideos(
+export const removeUnavailableYouTubeVideos = (
   context: CrawlContext<YouTubeFetcher>
-): Promise<number> {
-  return sweepUnavailableVideos(
-    context,
-    createYouTubePlatform(context.fetcher)
-  );
-}
+): Promise<number> =>
+  sweepUnavailableVideos(context, createYouTubePlatform(context.fetcher));

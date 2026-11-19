@@ -1,6 +1,7 @@
 import type { ParsedUrlQuery } from "node:querystring";
 
-import { getVideos, type Video } from "./get-videos";
+import { getVideos } from "./get-videos";
+import type { Video } from "./get-videos";
 import {
   defaultVideoSearchParams,
   videoSearchParamsSchema,
@@ -26,9 +27,9 @@ export interface VideosForPage {
  * `getVideos` は `'use cache: private'` の取得関数なので、同じパラメータで
  * 呼ぶ部品（件数と表）は、1回の表示で同じ結果を使う
  */
-export async function getVideosForPage(
+export const getVideosForPage = async (
   searchParams: Promise<ParsedUrlQuery>
-): Promise<VideosForPage> {
+): Promise<VideosForPage> => {
   const result = videoSearchParamsSchema.safeParse(await searchParams);
   const { page, sortField, sortOrder, ...filters } = result.success
     ? result.data
@@ -49,4 +50,4 @@ export async function getVideosForPage(
     totalPages: Math.ceil(total / VIDEOS_PER_PAGE),
     videos,
   };
-}
+};

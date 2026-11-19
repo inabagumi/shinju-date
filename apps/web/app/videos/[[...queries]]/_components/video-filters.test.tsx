@@ -1,32 +1,29 @@
-import type { MultiSelectOption } from "@shinju-date/ui";
+import type { MultiSelectProps } from "@shinju-date/ui";
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import type { useRouter } from "next/navigation";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Talent } from "@/lib/data/talents";
 
 import VideoFilters from "./video-filters";
 
-const push = vi.hoisted(() => vi.fn());
+type AppRouterInstance = ReturnType<typeof useRouter>;
 
-interface MockMultiSelectProps {
-  onChange: (value: string[]) => void;
-  options: MultiSelectOption[];
-  placeholder: string;
-  value: string[];
-}
+const push = vi.hoisted(() => vi.fn<AppRouterInstance["push"]>());
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push }),
+vi.mock(import("next/navigation"), () => ({
+  useRouter: () =>
+    ({ push }) as Partial<AppRouterInstance> as AppRouterInstance,
 }));
 
-vi.mock("@shinju-date/ui", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@shinju-date/ui")>()),
+vi.mock(import("@shinju-date/ui"), async (importOriginal) => ({
+  ...(await importOriginal()),
   MultiSelect: ({
     onChange,
     options,
     placeholder,
     value,
-  }: MockMultiSelectProps) => (
+  }: MultiSelectProps) => (
     <fieldset>
       <legend>{placeholder}</legend>
       {options.map((option) => (
@@ -56,12 +53,12 @@ const TALENTS: Talent[] = [
 ];
 const [TALENT_A, TALENT_B, TALENT_C] = TALENTS as [Talent, Talent, Talent];
 
-describe("VideoFilters", () => {
+describe(VideoFilters, () => {
   beforeEach(() => {
     push.mockClear();
   });
 
-  test("should show every talent as an option", () => {
+  it("should show every talent as an option", () => {
     render(
       <VideoFilters
         kind="all"
@@ -77,13 +74,13 @@ describe("VideoFilters", () => {
       within(group)
         .getAllByRole("checkbox")
         .map((checkbox) => checkbox.parentElement?.textContent)
-    ).toEqual(["朝霧ミオ", "白露ネネ", "凪沢ユラ"]);
+    ).toStrictEqual(["朝霧ミオ", "白露ネネ", "凪沢ユラ"]);
     expect(
       screen.queryByRole("list", { name: "選んでいるタレント" })
     ).not.toBeInTheDocument();
   });
 
-  test("should move to the videos of the selected talents", () => {
+  it("should move to the videos of the selected talents", () => {
     render(
       <VideoFilters
         kind="short"
@@ -101,7 +98,7 @@ describe("VideoFilters", () => {
     );
   });
 
-  test("should keep the selected talents when switching the kind", () => {
+  it("should keep the selected talents when switching the kind", () => {
     render(
       <VideoFilters
         kind="all"
@@ -123,7 +120,7 @@ describe("VideoFilters", () => {
     );
   });
 
-  test("should show a chip that removes the selected talent", () => {
+  it("should show a chip that removes the selected talent", () => {
     render(
       <VideoFilters
         kind="standard"
@@ -143,7 +140,7 @@ describe("VideoFilters", () => {
     ).not.toBeInTheDocument();
   });
 
-  test("should show a link to clear two or more talents", () => {
+  it("should show a link to clear two or more talents", () => {
     render(
       <VideoFilters
         kind="all"
@@ -172,7 +169,7 @@ describe("VideoFilters", () => {
     ).toHaveAttribute("href", `/videos/${encodeURIComponent("歌")}`);
   });
 
-  test("should link to the calendar of the selected talents and kind", () => {
+  it("should link to the calendar of the selected talents and kind", () => {
     render(
       <VideoFilters
         kind="standard"
@@ -190,7 +187,7 @@ describe("VideoFilters", () => {
     );
   });
 
-  test("should link to the calendar of every video without filters", () => {
+  it("should link to the calendar of every video without filters", () => {
     render(
       <VideoFilters
         kind="all"
@@ -205,7 +202,7 @@ describe("VideoFilters", () => {
     ).toHaveAttribute("href", "/videos.ics");
   });
 
-  test("should not link to the calendar for the search results", () => {
+  it("should not link to the calendar for the search results", () => {
     render(
       <VideoFilters
         kind="all"

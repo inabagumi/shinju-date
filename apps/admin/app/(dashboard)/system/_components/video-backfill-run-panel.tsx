@@ -16,10 +16,8 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Panel, PanelSkeleton } from "@/components/panel";
 import { formatDateTimeFromISO } from "@/lib/format";
 import { useBackfillRequest } from "@/lib/use-backfill-request";
-import {
-  type PolledResourceFailure,
-  usePolledResource,
-} from "@/lib/use-polled-resource";
+import { usePolledResource } from "@/lib/use-polled-resource";
+import type { PolledResourceFailure } from "@/lib/use-polled-resource";
 
 import {
   getVideoBackfillRunAction,
@@ -34,16 +32,16 @@ import type {
 type Status = VideoBackfillRunAccount["status"];
 
 /** How often progress is refreshed while a check is in progress. */
-const POLL_INTERVAL_MS = 5_000;
+const POLL_INTERVAL_MS = 5000;
 
 const TITLE = "取得漏れチェック（全タレント）";
 const DESCRIPTION =
   "active なタレントのすべてのアカウントについて、プラットフォーム上にあってデータベースにない過去の動画を取り込みます。登録済みの動画はそのまま残ります。";
 
 /** 進捗を取り直す。アクションの `data` を、`usePolledResource` が受け取る形にする */
-async function fetchVideoBackfillRun(): Promise<
+const fetchVideoBackfillRun = async (): Promise<
   VideoBackfillRunState | PolledResourceFailure
-> {
+> => {
   const result = await getVideoBackfillRunAction();
 
   if (!result.success) {
@@ -51,7 +49,7 @@ async function fetchVideoBackfillRun(): Promise<
   }
 
   return result.data ?? { success: false };
-}
+};
 
 /** Order of the counts in the summary. */
 const STATUSES: Status[] = [
@@ -75,10 +73,10 @@ interface RunSummaryProps {
   run: VideoBackfillRun;
 }
 
-function RunSummary({ run }: RunSummaryProps) {
+const RunSummary = ({ run }: RunSummaryProps) => {
   const total = run.accounts.length;
   const finished = total - run.counts.pending - run.counts.running;
-  const accounts = [...run.accounts].sort(
+  const accounts = run.accounts.toSorted(
     (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]
   );
 
@@ -106,6 +104,7 @@ function RunSummary({ run }: RunSummaryProps) {
           aria-valuemin={0}
           aria-valuenow={finished}
           className="h-2 overflow-hidden rounded-full bg-muted"
+          // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- a styled bar; the native progress element would look different in each browser
           role="progressbar"
         >
           <div
@@ -158,7 +157,7 @@ function RunSummary({ run }: RunSummaryProps) {
       </ul>
     </>
   );
-}
+};
 
 interface VideoBackfillRunPanelProps {
   /** サーバーコンポーネントで取得した、対象の件数と最新のチェックの進捗 */
@@ -170,9 +169,9 @@ interface VideoBackfillRunPanelProps {
  * DB にない動画）の取り込みをまとめてキューに追加し、その進捗を表示する。
  * 取り込みはバッチが非同期に行う。
  */
-export function VideoBackfillRunPanel({
+export const VideoBackfillRunPanel = ({
   initialData,
-}: VideoBackfillRunPanelProps) {
+}: VideoBackfillRunPanelProps) => {
   const { data, error, reload } = usePolledResource({
     fetcher: fetchVideoBackfillRun,
     initialData,
@@ -223,35 +222,33 @@ export function VideoBackfillRunPanel({
       </AsyncPanelBody>
     </Panel>
   );
-}
+};
 
 /** スケルトンに並べる、アカウントの行の数 */
 const SKELETON_ROWS = 3;
 
 /** 読み込み中の `VideoBackfillRunPanel`。依頼の行、進捗の棒、件数の枠、アカウントの行を並べる */
-export function VideoBackfillRunPanelSkeleton() {
-  return (
-    <PanelSkeleton
-      actions={<Skeleton className="h-8 w-44" />}
-      description={DESCRIPTION}
-      title={TITLE}
-    >
-      <div className="-mx-6 -mb-6">
-        <div className="space-y-3 px-6 pb-4">
-          <Skeleton className="h-5 w-64 max-w-full" />
-          <Skeleton className="h-2 w-full rounded-full" />
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-            {range(STATUSES.length + 1).map((tile) => (
-              <Skeleton className="h-14" key={`run-count-skeleton-${tile}`} />
-            ))}
-          </div>
-        </div>
-        <ul className="divide-y divide-border border-t border-border">
-          {range(SKELETON_ROWS).map((row) => (
-            <BackfillAccountRowSkeleton key={`run-account-skeleton-${row}`} />
+export const VideoBackfillRunPanelSkeleton = () => (
+  <PanelSkeleton
+    actions={<Skeleton className="h-8 w-44" />}
+    description={DESCRIPTION}
+    title={TITLE}
+  >
+    <div className="-mx-6 -mb-6">
+      <div className="space-y-3 px-6 pb-4">
+        <Skeleton className="h-5 w-64 max-w-full" />
+        <Skeleton className="h-2 w-full rounded-full" />
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+          {range(STATUSES.length + 1).map((tile) => (
+            <Skeleton className="h-14" key={`run-count-skeleton-${tile}`} />
           ))}
-        </ul>
+        </div>
       </div>
-    </PanelSkeleton>
-  );
-}
+      <ul className="divide-y divide-border border-t border-border">
+        {range(SKELETON_ROWS).map((row) => (
+          <BackfillAccountRowSkeleton key={`run-account-skeleton-${row}`} />
+        ))}
+      </ul>
+    </div>
+  </PanelSkeleton>
+);

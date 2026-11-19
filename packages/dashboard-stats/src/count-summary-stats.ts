@@ -1,4 +1,4 @@
-import type { default as Database, Enums } from "@shinju-date/database";
+import type { Database, Enums } from "@shinju-date/database";
 import { toDBString } from "@shinju-date/temporal-fns";
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 
@@ -29,25 +29,25 @@ interface CountResult {
 
 /** The filters of a query of a table whose rows are deleted softly. */
 interface ExistingRowsQuery<T> {
-  is(column: "deleted_at", value: null): T;
-  lt(column: "created_at", value: string): T;
-  or(filters: string): T;
+  is: (column: "deleted_at", value: null) => T;
+  lt: (column: "created_at", value: string) => T;
+  or: (filters: string) => T;
 }
 
 /** The filters of a query that counts the rows deleted softly. */
 interface DeletedRowsQuery<T> {
-  lt(column: "deleted_at", value: string): T;
-  not(column: "deleted_at", operator: "is", value: null): T;
+  lt: (column: "deleted_at", value: string) => T;
+  not: (column: "deleted_at", operator: "is", value: null) => T;
 }
 
 /**
  * Narrow a query down to the rows that existed at `asOf` (created before it
  * and not deleted by then), or to the rows not deleted when `asOf` is `null`.
  */
-function existing<T extends ExistingRowsQuery<T>>(
+const existing = <T extends ExistingRowsQuery<T>>(
   query: T,
   asOf: string | null
-): T {
+): T => {
   if (asOf === null) {
     return query.is("deleted_at", null);
   }
@@ -55,22 +55,22 @@ function existing<T extends ExistingRowsQuery<T>>(
   return query
     .lt("created_at", asOf)
     .or(`deleted_at.is.null,deleted_at.gte.${asOf}`);
-}
+};
 
 /** Narrow a query down to the rows deleted before `asOf`, or ever deleted. */
-function deleted<T extends DeletedRowsQuery<T>>(
+const deleted = <T extends DeletedRowsQuery<T>>(
   query: T,
   asOf: string | null
-): T {
+): T => {
   const filtered = query.not("deleted_at", "is", null);
 
   return asOf === null ? filtered : filtered.lt("deleted_at", asOf);
-}
+};
 
-async function unwrapCount(
+const unwrapCount = async (
   name: keyof SummaryStats,
   query: PromiseLike<CountResult>
-): Promise<number> {
+): Promise<number> => {
   const { count, error } = await query;
 
   if (error) {
@@ -80,7 +80,7 @@ async function unwrapCount(
   }
 
   return count ?? 0;
-}
+};
 
 /**
  * Count the videos, terms and talents shown on the dashboard. The current
@@ -90,10 +90,10 @@ async function unwrapCount(
  * Terms are deleted for good, so the count at `asOf` leaves out only the terms
  * created after it.
  */
-export async function countSummaryStats(
+export const countSummaryStats = async (
   supabaseClient: SupabaseClient<Database>,
   { asOf }: CountSummaryStatsOptions = {}
-): Promise<SummaryStats> {
+): Promise<SummaryStats> => {
   const asOfString = asOf ? toDBString(asOf) : null;
 
   const countVideos = () =>
@@ -155,4 +155,4 @@ export async function countSummaryStats(
     totalVideos,
     visibleVideos,
   };
-}
+};

@@ -40,7 +40,7 @@ interface ColorInputProps {
   name: string;
 }
 
-function ColorInput({ defaultValue, id, name }: ColorInputProps) {
+const ColorInput = ({ defaultValue, id, name }: ColorInputProps) => {
   const [color, setColor] = useState(defaultValue ?? "#000000");
 
   return (
@@ -63,9 +63,9 @@ function ColorInput({ defaultValue, id, name }: ColorInputProps) {
       />
     </div>
   );
-}
+};
 
-export function EditTalentForm({ talent }: EditTalentFormProps) {
+export const EditTalentForm = ({ talent }: EditTalentFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const themeColorId = useId();
 
@@ -236,4 +236,4 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
       </Form>
     </Panel>
   );
-}
+};

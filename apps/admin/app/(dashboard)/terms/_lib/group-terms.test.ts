@@ -6,11 +6,13 @@ import {
   groupTermsByInitial,
 } from "./group-terms";
 
-function createTerm(term: string, readings: string[], synonyms: string[] = []) {
-  return { readings, synonyms, term };
-}
+const createTerm = (
+  term: string,
+  readings: string[],
+  synonyms: string[] = []
+) => ({ readings, synonyms, term });
 
-describe("getInitialGroup", () => {
+describe(getInitialGroup, () => {
   it.each([
     ["アイ", "ア"],
     ["ガギ", "カ"],
@@ -29,32 +31,32 @@ describe("getInitialGroup", () => {
   });
 });
 
-describe("filterTerms", () => {
+describe(filterTerms, () => {
   const terms = [
     createTerm("歌枠", ["うたわく"], ["カラオケ配信"]),
     createTerm("ASMR", ["えーえすえむあーる"], ["音フェチ"]),
   ];
 
   it("returns every term without a search", () => {
-    expect(filterTerms(terms, undefined)).toEqual(terms);
+    expect(filterTerms(terms, undefined)).toStrictEqual(terms);
   });
 
   it("searches the term, the readings and the synonyms, ignoring the case", () => {
-    expect(filterTerms(terms, "asmr")).toEqual([terms[1]]);
-    expect(filterTerms(terms, "うた")).toEqual([terms[0]]);
-    expect(filterTerms(terms, "フェチ")).toEqual([terms[1]]);
-    expect(filterTerms(terms, "none")).toEqual([]);
+    expect(filterTerms(terms, "asmr")).toStrictEqual([terms[1]]);
+    expect(filterTerms(terms, "うた")).toStrictEqual([terms[0]]);
+    expect(filterTerms(terms, "フェチ")).toStrictEqual([terms[1]]);
+    expect(filterTerms(terms, "none")).toStrictEqual([]);
   });
 });
 
-describe("groupTermsByInitial", () => {
+describe(groupTermsByInitial, () => {
   it("groups by the initial of the first reading and sorts the groups", () => {
     const utawaku = createTerm("歌枠", ["ウタワク"]);
     const asmr = createTerm("ASMR", []);
     const game = createTerm("ゲーム配信", ["ゲームハイシン"]);
     const karaoke = createTerm("カラオケ", ["カラオケ"]);
 
-    expect(groupTermsByInitial([utawaku, asmr, game, karaoke])).toEqual([
+    expect(groupTermsByInitial([utawaku, asmr, game, karaoke])).toStrictEqual([
       { group: "A", terms: [asmr] },
       { group: "ア", terms: [utawaku] },
       { group: "カ", terms: [game, karaoke] },
@@ -62,6 +64,6 @@ describe("groupTermsByInitial", () => {
   });
 
   it("returns no groups for no terms", () => {
-    expect(groupTermsByInitial([])).toEqual([]);
+    expect(groupTermsByInitial([])).toStrictEqual([]);
   });
 });

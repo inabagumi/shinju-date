@@ -1,13 +1,13 @@
 import { render, screen, within } from "@testing-library/react";
-import { describe, expect, test, vi } from "vitest";
-
-vi.mock("@/lib/data/talents", () => ({}));
+import { describe, expect, it, vi } from "vitest";
 
 import { StreamTendency } from "./talent-stream-tendency";
 
-function createCounts(
+vi.mock(import("@/lib/data/talents"), () => ({}));
+
+const createCounts = (
   cells: [weekday: number, hour: number, count: number][] = []
-): number[][] {
+): number[][] => {
   const counts = Array.from({ length: 7 }, () =>
     Array.from({ length: 24 }, () => 0)
   );
@@ -21,7 +21,7 @@ function createCounts(
   }
 
   return counts;
-}
+};
 
 // 12 streams: 8 on Saturday at 21, 3 on Friday at 22 and 1 on Monday at 0
 const COUNTS = createCounts([
@@ -30,8 +30,8 @@ const COUNTS = createCounts([
   [0, 0, 1],
 ]);
 
-describe("StreamTendency", () => {
-  test("should show the heading and the summary", () => {
+describe(StreamTendency, () => {
+  it("should show the heading and the summary", () => {
     render(<StreamTendency counts={COUNTS} />);
 
     expect(
@@ -47,7 +47,7 @@ describe("StreamTendency", () => {
     ).toBeInTheDocument();
   });
 
-  test("should fold into a line with the busiest day and hour", () => {
+  it("should fold into a line with the busiest day and hour", () => {
     const { container } = render(<StreamTendency counts={COUNTS} />);
 
     const summary = container.querySelector("details > summary");
@@ -56,7 +56,7 @@ describe("StreamTendency", () => {
     expect(summary).toHaveTextContent("配信の傾向土曜日・21時台が多い");
   });
 
-  test("should read out the count of each cell by the day and the hour", () => {
+  it("should have a column for each hour and a row for each day", () => {
     render(<StreamTendency counts={COUNTS} />);
 
     const table = screen.getByRole("table", {
@@ -70,7 +70,14 @@ describe("StreamTendency", () => {
     expect(
       within(table).getByRole("columnheader", { name: "21時" })
     ).toBeInTheDocument();
+  });
 
+  it("should read out the count of each cell by the day and the hour", () => {
+    render(<StreamTendency counts={COUNTS} />);
+
+    const table = screen.getByRole("table", {
+      name: "曜日と時間帯ごとの配信回数",
+    });
     const saturday = within(table)
       .getByRole("rowheader", { name: "土曜日" })
       .closest("tr");
@@ -86,7 +93,7 @@ describe("StreamTendency", () => {
     expect(cells[20]).toHaveTextContent("0回");
   });
 
-  test("should show the numbers of only some hours", () => {
+  it("should show the numbers of only some hours", () => {
     render(<StreamTendency counts={COUNTS} />);
 
     for (const hour of [0, 6, 12, 18]) {
@@ -104,7 +111,7 @@ describe("StreamTendency", () => {
     ).toBeNull();
   });
 
-  test("should shade the cells by the count with the accent", () => {
+  it("should shade the cells by the count with the accent", () => {
     render(<StreamTendency counts={COUNTS} />);
 
     const cells = screen.getAllByTestId("stream-tendency-cell");
@@ -121,12 +128,12 @@ describe("StreamTendency", () => {
 
     for (const className of classNames) {
       expect(className).toMatch(
-        /\bbg-(muted|accent|accent\/25|accent\/50|accent\/75)$/
+        /\bbg-(?:muted|accent|accent\/25|accent\/50|accent\/75)$/u
       );
     }
   });
 
-  test("should render nothing with fewer than 10 streams", () => {
+  it("should render nothing with fewer than 10 streams", () => {
     const { container } = render(
       <StreamTendency counts={createCounts([[5, 21, 9]])} />
     );
@@ -134,7 +141,7 @@ describe("StreamTendency", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  test("should render nothing without streams", () => {
+  it("should render nothing without streams", () => {
     const { container } = render(<StreamTendency counts={createCounts()} />);
 
     expect(container).toBeEmptyDOMElement();

@@ -10,7 +10,7 @@ import { getRedisClient } from "@/lib/redis";
  * キャッシュの戻り値は直列化できる値に限られるため、`Temporal` のオブジェクト
  * ではなく文字列にする
  */
-export async function getLastVideoSync(): Promise<string | null> {
+export const getLastVideoSync = async (): Promise<string | null> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -27,4 +27,4 @@ export async function getLastVideoSync(): Promise<string | null> {
 
     return null;
   }
-}
+};

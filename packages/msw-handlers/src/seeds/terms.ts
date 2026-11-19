@@ -1,6 +1,7 @@
 import type { Tables } from "@shinju-date/database";
 
-import { randomPast, type SeedContext } from "./context.js";
+import { randomPast } from "./context.js";
+import type { SeedContext } from "./context.js";
 
 const TERMS = [
   {
@@ -18,8 +19,8 @@ const TERMS = [
 ] as const;
 
 /** Search terms with their readings and synonyms. */
-export function createTerms(context: SeedContext): Tables<"terms">[] {
-  return TERMS.map(({ readings, synonyms, term }) => {
+export const createTerms = (context: SeedContext): Tables<"terms">[] =>
+  TERMS.map(({ readings, synonyms, term }) => {
     const createdAt = randomPast(context, 365);
 
     return {
@@ -32,4 +33,3 @@ export function createTerms(context: SeedContext): Tables<"terms">[] {
       updated_at: createdAt,
     };
   });
-}

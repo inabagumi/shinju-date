@@ -28,18 +28,18 @@ const saved: StoredProfileImage = {
 
 let image: Buffer;
 
-beforeAll(async () => {
-  image = await createImage(300, 300);
-});
-
 /** A database in which the owner exists and every write succeeds. */
-function respondWithOwner(): void {
+const respondWithOwner = (): void => {
   supabase.respond(({ method, table }) =>
     method === "PATCH" && table !== "profile_images" ? [{ id: "owner" }] : []
   );
-}
+};
 
-describe("syncProfileImage", () => {
+describe(syncProfileImage, () => {
+  beforeAll(async () => {
+    image = await createImage(300, 300);
+  });
+
   it("does nothing when there is no icon on either side", async () => {
     respondWithOwner();
 
@@ -76,7 +76,7 @@ describe("syncProfileImage", () => {
     const [assignment] = supabase.written("PATCH", "youtube_channels");
 
     expect(storage.uploads).toHaveLength(1);
-    expect(assignment?.body).toEqual({ profile_image_id: inserted.id });
+    expect(assignment?.body).toStrictEqual({ profile_image_id: inserted.id });
     expect(assignment?.query["id"]).toBe("eq.channel-1");
     expect(storage.removed).toHaveLength(0);
   });
@@ -121,18 +121,18 @@ describe("syncProfileImage", () => {
 
     expect(
       supabase.requests.map(({ method, table }) => `${method} ${table}`)
-    ).toEqual([
+    ).toStrictEqual([
       "POST profile_images",
       "PATCH twitch_users",
       "DELETE profile_images",
     ]);
-    expect(supabase.written("PATCH", "twitch_users")[0]?.body).toEqual({
+    expect(supabase.written("PATCH", "twitch_users")[0]?.body).toStrictEqual({
       profile_image_id: inserted.id,
     });
     expect(supabase.written("DELETE", "profile_images")[0]?.query["id"]).toBe(
       "eq.image-1"
     );
-    expect(storage.removed).toEqual([["twitch/100001/old.webp"]]);
+    expect(storage.removed).toStrictEqual([["twitch/100001/old.webp"]]);
   });
 
   it("unassigns and discards the icon when the platform has none", async () => {
@@ -148,10 +148,12 @@ describe("syncProfileImage", () => {
         supabaseClient: supabase.supabaseClient,
       })
     ).resolves.toBe("removed");
-    expect(supabase.written("PATCH", "youtube_channels")[0]?.body).toEqual({
+    expect(
+      supabase.written("PATCH", "youtube_channels")[0]?.body
+    ).toStrictEqual({
       profile_image_id: null,
     });
-    expect(storage.removed).toEqual([["youtube/UC1/old.webp"]]);
+    expect(storage.removed).toStrictEqual([["youtube/UC1/old.webp"]]);
   });
 
   it("still succeeds when the old icon cannot be discarded", async () => {
@@ -205,7 +207,7 @@ describe("syncProfileImage", () => {
       supabase
         .written("DELETE", "profile_images")
         .map(({ query }) => query["id"])
-    ).toEqual([`eq.${inserted.id}`]);
-    expect(storage.removed).toEqual([[inserted.path]]);
+    ).toStrictEqual([`eq.${inserted.id}`]);
+    expect(storage.removed).toStrictEqual([[inserted.path]]);
   });
 });

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { getVideoSortHref, toAriaSort } from "./video-sort";
 
-describe("getVideoSortHref", () => {
+describe(getVideoSortHref, () => {
   it("reverses the order for the current field", () => {
     expect(
       getVideoSortHref(
@@ -36,7 +36,7 @@ describe("getVideoSortHref", () => {
   });
 });
 
-describe("toAriaSort", () => {
+describe(toAriaSort, () => {
   it("maps the order to the value of aria-sort", () => {
     expect(toAriaSort("asc")).toBe("ascending");
     expect(toAriaSort("desc")).toBe("descending");

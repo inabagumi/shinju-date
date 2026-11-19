@@ -1,7 +1,8 @@
 "use client";
 
 import { Menu, X } from "lucide-react";
-import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import type { ReactNode } from "react";
 
 interface MobileMenuProps {
   children: ReactNode;
@@ -11,7 +12,7 @@ interface MobileMenuProps {
  * Disclosure-style menu that exposes the primary navigation on narrow
  * viewports where the inline header links are hidden.
  */
-export function MobileMenu({ children }: MobileMenuProps) {
+export const MobileMenu = ({ children }: MobileMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -22,7 +23,9 @@ export function MobileMenu({ children }: MobileMenuProps) {
     const container = containerRef.current;
     const menu = menuRef.current;
 
-    if (!isOpen || !container || !menu) return;
+    if (!isOpen || !container || !menu) {
+      return;
+    }
 
     const close = () => setIsOpen(false);
 
@@ -98,4 +101,4 @@ export function MobileMenu({ children }: MobileMenuProps) {
       </div>
     </div>
   );
-}
+};

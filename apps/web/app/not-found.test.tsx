@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   SearchModalProvider,
@@ -7,27 +7,26 @@ import {
 } from "./_components/search-modal-context";
 import NotFound from "./not-found";
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => "/missing-page",
 }));
 
-function SearchModalState() {
+const SearchModalState = () => {
   const { isOpen } = useSearchModal();
 
   return <output>{isOpen ? "open" : "closed"}</output>;
-}
+};
 
-function renderNotFound() {
-  return render(
+const renderNotFound = () =>
+  render(
     <SearchModalProvider>
       <NotFound />
       <SearchModalState />
     </SearchModalProvider>
   );
-}
 
-describe("NotFound", () => {
-  test("should render the heading in Japanese", () => {
+describe(NotFound, () => {
+  it("should render the heading in Japanese", () => {
     renderNotFound();
 
     expect(
@@ -35,7 +34,7 @@ describe("NotFound", () => {
     ).toBeInTheDocument();
   });
 
-  test("should render links to the top page and the video list", () => {
+  it("should render links to the top page and the video list", () => {
     renderNotFound();
 
     expect(
@@ -46,7 +45,7 @@ describe("NotFound", () => {
     ).toHaveAttribute("href", "/videos");
   });
 
-  test("should open the search modal when the search button is clicked", () => {
+  it("should open the search modal when the search button is clicked", () => {
     renderNotFound();
 
     expect(screen.getByRole("status")).toHaveTextContent("closed");

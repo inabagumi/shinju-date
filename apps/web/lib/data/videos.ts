@@ -10,16 +10,16 @@ import { VIDEO_CALENDAR_SELECT, VIDEO_LIST_SELECT } from "@/lib/data/selects";
 import { unwrap } from "@/lib/data/unwrap";
 import { SEARCH_RESULT_COUNT } from "@/lib/site";
 import { supabaseClient } from "@/lib/supabase";
-import { getVideoKinds, type VideoKindFilter } from "@/lib/video-kind-filter";
+import { getVideoKinds } from "@/lib/video-kind-filter";
+import type { VideoKindFilter } from "@/lib/video-kind-filter";
 import { hasPlatformSource } from "@/lib/video-url";
 
 /**
  * The query of the videos of the video cards, which the type of the rows is
  * derived from. The filters are added to it by each fetcher.
  */
-function selectVideos() {
-  return supabaseClient.from("videos").select(VIDEO_LIST_SELECT);
-}
+const selectVideos = () =>
+  supabaseClient.from("videos").select(VIDEO_LIST_SELECT);
 
 /** A video of the video cards */
 export type Video = QueryData<ReturnType<typeof selectVideos>>[number];
@@ -84,6 +84,7 @@ export const fetchUpcomingVideos = async (): Promise<UpcomingVideos> => {
  * It is cached as long as the videos (`fetchVideos`) are, as it is rendered
  * with them.
  */
+// oxlint-disable-next-line eslint/require-await -- Next.js requires functions with `'use cache'` to be async
 export const fetchCurrentTime = async (): Promise<string> => {
   "use cache: remote";
 
@@ -92,14 +93,13 @@ export const fetchCurrentTime = async (): Promise<string> => {
   return Temporal.Now.zonedDateTimeISO(TIME_ZONE).toString();
 };
 
-async function getDefaultBaseTime() {
-  return Temporal.Now.zonedDateTimeISO(TIME_ZONE)
+const getDefaultBaseTime = (): Temporal.Instant =>
+  Temporal.Now.zonedDateTimeISO(TIME_ZONE)
     .startOfDay()
     .add({
       months: 1,
     })
     .toInstant();
-}
 
 interface FetchVideosOptions {
   kind?: VideoKindFilter;
@@ -122,7 +122,7 @@ export const fetchVideos = async ({
 
   const baseTime = until
     ? Temporal.Instant.fromEpochNanoseconds(until)
-    : await getDefaultBaseTime();
+    : getDefaultBaseTime();
   const videoKinds = getVideoKinds(kind);
   const videos = unwrap(
     await supabaseClient
@@ -161,7 +161,7 @@ export const countVideos = async ({
   cacheLife("hours");
   cacheTag(CACHE_TAGS.VIDEOS);
 
-  const baseTime = await getDefaultBaseTime();
+  const baseTime = getDefaultBaseTime();
   const videoKinds = getVideoKinds(kind);
 
   return unwrap(
@@ -176,9 +176,8 @@ export const countVideos = async ({
 };
 
 /** The query of the videos of the calendars, which the type is derived from */
-function selectCalendarVideos() {
-  return supabaseClient.from("videos").select(VIDEO_CALENDAR_SELECT);
-}
+const selectCalendarVideos = () =>
+  supabaseClient.from("videos").select(VIDEO_CALENDAR_SELECT);
 
 /** A video of the calendars (`/videos.ics` and `/talents/[id].ics`) */
 export type CalendarVideo = QueryData<
@@ -257,12 +256,12 @@ interface DashboardVideosCondition {
  * Fetch the videos of a section of the dashboard that match `condition`, from
  * the latest.
  */
-async function fetchDashboardSectionVideos({
+const fetchDashboardSectionVideos = async ({
   limit,
   shorts,
   status,
   withinHours,
-}: DashboardVideosCondition): Promise<Video[]> {
+}: DashboardVideosCondition): Promise<Video[]> => {
   "use cache: remote";
 
   cacheLife("minutes");
@@ -291,7 +290,7 @@ async function fetchDashboardSectionVideos({
   );
 
   return videos.filter(hasPlatformSource);
-}
+};
 
 /** The currently streaming (`LIVE`) videos */
 const LIVE_VIDEOS_CONDITION: DashboardVideosCondition = {

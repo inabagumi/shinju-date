@@ -26,10 +26,10 @@ const formSchema = z.object({
     .min(8, "パスワードは8文字以上入力する必要があります。"),
 });
 
-export async function signInAction(
+export const signInAction = async (
   _currentState: FormState,
   formData: FormData
-): Promise<FormState> {
+): Promise<FormState> => {
   const parsed = parseFormData(formSchema, formData);
 
   if (!parsed.success) {
@@ -63,4 +63,4 @@ export async function signInAction(
 
   // 戻り先はフォームから送られた値のため、管理画面内のパスに限定する
   redirect(getSafeRedirectPath(formData.get(REDIRECT_PARAM)));
-}
+};

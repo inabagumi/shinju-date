@@ -12,10 +12,8 @@ import {
   summarizeStreamTendency,
 } from "@/lib/stream-tendency";
 
-import {
-  getShownTalent,
-  type TalentPageParams,
-} from "../_lib/get-shown-talent";
+import { getShownTalent } from "../_lib/get-shown-talent";
+import type { TalentPageParams } from "../_lib/get-shown-talent";
 
 /**
  * The background of a cell for each level of `getStreamCountLevel`. It is
@@ -58,7 +56,7 @@ interface StreamTendencyProps {
  * Nothing is rendered with fewer streams than `STREAM_TENDENCY_MIN_STREAMS`,
  * so no space is left for it.
  */
-export function StreamTendency({ counts }: StreamTendencyProps) {
+export const StreamTendency = ({ counts }: StreamTendencyProps) => {
   const { busiestHour, busiestWeekday, max, total } =
     summarizeStreamTendency(counts);
 
@@ -109,6 +107,7 @@ export function StreamTendency({ counts }: StreamTendencyProps) {
           <caption className="sr-only">曜日と時間帯ごとの配信回数</caption>
           <thead>
             <tr>
+              {/* oxlint-disable-next-line jsx-a11y/control-has-associated-label -- The empty corner cell above the weekday headers, which has nothing to label */}
               <td className="w-5 p-0" />
               {HOURS.map((hour) => (
                 <th
@@ -138,6 +137,7 @@ export function StreamTendency({ counts }: StreamTendencyProps) {
                   const count = counts[weekdayIndex]?.[hour] ?? 0;
 
                   return (
+                    // oxlint-disable-next-line jsx-a11y/control-has-associated-label -- A data cell, not a control: the count is in the visually hidden text inside it, deeper than the rule looks
                     <td className="p-0" key={hour}>
                       <span
                         className={twMerge(
@@ -158,7 +158,7 @@ export function StreamTendency({ counts }: StreamTendencyProps) {
       </details>
     </section>
   );
-}
+};
 
 interface TalentStreamTendencyProps {
   params: TalentPageParams;
@@ -169,9 +169,9 @@ interface TalentStreamTendencyProps {
  * the page that must be shown, so nothing is rendered when the streams cannot
  * be fetched.
  */
-export async function TalentStreamTendency({
+export const TalentStreamTendency = async ({
   params,
-}: TalentStreamTendencyProps) {
+}: TalentStreamTendencyProps) => {
   const talent = await getShownTalent(params);
   let starts: string[];
 
@@ -187,4 +187,4 @@ export async function TalentStreamTendency({
   }
 
   return <StreamTendency counts={countStreamsByWeekdayAndHour(starts)} />;
-}
+};

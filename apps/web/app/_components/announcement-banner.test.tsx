@@ -1,29 +1,31 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { queryKeys } from "@/lib/query-keys";
 
+import type {
+  dismissAnnouncement,
+  getRenderedAnnouncement,
+} from "../_lib/actions";
 import { AnnouncementBanner } from "./announcement-banner";
 import type { RenderedAnnouncement } from "./announcement-message";
 
 const actions = vi.hoisted(() => ({
-  dismissAnnouncement: vi.fn(async () => {}),
-  getRenderedAnnouncement: vi.fn(),
+  dismissAnnouncement: vi.fn<typeof dismissAnnouncement>(async () => {}),
+  getRenderedAnnouncement: vi.fn<typeof getRenderedAnnouncement>(),
 }));
 
-vi.mock("../_lib/actions", () => actions);
+vi.mock(import("../_lib/actions"), () => actions);
 
-function createAnnouncement(message: ReactNode): RenderedAnnouncement {
-  return {
-    id: "announcement-1",
-    level: "info",
-    message,
-  };
-}
+const createAnnouncement = (message: ReactNode): RenderedAnnouncement => ({
+  id: "announcement-1",
+  level: "info",
+  message,
+});
 
-function renderBanner(announcement: RenderedAnnouncement) {
+const renderBanner = (announcement: RenderedAnnouncement) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -35,14 +37,14 @@ function renderBanner(announcement: RenderedAnnouncement) {
   );
 
   return { queryClient };
-}
+};
 
-describe("AnnouncementBanner", () => {
+describe(AnnouncementBanner, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  test("should show the message rendered on the server as it is", () => {
+  it("should show the message rendered on the server as it is", () => {
     renderBanner(
       createAnnouncement(
         <p>
@@ -59,7 +61,7 @@ describe("AnnouncementBanner", () => {
     );
   });
 
-  test("should show the new message after the refetch", async () => {
+  it("should show the new message after the refetch", async () => {
     actions.getRenderedAnnouncement.mockResolvedValue(
       createAnnouncement(
         <p>
@@ -88,7 +90,7 @@ describe("AnnouncementBanner", () => {
     expect(screen.getByText("お知らせ", { selector: "del" })).toBeVisible();
   });
 
-  test("should hide the banner once the announcement has ended", async () => {
+  it("should hide the banner once the announcement has ended", async () => {
     actions.getRenderedAnnouncement.mockResolvedValue(null);
 
     const { queryClient } = renderBanner(

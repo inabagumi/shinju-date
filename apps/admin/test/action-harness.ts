@@ -2,8 +2,10 @@ import type { User } from "@supabase/supabase-js";
 import { beforeEach, expect, vi } from "vitest";
 
 import type { AuditAction, AuditLogEntry } from "@/lib/audit-log";
+import type * as AuthModule from "@/lib/auth";
 
-import { type FakeSupabase, setupSupabase } from "./supabase";
+import { setupSupabase } from "./supabase";
+import type { FakeSupabase } from "./supabase";
 
 /**
  * The modules every Server Action talks to, replaced for the action tests.
@@ -15,8 +17,8 @@ import { type FakeSupabase, setupSupabase } from "./supabase";
  * importing the mocked modules in the test file.
  */
 const mocks = vi.hoisted(() => ({
-  createAuditLog: vi.fn(async () => {}),
-  createAuditLogs: vi.fn(async () => {}),
+  createAuditLog: vi.fn(() => Promise.resolve()),
+  createAuditLogs: vi.fn(() => Promise.resolve()),
   createSupabaseServerClient: vi.fn(),
   getRedisClient: vi.fn(() => ({})),
   logger: {
@@ -27,20 +29,20 @@ const mocks = vi.hoisted(() => ({
   },
   requireAuthenticatedUser: vi.fn(),
   revalidatePath: vi.fn(),
-  revalidateTags: vi.fn(async () => {}),
+  revalidateTags: vi.fn(() => Promise.resolve()),
   state: { supabase: null as FakeSupabase | null },
 }));
 
-function currentClient() {
+const currentClient = () => {
   if (!mocks.state.supabase) {
     throw new Error("Call setupActionTest() before running a Server Action.");
   }
 
   return mocks.state.supabase.client;
-}
+};
 
 vi.mock("@/lib/auth", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/auth")>()),
+  ...(await importOriginal<typeof AuthModule>()),
   requireAuthenticatedUser: mocks.requireAuthenticatedUser,
 }));
 vi.mock("@/lib/supabase", () => ({
@@ -83,29 +85,29 @@ interface RevalidationExpectation {
  * Before each test, the mocks are cleared and an administrator is signed in.
  * Call it once at the top level of the test file.
  */
-export function setupActionTest() {
+export const setupActionTest = () => {
   const supabase = setupSupabase();
 
   mocks.state.supabase = supabase;
 
-  function signIn(user: Partial<User> = {}): void {
+  const signIn = (user: Partial<User> = {}): void => {
     mocks.requireAuthenticatedUser.mockResolvedValue({
       supabaseClient: supabase.client,
       user: { ...TEST_USER, ...user },
     });
-  }
+  };
 
-  function signOut(): void {
+  const signOut = (): void => {
     mocks.requireAuthenticatedUser.mockResolvedValue(null);
-  }
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.createAuditLog.mockImplementation(async () => {});
-    mocks.createAuditLogs.mockImplementation(async () => {});
+    mocks.createAuditLog.mockResolvedValue();
+    mocks.createAuditLogs.mockResolvedValue();
     mocks.createSupabaseServerClient.mockResolvedValue(supabase.client);
     mocks.getRedisClient.mockImplementation(() => ({}));
-    mocks.revalidateTags.mockImplementation(async () => {});
+    mocks.revalidateTags.mockResolvedValue();
     signIn();
   });
 
@@ -182,6 +184,6 @@ export function setupActionTest() {
     /** The fake Supabase that both clients talk to. */
     supabase,
   };
-}
+};
 
 export type ActionTest = ReturnType<typeof setupActionTest>;

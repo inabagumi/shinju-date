@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  AccountNotFoundError,
-  StalledPaginationError,
-} from "../internal/errors.js";
+import { AccountNotFoundError } from "../internal/account-not-found-error.js";
+import { StalledPaginationError } from "../internal/stalled-pagination-error.js";
 import { TEST_NOW } from "../internal/testing/context.js";
 import {
   newVideoId,
@@ -19,6 +17,8 @@ import {
   isSavedVideoLookup,
   TWITCH_TALENTS,
 } from "../internal/testing/twitch.js";
+import type * as Thumbnails from "../internal/thumbnails/index.js";
+import type { ErrorReporter } from "../types.js";
 import type { SavedTwitchVideo } from "./saved-video.js";
 import { TwitchScraper } from "./scraper.js";
 import type {
@@ -30,17 +30,21 @@ import type {
   TwitchVideoPage,
 } from "./types.js";
 
-vi.mock("../internal/thumbnails/index.js", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../internal/thumbnails/index.js")>()),
-  createThumbnail: vi.fn(async () => ({ id: "thumb-new", path: "x/y.jpg" })),
-  removeThumbnail: vi.fn(),
+vi.mock(import("../internal/thumbnails/index.js"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  createThumbnail: vi.fn<typeof Thumbnails.createThumbnail>(() =>
+    Promise.resolve({ id: "thumb-new", path: "x/y.jpg" })
+  ),
+  removeThumbnail: vi.fn<typeof Thumbnails.removeThumbnail>(),
 }));
 
 const supabase = setupSupabase();
 
-async function* fromArray<T>(items: readonly T[]): AsyncGenerator<T> {
+const fromArray = async function* fromArray<T>(
+  items: readonly T[]
+): AsyncGenerator<T> {
   yield* items;
-}
+};
 
 interface FakeTwitch {
   archives?: TwitchVideo[];
@@ -59,7 +63,7 @@ interface FakeTwitch {
  * Stands in for Helix: the scraper is exercised through its public operations
  * with only Twitch and the database replaced.
  */
-function createApi({
+const createApi = ({
   archives = [],
   clips = [],
   historyPages = {},
@@ -67,37 +71,36 @@ function createApi({
   uploads = [],
   users = [],
   videos = [],
-}: FakeTwitch): TwitchApi {
-  return {
-    getClips: vi.fn(({ ids }) =>
-      fromArray(clips.filter((clip) => ids.includes(clip.id)))
-    ),
-    getStreamsByUserIds: vi.fn(() => fromArray(liveStreams)),
-    getUsers: vi.fn(({ ids }) =>
-      fromArray(users.filter((user) => ids.includes(user.id)))
-    ),
-    getVideos: vi.fn(({ ids }) =>
-      fromArray(videos.filter((video) => ids.includes(video.id)))
-    ),
-    getVideosByUser: vi.fn(({ type }) =>
-      fromArray(type === "upload" ? uploads : archives)
-    ),
-    getVideosByUserPage: vi.fn(
-      async ({ after }) =>
-        historyPages[after ?? ""] ?? { cursor: null, videos: [] }
-    ),
-  };
-}
+}: FakeTwitch): TwitchApi => ({
+  getClips: vi.fn<TwitchApi["getClips"]>(({ ids }) =>
+    fromArray(clips.filter((clip) => ids.includes(clip.id)))
+  ),
+  getStreamsByUserIds: vi.fn<TwitchApi["getStreamsByUserIds"]>(() =>
+    fromArray(liveStreams)
+  ),
+  getUsers: vi.fn<TwitchApi["getUsers"]>(({ ids }) =>
+    fromArray(users.filter((user) => ids.includes(user.id)))
+  ),
+  getVideos: vi.fn<TwitchApi["getVideos"]>(({ ids }) =>
+    fromArray(videos.filter((video) => ids.includes(video.id)))
+  ),
+  getVideosByUser: vi.fn<TwitchApi["getVideosByUser"]>(({ type }) =>
+    fromArray(type === "upload" ? uploads : archives)
+  ),
+  getVideosByUserPage: vi.fn<TwitchApi["getVideosByUserPage"]>(({ after }) =>
+    Promise.resolve(historyPages[after ?? ""] ?? { cursor: null, videos: [] })
+  ),
+});
 
 /**
  * Answers like a database holding one saved video: reads return the row as it
  * is after the writes made so far. Requests named in `failing` (e.g.
  * `PATCH twitch_videos`) fail instead.
  */
-function respondWithSavedVideo(
+const respondWithSavedVideo = (
   initial: SavedTwitchVideo,
   { failing = [] }: { failing?: string[] } = {}
-) {
+) => {
   let row = structuredClone(initial);
 
   supabase.respond((request) => {
@@ -110,9 +113,10 @@ function respondWithSavedVideo(
     }
 
     switch (route) {
-      case "GET talents":
+      case "GET talents": {
         return TWITCH_TALENTS;
-      case "GET videos":
+      }
+      case "GET videos": {
         if (isSavedVideoLookup(request)) {
           return findSavedVideos([row])(request);
         }
@@ -126,10 +130,12 @@ function respondWithSavedVideo(
             },
           },
         ];
-      case "PATCH videos":
+      }
+      case "PATCH videos": {
         row = { ...row, ...(body as Partial<SavedTwitchVideo>) };
         return [{ id: row.id }];
-      case "PATCH twitch_videos":
+      }
+      case "PATCH twitch_videos": {
         row = {
           ...row,
           twitch_video: {
@@ -138,23 +144,24 @@ function respondWithSavedVideo(
           },
         };
         return [];
-      case "POST rpc/soft_delete_videos":
+      }
+      case "POST rpc/soft_delete_videos": {
         return (body as { p_video_ids: string[] }).p_video_ids;
-      default:
+      }
+      default: {
         return [];
+      }
     }
   });
-}
+};
 
 /** The writes made so far, without the reads. */
-function writes() {
-  return supabase.requests.filter(({ method }) => method !== "GET");
-}
+const writes = () => supabase.requests.filter(({ method }) => method !== "GET");
 
-describe("TwitchScraper", () => {
-  const onError = vi.fn();
+describe(TwitchScraper, () => {
+  const onError = vi.fn<ErrorReporter>();
 
-  function createScraper(fake: FakeTwitch) {
+  const createScraper = (fake: FakeTwitch) => {
     const client = createApi(fake);
 
     return {
@@ -165,7 +172,7 @@ describe("TwitchScraper", () => {
         supabaseClient: supabase.supabaseClient,
       }),
     };
-  }
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -180,7 +187,7 @@ describe("TwitchScraper", () => {
       supabase.respondWith({ "GET talents": TWITCH_TALENTS });
       const { scraper } = createScraper({ liveStreams: [createStream()] });
 
-      await expect(scraper.refreshLiveVideos(TEST_NOW)).resolves.toBe(true);
+      await expect(scraper.refreshLiveVideos(TEST_NOW)).resolves.toBeTruthy();
 
       expect(supabase.insertedVideos()[0]?.video).toMatchObject({
         platform: "twitch",
@@ -206,9 +213,10 @@ describe("TwitchScraper", () => {
         }
 
         switch (table) {
-          case "talents":
+          case "talents": {
             return TWITCH_TALENTS;
-          case "videos":
+          }
+          case "videos": {
             return [
               {
                 ...video,
@@ -218,18 +226,22 @@ describe("TwitchScraper", () => {
                 },
               },
             ];
-          default:
+          }
+          default: {
             return [];
+          }
         }
       });
       const { scraper } = createScraper({ archives: [createVideo()] });
 
-      await expect(scraper.refreshLiveVideos(TEST_NOW)).resolves.toBe(true);
+      await expect(scraper.refreshLiveVideos(TEST_NOW)).resolves.toBeTruthy();
 
-      expect(supabase.written("PATCH", "twitch_videos")[0]?.body).toEqual({
-        twitch_video_id: "vod-1",
-        type: "archive",
-      });
+      expect(supabase.written("PATCH", "twitch_videos")[0]?.body).toStrictEqual(
+        {
+          twitch_video_id: "vod-1",
+          type: "archive",
+        }
+      );
       expect(supabase.written("PATCH", "videos")[0]?.body).toMatchObject({
         duration: "PT2H",
         status: "ENDED",
@@ -243,7 +255,7 @@ describe("TwitchScraper", () => {
       );
       const { scraper } = createScraper({});
 
-      await expect(scraper.refreshLiveVideos(TEST_NOW)).resolves.toBe(false);
+      await expect(scraper.refreshLiveVideos(TEST_NOW)).resolves.toBeFalsy();
     });
   });
 
@@ -257,7 +269,7 @@ describe("TwitchScraper", () => {
         ],
       });
 
-      await expect(scraper.addNewVideos(TEST_NOW)).resolves.toBe(true);
+      await expect(scraper.addNewVideos(TEST_NOW)).resolves.toBeTruthy();
 
       expect(client.getVideosByUser).toHaveBeenCalledWith(
         expect.objectContaining({ type: "archive", userId: "twitch-user-1" })
@@ -269,8 +281,8 @@ describe("TwitchScraper", () => {
         supabase
           .insertedVideos()
           .map(({ platformVideo }) => (platformVideo as { type: string }).type)
-          .sort()
-      ).toEqual(["archive", "upload"]);
+          .toSorted()
+      ).toStrictEqual(["archive", "upload"]);
     });
 
     it("reports an account that cannot be read and handles the rest", async () => {
@@ -285,7 +297,7 @@ describe("TwitchScraper", () => {
         return fromArray([createVideo()]);
       });
 
-      await expect(scraper.addNewVideos(TEST_NOW)).resolves.toBe(true);
+      await expect(scraper.addNewVideos(TEST_NOW)).resolves.toBeTruthy();
       expect(onError).toHaveBeenCalledWith(error, {
         twitchUserId: "twitch-user-1",
       });
@@ -308,9 +320,9 @@ describe("TwitchScraper", () => {
       );
       const { scraper } = createScraper({ videos: [createVideo()] });
 
-      await expect(scraper.refreshRecentVideos(TEST_NOW)).resolves.toBe(true);
+      await expect(scraper.refreshRecentVideos(TEST_NOW)).resolves.toBeTruthy();
 
-      expect(supabase.written("PATCH", "videos")[0]?.body).toEqual({
+      expect(supabase.written("PATCH", "videos")[0]?.body).toStrictEqual({
         duration: "PT2H",
       });
     });
@@ -331,7 +343,9 @@ describe("TwitchScraper", () => {
         videos: [createVideo({ title: "Renamed archive" })],
       });
 
-      await expect(scraper.refreshVideo("video-1", TEST_NOW)).resolves.toEqual({
+      await expect(
+        scraper.refreshVideo("video-1", TEST_NOW)
+      ).resolves.toStrictEqual({
         after: { duration: "PT2H", title: "Renamed archive" },
         before: { duration: "PT1H", title: "Archive" },
         status: "updated",
@@ -357,7 +371,7 @@ describe("TwitchScraper", () => {
       respondWithSavedVideo(endedArchive);
       await createScraper(fake).scraper.refreshRecentVideos(TEST_NOW);
 
-      expect(single).toEqual([
+      expect(single).toStrictEqual([
         expect.objectContaining({
           body: {
             duration: "PT2H",
@@ -366,7 +380,7 @@ describe("TwitchScraper", () => {
           table: "videos",
         }),
       ]);
-      expect(writes()).toEqual(single);
+      expect(writes()).toStrictEqual(single);
     });
 
     it("reads a clip as a clip", async () => {
@@ -387,7 +401,9 @@ describe("TwitchScraper", () => {
         clips: [createClip({ title: "Renamed clip" })],
       });
 
-      await expect(scraper.refreshVideo("video-1", TEST_NOW)).resolves.toEqual({
+      await expect(
+        scraper.refreshVideo("video-1", TEST_NOW)
+      ).resolves.toStrictEqual({
         after: { title: "Renamed clip" },
         before: { title: "Clip" },
         status: "updated",
@@ -403,11 +419,13 @@ describe("TwitchScraper", () => {
       respondWithSavedVideo({ ...endedArchive, duration: "PT2H" });
       const { scraper } = createScraper({ videos: [createVideo()] });
 
-      await expect(scraper.refreshVideo("video-1", TEST_NOW)).resolves.toEqual({
+      await expect(
+        scraper.refreshVideo("video-1", TEST_NOW)
+      ).resolves.toStrictEqual({
         status: "unchanged",
         title: "Archive",
       });
-      expect(writes()).toEqual([]);
+      expect(writes()).toStrictEqual([]);
     });
 
     it("soft-deletes a video Twitch no longer returns, like the scheduled refresh", async () => {
@@ -415,14 +433,14 @@ describe("TwitchScraper", () => {
 
       await expect(
         createScraper({}).scraper.refreshVideo("video-1", TEST_NOW)
-      ).resolves.toEqual({ status: "unavailable" });
+      ).resolves.toStrictEqual({ status: "unavailable" });
       const single = writes();
 
       supabase.requests.length = 0;
       respondWithSavedVideo(endedArchive);
       await createScraper({}).scraper.refreshRecentVideos(TEST_NOW);
 
-      expect(single).toEqual([
+      expect(single).toStrictEqual([
         expect.objectContaining({
           body: expect.objectContaining({
             p_reason: "unavailable",
@@ -431,14 +449,14 @@ describe("TwitchScraper", () => {
           table: "rpc/soft_delete_videos",
         }),
       ]);
-      expect(writes()).toEqual(single);
+      expect(writes()).toStrictEqual(single);
     });
 
     it("reports a video that is not saved, or not a Twitch video", async () => {
       supabase.respond(() => []);
       const { client, scraper } = createScraper({ videos: [createVideo()] });
 
-      await expect(scraper.refreshVideo("video-404")).resolves.toEqual({
+      await expect(scraper.refreshVideo("video-404")).resolves.toStrictEqual({
         status: "not-found",
       });
       expect(client.getVideos).not.toHaveBeenCalled();
@@ -452,25 +470,27 @@ describe("TwitchScraper", () => {
         liveStreams: [createStream()],
       });
 
-      await expect(scraper.refreshVideo("video-1", TEST_NOW)).resolves.toEqual({
+      await expect(
+        scraper.refreshVideo("video-1", TEST_NOW)
+      ).resolves.toStrictEqual({
         after: { title: "Live now" },
         before: { title: "Old title" },
         status: "updated",
         title: "Live now",
       });
 
-      expect(supabase.written("PATCH", "twitch_videos")).toEqual([
+      expect(supabase.written("PATCH", "twitch_videos")).toStrictEqual([
         expect.objectContaining({
           body: { twitch_video_id: "vod-1", type: "archive" },
           query: { id: "eq.twitch-row-1" },
         }),
       ]);
-      expect(supabase.written("PATCH", "videos")).toEqual([
+      expect(supabase.written("PATCH", "videos")).toStrictEqual([
         expect.objectContaining({
           body: { title: "Live now" },
         }),
       ]);
-      expect(supabase.insertedVideos()).toEqual([]);
+      expect(supabase.insertedVideos()).toStrictEqual([]);
     });
 
     it("reports a link to the archive as an update", async () => {
@@ -480,7 +500,9 @@ describe("TwitchScraper", () => {
         liveStreams: [createStream()],
       });
 
-      await expect(scraper.refreshVideo("video-1", TEST_NOW)).resolves.toEqual({
+      await expect(
+        scraper.refreshVideo("video-1", TEST_NOW)
+      ).resolves.toStrictEqual({
         after: {},
         before: {},
         status: "updated",
@@ -494,7 +516,7 @@ describe("TwitchScraper", () => {
       respondWithSavedVideo(createSavedVideo());
       await expect(
         createScraper(fake).scraper.refreshVideo("video-1", TEST_NOW)
-      ).resolves.toEqual({
+      ).resolves.toStrictEqual({
         // The start time is the same instant, written differently.
         after: { duration: "PT2H", status: "ENDED", title: "Archive" },
         before: { duration: "P0D", status: "LIVE", title: "Live now" },
@@ -507,12 +529,12 @@ describe("TwitchScraper", () => {
       respondWithSavedVideo(createSavedVideo());
       await createScraper(fake).scraper.refreshLiveVideos(TEST_NOW);
 
-      expect(single.map(({ table }) => table)).toEqual([
+      expect(single.map(({ table }) => table)).toStrictEqual([
         "twitch_videos",
         "rpc/touch_thumbnail",
         "videos",
       ]);
-      expect(writes()).toEqual(single);
+      expect(writes()).toStrictEqual(single);
     });
 
     it("links an ended broadcast to the archive Twitch lists by now", async () => {
@@ -525,10 +547,12 @@ describe("TwitchScraper", () => {
         after: { duration: "PT2H", title: "Archive" },
         status: "updated",
       });
-      expect(supabase.written("PATCH", "twitch_videos")[0]?.body).toEqual({
-        twitch_video_id: "vod-1",
-        type: "archive",
-      });
+      expect(supabase.written("PATCH", "twitch_videos")[0]?.body).toStrictEqual(
+        {
+          twitch_video_id: "vod-1",
+          type: "archive",
+        }
+      );
       expect(supabase.written("PATCH", "videos")[0]?.body).toMatchObject({
         duration: "PT2H",
         status: "ENDED",
@@ -554,7 +578,7 @@ describe("TwitchScraper", () => {
       await expect(scraper.refreshVideo("video-1", TEST_NOW)).rejects.toBe(
         error
       );
-      expect(writes()).toEqual([]);
+      expect(writes()).toStrictEqual([]);
     });
 
     it("rejects when the broadcast cannot be linked to its archive", async () => {
@@ -566,7 +590,7 @@ describe("TwitchScraper", () => {
       await expect(scraper.refreshVideo("video-1", TEST_NOW)).rejects.toThrow(
         "Failed to update a Twitch video"
       );
-      expect(supabase.written("PATCH", "videos")).toEqual([]);
+      expect(supabase.written("PATCH", "videos")).toStrictEqual([]);
       expect(onError).not.toHaveBeenCalled();
     });
 
@@ -574,11 +598,13 @@ describe("TwitchScraper", () => {
       respondWithSavedVideo(createSavedVideo({ status: "ENDED" }));
       const { scraper } = createScraper({});
 
-      await expect(scraper.refreshVideo("video-1", TEST_NOW)).resolves.toEqual({
+      await expect(
+        scraper.refreshVideo("video-1", TEST_NOW)
+      ).resolves.toStrictEqual({
         status: "unchanged",
         title: "Live now",
       });
-      expect(writes()).toEqual([]);
+      expect(writes()).toStrictEqual([]);
     });
   });
 
@@ -603,9 +629,9 @@ describe("TwitchScraper", () => {
       });
       const { scraper } = createScraper({});
 
-      await expect(scraper.removeUnavailableVideos(TEST_NOW)).resolves.toBe(
-        true
-      );
+      await expect(
+        scraper.removeUnavailableVideos(TEST_NOW)
+      ).resolves.toBeTruthy();
       expect(
         supabase.written("POST", "rpc/soft_delete_videos")[0]?.body
       ).toMatchObject({ p_reason: "unavailable", p_video_ids: ["video-1"] });
@@ -647,7 +673,7 @@ describe("TwitchScraper", () => {
         ],
       });
 
-      await expect(scraper.syncAccounts()).resolves.toBe(true);
+      await expect(scraper.syncAccounts()).resolves.toBeTruthy();
 
       expect(supabase.written("PATCH", "twitch_users")[0]).toMatchObject({
         body: { name: "Alice", twitch_login_name: "alice" },
@@ -691,7 +717,9 @@ describe("TwitchScraper", () => {
         ],
       });
 
-      await expect(scraper.syncTalentAccounts("talent-1")).resolves.toEqual([
+      await expect(
+        scraper.syncTalentAccounts("talent-1")
+      ).resolves.toStrictEqual([
         {
           accountId: "user-row-1",
           changes: {
@@ -760,7 +788,7 @@ describe("TwitchScraper", () => {
 
       await expect(
         scraper.addPastVideos({ accountId: "user-row-1", now: TEST_NOW })
-      ).resolves.toEqual({ added: 1, cursor: "page-2", listed: 3 });
+      ).resolves.toStrictEqual({ added: 1, cursor: "page-2", listed: 3 });
 
       expect(client.getVideosByUserPage).toHaveBeenCalledWith(
         expect.objectContaining({ type: "all", userId: "twitch-user-1" })
@@ -771,7 +799,7 @@ describe("TwitchScraper", () => {
       });
       expect(
         supabase.insertedVideos().map(({ platformVideo }) => platformVideo)
-      ).toEqual([
+      ).toStrictEqual([
         expect.objectContaining({
           twitch_user_id: "user-row-1",
           twitch_video_id: "vod-2",
@@ -791,7 +819,7 @@ describe("TwitchScraper", () => {
 
       await expect(
         scraper.addPastVideos({ accountId: "user-row-1", cursor: "page-2" })
-      ).resolves.toEqual({ added: 0, cursor: null, listed: 0 });
+      ).resolves.toStrictEqual({ added: 0, cursor: null, listed: 0 });
 
       expect(client.getVideosByUserPage).toHaveBeenCalledWith(
         expect.objectContaining({ after: "page-2" })
@@ -812,7 +840,7 @@ describe("TwitchScraper", () => {
       await expect(
         scraper.addPastVideos({ accountId: "user-row-1", cursor: "page-2" })
       ).rejects.toBeInstanceOf(StalledPaginationError);
-      expect(supabase.insertedVideos()).toEqual([]);
+      expect(supabase.insertedVideos()).toStrictEqual([]);
     });
 
     it("rejects an account that is unknown or whose talent was deleted", async () => {

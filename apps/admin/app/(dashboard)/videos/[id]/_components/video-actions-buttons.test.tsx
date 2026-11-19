@@ -8,20 +8,21 @@ import {
   softDeleteAction,
   toggleVisibilityAction,
 } from "../../_actions";
+import type { syncVideoAction } from "../../_actions/sync";
 import {
   VideoActionsButtons,
   VideoActionsProvider,
   VideoDeleteButton,
 } from "./video-actions-buttons";
 
-vi.mock("../../_actions", () => ({
-  restoreAction: vi.fn(),
-  softDeleteAction: vi.fn(),
-  toggleVisibilityAction: vi.fn(),
+vi.mock(import("../../_actions"), () => ({
+  restoreAction: vi.fn<typeof restoreAction>(),
+  softDeleteAction: vi.fn<typeof softDeleteAction>(),
+  toggleVisibilityAction: vi.fn<typeof toggleVisibilityAction>(),
 }));
 
-vi.mock("../../_actions/sync", () => ({
-  syncVideoAction: vi.fn(),
+vi.mock(import("../../_actions/sync"), () => ({
+  syncVideoAction: vi.fn<typeof syncVideoAction>(),
 }));
 
 const VIDEO_ID = "00000000-0000-4000-8000-000000000001";
@@ -31,10 +32,10 @@ interface VideoOverrides {
   visible?: boolean;
 }
 
-function renderActions({
+const renderActions = ({
   deleted_at = null,
   visible = true,
-}: VideoOverrides = {}) {
+}: VideoOverrides = {}) => {
   const video = {
     deleted_at,
     id: VIDEO_ID,
@@ -51,9 +52,9 @@ function renderActions({
       </VideoActionsProvider>
     </ActionToastProvider>
   );
-}
+};
 
-describe("VideoActionsProvider", () => {
+describe(VideoActionsProvider, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -83,9 +84,9 @@ describe("VideoActionsProvider", () => {
     fireEvent.click(screen.getByRole("button", { name: "非表示にする" }));
     fireEvent.click(screen.getByRole("button", { name: "切り替える" }));
 
-    expect(
-      await screen.findByText("動画を非表示に変更しました。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("動画を非表示に変更しました。")
+    ).resolves.toBeInTheDocument();
     expect(toggleVisibilityAction).toHaveBeenCalledWith([VIDEO_ID]);
   });
 
@@ -94,12 +95,14 @@ describe("VideoActionsProvider", () => {
     renderActions();
 
     fireEvent.click(screen.getByRole("button", { name: "動画を削除" }));
-    fireEvent.change(screen.getByLabelText(/「DELETE」と入力してください/), {
+    fireEvent.change(screen.getByLabelText(/「DELETE」と入力してください/u), {
       target: { value: "DELETE" },
     });
     fireEvent.click(screen.getByRole("button", { name: "削除する" }));
 
-    expect(await screen.findByText("動画を削除しました。")).toBeInTheDocument();
+    await expect(
+      screen.findByText("動画を削除しました。")
+    ).resolves.toBeInTheDocument();
     expect(softDeleteAction).toHaveBeenCalledWith([VIDEO_ID]);
   });
 
@@ -113,9 +116,9 @@ describe("VideoActionsProvider", () => {
     fireEvent.click(screen.getByRole("button", { name: "復元" }));
     fireEvent.click(screen.getByRole("button", { name: "復元する" }));
 
-    expect(
-      await screen.findByText("復元できませんでした。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("復元できませんでした。")
+    ).resolves.toBeInTheDocument();
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     );

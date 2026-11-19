@@ -1,20 +1,18 @@
 import { REDIS_KEYS } from "@shinju-date/constants";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-  isMaintenanceMode,
-  type MaintenanceModeRedisClient,
-} from "./is-maintenance-mode.js";
+import { isMaintenanceMode } from "./is-maintenance-mode.js";
+import type { MaintenanceModeRedisClient } from "./is-maintenance-mode.js";
 
-function createRedisClient(get: () => Promise<unknown>) {
-  const mockGet = vi.fn(get);
+const createRedisClient = (get: () => Promise<unknown>) => {
+  const mockGet = vi.fn<() => Promise<unknown>>(get);
 
   return { get: mockGet } as MaintenanceModeRedisClient & {
     get: typeof mockGet;
   };
-}
+};
 
-describe("isMaintenanceMode", () => {
+describe(isMaintenanceMode, () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
@@ -30,7 +28,7 @@ describe("isMaintenanceMode", () => {
   it("returns true when the value is true", async () => {
     const redisClient = createRedisClient(() => Promise.resolve(true));
 
-    await expect(isMaintenanceMode(redisClient)).resolves.toBe(true);
+    await expect(isMaintenanceMode(redisClient)).resolves.toBeTruthy();
   });
 
   it.each([null, false, "true", 1])(
@@ -38,19 +36,20 @@ describe("isMaintenanceMode", () => {
     async (value) => {
       const redisClient = createRedisClient(() => Promise.resolve(value));
 
-      await expect(isMaintenanceMode(redisClient)).resolves.toBe(false);
+      await expect(isMaintenanceMode(redisClient)).resolves.toBeFalsy();
     }
   );
 
   it("returns false when Redis cannot be read", async () => {
-    const consoleError = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => undefined);
+    const consoleError = vi.spyOn(console, "error").mockReturnValue(undefined);
     const redisClient = createRedisClient(() =>
       Promise.reject(new Error("unavailable"))
     );
 
-    await expect(isMaintenanceMode(redisClient)).resolves.toBe(false);
-    expect(consoleError).toHaveBeenCalled();
+    await expect(isMaintenanceMode(redisClient)).resolves.toBeFalsy();
+    expect(consoleError).toHaveBeenCalledWith(
+      "Failed to check maintenance mode:",
+      expect.any(Error)
+    );
   });
 });

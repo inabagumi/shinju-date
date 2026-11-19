@@ -20,7 +20,7 @@ interface MaintenanceModeCache {
 
 let maintenanceModeCache: MaintenanceModeCache | undefined;
 
-function getMaintenanceMode(): Promise<boolean> {
+const getMaintenanceMode = (): Promise<boolean> => {
   const now = Temporal.Now.instant();
 
   if (
@@ -40,11 +40,11 @@ function getMaintenanceMode(): Promise<boolean> {
   };
 
   return value;
-}
+};
 
-export async function proxy(
+export const proxy = async (
   request: NextRequest
-): Promise<ReturnType<NextProxy>> {
+): Promise<ReturnType<NextProxy>> => {
   if (!serverEnv.ENABLE_MSW && (await getMaintenanceMode())) {
     // Serve static maintenance.html page
     return NextResponse.rewrite(new URL("/maintenance.html", request.url));
@@ -57,7 +57,7 @@ export async function proxy(
   }
 
   return NextResponse.next();
-}
+};
 
 export const config = {
   matcher: [

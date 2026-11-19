@@ -1,4 +1,6 @@
 // @vitest-environment node
+import type { logger } from "@shinju-date/logger";
+import type { cacheTag } from "next/cache";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -16,25 +18,33 @@ import {
   videoSeed,
 } from "@/test/supabase";
 
+import { GET } from "./route";
+
 const mocks = vi.hoisted(() => ({
   // Entries of the `'use cache'` functions, keyed by their arguments
   cacheEntries: new Map<string, unknown>(),
-  logger: { error: vi.fn() },
+  logger: {
+    debug: vi.fn<typeof logger.debug>(),
+    error: vi.fn<typeof logger.error>(),
+    info: vi.fn<typeof logger.info>(),
+    warn: vi.fn<typeof logger.warn>(),
+  },
 }));
 
-vi.mock("next/cache", () => ({
-  cacheLife: vi.fn(),
-  cacheTag: vi.fn(),
+vi.mock(import("next/cache"), () => ({
+  // A name of a profile or an object, which every overload of cacheLife takes
+  cacheLife: vi.fn<(profile: string | object) => void>(),
+  cacheTag: vi.fn<typeof cacheTag>(),
 }));
 
-vi.mock("@shinju-date/logger", () => ({
+vi.mock(import("@shinju-date/logger"), () => ({
   logger: mocks.logger,
 }));
 
 // Vitest does not run `'use cache'`, so serve the second call with the same
 // arguments from the entry of the first, as Next.js does
-vi.mock("@/lib/data/videos", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/data/videos")>();
+vi.mock(import("@/lib/data/videos"), async (importOriginal) => {
+  const actual = await importOriginal();
 
   return {
     ...actual,
@@ -47,12 +57,12 @@ vi.mock("@/lib/data/videos", async (importOriginal) => {
         mocks.cacheEntries.set(key, actual.fetchCalendarVideos(...args));
       }
 
-      return mocks.cacheEntries.get(key);
+      return mocks.cacheEntries.get(key) as ReturnType<
+        typeof actual.fetchCalendarVideos
+      >;
     },
   };
 });
-
-import { GET } from "./route";
 
 setupSupabase();
 
@@ -72,21 +82,21 @@ const shortB = createVideoOnYouTube(channelB, {
   video_kind: "short",
 });
 
-function get(search = ""): Promise<Response> {
-  return GET(new NextRequest(`https://shinju.date/videos.ics${search}`));
-}
+const get = (search = ""): Promise<Response> =>
+  GET(new NextRequest(`https://shinju.date/videos.ics${search}`));
 
 /** The IDs of the videos of the events of a calendar, in its order */
-async function eventIds(response: Response): Promise<string[]> {
-  return [...(await response.text()).matchAll(/^UID:(.+)@shinju\.date/gm)].map(
-    ([, id]) => id ?? ""
+const eventIds = async (response: Response): Promise<string[]> => {
+  const text = await response.text();
+
+  return [...text.matchAll(/^UID:(?<id>.+)@shinju\.date/gmu)].map(
+    ({ groups: { id = "" } = {} }) => id
   );
-}
+};
 
 /** The IDs of the events of the given videos, in any order */
-function videoIds(...rows: { video: { id: string } }[]): string[] {
-  return rows.map(({ video }) => video.id);
-}
+const videoIds = (...rows: { video: { id: string } }[]): string[] =>
+  rows.map(({ video }) => video.id);
 
 describe("GET /videos.ics", () => {
   beforeEach(async () => {
@@ -119,7 +129,9 @@ describe("GET /videos.ics", () => {
     const body = await response.clone().text();
 
     expect(body).toContain("SUMMARY:歌枠");
-    expect((await eventIds(response)).toSorted()).toEqual(
+    const ids = await eventIds(response);
+
+    expect(ids.toSorted()).toStrictEqual(
       videoIds(songA, shortA, songB, shortB).toSorted()
     );
   });
@@ -128,9 +140,9 @@ describe("GET /videos.ics", () => {
     const response = await get(`?talent=${talentA.id}`);
 
     expect(response.status).toBe(200);
-    expect((await eventIds(response)).toSorted()).toEqual(
-      videoIds(songA, shortA).toSorted()
-    );
+    const ids = await eventIds(response);
+
+    expect(ids.toSorted()).toStrictEqual(videoIds(songA, shortA).toSorted());
   });
 
   it("returns the videos of any of the given talents", async () => {
@@ -148,9 +160,9 @@ describe("GET /videos.ics", () => {
       `?talent=${talentB.id}&talent=${talentA.id.toUpperCase()}&talent=${talentB.id}`
     );
 
-    expect((await eventIds(response)).toSorted()).toEqual(
-      videoIds(songA, songB).toSorted()
-    );
+    const ids = await eventIds(response);
+
+    expect(ids.toSorted()).toStrictEqual(videoIds(songA, songB).toSorted());
   });
 
   it("does not query Supabase again for the same conditions", async () => {
@@ -160,9 +172,9 @@ describe("GET /videos.ics", () => {
     );
 
     expect(response.status).toBe(200);
-    expect((await eventIds(response)).toSorted()).toEqual(
-      videoIds(shortA, shortB).toSorted()
-    );
+    const ids = await eventIds(response);
+
+    expect(ids.toSorted()).toStrictEqual(videoIds(shortA, shortB).toSorted());
     expect(supabaseRequests("videos")).toHaveLength(1);
   });
 
@@ -182,7 +194,7 @@ describe("GET /videos.ics", () => {
       ...videoSeed([songA, withoutSource]),
     });
 
-    expect(await eventIds(await get())).toEqual(videoIds(songA));
+    await expect(eventIds(await get())).resolves.toStrictEqual(videoIds(songA));
   });
 
   it.each([
@@ -191,21 +203,21 @@ describe("GET /videos.ics", () => {
   ])("returns only the videos of kind=%s", async (kind, expected) => {
     const response = await get(`?kind=${kind}`);
 
-    expect((await eventIds(response)).toSorted()).toEqual(
-      videoIds(...expected).toSorted()
-    );
+    const ids = await eventIds(response);
+
+    expect(ids.toSorted()).toStrictEqual(videoIds(...expected).toSorted());
   });
 
   it("treats an unknown kind as no kind", async () => {
     const response = await get("?kind=live");
 
-    expect(await eventIds(response)).toHaveLength(4);
+    await expect(eventIds(response)).resolves.toHaveLength(4);
   });
 
   it("combines the talents and the kind", async () => {
     const response = await get(`?kind=short&talent=${talentA.id}`);
 
-    expect(await eventIds(response)).toEqual(videoIds(shortA));
+    await expect(eventIds(response)).resolves.toStrictEqual(videoIds(shortA));
   });
 
   it("returns a calendar without events when nothing matches", async () => {
@@ -226,7 +238,7 @@ describe("GET /videos.ics", () => {
     const response = await get(search);
 
     expect(response.status).toBe(400);
-    expect(supabaseRequests()).toEqual([]);
+    expect(supabaseRequests()).toStrictEqual([]);
   });
 
   it("answers 500 when the videos cannot be fetched", async () => {
@@ -236,7 +248,7 @@ describe("GET /videos.ics", () => {
 
     expect(response.status).toBe(500);
     expect(response.headers.get("Cache-Control")).toBe("no-store");
-    expect(await response.text()).not.toContain("relation");
+    await expect(response.text()).resolves.not.toContain("relation");
     expect(mocks.logger.error).toHaveBeenCalledOnce();
   });
 });

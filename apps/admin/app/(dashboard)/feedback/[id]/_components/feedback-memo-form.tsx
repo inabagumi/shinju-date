@@ -16,21 +16,19 @@ interface FeedbackMemoFormProps {
 }
 
 /** 機能要望の管理メモを保存するフォーム */
-export function FeedbackMemoForm({ adminMemo, id }: FeedbackMemoFormProps) {
-  return (
-    <Form action={updateFeatureRequestMemoAction} className="space-y-4">
-      <input name="id" type="hidden" value={id} />
-      <FormField name="admin_memo">
-        <Label>メモ（Markdown対応）</Label>
-        <Textarea defaultValue={adminMemo ?? ""} rows={8} />
-      </FormField>
-      <div className="flex flex-wrap items-center gap-3">
-        <SubmitButton>メモを保存</SubmitButton>
-        <SuccessMessage
-          className="text-meta text-success"
-          message="保存しました。"
-        />
-      </div>
-    </Form>
-  );
-}
+export const FeedbackMemoForm = ({ adminMemo, id }: FeedbackMemoFormProps) => (
+  <Form action={updateFeatureRequestMemoAction} className="space-y-4">
+    <input name="id" type="hidden" value={id} />
+    <FormField name="admin_memo">
+      <Label>メモ（Markdown対応）</Label>
+      <Textarea defaultValue={adminMemo ?? ""} rows={8} />
+    </FormField>
+    <div className="flex flex-wrap items-center gap-3">
+      <SubmitButton>メモを保存</SubmitButton>
+      <SuccessMessage
+        className="text-meta text-success"
+        message="保存しました。"
+      />
+    </div>
+  </Form>
+);

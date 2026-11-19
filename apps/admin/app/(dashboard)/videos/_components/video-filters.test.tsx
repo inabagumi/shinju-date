@@ -1,40 +1,45 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { AppRouter } from "@/test/next-navigation";
 
 import { VideoFilters } from "./video-filters";
 
 const mocks = vi.hoisted(() => ({
   pathname: "/videos",
-  push: vi.fn(),
-  replace: vi.fn(),
+  push: vi.fn<AppRouter["push"]>(),
+  replace: vi.fn<AppRouter["replace"]>(),
   searchParams: new URLSearchParams(),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   usePathname: () => mocks.pathname,
-  useRouter: () => ({ push: mocks.push, replace: mocks.replace }),
-  useSearchParams: () => mocks.searchParams,
+  useRouter: () =>
+    ({
+      push: mocks.push,
+      replace: mocks.replace,
+    }) as Partial<AppRouter> as AppRouter,
+  useSearchParams: () => mocks.searchParams as ReadonlyURLSearchParams,
 }));
 
 type Rerender = ReturnType<typeof render>["rerender"];
 
-function getSearchInput() {
-  return screen.getByLabelText("タイトルまたはIDで検索");
-}
+const getSearchInput = () => screen.getByLabelText("タイトルまたはIDで検索");
 
 /** 検索ボックスに入力し、URL に反映されるまで待つ */
-function search(value: string) {
+const search = (value: string) => {
   fireEvent.change(getSearchInput(), { target: { value } });
   act(() => {
     vi.advanceTimersByTime(500);
   });
-}
+};
 
 /** URL のパラメータが変わったときの再描画（「戻る」「進む」、リンク、自分の更新の反映） */
-function navigate(rerender: Rerender, searchParams: string) {
+const navigate = (rerender: Rerender, searchParams: string) => {
   mocks.searchParams = new URLSearchParams(searchParams);
   rerender(<VideoFilters talents={[]} />);
-}
+};
 
 describe("VideoFilters search", () => {
   beforeEach(() => {
@@ -86,8 +91,7 @@ describe("VideoFilters search", () => {
       vi.advanceTimersByTime(1);
     });
     // Keeps the other filters and goes back to page 1
-    expect(mocks.replace).toHaveBeenCalledTimes(1);
-    expect(mocks.replace).toHaveBeenCalledWith(
+    expect(mocks.replace).toHaveBeenCalledExactlyOnceWith(
       "/videos?status=LIVE&search=anime"
     );
     expect(mocks.push).not.toHaveBeenCalled();
@@ -174,7 +178,7 @@ describe("VideoFilters toggle", () => {
     render(<VideoFilters talents={[]} />);
 
     const filterBar = screen.getByRole("group", { name: "絞り込み" });
-    const toggle = screen.getByRole("button", { name: /^絞り込み/ });
+    const toggle = screen.getByRole("button", { name: /^絞り込み/u });
 
     expect(toggle).toHaveAttribute("aria-expanded", "false");
     expect(filterBar).toHaveAttribute("data-state", "closed");
@@ -201,7 +205,7 @@ describe("VideoFilters toggle", () => {
     render(<VideoFilters talents={[]} />);
 
     expect(
-      screen.getByRole("button", { name: /^絞り込み.*2件適用中/ })
+      screen.getByRole("button", { name: /^絞り込み.*2件適用中/u })
     ).toBeInTheDocument();
   });
 
@@ -210,7 +214,7 @@ describe("VideoFilters toggle", () => {
     render(<VideoFilters talents={[]} />);
 
     expect(
-      screen.getByRole("button", { name: /^絞り込み/ }).textContent
-    ).not.toMatch(/件適用中/);
+      screen.getByRole("button", { name: /^絞り込み/u }).textContent
+    ).not.toMatch(/件適用中/u);
   });
 });

@@ -6,7 +6,8 @@ import { cacheLife } from "next/cache";
 import { getRedisClient } from "@/lib/redis";
 
 import { listDatesInRange } from "./list-dates-in-range";
-import { type PeriodQuery, toDateRange } from "./period";
+import { toDateRange } from "./period";
+import type { PeriodQuery } from "./period";
 
 export interface DailySearchVolume {
   count: number;
@@ -17,9 +18,9 @@ export interface DailySearchVolume {
  * Get daily search volume for a date range
  * @param query.range - The date range (both ends inclusive)
  */
-export async function getSearchVolume({
+export const getSearchVolume = async ({
   range,
-}: PeriodQuery): Promise<DailySearchVolume[]> {
+}: PeriodQuery): Promise<DailySearchVolume[]> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -56,4 +57,4 @@ export async function getSearchVolume({
     });
     return [];
   }
-}
+};

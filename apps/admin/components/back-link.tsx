@@ -10,14 +10,12 @@ interface BackLinkProps {
 /**
  * 詳細ページの上に置く、一覧へ戻るリンク。
  */
-export function BackLink({ children, href }: BackLinkProps) {
-  return (
-    <Link
-      className="inline-flex items-center gap-1 rounded-control text-meta text-accent focus-ring hover:underline"
-      href={href}
-    >
-      <ChevronLeft aria-hidden="true" className="size-4" />
-      {children}
-    </Link>
-  );
-}
+export const BackLink = ({ children, href }: BackLinkProps) => (
+  <Link
+    className="inline-flex items-center gap-1 rounded-control text-meta text-accent focus-ring hover:underline"
+    href={href}
+  >
+    <ChevronLeft aria-hidden="true" className="size-4" />
+    {children}
+  </Link>
+);

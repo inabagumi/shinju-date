@@ -1,11 +1,12 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { isAdminUser } from "@/lib/admin-user";
 import { createAuditLog } from "@/lib/audit-log";
 import { getSafeRedirectPath, REDIRECT_PARAM } from "@/lib/redirect-path";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
-export async function GET(request: NextRequest): Promise<Response> {
+export const GET = async (request: NextRequest): Promise<Response> => {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const next = getSafeRedirectPath(
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest): Promise<Response> {
     if (!error && data.user && isAdminUser(data.user)) {
       // Check if this is an email change event
       // Supabase sends the user with the new email after confirmation
-      const user = data.user;
+      const { user } = data;
 
       // Only log if user has an email
       if (user.email) {
@@ -43,4 +44,4 @@ export async function GET(request: NextRequest): Promise<Response> {
 
   // If there's an error or no code, redirect to login
   return NextResponse.redirect(new URL("/login", request.url));
-}
+};

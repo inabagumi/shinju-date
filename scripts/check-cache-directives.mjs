@@ -22,12 +22,11 @@
 
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import path from "node:path";
 
 import ts from "typescript";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const root = path.resolve(import.meta.dirname, "..");
 
 const SOURCE_PATTERNS = [
   "*.cjs",
@@ -41,39 +40,42 @@ const SOURCE_PATTERNS = [
 ];
 
 /** Files placed by the `skills` CLI, which are not edited by hand */
-const IGNORED_FILES = [/^\.agents\//, /^\.claude\//];
+const IGNORED_FILES = [/^\.agents\//u, /^\.claude\//u];
 
 const CACHE_FUNCTIONS = new Set(["cacheLife", "cacheTag"]);
 
-const BLANK_LINE_PATTERN = /\n[ \t]*\r?\n/;
+const BLANK_LINE_PATTERN = /\n[ \t]*\r?\n/u;
 
 /**
  * @typedef {object} Problem
  * @property {number} line - 1-based line number
  * @property {number} column - 1-based column number
- * @property {string} message
+ * @property {string} message - Message to show
  */
 
-/** @param {string} fileName */
-function getScriptKind(fileName) {
-  if (/\.[cm]?tsx?$/.test(fileName)) {
+/**
+ * @param {string} fileName - Name of the file, used for its extension
+ */
+const getScriptKind = (fileName) => {
+  if (/\.[cm]?tsx?$/u.test(fileName)) {
     return fileName.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   }
 
   return fileName.endsWith("x") ? ts.ScriptKind.JSX : ts.ScriptKind.JS;
-}
+};
 
-/** @param {ts.Statement} statement */
-function isCacheDirective(statement) {
-  return (
-    ts.isExpressionStatement(statement) &&
-    ts.isStringLiteral(statement.expression) &&
-    statement.expression.text.startsWith("use cache")
-  );
-}
+/**
+ * @param {ts.Statement} statement - Statement to check
+ */
+const isCacheDirective = (statement) =>
+  ts.isExpressionStatement(statement) &&
+  ts.isStringLiteral(statement.expression) &&
+  statement.expression.text.startsWith("use cache");
 
-/** @param {ts.Statement} statement */
-function isCacheFunctionCall(statement) {
+/**
+ * @param {ts.Statement} statement - Statement to check
+ */
+const isCacheFunctionCall = (statement) => {
   if (!ts.isExpressionStatement(statement)) {
     return false;
   }
@@ -85,17 +87,17 @@ function isCacheFunctionCall(statement) {
     ts.isIdentifier(expression.expression) &&
     CACHE_FUNCTIONS.has(expression.expression.text)
   );
-}
+};
 
 /**
  * Find the directives and the runs of cache function calls that are not
  * followed by a blank line.
  *
- * @param {string} sourceText
+ * @param {string} sourceText - Source code of the file
  * @param {string} fileName - Used to choose the parser (TS, TSX, JS or JSX)
- * @returns {Problem[]}
+ * @returns {Problem[]} Problems, in the order of the source code
  */
-export function findMissingBlankLines(sourceText, fileName) {
+export const findMissingBlankLines = (sourceText, fileName) => {
   const sourceFile = ts.createSourceFile(
     fileName,
     sourceText,
@@ -108,11 +110,11 @@ export function findMissingBlankLines(sourceText, fileName) {
   const problems = [];
 
   /**
-   * @param {ts.Statement} statement
-   * @param {ts.Statement} next
-   * @param {string} message
+   * @param {ts.Statement} statement - Statement that needs a blank line after it
+   * @param {ts.Statement} next - Statement that follows it
+   * @param {string} message - Message for the problem
    */
-  function requireBlankLine(statement, next, message) {
+  const requireBlankLine = (statement, next, message) => {
     const between = sourceText.slice(statement.end, next.getStart(sourceFile));
 
     if (BLANK_LINE_PATTERN.test(between)) {
@@ -124,10 +126,12 @@ export function findMissingBlankLines(sourceText, fileName) {
     );
 
     problems.push({ column: character + 1, line: line + 1, message });
-  }
+  };
 
-  /** @param {readonly ts.Statement[]} statements */
-  function checkStatements(statements) {
+  /**
+   * @param {readonly ts.Statement[]} statements - Statements of a block
+   */
+  const checkStatements = (statements) => {
     for (const [index, statement] of statements.entries()) {
       const next = statements[index + 1];
 
@@ -149,10 +153,12 @@ export function findMissingBlankLines(sourceText, fileName) {
         );
       }
     }
-  }
+  };
 
-  /** @param {ts.Node} node */
-  function visit(node) {
+  /**
+   * @param {ts.Node} node - Node to visit
+   */
+  const visit = (node) => {
     if (
       ts.isSourceFile(node) ||
       ts.isBlock(node) ||
@@ -163,15 +169,15 @@ export function findMissingBlankLines(sourceText, fileName) {
     }
 
     ts.forEachChild(node, visit);
-  }
+  };
 
   visit(sourceFile);
 
   return problems;
-}
+};
 
 /** List the files Git tracks and the new files that are not ignored. */
-function listSourceFiles() {
+const listSourceFiles = () => {
   const output = execFileSync(
     "git",
     [
@@ -184,16 +190,16 @@ function listSourceFiles() {
       "--",
       ...SOURCE_PATTERNS,
     ],
-    { cwd: root, encoding: "utf8" }
+    { cwd: root, encoding: "utf-8" }
   );
 
   return output
     .split("\0")
     .filter(Boolean)
     .filter((file) => !IGNORED_FILES.some((pattern) => pattern.test(file)));
-}
+};
 
-function main() {
+const main = () => {
   const args = process.argv.slice(2);
   const files = args.length > 0 ? args : listSourceFiles();
   let count = 0;
@@ -202,7 +208,7 @@ function main() {
     let sourceText;
 
     try {
-      sourceText = readFileSync(resolve(root, file), "utf8");
+      sourceText = readFileSync(path.resolve(root, file), "utf-8");
     } catch (error) {
       // A tracked file that was deleted but not yet staged
       if (error?.code === "ENOENT") {
@@ -214,7 +220,7 @@ function main() {
 
     if (
       !sourceText.includes("use cache") &&
-      !/\bcache(Life|Tag)\(/.test(sourceText)
+      !/\bcache(?:Life|Tag)\(/u.test(sourceText)
     ) {
       continue;
     }
@@ -224,7 +230,7 @@ function main() {
       file
     )) {
       console.error(`${file}:${line}:${column} ${message}`);
-      count++;
+      count += 1;
     }
   }
 
@@ -234,11 +240,8 @@ function main() {
     );
     process.exitCode = 1;
   }
-}
+};
 
-if (
-  process.argv[1] &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-) {
+if (process.argv[1] && path.resolve(process.argv[1]) === import.meta.filename) {
   main();
 }

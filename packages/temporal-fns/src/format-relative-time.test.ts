@@ -2,70 +2,81 @@ import { describe, expect, it } from "vitest";
 
 import { formatRelativeTime } from "./format-relative-time.js";
 
-describe("formatRelativeTime", () => {
+describe(formatRelativeTime, () => {
   // Use a fixed reference time for consistent testing
   const referenceTime = Temporal.Instant.from("2024-01-15T12:00:00Z");
 
   describe("past times", () => {
     it("formats times less than 1 minute ago", () => {
-      const time = Temporal.Instant.from("2024-01-15T11:59:30Z"); // 30 seconds ago
+      // 30 seconds ago
+      const time = Temporal.Instant.from("2024-01-15T11:59:30Z");
       expect(formatRelativeTime(time, "ja", referenceTime)).toBe("30 秒前");
     });
 
     it("formats times in minutes", () => {
-      const time = Temporal.Instant.from("2024-01-15T11:55:00Z"); // 5 minutes ago
+      // 5 minutes ago
+      const time = Temporal.Instant.from("2024-01-15T11:55:00Z");
       expect(formatRelativeTime(time, "ja", referenceTime)).toBe("5 分前");
     });
 
     it("formats times in hours", () => {
-      const time = Temporal.Instant.from("2024-01-15T10:00:00Z"); // 2 hours ago
+      // 2 hours ago
+      const time = Temporal.Instant.from("2024-01-15T10:00:00Z");
       expect(formatRelativeTime(time, "ja", referenceTime)).toBe("2 時間前");
     });
 
     it("formats times in days", () => {
-      const time = Temporal.Instant.from("2024-01-13T12:00:00Z"); // 2 days ago
+      // 2 days ago
+      const time = Temporal.Instant.from("2024-01-13T12:00:00Z");
       // Intl.RelativeTimeFormat may use "一昨日" for 2 days ago
       const result = formatRelativeTime(time, "ja", referenceTime);
-      expect(result).toMatch(/日前|一昨日/);
+      expect(result).toMatch(/日前|一昨日/u);
     });
 
     it("formats times in weeks", () => {
-      const time = Temporal.Instant.from("2024-01-01T12:00:00Z"); // 2 weeks ago
+      // 2 weeks ago
+      const time = Temporal.Instant.from("2024-01-01T12:00:00Z");
       expect(formatRelativeTime(time, "ja", referenceTime)).toBe("2 週間前");
     });
 
     it("formats times in months", () => {
-      const time = Temporal.Instant.from("2023-11-15T12:00:00Z"); // 2 months ago
+      // 2 months ago
+      const time = Temporal.Instant.from("2023-11-15T12:00:00Z");
       expect(formatRelativeTime(time, "ja", referenceTime)).toBe("2 か月前");
     });
 
     it("formats times in years", () => {
-      const time = Temporal.Instant.from("2022-01-15T12:00:00Z"); // 2 years ago
+      // 2 years ago
+      const time = Temporal.Instant.from("2022-01-15T12:00:00Z");
       expect(formatRelativeTime(time, "ja", referenceTime)).toBe("2 年前");
     });
   });
 
   describe("future times", () => {
     it("formats future times in seconds", () => {
-      const time = Temporal.Instant.from("2024-01-15T12:00:30Z"); // 30 seconds from now
+      // 30 seconds from now
+      const time = Temporal.Instant.from("2024-01-15T12:00:30Z");
       expect(formatRelativeTime(time, "ja", referenceTime)).toBe("30 秒後");
     });
 
     it("formats future times in minutes", () => {
-      const time = Temporal.Instant.from("2024-01-15T12:05:00Z"); // 5 minutes from now
+      // 5 minutes from now
+      const time = Temporal.Instant.from("2024-01-15T12:05:00Z");
       expect(formatRelativeTime(time, "ja", referenceTime)).toBe("5 分後");
     });
 
     it("formats future times in hours", () => {
-      const time = Temporal.Instant.from("2024-01-15T14:00:00Z"); // 2 hours from now
+      // 2 hours from now
+      const time = Temporal.Instant.from("2024-01-15T14:00:00Z");
       expect(formatRelativeTime(time, "ja", referenceTime)).toBe("2 時間後");
     });
 
     it("formats future times in days", () => {
-      const time = Temporal.Instant.from("2024-01-17T12:00:00Z"); // 2 days from now
+      // 2 days from now
+      const time = Temporal.Instant.from("2024-01-17T12:00:00Z");
       // Intl.RelativeTimeFormat may use "明後日" for 2 days from now
       const result = formatRelativeTime(time, "ja", referenceTime);
-      expect(result).toMatch(/日後|明後日/);
+      expect(result).toMatch(/日後|明後日/u);
     });
   });
 
@@ -92,7 +103,8 @@ describe("formatRelativeTime", () => {
     });
 
     it("handles times at boundary between units", () => {
-      const time = Temporal.Instant.from("2024-01-15T11:00:00Z"); // Exactly 1 hour ago
+      // Exactly 1 hour ago
+      const time = Temporal.Instant.from("2024-01-15T11:00:00Z");
       expect(formatRelativeTime(time, "ja", referenceTime)).toBe("1 時間前");
     });
 
@@ -144,13 +156,15 @@ describe("formatRelativeTime", () => {
 
   describe("different locales", () => {
     it("formats in English", () => {
-      const time = Temporal.Instant.from("2024-01-15T11:55:00Z"); // 5 minutes ago
+      // 5 minutes ago
+      const time = Temporal.Instant.from("2024-01-15T11:55:00Z");
       const result = formatRelativeTime(time, "en", referenceTime);
       expect(result).toBe("5 minutes ago");
     });
 
     it("formats in Japanese (default)", () => {
-      const time = Temporal.Instant.from("2024-01-15T11:55:00Z"); // 5 minutes ago
+      // 5 minutes ago
+      const time = Temporal.Instant.from("2024-01-15T11:55:00Z");
       expect(formatRelativeTime(time, "ja", referenceTime)).toBe("5 分前");
     });
   });
@@ -160,7 +174,7 @@ describe("formatRelativeTime", () => {
       // This test will use the actual current time
       const pastTime = Temporal.Now.instant().subtract({ minutes: 5 });
       const result = formatRelativeTime(pastTime, "ja");
-      expect(result).toMatch(/分前/);
+      expect(result).toMatch(/分前/u);
     });
   });
 });

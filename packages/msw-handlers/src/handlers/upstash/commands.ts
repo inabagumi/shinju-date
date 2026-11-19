@@ -9,50 +9,43 @@
 import {
   SCRIPT_EMULATIONS as BACKFILL_SCRIPT_EMULATIONS,
   getScriptName,
-  type ScriptEmulation,
 } from "@shinju-date/video-backfill/testing";
+import type { ScriptEmulation } from "@shinju-date/video-backfill/testing";
 
-import {
-  type MockRedisStore,
-  RedisError,
-  type RedisValueOf,
-  wrongTypeError,
-} from "./store.js";
+import { RedisError, wrongTypeError } from "./errors.js";
+import type { MockRedisStore, RedisValue, RedisValueOf } from "./store.js";
 
 /** A reply of Redis as Upstash returns it in JSON. */
 export type RedisReply = number | string | null | RedisReply[];
 
 type CommandHandler = (store: MockRedisStore, args: string[]) => RedisReply;
 
-function syntaxError(): RedisError {
-  return new RedisError("ERR syntax error");
-}
+const syntaxError = (): RedisError => new RedisError("ERR syntax error");
 
-function notIntegerError(): RedisError {
-  return new RedisError("ERR value is not an integer or out of range");
-}
+const notIntegerError = (): RedisError =>
+  new RedisError("ERR value is not an integer or out of range");
 
 /** Check the number of arguments of a command, like Redis does. */
-function checkArity(
+const checkArity = (
   name: string,
   args: readonly string[],
   min: number,
   max = Number.POSITIVE_INFINITY
-): void {
+): void => {
   if (args.length < min || args.length > max) {
     throw new RedisError(`ERR wrong number of arguments for '${name}' command`);
   }
-}
+};
 
-function parseInteger(text: string | undefined): number {
-  if (text === undefined || !/^-?\d+$/.test(text)) {
+const parseInteger = (text: string | undefined): number => {
+  if (text === undefined || !/^-?\d+$/u.test(text)) {
     throw notIntegerError();
   }
 
   return Number(text);
-}
+};
 
-function parseScore(text: string | undefined): number {
+const parseScore = (text: string | undefined): number => {
   const normalized = text?.toLowerCase();
 
   if (normalized === "+inf" || normalized === "inf") {
@@ -70,10 +63,10 @@ function parseScore(text: string | undefined): number {
   }
 
   return score;
-}
+};
 
 /** A score as Redis replies it, such as `"1"`, `"1.5"` or `"inf"`. */
-function formatScore(score: number): string {
+const formatScore = (score: number): string => {
   if (score === Number.POSITIVE_INFINITY) {
     return "inf";
   }
@@ -83,13 +76,13 @@ function formatScore(score: number): string {
   }
 
   return String(score);
-}
+};
 
 /** Take the options (case-insensitive) that a command accepts. */
-function parseFlags(
+const parseFlags = (
   args: readonly string[],
   allowed: readonly string[]
-): Set<string> {
+): Set<string> => {
   const flags = new Set<string>();
 
   for (const arg of args) {
@@ -103,34 +96,35 @@ function parseFlags(
   }
 
   return flags;
-}
+};
+
+/** Compare two members of a sorted set with the same score. */
+const compareMembers = (memberA: string, memberB: string): number => {
+  if (memberA < memberB) {
+    return -1;
+  }
+
+  return memberA > memberB ? 1 : 0;
+};
 
 /** The members of a sorted set, ordered by score and then by member. */
-function sortZset(zset: RedisValueOf<"zset">): [string, number][] {
-  return [...zset].sort(([memberA, scoreA], [memberB, scoreB]) =>
-    scoreA !== scoreB
-      ? scoreA - scoreB
-      : memberA < memberB
-        ? -1
-        : memberA > memberB
-          ? 1
-          : 0
+const sortZset = (zset: RedisValueOf<"zset">): [string, number][] =>
+  [...zset].toSorted(([memberA, scoreA], [memberB, scoreB]) =>
+    scoreA === scoreB ? compareMembers(memberA, memberB) : scoreA - scoreB
   );
-}
 
 /** A bound of `ZRANGE … BYSCORE`, such as `5`, `(5`, `-inf` or `+inf`. */
-function parseScoreBound(text: string): { exclusive: boolean; score: number } {
-  return text.startsWith("(")
+const parseScoreBound = (text: string): { exclusive: boolean; score: number } =>
+  text.startsWith("(")
     ? { exclusive: true, score: parseScore(text.slice(1)) }
     : { exclusive: false, score: parseScore(text) };
-}
 
 /** Resolve a range of indexes such as `0 -1` to `[start, end)`. */
-function resolveIndexRange(
+const resolveIndexRange = (
   length: number,
   startText: string | undefined,
   stopText: string | undefined
-): [number, number] {
+): [number, number] => {
   let start = parseInteger(startText);
   let stop = parseInteger(stopText);
 
@@ -143,9 +137,9 @@ function resolveIndexRange(
   }
 
   return [start, Math.min(length, stop + 1)];
-}
+};
 
-function zrange(store: MockRedisStore, args: string[]): RedisReply {
+const zrange = (store: MockRedisStore, args: string[]): RedisReply => {
   checkArity("zrange", args, 3);
 
   const [key = "", min = "", max = "", ...options] = args;
@@ -154,7 +148,7 @@ function zrange(store: MockRedisStore, args: string[]): RedisReply {
   let rev = false;
   let withScores = false;
 
-  for (let i = 0; i < options.length; i++) {
+  for (let i = 0; i < options.length; i += 1) {
     const option = options[i]?.toLowerCase();
 
     if (option === "byscore") {
@@ -219,38 +213,87 @@ function zrange(store: MockRedisStore, args: string[]): RedisReply {
   return members.flatMap(([member, score]) =>
     withScores ? [member, formatScore(score)] : [member]
   );
-}
+};
 
-function zadd(store: MockRedisStore, args: string[]): RedisReply {
-  checkArity("zadd", args, 3);
+const ZADD_FLAGS: ReadonlySet<string> = new Set([
+  "ch",
+  "gt",
+  "incr",
+  "lt",
+  "nx",
+  "xx",
+]);
 
-  const [key = "", ...rest] = args;
+/**
+ * Take the flags of `ZADD` (such as `NX` and `INCR`) before the scores and
+ * the members, which are the rest.
+ */
+const parseZaddFlags = (
+  args: readonly string[]
+): { flags: Set<string>; rest: string[] } => {
+  const rest = [...args];
   const flags = new Set<string>();
 
-  while (
-    rest[0] &&
-    ["ch", "gt", "incr", "lt", "nx", "xx"].includes(rest[0].toLowerCase())
-  ) {
+  while (rest[0] && ZADD_FLAGS.has(rest[0].toLowerCase())) {
     flags.add(String(rest.shift()).toLowerCase());
   }
 
-  if (
-    rest.length === 0 ||
-    rest.length % 2 !== 0 ||
-    (flags.has("nx") &&
-      (flags.has("xx") || flags.has("gt") || flags.has("lt"))) ||
-    (flags.has("gt") && flags.has("lt")) ||
-    (flags.has("incr") && rest.length !== 2)
-  ) {
-    throw syntaxError();
-  }
+  return { flags, rest };
+};
 
+/** Whether the flags of `ZADD` cannot be used together. */
+const hasConflictingZaddFlags = (
+  flags: ReadonlySet<string>,
+  restLength: number
+): boolean =>
+  (flags.has("nx") &&
+    (flags.has("xx") || flags.has("gt") || flags.has("lt"))) ||
+  (flags.has("gt") && flags.has("lt")) ||
+  (flags.has("incr") && restLength !== 2);
+
+/** The pairs of a score and a member of `ZADD`. */
+const parseScoreMemberPairs = (rest: readonly string[]): [number, string][] => {
   const pairs: [number, string][] = [];
 
   for (let i = 0; i < rest.length; i += 2) {
     pairs.push([parseScore(rest[i]), rest[i + 1] ?? ""]);
   }
 
+  return pairs;
+};
+
+/** Whether `ZADD` leaves a member as it is because of `XX`, `NX`, `GT` or `LT`. */
+const isZaddSkipped = (
+  flags: ReadonlySet<string>,
+  current: number | undefined,
+  next: number
+): boolean => {
+  if (current === undefined) {
+    return flags.has("xx");
+  }
+
+  return (
+    flags.has("nx") ||
+    (flags.has("gt") && next <= current) ||
+    (flags.has("lt") && next >= current)
+  );
+};
+
+const zadd = (store: MockRedisStore, args: string[]): RedisReply => {
+  checkArity("zadd", args, 3);
+
+  const [key = "", ...afterKey] = args;
+  const { flags, rest } = parseZaddFlags(afterKey);
+
+  if (
+    rest.length === 0 ||
+    rest.length % 2 !== 0 ||
+    hasConflictingZaddFlags(flags, rest.length)
+  ) {
+    throw syntaxError();
+  }
+
+  const pairs = parseScoreMemberPairs(rest);
   const existing = store.getOf(key, "zset");
 
   if (!existing && flags.has("xx")) {
@@ -266,12 +309,7 @@ function zadd(store: MockRedisStore, args: string[]): RedisReply {
     const current = zset.get(member);
     const next = flags.has("incr") ? (current ?? 0) + score : score;
 
-    if (
-      (current === undefined && flags.has("xx")) ||
-      (current !== undefined && flags.has("nx")) ||
-      (current !== undefined && flags.has("gt") && next <= current) ||
-      (current !== undefined && flags.has("lt") && next >= current)
-    ) {
+    if (isZaddSkipped(flags, current, next)) {
       continue;
     }
 
@@ -292,9 +330,48 @@ function zadd(store: MockRedisStore, args: string[]): RedisReply {
   }
 
   return flags.has("ch") ? added + changed : added;
-}
+};
 
-function zunionstore(store: MockRedisStore, args: string[]): RedisReply {
+/**
+ * The members and the scores of a sorted set or a set. The members of a set
+ * have the score 1, like in Redis.
+ */
+const getZsetEntries = (value: RedisValue | undefined): [string, number][] => {
+  if (value === undefined) {
+    return [];
+  }
+
+  if (value.type === "zset") {
+    return [...value.value];
+  }
+
+  if (value.type === "set") {
+    return [...value.value].map((member) => [member, 1]);
+  }
+
+  throw wrongTypeError();
+};
+
+/** Combine the scores of a member of `ZUNIONSTORE` with `AGGREGATE`. */
+const aggregateScore = (
+  aggregate: "max" | "min" | "sum",
+  current: number | undefined,
+  weighted: number
+): number => {
+  if (current === undefined) {
+    return weighted;
+  }
+
+  if (aggregate === "sum") {
+    return current + weighted;
+  }
+
+  return aggregate === "min"
+    ? Math.min(current, weighted)
+    : Math.max(current, weighted);
+};
+
+const zunionstore = (store: MockRedisStore, args: string[]): RedisReply => {
   checkArity("zunionstore", args, 3);
 
   const [destination = "", numKeysText, ...rest] = args;
@@ -309,7 +386,7 @@ function zunionstore(store: MockRedisStore, args: string[]): RedisReply {
   let weights = keys.map(() => 1);
   let aggregate: "max" | "min" | "sum" = "sum";
 
-  for (let i = 0; i < options.length; i++) {
+  for (let i = 0; i < options.length; i += 1) {
     const option = options[i]?.toLowerCase();
 
     if (option === "weights") {
@@ -331,37 +408,17 @@ function zunionstore(store: MockRedisStore, args: string[]): RedisReply {
 
   const union = new Map<string, number>();
 
-  keys.forEach((key, index) => {
-    const value = store.get(key);
+  for (const [index, key] of keys.entries()) {
+    const entries = getZsetEntries(store.get(key));
     const weight = weights[index] ?? 1;
-    // The members of a set have the score 1, like in Redis.
-    const entries: [string, number][] =
-      value === undefined
-        ? []
-        : value.type === "zset"
-          ? [...value.value]
-          : value.type === "set"
-            ? [...value.value].map((member) => [member, 1])
-            : (() => {
-                throw wrongTypeError();
-              })();
 
     for (const [member, score] of entries) {
-      const weighted = score * weight;
-      const current = union.get(member);
-
       union.set(
         member,
-        current === undefined
-          ? weighted
-          : aggregate === "sum"
-            ? current + weighted
-            : aggregate === "min"
-              ? Math.min(current, weighted)
-              : Math.max(current, weighted)
+        aggregateScore(aggregate, union.get(member), score * weight)
       );
     }
-  });
+  }
 
   store.delete(destination);
 
@@ -370,20 +427,51 @@ function zunionstore(store: MockRedisStore, args: string[]): RedisReply {
   }
 
   return union.size;
+};
+
+/** The expiry time of `SET` with `EX`, `PX`, `EXAT` or `PXAT`. */
+const parseSetExpiry = (
+  option: "ex" | "exat" | "px" | "pxat",
+  amountText: string | undefined
+): Temporal.Instant => {
+  const amount = parseInteger(amountText);
+
+  if (amount <= 0) {
+    throw new RedisError("ERR invalid expire time in 'set' command");
+  }
+
+  const now = Temporal.Now.instant();
+
+  if (option === "ex") {
+    return now.add({ seconds: amount });
+  }
+
+  if (option === "px") {
+    return now.add({ milliseconds: amount });
+  }
+
+  return option === "exat"
+    ? Temporal.Instant.fromEpochMilliseconds(amount * 1000)
+    : Temporal.Instant.fromEpochMilliseconds(amount);
+};
+
+/** The options of `SET` that `@upstash/redis` sends. */
+interface SetOptions {
+  condition: "nx" | "xx" | null;
+  expiresAt: Temporal.Instant | null;
+  get: boolean;
+  keepTtl: boolean;
 }
 
-/** `SET` and the options of it that `@upstash/redis` sends. */
-function set(store: MockRedisStore, args: string[]): RedisReply {
-  checkArity("set", args, 2);
-
-  const [key = "", value = "", ...options] = args;
+/** Read the options of `SET`, which are case-insensitive. */
+const parseSetOptions = (options: readonly string[]): SetOptions => {
   let condition: "nx" | "xx" | null = null;
   let expiresAt: Temporal.Instant | null = null;
   let get = false;
   let keepTtl = false;
   let expirySet = false;
 
-  for (let i = 0; i < options.length; i++) {
+  for (let i = 0; i < options.length; i += 1) {
     const option = options[i]?.toLowerCase();
 
     if (option === "nx" || option === "xx") {
@@ -406,22 +494,7 @@ function set(store: MockRedisStore, args: string[]): RedisReply {
         throw syntaxError();
       }
 
-      const amount = parseInteger(options[i + 1]);
-
-      if (amount <= 0) {
-        throw new RedisError("ERR invalid expire time in 'set' command");
-      }
-
-      const now = Temporal.Now.instant();
-
-      expiresAt =
-        option === "ex"
-          ? now.add({ seconds: amount })
-          : option === "px"
-            ? now.add({ milliseconds: amount })
-            : option === "exat"
-              ? Temporal.Instant.fromEpochMilliseconds(amount * 1000)
-              : Temporal.Instant.fromEpochMilliseconds(amount);
+      expiresAt = parseSetExpiry(option, options[i + 1]);
       expirySet = true;
       i += 1;
     } else {
@@ -433,6 +506,15 @@ function set(store: MockRedisStore, args: string[]): RedisReply {
     throw syntaxError();
   }
 
+  return { condition, expiresAt, get, keepTtl };
+};
+
+/** `SET` and the options of it that `@upstash/redis` sends. */
+const set = (store: MockRedisStore, args: string[]): RedisReply => {
+  checkArity("set", args, 2);
+
+  const [key = "", value = "", ...options] = args;
+  const { condition, expiresAt, get, keepTtl } = parseSetOptions(options);
   const previous = get ? (store.getOf(key, "string") ?? null) : null;
   const exists = store.has(key);
 
@@ -447,30 +529,28 @@ function set(store: MockRedisStore, args: string[]): RedisReply {
   }
 
   return get ? previous : "OK";
-}
+};
 
 /** `INCRBY` on a string, and the integer that it holds. */
-function incrementString(
+const incrementString = (
   store: MockRedisStore,
   key: string,
   increment: number
-): number {
+): number => {
   const current = store.getOf(key, "string");
   const value = (current === undefined ? 0 : parseInteger(current)) + increment;
 
   store.set(key, { type: "string", value: String(value) }, { keepTtl: true });
 
   return value;
-}
+};
 
 /** Delete a lock only if it still holds the given token. */
-function releaseLock(
+const releaseLock = (
   call: (...command: string[]) => RedisReply,
   [lock = ""]: readonly string[],
   [token]: readonly string[]
-): RedisReply {
-  return call("GET", lock) === token ? call("DEL", lock) : 0;
-}
+): RedisReply => (call("GET", lock) === token ? call("DEL", lock) : 0);
 
 /**
  * The scripts of `EVAL` that the mock emulates, as the commands they run, by
@@ -584,7 +664,7 @@ export const COMMANDS: Record<string, CommandHandler> = {
     const hash = store.getOrCreate(key, "hash");
     const current = hash.get(field);
 
-    if (current !== undefined && !/^-?\d+$/.test(current)) {
+    if (current !== undefined && !/^-?\d+$/u.test(current)) {
       throw new RedisError("ERR hash value is not an integer");
     }
 
@@ -608,7 +688,7 @@ export const COMMANDS: Record<string, CommandHandler> = {
     const list = store.getOrCreate(key, "list");
 
     // Each element is pushed to the head in turn, like Redis does.
-    list.unshift(...elements.reverse());
+    list.unshift(...elements.toReversed());
 
     return list.length;
   },
@@ -643,7 +723,7 @@ export const COMMANDS: Record<string, CommandHandler> = {
       }
 
       const popped = list
-        ? list.splice(Math.max(0, list.length - count)).reverse()
+        ? list.splice(Math.max(0, list.length - count)).toReversed()
         : null;
 
       store.deleteIfEmpty(key);
@@ -770,10 +850,10 @@ export const SUPPORTED_COMMANDS = Object.keys(COMMANDS);
  * The error of Redis for a command that it does not know, such as
  * `ERR unknown command 'foo', with args beginning with: 'a' `.
  */
-export function unknownCommandError(
+export const unknownCommandError = (
   name: string,
   args: readonly unknown[]
-): RedisError {
+): RedisError => {
   const beginning = args
     .slice(0, 20)
     .map((arg) => `'${String(arg)}' `)
@@ -782,22 +862,21 @@ export function unknownCommandError(
   return new RedisError(
     `ERR unknown command '${name}', with args beginning with: ${beginning}`
   );
-}
+};
 
 /** Whether the mock supports a command (case-insensitive). */
-export function isSupportedCommand(name: string): boolean {
-  return Object.hasOwn(COMMANDS, name.toLowerCase());
-}
+export const isSupportedCommand = (name: string): boolean =>
+  Object.hasOwn(COMMANDS, name.toLowerCase());
 
 /**
  * Run a command, such as `['ZINCRBY', 'key', 1, 'member']`. The arguments
  * are strings for Redis, so numbers are converted like Upstash does. An
  * error of Redis is thrown as a `RedisError`.
  */
-export function runCommand(
+export const runCommand = (
   store: MockRedisStore,
   [name, ...args]: readonly unknown[]
-): RedisReply {
+): RedisReply => {
   if (typeof name !== "string" || name === "") {
     throw new RedisError("ERR empty command");
   }
@@ -812,4 +891,4 @@ export function runCommand(
     store,
     args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg)))
   );
-}
+};

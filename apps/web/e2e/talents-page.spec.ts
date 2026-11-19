@@ -1,4 +1,5 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 // Provided by the MSW mock data (packages/msw-handlers): five active talents,
 // a retired talent and a deleted talent. The first talent has icons, and the
@@ -11,13 +12,11 @@ const TALENT_WITHOUT_ICON_NAME = "動画のないタレント";
 const ACTIVE_TALENT_COUNT = 5;
 
 // The grid comes right under `<main>`, after the breadcrumbs in the header
-function getTalentList(page: Page) {
-  return page.getByRole("main").locator(":scope > ul");
-}
+const getTalentList = (page: Page) =>
+  page.getByRole("main").locator(":scope > ul");
 
-function getTalentCard(page: Page, name: string) {
-  return getTalentList(page).getByRole("link", { exact: true, name });
-}
+const getTalentCard = (page: Page, name: string) =>
+  getTalentList(page).getByRole("link", { exact: true, name });
 
 test.describe("Talents page", () => {
   test("should list the active talents with their icons", async ({ page }) => {
@@ -67,7 +66,7 @@ test.describe("Talents page", () => {
 
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      /\/talents$/
+      /\/talents$/u
     );
   });
 
@@ -182,9 +181,14 @@ test.describe("Navigation to the talents page on mobile", () => {
     await expect(menu).toBeVisible();
 
     // お問い合わせ follows them only when the contact form is enabled
-    expect(
-      (await menu.getByRole("link").allTextContents()).slice(0, 4)
-    ).toEqual(["SHINJU DATEとは", "スケジュール", "動画一覧", "タレント一覧"]);
+    const linkTexts = await menu.getByRole("link").allTextContents();
+
+    expect(linkTexts.slice(0, 4)).toEqual([
+      "SHINJU DATEとは",
+      "スケジュール",
+      "動画一覧",
+      "タレント一覧",
+    ]);
 
     await menu.getByRole("link", { name: "タレント一覧" }).click();
 
@@ -200,7 +204,7 @@ test.describe("Sitemap", () => {
     const body = await response.text();
 
     expect(response.ok()).toBe(true);
-    expect(body).toMatch(/<loc>[^<]*\/talents<\/loc>/);
+    expect(body).toMatch(/<loc>[^<]*\/talents<\/loc>/u);
     expect(body).toContain(`/talents/${TALENT.id}</loc>`);
     expect(body).not.toContain("/talents/00000000-0000-4000-8000-000000000005");
     expect(body).not.toContain("/talents/00000000-0000-4000-8000-000000000006");

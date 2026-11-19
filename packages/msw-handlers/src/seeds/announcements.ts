@@ -1,15 +1,16 @@
 import type { Tables } from "@shinju-date/database";
 
-import { randomFuture, randomPast, type SeedContext } from "./context.js";
+import { randomFuture, randomPast } from "./context.js";
+import type { SeedContext } from "./context.js";
 
 /**
  * An announcement that is shown now. Its message contains a link and GFM
  * syntax (strikethrough), so that the rendering of the Markdown message can
  * be checked.
  */
-export function createAnnouncements(
+export const createAnnouncements = (
   context: SeedContext
-): Tables<"announcements">[] {
+): Tables<"announcements">[] => {
   const createdAt = randomPast(context, 30);
 
   return [
@@ -25,4 +26,4 @@ export function createAnnouncements(
       updated_at: createdAt,
     },
   ];
-}
+};

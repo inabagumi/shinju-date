@@ -17,18 +17,16 @@ interface AvatarProps extends ComponentPropsWithoutRef<"span"> {
  * The round frame of a profile image. Put `AvatarImage` in it, or
  * `AvatarFallback` when there is no image.
  */
-export function Avatar({ className, size, style, ...props }: AvatarProps) {
-  return (
-    <span
-      className={twMerge(
-        "relative shrink-0 overflow-hidden rounded-full bg-muted",
-        className
-      )}
-      style={size ? { height: size, width: size, ...style } : style}
-      {...props}
-    />
-  );
-}
+export const Avatar = ({ className, size, style, ...props }: AvatarProps) => (
+  <span
+    className={twMerge(
+      "relative shrink-0 overflow-hidden rounded-full bg-muted",
+      className
+    )}
+    style={size ? { height: size, width: size, ...style } : style}
+    {...props}
+  />
+);
 
 interface AvatarImageProps {
   /**
@@ -42,39 +40,35 @@ interface AvatarImageProps {
 }
 
 /** The profile image, filling `Avatar` */
-export function AvatarImage({ alt = "", image, sizes }: AvatarImageProps) {
-  return (
-    <Image
-      alt={alt}
-      blurDataURL={image.blur_data_url}
-      className="object-cover"
-      fill
-      placeholder={image.blur_data_url ? "blur" : "empty"}
-      sizes={sizes}
-      src={`/images/profile-images/${image.id}`}
-    />
-  );
-}
+export const AvatarImage = ({ alt = "", image, sizes }: AvatarImageProps) => (
+  <Image
+    alt={alt}
+    blurDataURL={image.blur_data_url}
+    className="object-cover"
+    fill
+    placeholder={image.blur_data_url ? "blur" : "empty"}
+    sizes={sizes}
+    src={`/images/profile-images/${image.id}`}
+  />
+);
 
 /**
  * Shown in `Avatar` when there is no image: the default icon, or the
  * `children`. It is decorative.
  */
-export function AvatarFallback({
+export const AvatarFallback = ({
   children,
   className,
   ...props
-}: ComponentPropsWithoutRef<"span">) {
-  return (
-    <span
-      aria-hidden="true"
-      className={twMerge(
-        "flex size-full items-center justify-center text-muted",
-        className
-      )}
-      {...props}
-    >
-      {children ?? <UserRound className="size-[70%]" strokeWidth={1.5} />}
-    </span>
-  );
-}
+}: ComponentPropsWithoutRef<"span">) => (
+  <span
+    aria-hidden="true"
+    className={twMerge(
+      "flex size-full items-center justify-center text-muted",
+      className
+    )}
+    {...props}
+  >
+    {children ?? <UserRound className="size-[70%]" strokeWidth={1.5} />}
+  </span>
+);

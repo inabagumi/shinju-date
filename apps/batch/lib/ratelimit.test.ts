@@ -1,15 +1,18 @@
+import type { Redis } from "@upstash/redis";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const store = new Map<string, { count: number; ttl: number | null }>();
 
-function multi() {
+const multi = () => {
   const commands: (() => number)[] = [];
   const transaction = {
-    exec: async () => commands.map((command) => command()),
+    exec: () => Promise.resolve(commands.map((command) => command())),
     expire(key: string, seconds: number) {
       commands.push(() => {
         const entry = store.get(key);
-        if (!entry) return 0;
+        if (!entry) {
+          return 0;
+        }
         entry.ttl = seconds;
         return 1;
       });
@@ -26,17 +29,19 @@ function multi() {
     },
   };
   return transaction;
-}
+};
 
-vi.mock("./redis", () => ({ redisClient: { multi } }));
+vi.mock(import("./redis"), () => ({
+  redisClient: { multi } as Partial<Redis> as Redis,
+}));
 
 const { limitOncePerWindow, videosBackfill } = await import("./ratelimit");
 
-function setNow(isoString: string) {
+const setNow = (isoString: string) => {
   vi.spyOn(Temporal.Now, "instant").mockReturnValue(
     Temporal.Instant.from(isoString)
   );
-}
+};
 
 describe("limitOncePerWindow", () => {
   beforeEach(() => {
@@ -50,9 +55,11 @@ describe("limitOncePerWindow", () => {
   it("accepts the first run in a window", async () => {
     setNow("2024-05-01T12:00:00Z");
 
-    await expect(limitOncePerWindow("videos:check", 30)).resolves.toEqual({
-      success: true,
-    });
+    await expect(limitOncePerWindow("videos:check", 30)).resolves.toStrictEqual(
+      {
+        success: true,
+      }
+    );
   });
 
   it("rejects the second run in the same window", async () => {
@@ -61,9 +68,11 @@ describe("limitOncePerWindow", () => {
 
     setNow("2024-05-01T12:00:29.999Z");
 
-    await expect(limitOncePerWindow("videos:check", 30)).resolves.toEqual({
-      success: false,
-    });
+    await expect(limitOncePerWindow("videos:check", 30)).resolves.toStrictEqual(
+      {
+        success: false,
+      }
+    );
   });
 
   it("accepts a run in the next window, however soon it comes", async () => {
@@ -72,9 +81,11 @@ describe("limitOncePerWindow", () => {
 
     setNow("2024-05-01T12:00:30Z");
 
-    await expect(limitOncePerWindow("videos:check", 30)).resolves.toEqual({
-      success: true,
-    });
+    await expect(limitOncePerWindow("videos:check", 30)).resolves.toStrictEqual(
+      {
+        success: true,
+      }
+    );
   });
 
   it("counts each identifier separately", async () => {
@@ -83,7 +94,7 @@ describe("limitOncePerWindow", () => {
 
     await expect(
       limitOncePerWindow("videos:check:twitch", 30)
-    ).resolves.toEqual({ success: true });
+    ).resolves.toStrictEqual({ success: true });
   });
 
   it("keys the count by the identifier and the window number", async () => {
@@ -94,7 +105,7 @@ describe("limitOncePerWindow", () => {
     const window = Math.floor(
       Temporal.Instant.from("2024-05-01T12:00:00Z").epochMilliseconds / 30_000
     );
-    expect([...store.keys()]).toEqual([
+    expect([...store.keys()]).toStrictEqual([
       `ratelimit:cron:videos:check:${window}`,
     ]);
   });
@@ -104,7 +115,7 @@ describe("limitOncePerWindow", () => {
 
     await limitOncePerWindow("videos:check", 30);
 
-    expect([...store.values()]).toEqual([{ count: 1, ttl: 30 }]);
+    expect([...store.values()]).toStrictEqual([{ count: 1, ttl: 30 }]);
   });
 });
 
@@ -122,7 +133,7 @@ describe("the rate limiter of /videos/backfill", () => {
 
     await videosBackfill.limit("videos:backfill");
 
-    expect([...store.values()].map(({ ttl }) => ttl)).toEqual([30]);
+    expect([...store.values()].map(({ ttl }) => ttl)).toStrictEqual([30]);
   });
 
   it("rejects the second run in its window", async () => {
@@ -131,7 +142,9 @@ describe("the rate limiter of /videos/backfill", () => {
 
     setNow("2024-05-01T12:00:29.999Z");
 
-    await expect(videosBackfill.limit("videos:backfill")).resolves.toEqual({
+    await expect(
+      videosBackfill.limit("videos:backfill")
+    ).resolves.toStrictEqual({
       success: false,
     });
   });

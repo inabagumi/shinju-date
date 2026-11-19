@@ -12,36 +12,29 @@ import { z } from "zod";
  * An unset variable and an empty one (`KEY=` in a `.env` file) are both
  * treated as unset.
  */
-function variable<T extends z.ZodType>(schema: T) {
-  return z.preprocess((value) => (value === "" ? undefined : value), schema);
-}
+const variable = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((value) => (value === "" ? undefined : value), schema);
 
-function requiredString() {
-  return variable(z.string({ error: "is not set" }));
-}
+const requiredString = () => variable(z.string({ error: "is not set" }));
 
-function requiredURL() {
-  return variable(
+const requiredURL = () =>
+  variable(
     z.url({
       error: (issue) =>
         issue.input === undefined ? "is not set" : "is not a valid URL",
     })
   );
-}
 
-function optionalString() {
-  return variable(z.string().optional());
-}
+const optionalString = () => variable(z.string().optional());
 
 /** `true` only when the variable is `true`. */
-function flag() {
-  return variable(
+const flag = () =>
+  variable(
     z
       .string()
       .optional()
       .transform((value) => value === "true")
   );
-}
 
 const publicEnvSchema = z.object({
   NEXT_PUBLIC_BASE_URL: variable(
@@ -111,7 +104,7 @@ export type ServerEnv = z.output<typeof serverEnvSchema>;
 /** The variables read from `process.env`, by name. */
 export type EnvSource = Readonly<Record<string, string | undefined>>;
 
-function toEnvError(issues: readonly z.core.$ZodIssue[]): Error {
+const toEnvError = (issues: readonly z.core.$ZodIssue[]): Error => {
   const details = issues.map(
     (issue) => `  - ${issue.path.join(".")}: ${issue.message}`
   );
@@ -119,14 +112,14 @@ function toEnvError(issues: readonly z.core.$ZodIssue[]): Error {
   return new Error(
     ["Missing or invalid environment variables:", ...details].join("\n")
   );
-}
+};
 
 /**
  * Checks the variables that the browser can also read.
  *
  * @throws {Error} When a variable is missing or invalid, listing every one.
  */
-export function parsePublicEnv(source: EnvSource): PublicEnv {
+export const parsePublicEnv = (source: EnvSource): PublicEnv => {
   const result = publicEnvSchema.safeParse(source);
 
   if (!result.success) {
@@ -134,17 +127,19 @@ export function parsePublicEnv(source: EnvSource): PublicEnv {
   }
 
   return result.data;
-}
+};
 
 /**
  * Checks every variable of the server, the public ones included, at once.
  *
  * @throws {Error} When a variable is missing or invalid, listing every one.
  */
-export function parseEnv(source: EnvSource): {
+export const parseEnv = (
+  source: EnvSource
+): {
   publicEnv: PublicEnv;
   serverEnv: ServerEnv;
-} {
+} => {
   const publicResult = publicEnvSchema.safeParse(source);
   const serverResult = serverEnvSchema.safeParse(source);
 
@@ -156,7 +151,7 @@ export function parseEnv(source: EnvSource): {
   }
 
   return { publicEnv: publicResult.data, serverEnv: serverResult.data };
-}
+};
 
 /**
  * Next.js inlines `NEXT_PUBLIC_` variables into the browser bundle only where

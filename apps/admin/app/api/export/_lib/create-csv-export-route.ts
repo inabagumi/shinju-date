@@ -1,7 +1,8 @@
 import { createErrorResponse } from "@shinju-date/helpers";
 import { logger } from "@shinju-date/logger";
 import { stringify } from "csv-stringify/sync";
-import { connection, type NextRequest } from "next/server";
+import { connection } from "next/server";
+import type { NextRequest } from "next/server";
 
 import type { Period } from "@/lib/analytics/period";
 
@@ -33,13 +34,14 @@ export interface CsvExportDefinition<T> {
  * - The CSV has a BOM for Excel, and the filename ends with the date
  *   (`YYYY-MM-DD` for a single day, `YYYY-MM-DD_YYYY-MM-DD` for a range)
  */
-export function createCsvExportRoute<T>({
-  fetch,
-  filenamePrefix,
-  header,
-  toRow,
-}: CsvExportDefinition<T>): (request: NextRequest) => Promise<Response> {
-  return async (request) => {
+export const createCsvExportRoute =
+  <T>({
+    fetch,
+    filenamePrefix,
+    header,
+    toRow,
+  }: CsvExportDefinition<T>): ((request: NextRequest) => Promise<Response>) =>
+  async (request) => {
     // Call connection() before accessing searchParams to mark as dynamic
     await connection();
 
@@ -66,7 +68,8 @@ export function createCsvExportRoute<T>({
       }
 
       const csvContent = stringify([header, ...items.map(toRow)], {
-        bom: true, // Add BOM for Excel compatibility
+        // Add BOM for Excel compatibility
+        bom: true,
       });
       const dateStr = selectedDate ?? `${range.start}_${range.end}`;
       const filename = `${filenamePrefix}${dateStr}.csv`;
@@ -90,4 +93,3 @@ export function createCsvExportRoute<T>({
       });
     }
   };
-}

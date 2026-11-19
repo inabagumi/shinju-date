@@ -14,9 +14,9 @@ export const metadata: Metadata = {
   title: "機能要望管理",
 };
 
-async function FeatureRequestListData({
+const FeatureRequestListData = async ({
   searchParams,
-}: Pick<PageProps<"/feedback">, "searchParams">) {
+}: Pick<PageProps<"/feedback">, "searchParams">) => {
   const [featureRequests, rawParams] = await Promise.all([
     getFeatureRequests(),
     searchParams,
@@ -30,7 +30,7 @@ async function FeatureRequestListData({
       statusFilter={filters.status}
     />
   );
-}
+};
 
 export default function FeedbackPage({ searchParams }: PageProps<"/feedback">) {
   return (

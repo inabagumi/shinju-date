@@ -5,7 +5,7 @@ import type { ESTree } from "@oxlint/plugins";
  * attribute) or a chunk of a template literal, or `null` when the node is not
  * a string.
  */
-export function getStringValue(node: ESTree.Node): string | null {
+export const getStringValue = (node: ESTree.Node): string | null => {
   if (node.type === "Literal") {
     return typeof node.value === "string" ? node.value : null;
   }
@@ -15,4 +15,4 @@ export function getStringValue(node: ESTree.Node): string | null {
   }
 
   return null;
-}
+};

@@ -10,8 +10,8 @@ import {
   ScheduleWeekdayBandSkeleton,
   ScheduleWeekNavigation,
   ScheduleWeekNavigationSkeleton,
-  type ScheduleWeekSectionProps,
 } from "./schedule-week";
+import type { ScheduleWeekSectionProps } from "./schedule-week";
 
 /**
  * `/schedule` と `/schedule/[date]` の中身。2つのルートの違いは「どの週か」の

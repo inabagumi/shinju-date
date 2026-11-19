@@ -17,36 +17,34 @@ interface WidgetHeaderProps {
  * アナリティクスの各指標の見出し。見出し・集計の期間・説明・操作を同じ型で並べる。
  * グラフで選んだ日付に絞り込んでいるときは、期間を `text-accent` で示す。
  */
-export function WidgetHeader({
+export const WidgetHeader = ({
   actions,
   dateRange,
   description,
   selectedDate,
   title,
-}: WidgetHeaderProps) {
-  return (
-    <div className="mb-4 space-y-1">
-      <div className="flex items-start justify-between gap-4">
-        <h3 className="text-body leading-normal font-semibold">
-          {title}
-          {selectedDate ? (
-            <span className="ml-2 text-meta font-normal text-accent">
-              ({formatDateLabel(selectedDate)})
+}: WidgetHeaderProps) => (
+  <div className="mb-4 space-y-1">
+    <div className="flex items-start justify-between gap-4">
+      <h3 className="text-body leading-normal font-semibold">
+        {title}
+        {selectedDate ? (
+          <span className="ml-2 text-meta font-normal text-accent">
+            ({formatDateLabel(selectedDate)})
+          </span>
+        ) : (
+          dateRange && (
+            <span className="ml-2 text-meta font-normal text-muted">
+              ({formatDateRange(dateRange)})
             </span>
-          ) : (
-            dateRange && (
-              <span className="ml-2 text-meta font-normal text-muted">
-                ({formatDateRange(dateRange)})
-              </span>
-            )
-          )}
-        </h3>
-        {actions}
-      </div>
-      {description && <p className="text-meta text-muted">{description}</p>}
+          )
+        )}
+      </h3>
+      {actions}
     </div>
-  );
-}
+    {description && <p className="text-meta text-muted">{description}</p>}
+  </div>
+);
 
 interface WidgetHeaderSkeletonProps {
   /** エクスポートのボタンを置く */
@@ -58,26 +56,24 @@ interface WidgetHeaderSkeletonProps {
 }
 
 /** 読み込み中の `WidgetHeader`。見出しは文字のまま描き、期間・説明・操作を `Skeleton` で描く */
-export function WidgetHeaderSkeleton({
+export const WidgetHeaderSkeleton = ({
   actions = false,
   period = true,
   title,
-}: WidgetHeaderSkeletonProps) {
-  return (
-    <div className="mb-4 space-y-1">
-      <div className="flex items-start justify-between gap-4">
-        <h3 className="text-body leading-normal font-semibold">
-          {title}
-          {period && (
-            <Skeleton className="ml-2 inline-block h-4 w-40 align-middle" />
-          )}
-        </h3>
-        {actions && <Skeleton className="h-7 w-28 shrink-0" />}
-      </div>
-      <div className="space-y-1 py-0.5">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-2/3" />
-      </div>
+}: WidgetHeaderSkeletonProps) => (
+  <div className="mb-4 space-y-1">
+    <div className="flex items-start justify-between gap-4">
+      <h3 className="text-body leading-normal font-semibold">
+        {title}
+        {period && (
+          <Skeleton className="ml-2 inline-block h-4 w-40 align-middle" />
+        )}
+      </h3>
+      {actions && <Skeleton className="h-7 w-28 shrink-0" />}
     </div>
-  );
-}
+    <div className="space-y-1 py-0.5">
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-2/3" />
+    </div>
+  </div>
+);

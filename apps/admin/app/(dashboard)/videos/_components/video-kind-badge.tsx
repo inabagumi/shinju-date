@@ -1,5 +1,6 @@
 import type { Enums } from "@shinju-date/database";
-import { Badge, type BadgeProps } from "@shinju-date/ui";
+import { Badge } from "@shinju-date/ui";
+import type { BadgeProps } from "@shinju-date/ui";
 
 const VIDEO_KIND_LABELS: Record<Enums<"video_kind">, string> = {
   short: "ショート",
@@ -19,7 +20,10 @@ interface VideoKindBadgeProps {
   className?: string;
 }
 
-export function VideoKindBadge({ videoKind, className }: VideoKindBadgeProps) {
+export const VideoKindBadge = ({
+  videoKind,
+  className,
+}: VideoKindBadgeProps) => {
   const variant = VIDEO_KIND_VARIANTS[videoKind] ?? "neutral";
   const text = VIDEO_KIND_LABELS[videoKind] ?? videoKind;
 
@@ -28,4 +32,4 @@ export function VideoKindBadge({ videoKind, className }: VideoKindBadgeProps) {
       {text}
     </Badge>
   );
-}
+};

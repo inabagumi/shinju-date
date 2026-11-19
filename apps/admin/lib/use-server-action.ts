@@ -26,11 +26,9 @@ export type SuccessfulResult<TResult extends ServerActionResult> = TResult & {
   success: true;
 };
 
-function isSuccessful<TResult extends ServerActionResult>(
+const isSuccessful = <TResult extends ServerActionResult>(
   result: TResult
-): result is SuccessfulResult<TResult> {
-  return result.success;
-}
+): result is SuccessfulResult<TResult> => result.success;
 
 export interface UseServerActionOptions<TResult extends ServerActionResult> {
   /**
@@ -69,7 +67,7 @@ export interface UseServerActionReturn<
  *
  * 画面の再取得は、アクションの `revalidatePath` に任せる（`router.refresh()` は呼ばない）。
  */
-export function useServerAction<
+export const useServerAction = <
   TArgs extends unknown[],
   TResult extends ServerActionResult,
 >(
@@ -79,7 +77,7 @@ export function useServerAction<
     onSuccess,
     successText,
   }: UseServerActionOptions<TResult> = {}
-): UseServerActionReturn<TArgs, TResult> {
+): UseServerActionReturn<TArgs, TResult> => {
   const [isPending, startTransition] = useTransition();
   const { showToast } = useActionToast();
 
@@ -105,6 +103,7 @@ export function useServerAction<
   };
 
   const run = (...args: TArgs) =>
+    // oxlint-disable-next-line promise/avoid-new -- startTransition() takes a callback and returns nothing, so its end is turned into a promise here (Promise.withResolvers() is not in every browser this app supports)
     new Promise<TResult | undefined>((resolve) => {
       startTransition(async () => {
         let result: TResult;
@@ -123,4 +122,4 @@ export function useServerAction<
     });
 
   return { isPending, run };
-}
+};

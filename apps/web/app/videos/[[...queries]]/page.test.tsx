@@ -1,10 +1,20 @@
 import { render, screen } from "@testing-library/react";
 import type { ResolvingMetadata } from "next";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { Talent } from "@/lib/data/talents";
-import type { Video } from "@/lib/data/videos";
+import type { SearchResultsSkeleton } from "@/components/search-results";
+import type { fetchActiveTalents, Talent } from "@/lib/data/talents";
+import type {
+  countVideos,
+  fetchCurrentTime,
+  fetchVideos,
+  Video,
+} from "@/lib/data/videos";
+import type { getDisplayRecommendationQueries } from "@/lib/recommendations/get-display-queries";
 
+import type SearchExitTracker from "./_components/search-exit-tracker";
+import type SearchQueryTracker from "./_components/search-query-tracker";
+import type { VideoFiltersSkeleton } from "./_components/video-filters";
 import {
   VideosPageHeading,
   VideosPageResults,
@@ -12,58 +22,61 @@ import {
 import { generateMetadata } from "./page";
 
 const fetchers = vi.hoisted(() => ({
-  countVideos: vi.fn(),
-  fetchActiveTalents: vi.fn(),
-  fetchCurrentTime: vi.fn(async () => "2026-11-14T12:00:00+09:00[Asia/Tokyo]"),
-  fetchVideos: vi.fn(),
+  countVideos: vi.fn<typeof countVideos>(),
+  fetchActiveTalents: vi.fn<typeof fetchActiveTalents>(),
+  fetchCurrentTime: vi.fn<typeof fetchCurrentTime>(() =>
+    Promise.resolve("2026-11-14T12:00:00+09:00[Asia/Tokyo]")
+  ),
+  fetchVideos: vi.fn<typeof fetchVideos>(),
 }));
 
-vi.mock("@/lib/data/talents", () => ({
+// The trackers render nothing, so the props they are rendered with are checked
+const trackers = vi.hoisted(() => ({
+  SearchExitTracker: vi.fn<typeof SearchExitTracker>(() => null),
+  SearchQueryTracker: vi.fn<typeof SearchQueryTracker>(() => null),
+}));
+
+vi.mock(import("@/lib/data/talents"), () => ({
   fetchActiveTalents: fetchers.fetchActiveTalents,
 }));
 
-vi.mock("@/lib/data/videos", () => ({
+vi.mock(import("@/lib/data/videos"), () => ({
   countVideos: fetchers.countVideos,
   fetchCurrentTime: fetchers.fetchCurrentTime,
   fetchVideos: fetchers.fetchVideos,
 }));
 
-interface MockTrackerProps {
-  query: string;
-}
-
 interface MockSearchResultsProps {
-  talentIds: string[];
+  talentIds?: string[];
 }
 
 interface MockVideoFiltersProps {
   selectedTalents: Talent[];
 }
 
-vi.mock("@/lib/recommendations/get-display-queries", () => ({
-  getDisplayRecommendationQueries: vi.fn(async () => []),
+vi.mock(import("@/lib/recommendations/get-display-queries"), () => ({
+  getDisplayRecommendationQueries: vi.fn<
+    typeof getDisplayRecommendationQueries
+  >(() => Promise.resolve([])),
 }));
 
-vi.mock("./_components/search-query-tracker", () => ({
-  default: ({ query }: MockTrackerProps) => (
-    <div data-testid="search-query-tracker">{query}</div>
-  ),
+vi.mock(import("./_components/search-query-tracker"), () => ({
+  default: trackers.SearchQueryTracker,
 }));
 
-vi.mock("./_components/search-exit-tracker", () => ({
-  default: ({ query }: MockTrackerProps) => (
-    <div data-testid="search-exit-tracker">{query}</div>
-  ),
+vi.mock(import("./_components/search-exit-tracker"), () => ({
+  default: trackers.SearchExitTracker,
 }));
 
-vi.mock("@/components/search-results", () => ({
+vi.mock(import("@/components/search-results"), () => ({
   default: ({ talentIds }: MockSearchResultsProps) => (
-    <div data-testid="search-results">{talentIds.join(",")}</div>
+    <div data-testid="search-results">{talentIds?.join(",")}</div>
   ),
-  SearchResultsSkeleton: () => null,
+  // Renders nothing
+  SearchResultsSkeleton: vi.fn<typeof SearchResultsSkeleton>(),
 }));
 
-vi.mock("./_components/video-filters", () => ({
+vi.mock(import("./_components/video-filters"), () => ({
   default: ({ selectedTalents }: MockVideoFiltersProps) => (
     <ul aria-label="選んでいるタレント">
       {selectedTalents.map((talent) => (
@@ -71,7 +84,8 @@ vi.mock("./_components/video-filters", () => ({
       ))}
     </ul>
   ),
-  VideoFiltersSkeleton: () => null,
+  // Renders nothing
+  VideoFiltersSkeleton: vi.fn<typeof VideoFiltersSkeleton>(),
 }));
 
 const TALENT_A: Talent = {
@@ -84,15 +98,13 @@ const TALENT_B: Talent = {
 };
 const RETIRED_TALENT_ID = "00000000-0000-4000-8000-000000000000";
 
-function createProps(
+const createProps = (
   queries: string[] | undefined,
   searchParams: Record<string, string | string[] | undefined> = {}
-) {
-  return {
-    params: Promise.resolve(queries ? { queries } : {}),
-    searchParams: Promise.resolve(searchParams),
-  };
-}
+) => ({
+  params: Promise.resolve(queries ? { queries } : {}),
+  searchParams: Promise.resolve(searchParams),
+});
 
 describe("VideosPage", () => {
   beforeEach(() => {
@@ -103,7 +115,7 @@ describe("VideosPage", () => {
     fetchers.countVideos.mockResolvedValue(1);
   });
 
-  test("should fetch the videos of the selected talents", async () => {
+  it("should fetch the videos of the selected talents", async () => {
     render(
       await VideosPageResults(
         createProps(["歌"], {
@@ -123,18 +135,16 @@ describe("VideosPage", () => {
     );
   });
 
-  test("should not track the keyword while filtering by talents", async () => {
+  it("should not track the keyword while filtering by talents", async () => {
     render(
       await VideosPageResults(createProps(["歌"], { talent: TALENT_A.id }))
     );
 
-    expect(
-      screen.queryByTestId("search-query-tracker")
-    ).not.toBeInTheDocument();
-    expect(screen.queryByTestId("search-exit-tracker")).not.toBeInTheDocument();
+    expect(trackers.SearchQueryTracker).not.toHaveBeenCalled();
+    expect(trackers.SearchExitTracker).not.toHaveBeenCalled();
   });
 
-  test("should track the keyword without talents", async () => {
+  it("should track the keyword without talents", async () => {
     render(await VideosPageResults(createProps(["歌"], { talent: "invalid" })));
 
     expect(fetchers.fetchVideos).toHaveBeenCalledWith({
@@ -142,11 +152,17 @@ describe("VideosPage", () => {
       query: "歌",
       talentIds: [],
     });
-    expect(screen.getByTestId("search-query-tracker")).toHaveTextContent("歌");
-    expect(screen.getByTestId("search-exit-tracker")).toHaveTextContent("歌");
+    expect(trackers.SearchQueryTracker.mock.lastCall?.[0]).toStrictEqual({
+      query: "歌",
+      resultsCount: 1,
+    });
+    expect(trackers.SearchExitTracker.mock.lastCall?.[0]).toStrictEqual({
+      hasResults: true,
+      query: "歌",
+    });
   });
 
-  test("should offer to clear the talents when nothing matches", async () => {
+  it("should offer to clear the talents when nothing matches", async () => {
     fetchers.fetchVideos.mockResolvedValue([]);
 
     render(
@@ -164,12 +180,10 @@ describe("VideosPage", () => {
       "href",
       `/videos/${encodeURIComponent("歌")}?kind=standard`
     );
-    expect(
-      screen.queryByTestId("search-query-tracker")
-    ).not.toBeInTheDocument();
+    expect(trackers.SearchQueryTracker).not.toHaveBeenCalled();
   });
 
-  test("should not offer to clear the talents without talents", async () => {
+  it("should not offer to clear the talents without talents", async () => {
     fetchers.fetchVideos.mockResolvedValue([]);
 
     render(await VideosPageResults(createProps(["歌"])));
@@ -183,7 +197,7 @@ describe("VideosPage", () => {
   });
 
   // 件数は Suspense の中で読み込むので、ここではスケルトンの有無で確かめる
-  test("should show the selected talents and the count", async () => {
+  it("should show the selected talents and the count", async () => {
     render(
       await VideosPageHeading(
         createProps(undefined, { talent: [TALENT_B.id, TALENT_A.id] })
@@ -203,7 +217,7 @@ describe("VideosPage", () => {
     ).toHaveLength(2);
   });
 
-  test("should not show the count without a keyword or talents", async () => {
+  it("should not show the count without a keyword or talents", async () => {
     render(await VideosPageHeading(createProps(undefined)));
 
     expect(
@@ -212,42 +226,38 @@ describe("VideosPage", () => {
   });
 });
 
-describe("generateMetadata", () => {
-  // The images of the parent segment are tested in `app/metadata.test.ts`
-  function generatePageMetadata(props: Parameters<typeof generateMetadata>[0]) {
-    return generateMetadata(
-      props,
-      Promise.resolve({} as Awaited<ResolvingMetadata>)
-    );
-  }
+// The images of the parent segment are tested in `app/metadata.test.ts`
+const generatePageMetadata = (props: Parameters<typeof generateMetadata>[0]) =>
+  generateMetadata(props, Promise.resolve({} as Awaited<ResolvingMetadata>));
 
+describe(generateMetadata, () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
     fetchers.fetchActiveTalents.mockResolvedValue([TALENT_A, TALENT_B]);
   });
 
-  test("should index the videos page", async () => {
+  it("should index the videos page", async () => {
     const metadata = await generatePageMetadata(
       createProps(undefined, { kind: "short" })
     );
 
-    expect(metadata.robots).toEqual({ index: true });
+    expect(metadata.robots).toStrictEqual({ index: true });
     expect(metadata.alternates?.canonical).toBe("/videos");
-    expect(metadata.alternates?.types).toEqual({
+    expect(metadata.alternates?.types).toStrictEqual({
       "text/calendar": "/videos.ics?kind=short",
     });
   });
 
-  test("should offer the calendar of every video without filters", async () => {
+  it("should offer the calendar of every video without filters", async () => {
     const metadata = await generatePageMetadata(createProps(undefined));
 
-    expect(metadata.alternates?.types).toEqual({
+    expect(metadata.alternates?.types).toStrictEqual({
       "text/calendar": "/videos.ics",
     });
   });
 
-  test("should not index the videos filtered by talents", async () => {
+  it("should not index the videos filtered by talents", async () => {
     const metadata = await generatePageMetadata(
       createProps(undefined, {
         kind: "standard",
@@ -255,33 +265,33 @@ describe("generateMetadata", () => {
       })
     );
 
-    expect(metadata.robots).toEqual({ index: false });
+    expect(metadata.robots).toStrictEqual({ index: false });
     expect(metadata.alternates?.canonical).toBe("/videos");
-    expect(metadata.alternates?.types).toEqual({
+    expect(metadata.alternates?.types).toStrictEqual({
       "text/calendar": `/videos.ics?kind=standard&talent=${TALENT_A.id}&talent=${TALENT_B.id}`,
     });
   });
 
-  test("should ignore unknown talents", async () => {
+  it("should ignore unknown talents", async () => {
     const metadata = await generatePageMetadata(
       createProps(undefined, { talent: RETIRED_TALENT_ID })
     );
 
-    expect(metadata.robots).toEqual({ index: true });
-    expect(metadata.alternates?.types).toEqual({
+    expect(metadata.robots).toStrictEqual({ index: true });
+    expect(metadata.alternates?.types).toStrictEqual({
       "text/calendar": "/videos.ics",
     });
   });
 
-  test("should keep the canonical URL of the search results", async () => {
+  it("should keep the canonical URL of the search results", async () => {
     const metadata = await generatePageMetadata(
       createProps(["歌"], { talent: TALENT_A.id })
     );
 
-    expect(metadata.robots).toEqual({ index: false });
+    expect(metadata.robots).toStrictEqual({ index: false });
     expect(metadata.alternates?.canonical).toBe(
       `/videos/${encodeURIComponent("歌")}`
     );
-    expect(metadata.alternates?.types).toEqual({ "text/calendar": null });
+    expect(metadata.alternates?.types).toStrictEqual({ "text/calendar": null });
   });
 });

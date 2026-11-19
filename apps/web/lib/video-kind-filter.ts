@@ -26,30 +26,28 @@ export const VIDEO_KIND_SEARCH_PARAM = "kind";
 /**
  * 検索パラメーターの値を種別に変換する。知らない値は `all` として扱う。
  */
-export function parseVideoKindFilter(
+export const parseVideoKindFilter = (
   value: string | string[] | undefined
-): VideoKindFilter {
+): VideoKindFilter => {
   const firstValue = Array.isArray(value) ? value[0] : value;
 
   return (
     VIDEO_KIND_FILTER_OPTIONS.find((option) => option.value === firstValue)
       ?.value ?? "all"
   );
-}
+};
 
 /**
  * `search_videos_v4` の `p_video_kinds` に渡す値。`all` では絞り込まない。
  */
-export function getVideoKinds(
+export const getVideoKinds = (
   filter: VideoKindFilter
-): VideoKind[] | undefined {
-  return filter === "all" ? undefined : [filter];
-}
+): VideoKind[] | undefined => (filter === "all" ? undefined : [filter]);
 
-function createFilterSearchParams(
+const createFilterSearchParams = (
   filter: VideoKindFilter,
   talentIds: readonly string[]
-): URLSearchParams {
+): URLSearchParams => {
   const searchParams = new URLSearchParams();
 
   if (filter !== "all") {
@@ -61,49 +59,46 @@ function createFilterSearchParams(
   }
 
   return searchParams;
-}
+};
 
-function appendSearchParams(
+const appendSearchParams = (
   pathname: string,
   searchParams: URLSearchParams
-): string {
-  return searchParams.size > 0 ? `${pathname}?${searchParams}` : pathname;
-}
+): string => (searchParams.size > 0 ? `${pathname}?${searchParams}` : pathname);
 
 /**
  * 動画一覧（または検索結果）を種別とタレントで絞り込んだページのパス。
  * タレントの ID は重複を除いて並べ替える。
  */
-export function getVideosPath(
+export const getVideosPath = (
   query: string,
   filter: VideoKindFilter,
   talentIds: readonly string[] = []
-): string {
+): string => {
   const pathname = query ? `/videos/${encodeURIComponent(query)}` : "/videos";
 
   return appendSearchParams(
     pathname,
     createFilterSearchParams(filter, talentIds)
   );
-}
+};
 
 /**
  * 動画一覧と同じ条件で絞り込んだカレンダーのパス。キーワードには対応しない。
  */
-export function getVideosCalendarPath(
+export const getVideosCalendarPath = (
   filter: VideoKindFilter,
   talentIds: readonly string[] = []
-): string {
-  return appendSearchParams(
+): string =>
+  appendSearchParams(
     "/videos.ics",
     createFilterSearchParams(filter, talentIds)
   );
-}
 
 /**
  * 見つからなかったときに使う種別の呼び名。「すべて」では「動画」と呼ぶ。
  */
-export function getVideoKindName(filter: VideoKindFilter): string {
+export const getVideoKindName = (filter: VideoKindFilter): string => {
   if (filter === "all") {
     return "動画";
   }
@@ -112,4 +107,4 @@ export function getVideoKindName(filter: VideoKindFilter): string {
     VIDEO_KIND_FILTER_OPTIONS.find((option) => option.value === filter)
       ?.label ?? "動画"
   );
-}
+};

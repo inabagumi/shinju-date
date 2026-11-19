@@ -13,13 +13,13 @@ export class FakeLockRedis {
   readonly ttls = new Map<string, number>();
   readonly values = new Map<string, string>();
 
-  async set(
+  set(
     key: string,
     value: string,
     { ex, nx }: SetOptions = {}
   ): Promise<"OK" | null> {
     if (nx && this.values.has(key)) {
-      return null;
+      return Promise.resolve(null);
     }
 
     this.values.set(key, value);
@@ -30,7 +30,7 @@ export class FakeLockRedis {
       this.ttls.set(key, ex);
     }
 
-    return "OK";
+    return Promise.resolve("OK");
   }
 
   /**
@@ -38,27 +38,27 @@ export class FakeLockRedis {
    * by its first line. It is not imported, so that this file can be loaded
    * before `@/lib/redis` is mocked.
    */
-  async eval(script: string, keys: string[], args: string[]): Promise<number> {
+  eval(script: string, keys: string[], args: string[]): Promise<number> {
     if (this.evalFails) {
       this.evalFails = false;
 
-      throw new Error("Redis is down");
+      return Promise.reject(new Error("Redis is down"));
     }
 
     if (!script.startsWith("-- batch:release-lock\n")) {
-      throw new Error("Unexpected script");
+      return Promise.reject(new Error("Unexpected script"));
     }
 
     const [key = ""] = keys;
     const [value] = args;
 
     if (this.values.get(key) !== value) {
-      return 0;
+      return Promise.resolve(0);
     }
 
     this.delete(key);
 
-    return 1;
+    return Promise.resolve(1);
   }
 
   /** Removes the key, as when it runs out. */

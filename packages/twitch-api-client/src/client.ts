@@ -10,7 +10,7 @@ export interface ClientOptions {
  * Creates a twurple client that authenticates with an App Access Token made
  * from the app credentials in the environment.
  */
-function createTwitchApiClient(): ApiClient {
+const createTwitchApiClient = (): ApiClient => {
   const clientId = process.env["TWITCH_CLIENT_ID"];
   const clientSecret = process.env["TWITCH_CLIENT_SECRET"];
 
@@ -23,16 +23,16 @@ function createTwitchApiClient(): ApiClient {
   return new ApiClient({
     authProvider: new AppTokenAuthProvider(clientId, clientSecret),
   });
-}
+};
 
 let _apiClient: ApiClient | null = null;
 
 /**
  * Gets or creates the shared twurple client.
  */
-export function getTwitchApiClient(): ApiClient {
+export const getTwitchApiClient = (): ApiClient => {
   if (!_apiClient) {
     _apiClient = createTwitchApiClient();
   }
   return _apiClient;
-}
+};

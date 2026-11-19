@@ -4,7 +4,8 @@ import { SITE_NAME, SITE_THEME_COLOR } from "@/lib/site";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    background_color: "#ffffff", // var(--color-background) のライトの値
+    // var(--color-background) のライトの値
+    background_color: "#ffffff",
     display: "standalone",
     icons: [
       {

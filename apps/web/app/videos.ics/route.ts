@@ -19,7 +19,7 @@ import { createVideosCalendarResponse } from "@/lib/videos-calendar";
  * ID を無視すると、登録済みのカレンダーがタレントの削除などをきっかけに
  * すべてのタレントの予定に変わってしまうため。
  */
-export async function GET(request: NextRequest): Promise<Response> {
+export const GET = async (request: NextRequest): Promise<Response> => {
   const { searchParams } = request.nextUrl;
   const talentValues = searchParams.getAll(TALENT_SEARCH_PARAM);
 
@@ -29,8 +29,8 @@ export async function GET(request: NextRequest): Promise<Response> {
     });
   }
 
-  return createVideosCalendarResponse({
+  return await createVideosCalendarResponse({
     kind: parseVideoKindFilter(searchParams.getAll(VIDEO_KIND_SEARCH_PARAM)),
     talentIds: parseTalentIds(talentValues),
   });
-}
+};

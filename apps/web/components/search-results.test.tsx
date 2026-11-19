@@ -1,35 +1,46 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import type { InViewHookResponse } from "react-intersection-observer";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { fetchVideos, type Video } from "@/lib/data/videos";
+import { fetchVideos } from "@/lib/data/videos";
+import type { Video } from "@/lib/data/videos";
 import { createVideoItem } from "@/test/factories";
 
 import SearchResults from "./search-results";
+import type { VideoCardSkeleton } from "./video-card";
 
-vi.mock("@/lib/data/videos", () => ({
-  fetchVideos: vi.fn(() => new Promise(() => {})),
+vi.mock(import("@/lib/data/videos"), () => ({
+  // Never resolves, so the results stay loading
+  fetchVideos: vi.fn<typeof fetchVideos>(
+    () => Promise.withResolvers<never>().promise
+  ),
 }));
 
-vi.mock("react-intersection-observer", () => ({
-  useInView: () => ({ inView: false, ref: () => {} }),
+vi.mock(import("react-intersection-observer"), () => ({
+  useInView: () =>
+    ({
+      inView: false,
+      ref: () => {},
+    }) as Partial<InViewHookResponse> as InViewHookResponse,
 }));
 
-vi.mock("./video-card", () => ({
+vi.mock(import("./video-card"), () => ({
   default: ({ value }: { value: Video }) => <article>{value.title}</article>,
-  VideoCardSkeleton: () => null,
+  // Renders nothing
+  VideoCardSkeleton: vi.fn<typeof VideoCardSkeleton>(),
 }));
 
-function renderWithQueryClient(ui: ReactNode) {
+const renderWithQueryClient = (ui: ReactNode) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false, staleTime: Infinity } },
   });
 
   render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
-}
+};
 
-describe("SearchResults", () => {
+describe(SearchResults, () => {
   beforeEach(() => {
     // Asia/Tokyo: 2026-11-14 21:00
     vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(
@@ -41,7 +52,7 @@ describe("SearchResults", () => {
     vi.restoreAllMocks();
   });
 
-  test("should group the videos by date in Japan", () => {
+  it("should group the videos by date in Japan", () => {
     renderWithQueryClient(
       <SearchResults
         prefetchedData={[
@@ -97,7 +108,7 @@ describe("SearchResults", () => {
           .getAllByRole("article")
           .map((card) => card.textContent),
       }))
-    ).toEqual([
+    ).toStrictEqual([
       { heading: "明日", titles: ["video-a"] },
       { heading: "今日", titles: ["video-b", "video-c"] },
       { heading: "昨日", titles: ["video-d"] },
@@ -111,7 +122,7 @@ describe("SearchResults", () => {
     ).toHaveAttribute("dateTime", "2026-11-14");
   });
 
-  test("should keep the date headings below the site header", () => {
+  it("should keep the date headings below the site header", () => {
     renderWithQueryClient(
       <SearchResults
         prefetchedData={[
@@ -133,7 +144,7 @@ describe("SearchResults", () => {
     );
   });
 
-  test("should render nothing without videos", () => {
+  it("should render nothing without videos", () => {
     const { container } = render(
       <QueryClientProvider client={new QueryClient()}>
         <SearchResults prefetchedData={[[]]} referenceDate="2026-11-14" />
@@ -143,7 +154,7 @@ describe("SearchResults", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  test("should fetch the videos with the selected talents", () => {
+  it("should fetch the videos with the selected talents", () => {
     const talentIds = ["0f6b7c84-1a1e-4b4e-9d3a-5c7a0c1e2f01"];
 
     renderWithQueryClient(

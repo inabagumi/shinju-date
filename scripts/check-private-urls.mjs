@@ -20,10 +20,9 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import path from "node:path";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const root = path.resolve(import.meta.dirname, "..");
 
 /**
  * URLs that most people cannot open. Add a pattern here to check more URLs.
@@ -38,7 +37,7 @@ export const PRIVATE_URL_PATTERNS = [
     // Sessions, artifacts, chats and projects of Claude need the owner's login
     name: "Claude のセッション・アーティファクト・会話・プロジェクト",
     pattern:
-      /https?:\/\/(?:www\.)?claude\.ai\/(?:code\/(?:session_|artifact\/)|artifact\/|chat\/|project\/)[^\s<>()[\]{}"'`]*/gi,
+      /https?:\/\/(?:www\.)?claude\.ai\/(?:code\/(?:session_|artifact\/)|artifact\/|chat\/|project\/)[^\s<>()[\]{}"'`]*/giu,
   },
 ];
 
@@ -46,20 +45,20 @@ export const PRIVATE_URL_PATTERNS = [
  * @typedef {object} PrivateUrl
  * @property {number} line - 1-based line number
  * @property {string} name - Name of the pattern that matched
- * @property {string} url
+ * @property {string} url - URL that matched
  */
 
 /**
  * Find the URLs that most people cannot open.
  *
- * @param {string} text
- * @returns {PrivateUrl[]}
+ * @param {string} text - Text such as a commit message
+ * @returns {PrivateUrl[]} URLs found, in the order of the text
  */
-export function findPrivateUrls(text) {
+export const findPrivateUrls = (text) => {
   /** @type {PrivateUrl[]} */
   const found = [];
 
-  for (const [index, lineText] of text.split(/\r?\n/).entries()) {
+  for (const [index, lineText] of text.split(/\r?\n/u).entries()) {
     for (const { name, pattern } of PRIVATE_URL_PATTERNS) {
       for (const match of lineText.matchAll(pattern)) {
         found.push({ line: index + 1, name, url: match[0] });
@@ -68,12 +67,12 @@ export function findPrivateUrls(text) {
   }
 
   return found;
-}
+};
 
 /**
  * @typedef {object} Source
  * @property {string} label - Where the text is from, e.g. `commit abc1234`
- * @property {string} text
+ * @property {string} text - Text to check
  */
 
 /**
@@ -83,23 +82,21 @@ export function findPrivateUrls(text) {
 /**
  * Find the URLs that most people cannot open in each source.
  *
- * @param {Source[]} sources
- * @returns {Problem[]}
+ * @param {Source[]} sources - Texts to check with their labels
+ * @returns {Problem[]} URLs found, with the labels of their sources
  */
-export function findProblems(sources) {
-  return sources.flatMap(({ label, text }) =>
+export const findProblems = (sources) =>
+  sources.flatMap(({ label, text }) =>
     findPrivateUrls(text ?? "").map((found) => ({ label, ...found }))
   );
-}
 
 /**
  * Format a problem for the log.
  *
- * @param {Problem} problem
+ * @param {Problem} problem - Problem to format
  */
-export function formatProblem({ label, line, name, url }) {
-  return `${label} (${line} 行目): ${url} (${name})`;
-}
+export const formatProblem = ({ label, line, name, url }) =>
+  `${label} (${line} 行目): ${url} (${name})`;
 
 export const GUIDANCE =
   "ほとんどの人が開けない URL は、コミットメッセージとプルリクエストに書かないでください。CONTRIBUTING.md の「コミットメッセージ」を参照。";
@@ -107,14 +104,14 @@ export const GUIDANCE =
 /**
  * List the commits from `base` to `HEAD` with their messages.
  *
- * @param {string} base
- * @returns {Source[]}
+ * @param {string} base - Base revision, such as `origin/main`
+ * @returns {Source[]} Commit messages labeled with their short hashes
  */
-function listCommits(base) {
+const listCommits = (base) => {
   const output = execFileSync(
     "git",
     ["log", "-z", "--format=%h%n%B", `${base}..HEAD`],
-    { cwd: root, encoding: "utf8" }
+    { cwd: root, encoding: "utf-8" }
   );
 
   return output
@@ -128,9 +125,9 @@ function listCommits(base) {
         text: entry.slice(newline + 1),
       };
     });
-}
+};
 
-function main() {
+const main = () => {
   const base = process.argv[2] ?? "origin/main";
   const problems = findProblems(listCommits(base));
 
@@ -142,11 +139,8 @@ function main() {
     console.error(`\n${problems.length} 件の問題があります。${GUIDANCE}`);
     process.exitCode = 1;
   }
-}
+};
 
-if (
-  process.argv[1] &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-) {
+if (process.argv[1] && path.resolve(process.argv[1]) === import.meta.filename) {
   main();
 }

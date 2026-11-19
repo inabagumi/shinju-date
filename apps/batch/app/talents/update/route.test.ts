@@ -1,38 +1,49 @@
+import type * as Sentry from "@sentry/nextjs";
+import type { Scraper } from "@shinju-date/scraper";
+import type * as WebCache from "@shinju-date/web-cache";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const acquireLock = vi.fn();
-const releaseLock = vi.fn();
-const scraper = { syncAccounts: vi.fn() };
-const createScraper = vi.fn(() => scraper);
-const revalidateTags = vi.fn();
+import type * as Lock from "@/lib/lock";
+import type * as ScraperModule from "@/lib/scraper";
 
-vi.mock("@/lib/lock", () => ({ acquireLock, releaseLock }));
-vi.mock("@/lib/scraper", () => ({ createScraper }));
-vi.mock("@shinju-date/web-cache", () => ({ revalidateTags }));
+const { createAfterMock, createLoggerMock } = await vi.hoisted(
+  () => import("@/test/mocks")
+);
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
+const acquireLock = vi.fn<typeof Lock.acquireLock>();
+const releaseLock = vi.fn<typeof Lock.releaseLock>();
+const scraper = { syncAccounts: vi.fn<Scraper["syncAccounts"]>() };
+const createScraper = vi.fn<typeof ScraperModule.createScraper>(
+  () => scraper as Partial<Scraper> as Scraper
+);
+const revalidateTags = vi.fn<typeof WebCache.revalidateTags>();
+
+vi.mock(import("@/lib/lock"), () => ({ acquireLock, releaseLock }));
+vi.mock(import("@/lib/scraper"), () => ({ createScraper }));
+vi.mock(import("@shinju-date/web-cache"), () => ({ revalidateTags }));
+
+vi.mock(import("@shinju-date/logger"), () => ({
+  logger: createLoggerMock(),
 }));
 
-vi.mock("@sentry/nextjs", () => ({
-  captureCheckIn: vi.fn(() => "check-in-id"),
-  captureException: vi.fn(),
-  flush: vi.fn(),
+vi.mock(import("@sentry/nextjs"), () => ({
+  captureCheckIn: vi.fn<typeof Sentry.captureCheckIn>(() => "check-in-id"),
+  captureException: vi.fn<typeof Sentry.captureException>(),
+  flush: vi.fn<typeof Sentry.flush>(),
 }));
 
-vi.mock("next/server", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("next/server")>()),
-  after: vi.fn((callback: () => unknown) => callback()),
+vi.mock(import("next/server"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  after: createAfterMock(),
 }));
 
 const { POST } = await import("./route");
 
-function createRequest(search = ""): NextRequest {
-  return new NextRequest(`http://localhost:5000/talents/update${search}`, {
+const createRequest = (search = ""): NextRequest =>
+  new NextRequest(`http://localhost:5000/talents/update${search}`, {
     method: "POST",
   });
-}
 
 describe("POST /talents/update", () => {
   beforeEach(() => {
@@ -47,7 +58,7 @@ describe("POST /talents/update", () => {
     expect(response.status).toBe(204);
     expect(acquireLock).toHaveBeenCalledWith("talents:update", 130);
     expect(createScraper).toHaveBeenCalledWith("youtube");
-    expect(scraper.syncAccounts).toHaveBeenCalledTimes(1);
+    expect(scraper.syncAccounts).toHaveBeenCalledOnce();
     expect(revalidateTags).not.toHaveBeenCalled();
   });
 
@@ -69,8 +80,8 @@ describe("POST /talents/update", () => {
     const response = await POST(createRequest("?provider=niconico"));
 
     expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toEqual({
-      error: expect.stringMatching(/^Invalid query parameters\. provider: /),
+    await expect(response.json()).resolves.toStrictEqual({
+      error: expect.stringMatching(/^Invalid query parameters\. provider: /u),
     });
     expect(createScraper).not.toHaveBeenCalled();
   });

@@ -19,19 +19,19 @@ import type { Video } from "../_lib/get-videos";
 import type { VideoSort } from "../_lib/video-sort";
 import VideoList from "./video-list";
 
-vi.mock("../_actions", () => ({
-  restoreAction: vi.fn(),
-  softDeleteAction: vi.fn(),
-  toggleVisibilityAction: vi.fn(),
+vi.mock(import("../_actions"), () => ({
+  restoreAction: vi.fn<typeof restoreAction>(),
+  softDeleteAction: vi.fn<typeof softDeleteAction>(),
+  toggleVisibilityAction: vi.fn<typeof toggleVisibilityAction>(),
 }));
 
 interface WrapperProps {
   children: ReactNode;
 }
 
-function Wrapper({ children }: WrapperProps) {
-  return <ActionToastProvider>{children}</ActionToastProvider>;
-}
+const Wrapper = ({ children }: WrapperProps) => (
+  <ActionToastProvider>{children}</ActionToastProvider>
+);
 
 const DEFAULT_SORT: VideoSort = { field: "updated_at", order: "desc" };
 
@@ -42,36 +42,72 @@ interface TestVideoListProps {
 }
 
 /** 既定の並べ替えで、絞り込みのない一覧を描く */
-function TestVideoList({
+const TestVideoList = ({
   videos,
   sort = DEFAULT_SORT,
   searchParams = "",
-}: TestVideoListProps) {
-  return <VideoList searchParams={searchParams} sort={sort} videos={videos} />;
-}
+}: TestVideoListProps) => (
+  <VideoList searchParams={searchParams} sort={sort} videos={videos} />
+);
 
-function createVideo(overrides: Partial<Video> = {}): Video {
-  return {
-    clicks: 0,
-    deleted_at: null,
-    duration: "PT1H2M3S",
-    id: "00000000-0000-4000-8000-000000000001",
-    platform: "youtube",
-    published_at: "2025-01-01T00:00:00Z",
-    status: "ENDED",
-    talent: { id: "00000000-0000-4000-8000-000000000002", name: "Talent A" },
-    thumbnail: null,
-    title: "Test Video",
-    twitch_video: null,
-    updated_at: "2025-01-02T00:00:00Z",
-    video_kind: "standard",
-    visible: true,
-    youtube_video: { youtube_video_id: "abcdefghijk" },
-    ...overrides,
-  };
-}
+const createVideo = (overrides: Partial<Video> = {}): Video => ({
+  clicks: 0,
+  deleted_at: null,
+  duration: "PT1H2M3S",
+  id: "00000000-0000-4000-8000-000000000001",
+  platform: "youtube",
+  published_at: "2025-01-01T00:00:00Z",
+  status: "ENDED",
+  talent: { id: "00000000-0000-4000-8000-000000000002", name: "Talent A" },
+  thumbnail: null,
+  title: "Test Video",
+  twitch_video: null,
+  updated_at: "2025-01-02T00:00:00Z",
+  video_kind: "standard",
+  visible: true,
+  youtube_video: { youtube_video_id: "abcdefghijk" },
+  ...overrides,
+});
 
-describe("VideoList", () => {
+const renderWithToast = () => {
+  render(
+    <ActionToastProvider>
+      <TestVideoList videos={[createVideo()]} />
+    </ActionToastProvider>
+  );
+};
+
+const toggleSelectedVideos = () => {
+  fireEvent.click(screen.getByLabelText("「Test Video」を選択"));
+  fireEvent.click(
+    screen.getByRole("button", { name: "表示/非表示を切り替え" })
+  );
+  fireEvent.click(screen.getByRole("button", { name: "切り替える" }));
+};
+
+const select = (title: string) => {
+  fireEvent.click(screen.getByLabelText(`「${title}」を選択`));
+};
+
+const confirmDelete = () => {
+  fireEvent.change(screen.getByLabelText(/「DELETE」と入力してください/u), {
+    target: { value: "DELETE" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "削除する" }));
+};
+
+const getDateHeader = () =>
+  screen.getByRole("columnheader", { name: /公開日時/u });
+
+// メニューはポインターを押したときかキーで開くため、Enter で開く
+const openMenu = () => {
+  fireEvent.keyDown(
+    screen.getByRole("button", { name: "アクションメニュー" }),
+    { key: "Enter" }
+  );
+};
+
+describe(VideoList, () => {
   it("renders the talent name", () => {
     render(<TestVideoList videos={[createVideo()]} />, {
       wrapper: ActionToastProvider,
@@ -128,22 +164,6 @@ describe("VideoList", () => {
       vi.clearAllMocks();
     });
 
-    function renderWithToast() {
-      render(
-        <ActionToastProvider>
-          <TestVideoList videos={[createVideo()]} />
-        </ActionToastProvider>
-      );
-    }
-
-    function toggleSelectedVideos() {
-      fireEvent.click(screen.getByLabelText("「Test Video」を選択"));
-      fireEvent.click(
-        screen.getByRole("button", { name: "表示/非表示を切り替え" })
-      );
-      fireEvent.click(screen.getByRole("button", { name: "切り替える" }));
-    }
-
     it("shows a success toast and clears the selection", async () => {
       vi.mocked(toggleVisibilityAction).mockResolvedValue({
         data: { skippedCount: 0, updatedCount: 1 },
@@ -153,9 +173,9 @@ describe("VideoList", () => {
       renderWithToast();
       toggleSelectedVideos();
 
-      expect(
-        await screen.findByText("1 件の動画の表示状態を更新しました。")
-      ).toBeInTheDocument();
+      await expect(
+        screen.findByText("1 件の動画の表示状態を更新しました。")
+      ).resolves.toBeInTheDocument();
       expect(toggleVisibilityAction).toHaveBeenCalledWith([
         "00000000-0000-4000-8000-000000000001",
       ]);
@@ -173,9 +193,9 @@ describe("VideoList", () => {
       renderWithToast();
       toggleSelectedVideos();
 
-      expect(
-        await screen.findByText("更新できませんでした。")
-      ).toBeInTheDocument();
+      await expect(
+        screen.findByText("更新できませんでした。")
+      ).resolves.toBeInTheDocument();
       expect(screen.getByText("1 件選択中")).toBeInTheDocument();
     });
   });
@@ -203,38 +223,43 @@ describe("VideoList", () => {
       title: "Deleted Video",
     });
 
-    function select(title: string) {
-      fireEvent.click(screen.getByLabelText(`「${title}」を選択`));
-    }
-
-    function confirmDelete() {
-      fireEvent.change(screen.getByLabelText(/「DELETE」と入力してください/), {
-        target: { value: "DELETE" },
-      });
-      fireEvent.click(screen.getByRole("button", { name: "削除する" }));
-    }
-
     beforeEach(() => {
       vi.clearAllMocks();
       vi.mocked(softDeleteAction).mockResolvedValue({ success: true });
       vi.mocked(restoreAction).mockResolvedValue({ success: true });
     });
 
-    it("drops the selection that is no longer in the list", async () => {
+    const selectAcrossLists = () => {
       const { rerender } = render(<TestVideoList videos={[videoA, videoB]} />, {
         wrapper: Wrapper,
       });
       select("Video A");
       select("Video B");
+
+      return {
+        moveToNextList() {
+          rerender(<TestVideoList videos={[videoC]} />);
+        },
+      };
+    };
+
+    it("drops the selection that is no longer in the list", () => {
+      const { moveToNextList } = selectAcrossLists();
       expect(screen.getByText("2 件選択中")).toBeInTheDocument();
 
-      rerender(<TestVideoList videos={[videoC]} />);
+      moveToNextList();
       expect(
         screen.getByText("動画を選択すると、まとめて操作できます。")
       ).toBeInTheDocument();
 
       select("Video C");
       expect(screen.getByText("1 件選択中")).toBeInTheDocument();
+    });
+
+    it("acts only on the videos selected in the current list", async () => {
+      const { moveToNextList } = selectAcrossLists();
+      moveToNextList();
+      select("Video C");
 
       fireEvent.click(screen.getByRole("button", { name: "削除" }));
       const dialog = screen.getByRole("dialog");
@@ -321,16 +346,12 @@ describe("VideoList", () => {
   });
 
   describe("sorting", () => {
-    function getDateHeader() {
-      return screen.getByRole("columnheader", { name: /公開日時/ });
-    }
-
     it("links to the reversed order for the current field", () => {
       render(<TestVideoList searchParams="sortOrder=desc" videos={[]} />, {
         wrapper: Wrapper,
       });
 
-      const link = screen.getByRole("link", { name: /更新日時/ });
+      const link = screen.getByRole("link", { name: /更新日時/u });
       expect(link).toHaveAttribute("href", "/videos?sortOrder=asc");
       expect(link).toHaveTextContent("降順で並べ替え中");
       expect(getDateHeader()).toHaveAttribute("aria-sort", "descending");
@@ -346,19 +367,19 @@ describe("VideoList", () => {
         { wrapper: Wrapper }
       );
 
-      expect(screen.getByRole("link", { name: /更新日時/ })).toHaveAttribute(
+      expect(screen.getByRole("link", { name: /更新日時/u })).toHaveAttribute(
         "href",
         "/videos?search=test&sortField=updated_at&sortOrder=desc"
       );
-      expect(screen.getByRole("link", { name: /公開日時/ })).toHaveAttribute(
+      expect(screen.getByRole("link", { name: /公開日時/u })).toHaveAttribute(
         "href",
         "/videos?search=test&sortField=published_at&sortOrder=desc"
       );
-      expect(screen.getByRole("link", { name: /公開日時/ })).toHaveTextContent(
+      expect(screen.getByRole("link", { name: /公開日時/u })).toHaveTextContent(
         "昇順で並べ替え中"
       );
       expect(
-        screen.getByRole("link", { name: /更新日時/ })
+        screen.getByRole("link", { name: /更新日時/u })
       ).not.toHaveTextContent("並べ替え中");
       expect(getDateHeader()).toHaveAttribute("aria-sort", "ascending");
     });
@@ -368,14 +389,6 @@ describe("VideoList", () => {
     beforeEach(() => {
       vi.clearAllMocks();
     });
-
-    // メニューはポインターを押したときかキーで開くため、Enter で開く
-    function openMenu() {
-      fireEvent.keyDown(
-        screen.getByRole("button", { name: "アクションメニュー" }),
-        { key: "Enter" }
-      );
-    }
 
     it("links to the video on the platform", () => {
       render(<TestVideoList videos={[createVideo()]} />, { wrapper: Wrapper });

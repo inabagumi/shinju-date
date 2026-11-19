@@ -5,7 +5,8 @@ import {
   getYouTubeChannelIconName,
   getYouTubeChannelIconUrl,
 } from "../youtube-urls.js";
-import { randomBlurDataUrl, randomPast, type SeedContext } from "./context.js";
+import { randomBlurDataUrl, randomPast } from "./context.js";
+import type { SeedContext } from "./context.js";
 
 /**
  * IDs of the seeded active talents, in the order of their readings
@@ -59,10 +60,10 @@ export interface SeedAccounts {
   youtubeChannels: Tables<"youtube_channels">[];
 }
 
-function createTalent(
+const createTalent = (
   context: SeedContext,
   values: Pick<Tables<"talents">, "id" | "name"> & Partial<Tables<"talents">>
-): Tables<"talents"> {
+): Tables<"talents"> => {
   const createdAt = values.created_at ?? randomPast(context, 365 * 2);
 
   return {
@@ -74,7 +75,7 @@ function createTalent(
     updated_at: values.deleted_at ?? createdAt,
     ...values,
   };
-}
+};
 
 /**
  * Talents and their accounts: the talents of `MOCK_TALENT_IDS` with YouTube
@@ -82,7 +83,7 @@ function createTalent(
  * only the first with an icon), and a talent without videos, a retired one
  * and a deleted one, which have no accounts.
  */
-export function createAccounts(context: SeedContext): SeedAccounts {
+export const createAccounts = (context: SeedContext): SeedAccounts => {
   const { faker } = context;
   const talentsWithVideos = TALENTS_WITH_VIDEOS.map(
     ({ name, reading, themeColor }, index) =>
@@ -195,4 +196,4 @@ export function createAccounts(context: SeedContext): SeedAccounts {
     twitchUsers,
     youtubeChannels,
   };
-}
+};

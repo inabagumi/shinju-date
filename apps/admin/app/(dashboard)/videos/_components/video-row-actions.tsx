@@ -24,13 +24,13 @@ interface VideoRowActionsProps {
 }
 
 /** 行ごとの操作のメニュー（外部のサイトで見る・表示の切り替え・削除・復元） */
-export function VideoRowActions({
+export const VideoRowActions = ({
   externalUrl,
   id,
   isDeleted,
   platform,
   title,
-}: VideoRowActionsProps) {
+}: VideoRowActionsProps) => {
   const { openActionDialog } = useVideoSelection();
 
   const handleAction = (action: VideoAction) => {
@@ -72,4 +72,4 @@ export function VideoRowActions({
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+};

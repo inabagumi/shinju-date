@@ -8,8 +8,8 @@ type MockSupabase = ReturnType<typeof setupSupabase>;
 const STORAGE_URL = "https://fake.supabase.test/storage/v1/object";
 
 /** Creates a solid-colour JPEG of the given size. */
-export function createImage(width: number, height: number): Promise<Buffer> {
-  return sharp({
+export const createImage = (width: number, height: number): Promise<Buffer> =>
+  sharp({
     create: {
       background: { b: 0, g: 0, r: 255 },
       channels: 3,
@@ -19,7 +19,6 @@ export function createImage(width: number, height: number): Promise<Buffer> {
   })
     .jpeg()
     .toBuffer();
-}
 
 export interface ServedImage {
   body: Buffer;
@@ -38,7 +37,7 @@ export interface ImageRequest {
  * Serves an image from the platform CDN. A request whose If-None-Match
  * matches the image's ETag gets `304 Not Modified`.
  */
-export function serveImage(
+export const serveImage = (
   supabase: MockSupabase,
   url: string,
   {
@@ -47,7 +46,7 @@ export function serveImage(
     contentType = "image/jpeg",
     etag = '"etag-1"',
   }: ServedImage
-): ImageRequest[] {
+): ImageRequest[] => {
   const requests: ImageRequest[] = [];
 
   supabase.server.use(
@@ -72,7 +71,7 @@ export function serveImage(
   );
 
   return requests;
-}
+};
 
 export interface StorageCalls {
   /** Paths passed to `remove`, one array per call. */
@@ -82,10 +81,10 @@ export interface StorageCalls {
 }
 
 /** Records uploads to and removals from a storage bucket. */
-export function mockStorage(
+export const mockStorage = (
   supabase: MockSupabase,
   bucket: string
-): StorageCalls {
+): StorageCalls => {
   const bucketUrl = `${STORAGE_URL}/${bucket}`;
   const calls: StorageCalls = { removed: [], uploads: [] };
 
@@ -114,4 +113,4 @@ export function mockStorage(
   );
 
   return calls;
-}
+};

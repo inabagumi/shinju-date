@@ -1,6 +1,7 @@
-import type { default as DefaultDatabase } from "@shinju-date/database";
+import type { Database as DefaultDatabase } from "@shinju-date/database";
 import { createServerClient } from "@supabase/ssr";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { isAdminUser } from "@/lib/admin-user";
 import { getSafeRedirectPath, REDIRECT_PARAM } from "@/lib/redirect-path";
@@ -16,9 +17,9 @@ import { withMockSessionCookie } from "@/lib/supabase/mock-session";
  * @param request - The incoming Next.js request
  * @returns A NextResponse with updated session cookies
  */
-export async function updateSession(
+export const updateSession = async (
   request: NextRequest
-): Promise<NextResponse> {
+): Promise<NextResponse> => {
   const { cookieOptions, key, url } = getSupabaseConfig();
   const response = NextResponse.next({
     request,
@@ -73,4 +74,4 @@ export async function updateSession(
   }
 
   return response;
-}
+};

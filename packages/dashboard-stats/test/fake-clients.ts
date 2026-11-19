@@ -1,4 +1,4 @@
-import type { default as Database } from "@shinju-date/database";
+import type { Database } from "@shinju-date/database";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Redis } from "@upstash/redis";
 
@@ -7,13 +7,25 @@ type Filter = (row: Row) => boolean;
 
 // Compares values the way PostgreSQL compares these columns: the timestamps
 // are ISO 8601 strings in UTC, so the string order is the time order
-function compare(value: unknown, operator: string, operand: string): boolean {
-  if (operator === "is" && operand === "null") return value === null;
-  if (typeof value !== "string") return false;
-  if (operator === "gte") return value >= operand;
-  if (operator === "lt") return value < operand;
+const compare = (
+  value: unknown,
+  operator: string,
+  operand: string
+): boolean => {
+  if (operator === "is" && operand === "null") {
+    return value === null;
+  }
+  if (typeof value !== "string") {
+    return false;
+  }
+  if (operator === "gte") {
+    return value >= operand;
+  }
+  if (operator === "lt") {
+    return value < operand;
+  }
   throw new Error(`Unsupported operator: ${operator}`);
-}
+};
 
 export interface FakeSupabaseOptions {
   /** Tables whose count fails with this error message. */
@@ -24,11 +36,11 @@ export interface FakeSupabaseOptions {
  * A Supabase client that counts the rows of in-memory tables with the filters
  * of the query, so that the tests check the counts themselves.
  */
-export function createFakeSupabaseClient(
+export const createFakeSupabaseClient = (
   tables: Record<string, readonly object[]>,
   { errors = {} }: FakeSupabaseOptions = {}
-): SupabaseClient<Database> {
-  return {
+): SupabaseClient<Database> =>
+  ({
     from(table: string) {
       const filters: Filter[] = [];
       const builder = {
@@ -85,8 +97,7 @@ export function createFakeSupabaseClient(
       };
       return builder;
     },
-  } as unknown as SupabaseClient<Database>;
-}
+  }) as unknown as SupabaseClient<Database>;
 
 /**
  * The subset of Redis the statistics use, kept in memory. Values are stored as
@@ -97,15 +108,11 @@ export class FakeRedis {
   readonly ttls = new Map<string, number>();
   readonly values = new Map<string, unknown>();
 
-  async get(key: string): Promise<unknown> {
-    return this.values.get(key) ?? null;
+  get(key: string): Promise<unknown> {
+    return Promise.resolve(this.values.get(key) ?? null);
   }
 
-  async set(
-    key: string,
-    value: unknown,
-    options?: { ex?: number }
-  ): Promise<"OK"> {
+  set(key: string, value: unknown, options?: { ex?: number }): Promise<"OK"> {
     this.values.set(key, value);
 
     if (options?.ex === undefined) {
@@ -114,30 +121,30 @@ export class FakeRedis {
       this.ttls.set(key, options.ex);
     }
 
-    return "OK";
+    return Promise.resolve("OK");
   }
 
-  async zcard(key: string): Promise<number> {
-    return this.sortedSets.get(key)?.size ?? 0;
+  zcard(key: string): Promise<number> {
+    return Promise.resolve(this.sortedSets.get(key)?.size ?? 0);
   }
 
-  async zrange(
+  zrange(
     key: string,
     start: number,
     stop: number,
     options?: { rev?: boolean; withScores?: boolean }
   ): Promise<unknown[]> {
     if (start !== 0 || stop !== -1 || options?.rev) {
-      throw new Error("Unsupported zrange()");
+      return Promise.reject(new Error("Unsupported zrange()"));
     }
 
     const members = [...(this.sortedSets.get(key) ?? new Map<string, number>())]
-      .sort(([, a], [, b]) => a - b)
+      .toSorted(([, a], [, b]) => a - b)
       .flatMap(([member, score]) =>
         options?.withScores ? [member, score] : [member]
       );
 
-    return members;
+    return Promise.resolve(members);
   }
 
   /** Fill a sorted set, as the apps would with ZADD. */

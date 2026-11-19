@@ -1,4 +1,4 @@
-import type { default as Database, Enums, Tables } from "@shinju-date/database";
+import type { Database, Enums, Tables } from "@shinju-date/database";
 import { logger } from "@shinju-date/logger";
 import type { AccountChanges } from "@shinju-date/scraper";
 
@@ -356,24 +356,23 @@ interface AuditLogRow {
 }
 
 /** Returns the table that an entry of the action with the details is about. */
-export function getAuditTargetTable<A extends AuditAction>(
+export const getAuditTargetTable = <A extends AuditAction>(
   action: A,
   details: AuditLogDetails<A>
-): AuditTargetTable {
+): AuditTargetTable => {
   const target: AuditTargetTable | ((details: never) => AuditTargetTable) =
     AUDIT_LOG_TARGETS[action];
 
   return typeof target === "function" ? target(details as never) : target;
-}
+};
 
 /**
  * The details as the JSON that the RPC takes. They are plain JSON values, but
  * an interface has no index signature, so TypeScript cannot see that it is
  * assignable to `Json`.
  */
-function toAuditLogJson(details: unknown): AuditLogJson {
-  return (details ?? null) as AuditLogJson;
-}
+const toAuditLogJson = (details: unknown): AuditLogJson =>
+  (details ?? null) as AuditLogJson;
 
 /**
  * Records an audit log entry of the action, as the user that the client is
@@ -383,12 +382,12 @@ function toAuditLogJson(details: unknown): AuditLogJson {
  * A failure is logged and does not throw, so that it does not fail the
  * action that has already made its change.
  */
-export async function createAuditLog<A extends AuditAction>(
+export const createAuditLog = async <A extends AuditAction>(
   supabaseClient: TypedSupabaseClient,
   action: A,
   targetRecordId: string | null,
   ...[details]: AuditLogDetailsArgs<A>
-): Promise<void> {
+): Promise<void> => {
   try {
     const { error } = await supabaseClient.rpc("insert_audit_log", {
       p_action: action,
@@ -407,7 +406,7 @@ export async function createAuditLog<A extends AuditAction>(
       targetRecordId: targetRecordId ?? undefined,
     });
   }
-}
+};
 
 /**
  * Records the audit log entries with one call, as the user that the client
@@ -416,10 +415,10 @@ export async function createAuditLog<A extends AuditAction>(
  *
  * A failure is logged and does not throw, like `createAuditLog`.
  */
-export async function createAuditLogs(
+export const createAuditLogs = async (
   supabaseClient: TypedSupabaseClient,
   entries: readonly AuditLogEntry[]
-): Promise<void> {
+): Promise<void> => {
   if (entries.length === 0) {
     return;
   }
@@ -453,4 +452,4 @@ export async function createAuditLogs(
         .join(","),
     });
   }
-}
+};

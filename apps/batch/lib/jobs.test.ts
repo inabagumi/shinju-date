@@ -12,25 +12,26 @@ import {
 } from "./jobs";
 
 /** The `maxDuration` the route of `path` exports, read from its source. */
-async function readMaxDuration(path: string): Promise<number | undefined> {
+const readMaxDuration = async (path: string): Promise<number | undefined> => {
   const { pathname } = new URL(path, "http://localhost");
   const source = await readFile(
     new URL(`../app${pathname}/route.ts`, import.meta.url),
-    "utf8"
+    "utf-8"
   );
-  const value = source.match(/^export const maxDuration = (\d+);$/m)?.[1];
+  const value = source.match(/^export const maxDuration = (?<seconds>\d+);$/mu)
+    ?.groups?.["seconds"];
 
   return value === undefined ? undefined : Number(value);
-}
+};
 
 /** Compares query strings regardless of parameter order. */
-function normalize(path: string): string {
+const normalize = (path: string): string => {
   const url = new URL(path, "http://localhost");
 
   url.searchParams.sort();
 
   return `${url.pathname}${url.search}`;
-}
+};
 
 describe("jobs", () => {
   it("stay in sync with the schedules in vercel.json", () => {
@@ -41,7 +42,7 @@ describe("jobs", () => {
       JOBS.map((job) => [normalize(job.path), job.schedule])
     );
 
-    expect(defined).toEqual(scheduled);
+    expect(defined).toStrictEqual(scheduled);
   });
 
   it("define each path only once", () => {
@@ -63,11 +64,14 @@ describe("jobs", () => {
     }
   );
 
-  it("resolves the job of a request", () => {
+  it("resolves the job of a request to /videos/update", () => {
     expect(getVideosUpdateJob("youtube").path).toBe("/videos/update");
     expect(getVideosUpdateJob("twitch").path).toBe(
       "/videos/update?provider=twitch"
     );
+  });
+
+  it("resolves the job of a request to /videos/check", () => {
     expect(getVideosCheckJob("youtube", "default").path).toBe("/videos/check");
     expect(getVideosCheckJob("youtube", "recent").path).toBe(
       "/videos/check?mode=recent"
@@ -75,6 +79,9 @@ describe("jobs", () => {
     expect(getVideosCheckJob("twitch", "all").path).toBe(
       "/videos/check?provider=twitch&mode=all"
     );
+  });
+
+  it("resolves the job of a request to /talents/update", () => {
     expect(getTalentsUpdateJob("twitch").path).toBe(
       "/talents/update?provider=twitch"
     );

@@ -1,5 +1,5 @@
 import { formatDate } from "@shinju-date/temporal-fns";
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
   formatLongDate,
@@ -11,38 +11,38 @@ import {
 const date = (value: string) => Temporal.PlainDate.from(value);
 const today = date("2026-11-14");
 
-describe("formatWeekday", () => {
-  test("should name the weekday with a letter", () => {
+describe(formatWeekday, () => {
+  it("should name the weekday with a letter", () => {
     expect(formatWeekday(date("2026-11-09"))).toBe("月");
     expect(formatWeekday(date("2026-11-15"))).toBe("日");
   });
 });
 
-describe("formatShortDate", () => {
-  test("should write the month, the day and the weekday", () => {
+describe(formatShortDate, () => {
+  it("should write the month, the day and the weekday", () => {
     expect(formatShortDate(date("2026-11-09"))).toBe("11/09（月）");
     expect(formatShortDate(date("2026-11-15"))).toBe("11/15（日）");
   });
 
-  test("should write the year with `year`", () => {
+  it("should write the year with `year`", () => {
     expect(formatShortDate(date("2027-01-02"), { year: true })).toBe(
       "2027/01/02（土）"
     );
   });
 });
 
-describe("formatLongDate", () => {
-  test("should write the month and the day", () => {
+describe(formatLongDate, () => {
+  it("should write the month and the day", () => {
     expect(formatLongDate(date("2026-11-08"))).toBe("11月8日");
   });
 
-  test("should write the weekday with `weekday`", () => {
+  it("should write the weekday with `weekday`", () => {
     expect(formatLongDate(date("2026-11-08"), { weekday: true })).toBe(
       "11月8日（日）"
     );
   });
 
-  test("should write the year with `year`", () => {
+  it("should write the year with `year`", () => {
     expect(formatLongDate(date("2026-11-08"), { year: true })).toBe(
       "2026年11月8日"
     );
@@ -52,8 +52,8 @@ describe("formatLongDate", () => {
   });
 });
 
-describe("formatRelativeDate", () => {
-  test("should name today and tomorrow", () => {
+describe(formatRelativeDate, () => {
+  it("should name today and tomorrow", () => {
     for (const style of ["long", "short"] as const) {
       expect(formatRelativeDate(today, today, { style })).toBe("今日");
       expect(formatRelativeDate(today.add({ days: 1 }), today, { style })).toBe(
@@ -62,7 +62,7 @@ describe("formatRelativeDate", () => {
     }
   });
 
-  test("should name yesterday only with `yesterday`", () => {
+  it("should name yesterday only with `yesterday`", () => {
     const yesterday = today.subtract({ days: 1 });
 
     expect(
@@ -76,7 +76,7 @@ describe("formatRelativeDate", () => {
     );
   });
 
-  test("should name yesterday across the new year", () => {
+  it("should name yesterday across the new year", () => {
     expect(
       formatRelativeDate(date("2026-12-31"), date("2027-01-01"), {
         style: "long",
@@ -85,7 +85,7 @@ describe("formatRelativeDate", () => {
     ).toBe("昨日");
   });
 
-  test("should write other dates in the style", () => {
+  it("should write other dates in the style", () => {
     expect(
       formatRelativeDate(date("2026-11-16"), today, { style: "short" })
     ).toBe("11/16（月）");
@@ -94,7 +94,7 @@ describe("formatRelativeDate", () => {
     ).toBe("11月12日（木）");
   });
 
-  test("should write the year of the dates in another year than today", () => {
+  it("should write the year of the dates in another year than today", () => {
     expect(
       formatRelativeDate(date("2027-01-02"), date("2026-12-31"), {
         style: "short",
@@ -114,11 +114,11 @@ describe("formatRelativeDate", () => {
 const LEGACY_WEEKDAYS = ["月", "火", "水", "木", "金", "土", "日"];
 
 /** `formatTimelineDate` of `app/_components/timeline.tsx` (the home page) */
-function legacyFormatTimelineDate(
+const legacyFormatTimelineDate = (
   value: Temporal.PlainDate,
   base: Temporal.PlainDate
-): string {
-  const days = base.until(value, { largestUnit: "day" }).days;
+): string => {
+  const { days } = base.until(value, { largestUnit: "day" });
 
   if (days === 0) {
     return "今日";
@@ -133,19 +133,18 @@ function legacyFormatTimelineDate(
   });
 
   return `${monthAndDay}（${LEGACY_WEEKDAYS[value.dayOfWeek - 1]}）`;
-}
+};
 
 /** `formatScheduleDay` of `lib/schedule.ts` (the schedule) */
-function legacyFormatScheduleDay(value: Temporal.PlainDate): string {
-  return `${formatDate(value, { includeYear: false })}（${LEGACY_WEEKDAYS[value.dayOfWeek - 1]}）`;
-}
+const legacyFormatScheduleDay = (value: Temporal.PlainDate): string =>
+  `${formatDate(value, { includeYear: false })}（${LEGACY_WEEKDAYS[value.dayOfWeek - 1]}）`;
 
 /** `formatDateHeading` of `lib/date-heading.ts` (the search results) */
-function legacyFormatDateHeading(
+const legacyFormatDateHeading = (
   value: Temporal.PlainDate,
   base: Temporal.PlainDate
-): string {
-  const days = base.until(value, { largestUnit: "day" }).days;
+): string => {
+  const { days } = base.until(value, { largestUnit: "day" });
 
   if (days === 0) {
     return "今日";
@@ -162,21 +161,23 @@ function legacyFormatDateHeading(
   const monthDay = `${value.month}月${value.day}日（${LEGACY_WEEKDAYS[value.dayOfWeek - 1]}）`;
 
   return value.year === base.year ? monthDay : `${value.year}年${monthDay}`;
-}
+};
 
 /** `formatMonthDay` of `lib/schedule.ts` (the range of a week) */
-function legacyFormatMonthDay(value: Temporal.PlainDate, withWeekday: boolean) {
+const legacyFormatMonthDay = (
+  value: Temporal.PlainDate,
+  withWeekday: boolean
+) => {
   const monthDay = `${value.month}月${value.day}日`;
 
   return withWeekday
     ? `${monthDay}（${LEGACY_WEEKDAYS[value.dayOfWeek - 1]}）`
     : monthDay;
-}
+};
 
 /** Every day from `start` for `days` days */
-function eachDay(start: Temporal.PlainDate, days: number) {
-  return Array.from({ length: days }, (_, index) => start.add({ days: index }));
-}
+const eachDay = (start: Temporal.PlainDate, days: number) =>
+  Array.from({ length: days }, (_, index) => start.add({ days: index }));
 
 describe("the same text as the replaced functions", () => {
   // Some days around the new year and a leap day, against every date in the
@@ -188,11 +189,12 @@ describe("the same text as the replaced functions", () => {
     date("2026-01-01"),
     date("2026-11-14"),
   ];
-  const dates = eachDay(date("2024-12-01"), 3 * 366).concat(
-    eachDay(date("2024-02-20"), 20)
-  );
+  const dates = [
+    ...eachDay(date("2024-12-01"), 3 * 366),
+    ...eachDay(date("2024-02-20"), 20),
+  ];
 
-  test("formatTimelineDate", () => {
+  it("formatTimelineDate", () => {
     for (const base of bases) {
       for (const value of dates) {
         expect(formatRelativeDate(value, base, { style: "short" })).toBe(
@@ -202,13 +204,13 @@ describe("the same text as the replaced functions", () => {
     }
   });
 
-  test("formatScheduleDay", () => {
+  it("formatScheduleDay", () => {
     for (const value of dates) {
       expect(formatShortDate(value)).toBe(legacyFormatScheduleDay(value));
     }
   });
 
-  test("formatDateHeading", () => {
+  it("formatDateHeading", () => {
     for (const base of bases) {
       for (const value of dates) {
         expect(
@@ -218,7 +220,7 @@ describe("the same text as the replaced functions", () => {
     }
   });
 
-  test("formatMonthDay", () => {
+  it("formatMonthDay", () => {
     for (const value of dates) {
       for (const weekday of [false, true]) {
         expect(formatLongDate(value, { weekday })).toBe(

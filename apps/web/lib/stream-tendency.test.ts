@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
   countStreamsByWeekdayAndHour,
@@ -6,9 +6,9 @@ import {
   summarizeStreamTendency,
 } from "./stream-tendency";
 
-function createCounts(
+const createCounts = (
   cells: [weekday: number, hour: number, count: number][] = []
-): number[][] {
+): number[][] => {
   const counts = Array.from({ length: 7 }, () =>
     Array.from({ length: 24 }, () => 0)
   );
@@ -22,20 +22,20 @@ function createCounts(
   }
 
   return counts;
-}
+};
 
-describe("countStreamsByWeekdayAndHour", () => {
-  test("returns 7 rows of 24 zeros for no streams", () => {
+describe(countStreamsByWeekdayAndHour, () => {
+  it("returns 7 rows of 24 zeros for no streams", () => {
     const counts = countStreamsByWeekdayAndHour([]);
 
     expect(counts).toHaveLength(7);
 
     for (const row of counts) {
-      expect(row).toEqual(Array.from({ length: 24 }, () => 0));
+      expect(row).toStrictEqual(Array.from({ length: 24 }, () => 0));
     }
   });
 
-  test("counts by the day of the week and the hour in Japan", () => {
+  it("counts by the day of the week and the hour in Japan", () => {
     const counts = countStreamsByWeekdayAndHour([
       // Saturday 2026-11-14 21:00 and 21:59 in Japan
       "2026-11-14T12:00:00Z",
@@ -49,7 +49,7 @@ describe("countStreamsByWeekdayAndHour", () => {
     expect(counts.flat().reduce((sum, count) => sum + count, 0)).toBe(3);
   });
 
-  test("counts a stream on the day in Japan, not the day before in UTC", () => {
+  it("counts a stream on the day in Japan, not the day before in UTC", () => {
     // Sunday 2026-11-15 1:00 in Japan, which is Saturday in UTC
     const counts = countStreamsByWeekdayAndHour(["2026-11-14T16:00:00Z"]);
 
@@ -57,7 +57,7 @@ describe("countStreamsByWeekdayAndHour", () => {
     expect(counts[5]?.[16]).toBe(0);
   });
 
-  test("counts a stream on New Year’s Day in Japan", () => {
+  it("counts a stream on New Year’s Day in Japan", () => {
     // Friday 2027-01-01 0:30 in Japan, which is Thursday 2026-12-31 in UTC
     const counts = countStreamsByWeekdayAndHour(["2026-12-31T15:30:00Z"]);
 
@@ -65,16 +65,16 @@ describe("countStreamsByWeekdayAndHour", () => {
     expect(counts[3]?.[15]).toBe(0);
   });
 
-  test("accepts starts with an offset", () => {
+  it("accepts starts with an offset", () => {
     const counts = countStreamsByWeekdayAndHour(["2026-11-14T21:00:00+09:00"]);
 
     expect(counts[5]?.[21]).toBe(1);
   });
 });
 
-describe("summarizeStreamTendency", () => {
-  test("returns no busiest day or hour for no streams", () => {
-    expect(summarizeStreamTendency(createCounts())).toEqual({
+describe(summarizeStreamTendency, () => {
+  it("returns no busiest day or hour for no streams", () => {
+    expect(summarizeStreamTendency(createCounts())).toStrictEqual({
       busiestHour: null,
       busiestWeekday: null,
       max: 0,
@@ -82,7 +82,7 @@ describe("summarizeStreamTendency", () => {
     });
   });
 
-  test("picks the day by the total of the row and the hour by the column", () => {
+  it("picks the day by the total of the row and the hour by the column", () => {
     expect(
       summarizeStreamTendency(
         createCounts([
@@ -93,7 +93,7 @@ describe("summarizeStreamTendency", () => {
           [0, 21, 1],
         ])
       )
-    ).toEqual({
+    ).toStrictEqual({
       busiestHour: 21,
       busiestWeekday: 5,
       max: 4,
@@ -101,7 +101,7 @@ describe("summarizeStreamTendency", () => {
     });
   });
 
-  test("picks the day closer to Monday and the earlier hour on a tie", () => {
+  it("picks the day closer to Monday and the earlier hour on a tie", () => {
     expect(
       summarizeStreamTendency(
         createCounts([
@@ -118,14 +118,14 @@ describe("summarizeStreamTendency", () => {
     });
   });
 
-  test("matches the counts of the streams", () => {
+  it("matches the counts of the streams", () => {
     const counts = countStreamsByWeekdayAndHour([
       "2026-11-14T12:00:00Z",
       "2026-11-07T12:30:00Z",
       "2026-11-13T13:00:00Z",
     ]);
 
-    expect(summarizeStreamTendency(counts)).toEqual({
+    expect(summarizeStreamTendency(counts)).toStrictEqual({
       busiestHour: 21,
       busiestWeekday: 5,
       max: 2,
@@ -134,23 +134,19 @@ describe("summarizeStreamTendency", () => {
   });
 });
 
-describe("getStreamCountLevel", () => {
-  test("returns 0 for no streams", () => {
+describe(getStreamCountLevel, () => {
+  it("returns 0 for no streams", () => {
     expect(getStreamCountLevel(0, 0)).toBe(0);
     expect(getStreamCountLevel(0, 8)).toBe(0);
   });
 
-  test("splits the counts into 4 levels by the busiest cell", () => {
-    expect(getStreamCountLevel(1, 8)).toBe(1);
-    expect(getStreamCountLevel(2, 8)).toBe(1);
-    expect(getStreamCountLevel(3, 8)).toBe(2);
-    expect(getStreamCountLevel(4, 8)).toBe(2);
-    expect(getStreamCountLevel(6, 8)).toBe(3);
-    expect(getStreamCountLevel(7, 8)).toBe(4);
-    expect(getStreamCountLevel(8, 8)).toBe(4);
+  it("splits the counts into 4 levels by the busiest cell", () => {
+    expect(
+      [1, 2, 3, 4, 6, 7, 8].map((count) => getStreamCountLevel(count, 8))
+    ).toStrictEqual([1, 1, 2, 2, 3, 4, 4]);
   });
 
-  test("returns the darkest level for every stream when the busiest is 1", () => {
+  it("returns the darkest level for every stream when the busiest is 1", () => {
     expect(getStreamCountLevel(1, 1)).toBe(4);
   });
 });

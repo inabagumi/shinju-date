@@ -2,17 +2,18 @@ import type { ParsedUrlQuery } from "node:querystring";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { getVideos } from "./get-videos";
 import { getVideosForPage } from "./get-videos-for-page";
 
 const mocks = vi.hoisted(() => ({
-  getVideos: vi.fn(),
+  getVideos: vi.fn<typeof getVideos>(),
 }));
 
-vi.mock("./get-videos", () => ({
+vi.mock(import("./get-videos"), () => ({
   getVideos: mocks.getVideos,
 }));
 
-describe("getVideosForPage", () => {
+describe(getVideosForPage, () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getVideos.mockResolvedValue({ total: 45, videos: [] });
@@ -29,7 +30,7 @@ describe("getVideosForPage", () => {
           visible: "true",
         })
       )
-    ).resolves.toEqual({
+    ).resolves.toStrictEqual({
       currentPage: 2,
       sort: { field: "published_at", order: "asc" },
       total: 45,

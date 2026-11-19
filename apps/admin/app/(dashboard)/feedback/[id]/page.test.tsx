@@ -2,14 +2,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { findSuspenseChildren, runServerComponent } from "@/test/suspense";
 
+import type { getFeatureRequestById } from "../_lib/get-feedback";
+
 const mocks = vi.hoisted(() => ({
-  getFeatureRequestById: vi.fn(),
+  getFeatureRequestById: vi.fn<typeof getFeatureRequestById>(),
 }));
 
-vi.mock("../_lib/get-feedback", () => ({
+vi.mock(import("../_lib/get-feedback"), () => ({
   getFeatureRequestById: mocks.getFeatureRequestById,
 }));
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   notFound: () => {
     throw new Error("NEXT_NOT_FOUND");
   },
@@ -26,7 +28,7 @@ const featureRequest = {
   id: FEEDBACK_ID,
   is_read: false,
   message: "検索の絞り込みがほしい",
-  status: "pending",
+  status: "pending" as const,
   updated_at: "2026-11-01T00:00:00Z",
 };
 
@@ -39,7 +41,7 @@ describe("FeedbackDetailPage", () => {
   it("fetches the title and the body with the same cached call", async () => {
     const params = Promise.resolve({ id: FEEDBACK_ID });
 
-    await expect(generateMetadata({ params })).resolves.toEqual({
+    await expect(generateMetadata({ params })).resolves.toStrictEqual({
       title: "検索の絞り込みがほしい - 機能要望詳細",
     });
 
@@ -51,7 +53,7 @@ describe("FeedbackDetailPage", () => {
     // `getFeatureRequestById` is a `'use cache: private'` function, so the
     // calls with the same arguments share one entry and query the database
     // once per request.
-    expect(mocks.getFeatureRequestById.mock.calls).toEqual([
+    expect(mocks.getFeatureRequestById.mock.calls).toStrictEqual([
       [FEEDBACK_ID],
       [FEEDBACK_ID],
     ]);
@@ -62,6 +64,6 @@ describe("FeedbackDetailPage", () => {
 
     await expect(
       generateMetadata({ params: Promise.resolve({ id: FEEDBACK_ID }) })
-    ).resolves.toEqual({ title: "機能要望が見つかりません" });
+    ).resolves.toStrictEqual({ title: "機能要望が見つかりません" });
   });
 });

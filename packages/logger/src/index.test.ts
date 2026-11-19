@@ -3,14 +3,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { logger } from "./index.js";
 
+/** The form in which the shared logger calls the Sentry logger. */
+type LogFunction = (
+  message: string,
+  attributes?: Record<string, unknown>
+) => void;
+
 // Sentryモジュールをモック化
-vi.mock("@sentry/nextjs", () => ({
+vi.mock(import("@sentry/nextjs"), () => ({
   logger: {
-    debug: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-  },
+    debug: vi.fn<LogFunction>(),
+    error: vi.fn<LogFunction>(),
+    info: vi.fn<LogFunction>(),
+    warn: vi.fn<LogFunction>(),
+  } as Partial<typeof Sentry.logger> as typeof Sentry.logger,
 }));
 
 // 全ログレベル共通のテストケース
@@ -21,7 +27,7 @@ const testCases = [
   { label: "エラー", method: "error" as const, mock: Sentry.logger.error },
 ];
 
-describe("logger", () => {
+describe("the logger", () => {
   // 各テストの前にモックをクリア
   beforeEach(() => {
     vi.clearAllMocks();
@@ -35,16 +41,14 @@ describe("logger", () => {
       logger[method](message);
 
       // 修正点: 2番目の引数としてundefinedが渡されることを期待する
-      expect(mock).toHaveBeenCalledWith(message, undefined);
-      expect(mock).toHaveBeenCalledTimes(1);
+      expect(mock).toHaveBeenCalledExactlyOnceWith(message, undefined);
     });
 
     it("should call Sentry logger with attributes", () => {
       const attributes = { id: 123, key: "value" };
       logger[method](message, attributes);
 
-      expect(mock).toHaveBeenCalledWith(message, attributes);
-      expect(mock).toHaveBeenCalledTimes(1);
+      expect(mock).toHaveBeenCalledExactlyOnceWith(message, attributes);
     });
 
     it("should call Sentry logger with an Error object in attributes", () => {
@@ -52,8 +56,7 @@ describe("logger", () => {
       const attributes = { error, operation: "fetch" };
       logger[method](message, attributes);
 
-      expect(mock).toHaveBeenCalledWith(message, attributes);
-      expect(mock).toHaveBeenCalledTimes(1);
+      expect(mock).toHaveBeenCalledExactlyOnceWith(message, attributes);
     });
   });
 });

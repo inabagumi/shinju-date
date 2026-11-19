@@ -14,7 +14,7 @@ export const metadata = createPageMetadata({
   title: TITLE,
 });
 
-export default async function ContactPage() {
+export default function ContactPage() {
   const enabled = isContactFormEnabled();
 
   return (

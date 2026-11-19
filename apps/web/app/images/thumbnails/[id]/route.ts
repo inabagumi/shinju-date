@@ -4,10 +4,10 @@ import type { NextRequest } from "next/server";
 import { serveStorageImage } from "@/lib/storage-image";
 import { getSupabaseAdminClient } from "@/lib/supabase";
 
-export async function GET(
+export const GET = async (
   request: NextRequest,
   ctx: RouteContext<"/images/thumbnails/[id]">
-) {
+) => {
   const { id } = await ctx.params;
   const supabaseAdminClient = getSupabaseAdminClient();
   const { data: thumbnail, error } = await supabaseAdminClient
@@ -26,4 +26,4 @@ export async function GET(
     path: thumbnail.path,
     supabaseClient: supabaseAdminClient,
   });
-}
+};

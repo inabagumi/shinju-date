@@ -8,7 +8,7 @@ const thumbnail = {
   id: "00000000-0000-0000-0000-000000000001",
 };
 
-describe("VideoThumbnail", () => {
+describe(VideoThumbnail, () => {
   it("renders the image of the thumbnail", () => {
     render(
       <VideoThumbnail alt="動画のタイトル" size="lg" thumbnail={thumbnail} />

@@ -1,12 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { Button } from "./Button/Button";
-import { Input } from "./Input/Input";
-import { MultiSelect } from "./MultiSelect/MultiSelect";
-import { Select } from "./Select/Select";
-import { Textarea } from "./Textarea/Textarea";
-import { ToastClose, ToastProvider } from "./Toast/Toast";
+import { Button } from "./button/button";
+import { Input } from "./input/input";
+import { MultiSelect } from "./multi-select/multi-select";
+import type { MultiSelectProps } from "./multi-select/multi-select";
+import { Select } from "./select/select";
+import { Textarea } from "./textarea/textarea";
+import { ToastClose, ToastProvider } from "./toast/toast";
 
 describe("focus styles", () => {
   it("gives buttons the focus ring", () => {
@@ -33,7 +34,11 @@ describe("focus styles", () => {
           <option>選択肢</option>
         </Select>
         <Textarea aria-label="複数行の入力欄" />
-        <MultiSelect onChange={vi.fn()} options={[]} value={[]} />
+        <MultiSelect
+          onChange={vi.fn<MultiSelectProps["onChange"]>()}
+          options={[]}
+          value={[]}
+        />
       </>
     );
 
@@ -44,7 +49,7 @@ describe("focus styles", () => {
       screen.getByRole("button"),
     ]) {
       expect(field).toHaveClass("field-focus-ring");
-      expect(field.className).not.toMatch(/\bfocus:ring-/);
+      expect(field.className).not.toMatch(/\bfocus:ring-/u);
     }
   });
 

@@ -2,7 +2,8 @@ import { Skeleton, twMerge } from "@shinju-date/ui";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { PLATFORM_LABELS, type Platform } from "./platform-badge";
+import { PLATFORM_LABELS } from "./platform-badge";
+import type { Platform } from "./platform-badge";
 
 interface BackfillAccountTalent {
   id: string;
@@ -26,7 +27,7 @@ interface BackfillAccountRowProps {
 }
 
 /** 過去動画の取り込みの一覧の、アカウント1件ぶんの行（`<li>`） */
-export function BackfillAccountRow({
+export const BackfillAccountRow = ({
   aside,
   children,
   className,
@@ -34,7 +35,7 @@ export function BackfillAccountRow({
   name,
   provider,
   talent,
-}: BackfillAccountRowProps) {
+}: BackfillAccountRowProps) => {
   const accountName = name ?? "削除されたアカウント";
 
   return (
@@ -73,17 +74,15 @@ export function BackfillAccountRow({
       {aside}
     </li>
   );
-}
+};
 
 /** 読み込み中の `BackfillAccountRow`。アカウント名と件数の2行と、バッジを置く */
-export function BackfillAccountRowSkeleton() {
-  return (
-    <li className="flex items-center justify-between gap-2 px-6 py-3">
-      <div className="min-w-0 flex-1 space-y-1">
-        <Skeleton className="h-5 w-48 max-w-full" />
-        <Skeleton className="h-5 w-64 max-w-full" />
-      </div>
-      <Skeleton className="h-5 w-12 shrink-0" />
-    </li>
-  );
-}
+export const BackfillAccountRowSkeleton = () => (
+  <li className="flex items-center justify-between gap-2 px-6 py-3">
+    <div className="min-w-0 flex-1 space-y-1">
+      <Skeleton className="h-5 w-48 max-w-full" />
+      <Skeleton className="h-5 w-64 max-w-full" />
+    </div>
+    <Skeleton className="h-5 w-12 shrink-0" />
+  </li>
+);

@@ -5,12 +5,8 @@ import { useState } from "react";
 import type { ActionResult, ConfirmHandler } from "@/components/confirm-dialog";
 import { useServerAction } from "@/lib/use-server-action";
 
-import {
-  getVideoActionSuccessText,
-  runVideoAction,
-  type VideoAction,
-  type VideoActionTarget,
-} from "./video-actions";
+import { getVideoActionSuccessText, runVideoAction } from "./video-actions";
+import type { VideoAction, VideoActionTarget } from "./video-actions";
 
 export interface UseVideoActionOptions {
   /** 操作が成功したときに、トーストを出したあとで呼ばれる */
@@ -48,9 +44,9 @@ interface DialogState {
  * ダイアログは、返した `dialogProps` を `VideoActionConfirmDialog` に渡して1つだけ
  * 描く。
  */
-export function useVideoAction({
+export const useVideoAction = ({
   onSuccess,
-}: UseVideoActionOptions = {}): UseVideoActionReturn {
+}: UseVideoActionOptions = {}): UseVideoActionReturn => {
   // 閉じる途中も文言が変わらないよう、操作の種類と対象は閉じても残す
   const [dialog, setDialog] = useState<DialogState>({
     action: "toggle",
@@ -91,4 +87,4 @@ export function useVideoAction({
     },
     openDialog,
   };
-}
+};

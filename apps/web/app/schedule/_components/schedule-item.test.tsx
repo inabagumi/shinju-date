@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ScheduleVideo } from "@/lib/data/schedule";
 import { createScheduleVideoItem } from "@/test/factories";
@@ -32,11 +32,11 @@ const VIDEO = createScheduleVideoItem({
   },
 });
 
-function createTwitchVideo(
+const createTwitchVideo = (
   overrides: Partial<ScheduleVideo> = {},
   twitchLoginName: string | null = "mio"
-): ScheduleVideo {
-  return createScheduleVideoItem({
+): ScheduleVideo =>
+  createScheduleVideoItem({
     ...VIDEO,
     platform: "twitch",
     status: "ENDED",
@@ -52,14 +52,11 @@ function createTwitchVideo(
     youtube_video: null,
     ...overrides,
   });
-}
 
-function getItem() {
-  return screen.getByTestId("schedule-item");
-}
+const getItem = () => screen.getByTestId("schedule-item");
 
-describe("ScheduleItem", () => {
-  test("should show the start, the talent and the title", () => {
+describe(ScheduleItem, () => {
+  it("should show the start, the talent and the title", () => {
     render(<ScheduleItem value={VIDEO} />);
 
     const item = getItem();
@@ -75,7 +72,7 @@ describe("ScheduleItem", () => {
     expect(screen.getByTestId("talent-icon")).toBeInTheDocument();
   });
 
-  test("should keep the whole title in the title attribute", () => {
+  it("should keep the whole title in the title attribute", () => {
     render(<ScheduleItem value={VIDEO} />);
 
     expect(screen.getByText("アニソン縛り歌ってみた！")).toHaveAttribute(
@@ -84,7 +81,7 @@ describe("ScheduleItem", () => {
     );
   });
 
-  test("should show neither the credits nor the trailing hashtags in the title", () => {
+  it("should show neither the credits nor the trailing hashtags in the title", () => {
     const title =
       "【歌枠】今日も歌います #歌枠リレー【朝霧ミオ / ななしいんく】";
 
@@ -98,7 +95,7 @@ describe("ScheduleItem", () => {
     expect(getItem()).not.toHaveTextContent("ななしいんく");
   });
 
-  test("should show the first label between the first line and the title", () => {
+  it("should show the first label between the first line and the title", () => {
     render(
       <ScheduleItem
         value={createScheduleVideoItem({
@@ -120,7 +117,7 @@ describe("ScheduleItem", () => {
     expect(tags.querySelector("a")).toBeNull();
   });
 
-  test("should show up to three hashtags after the label", () => {
+  it("should show up to three hashtags after the label", () => {
     render(
       <ScheduleItem
         value={createScheduleVideoItem({
@@ -135,7 +132,7 @@ describe("ScheduleItem", () => {
     );
   });
 
-  test("should show the hashtags without a label", () => {
+  it("should show the hashtags without a label", () => {
     render(
       <ScheduleItem
         value={createScheduleVideoItem({
@@ -150,7 +147,7 @@ describe("ScheduleItem", () => {
     );
   });
 
-  test("should not show the line without labels and hashtags", () => {
+  it("should not show the line without labels and hashtags", () => {
     render(
       <ScheduleItem
         value={createScheduleVideoItem({ ...VIDEO, title: "今日も歌います" })}
@@ -161,7 +158,7 @@ describe("ScheduleItem", () => {
     expect(getItem().textContent).toBe("21:00朝霧ミオ今日も歌います");
   });
 
-  test("should link like a video card", () => {
+  it("should link like a video card", () => {
     render(<ScheduleItem value={VIDEO} />);
 
     const item = getItem();
@@ -175,13 +172,13 @@ describe("ScheduleItem", () => {
     expect(item).toHaveAttribute("target", "_blank");
   });
 
-  test("should not show a thumbnail", () => {
+  it("should not show a thumbnail", () => {
     render(<ScheduleItem value={VIDEO} />);
 
     expect(screen.queryByTestId("video-card-thumbnail")).toBeNull();
   });
 
-  test("should mark the stream on air with the text", () => {
+  it("should mark the stream on air with the text", () => {
     render(
       <ScheduleItem
         value={createScheduleVideoItem({ ...VIDEO, status: "LIVE" })}
@@ -191,7 +188,7 @@ describe("ScheduleItem", () => {
     expect(screen.getByText("配信中")).toHaveClass("bg-live");
   });
 
-  test.each(["ENDED", "PUBLISHED", "UPCOMING"] as const)(
+  it.each(["ENDED", "PUBLISHED", "UPCOMING"] as const)(
     "should not mark a video that is %s",
     (status) => {
       render(
@@ -200,11 +197,11 @@ describe("ScheduleItem", () => {
 
       expect(screen.queryByText("配信中")).toBeNull();
       // No status text between the start and the talent
-      expect(getItem().textContent).toMatch(/^21:00朝霧ミオ/);
+      expect(getItem().textContent).toMatch(/^21:00朝霧ミオ/u);
     }
   );
 
-  test("should draw the line with the theme color of the talent", () => {
+  it("should draw the line with the theme color of the talent", () => {
     render(<ScheduleItem value={VIDEO} />);
 
     const item = getItem();
@@ -214,7 +211,7 @@ describe("ScheduleItem", () => {
     expect(item).not.toHaveClass("border-l-border");
   });
 
-  test.each([
+  it.each([
     null,
     "red",
     "#fff",
@@ -237,15 +234,17 @@ describe("ScheduleItem", () => {
     expect(item).not.toHaveClass("border-l-(--talent-color)");
   });
 
-  test("should not use the theme color for the text", () => {
+  it("should not use the theme color for the text", () => {
     render(<ScheduleItem value={VIDEO} />);
 
     for (const element of getItem().querySelectorAll("*")) {
-      expect(element.getAttribute("class") ?? "").not.toMatch(/--talent-color/);
+      expect(element.getAttribute("class") ?? "").not.toMatch(
+        /--talent-color/u
+      );
     }
   });
 
-  test("should show the Twitch badge and link to Twitch", () => {
+  it("should show the Twitch badge and link to Twitch", () => {
     render(<ScheduleItem value={createTwitchVideo()} />);
 
     expect(getItem()).toHaveAttribute(
@@ -256,7 +255,7 @@ describe("ScheduleItem", () => {
     expect(screen.getByTestId("talent-default-icon")).toBeInTheDocument();
   });
 
-  test("should render nothing without a link", () => {
+  it("should render nothing without a link", () => {
     const { container } = render(
       <ScheduleItem
         value={createScheduleVideoItem({
@@ -272,7 +271,7 @@ describe("ScheduleItem", () => {
 });
 
 describe("ScheduleItem (on a wide screen)", () => {
-  test("should have a frame to stand out from the ground", () => {
+  it("should have a frame to stand out from the ground", () => {
     render(<ScheduleItem value={VIDEO} />);
 
     // The fill is opaque, so the items below do not show through an expanded
@@ -280,7 +279,7 @@ describe("ScheduleItem (on a wide screen)", () => {
     expect(getItem()).toHaveClass("bg-surface", "border", "border-border");
   });
 
-  test("should fill the placement and float with a shadow when expanded", () => {
+  it("should fill the placement and float with a shadow when expanded", () => {
     render(<ScheduleItem value={VIDEO} />);
 
     expect(getItem()).toHaveClass(
@@ -290,10 +289,10 @@ describe("ScheduleItem (on a wide screen)", () => {
       "lg:group-focus-within/item:shadow-overlay"
     );
     // The fill does not change on hover
-    expect(getItem().className).not.toMatch(/hover\S*:bg-/);
+    expect(getItem().className).not.toMatch(/hover\S*:bg-/u);
   });
 
-  test("should keep the same order of the contents when it is narrow", () => {
+  it("should keep the same order of the contents when it is narrow", () => {
     render(
       <ScheduleItem
         value={createScheduleVideoItem({ ...VIDEO, status: "LIVE" })}
@@ -311,7 +310,7 @@ describe("ScheduleItem (on a wide screen)", () => {
     );
   });
 
-  test("should show the labels and hashtags only when expanded", () => {
+  it("should show the labels and hashtags only when expanded", () => {
     render(<ScheduleItem titleLines={1} value={VIDEO} />);
 
     // Shown, the line would leave no room for the title in an item of an hour
@@ -323,13 +322,13 @@ describe("ScheduleItem (on a wide screen)", () => {
   });
 });
 
-describe("getTitleLines", () => {
+describe(getTitleLines, () => {
   afterEach(() => {
     vi.doUnmock("../_lib/layout");
     vi.resetModules();
   });
 
-  test.each([
+  it.each([
     [30, 0],
     [60, 1],
     [90, 2],
@@ -340,12 +339,14 @@ describe("getTitleLines", () => {
     expect(getTitleLines(minutes)).toBe(lines);
   });
 
-  test("should follow the height of an hour in the layout", async () => {
+  it("should follow the height of an hour in the layout", async () => {
     vi.resetModules();
-    vi.doMock("../_lib/layout", async (importOriginal) => ({
-      ...(await importOriginal<typeof import("../_lib/layout")>()),
-      HOUR_HEIGHT_REM: 8,
-    }));
+    vi.doMock(import("../_lib/layout"), async (importOriginal) => {
+      const actual = await importOriginal();
+
+      // The type of `HOUR_HEIGHT_REM` is the literal `4` of its declaration
+      return { ...actual, HOUR_HEIGHT_REM: 8 as number } as typeof actual;
+    });
     const { getTitleLines: getTitleLinesOfTallerHours } =
       await import("./schedule-item");
 

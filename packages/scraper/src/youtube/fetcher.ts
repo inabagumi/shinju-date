@@ -14,7 +14,11 @@ import type {
   RecentVideosOptions,
   VideoLookupResult,
 } from "../internal/fetcher-types.js";
-import { DEFAULT_RECENT_VIDEOS_LIMIT, Fetcher } from "../internal/fetcher.js";
+import {
+  DEFAULT_RECENT_VIDEOS_LIMIT,
+  Fetcher,
+  fetchByIds,
+} from "../internal/fetcher.js";
 import type {
   UploadPage,
   YouTubeChannel,
@@ -47,7 +51,7 @@ export class YouTubeFetcher extends Fetcher<
    * Gets channels by channel ID (`UC...`).
    */
   async getAccounts(accountIds: readonly string[]): Promise<YouTubeChannel[]> {
-    const { found } = await this.fetchByIds(accountIds, (ids) =>
+    const { found } = await fetchByIds(accountIds, (ids) =>
       getChannels({ client: this.#client, ids, schedule: this.request })
     );
 
@@ -156,7 +160,7 @@ export class YouTubeFetcher extends Fetcher<
   async getVideos(
     videoIds: readonly string[]
   ): Promise<VideoLookupResult<YouTubeVideo>> {
-    const { found, missingIds } = await this.fetchByIds(videoIds, (ids) =>
+    const { found, missingIds } = await fetchByIds(videoIds, (ids) =>
       getVideos({ client: this.#client, ids, schedule: this.request })
     );
 

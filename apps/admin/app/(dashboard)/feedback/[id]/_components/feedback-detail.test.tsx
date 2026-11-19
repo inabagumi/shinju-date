@@ -2,13 +2,22 @@ import type { Tables } from "@shinju-date/database";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type {
+  markFeatureRequestAsReadAction,
+  updateFeatureRequestMemoAction,
+  updateFeatureRequestStatusAction,
+} from "../../_actions/update-feedback";
+
 const mocks = vi.hoisted(() => ({
-  markFeatureRequestAsReadAction: vi.fn(),
-  updateFeatureRequestMemoAction: vi.fn(),
-  updateFeatureRequestStatusAction: vi.fn(),
+  markFeatureRequestAsReadAction:
+    vi.fn<typeof markFeatureRequestAsReadAction>(),
+  updateFeatureRequestMemoAction:
+    vi.fn<typeof updateFeatureRequestMemoAction>(),
+  updateFeatureRequestStatusAction:
+    vi.fn<typeof updateFeatureRequestStatusAction>(),
 }));
 
-vi.mock("../../_actions/update-feedback", () => ({
+vi.mock(import("../../_actions/update-feedback"), () => ({
   markFeatureRequestAsReadAction: mocks.markFeatureRequestAsReadAction,
   updateFeatureRequestMemoAction: mocks.updateFeatureRequestMemoAction,
   updateFeatureRequestStatusAction: mocks.updateFeatureRequestStatusAction,
@@ -29,7 +38,7 @@ const featureRequest: Tables<"feature_requests"> = {
 };
 
 /** The form that holds the button */
-function getForm(buttonName: string): HTMLFormElement {
+const getForm = (buttonName: string): HTMLFormElement => {
   const form = screen.getByRole("button", { name: buttonName }).closest("form");
 
   if (!form) {
@@ -37,14 +46,14 @@ function getForm(buttonName: string): HTMLFormElement {
   }
 
   return form;
-}
+};
 
 /** The `FormData` that the action was last called with, as an object */
-function submittedValues(action: ReturnType<typeof vi.fn>) {
+const submittedValues = (action: ReturnType<typeof vi.fn>) => {
   const [, formData] = action.mock.lastCall as [unknown, FormData];
 
   return Object.fromEntries(formData);
-}
+};
 
 describe("FeatureRequestDetail", () => {
   beforeEach(() => {
@@ -66,7 +75,7 @@ describe("FeatureRequestDetail", () => {
       expect(screen.getByText("検索").tagName).toBe("STRONG");
       expect(
         screen.getAllByRole("listitem").map((item) => item.textContent)
-      ).toEqual(["絞り込み", "並べ替え"]);
+      ).toStrictEqual(["絞り込み", "並べ替え"]);
       expect(screen.getByRole("link", { name: "詳細" })).toHaveAttribute(
         "href",
         "https://example.com/"
@@ -91,10 +100,12 @@ describe("FeatureRequestDetail", () => {
         within(form).getByRole("button", { name: "ステータスを更新" })
       );
 
-      expect(await within(form).findByRole("status")).toHaveTextContent(
-        "更新しました。"
-      );
-      expect(submittedValues(mocks.updateFeatureRequestStatusAction)).toEqual({
+      await expect(
+        within(form).findByRole("status")
+      ).resolves.toHaveTextContent("更新しました。");
+      expect(
+        submittedValues(mocks.updateFeatureRequestStatusAction)
+      ).toStrictEqual({
         id: FEEDBACK_ID,
         status: "in_progress",
       });
@@ -113,7 +124,7 @@ describe("FeatureRequestDetail", () => {
         within(form).getByRole("button", { name: "ステータスを更新" })
       );
 
-      expect(await within(form).findByRole("alert")).toHaveTextContent(
+      await expect(within(form).findByRole("alert")).resolves.toHaveTextContent(
         "ステータスの更新に失敗しました。"
       );
       expect(within(form).queryByRole("status")).toBeNull();
@@ -136,10 +147,12 @@ describe("FeatureRequestDetail", () => {
       });
       fireEvent.click(within(form).getByRole("button", { name: "メモを保存" }));
 
-      expect(await within(form).findByRole("status")).toHaveTextContent(
-        "保存しました。"
-      );
-      expect(submittedValues(mocks.updateFeatureRequestMemoAction)).toEqual({
+      await expect(
+        within(form).findByRole("status")
+      ).resolves.toHaveTextContent("保存しました。");
+      expect(
+        submittedValues(mocks.updateFeatureRequestMemoAction)
+      ).toStrictEqual({
         admin_memo: "次の四半期に対応する。",
         id: FEEDBACK_ID,
       });
@@ -156,7 +169,7 @@ describe("FeatureRequestDetail", () => {
 
       fireEvent.click(within(form).getByRole("button", { name: "メモを保存" }));
 
-      expect(await within(form).findByRole("alert")).toHaveTextContent(
+      await expect(within(form).findByRole("alert")).resolves.toHaveTextContent(
         "メモの更新に失敗しました。"
       );
       expect(within(form).queryByRole("status")).toBeNull();
@@ -184,10 +197,12 @@ describe("FeatureRequestDetail", () => {
 
         fireEvent.click(within(form).getByRole("button", { name: button }));
 
-        expect(await within(form).findByRole("status")).toHaveTextContent(
-          "更新しました。"
-        );
-        expect(submittedValues(mocks.markFeatureRequestAsReadAction)).toEqual({
+        await expect(
+          within(form).findByRole("status")
+        ).resolves.toHaveTextContent("更新しました。");
+        expect(
+          submittedValues(mocks.markFeatureRequestAsReadAction)
+        ).toStrictEqual({
           id: FEEDBACK_ID,
           is_read: submitted,
         });
@@ -205,7 +220,7 @@ describe("FeatureRequestDetail", () => {
 
       fireEvent.click(within(form).getByRole("button", { name: "既読にする" }));
 
-      expect(await within(form).findByRole("alert")).toHaveTextContent(
+      await expect(within(form).findByRole("alert")).resolves.toHaveTextContent(
         "既読状態の更新に失敗しました。"
       );
       expect(within(form).queryByRole("status")).toBeNull();

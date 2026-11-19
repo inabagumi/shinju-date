@@ -1,4 +1,5 @@
 import { REDIS_KEYS } from "@shinju-date/constants";
+import type { Redis } from "@upstash/redis";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { setupActionTest } from "@/test/action-harness";
@@ -19,59 +20,61 @@ const ACTION_FAILED_ERROR =
   "処理に失敗しました。時間をおいて、もう一度お試しください。";
 
 const redisClient = {
-  del: vi.fn(async () => 1),
-  set: vi.fn(async () => "OK"),
+  del: vi.fn<Redis["del"]>(() => Promise.resolve(1)),
+  set: vi.fn<Redis["set"]>(() => Promise.resolve("OK" as const)),
 };
 
-beforeEach(() => {
-  redisClient.del.mockImplementation(async () => 1);
-  redisClient.set.mockImplementation(async () => "OK");
-  test.getRedisClient.mockImplementation(() => redisClient);
-});
-
-describe("enableMaintenanceModeAction", () => {
-  it("turns maintenance mode on and records it", async () => {
-    await expect(enableMaintenanceModeAction()).resolves.toEqual({
-      success: true,
-    });
-
-    expect(redisClient.set).toHaveBeenCalledExactlyOnceWith(
-      REDIS_KEYS.MAINTENANCE_MODE,
-      "true"
-    );
-    test.expectAuditLog("MAINTENANCE_MODE_ENABLE", null);
+describe("maintenance mode actions", () => {
+  beforeEach(() => {
+    redisClient.del.mockResolvedValue(1);
+    redisClient.set.mockResolvedValue("OK");
+    test.getRedisClient.mockReturnValue(redisClient);
   });
 
-  it("hides the message of an unexpected error and records nothing", async () => {
-    redisClient.set.mockRejectedValue(new Error("redis unavailable"));
+  describe("enableMaintenanceModeAction()", () => {
+    it("turns maintenance mode on and records it", async () => {
+      await expect(enableMaintenanceModeAction()).resolves.toStrictEqual({
+        success: true,
+      });
 
-    await expect(enableMaintenanceModeAction()).resolves.toEqual({
-      error: ACTION_FAILED_ERROR,
-      success: false,
+      expect(redisClient.set).toHaveBeenCalledExactlyOnceWith(
+        REDIS_KEYS.MAINTENANCE_MODE,
+        "true"
+      );
+      test.expectAuditLog("MAINTENANCE_MODE_ENABLE", null);
     });
-    test.expectNoAuditLog();
+
+    it("hides the message of an unexpected error and records nothing", async () => {
+      redisClient.set.mockRejectedValue(new Error("redis unavailable"));
+
+      await expect(enableMaintenanceModeAction()).resolves.toStrictEqual({
+        error: ACTION_FAILED_ERROR,
+        success: false,
+      });
+      test.expectNoAuditLog();
+    });
   });
-});
 
-describe("disableMaintenanceModeAction", () => {
-  it("turns maintenance mode off and records it", async () => {
-    await expect(disableMaintenanceModeAction()).resolves.toEqual({
-      success: true,
+  describe("disableMaintenanceModeAction()", () => {
+    it("turns maintenance mode off and records it", async () => {
+      await expect(disableMaintenanceModeAction()).resolves.toStrictEqual({
+        success: true,
+      });
+
+      expect(redisClient.del).toHaveBeenCalledExactlyOnceWith(
+        REDIS_KEYS.MAINTENANCE_MODE
+      );
+      test.expectAuditLog("MAINTENANCE_MODE_DISABLE", null);
     });
 
-    expect(redisClient.del).toHaveBeenCalledExactlyOnceWith(
-      REDIS_KEYS.MAINTENANCE_MODE
-    );
-    test.expectAuditLog("MAINTENANCE_MODE_DISABLE", null);
-  });
+    it("hides the message of an unexpected error and records nothing", async () => {
+      redisClient.del.mockRejectedValue(new Error("redis unavailable"));
 
-  it("hides the message of an unexpected error and records nothing", async () => {
-    redisClient.del.mockRejectedValue(new Error("redis unavailable"));
-
-    await expect(disableMaintenanceModeAction()).resolves.toEqual({
-      error: ACTION_FAILED_ERROR,
-      success: false,
+      await expect(disableMaintenanceModeAction()).resolves.toStrictEqual({
+        error: ACTION_FAILED_ERROR,
+        success: false,
+      });
+      test.expectNoAuditLog();
     });
-    test.expectNoAuditLog();
   });
 });

@@ -12,10 +12,9 @@ export interface SavedProfileImageRow {
 }
 
 /** Turns an embedded `profile_images` row into what `syncProfileImage` takes. */
-export function toStoredProfileImage(
+export const toStoredProfileImage = (
   row: SavedProfileImageRow | null
-): StoredProfileImage | null {
-  return row
+): StoredProfileImage | null =>
+  row
     ? { etag: row.etag, id: row.id, path: row.path, sourceUrl: row.source_url }
     : null;
-}

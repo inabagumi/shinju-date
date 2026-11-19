@@ -2,22 +2,25 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { findAllSuspenseChildren, runServerComponent } from "@/test/suspense";
 
+import type { getTalents } from "../talents/_lib/get-talents";
+import type { getVideos } from "./_lib/get-videos";
+
 const mocks = vi.hoisted(() => ({
-  getTalents: vi.fn(),
-  getVideos: vi.fn(),
+  getTalents: vi.fn<typeof getTalents>(),
+  getVideos: vi.fn<typeof getVideos>(),
 }));
 
-vi.mock("./_lib/get-videos", () => ({
+vi.mock(import("./_lib/get-videos"), () => ({
   getVideos: mocks.getVideos,
 }));
-vi.mock("../talents/_lib/get-talents", () => ({
+vi.mock(import("../talents/_lib/get-talents"), () => ({
   getTalents: mocks.getTalents,
 }));
 
 const { default: VideosPage } = await import("./page");
 
 /** ページの Suspense の中の部品を、すべて実行する */
-async function renderPage(searchParams: Record<string, string>) {
+const renderPage = (searchParams: Record<string, string>) => {
   const children = findAllSuspenseChildren(
     VideosPage({
       params: Promise.resolve({}),
@@ -26,7 +29,7 @@ async function renderPage(searchParams: Record<string, string>) {
   );
 
   return Promise.all(children.map((child) => runServerComponent(child)));
-}
+};
 
 describe("VideosPage", () => {
   beforeEach(() => {
@@ -41,13 +44,13 @@ describe("VideosPage", () => {
     // `getVideos` is a `'use cache: private'` function, so the calls with the
     // same arguments share one entry and query the database once per request.
     const args = [2, 20, { search: "test" }, "updated_at", "desc"];
-    expect(mocks.getVideos.mock.calls).toEqual([args, args]);
+    expect(mocks.getVideos.mock.calls).toStrictEqual([args, args]);
   });
 
   it("renders the default list for an invalid page", async () => {
     await expect(renderPage({ page: "abc" })).resolves.toHaveLength(3);
 
     const args = [1, 20, {}, "updated_at", "desc"];
-    expect(mocks.getVideos.mock.calls).toEqual([args, args]);
+    expect(mocks.getVideos.mock.calls).toStrictEqual([args, args]);
   });
 });

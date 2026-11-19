@@ -34,8 +34,9 @@ const COLLECTIONS = {
 };
 
 /** The rows of every collection, as plain JSON. */
-function dumpCollections(): Record<string, unknown[]> {
-  return JSON.parse(
+const dumpCollections = (): Record<string, unknown[]> =>
+  // oxlint-disable-next-line unicorn/prefer-structured-clone -- the dump must be plain JSON (structuredClone keeps undefined values and fails on non-cloneable values)
+  JSON.parse(
     JSON.stringify(
       Object.fromEntries(
         Object.entries(COLLECTIONS).map(([name, collection]) => [
@@ -45,22 +46,20 @@ function dumpCollections(): Record<string, unknown[]> {
       )
     )
   );
-}
 
 /** The values of every row that look like a time (an ISO 8601 string). */
-function getTimestamps(dump: Record<string, unknown[]>): string[] {
-  return Object.values(dump)
+const getTimestamps = (dump: Record<string, unknown[]>): string[] =>
+  Object.values(dump)
     .flat()
     .flatMap((row) => Object.values(row as Record<string, unknown>))
     .filter(
       (value): value is string =>
-        typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)
+        typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/u.test(value)
     );
-}
 
 const NOW = Temporal.Instant.from("2026-11-15T12:34:56.789Z");
 
-describe("seedCollections", () => {
+describe(seedCollections, () => {
   it("seeds the same data for the same now", async () => {
     await seedCollections({ now: NOW });
     const first = dumpCollections();
@@ -68,15 +67,17 @@ describe("seedCollections", () => {
     await seedCollections({ now: NOW });
     const second = dumpCollections();
 
-    expect(second).toEqual(first);
+    expect(second).toStrictEqual(first);
   });
 
   it("seeds every collection", async () => {
     await seedCollections({ now: NOW });
 
-    for (const [name, rows] of Object.entries(dumpCollections())) {
-      expect(rows.length, name).toBeGreaterThan(0);
-    }
+    const empty = Object.entries(dumpCollections())
+      .filter(([, rows]) => rows.length === 0)
+      .map(([name]) => name);
+
+    expect(empty).toStrictEqual([]);
   });
 
   it("seeds data around the given now", async () => {
@@ -85,7 +86,7 @@ describe("seedCollections", () => {
 
     await seedCollections({ now: NOW.add({ hours: 24 * 7 }) });
 
-    expect(dumpCollections()).not.toEqual(first);
+    expect(dumpCollections()).not.toStrictEqual(first);
   });
 
   it("saves the times in seconds, without milliseconds", async () => {
@@ -96,7 +97,7 @@ describe("seedCollections", () => {
     expect(timestamps.length).toBeGreaterThan(0);
 
     for (const timestamp of timestamps) {
-      expect(timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+      expect(timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u);
     }
   });
 

@@ -6,7 +6,7 @@ import type { TypedSupabaseClient } from "@/lib/supabase";
  * How many terms one request reads. It must not exceed `max_rows` of
  * PostgREST (1,000 in `supabase/config.toml`).
  */
-export const TERMS_PAGE_SIZE = 1_000;
+export const TERMS_PAGE_SIZE = 1000;
 
 interface Term {
   id: string;
@@ -22,11 +22,11 @@ interface Term {
  * `updated_at` skipped or repeated terms at the page boundaries, because the
  * popularity update gives many terms the same `updated_at`.
  *
- * @yields Terms in ascending order of `id`
- * @throws When a page does not move past the previous one, which would
+ * @yields {Term} Terms in ascending order of `id`
+ * @throws {Error} When a page does not move past the previous one, which would
  *   otherwise repeat the same page forever.
  */
-export async function* getAllTerms(
+export const getAllTerms = async function* getAllTerms(
   supabase: TypedSupabaseClient,
   { pageSize = TERMS_PAGE_SIZE }: { pageSize?: number } = {}
 ): AsyncGenerator<Term, void, undefined> {
@@ -43,6 +43,7 @@ export async function* getAllTerms(
       query = query.gt("id", cursor);
     }
 
+    // oxlint-disable-next-line eslint/no-await-in-loop -- each page starts after the last id of the previous one
     const page = throwIfError(await query, "Failed to load terms");
 
     const lastId = page.at(-1)?.id;
@@ -61,4 +62,4 @@ export async function* getAllTerms(
 
     yield* page;
   }
-}
+};

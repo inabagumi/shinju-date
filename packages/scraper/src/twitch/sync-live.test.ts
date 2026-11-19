@@ -15,16 +15,18 @@ import {
   createVideo,
   liveVideoRoutes,
 } from "../internal/testing/twitch.js";
+import type * as Thumbnails from "../internal/thumbnails/index.js";
 import { createThumbnail } from "../internal/thumbnails/index.js";
+import type { ErrorReporter } from "../types.js";
 import { planLiveSync, syncTwitchLive } from "./sync-live.js";
 
-vi.mock("../internal/thumbnails/index.js", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../internal/thumbnails/index.js")>()),
-  createThumbnail: vi.fn(),
-  removeThumbnail: vi.fn(),
+vi.mock(import("../internal/thumbnails/index.js"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  createThumbnail: vi.fn<typeof Thumbnails.createThumbnail>(),
+  removeThumbnail: vi.fn<typeof Thumbnails.removeThumbnail>(),
 }));
 
-describe("planLiveSync", () => {
+describe(planLiveSync, () => {
   const activeTwitchUserIds = new Set(["twitch-user-1"]);
 
   it("starts tracking a stream that just went on air", () => {
@@ -37,7 +39,7 @@ describe("planLiveSync", () => {
         savedByStreamId: [],
         savedLiveVideos: [],
       })
-    ).toEqual({ ended: [], refreshed: [], started: [stream] });
+    ).toStrictEqual({ ended: [], refreshed: [], started: [stream] });
   });
 
   it("ignores streams of accounts that are not crawled", () => {
@@ -48,7 +50,7 @@ describe("planLiveSync", () => {
         savedByStreamId: [],
         savedLiveVideos: [],
       }).started
-    ).toEqual([]);
+    ).toStrictEqual([]);
   });
 
   it("leaves a broadcast that is still on air alone", () => {
@@ -61,7 +63,7 @@ describe("planLiveSync", () => {
         savedByStreamId: [saved],
         savedLiveVideos: [saved],
       })
-    ).toEqual({ ended: [], refreshed: [], started: [] });
+    ).toStrictEqual({ ended: [], refreshed: [], started: [] });
   });
 
   it("follows title changes during a broadcast", () => {
@@ -74,7 +76,7 @@ describe("planLiveSync", () => {
         savedByStreamId: [saved],
         savedLiveVideos: [saved],
       }).refreshed
-    ).toEqual([{ saved, values: { title: "New title" } }]);
+    ).toStrictEqual([{ saved, values: { title: "New title" } }]);
   });
 
   it("ends a broadcast whose stream went offline", () => {
@@ -87,7 +89,7 @@ describe("planLiveSync", () => {
         savedByStreamId: [],
         savedLiveVideos: [saved],
       })
-    ).toEqual({ ended: [saved], refreshed: [], started: [] });
+    ).toStrictEqual({ ended: [saved], refreshed: [], started: [] });
   });
 
   it("ends only the broadcasts that went offline", () => {
@@ -104,7 +106,7 @@ describe("planLiveSync", () => {
         savedByStreamId: [onAir],
         savedLiveVideos: [onAir, offline],
       }).ended
-    ).toEqual([offline]);
+    ).toStrictEqual([offline]);
   });
 
   it("marks a row LIVE again when Twitch still reports its stream", () => {
@@ -122,7 +124,7 @@ describe("planLiveSync", () => {
         savedByStreamId: [saved],
         savedLiveVideos: [],
       })
-    ).toEqual({
+    ).toStrictEqual({
       ended: [],
       refreshed: [{ saved, values: { status: "LIVE" } }],
       started: [],
@@ -142,7 +144,7 @@ describe("planLiveSync", () => {
         ],
         savedLiveVideos: [],
       })
-    ).toEqual({ ended: [], refreshed: [], started: [] });
+    ).toStrictEqual({ ended: [], refreshed: [], started: [] });
   });
 
   it("ends a LIVE row that has no stream to check", () => {
@@ -155,14 +157,14 @@ describe("planLiveSync", () => {
         savedByStreamId: [],
         savedLiveVideos: [saved],
       }).ended
-    ).toEqual([saved]);
+    ).toStrictEqual([saved]);
   });
 });
 
-describe("syncTwitchLive", () => {
+describe(syncTwitchLive, () => {
   const supabase = setupSupabase();
   const now = Temporal.Instant.from("2024-05-01T12:00:00.500Z");
-  const reportError = vi.fn();
+  const reportError = vi.fn<ErrorReporter>();
   const createContext = <T>(fetcher: T) =>
     createTestContext({
       fetcher,
@@ -173,11 +175,8 @@ describe("syncTwitchLive", () => {
 
   let removedImages: unknown[];
 
-  function deletedThumbnailIds(): (string | undefined)[] {
-    return supabase
-      .written("DELETE", "thumbnails")
-      .map(({ query }) => query["id"]);
-  }
+  const deletedThumbnailIds = (): (string | undefined)[] =>
+    supabase.written("DELETE", "thumbnails").map(({ query }) => query["id"]);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -243,9 +242,9 @@ describe("syncTwitchLive", () => {
     const changed = await syncTwitchLive(createContext(fetcher));
 
     expect(changed).toBe(0);
-    expect(supabase.requests.every((request) => request.method === "GET")).toBe(
-      true
-    );
+    expect(
+      supabase.requests.every((request) => request.method === "GET")
+    ).toBeTruthy();
     expect(getRecentVideos).not.toHaveBeenCalled();
   });
 
@@ -274,7 +273,7 @@ describe("syncTwitchLive", () => {
     expect(getRecentVideos).toHaveBeenCalledWith(["twitch-user-1"], {
       type: "archive",
     });
-    expect(supabase.written("PATCH", "videos")[0]?.body).toEqual({
+    expect(supabase.written("PATCH", "videos")[0]?.body).toStrictEqual({
       status: "ENDED",
     });
     expect(supabase.written("PATCH", "twitch_videos")).toHaveLength(0);
@@ -295,7 +294,7 @@ describe("syncTwitchLive", () => {
       body: { twitch_video_id: "vod-1", type: "archive" },
       query: { id: "eq.twitch-row-1" },
     });
-    expect(supabase.written("PATCH", "videos")[0]?.body).toEqual({
+    expect(supabase.written("PATCH", "videos")[0]?.body).toStrictEqual({
       duration: "PT2H",
       published_at: "2024-05-01T09:00:00Z",
       status: "ENDED",
@@ -304,11 +303,11 @@ describe("syncTwitchLive", () => {
     });
     // Cached pages may still show the preview, so the cleanup removes it
     // later, counting from the time it was replaced (`touch_thumbnail`).
-    expect(supabase.written("POST", "rpc/touch_thumbnail")).toEqual([
+    expect(supabase.written("POST", "rpc/touch_thumbnail")).toStrictEqual([
       expect.objectContaining({ body: { p_thumbnail_id: "thumb-live" } }),
     ]);
-    expect(deletedThumbnailIds()).toEqual([]);
-    expect(removedImages).toEqual([]);
+    expect(deletedThumbnailIds()).toStrictEqual([]);
+    expect(removedImages).toStrictEqual([]);
   });
 
   it("removes the new thumbnail when the broadcast cannot be ended", async () => {
@@ -321,8 +320,8 @@ describe("syncTwitchLive", () => {
     const changed = await syncTwitchLive(createContext(fetcher));
 
     expect(changed).toBe(0);
-    expect(deletedThumbnailIds()).toEqual(["eq.thumb-new"]);
-    expect(removedImages).toEqual([{ prefixes: ["x/y.jpg"] }]);
+    expect(deletedThumbnailIds()).toStrictEqual(["eq.thumb-new"]);
+    expect(removedImages).toStrictEqual([{ prefixes: ["x/y.jpg"] }]);
     expect(reportError).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.stringContaining("statement timeout"),
@@ -343,8 +342,8 @@ describe("syncTwitchLive", () => {
     expect(supabase.written("PATCH", "videos")[0]?.body).not.toHaveProperty(
       "thumbnail_id"
     );
-    expect(supabase.written("PATCH", "thumbnails")).toEqual([]);
-    expect(deletedThumbnailIds()).toEqual([]);
+    expect(supabase.written("PATCH", "thumbnails")).toStrictEqual([]);
+    expect(deletedThumbnailIds()).toStrictEqual([]);
   });
 
   it("ends a broadcast whose archive was attached while on air", async () => {

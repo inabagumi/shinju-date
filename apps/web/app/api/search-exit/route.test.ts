@@ -1,27 +1,30 @@
 // @vitest-environment node
+import type { logger } from "@shinju-date/logger";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({
-  trackSearchExitWithoutClick: vi.fn(),
-}));
-
-vi.mock("@/lib/session-analytics", () => ({
-  trackSearchExitWithoutClick: mocks.trackSearchExitWithoutClick,
-}));
-
-vi.mock("@shinju-date/logger", () => ({
-  logger: {
-    debug: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-  },
-}));
+import type { trackSearchExitWithoutClick } from "@/lib/session-analytics";
 
 import { POST } from "./route";
 
-function post(body: string): Promise<Response> {
-  return POST(
+const mocks = vi.hoisted(() => ({
+  trackSearchExitWithoutClick: vi.fn<typeof trackSearchExitWithoutClick>(),
+}));
+
+vi.mock(import("@/lib/session-analytics"), () => ({
+  trackSearchExitWithoutClick: mocks.trackSearchExitWithoutClick,
+}));
+
+vi.mock(import("@shinju-date/logger"), () => ({
+  logger: {
+    debug: vi.fn<typeof logger.debug>(),
+    error: vi.fn<typeof logger.error>(),
+    info: vi.fn<typeof logger.info>(),
+    warn: vi.fn<typeof logger.warn>(),
+  },
+}));
+
+const post = (body: string): Promise<Response> =>
+  POST(
     new Request("https://shinju.date/api/search-exit", {
       body,
       // `navigator.sendBeacon` は文字列の本文を `text/plain` で送る
@@ -29,7 +32,6 @@ function post(body: string): Promise<Response> {
       method: "POST",
     })
   );
-}
 
 describe("POST /api/search-exit", () => {
   beforeEach(() => {

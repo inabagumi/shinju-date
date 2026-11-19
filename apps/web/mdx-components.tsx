@@ -1,9 +1,10 @@
 import { twMerge } from "@shinju-date/ui";
 import type { MDXComponents } from "mdx/types";
-import NextLink, { type LinkProps } from "next/link";
+import NextLink from "next/link";
+import type { LinkProps } from "next/link";
 import type { ComponentPropsWithoutRef } from "react";
 
-function Link({
+const Link = ({
   children,
   className,
   href,
@@ -11,7 +12,7 @@ function Link({
   onTouchStart,
   onClick,
   ...props
-}: ComponentPropsWithoutRef<"a">) {
+}: ComponentPropsWithoutRef<"a">) => {
   const linkClassName = twMerge(
     "text-accent underline underline-offset-2 hover:decoration-2",
     className
@@ -44,7 +45,7 @@ function Link({
       {children}
     </a>
   );
-}
+};
 
 /**
  * 文書ページ（とは・利用規約・プライバシーポリシー）の本文の要素。
@@ -52,23 +53,27 @@ function Link({
  */
 const documentComponents: MDXComponents = {
   a: Link,
-  h2: ({ className, ...props }) => (
+  h2: ({ children, className, ...props }) => (
     <h2
       className={twMerge(
         "mt-12 mb-4 text-heading font-bold first:mt-0",
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </h2>
   ),
-  h3: ({ className, ...props }) => (
+  h3: ({ children, className, ...props }) => (
     <h3
       className={twMerge(
         "mt-8 mb-2 text-body leading-normal font-semibold first:mt-0",
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </h3>
   ),
   hr: ({ className, ...props }) => (
     <hr className={twMerge("my-12 border-border", className)} {...props} />
@@ -96,9 +101,7 @@ const documentComponents: MDXComponents = {
   ),
 };
 
-export function useMDXComponents(components: MDXComponents): MDXComponents {
-  return {
-    ...documentComponents,
-    ...components,
-  };
-}
+export const useMDXComponents = (components: MDXComponents): MDXComponents => ({
+  ...documentComponents,
+  ...components,
+});

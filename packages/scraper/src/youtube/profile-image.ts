@@ -2,10 +2,12 @@ import type { youtube_v3 as youtube } from "@googleapis/youtube";
 
 import {
   MAX_PROFILE_IMAGE_SIZE,
-  type ProfileImageSyncResult,
-  type SavedProfileImageRow,
   syncProfileImage,
   toStoredProfileImage,
+} from "../internal/profile-images/index.js";
+import type {
+  ProfileImageSyncResult,
+  SavedProfileImageRow,
 } from "../internal/profile-images/index.js";
 import type { TypedSupabaseClient } from "../types.js";
 import type { YouTubeChannel } from "./types.js";
@@ -25,9 +27,8 @@ interface IconCandidate {
   width: number;
 }
 
-function isHttpsUrl(value: string): boolean {
-  return URL.canParse(value) && new URL(value).protocol === "https:";
-}
+const isHttpsUrl = (value: string): boolean =>
+  URL.canParse(value) && new URL(value).protocol === "https:";
 
 /**
  * Picks the URL of a channel icon to store from `snippet.thumbnails`.
@@ -41,9 +42,9 @@ function isHttpsUrl(value: string): boolean {
  *
  * @returns `null` when the channel has no icon.
  */
-export function selectYouTubeChannelIconUrl(
+export const selectYouTubeChannelIconUrl = (
   thumbnails: youtube.Schema$ThumbnailDetails | null | undefined
-): string | null {
+): string | null => {
   const candidates: IconCandidate[] = THUMBNAIL_KEYS.flatMap((key) => {
     const thumbnail = thumbnails?.[key];
     const url = thumbnail?.url;
@@ -55,7 +56,7 @@ export function selectYouTubeChannelIconUrl(
 
   const squares = candidates
     .filter(({ height, width }) => width > 0 && width === height)
-    .sort((a, b) => a.width - b.width);
+    .toSorted((a, b) => a.width - b.width);
   const square =
     squares.find(({ width }) => width >= MAX_PROFILE_IMAGE_SIZE) ??
     squares.at(-1);
@@ -65,18 +66,20 @@ export function selectYouTubeChannelIconUrl(
   }
 
   // Later keys are larger sizes, so they win ties between unknown sizes.
-  const largest = candidates.reduce<IconCandidate | undefined>(
-    (current, candidate) =>
-      !current ||
+  let largest: IconCandidate | undefined;
+
+  for (const candidate of candidates) {
+    if (
+      !largest ||
       Math.min(candidate.width, candidate.height) >=
-        Math.min(current.width, current.height)
-        ? candidate
-        : current,
-    undefined
-  );
+        Math.min(largest.width, largest.height)
+    ) {
+      largest = candidate;
+    }
+  }
 
   return largest?.url ?? null;
-}
+};
 
 export type { SavedProfileImageRow };
 
@@ -109,16 +112,16 @@ export interface SyncYouTubeChannelIconOptions {
  * The icon is only downloaded and stored again when it changed on YouTube
  * (see `syncProfileImage`).
  *
- * @throws When the icon cannot be downloaded, stored or assigned. The channel
+ * @throws {Error} When the icon cannot be downloaded, stored or assigned. The channel
  *   keeps its current icon then.
  */
-export function syncYouTubeChannelIcon({
+export const syncYouTubeChannelIcon = ({
   channel,
   now = Temporal.Now.instant(),
   saved,
   supabaseClient,
-}: SyncYouTubeChannelIconOptions): Promise<ProfileImageSyncResult> {
-  return syncProfileImage({
+}: SyncYouTubeChannelIconOptions): Promise<ProfileImageSyncResult> =>
+  syncProfileImage({
     now,
     owner: {
       id: saved.id,
@@ -129,4 +132,3 @@ export function syncYouTubeChannelIcon({
     sourceUrl: selectYouTubeChannelIconUrl(channel.snippet.thumbnails),
     supabaseClient,
   });
-}

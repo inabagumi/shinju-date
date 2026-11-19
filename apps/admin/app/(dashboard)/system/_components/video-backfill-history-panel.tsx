@@ -13,10 +13,8 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Panel, PanelSkeleton } from "@/components/panel";
 import { formatDateTimeFromISO } from "@/lib/format";
 import { useBackfillRequest } from "@/lib/use-backfill-request";
-import {
-  type PolledResourceFailure,
-  usePolledResource,
-} from "@/lib/use-polled-resource";
+import { usePolledResource } from "@/lib/use-polled-resource";
+import type { PolledResourceFailure } from "@/lib/use-polled-resource";
 
 import {
   getVideoBackfillHistoryAction,
@@ -39,9 +37,9 @@ const DESCRIPTION =
   "終了した過去動画の取り込みの結果です。最後の取り込みが失敗したアカウントは、まとめて再試行できます。";
 
 /** 履歴を取り直す。アクションの `data` を、`usePolledResource` が受け取る形にする */
-async function fetchVideoBackfillHistory(): Promise<
+const fetchVideoBackfillHistory = async (): Promise<
   VideoBackfillHistory | PolledResourceFailure
-> {
+> => {
   const result = await getVideoBackfillHistoryAction();
 
   if (!result.success) {
@@ -49,7 +47,7 @@ async function fetchVideoBackfillHistory(): Promise<
   }
 
   return result.data ?? { success: false };
-}
+};
 
 const SCOPE_LABELS: Record<VideoBackfillHistoryEntry["scope"], string> = {
   all: "全タレントのチェックで依頼",
@@ -65,9 +63,9 @@ interface VideoBackfillHistoryPanelProps {
  * 終了した過去動画の取り込み（バックフィル）の履歴を表示し、最後の取り込みが
  * 失敗したアカウントをまとめて再試行できるようにする。取り込みはバッチが非同期に行う。
  */
-export function VideoBackfillHistoryPanel({
+export const VideoBackfillHistoryPanel = ({
   initialData,
-}: VideoBackfillHistoryPanelProps) {
+}: VideoBackfillHistoryPanelProps) => {
   const { data, error, reload } = usePolledResource({
     fetcher: fetchVideoBackfillHistory,
     initialData,
@@ -108,6 +106,7 @@ export function VideoBackfillHistoryPanel({
           <Alert
             aria-label="最後の取り込みが失敗したアカウント"
             className="mb-4"
+            // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- Alert (@shinju-date/ui) always renders a div and takes its role as a prop
             role="region"
             title={
               <>
@@ -185,24 +184,22 @@ export function VideoBackfillHistoryPanel({
       </AsyncPanelBody>
     </Panel>
   );
-}
+};
 
 /** スケルトンに並べる、履歴の行の数。一覧の高さ（`max-h-[32rem]`）に収まる数にする */
 const SKELETON_ROWS = 6;
 
 /** 読み込み中の `VideoBackfillHistoryPanel`。履歴の行を並べる */
-export function VideoBackfillHistoryPanelSkeleton() {
-  return (
-    <PanelSkeleton
-      actions={<Skeleton className="h-8 w-44" />}
-      description={DESCRIPTION}
-      title={TITLE}
-    >
-      <ul className="-mx-6 -mb-6 divide-y divide-border border-t border-border">
-        {range(SKELETON_ROWS).map((row) => (
-          <BackfillAccountRowSkeleton key={`history-skeleton-${row}`} />
-        ))}
-      </ul>
-    </PanelSkeleton>
-  );
-}
+export const VideoBackfillHistoryPanelSkeleton = () => (
+  <PanelSkeleton
+    actions={<Skeleton className="h-8 w-44" />}
+    description={DESCRIPTION}
+    title={TITLE}
+  >
+    <ul className="-mx-6 -mb-6 divide-y divide-border border-t border-border">
+      {range(SKELETON_ROWS).map((row) => (
+        <BackfillAccountRowSkeleton key={`history-skeleton-${row}`} />
+      ))}
+    </ul>
+  </PanelSkeleton>
+);

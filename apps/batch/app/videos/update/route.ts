@@ -9,7 +9,7 @@ import { finishVideoSync } from "@/lib/video-sync";
 
 export const maxDuration = 120;
 
-export async function POST(request: NextRequest): Promise<Response> {
+export const POST = async (request: NextRequest): Promise<Response> => {
   const query = parseQuery(providerQuerySchema, request);
 
   if (query instanceof Response) {
@@ -18,12 +18,12 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   const { provider } = query;
 
-  return runCronJob(request, getVideosUpdateJob(provider), async () => {
+  return await runCronJob(request, getVideosUpdateJob(provider), async () => {
     const now = Temporal.Now.instant();
     const changed = await createScraper(provider).addNewVideos(now);
 
     await finishVideoSync({ changed, now, signal: request.signal });
   });
-}
+};
 
 export const GET = POST;

@@ -4,16 +4,11 @@ import type { QueryData } from "@supabase/supabase-js";
 import { cacheLife } from "next/cache";
 
 import { isNonNullable } from "@/lib/is-non-nullable";
-import {
-  createSupabaseServerClient,
-  type TypedSupabaseClient,
-} from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase";
+import type { TypedSupabaseClient } from "@/lib/supabase";
 
-import {
-  DEFAULT_RANKING_LIMIT,
-  type RankingQuery,
-  toDateRange,
-} from "./period";
+import { DEFAULT_RANKING_LIMIT, toDateRange } from "./period";
+import type { RankingQuery } from "./period";
 import { getPopularItems } from "./popular-items";
 
 const POPULAR_TALENT_SELECT = `
@@ -22,15 +17,14 @@ const POPULAR_TALENT_SELECT = `
   youtube_channels (youtube_channel_id)
 `;
 
-function selectPopularTalents(
+const selectPopularTalents = (
   supabaseClient: TypedSupabaseClient,
   talentIds: string[]
-) {
-  return supabaseClient
+) =>
+  supabaseClient
     .from("talents")
     .select(POPULAR_TALENT_SELECT)
     .in("id", talentIds);
-}
 
 type PopularTalentRow = QueryData<
   ReturnType<typeof selectPopularTalents>
@@ -45,10 +39,10 @@ export interface PopularTalent extends PopularTalentRow {
  * @param query.range - The date range (both ends inclusive). Pass the same date as `start` and `end` for a single date
  * @param query.limit - Maximum number to return (`DEFAULT_RANKING_LIMIT` by default)
  */
-export async function getPopularTalents({
+export const getPopularTalents = async ({
   limit = DEFAULT_RANKING_LIMIT,
   range,
-}: RankingQuery): Promise<PopularTalent[]> {
+}: RankingQuery): Promise<PopularTalent[]> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -84,9 +78,11 @@ export async function getPopularTalents({
   return talentScores
     .map(([id, clicks]) => {
       const talent = talentMap.get(id);
-      if (!talent) return null;
+      if (!talent) {
+        return null;
+      }
 
       return { ...talent, clicks };
     })
     .filter(isNonNullable);
-}
+};

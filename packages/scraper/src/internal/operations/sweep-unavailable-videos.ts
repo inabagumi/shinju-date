@@ -1,15 +1,15 @@
 import type { WriteContext } from "../../types.js";
 import { SWEEP_PAGE_SIZE } from "../constants.js";
-import { paginateById } from "../database/index.js";
-import { DatabaseError } from "../errors.js";
+import { DatabaseError } from "../database-error.js";
+import { paginateById } from "../database/pagination.js";
 import type { PlatformAdapter, SavedVideoBase } from "../platform.js";
 import { deleteMissingVideos } from "./delete-missing-videos.js";
 
-async function getSweepPage<TVideo, TSaved extends SavedVideoBase>(
+const getSweepPage = async <TVideo, TSaved extends SavedVideoBase>(
   { supabaseClient }: WriteContext,
   adapter: PlatformAdapter<TVideo, TSaved>,
   cursor: string | undefined
-): Promise<TSaved[]> {
+): Promise<TSaved[]> => {
   let query = supabaseClient
     .from("videos")
     // The talent is embedded only to filter on whether it was deleted.
@@ -36,7 +36,7 @@ async function getSweepPage<TVideo, TSaved extends SavedVideoBase>(
   // `savedVideoColumns` is a plain string here, so the rows cannot be typed
   // from it; the adapter guarantees they are `TSaved`.
   return data as unknown as TSaved[];
-}
+};
 
 /**
  * Checks every saved video of non-deleted talents (retired ones included),
@@ -45,21 +45,25 @@ async function getSweepPage<TVideo, TSaved extends SavedVideoBase>(
  *
  * @returns The number of videos deleted.
  */
-export async function sweepUnavailableVideos<
+export const sweepUnavailableVideos = async <
   TVideo,
   TSaved extends SavedVideoBase,
 >(
   context: WriteContext,
   adapter: PlatformAdapter<TVideo, TSaved>
-): Promise<number> {
+): Promise<number> => {
   let deletedCount = 0;
 
   for await (const page of paginateById((cursor) =>
     getSweepPage(context, adapter, cursor)
   )) {
-    const missingIds = adapter.findMissing
-      ? await adapter.findMissing(page)
-      : (await adapter.lookUp(page)).missingIds;
+    let missingIds: string[];
+
+    if (adapter.findMissing) {
+      missingIds = await adapter.findMissing(page);
+    } else {
+      ({ missingIds } = await adapter.lookUp(page));
+    }
 
     deletedCount += await deleteMissingVideos(
       context,
@@ -70,4 +74,4 @@ export async function sweepUnavailableVideos<
   }
 
   return deletedCount;
-}
+};

@@ -4,7 +4,8 @@ import { Resend } from "resend";
 import { z } from "zod";
 
 import { UNEXPECTED_ERROR, withBotCheck } from "@/lib/form-action";
-import { type FormState, toValidationErrorState } from "@/lib/form-state";
+import { toValidationErrorState } from "@/lib/form-state";
+import type { FormState } from "@/lib/form-state";
 
 import { getContactFormConfig } from "./utils";
 
@@ -36,6 +37,10 @@ const CONTACT_FORM_FIELDS = [
   "type",
   "wantsReply",
 ] as const satisfies readonly ContactFormField[];
+
+/** The reply-to address, with the name when it is given */
+const formatReplyTo = (email: string, name: string | undefined): string =>
+  name ? `${name} <${email}>` : email;
 
 export const submitContactForm = withBotCheck<ContactFormField>(
   async (formData, values) => {
@@ -97,11 +102,7 @@ ${message}
 
     // Set up reply-to with name and email if both available and reply requested
     const replyToValue =
-      wantsReply && email && name
-        ? `${name} <${email}>`
-        : wantsReply && email
-          ? email
-          : undefined;
+      wantsReply && email ? formatReplyTo(email, name) : undefined;
 
     const resend = new Resend(config.resendApiKey);
 

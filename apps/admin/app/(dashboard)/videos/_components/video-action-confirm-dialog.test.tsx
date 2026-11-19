@@ -1,15 +1,16 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+import type { VideoActionDialogProps } from "../_lib/use-video-action";
 import { VideoActionConfirmDialog } from "./video-action-confirm-dialog";
 
-describe("VideoActionConfirmDialog", () => {
+describe(VideoActionConfirmDialog, () => {
   const firstMockVideo = { id: "1", title: "Test Video 1" };
   const mockVideos = [firstMockVideo, { id: "2", title: "Test Video 2" }];
 
   it("renders delete dialog with warning for single video", () => {
-    const onConfirm = vi.fn();
-    const onOpenChange = vi.fn();
+    const onConfirm = vi.fn<VideoActionDialogProps["onConfirm"]>();
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     render(
       <VideoActionConfirmDialog
@@ -29,8 +30,10 @@ describe("VideoActionConfirmDialog", () => {
   });
 
   it("shows keyword confirmation for all delete operations", () => {
-    const onConfirm = vi.fn().mockResolvedValue(undefined);
-    const onOpenChange = vi.fn();
+    const onConfirm = vi
+      .fn<VideoActionDialogProps["onConfirm"]>()
+      .mockResolvedValue(undefined);
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     render(
       <VideoActionConfirmDialog
@@ -47,13 +50,13 @@ describe("VideoActionConfirmDialog", () => {
     ).toBeInTheDocument();
 
     // Button should be disabled initially
-    const confirmButton = screen.getByRole("button", { name: /削除する/i });
+    const confirmButton = screen.getByRole("button", { name: /削除する/iu });
     expect(confirmButton).toBeDisabled();
   });
 
   it("requires keyword confirmation for all delete operations", () => {
-    const onConfirm = vi.fn();
-    const onOpenChange = vi.fn();
+    const onConfirm = vi.fn<VideoActionDialogProps["onConfirm"]>();
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     const { rerender } = render(
       <VideoActionConfirmDialog
@@ -87,8 +90,8 @@ describe("VideoActionConfirmDialog", () => {
   });
 
   it("renders restore dialog", () => {
-    const onConfirm = vi.fn();
-    const onOpenChange = vi.fn();
+    const onConfirm = vi.fn<VideoActionDialogProps["onConfirm"]>();
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     render(
       <VideoActionConfirmDialog
@@ -101,12 +104,12 @@ describe("VideoActionConfirmDialog", () => {
     );
 
     expect(screen.getByText("動画を復元")).toBeInTheDocument();
-    expect(screen.getByText(/2件の動画を復元します/)).toBeInTheDocument();
+    expect(screen.getByText(/2件の動画を復元します/u)).toBeInTheDocument();
   });
 
   it("renders toggle visibility dialog", () => {
-    const onConfirm = vi.fn();
-    const onOpenChange = vi.fn();
+    const onConfirm = vi.fn<VideoActionDialogProps["onConfirm"]>();
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     render(
       <VideoActionConfirmDialog
@@ -120,13 +123,13 @@ describe("VideoActionConfirmDialog", () => {
 
     expect(screen.getByText("表示状態を切り替え")).toBeInTheDocument();
     expect(
-      screen.getByText(/2件の動画の表示状態を切り替えます/)
+      screen.getByText(/2件の動画の表示状態を切り替えます/u)
     ).toBeInTheDocument();
   });
 
   it("displays all videos in the list", () => {
-    const onConfirm = vi.fn();
-    const onOpenChange = vi.fn();
+    const onConfirm = vi.fn<VideoActionDialogProps["onConfirm"]>();
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     render(
       <VideoActionConfirmDialog
@@ -144,8 +147,8 @@ describe("VideoActionConfirmDialog", () => {
   });
 
   it("renders different button text based on action", () => {
-    const onConfirm = vi.fn();
-    const onOpenChange = vi.fn();
+    const onConfirm = vi.fn<VideoActionDialogProps["onConfirm"]>();
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     const { rerender } = render(
       <VideoActionConfirmDialog
@@ -158,7 +161,7 @@ describe("VideoActionConfirmDialog", () => {
     );
 
     expect(
-      screen.getByRole("button", { name: /削除する/i })
+      screen.getByRole("button", { name: /削除する/iu })
     ).toBeInTheDocument();
 
     rerender(
@@ -172,7 +175,7 @@ describe("VideoActionConfirmDialog", () => {
     );
 
     expect(
-      screen.getByRole("button", { name: /復元する/i })
+      screen.getByRole("button", { name: /復元する/iu })
     ).toBeInTheDocument();
 
     rerender(
@@ -186,13 +189,15 @@ describe("VideoActionConfirmDialog", () => {
     );
 
     expect(
-      screen.getByRole("button", { name: /切り替える/i })
+      screen.getByRole("button", { name: /切り替える/iu })
     ).toBeInTheDocument();
   });
 
   it("runs delete only after DELETE is entered", async () => {
-    const onConfirm = vi.fn().mockResolvedValue(undefined);
-    const onOpenChange = vi.fn();
+    const onConfirm = vi
+      .fn<VideoActionDialogProps["onConfirm"]>()
+      .mockResolvedValue(undefined);
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     render(
       <VideoActionConfirmDialog
@@ -217,15 +222,17 @@ describe("VideoActionConfirmDialog", () => {
 
     fireEvent.click(confirmButton);
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onConfirm).toHaveBeenCalledOnce();
     await waitFor(() => {
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
   });
 
   it("does not require a keyword to restore or toggle", () => {
-    const onConfirm = vi.fn().mockResolvedValue(undefined);
-    const onOpenChange = vi.fn();
+    const onConfirm = vi
+      .fn<VideoActionDialogProps["onConfirm"]>()
+      .mockResolvedValue(undefined);
+    const onOpenChange = vi.fn<VideoActionDialogProps["onOpenChange"]>();
 
     render(
       <VideoActionConfirmDialog

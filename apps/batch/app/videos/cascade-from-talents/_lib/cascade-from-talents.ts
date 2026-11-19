@@ -41,10 +41,10 @@ export class CascadePhaseError extends Error {
  * Soft-delete and restore run independently so a failure in one phase does not
  * hide the other phase's committed count.
  */
-export async function cascadeVideosFromTalents(
+export const cascadeVideosFromTalents = async (
   supabaseClient: TypedSupabaseClient,
   options: { limit?: number } = {}
-): Promise<CascadeFromTalentsResult> {
+): Promise<CascadeFromTalentsResult> => {
   const limit = options.limit ?? BATCH_LIMIT;
   const now = Temporal.Now.instant();
 
@@ -75,7 +75,7 @@ export async function cascadeVideosFromTalents(
         cause:
           phaseErrors.length === 1
             ? phaseErrors[0]
-            : new AggregateError(phaseErrors),
+            : new AggregateError(phaseErrors, "cascade phases failed"),
         restored,
         softDeleted,
       }
@@ -83,17 +83,16 @@ export async function cascadeVideosFromTalents(
   }
 
   return { restored, softDeleted };
-}
+};
 
-function toError(error: unknown): Error {
-  return error instanceof Error ? error : new Error(String(error));
-}
+const toError = (error: unknown): Error =>
+  error instanceof Error ? error : new Error(String(error));
 
-async function softDeleteVideosOfDeletedTalents(
+const softDeleteVideosOfDeletedTalents = async (
   supabaseClient: TypedSupabaseClient,
   now: Temporal.Instant,
   limit: number
-): Promise<number> {
+): Promise<number> => {
   // Join filter: non-deleted videos whose parent talent is soft-deleted.
   const videos = throwIfError(
     await supabaseClient
@@ -123,12 +122,12 @@ async function softDeleteVideosOfDeletedTalents(
   );
 
   return deletedIds.length;
-}
+};
 
-async function restoreCascadeDeletedVideos(
+const restoreCascadeDeletedVideos = async (
   supabaseClient: TypedSupabaseClient,
   limit: number
-): Promise<number> {
+): Promise<number> => {
   // Only talent_deleted under restored (non-deleted) talents.
   const videos = throwIfError(
     await supabaseClient
@@ -158,4 +157,4 @@ async function restoreCascadeDeletedVideos(
   );
 
   return restoredIds.length;
-}
+};

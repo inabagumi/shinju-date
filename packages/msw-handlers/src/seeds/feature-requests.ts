@@ -26,11 +26,11 @@ const FEATURE_REQUESTS = [
  * has not been read yet, and one that has been handled with a memo, so both
  * states of the list can be checked.
  */
-export function createFeatureRequests({
+export const createFeatureRequests = ({
   faker,
   now,
-}: SeedContext): Tables<"feature_requests">[] {
-  return FEATURE_REQUESTS.map(({ hoursAgo, ...values }) => {
+}: SeedContext): Tables<"feature_requests">[] =>
+  FEATURE_REQUESTS.map(({ hoursAgo, ...values }) => {
     const createdAt = toDBString(now.subtract({ hours: hoursAgo }));
 
     return {
@@ -40,4 +40,3 @@ export function createFeatureRequests({
       updated_at: createdAt,
     };
   });
-}

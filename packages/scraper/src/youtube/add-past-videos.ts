@@ -1,8 +1,6 @@
-import { YOUTUBE_CHANNELS } from "../internal/database/index.js";
-import {
-  addPastVideosWith,
-  type PastVideoAdapter,
-} from "../internal/operations/add-past-videos.js";
+import { YOUTUBE_CHANNELS } from "../internal/database/talents.js";
+import { addPastVideosWith } from "../internal/operations/add-past-videos.js";
+import type { PastVideoAdapter } from "../internal/operations/add-past-videos.js";
 import type {
   AddPastVideosOptions,
   AddPastVideosResult,
@@ -40,9 +38,8 @@ const YOUTUBE_PAST_VIDEOS: PastVideoAdapter<YouTubeFetcher, string> = {
  * @throws {StalledPaginationError} When YouTube returns the requested cursor
  *   as the next one.
  */
-export function addPastYouTubeVideos(
+export const addPastYouTubeVideos = (
   context: CrawlContext<YouTubeFetcher>,
   options: Pick<AddPastVideosOptions, "accountId" | "cursor">
-): Promise<AddPastVideosResult> {
-  return addPastVideosWith(context, YOUTUBE_PAST_VIDEOS, options);
-}
+): Promise<AddPastVideosResult> =>
+  addPastVideosWith(context, YOUTUBE_PAST_VIDEOS, options);

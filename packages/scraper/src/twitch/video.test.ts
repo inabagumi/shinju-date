@@ -11,9 +11,9 @@ const video = {
   type: "archive",
 } as TwitchVideo;
 
-describe("toVideoFields", () => {
+describe(toVideoFields, () => {
   it("maps a Helix video", () => {
-    expect(toVideoFields(video)).toEqual({
+    expect(toVideoFields(video)).toStrictEqual({
       duration: "PT1H2M3S",
       published_at: "2024-05-01T09:00:05Z",
       status: "ENDED",
@@ -28,14 +28,14 @@ describe("toVideoFields", () => {
   });
 });
 
-describe("toLiveFields", () => {
+describe(toLiveFields, () => {
   it("maps a stream that is on air", () => {
     const stream = {
       started_at: "2024-05-01T09:00:00.123Z",
       title: "Live now",
     } as TwitchStream;
 
-    expect(toLiveFields(stream)).toEqual({
+    expect(toLiveFields(stream)).toStrictEqual({
       duration: "P0D",
       published_at: "2024-05-01T09:00:00Z",
       status: "LIVE",
@@ -44,11 +44,11 @@ describe("toLiveFields", () => {
   });
 });
 
-describe("getThumbnailSource", () => {
+describe(getThumbnailSource, () => {
   it("resolves the size placeholders of a template URL", () => {
     expect(
       getThumbnailSource("https://cdn.test/thumb-%{width}x%{height}.jpg")
-    ).toEqual({
+    ).toStrictEqual({
       height: 720,
       url: "https://cdn.test/thumb-1280x720.jpg",
       width: 1280,

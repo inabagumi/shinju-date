@@ -1,11 +1,9 @@
 import type { youtube_v3 as youtube } from "@googleapis/youtube";
 
-import {
-  type BatchOptions,
-  requestInBatches,
-  YOUTUBE_DATA_API_MAX_RESULTS,
-} from "./batches.js";
-import { type ClientOptions, getYouTubeClient } from "./client.js";
+import { requestInBatches, YOUTUBE_DATA_API_MAX_RESULTS } from "./batches.js";
+import type { BatchOptions } from "./batches.js";
+import { getYouTubeClient } from "./client.js";
+import type { ClientOptions } from "./client.js";
 import type { YouTubeChannelIdentifier } from "./identifiers.js";
 import type { FilteredYouTubeChannel } from "./types.js";
 
@@ -21,22 +19,19 @@ interface GetChannelByHandleOptions extends ClientOptions {
  * Returns true when the channel has the ID, the uploads playlist and the
  * title that {@link FilteredYouTubeChannel} requires.
  */
-export function isFilteredYouTubeChannel(
+export const isFilteredYouTubeChannel = (
   channel: youtube.Schema$Channel
-): channel is FilteredYouTubeChannel {
-  return (
-    typeof channel.id === "string" &&
-    typeof channel.contentDetails?.relatedPlaylists?.uploads === "string" &&
-    typeof channel.snippet?.title === "string"
-  );
-}
+): channel is FilteredYouTubeChannel =>
+  typeof channel.id === "string" &&
+  typeof channel.contentDetails?.relatedPlaylists?.uploads === "string" &&
+  typeof channel.snippet?.title === "string";
 
 /**
  * Gets YouTube channels by their IDs
  * @param options - The options for getting channels
- * @yields YouTube channel objects
+ * @yields {FilteredYouTubeChannel} YouTube channel objects
  */
-export async function* getChannels({
+export const getChannels = async function* getChannels({
   client = getYouTubeClient(),
   ids,
   schedule,
@@ -56,30 +51,29 @@ export async function* getChannels({
 
     return (items ?? []).filter(isFilteredYouTubeChannel);
   });
-}
+};
 
 /**
  * Gets a single YouTube channel by channel ID.
  * @returns The channel, or `null` if not found / invalid
  */
-async function getChannelById(
+const getChannelById = async (
   id: string
-): Promise<FilteredYouTubeChannel | null> {
-  for await (const channel of getChannels({ ids: [id] })) {
-    return channel;
-  }
-  return null;
-}
+): Promise<FilteredYouTubeChannel | null> => {
+  const [channel] = await Array.fromAsync(getChannels({ ids: [id] }));
+
+  return channel ?? null;
+};
 
 /**
  * Gets a single YouTube channel by handle (with or without leading `@`).
  * Uses the YouTube Data API `forHandle` parameter.
  * @returns The channel, or `null` if not found / invalid
  */
-async function getChannelByHandle({
+const getChannelByHandle = async ({
   client = getYouTubeClient(),
   handle,
-}: GetChannelByHandleOptions): Promise<FilteredYouTubeChannel | null> {
+}: GetChannelByHandleOptions): Promise<FilteredYouTubeChannel | null> => {
   const normalized = handle.startsWith("@") ? handle : `@${handle}`;
 
   const {
@@ -96,16 +90,16 @@ async function getChannelByHandle({
 
   const channel = items.find(isFilteredYouTubeChannel);
   return channel ?? null;
-}
+};
 
 /**
  * Resolves a parsed identifier to a YouTube channel via the Data API.
  */
-export async function resolveYouTubeChannel(
+export const resolveYouTubeChannel = async (
   identifier: YouTubeChannelIdentifier
-): Promise<FilteredYouTubeChannel | null> {
+): Promise<FilteredYouTubeChannel | null> => {
   if (identifier.kind === "id") {
-    return getChannelById(identifier.id);
+    return await getChannelById(identifier.id);
   }
-  return getChannelByHandle({ handle: identifier.handle });
-}
+  return await getChannelByHandle({ handle: identifier.handle });
+};

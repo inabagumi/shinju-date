@@ -20,21 +20,21 @@ export const server = setupServer(...allHandlers);
 /**
  * Helper function to start the server with logging
  */
-export function startServer() {
+export const startServer = () => {
   server.listen({
     onUnhandledFrame: "warn",
   });
   console.error("🚀 MSW server started");
   console.error("[MSW] Handlers registered:", server.listHandlers().length);
-}
+};
 
 /**
  * Helper function to stop the server
  */
-export function stopServer() {
+export const stopServer = () => {
   server.close();
   console.error("🛑 MSW server stopped");
-}
+};
 
 /**
  * Default export for convenience

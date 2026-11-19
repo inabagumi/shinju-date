@@ -1,10 +1,8 @@
-export {
-  AccountNotFoundError,
-  DatabaseError,
-  StalledPaginationError,
-  StorageError,
-  throwIfError,
-} from "./internal/errors.js";
+export { AccountNotFoundError } from "./internal/account-not-found-error.js";
+export { DatabaseError } from "./internal/database-error.js";
+export { throwIfError } from "./internal/errors.js";
+export { StalledPaginationError } from "./internal/stalled-pagination-error.js";
+export { StorageError } from "./internal/storage-error.js";
 export { Scraper } from "./scraper.js";
 export type {
   AccountChanges,

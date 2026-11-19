@@ -9,11 +9,8 @@ import type { Period } from "@/lib/analytics/period";
 import type { ChartSeries } from "../../_lib/chart-series";
 import { formatDateLabel } from "../_lib/format-date";
 import type { AnalyticsSearchParams } from "../_lib/search-params-schema";
-import {
-  type VolumeChartDatum,
-  VolumeChartUI,
-  type VolumeChartVariant,
-} from "./volume-chart-ui";
+import { VolumeChartUI } from "./volume-chart-ui";
+import type { VolumeChartDatum, VolumeChartVariant } from "./volume-chart-ui";
 
 interface VolumeChartKindDefinition {
   /**
@@ -63,17 +60,21 @@ interface VolumeChartProps {
   searchParams: Promise<AnalyticsSearchParams>;
 }
 
-function sumBy(data: VolumeChartDatum[], key: string): number {
-  return data.reduce((sum, day) => {
+const sumBy = (data: VolumeChartDatum[], key: string): number => {
+  let sum = 0;
+
+  for (const day of data) {
     const value = day[key];
-    return sum + (typeof value === "number" ? value : 0);
-  }, 0);
-}
+    sum += typeof value === "number" ? value : 0;
+  }
+
+  return sum;
+};
 
 /**
  * 日ごとの件数（クリック数・検索数）の合計とグラフを表示する
  */
-export async function VolumeChart({ kind, searchParams }: VolumeChartProps) {
+export const VolumeChart = async ({ kind, searchParams }: VolumeChartProps) => {
   const definition: VolumeChartKindDefinition = VOLUME_CHART_KINDS[kind];
   const { dateRange, selectedDate } = await searchParams;
 
@@ -101,14 +102,12 @@ export async function VolumeChart({ kind, searchParams }: VolumeChartProps) {
       )}
     </>
   );
-}
+};
 
 /** 読み込み中の `VolumeChart`。合計のタイルと、グラフ（`VolumeChartUI`）と同じ高さの枠を並べる */
-export function VolumeChartSkeleton() {
-  return (
-    <div aria-hidden="true">
-      <StatTileSkeleton className="mb-4 sm:max-w-xs" />
-      <Skeleton className="h-64 w-full rounded-container" />
-    </div>
-  );
-}
+export const VolumeChartSkeleton = () => (
+  <div aria-hidden="true">
+    <StatTileSkeleton className="mb-4 sm:max-w-xs" />
+    <Skeleton className="h-64 w-full rounded-container" />
+  </div>
+);

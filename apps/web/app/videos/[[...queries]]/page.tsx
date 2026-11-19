@@ -19,10 +19,10 @@ import {
   VideosPageResults,
 } from "./_components/videos-page-sections";
 
-export async function generateMetadata(
+export const generateMetadata = async (
   { params, searchParams }: PageProps<"/videos/[[...queries]]">,
   parent: ResolvingMetadata
-): Promise<Metadata> {
+): Promise<Metadata> => {
   const [{ queries }, searchParamValues, parentMetadata] = await Promise.all([
     params,
     searchParams,
@@ -46,7 +46,7 @@ export async function generateMetadata(
     alternates: {
       ...metadata.alternates,
       types: {
-        "text/calendar": !query ? getVideosCalendarPath(kind, talentIds) : null,
+        "text/calendar": query ? null : getVideosCalendarPath(kind, talentIds),
       },
     },
     openGraph: {
@@ -59,7 +59,7 @@ export async function generateMetadata(
       }),
     },
   };
-}
+};
 
 export default function VideosPage({
   params,

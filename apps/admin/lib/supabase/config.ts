@@ -17,14 +17,12 @@ interface SupabaseConfig {
  * The settings of the clients that act as the signed-in user, shared by
  * `createSupabaseServerClient()` and the proxy.
  */
-export function getSupabaseConfig(): SupabaseConfig {
-  return {
-    cookieOptions: {
-      httpOnly: true,
-      sameSite: "strict",
-      secure: process.env["NODE_ENV"] === "production",
-    },
-    key: publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    url: publicEnv.NEXT_PUBLIC_SUPABASE_URL,
-  };
-}
+export const getSupabaseConfig = (): SupabaseConfig => ({
+  cookieOptions: {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env["NODE_ENV"] === "production",
+  },
+  key: publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  url: publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+});

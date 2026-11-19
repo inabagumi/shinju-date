@@ -12,40 +12,36 @@ import type {
   TwitchVideo,
 } from "./types.js";
 
-function toIsoString(date: Date): string {
-  return Temporal.Instant.fromEpochMilliseconds(date.getTime()).toString();
-}
+const toIsoString = (date: Date): string =>
+  Temporal.Instant.fromEpochMilliseconds(date.getTime()).toString();
 
 /**
  * Converts a duration in seconds to ISO 8601 (e.g. PT1H2M3S) via Temporal.
  * Uses twurple's durationInSeconds rather than re-parsing Twitch's "1h2m3s" strings.
  */
-function durationFromSeconds(seconds: number): string {
-  return Temporal.Duration.from({
+const durationFromSeconds = (seconds: number): string =>
+  Temporal.Duration.from({
     seconds: Math.max(0, Math.floor(seconds)),
   })
     .round({ largestUnit: "hour" })
     .toString();
-}
 
-export function mapUser(user: HelixUser): TwitchUser {
-  return {
-    broadcaster_type: user.broadcasterType,
-    created_at: toIsoString(user.creationDate),
-    description: user.description,
-    display_name: user.displayName,
-    id: user.id,
-    login: user.name,
-    offline_image_url: user.offlinePlaceholderUrl,
-    profile_image_url: user.profilePictureUrl,
-    type: user.type,
-  };
-}
+export const mapUser = (user: HelixUser): TwitchUser => ({
+  broadcaster_type: user.broadcasterType,
+  created_at: toIsoString(user.creationDate),
+  description: user.description,
+  display_name: user.displayName,
+  id: user.id,
+  login: user.name,
+  offline_image_url: user.offlinePlaceholderUrl,
+  profile_image_url: user.profilePictureUrl,
+  type: user.type,
+});
 
 /**
  * @returns `null` for a kind of video the database does not know
  */
-export function mapVideo(video: HelixVideo): TwitchVideo | null {
+export const mapVideo = (video: HelixVideo): TwitchVideo | null => {
   // Helix may add kinds of videos that twurple's type does not list yet.
   const type: string = video.type;
 
@@ -71,33 +67,31 @@ export function mapVideo(video: HelixVideo): TwitchVideo | null {
     view_count: video.views,
     viewable: video.isPublic ? "public" : "private",
   };
-}
+};
 
-export function mapClip(clip: HelixClip): TwitchClip {
-  return {
-    broadcaster_id: clip.broadcasterId,
-    broadcaster_name: clip.broadcasterDisplayName,
-    created_at: toIsoString(clip.creationDate),
-    creator_id: clip.creatorId,
-    creator_name: clip.creatorDisplayName,
-    duration: durationFromSeconds(clip.duration),
-    embed_url: clip.embedUrl,
-    game_id: clip.gameId,
-    id: clip.id,
-    language: clip.language,
-    thumbnail_url: clip.thumbnailUrl,
-    title: clip.title,
-    url: clip.url,
-    video_id: clip.videoId,
-    view_count: clip.views,
-    vod_offset: clip.vodOffset,
-  };
-}
+export const mapClip = (clip: HelixClip): TwitchClip => ({
+  broadcaster_id: clip.broadcasterId,
+  broadcaster_name: clip.broadcasterDisplayName,
+  created_at: toIsoString(clip.creationDate),
+  creator_id: clip.creatorId,
+  creator_name: clip.creatorDisplayName,
+  duration: durationFromSeconds(clip.duration),
+  embed_url: clip.embedUrl,
+  game_id: clip.gameId,
+  id: clip.id,
+  language: clip.language,
+  thumbnail_url: clip.thumbnailUrl,
+  title: clip.title,
+  url: clip.url,
+  video_id: clip.videoId,
+  view_count: clip.views,
+  vod_offset: clip.vodOffset,
+});
 
 /**
  * @returns `null` for a stream that is not live
  */
-export function mapStream(stream: HelixStream): TwitchStream | null {
+export const mapStream = (stream: HelixStream): TwitchStream | null => {
   // Helix currently only returns type "live" for Get Streams.
   if (stream.type !== "live") {
     return null;
@@ -119,4 +113,4 @@ export function mapStream(stream: HelixStream): TwitchStream | null {
     user_name: stream.userDisplayName,
     viewer_count: stream.viewers,
   };
-}
+};

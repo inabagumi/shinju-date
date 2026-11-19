@@ -21,12 +21,14 @@ export type YouTubeVideoStatus = Enums<"video_status">;
  * liveStreamingDetails). This is the correct behavior as premieres are treated
  * similarly to live streams in YouTube's API.
  */
-export function getVideoStatus(
+export const getVideoStatus = (
   { liveStreamingDetails: details }: youtube.Schema$Video,
   currentDateTime = Temporal.Now.instant()
-): YouTubeVideoStatus {
+): YouTubeVideoStatus => {
   // If no liveStreamingDetails, it's a regular published video (not a live stream)
-  if (!details) return "PUBLISHED";
+  if (!details) {
+    return "PUBLISHED";
+  }
 
   // Currently live (has actualStartTime but no actualEndTime)
   if (details.actualStartTime && !details.actualEndTime) {
@@ -46,4 +48,4 @@ export function getVideoStatus(
 
   // Live stream that has ended
   return "ENDED";
-}
+};

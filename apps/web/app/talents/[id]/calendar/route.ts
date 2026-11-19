@@ -1,10 +1,11 @@
 import { createErrorResponse } from "@shinju-date/helpers";
 import { logger } from "@shinju-date/logger";
 
-import { fetchTalent, type TalentDetail } from "@/lib/data/talents";
+import { fetchTalent } from "@/lib/data/talents";
+import type { TalentDetail } from "@/lib/data/talents";
 import { createVideosCalendarResponse } from "@/lib/videos-calendar";
 
-export async function GET(
+export const GET = async (
   _req: Request,
   {
     params,
@@ -13,7 +14,7 @@ export async function GET(
       id: string;
     }>;
   }>
-): Promise<Response> {
+): Promise<Response> => {
   const { id } = await params;
   let talent: TalentDetail | null;
 
@@ -40,4 +41,4 @@ export async function GET(
   return createVideosCalendarResponse({
     talentIds: [talent.id],
   });
-}
+};

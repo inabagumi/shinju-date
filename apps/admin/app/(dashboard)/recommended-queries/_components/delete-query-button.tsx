@@ -15,7 +15,7 @@ interface DeleteQueryButtonProps {
  * 手動のおすすめクエリの、行ごとの削除のボタン。失敗はダイアログの中に出し、
  * 成功したらダイアログを閉じてトーストで知らせる
  */
-export function DeleteQueryButton({ query }: DeleteQueryButtonProps) {
+export const DeleteQueryButton = ({ query }: DeleteQueryButtonProps) => {
   const { showToast } = useActionToast();
 
   const handleDeleteQuery = async () => {
@@ -47,4 +47,4 @@ export function DeleteQueryButton({ query }: DeleteQueryButtonProps) {
       }
     />
   );
-}
+};

@@ -1,4 +1,5 @@
-import { expect, type Locator, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 // Provided by the MSW mock data (packages/msw-handlers)
 const ANNOUNCEMENT_MESSAGE = "メンテナンスのお知らせ";
@@ -13,20 +14,16 @@ interface Box {
   y: number;
 }
 
-function getBanner(page: Page) {
-  return page.getByTestId("announcement-banner");
-}
+const getBanner = (page: Page) => page.getByTestId("announcement-banner");
 
-function getMinimizedBanner(page: Page) {
-  return page.getByTestId("announcement-banner-minimized");
-}
+const getMinimizedBanner = (page: Page) =>
+  page.getByTestId("announcement-banner-minimized");
 
-function getVideoCards(page: Page) {
+const getVideoCards = (page: Page) =>
   // Video cards are external links that contain the video title heading
-  return page.locator('main a[target="_blank"]:has(h3)');
-}
+  page.locator('main a[target="_blank"]:has(h3)');
 
-async function getBoundingBox(locator: Locator): Promise<Box> {
+const getBoundingBox = async (locator: Locator): Promise<Box> => {
   const box = await locator.boundingBox();
 
   if (!box) {
@@ -34,16 +31,13 @@ async function getBoundingBox(locator: Locator): Promise<Box> {
   }
 
   return box;
-}
+};
 
-function intersects(a: Box, b: Box): boolean {
-  return (
-    a.x < b.x + b.width &&
-    a.x + a.width > b.x &&
-    a.y < b.y + b.height &&
-    a.y + a.height > b.y
-  );
-}
+const intersects = (a: Box, b: Box): boolean =>
+  a.x < b.x + b.width &&
+  a.x + a.width > b.x &&
+  a.y < b.y + b.height &&
+  a.y + a.height > b.y;
 
 /**
  * Assert that the content next to (left of) the given sticky element is
@@ -51,7 +45,7 @@ function intersects(a: Box, b: Box): boolean {
  * with the element and check that a click in that card is not intercepted
  * by the banner wrapper.
  */
-async function expectContentBesideToBeClickable(page: Page, box: Box) {
+const expectContentBesideToBeClickable = async (page: Page, box: Box) => {
   const cardBoxes = await getVideoCardBoxes(page);
 
   let best: { overlap: number; x: number; y: number } | null = null;
@@ -88,14 +82,14 @@ async function expectContentBesideToBeClickable(page: Page, box: Box) {
   );
 
   expect(hitsVideoCard).toBe(true);
-}
+};
 
 /**
  * Scroll down step by step until a video card spans the whole vertical
  * range of the given sticky element, so that the element is clearly
  * covering that card.
  */
-async function scrollUntilCardSpans(page: Page, locator: Locator) {
+const scrollUntilCardSpans = async (page: Page, locator: Locator) => {
   await expect
     .poll(
       async () => {
@@ -118,24 +112,23 @@ async function scrollUntilCardSpans(page: Page, locator: Locator) {
       { timeout: 15_000 }
     )
     .toBe(true);
-}
+};
 
-async function getVideoCardBoxes(page: Page): Promise<Box[]> {
-  return getVideoCards(page).evaluateAll((elements) =>
+const getVideoCardBoxes = (page: Page): Promise<Box[]> =>
+  getVideoCards(page).evaluateAll((elements) =>
     elements.map((element) => {
       const { height, width, x, y } = element.getBoundingClientRect();
 
       return { height, width, x, y };
     })
   );
-}
 
 /**
  * Scroll to the end of the document and wait until the document height
  * stops changing: the height is compared with the one at the previous check,
  * and `expect.poll` waits between the checks.
  */
-async function scrollToEnd(page: Page) {
+const scrollToEnd = async (page: Page) => {
   let previousHeight: number | null = null;
 
   await expect
@@ -158,9 +151,9 @@ async function scrollToEnd(page: Page) {
       { intervals: [300], timeout: 15_000 }
     )
     .toBe(true);
-}
+};
 
-async function openPage(page: Page, path: string) {
+const openPage = async (page: Page, path: string) => {
   await page.goto(path);
 
   await expect(getBanner(page)).toBeVisible();
@@ -168,12 +161,12 @@ async function openPage(page: Page, path: string) {
   await expect(getVideoCards(page).first()).toBeVisible();
   // Wait for hydration so that the click handlers are attached
   await page.waitForLoadState("networkidle");
-}
+};
 
-function describeViewport(
+const describeViewport = (
   name: string,
   viewport: { height: number; width: number }
-) {
+) => {
   test.describe(name, () => {
     test.use({ viewport });
 
@@ -281,7 +274,7 @@ function describeViewport(
       await expect(banner).toBeHidden();
     });
   });
-}
+};
 
 test.describe("Announcement Banner", () => {
   test("should render the Markdown message", async ({ page }) => {
@@ -327,7 +320,8 @@ test.describe("Announcement Banner", () => {
 
     await page.clock.fastForward("01:00");
 
-    const response = await (await refetchRequest).response();
+    const refetch = await refetchRequest;
+    const response = await refetch.response();
 
     expect(response?.ok()).toBe(true);
     await expect(getBanner(page)).toContainText(ANNOUNCEMENT_MESSAGE);

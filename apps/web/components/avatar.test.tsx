@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 
 const IMAGE = { blur_data_url: "data:image/png;base64,AAAA", id: "icon" };
 
-describe("Avatar", () => {
-  test("should show the image as a decoration by default", () => {
+describe(Avatar, () => {
+  it("should show the image as a decoration by default", () => {
     const { container } = render(
       <Avatar data-testid="avatar" size={20}>
         <AvatarImage image={IMAGE} sizes="20px" />
@@ -23,7 +23,7 @@ describe("Avatar", () => {
     });
   });
 
-  test("should leave the size to the class names without a size", () => {
+  it("should leave the size to the class names without a size", () => {
     render(
       <Avatar className="size-20" data-testid="avatar">
         <AvatarImage image={IMAGE} sizes="80px" />
@@ -35,7 +35,7 @@ describe("Avatar", () => {
     expect(avatar).not.toHaveAttribute("style");
   });
 
-  test("should announce the alternative text of the image", () => {
+  it("should announce the alternative text of the image", () => {
     render(
       <Avatar>
         <AvatarImage alt="朝霧ミオ" image={IMAGE} sizes="20px" />
@@ -45,7 +45,7 @@ describe("Avatar", () => {
     expect(screen.getByRole("img", { name: "朝霧ミオ" })).toBeInTheDocument();
   });
 
-  test("should show the default icon as a decoration", () => {
+  it("should show the default icon as a decoration", () => {
     const { container } = render(
       <Avatar size={20}>
         <AvatarFallback data-testid="fallback" />
@@ -60,7 +60,7 @@ describe("Avatar", () => {
     );
   });
 
-  test("should show the given fallback", () => {
+  it("should show the given fallback", () => {
     render(
       <Avatar>
         <AvatarFallback data-testid="fallback">A</AvatarFallback>

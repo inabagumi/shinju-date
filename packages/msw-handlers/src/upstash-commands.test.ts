@@ -47,7 +47,7 @@ const NON_REDIS_RECEIVERS = new Set([
 ]);
 
 /** The Redis commands that `@upstash/redis` has methods for. */
-function getClientCommands(): Set<string> {
+const getClientCommands = (): Set<string> => {
   const redis = new Redis({ token: "fake-token", url: UPSTASH_URL });
   const pipeline = redis.pipeline();
   const names = [redis, pipeline].flatMap((client) =>
@@ -57,39 +57,42 @@ function getClientCommands(): Set<string> {
   );
 
   return new Set(names.filter((name) => !NON_COMMAND_METHODS.has(name)));
-}
+};
 
 /**
  * The Redis commands that the code of `apps/` and `packages/` calls: the
  * methods of `@upstash/redis` called in the files that use Redis, except the
  * tests (which use fakes) and this package.
  */
-function findUsedCommands(): Map<string, Set<string>> {
+const findUsedCommands = (): Map<string, Set<string>> => {
   const commands = getClientCommands();
   const files = execFileSync(
     "git",
     ["ls-files", "--", "apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts"],
-    { cwd: REPOSITORY_ROOT, encoding: "utf8" }
+    { cwd: REPOSITORY_ROOT, encoding: "utf-8" }
   )
     .split("\n")
     .filter(
       (file) =>
         file !== "" &&
         !file.startsWith("packages/msw-handlers/") &&
-        !/(^|\/)(e2e|test)\/|\.(test|spec)\.tsx?$/.test(file)
+        !/(?:^|\/)(?:e2e|test)\/|\.(?:test|spec)\.tsx?$/u.test(file)
     );
   const used = new Map<string, Set<string>>();
 
   for (const file of files) {
-    const source = readFileSync(`${REPOSITORY_ROOT}${file}`, "utf8");
+    const source = readFileSync(`${REPOSITORY_ROOT}${file}`, "utf-8");
 
-    if (!/redis/i.test(source)) {
+    if (!/redis/iu.test(source)) {
       continue;
     }
 
-    for (const [, receiver = "", method = ""] of source.matchAll(
-      /(\w*)\s*\.\s*([a-z][A-Za-z]*)\s*(?:<[^<>()]*>)?\(/g
+    for (const { groups } of source.matchAll(
+      /(?<receiver>\w*)\s*\.\s*(?<method>[a-z][A-Za-z]*)\s*(?:<[^<>()]*>)?\(/gu
     )) {
+      const receiver = groups?.["receiver"] ?? "";
+      const method = groups?.["method"] ?? "";
+
       if (commands.has(method) && !NON_REDIS_RECEIVERS.has(receiver)) {
         // `evalRo` is `EVAL_RO`, `scriptLoad` is `SCRIPT LOAD` and so on, so
         // the name of the command is the method in lower case.
@@ -101,12 +104,12 @@ function findUsedCommands(): Map<string, Set<string>> {
   }
 
   return used;
-}
+};
 
-async function send(
+const send = async (
   path: string,
   body: unknown
-): Promise<{ body: unknown; status: number }> {
+): Promise<{ body: unknown; status: number }> => {
   const response = await fetch(`${UPSTASH_URL}${path}`, {
     body: JSON.stringify(body),
     headers: { "Content-Type": "application/json" },
@@ -114,12 +117,11 @@ async function send(
   });
 
   return { body: await response.json(), status: response.status };
-}
+};
 
 /** A key that no other test uses. */
-function uniqueKey(name: string): string {
-  return `test:${name}:${crypto.randomUUID()}`;
-}
+const uniqueKey = (name: string): string =>
+  `test:${name}:${crypto.randomUUID()}`;
 
 describe("Upstash Redis commands", () => {
   const redis = new Redis({ token: "fake-token", url: UPSTASH_URL });
@@ -128,6 +130,7 @@ describe("Upstash Redis commands", () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
+
   afterAll(() => server.close());
 
   describe("the commands that the apps use", () => {
@@ -136,7 +139,7 @@ describe("Upstash Redis commands", () => {
     it("finds the commands in the code", () => {
       // A command of each kind that the apps are known to use, so that the
       // search does not silently find nothing
-      expect([...used.keys()]).toEqual(
+      expect([...used.keys()]).toStrictEqual(
         expect.arrayContaining(["eval", "hincrby", "zincrby", "zrange"])
       );
     });
@@ -153,7 +156,7 @@ describe("Upstash Redis commands", () => {
     it("returns the error of Redis with 400 for a single command", async () => {
       const response = await send("/", ["FOOBAR", "a", 1]);
 
-      expect(response).toEqual({
+      expect(response).toStrictEqual({
         body: {
           error:
             "ERR unknown command 'FOOBAR', with args beginning with: 'a' '1' ",
@@ -166,14 +169,14 @@ describe("Upstash Redis commands", () => {
       const response = await send("/v2/foobar", ["a"]);
 
       expect(response.status).toBe(400);
-      expect(response.body).toEqual({
-        error: expect.stringMatching(/^ERR unknown command 'foobar'/),
+      expect(response.body).toStrictEqual({
+        error: expect.stringMatching(/^ERR unknown command 'foobar'/u),
       });
     });
 
     it("throws from @upstash/redis", async () => {
       await expect(redis.hrandfield(uniqueKey("hrandfield"))).rejects.toThrow(
-        /ERR unknown command 'hrandfield'/
+        /ERR unknown command 'hrandfield'/u
       );
     });
 
@@ -185,10 +188,10 @@ describe("Upstash Redis commands", () => {
         ["GET", key],
       ]);
 
-      expect(response).toEqual({
+      expect(response).toStrictEqual({
         body: [
           { result: "OK" },
-          { error: expect.stringMatching(/^ERR unknown command 'FOOBAR'/) },
+          { error: expect.stringMatching(/^ERR unknown command 'FOOBAR'/u) },
           { result: "a" },
         ],
         status: 200,
@@ -203,15 +206,15 @@ describe("Upstash Redis commands", () => {
       ]);
 
       expect(response.status).toBe(400);
-      expect(response.body).toEqual({
-        error: expect.stringMatching(/^EXECABORT .*unknown command 'FOOBAR'/),
+      expect(response.body).toStrictEqual({
+        error: expect.stringMatching(/^EXECABORT .*unknown command 'FOOBAR'/u),
       });
       await expect(redis.exists(key)).resolves.toBe(0);
     });
 
     it("returns an error for a script that the mock cannot run", async () => {
       await expect(redis.eval("return 1", [], [])).rejects.toThrow(
-        /the mock cannot run this script/
+        /the mock cannot run this script/u
       );
     });
   });
@@ -222,13 +225,13 @@ describe("Upstash Redis commands", () => {
 
       await redis.set(key, "a");
 
-      await expect(redis.zincrby(key, 1, "m")).rejects.toThrow(/WRONGTYPE/);
+      await expect(redis.zincrby(key, 1, "m")).rejects.toThrow(/WRONGTYPE/u);
     });
 
     it("returns an error for the wrong number of arguments", async () => {
       const response = await send("/", ["GET"]);
 
-      expect(response).toEqual({
+      expect(response).toStrictEqual({
         body: { error: "ERR wrong number of arguments for 'get' command" },
         status: 400,
       });
@@ -239,7 +242,7 @@ describe("Upstash Redis commands", () => {
 
       await redis.set(key, "a");
 
-      await expect(redis.incr(key)).rejects.toThrow(/not an integer/);
+      await expect(redis.incr(key)).rejects.toThrow(/not an integer/u);
     });
   });
 
@@ -267,11 +270,15 @@ describe("Upstash Redis commands", () => {
 
       await redis.set(key, "a");
 
-      await expect(redis.ttl(key)).resolves.toBe(-1);
-      await expect(redis.expire(key, 30)).resolves.toBe(1);
-      await expect(redis.ttl(key)).resolves.toBe(30);
-      await expect(redis.setex(other, 10, "b")).resolves.toBe("OK");
-      await expect(redis.ttl(other)).resolves.toBe(10);
+      expect([
+        await redis.ttl(key),
+        await redis.expire(key, 30),
+        await redis.ttl(key),
+      ]).toStrictEqual([-1, 1, 30]);
+      expect([
+        await redis.setex(other, 10, "b"),
+        await redis.ttl(other),
+      ]).toStrictEqual(["OK", 10]);
       // SET removes the expiry
       await redis.set(key, "b");
       await expect(redis.ttl(key)).resolves.toBe(-1);
@@ -290,8 +297,8 @@ describe("Upstash Redis commands", () => {
 
       await redis.set(key, { a: 1 });
 
-      await expect(redis.get(key)).resolves.toEqual({ a: 1 });
-      await expect(send("/", ["GET", key])).resolves.toEqual({
+      await expect(redis.get(key)).resolves.toStrictEqual({ a: 1 });
+      await expect(send("/", ["GET", key])).resolves.toStrictEqual({
         body: { result: '{"a":1}' },
         status: 200,
       });
@@ -302,10 +309,14 @@ describe("Upstash Redis commands", () => {
     it("adds, counts and removes members", async () => {
       const key = uniqueKey("set");
 
-      await expect(redis.sadd(key, "a", "b", "a")).resolves.toBe(2);
-      await expect(redis.scard(key)).resolves.toBe(2);
-      await expect(redis.srem(key, "a", "c")).resolves.toBe(1);
-      await expect(redis.smembers(key)).resolves.toEqual(["b"]);
+      expect([
+        await redis.sadd(key, "a", "b", "a"),
+        await redis.scard(key),
+      ]).toStrictEqual([2, 2]);
+      expect([
+        await redis.srem(key, "a", "c"),
+        await redis.smembers(key),
+      ]).toStrictEqual([1, ["b"]]);
       await expect(redis.srem(key, "b")).resolves.toBe(1);
       // An empty set is removed
       await expect(redis.exists(key)).resolves.toBe(0);
@@ -319,7 +330,7 @@ describe("Upstash Redis commands", () => {
       await expect(redis.hincrby(key, "a", 2)).resolves.toBe(2);
       await expect(redis.hincrby(key, "a", 3)).resolves.toBe(5);
       await expect(redis.hincrby(key, "b", 1)).resolves.toBe(1);
-      await expect(redis.hgetall(key)).resolves.toEqual({ a: 5, b: 1 });
+      await expect(redis.hgetall(key)).resolves.toStrictEqual({ a: 5, b: 1 });
       await expect(redis.hgetall(uniqueKey("none"))).resolves.toBeNull();
     });
   });
@@ -352,7 +363,7 @@ describe("Upstash Redis commands", () => {
       ).resolves.toBe(0);
       await expect(
         redis.zrange(key, 0, -1, { withScores: true })
-      ).resolves.toEqual(["a", 1, "b", 3]);
+      ).resolves.toStrictEqual(["a", 1, "b", 3]);
     });
 
     it("reads ranges by score, in reverse and with a limit", async () => {
@@ -368,18 +379,21 @@ describe("Upstash Redis commands", () => {
 
       await expect(
         redis.zrange(key, 2, "+inf", { byScore: true })
-      ).resolves.toEqual(["b", "c", "d"]);
+      ).resolves.toStrictEqual(["b", "c", "d"]);
       await expect(
         redis.zrange(key, "(4", 2, { byScore: true, rev: true })
-      ).resolves.toEqual(["c", "b"]);
+      ).resolves.toStrictEqual(["c", "b"]);
       await expect(
         redis.zrange(key, "-inf", "+inf", {
           byScore: true,
           count: 2,
           offset: 1,
         })
-      ).resolves.toEqual(["b", "c"]);
-      await expect(redis.zrange(key, -2, -1)).resolves.toEqual(["c", "d"]);
+      ).resolves.toStrictEqual(["b", "c"]);
+      await expect(redis.zrange(key, -2, -1)).resolves.toStrictEqual([
+        "c",
+        "d",
+      ]);
     });
 
     it("stores the union of sorted sets with weights", async () => {
@@ -401,7 +415,7 @@ describe("Upstash Redis commands", () => {
       ).resolves.toBe(2);
       await expect(
         redis.zrange(destination, 0, -1, { withScores: true })
-      ).resolves.toEqual(["a", 5, "b", 6]);
+      ).resolves.toStrictEqual(["a", 5, "b", 6]);
     });
   });
 
@@ -416,7 +430,8 @@ describe("Upstash Redis commands", () => {
       const talentKey = `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}${dateKey}`;
 
       // Like `increment` of apps/web
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < 2; i += 1) {
+        // oxlint-disable-next-line no-await-in-loop -- two clicks, one after the other
         await redis
           .multi()
           .zincrby(videoKey, 1, videoId)

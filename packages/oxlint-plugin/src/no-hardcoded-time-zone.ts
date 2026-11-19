@@ -11,11 +11,11 @@ const TIME_ZONE = "Asia/Tokyo";
  */
 export const noHardcodedTimeZone = {
   create(context) {
-    function check(node: ESTree.Node) {
+    const check = (node: ESTree.Node) => {
       if (getStringValue(node)?.includes(TIME_ZONE)) {
         context.report({ messageId: "hardcodedTimeZone", node });
       }
-    }
+    };
 
     return {
       Literal: check,

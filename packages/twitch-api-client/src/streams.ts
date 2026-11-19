@@ -1,5 +1,7 @@
-import { type BatchOptions, requestInBatches } from "./batches.js";
-import { type ClientOptions, getTwitchApiClient } from "./client.js";
+import { requestInBatches } from "./batches.js";
+import type { BatchOptions } from "./batches.js";
+import { getTwitchApiClient } from "./client.js";
+import type { ClientOptions } from "./client.js";
 import { mapStream } from "./mappers.js";
 import type { TwitchStream } from "./types.js";
 
@@ -10,8 +12,10 @@ interface GetStreamsByUserIdsOptions extends ClientOptions, BatchOptions {
 /**
  * Gets currently live streams for the given Helix user IDs.
  * Offline users are omitted from the response (same as Helix).
+ *
+ * @yields {TwitchStream} The live streams of the users
  */
-export async function* getStreamsByUserIds({
+export const getStreamsByUserIds = async function* getStreamsByUserIds({
   client = getTwitchApiClient(),
   schedule,
   userIds,
@@ -28,4 +32,4 @@ export async function* getStreamsByUserIds({
       yield mapped;
     }
   }
-}
+};

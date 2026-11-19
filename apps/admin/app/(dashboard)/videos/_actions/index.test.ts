@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import { setupActionTest } from "@/test/action-harness";
 import { createVideo } from "@/test/factories";
-import { postgresError, type SupabaseRequest } from "@/test/supabase";
+import { postgresError } from "@/test/supabase";
+import type { SupabaseRequest } from "@/test/supabase";
 
 import {
   restoreAction,
@@ -29,11 +30,10 @@ vi.spyOn(Temporal.Now, "instant").mockReturnValue(
 );
 
 /** PostgREST と同じく、関数に渡された動画の ID をすべて返す（すべて更新できた） */
-function allVideoIds(request: SupabaseRequest) {
-  return (request.body as { p_video_ids: string[] }).p_video_ids;
-}
+const allVideoIds = (request: SupabaseRequest) =>
+  (request.body as { p_video_ids: string[] }).p_video_ids;
 
-describe("restoreAction", () => {
+describe("restoreAction()", () => {
   it("should return error when videos are not found", async () => {
     supabase.on("select", "videos", []);
 
@@ -41,7 +41,7 @@ describe("restoreAction", () => {
       "30000000-0000-0000-0000-000000000001",
     ]);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: "動画が見つかりませんでした。",
       success: false,
     });
@@ -65,7 +65,7 @@ describe("restoreAction", () => {
       "30000000-0000-0000-0000-000000000002",
     ]);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       data: { skippedCount: 0, updatedCount: 2 },
       success: true,
     });
@@ -73,7 +73,7 @@ describe("restoreAction", () => {
     // is updated directly.
     expect(
       supabase.calls("rpc", "restore_videos").map(({ body }) => body)
-    ).toEqual([
+    ).toStrictEqual([
       {
         p_video_ids: [
           "30000000-0000-0000-0000-000000000001",
@@ -126,7 +126,7 @@ describe("restoreAction", () => {
       "30000000-0000-0000-0000-000000000002",
     ]);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       data: { skippedCount: 1, updatedCount: 1 },
       success: true,
     });
@@ -157,8 +157,14 @@ describe("restoreAction", () => {
       "30000000-0000-0000-0000-000000000001",
     ]);
 
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false });
-    expect(test.logger.error).toHaveBeenCalled();
+    expect(result).toStrictEqual({
+      error: ACTION_FAILED_ERROR,
+      success: false,
+    });
+    expect(test.logger.error).toHaveBeenCalledWith(
+      "Server Action が失敗しました",
+      expect.any(Object)
+    );
     test.expectNoAuditLog();
   });
 
@@ -169,11 +175,14 @@ describe("restoreAction", () => {
       "30000000-0000-0000-0000-000000000001",
     ]);
 
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false });
+    expect(result).toStrictEqual({
+      error: ACTION_FAILED_ERROR,
+      success: false,
+    });
   });
 });
 
-describe("softDeleteAction", () => {
+describe("softDeleteAction()", () => {
   it("should withdraw the videos with one function call and record their audit logs with one call", async () => {
     supabase.on("select", "videos", [
       createVideo({
@@ -192,7 +201,7 @@ describe("softDeleteAction", () => {
       "30000000-0000-0000-0000-000000000002",
     ]);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       data: { skippedCount: 0, updatedCount: 2 },
       success: true,
     });
@@ -200,7 +209,7 @@ describe("softDeleteAction", () => {
     // is updated directly.
     expect(
       supabase.calls("rpc", "soft_delete_videos").map(({ body }) => body)
-    ).toEqual([
+    ).toStrictEqual([
       {
         p_deleted_at: "2024-11-24T17:00:00Z",
         p_reason: "withdrawn",
@@ -257,7 +266,7 @@ describe("softDeleteAction", () => {
       "30000000-0000-0000-0000-000000000002",
     ]);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       data: { skippedCount: 1, updatedCount: 1 },
       success: true,
     });
@@ -284,7 +293,7 @@ describe("softDeleteAction", () => {
       "30000000-0000-0000-0000-000000000001",
     ]);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       data: { skippedCount: 1, updatedCount: 0 },
       success: true,
     });
@@ -306,12 +315,15 @@ describe("softDeleteAction", () => {
       "30000000-0000-0000-0000-000000000001",
     ]);
 
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR, success: false });
+    expect(result).toStrictEqual({
+      error: ACTION_FAILED_ERROR,
+      success: false,
+    });
     test.expectNoAuditLog();
   });
 });
 
-describe("toggleVisibilityAction", () => {
+describe("toggleVisibilityAction()", () => {
   const videos = [
     createVideo({
       id: "30000000-0000-0000-0000-000000000001",
@@ -340,12 +352,12 @@ describe("toggleVisibilityAction", () => {
    * PostgREST と同じく、`id=in.(...)` と `visible=eq.*` の両方に合う行を
    * 更新したものとして返す。
    */
-  function updatedRows(
+  const updatedRows = (
     request: SupabaseRequest,
     { changedIds = [] }: UpdateOptions = {}
-  ) {
+  ) => {
     const targetIds = (request.query["id"] ?? "")
-      .replace(/^in\.\(|\)$/g, "")
+      .replaceAll(/^in\.\(|\)$/gu, "")
       .split(",");
     const currentVisible = request.query["visible"] === "eq.true";
 
@@ -357,7 +369,7 @@ describe("toggleVisibilityAction", () => {
           video.visible === currentVisible
       )
       .map(({ id, title }) => ({ id, title }));
-  }
+  };
 
   it("should update videos in one query per target visibility", async () => {
     supabase.on("select", "videos", videos);
@@ -367,7 +379,7 @@ describe("toggleVisibilityAction", () => {
 
     const result = await toggleVisibilityAction(ids);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       data: { skippedCount: 0, updatedCount: 3 },
       success: true,
     });
@@ -377,7 +389,7 @@ describe("toggleVisibilityAction", () => {
         id: query["id"],
         visible: query["visible"],
       }))
-    ).toEqual([
+    ).toStrictEqual([
       {
         body: { visible: true },
         id: "in.(30000000-0000-0000-0000-000000000001)",
@@ -412,7 +424,7 @@ describe("toggleVisibilityAction", () => {
 
     const result = await toggleVisibilityAction(ids);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: "2 件を更新し、1 件は失敗しました。",
       success: false,
     });
@@ -457,7 +469,7 @@ describe("toggleVisibilityAction", () => {
 
     const result = await toggleVisibilityAction(ids);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: "動画の表示状態を更新できませんでした。",
       success: false,
     });
@@ -475,7 +487,7 @@ describe("toggleVisibilityAction", () => {
 
     const result = await toggleVisibilityAction(ids);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       error: "2 件を更新し、1 件は失敗しました。",
       success: false,
     });
@@ -498,7 +510,7 @@ describe.each([
   ["restoreAction", restoreAction],
   ["softDeleteAction", softDeleteAction],
   ["toggleVisibilityAction", toggleVisibilityAction],
-])("%s with invalid ids", (_, action) => {
+])("%s with invalid ids", (_name, action) => {
   it.each([
     ["an empty list", []],
     ["an id that is not a UUID", ["video-1"]],
@@ -521,7 +533,10 @@ describe.each([
   ])("should return error without updating anything for %s", async (_, ids) => {
     const result = await action(ids as string[]);
 
-    expect(result).toEqual({ error: INVALID_INPUT_ERROR, success: false });
+    expect(result).toStrictEqual({
+      error: INVALID_INPUT_ERROR,
+      success: false,
+    });
     expect(supabase.requests).toHaveLength(0);
     test.expectNoAuditLog();
     test.expectNotRevalidated();

@@ -16,9 +16,7 @@ describe("stdout", () => {
   it("should not write to stdout when registering the server", async () => {
     vi.stubEnv("ENABLE_MSW", "true");
 
-    const stdoutWrite = vi
-      .spyOn(process.stdout, "write")
-      .mockImplementation(() => true);
+    const stdoutWrite = vi.spyOn(process.stdout, "write").mockReturnValue(true);
     const consoleLog = vi.spyOn(console, "log");
     const consoleInfo = vi.spyOn(console, "info");
     vi.spyOn(console, "error").mockImplementation(() => {});

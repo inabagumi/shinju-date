@@ -5,14 +5,10 @@ import { ExternalLink, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { useActionToast } from "@/components/action-toast";
-import { type ActionResult, ConfirmDialog } from "@/components/confirm-dialog";
-import {
-  ErrorMessage,
-  FormField,
-  type FormState,
-  Input,
-  Label,
-} from "@/components/form";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import type { ActionResult } from "@/components/confirm-dialog";
+import { ErrorMessage, FormField, Input, Label } from "@/components/form";
+import type { FormState } from "@/components/form";
 import { FormDialog } from "@/components/form-dialog";
 import { Panel } from "@/components/panel";
 
@@ -82,7 +78,7 @@ export interface LinkedAccountManagerProps<
  * タレントに紐づける、外部のサービスのアカウントの管理。
  * 追加のダイアログ、カードの一覧、削除の確認を持つ
  */
-export function LinkedAccountManager<T>({
+export const LinkedAccountManager = <T,>({
   talentId,
   accounts,
   isDeleted,
@@ -91,7 +87,7 @@ export function LinkedAccountManager<T>({
   addAction,
   removeAction,
   getAccount,
-}: LinkedAccountManagerProps<T>) {
+}: LinkedAccountManagerProps<T>) => {
   // Kept after the dialog closes so that its content stays while it fades out.
   const [removalTarget, setRemovalTarget] = useState<LinkedAccount | null>(
     null
@@ -241,4 +237,4 @@ export function LinkedAccountManager<T>({
       </ConfirmDialog>
     </div>
   );
-}
+};

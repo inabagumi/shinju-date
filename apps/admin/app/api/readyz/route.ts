@@ -8,7 +8,7 @@ import {
 import { getRedisClient } from "@/lib/redis";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
-export async function GET(): Promise<Response> {
+export const GET = async (): Promise<Response> => {
   try {
     const supabaseClient = await createSupabaseServerClient();
     const redisClient = getRedisClient();
@@ -25,4 +25,4 @@ export async function GET(): Promise<Response> {
       message: "Health check failed",
     });
   }
-}
+};

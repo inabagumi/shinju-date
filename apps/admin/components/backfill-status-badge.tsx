@@ -1,4 +1,5 @@
-import { Badge, type BadgeProps } from "@shinju-date/ui";
+import { Badge } from "@shinju-date/ui";
+import type { BadgeProps } from "@shinju-date/ui";
 import type { BackfillRunJobStatus } from "@shinju-date/video-backfill";
 
 /**
@@ -22,7 +23,7 @@ interface BackfillStatusBadgeProps {
 }
 
 /** 過去動画の取り込みの状態を示すバッジ */
-export function BackfillStatusBadge({ status }: BackfillStatusBadgeProps) {
+export const BackfillStatusBadge = ({ status }: BackfillStatusBadgeProps) => {
   if (status === null) {
     return <Badge variant="neutral">未実行</Badge>;
   }
@@ -30,4 +31,4 @@ export function BackfillStatusBadge({ status }: BackfillStatusBadgeProps) {
   const { label, variant } = BACKFILL_STATUS_LABELS[status];
 
   return <Badge variant={variant}>{label}</Badge>;
-}
+};

@@ -5,7 +5,8 @@ import { cacheLife } from "next/cache";
 import { getRedisClient } from "@/lib/redis";
 
 import { listDatesInRange } from "./list-dates-in-range";
-import { type PeriodQuery, toDateRange } from "./period";
+import { toDateRange } from "./period";
+import type { PeriodQuery } from "./period";
 import { dailyKeys, sumScores } from "./redis";
 
 export interface DailyClickVolume {
@@ -17,9 +18,9 @@ export interface DailyClickVolume {
  * Get daily click volume for a date range
  * @param query.range - The date range (both ends inclusive)
  */
-export async function getClickVolume({
+export const getClickVolume = async ({
   range,
-}: PeriodQuery): Promise<DailyClickVolume[]> {
+}: PeriodQuery): Promise<DailyClickVolume[]> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -43,13 +44,11 @@ export async function getClickVolume({
     }
     const results = await pipeline.exec<unknown[][]>();
 
-    const volumes = dates.map((date, index): DailyClickVolume => {
-      return {
-        // The sum of all video clicks for this day
-        clicks: sumScores(results[index]),
-        date: date.toString(),
-      };
-    });
+    const volumes = dates.map((date, index): DailyClickVolume => ({
+      // The sum of all video clicks for this day
+      clicks: sumScores(results[index]),
+      date: date.toString(),
+    }));
 
     return volumes;
   } catch (error) {
@@ -60,4 +59,4 @@ export async function getClickVolume({
     });
     return [];
   }
-}
+};

@@ -1,26 +1,20 @@
 "use server";
 
 import { logger } from "@shinju-date/logger";
-import {
-  type BackfillProvider,
-  BackfillQueue,
-} from "@shinju-date/video-backfill";
+import { BackfillQueue } from "@shinju-date/video-backfill";
+import type { BackfillProvider } from "@shinju-date/video-backfill";
 
 import { PLATFORM_LABELS } from "@/components/platform-badge";
-import {
-  ActionError,
-  type ActionResult,
-  adminAction,
-  parseActionInput,
-} from "@/lib/action";
+import { ActionError, adminAction, parseActionInput } from "@/lib/action";
+import type { ActionResult } from "@/lib/action";
 import { createAuditLog } from "@/lib/audit-log";
 import { getRedisClient } from "@/lib/redis";
 
 import {
   getTalentAccounts,
   readVideoBackfillStatus,
-  type VideoBackfillStatus,
 } from "../_lib/get-video-backfill-status";
+import type { VideoBackfillStatus } from "../_lib/get-video-backfill-status";
 import { backfillProviderSchema, talentIdSchema } from "../_lib/talent-schema";
 
 /** 過去動画の取り込みをキューに追加できたときに、画面に知らせること */
@@ -74,6 +68,7 @@ export const requestVideoBackfillAction = adminAction(
     // ones that were queued are recorded in any case.
     for (const account of accounts) {
       try {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- queues the accounts one at a time in order, so each failure is counted and logged separately
         const result = await queue.enqueue({
           accountId: account.accountId,
           provider,
@@ -85,7 +80,7 @@ export const requestVideoBackfillAction = adminAction(
           enqueued.push(account);
         }
       } catch (error) {
-        failed++;
+        failed += 1;
         logger.error("過去動画の取り込みをキューに追加できませんでした", {
           accountId: account.accountId,
           error,
@@ -114,12 +109,14 @@ export const requestVideoBackfillAction = adminAction(
     }
 
     const skipped = accounts.length - enqueued.length - failed;
-    const message =
-      skipped > 0
-        ? `${label}の過去動画の取り込みを${enqueued.length}件キューに追加しました（実行中の${skipped}件は除く）。`
-        : failed > 0
-          ? `${label}の過去動画の取り込みを${enqueued.length}件キューに追加しました。`
-          : `${label}の過去動画の取り込みをキューに追加しました。数分以内に開始されます。`;
+    let message: string;
+    if (skipped > 0) {
+      message = `${label}の過去動画の取り込みを${enqueued.length}件キューに追加しました（実行中の${skipped}件は除く）。`;
+    } else if (failed > 0) {
+      message = `${label}の過去動画の取り込みを${enqueued.length}件キューに追加しました。`;
+    } else {
+      message = `${label}の過去動画の取り込みをキューに追加しました。数分以内に開始されます。`;
+    }
 
     return {
       data: { message },

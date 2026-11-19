@@ -16,7 +16,7 @@ interface Props {
 /**
  * Repeat Search Rate Widget Component
  */
-function RepeatSearchRateWidgetComponent({
+const RepeatSearchRateWidgetComponent = ({
   repeatRate,
   dateRange,
   selectedDate,
@@ -24,7 +24,7 @@ function RepeatSearchRateWidgetComponent({
   repeatRate: number | null;
   dateRange: { startDate: string; endDate: string };
   selectedDate: string | null;
-}) {
+}) => {
   const rating =
     repeatRate === null ? null : rate(repeatRate, REPEAT_SEARCH_RATE_RATINGS);
 
@@ -63,12 +63,12 @@ function RepeatSearchRateWidgetComponent({
       />
     </div>
   );
-}
+};
 
 /**
  * Async server component that fetches and displays repeat search rate widget
  */
-export async function RepeatSearchRateWidget({ searchParams }: Props) {
+export const RepeatSearchRateWidget = async ({ searchParams }: Props) => {
   const { dateRange, selectedDate } = await searchParams;
 
   const range = resolvePeriod({ dateRange, selectedDate });
@@ -81,4 +81,4 @@ export async function RepeatSearchRateWidget({ searchParams }: Props) {
       selectedDate={selectedDate}
     />
   );
-}
+};

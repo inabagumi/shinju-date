@@ -19,9 +19,9 @@ import {
   TalentVideos,
 } from "./_components/talent-videos";
 
-export async function generateMetadata({
+export const generateMetadata = async ({
   params,
-}: Pick<PageProps<"/talents/[id]">, "params">): Promise<Metadata> {
+}: Pick<PageProps<"/talents/[id]">, "params">): Promise<Metadata> => {
   const { id } = await params;
   const talent = await fetchTalent(id);
 
@@ -44,7 +44,7 @@ export async function generateMetadata({
       },
     },
   };
-}
+};
 
 /**
  * タレント詳細。`params` は Suspense の中の各部品で読み、外側は静的なシェルにする。

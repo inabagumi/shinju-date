@@ -1,8 +1,8 @@
-import {
-  getVideoExternalUrl,
-  type TwitchVideoType,
-  type VideoPlatform,
-  type VideoStatus,
+import { getVideoExternalUrl } from "@shinju-date/helpers";
+import type {
+  TwitchVideoType,
+  VideoPlatform,
+  VideoStatus,
 } from "@shinju-date/helpers";
 
 /** What a YouTube video needs to be linked to */
@@ -34,8 +34,8 @@ export interface VideoUrlSource {
  * The URL of a video on YouTube or Twitch, `null` when it cannot be made (the
  * video has no ID of its platform).
  */
-export function getVideoUrl(video: VideoUrlSource): string | null {
-  return getVideoExternalUrl({
+export const getVideoUrl = (video: VideoUrlSource): string | null =>
+  getVideoExternalUrl({
     platform: video.platform,
     status: video.status,
     twitchLoginName: video.twitch_video?.twitch_user.twitch_login_name,
@@ -43,12 +43,10 @@ export function getVideoUrl(video: VideoUrlSource): string | null {
     twitchVideoType: video.twitch_video?.type,
     youtubeVideoId: video.youtube_video?.youtube_video_id,
   });
-}
 
 /**
  * Whether a video can be linked to (`getVideoUrl`). The site leaves out the
  * videos that cannot, before counting them.
  */
-export function hasPlatformSource(video: VideoUrlSource): boolean {
-  return getVideoUrl(video) !== null;
-}
+export const hasPlatformSource = (video: VideoUrlSource): boolean =>
+  getVideoUrl(video) !== null;

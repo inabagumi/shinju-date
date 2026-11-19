@@ -10,14 +10,14 @@ interface FormatTimeOptions {
  * The output does not depend on the Temporal implementation, so it can be
  * used safely in components rendered on both the server and the client.
  */
-export function formatTime(
+export const formatTime = (
   timestamp: Temporal.ZonedDateTime | Temporal.PlainTime,
   options: FormatTimeOptions = {}
-): string {
+): string => {
   const { includeSeconds = false } = options;
   const hourAndMinute = `${padNumber(timestamp.hour)}:${padNumber(timestamp.minute)}`;
 
   return includeSeconds
     ? `${hourAndMinute}:${padNumber(timestamp.second)}`
     : hourAndMinute;
-}
+};

@@ -1,58 +1,65 @@
+import type * as Sentry from "@sentry/nextjs";
 import { TIME_ZONE } from "@shinju-date/constants";
+import type * as DashboardStats from "@shinju-date/dashboard-stats";
 import type {
   AnalyticsSummary,
   SummaryStats,
 } from "@shinju-date/dashboard-stats";
+import type { Redis } from "@upstash/redis";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type * as Lock from "@/lib/lock";
+import type { TypedSupabaseClient } from "@/lib/supabase";
+
+const { createAfterMock, createLoggerMock } = await vi.hoisted(
+  () => import("@/test/mocks")
+);
+
 const mockSupabaseClient = {
-  from: vi.fn(),
-};
+  from: vi.fn<TypedSupabaseClient["from"]>(),
+} as Partial<TypedSupabaseClient> as TypedSupabaseClient;
 
 const mockRedisClient = {
-  set: vi.fn(),
+  set: vi.fn<Redis["set"]>(),
 };
 
-const acquireLock = vi.fn();
-const releaseLock = vi.fn();
+const acquireLock = vi.fn<typeof Lock.acquireLock>();
+const releaseLock = vi.fn<typeof Lock.releaseLock>();
 
-const mockCountSummaryStats = vi.fn();
-const mockCollectAnalyticsSummary = vi.fn();
+const mockCountSummaryStats = vi.fn<typeof DashboardStats.countSummaryStats>();
+const mockCollectAnalyticsSummary =
+  vi.fn<typeof DashboardStats.collectAnalyticsSummary>();
 
-vi.mock("@/lib/supabase", () => ({
+vi.mock(import("@/lib/supabase"), () => ({
   supabaseClient: mockSupabaseClient,
 }));
 
-vi.mock("@/lib/redis", () => ({
-  redisClient: mockRedisClient,
+vi.mock(import("@/lib/redis"), () => ({
+  redisClient: mockRedisClient as Partial<Redis> as Redis,
 }));
 
-vi.mock("@/lib/lock", () => ({ acquireLock, releaseLock }));
+vi.mock(import("@/lib/lock"), () => ({ acquireLock, releaseLock }));
 
 // The counts and the analytics are tested in `@shinju-date/dashboard-stats`.
 // The snapshots are written by the real functions of the package, so that the
 // keys and the values saved to Redis are checked here.
-vi.mock("@shinju-date/dashboard-stats", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@shinju-date/dashboard-stats")>()),
+vi.mock(import("@shinju-date/dashboard-stats"), async (importOriginal) => ({
+  ...(await importOriginal()),
   collectAnalyticsSummary: mockCollectAnalyticsSummary,
   countSummaryStats: mockCountSummaryStats,
 }));
 
-vi.mock("@sentry/nextjs", () => ({
-  captureCheckIn: vi.fn(() => "mock-check-in-id"),
-  captureException: vi.fn(),
-  flush: vi.fn(),
+vi.mock(import("@sentry/nextjs"), () => ({
+  captureCheckIn: vi.fn<typeof Sentry.captureCheckIn>(() => "mock-check-in-id"),
+  captureException: vi.fn<typeof Sentry.captureException>(),
+  flush: vi.fn<typeof Sentry.flush>(),
 }));
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
+vi.mock(import("@shinju-date/logger"), () => ({
+  logger: createLoggerMock(),
 }));
 
-vi.mock("next/server", () => ({
-  after: vi.fn((fn: () => void) => {
-    fn();
-  }),
-}));
+vi.mock(import("next/server"), () => ({ after: createAfterMock() }));
 
 const summaryStats: SummaryStats = {
   deletedVideos: 10,
@@ -73,7 +80,7 @@ const analyticsSummary: AnalyticsSummary = {
 const SNAPSHOT_TTL_SECONDS = 30 * 24 * 60 * 60;
 
 /** Run the route as if it is `instant` now. */
-async function runAt(instant: string): Promise<Response> {
+const runAt = async (instant: string): Promise<Response> => {
   vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockImplementation(
     (timeZone = TIME_ZONE) =>
       Temporal.Instant.from(instant).toZonedDateTimeISO(timeZone)
@@ -86,7 +93,7 @@ async function runAt(instant: string): Promise<Response> {
       method: "POST",
     })
   );
-}
+};
 
 describe("stats/snapshot route", () => {
   beforeEach(() => {

@@ -1,6 +1,7 @@
 import type { Enums } from "@shinju-date/database";
 
-import { ACTION_FAILED_ERROR_MESSAGE, type ActionResult } from "@/lib/action";
+import { ACTION_FAILED_ERROR_MESSAGE } from "@/lib/action";
+import type { ActionResult } from "@/lib/action";
 
 type Platform = Enums<"platform_type">;
 
@@ -38,36 +39,44 @@ const PLATFORMS = {
 } as const satisfies Record<Platform, Record<string, string>>;
 
 /** どのアカウントも、プラットフォームで見つからなかった（同期できなかった）ときの文 */
-export function accountsNotFoundError(platform: Platform): string {
+export const accountsNotFoundError = (platform: Platform): string => {
   const { account, label } = PLATFORMS[platform];
 
   return `${label}で${account}が見つかりませんでした。${account}IDが正しいか確認してください。`;
-}
+};
 
 /** 1つのプラットフォームだけを同期したときの結果を、画面の文にする。 */
-export function toSyncResult(
+export const toSyncResult = (
   platform: Platform,
   outcome: PlatformSyncOutcome
-): SyncResult {
+): SyncResult => {
   const { account, label, unchanged } = PLATFORMS[platform];
 
   switch (outcome.status) {
-    case "no_accounts":
+    case "no_accounts": {
       return {
         error: `このタレントに紐づく${label}${account}はありません。`,
         success: false,
       };
-    case "failed":
+    }
+    case "failed": {
       return {
         error: outcome.error ?? ACTION_FAILED_ERROR_MESSAGE,
         success: false,
       };
-    case "unchanged":
+    }
+    case "unchanged": {
       return { data: { message: unchanged, unchanged: true }, success: true };
-    case "updated":
+    }
+    case "updated": {
       return { data: { unchanged: false }, success: true };
+    }
+    default: {
+      const unexpected: never = outcome;
+      throw new Error(`Unknown sync outcome: ${JSON.stringify(unexpected)}`);
+    }
   }
-}
+};
 
 /**
  * まとめて同期したときの結果を、プラットフォームごとに1行の文にする。
@@ -78,9 +87,9 @@ export function toSyncResult(
  * - すべてのプラットフォームが失敗したら `success: false` とし、`error` に文を入れる
  * - `unchanged` は、どのプラットフォームも更新されなかったときに `true`
  */
-export function toSyncSummary(
+export const toSyncSummary = (
   outcomes: readonly (readonly [Platform, PlatformSyncOutcome])[]
-): SyncResult {
+): SyncResult => {
   const succeeded: string[] = [];
   const failed: string[] = [];
 
@@ -88,17 +97,22 @@ export function toSyncSummary(
     const { account, label } = PLATFORMS[platform];
 
     switch (outcome.status) {
-      case "no_accounts":
-        break;
-      case "failed":
+      case "failed": {
         failed.push(`${label}: 同期に失敗しました。${outcome.error ?? ""}`);
         break;
-      case "unchanged":
+      }
+      case "unchanged": {
         succeeded.push(`${label}: ${account}情報は既に最新です。`);
         break;
-      case "updated":
+      }
+      case "updated": {
         succeeded.push(`${label}: ${account}情報を同期しました。`);
         break;
+      }
+      default: {
+        // "no_accounts": a platform without accounts is not written
+        break;
+      }
     }
   }
 
@@ -121,4 +135,4 @@ export function toSyncSummary(
     success: true,
     ...(failed.length > 0 ? { warnings: failed } : {}),
   };
-}
+};

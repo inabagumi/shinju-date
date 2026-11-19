@@ -1,8 +1,6 @@
 import { TIME_ZONE } from "@shinju-date/constants";
-import {
-  readSummarySnapshot,
-  type SummaryStats,
-} from "@shinju-date/dashboard-stats";
+import { readSummarySnapshot } from "@shinju-date/dashboard-stats";
+import type { SummaryStats } from "@shinju-date/dashboard-stats";
 import { formatDate, formatDateKey } from "@shinju-date/temporal-fns";
 import { cacheLife } from "next/cache";
 
@@ -20,9 +18,9 @@ export interface HistoricalStatsEntry extends SummaryStats {
  * @returns Array of historical stats, ordered from oldest to newest. Days
  * without a snapshot are left out.
  */
-export async function getHistoricalStats(
+export const getHistoricalStats = async (
   days = 7
-): Promise<HistoricalStatsEntry[]> {
+): Promise<HistoricalStatsEntry[]> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -49,4 +47,4 @@ export async function getHistoricalStats(
   );
 
   return entries.filter(isNonNullable);
-}
+};

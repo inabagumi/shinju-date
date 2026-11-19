@@ -7,16 +7,16 @@ import {
 } from "../_actions";
 import { getVideoActionSuccessText, runVideoAction } from "./video-actions";
 
-vi.mock("../_actions", () => ({
-  restoreAction: vi.fn(),
-  softDeleteAction: vi.fn(),
-  toggleVisibilityAction: vi.fn(),
+vi.mock(import("../_actions"), () => ({
+  restoreAction: vi.fn<typeof restoreAction>(),
+  softDeleteAction: vi.fn<typeof softDeleteAction>(),
+  toggleVisibilityAction: vi.fn<typeof toggleVisibilityAction>(),
 }));
 
 const targetA = { id: "video-a", title: "Video A" };
 const targetB = { id: "video-b", title: "Video B" };
 
-describe("runVideoAction", () => {
+describe(runVideoAction, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -33,7 +33,7 @@ describe("runVideoAction", () => {
       const result = await runVideoAction(action, [targetA, targetB]);
 
       expect(fn).toHaveBeenCalledWith(["video-a", "video-b"]);
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         action,
         error: undefined,
         success: true,
@@ -69,7 +69,7 @@ describe("runVideoAction", () => {
   });
 });
 
-describe("getVideoActionSuccessText", () => {
+describe(getVideoActionSuccessText, () => {
   it("tells the number of toggled videos", () => {
     expect(
       getVideoActionSuccessText({

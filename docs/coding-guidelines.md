@@ -32,9 +32,9 @@ interface ButtonProps {
   disabled?: boolean;
 }
 
-export function Button({ label, onClick, disabled }: ButtonProps) {
+export const Button = ({ label, onClick, disabled }: ButtonProps) => {
   // ...
-}
+};
 
 // 関数のオプション
 interface FetchOptions {
@@ -43,9 +43,9 @@ interface FetchOptions {
   body?: unknown;
 }
 
-async function fetchData(url: string, options?: FetchOptions) {
+const fetchData = async (url: string, options?: FetchOptions) => {
   // ...
-}
+};
 
 // 拡張の例
 interface BaseProps {
@@ -247,21 +247,21 @@ refactor(admin): convert type definitions to interface
 
 ```typescript
 // ✅ 正しい
-async function getTalent(id: string) {
+const getTalent = async (id: string) => {
   "use cache: remote";
 
   cacheLife("hours");
   cacheTag(CACHE_TAGS.TALENTS);
 
   return await db.query(/* ... */);
-}
+};
 
 // ❌ 間違い: ディレクティブと設定の後に空行がない
-async function getTalent(id: string) {
+const getTalent = async (id: string) => {
   "use cache: remote";
   cacheLife("hours");
   return await db.query(/* ... */);
-}
+};
 ```
 
 ### どこにキャッシュを付けるか
@@ -271,7 +271,7 @@ async function getTalent(id: string) {
 - 公開データには `'use cache: remote'`、認証が必要なデータには `'use cache: private'`（ユーザーごと）を使う
 
 ```typescript
-async function getTalent(id: string) {
+const getTalent = async (id: string) => {
   'use cache: private'
 
   cacheLife('minutes')
@@ -279,17 +279,17 @@ async function getTalent(id: string) {
   return await db.query(/* ... */)
 }
 
-export async function generateMetadata({
+export const generateMetadata = async ({
   params,
-}: Pick<PageProps<'/talents/[id]'>, 'params'>): Promise<Metadata> {
+}: Pick<PageProps<'/talents/[id]'>, 'params'>): Promise<Metadata> => {
   const { id } = await params
   const talent = await getTalent(id) // 同じキャッシュを使う
   return { title: talent?.name }
 }
 
-async function TalentName({
+const TalentName = async ({
   params,
-}: Pick<PageProps<'/talents/[id]'>, 'params'>) {
+}: Pick<PageProps<'/talents/[id]'>, 'params'>) => {
   const { id } = await params
   const talent = await getTalent(id) // 同じキャッシュを使う
   return <h1>{talent?.name}</h1>
@@ -312,9 +312,9 @@ async function TalentName({
 
 ```typescript
 // ✅ 正しい: ページは async にせず、params を await しない
-export default function TalentDetailPage({
+const TalentDetailPage = ({
   params,
-}: PageProps<'/talents/[id]'>) {
+}: PageProps<'/talents/[id]'>) => {
   return (
     <div className="container mx-auto p-4">
       {/* 静的な内容: シェルとして、すぐにレンダリングされる */}
@@ -332,9 +332,11 @@ export default function TalentDetailPage({
   )
 }
 
-async function TalentProfile({
+export default TalentDetailPage
+
+const TalentProfile = async ({
   params,
-}: Pick<PageProps<'/talents/[id]'>, 'params'>) {
+}: Pick<PageProps<'/talents/[id]'>, 'params'>) => {
   const { id } = await params // Suspense の中で await する
   const talent = await getTalent(id) // 'use cache' 付きの取得関数
 
@@ -346,23 +348,27 @@ async function TalentProfile({
 }
 
 // ❌ 間違い: ページで params を await している
-export default async function TalentDetailPage({
+const TalentDetailPage = async ({
   params,
-}: PageProps<'/talents/[id]'>) {
+}: PageProps<'/talents/[id]'>) => {
   const { id } = await params
   // ...
 }
 
+export default TalentDetailPage
+
 // ❌ 間違い: ページ全体を Suspense で囲んでいる
-export default function TalentDetailPage({
+const TalentDetailPage = ({
   params,
-}: PageProps<'/talents/[id]'>) {
+}: PageProps<'/talents/[id]'>) => {
   return (
     <Suspense fallback={<PageSkeleton />}>
       <TalentDetailPageContent params={params} />
     </Suspense>
   )
 }
+
+export default TalentDetailPage
 ```
 
 ### `notFound()` とステータスコード

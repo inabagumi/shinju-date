@@ -3,7 +3,8 @@
 import type { Tables } from "@shinju-date/database";
 import { Button } from "@shinju-date/ui";
 import { Loader2, Trash2 } from "lucide-react";
-import { createContext, type ReactNode, use } from "react";
+import { createContext, use, useCallback } from "react";
+import type { ReactNode } from "react";
 
 import { useServerAction } from "@/lib/use-server-action";
 
@@ -17,7 +18,7 @@ interface SyncVideoButtonProps {
   platform: Tables<"videos">["platform"];
 }
 
-function SyncVideoButton({ videoId, platform }: SyncVideoButtonProps) {
+const SyncVideoButton = ({ videoId, platform }: SyncVideoButtonProps) => {
   const { isPending, run } = useServerAction(syncVideoAction, {
     errorText: "同期に失敗しました。",
     successText: ({ data }) => data?.message ?? "動画情報を同期しました。",
@@ -37,7 +38,7 @@ function SyncVideoButton({ videoId, platform }: SyncVideoButtonProps) {
       {isPending ? "同期中..." : label}
     </Button>
   );
-}
+};
 
 interface VideoActionsProps {
   video: Pick<
@@ -51,7 +52,7 @@ const VideoActionContext = createContext<
   ((action: VideoAction) => void) | null
 >(null);
 
-function useOpenVideoActionDialog() {
+const useOpenVideoActionDialog = () => {
   const openDialog = use(VideoActionContext);
 
   if (!openDialog) {
@@ -61,7 +62,7 @@ function useOpenVideoActionDialog() {
   }
 
   return openDialog;
-}
+};
 
 interface VideoActionsProviderProps extends VideoActionsProps {
   children: ReactNode;
@@ -72,17 +73,20 @@ interface VideoActionsProviderProps extends VideoActionsProps {
  * 中のボタンから開けるようにする。通常の操作と危険な操作を別の場所に置けるよう、
  * ボタンとは分けている。
  */
-export function VideoActionsProvider({
+export const VideoActionsProvider = ({
   children,
   video,
-}: VideoActionsProviderProps) {
+}: VideoActionsProviderProps) => {
   const { dialogProps, openDialog } = useVideoAction();
 
-  const openVideoActionDialog = (action: VideoAction) => {
-    openDialog(action, [
-      { id: video.id, title: video.title, visible: video.visible },
-    ]);
-  };
+  const openVideoActionDialog = useCallback(
+    (action: VideoAction) => {
+      openDialog(action, [
+        { id: video.id, title: video.title, visible: video.visible },
+      ]);
+    },
+    [openDialog, video.id, video.title, video.visible]
+  );
 
   return (
     <VideoActionContext value={openVideoActionDialog}>
@@ -90,10 +94,10 @@ export function VideoActionsProvider({
       <VideoActionConfirmDialog {...dialogProps} />
     </VideoActionContext>
   );
-}
+};
 
 /** 見出しの右端に置く通常の操作（同期・表示の切り替え・復元） */
-export function VideoActionsButtons({ video }: VideoActionsProps) {
+export const VideoActionsButtons = ({ video }: VideoActionsProps) => {
   const openDialog = useOpenVideoActionDialog();
   const isDeleted = video.deleted_at !== null;
 
@@ -113,10 +117,10 @@ export function VideoActionsButtons({ video }: VideoActionsProps) {
       <SyncVideoButton platform={video.platform} videoId={video.id} />
     </>
   );
-}
+};
 
 /** ページの末尾に、通常の操作と離して置く削除のボタン */
-export function VideoDeleteButton() {
+export const VideoDeleteButton = () => {
   const openDialog = useOpenVideoActionDialog();
 
   return (
@@ -125,4 +129,4 @@ export function VideoDeleteButton() {
       動画を削除
     </Button>
   );
-}
+};

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { ExternalVideoLink, getExternalVideoUrl } from "./external-video-link";
 
-describe("ExternalVideoLink", () => {
+describe(ExternalVideoLink, () => {
   it("links a YouTube video to its watch page in a new tab", () => {
     render(
       <ExternalVideoLink

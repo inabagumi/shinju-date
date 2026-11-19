@@ -1,4 +1,4 @@
-import { DatabaseError } from "../internal/errors.js";
+import { DatabaseError } from "../internal/database-error.js";
 import { compareVideoFields } from "../internal/operations/diff-video-fields.js";
 import { refreshSavedVideo } from "../internal/operations/refresh-saved-videos.js";
 import type {
@@ -12,15 +12,15 @@ import { createTwitchPlatform } from "./platform.js";
 import { isLivePlaceholder } from "./saved-video.js";
 import {
   refreshTwitchBroadcast,
-  type SavedLiveVideo,
   selectSavedLiveVideos,
   toSavedLiveVideo,
 } from "./sync-live.js";
+import type { SavedLiveVideo } from "./sync-live.js";
 
-async function findSavedVideo(
+const findSavedVideo = async (
   supabaseClient: TypedSupabaseClient,
   videoId: string
-): Promise<SavedLiveVideo | null> {
+): Promise<SavedLiveVideo | null> => {
   const { data, error } = await selectSavedLiveVideos(supabaseClient)
     .eq("id", videoId)
     .eq("platform", "twitch")
@@ -32,7 +32,7 @@ async function findSavedVideo(
   }
 
   return data && toSavedLiveVideo(data);
-}
+};
 
 /**
  * Brings one saved Twitch video in line with Twitch, the same way the
@@ -46,10 +46,10 @@ async function findSavedVideo(
  * Unlike the scheduled operations, the video is refreshed whatever the status
  * of its talent.
  */
-export async function refreshTwitchVideo(
+export const refreshTwitchVideo = async (
   context: CrawlContext<TwitchFetcher>,
   videoId: string
-): Promise<RefreshVideoResult> {
+): Promise<RefreshVideoResult> => {
   const { logger, supabaseClient } = context;
   const saved = await findSavedVideo(supabaseClient, videoId);
 
@@ -101,4 +101,4 @@ export async function refreshTwitchVideo(
   });
 
   return { ...diff, status: "updated", title: current.title };
-}
+};

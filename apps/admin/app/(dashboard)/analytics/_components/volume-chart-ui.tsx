@@ -8,12 +8,12 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  type MouseHandlerDataParam,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import type { MouseHandlerDataParam } from "recharts";
 
 import { ChartTooltipContent } from "../../_components/chart-tooltip-content";
 import type { ChartSeries } from "../../_lib/chart-series";
@@ -35,18 +35,20 @@ interface VolumeChartUIProps {
   variant: VolumeChartVariant;
 }
 
-function formatTooltipValue(value: number): string {
-  return `${formatNumber(value)} 回`;
-}
+const formatTooltipValue = (value: number): string =>
+  `${formatNumber(value)} 回`;
 
-function formatTick(value: string): string {
-  return formatDateLabel(value, { includeYear: false });
-}
+const formatTick = (value: string): string =>
+  formatDateLabel(value, { includeYear: false });
 
 /**
  * 日ごとの件数のグラフ。日を選ぶと、URL の `date` を書き換える。
  */
-export function VolumeChartUI({ data, series, variant }: VolumeChartUIProps) {
+export const VolumeChartUI = ({
+  data,
+  series,
+  variant,
+}: VolumeChartUIProps) => {
   const { toggleDate } = useSelectedDateParam();
   // 同じページに複数のグラフがあっても、グラデーションの ID が重ならないようにする
   const gradientIdPrefix = useId();
@@ -151,4 +153,4 @@ export function VolumeChartUI({ data, series, variant }: VolumeChartUIProps) {
       </ResponsiveContainer>
     </div>
   );
-}
+};

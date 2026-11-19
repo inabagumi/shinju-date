@@ -23,7 +23,7 @@ const KATAKANA_GROUPS = [
  * 頭文字のグループの名前。カタカナは行の最初の文字にし、それ以外は大文字にした
  * 最初の文字にする
  */
-export function getInitialGroup(text: string): string {
+export const getInitialGroup = (text: string): string => {
   const firstChar = text.charAt(0).toUpperCase();
 
   for (const { end, group, start } of KATAKANA_GROUPS) {
@@ -33,16 +33,16 @@ export function getInitialGroup(text: string): string {
   }
 
   return firstChar;
-}
+};
 
 /**
  * 用語、読み方、類義語のどれかに検索語を含む用語（大文字と小文字を区別しない）。
  * 検索語がなければ、すべての用語
  */
-export function filterTerms<T extends GroupableTerm>(
+export const filterTerms = <T extends GroupableTerm>(
   terms: readonly T[],
   search: string | undefined
-): T[] {
+): T[] => {
   if (!search) {
     return [...terms];
   }
@@ -55,7 +55,7 @@ export function filterTerms<T extends GroupableTerm>(
       term.readings.some((reading) => reading.toLowerCase().includes(query)) ||
       term.synonyms.some((synonym) => synonym.toLowerCase().includes(query))
   );
-}
+};
 
 /** 頭文字のグループと、そのグループの用語 */
 export interface TermGroup<T> {
@@ -63,13 +63,24 @@ export interface TermGroup<T> {
   terms: T[];
 }
 
+/** Compares two strings by their UTF-16 code units, like the default `sort()` */
+const compareCodeUnits = (a: string, b: string): number => {
+  if (a < b) {
+    return -1;
+  }
+  if (a > b) {
+    return 1;
+  }
+  return 0;
+};
+
 /**
  * 用語を、最初の読み方（なければ用語）の頭文字でグループに分ける。グループは
  * 名前の順に並べ、グループの中は渡した順のままにする
  */
-export function groupTermsByInitial<T extends GroupableTerm>(
+export const groupTermsByInitial = <T extends GroupableTerm>(
   terms: readonly T[]
-): TermGroup<T>[] {
+): TermGroup<T>[] => {
   const groups = new Map<string, T[]>();
 
   for (const term of terms) {
@@ -84,6 +95,6 @@ export function groupTermsByInitial<T extends GroupableTerm>(
   }
 
   return [...groups.entries()]
-    .toSorted(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .toSorted(([a], [b]) => compareCodeUnits(a, b))
     .map(([group, groupTerms]) => ({ group, terms: groupTerms }));
-}
+};

@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import LiveBadge from "./live-badge";
 
-describe("LiveBadge", () => {
-  test("should render the badge", () => {
+describe(LiveBadge, () => {
+  it("should render the badge", () => {
     render(<LiveBadge />);
 
     expect(screen.getByText("配信中")).toHaveClass(
@@ -18,13 +18,13 @@ describe("LiveBadge", () => {
     );
   });
 
-  test("should fit in a compact row", () => {
+  it("should fit in a compact row", () => {
     render(<LiveBadge size="compact" />);
 
     expect(screen.getByText("配信中")).toHaveClass("leading-4");
   });
 
-  test("should take the position and the id", () => {
+  it("should take the position and the id", () => {
     render(<LiveBadge className="absolute top-0" id="status" />);
 
     const badge = screen.getByText("配信中");

@@ -2,19 +2,22 @@ import { resolveYouTubeChannel } from "@shinju-date/youtube-api-client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ActionError } from "@/lib/action";
+import type { syncYouTubeChannelIconSafely } from "@/lib/youtube-channel-icon";
 import { setupActionTest } from "@/test/action-harness";
 import { postgresError } from "@/test/supabase";
 
 import { linkAccount, resolveAccount, touchTalent } from "./talent-accounts";
 
-vi.mock("@shinju-date/youtube-api-client", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@shinju-date/youtube-api-client")>()),
-  resolveYouTubeChannel: vi.fn(),
+vi.mock(import("@shinju-date/youtube-api-client"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  resolveYouTubeChannel: vi.fn<typeof resolveYouTubeChannel>(),
 }));
 
 // アイコンの同期は service role を使うため、ここではモックする
-vi.mock("@/lib/youtube-channel-icon", () => ({
-  syncYouTubeChannelIconSafely: vi.fn().mockResolvedValue("unchanged"),
+vi.mock(import("@/lib/youtube-channel-icon"), () => ({
+  syncYouTubeChannelIconSafely: vi
+    .fn<typeof syncYouTubeChannelIconSafely>()
+    .mockResolvedValue("unchanged"),
 }));
 
 const test = setupActionTest();
@@ -35,17 +38,15 @@ const youtubeChannel = {
   snippet: { customUrl: "@example", title: "Example Channel" },
 };
 
-function talentTouches() {
-  return supabase.calls("rpc", "touch_talent");
-}
+const talentTouches = () => supabase.calls("rpc", "touch_talent");
 
-describe("touchTalent", () => {
+describe(touchTalent, () => {
   it("moves the updated_at of the talent with touch_talent", async () => {
     const error = await touchTalent(supabase.client, talentId);
 
     expect(error).toBeNull();
     expect(talentTouches()).toHaveLength(1);
-    expect(talentTouches()[0]?.body).toEqual({ p_talent_id: talentId });
+    expect(talentTouches()[0]?.body).toStrictEqual({ p_talent_id: talentId });
     // `updated_at` is left to the trigger, so the talent is not updated directly
     expect(supabase.calls("update", "talents")).toHaveLength(0);
     expect(test.logger.error).not.toHaveBeenCalled();
@@ -71,7 +72,7 @@ describe("touchTalent", () => {
   });
 });
 
-describe("resolveAccount", () => {
+describe(resolveAccount, () => {
   beforeEach(() => {
     vi.mocked(resolveYouTubeChannel).mockResolvedValue(youtubeChannel as never);
   });
@@ -82,10 +83,13 @@ describe("resolveAccount", () => {
       supabaseClient: supabase.client,
     });
 
-    expect(account).toEqual({ platform: "youtube", remote: youtubeChannel });
+    expect(account).toStrictEqual({
+      platform: "youtube",
+      remote: youtubeChannel,
+    });
     expect(
       supabase.requests.map(({ operation, table }) => [operation, table])
-    ).toEqual([["select", "youtube_channels"]]);
+    ).toStrictEqual([["select", "youtube_channels"]]);
   });
 
   it("reports an account of any talent as taken when no talent is given", async () => {
@@ -135,7 +139,7 @@ describe("resolveAccount", () => {
   );
 });
 
-describe("linkAccount", () => {
+describe(linkAccount, () => {
   it("links an account that was resolved before without resolving it again", async () => {
     supabase.on("insert", "youtube_channels", {
       id: "channel-row-1",
@@ -153,12 +157,14 @@ describe("linkAccount", () => {
 
     expect(resolveYouTubeChannel).not.toHaveBeenCalled();
     expect(supabase.calls("select", "youtube_channels")).toHaveLength(0);
-    expect(supabase.calls("insert", "youtube_channels")[0]?.body).toEqual({
-      name: "Example Channel",
-      talent_id: talentId,
-      youtube_channel_id: youtubeChannelId,
-      youtube_handle: "@example",
-    });
+    expect(supabase.calls("insert", "youtube_channels")[0]?.body).toStrictEqual(
+      {
+        name: "Example Channel",
+        talent_id: talentId,
+        youtube_channel_id: youtubeChannelId,
+        youtube_handle: "@example",
+      }
+    );
     test.expectAuditLog("YOUTUBE_CHANNEL_CREATE", talentId, {
       account: {
         id: "channel-row-1",

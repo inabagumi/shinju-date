@@ -4,7 +4,7 @@ import { chunk } from "@shinju-date/helpers";
 import type { QueryData } from "@supabase/supabase-js";
 
 import { IN_FILTER_CHUNK_SIZE } from "../internal/constants.js";
-import { DatabaseError } from "../internal/errors.js";
+import { DatabaseError } from "../internal/database-error.js";
 import type { TypedSupabaseClient } from "../types.js";
 
 /** Columns of the `videos` row of a saved Twitch video. */
@@ -28,9 +28,8 @@ export const SAVED_TWITCH_VIDEO_COLUMNS =
 export const SAVED_LIVE_VIDEO_COLUMNS =
   `${VIDEO_COLUMNS}, twitch_video:twitch_videos!inner(${TWITCH_VIDEO_COLUMNS}, twitch_user:twitch_users(twitch_user_id))` as const;
 
-function selectSavedTwitchVideos(supabaseClient: TypedSupabaseClient) {
-  return supabaseClient.from("videos").select(SAVED_TWITCH_VIDEO_COLUMNS);
-}
+const selectSavedTwitchVideos = (supabaseClient: TypedSupabaseClient) =>
+  supabaseClient.from("videos").select(SAVED_TWITCH_VIDEO_COLUMNS);
 
 /** A saved Twitch video: its `videos` row plus its `twitch_videos` row. */
 export type SavedTwitchVideo = QueryData<
@@ -41,9 +40,8 @@ export type SavedTwitchVideo = QueryData<
  * Whether the row still stands in for a broadcast whose archive is unknown,
  * i.e. its platform ID is the synthetic `live:{stream_id}`.
  */
-export function isLivePlaceholder(saved: SavedTwitchVideo): boolean {
-  return isLiveTwitchVideoId(saved.twitch_video.twitch_video_id);
-}
+export const isLivePlaceholder = (saved: SavedTwitchVideo): boolean =>
+  isLiveTwitchVideoId(saved.twitch_video.twitch_video_id);
 
 /**
  * Finds saved Twitch videos by platform video ID or by stream ID.
@@ -51,14 +49,15 @@ export function isLivePlaceholder(saved: SavedTwitchVideo): boolean {
  * Soft-deleted videos are included: their `twitch_videos` rows still occupy
  * the unique platform and stream IDs, so callers must know about them.
  */
-export async function findSavedTwitchVideos(
+export const findSavedTwitchVideos = async (
   supabaseClient: TypedSupabaseClient,
   column: "stream_id" | "twitch_video_id",
   values: readonly string[]
-): Promise<SavedTwitchVideo[]> {
+): Promise<SavedTwitchVideo[]> => {
   const savedVideos: SavedTwitchVideo[] = [];
 
   for (const ids of chunk([...new Set(values)], IN_FILTER_CHUNK_SIZE)) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- the chunks are sent one at a time to keep the load on the database small
     const { data, error } = await selectSavedTwitchVideos(supabaseClient).in(
       `twitch_video.${column}`,
       ids
@@ -72,18 +71,18 @@ export async function findSavedTwitchVideos(
   }
 
   return savedVideos;
-}
+};
 
 /**
  * Points a saved row at a (different) Helix video, e.g. when the archive of a
  * broadcast becomes known.
  */
-export async function updateTwitchVideo(
+export const updateTwitchVideo = async (
   supabaseClient: TypedSupabaseClient,
   twitchVideoRowId: string,
   values: Pick<Tables<"twitch_videos">, "type"> &
     Partial<Pick<Tables<"twitch_videos">, "stream_id" | "twitch_video_id">>
-): Promise<void> {
+): Promise<void> => {
   const { error } = await supabaseClient
     .from("twitch_videos")
     .update(values)
@@ -92,4 +91,4 @@ export async function updateTwitchVideo(
   if (error) {
     throw new DatabaseError("Failed to update a Twitch video", error);
   }
-}
+};

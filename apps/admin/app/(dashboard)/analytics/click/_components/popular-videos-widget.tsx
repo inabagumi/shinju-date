@@ -9,7 +9,7 @@ interface Props {
 }
 
 /** 最もクリックされている動画のランキング */
-export async function PopularVideosWidget({ searchParams }: Props) {
+export const PopularVideosWidget = async ({ searchParams }: Props) => {
   const { dateRange, selectedDate } = await searchParams;
   const range = resolvePeriod({ dateRange, selectedDate });
   const videos = await getPopularVideos({ limit: 20, range });
@@ -30,4 +30,4 @@ export async function PopularVideosWidget({ searchParams }: Props) {
       valueHeading="クリック数"
     />
   );
-}
+};

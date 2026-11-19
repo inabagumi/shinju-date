@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { getSafeRedirectPath } from "./redirect-path";
 
-describe("getSafeRedirectPath", () => {
+describe(getSafeRedirectPath, () => {
   it.each([
     ["/analytics/click", "/analytics/click"],
     ["/analytics/click?from=2025-11-01", "/analytics/click?from=2025-11-01"],
@@ -18,6 +18,7 @@ describe("getSafeRedirectPath", () => {
 
   it.each([
     "https://example.com/",
+    // oxlint-disable-next-line eslint/no-script-url -- checks that a javascript: URL is rejected
     "javascript:alert(1)",
     "//example.com",
     "/\\example.com",

@@ -1,19 +1,19 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
-
-vi.mock("@/lib/data/talents", () => ({
-  fetchActiveTalents: vi.fn(),
-}));
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fetchActiveTalents } from "@/lib/data/talents";
 
 import sitemap from "./sitemap";
+
+vi.mock(import("@/lib/data/talents"), () => ({
+  fetchActiveTalents: vi.fn<typeof fetchActiveTalents>(),
+}));
 
 const TALENT_IDS = [
   "00000000-0000-4000-8000-000000000001",
   "00000000-0000-4000-8000-000000000002",
 ];
 
-describe("sitemap", () => {
+describe(sitemap, () => {
   beforeEach(() => {
     vi.mocked(fetchActiveTalents).mockResolvedValue([
       { id: TALENT_IDS[0] as string, name: "朝霧ミオ" },
@@ -21,26 +21,31 @@ describe("sitemap", () => {
     ]);
   });
 
-  test("should include the list of talents and the active talents", async () => {
-    const urls = (await sitemap()).map((item) => new URL(item.url).pathname);
+  it("should include the list of talents and the active talents", async () => {
+    const entries = await sitemap();
+    const urls = entries.map((item) => new URL(item.url).pathname);
 
     expect(urls).toContain("/talents");
     expect(urls).toContain(`/talents/${TALENT_IDS[0]}`);
     expect(urls).toContain(`/talents/${TALENT_IDS[1]}`);
   });
 
-  test("should include only the schedule of the current week", async () => {
-    const urls = (await sitemap()).map((item) => new URL(item.url).pathname);
+  it("should include only the schedule of the current week", async () => {
+    const entries = await sitemap();
+    const urls = entries.map((item) => new URL(item.url).pathname);
 
     expect(urls).toContain("/schedule");
-    expect(urls.filter((url) => url.startsWith("/schedule/"))).toEqual([]);
+    expect(urls.filter((url) => url.startsWith("/schedule/"))).toStrictEqual(
+      []
+    );
   });
 
-  test("should list only the talents fetchActiveTalents returns", async () => {
+  it("should list only the talents fetchActiveTalents returns", async () => {
     vi.mocked(fetchActiveTalents).mockResolvedValue([]);
 
-    const urls = (await sitemap()).map((item) => new URL(item.url).pathname);
+    const entries = await sitemap();
+    const urls = entries.map((item) => new URL(item.url).pathname);
 
-    expect(urls.filter((url) => url.startsWith("/talents/"))).toEqual([]);
+    expect(urls.filter((url) => url.startsWith("/talents/"))).toStrictEqual([]);
   });
 });

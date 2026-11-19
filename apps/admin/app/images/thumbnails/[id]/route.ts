@@ -1,15 +1,17 @@
 import { DUMMY_THUMBNAIL_PNG } from "@shinju-date/constants";
 import { createErrorResponse } from "@shinju-date/helpers";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
-const SIGNED_URL_EXPIRES_IN = 60; // 1 minute
+// 1 minute
+const SIGNED_URL_EXPIRES_IN = 60;
 
-export async function GET(
+export const GET = async (
   request: NextRequest,
   ctx: RouteContext<"/images/thumbnails/[id]">
-) {
+) => {
   const { id } = await ctx.params;
   const { data: thumbnail, error } = await getSupabaseAdminClient()
     .from("thumbnails")
@@ -65,7 +67,7 @@ export async function GET(
       headers,
       status: res.status,
     });
-  } catch (_error) {
+  } catch {
     // If fetch throws an error (e.g., network error), return a dummy image
     return new NextResponse(DUMMY_THUMBNAIL_PNG, {
       headers: {
@@ -75,4 +77,4 @@ export async function GET(
       },
     });
   }
-}
+};

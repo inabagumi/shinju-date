@@ -6,12 +6,8 @@ import { revalidateTags } from "@shinju-date/web-cache";
 import { revalidatePath } from "next/cache";
 
 import { PLATFORM_LABELS } from "@/components/platform-badge";
-import {
-  ActionError,
-  type ActionResult,
-  adminAction,
-  parseActionInput,
-} from "@/lib/action";
+import { ActionError, adminAction, parseActionInput } from "@/lib/action";
+import type { ActionResult } from "@/lib/action";
 import { createAuditLog } from "@/lib/audit-log";
 import { createScraper } from "@/lib/scraper";
 
@@ -27,11 +23,11 @@ export interface SyncVideoSummary {
 
 const NOT_FOUND_ERROR_MESSAGE = "動画が見つかりませんでした。";
 
-async function revalidateVideo(videoId: string): Promise<void> {
+const revalidateVideo = async (videoId: string): Promise<void> => {
   revalidatePath(`/videos/${videoId}`);
   revalidatePath("/videos");
   await revalidateTags([CACHE_TAGS.VIDEOS]);
-}
+};
 
 /**
  * 動画1件を、YouTube や Twitch の今の状態に合わせる。
@@ -71,16 +67,18 @@ export const syncVideoAction = adminAction(
     );
 
     switch (result.status) {
-      case "not-found":
+      case "not-found": {
         throw new ActionError(NOT_FOUND_ERROR_MESSAGE);
+      }
 
-      case "unchanged":
+      case "unchanged": {
         return {
           data: { message: "動画情報は既に最新です。", unchanged: true },
           success: true,
         };
+      }
 
-      case "unavailable":
+      case "unavailable": {
         await createAuditLog(supabaseClient, "VIDEO_SYNC", videoId, {
           changes: {
             after: {
@@ -99,8 +97,9 @@ export const syncVideoAction = adminAction(
           },
           success: true,
         };
+      }
 
-      case "updated":
+      case "updated": {
         await createAuditLog(supabaseClient, "VIDEO_SYNC", videoId, {
           changes: { after: result.after, before: result.before },
           entityName: result.title,
@@ -108,6 +107,14 @@ export const syncVideoAction = adminAction(
         await revalidateVideo(videoId);
 
         return { data: { message: "動画情報を同期しました。" }, success: true };
+      }
+
+      default: {
+        const unexpected: never = result;
+        throw new Error(
+          `Unknown refresh result: ${JSON.stringify(unexpected)}`
+        );
+      }
     }
   }
 );

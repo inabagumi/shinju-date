@@ -16,10 +16,8 @@ import { Panel, PanelSkeleton } from "@/components/panel";
 import { PLATFORM_LABELS } from "@/components/platform-badge";
 import { formatDateTimeFromISO } from "@/lib/format";
 import { useBackfillRequest } from "@/lib/use-backfill-request";
-import {
-  type PolledResourceFailure,
-  usePolledResource,
-} from "@/lib/use-polled-resource";
+import { usePolledResource } from "@/lib/use-polled-resource";
+import type { PolledResourceFailure } from "@/lib/use-polled-resource";
 
 import {
   getVideoBackfillStatusAction,
@@ -28,7 +26,7 @@ import {
 import type { VideoBackfillStatus } from "../../_lib/get-video-backfill-status";
 
 /** How often progress is refreshed while a job is queued or running. */
-const POLL_INTERVAL_MS = 5_000;
+const POLL_INTERVAL_MS = 5000;
 
 const TITLE = "過去動画の取り込み";
 const DESCRIPTION =
@@ -37,9 +35,9 @@ const DESCRIPTION =
 const PROVIDERS = ["youtube", "twitch"] as const;
 
 /** 取り込み状況を取り直す。アクションの `data` を、`usePolledResource` が受け取る形にする */
-async function fetchVideoBackfillStatus(
+const fetchVideoBackfillStatus = async (
   talentId: string
-): Promise<VideoBackfillStatus | PolledResourceFailure> {
+): Promise<VideoBackfillStatus | PolledResourceFailure> => {
   const result = await getVideoBackfillStatusAction(talentId);
 
   if (!result.success) {
@@ -47,7 +45,7 @@ async function fetchVideoBackfillStatus(
   }
 
   return result.data ?? { success: false };
-}
+};
 
 interface VideoBackfillPanelProps {
   /** サーバーコンポーネントで取得した、アカウントごとの取り込み状況 */
@@ -60,11 +58,11 @@ interface VideoBackfillPanelProps {
  * タレントの過去動画（プラットフォームにあって DB にない動画）の取り込みを
  * キューに追加し、その進捗を表示する。取り込みはバッチが非同期に行う。
  */
-export function VideoBackfillPanel({
+export const VideoBackfillPanel = ({
   initialData,
   talentId,
   talentName,
-}: VideoBackfillPanelProps) {
+}: VideoBackfillPanelProps) => {
   const router = useRouter();
   const { data, error, reload } = usePolledResource({
     fetcher: () => fetchVideoBackfillStatus(talentId),
@@ -169,19 +167,17 @@ export function VideoBackfillPanel({
       </AsyncPanelBody>
     </Panel>
   );
-}
+};
 
 /** 読み込み中の `VideoBackfillPanel`。アカウント1件ぶんの行を置く */
-export function VideoBackfillPanelSkeleton() {
-  return (
-    <PanelSkeleton
-      actions={<Skeleton className="h-9 w-56" />}
-      description={DESCRIPTION}
-      title={TITLE}
-    >
-      <ul className="-mx-6 -mb-6 border-t border-border">
-        <BackfillAccountRowSkeleton />
-      </ul>
-    </PanelSkeleton>
-  );
-}
+export const VideoBackfillPanelSkeleton = () => (
+  <PanelSkeleton
+    actions={<Skeleton className="h-9 w-56" />}
+    description={DESCRIPTION}
+    title={TITLE}
+  >
+    <ul className="-mx-6 -mb-6 border-t border-border">
+      <BackfillAccountRowSkeleton />
+    </ul>
+  </PanelSkeleton>
+);

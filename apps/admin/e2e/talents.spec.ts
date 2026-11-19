@@ -1,13 +1,14 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 /** Opens the detail page of the first talent in the list */
-async function openFirstTalent(page: Page) {
+const openFirstTalent = async (page: Page) => {
   await page.goto("/talents");
 
   // The first row is the header
   await page.getByRole("row").nth(1).getByRole("link").first().click();
-  await expect(page).toHaveURL(/\/talents\/[0-9a-f-]{36}$/);
-}
+  await expect(page).toHaveURL(/\/talents\/[0-9a-f-]{36}$/u);
+};
 
 test.describe("Talents", () => {
   test("should display a talent detail page from the list", async ({
@@ -16,7 +17,7 @@ test.describe("Talents", () => {
     await openFirstTalent(page);
 
     await expect(page.getByRole("heading", { level: 1 })).not.toBeEmpty();
-    await expect(page).toHaveTitle(/^(?!undefined).+ - タレント詳細 - /);
+    await expect(page).toHaveTitle(/^(?!undefined).+ - タレント詳細 - /u);
     await expect(page.getByText("Temporal error")).toHaveCount(0);
   });
 
@@ -63,14 +64,14 @@ test.describe("Talents", () => {
     await page.goto("/talents");
 
     await page
-      .getByRole("button", { name: /^「.+」の操作$/ })
+      .getByRole("button", { name: /^「.+」の操作$/u })
       .first()
       .click();
     await page.getByRole("menuitem", { name: "削除" }).click();
 
     const dialog = page.getByRole("dialog", { name: "タレントを削除" });
     await expect(dialog).toBeVisible();
-    await expect(dialog).toContainText(/タレント「.+」を削除しますか？/);
+    await expect(dialog).toContainText(/タレント「.+」を削除しますか？/u);
 
     await dialog.getByRole("button", { name: "キャンセル" }).click();
     await expect(dialog).toBeHidden();
@@ -85,7 +86,7 @@ test.describe("Talents", () => {
 
     const dialog = page.getByRole("dialog", { name: "タレントを削除" });
     await expect(dialog).toBeVisible();
-    await expect(dialog).toContainText(/タレント「.+」を削除しますか？/);
+    await expect(dialog).toContainText(/タレント「.+」を削除しますか？/u);
 
     await dialog.getByRole("button", { name: "キャンセル" }).click();
     await expect(dialog).toBeHidden();
@@ -99,12 +100,14 @@ test.describe("Talents", () => {
     await page
       .getByRole("combobox", { name: "状態で絞り込み" })
       .selectOption("all");
-    await expect(page).toHaveURL(/\/talents\?status=all$/);
+    await expect(page).toHaveURL(/\/talents\?status=all$/u);
 
-    const sortHeader = page.getByRole("columnheader", { name: /最終更新日時/ });
+    const sortHeader = page.getByRole("columnheader", {
+      name: /最終更新日時/u,
+    });
     await expect(sortHeader).toHaveAttribute("aria-sort", "descending");
     await sortHeader.getByRole("link").click();
-    await expect(page).toHaveURL(/\/talents\?status=all&sort=asc$/);
+    await expect(page).toHaveURL(/\/talents\?status=all&sort=asc$/u);
     await expect(sortHeader).toHaveAttribute("aria-sort", "ascending");
 
     // The filters stay after a reload

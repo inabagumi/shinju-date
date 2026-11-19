@@ -4,17 +4,18 @@ import { CACHE_TAGS, REDIS_KEYS } from "@shinju-date/constants";
 import { revalidateTags } from "@shinju-date/web-cache";
 import { revalidatePath } from "next/cache";
 
-import { type ActionResult, adminAction, parseActionInput } from "@/lib/action";
+import { adminAction, parseActionInput } from "@/lib/action";
+import type { ActionResult } from "@/lib/action";
 import { createAuditLog } from "@/lib/audit-log";
 import { getRedisClient } from "@/lib/redis";
 
 import { recommendedQuerySchema } from "../_lib/schema";
 
-async function revalidateRecommendedQueries(): Promise<void> {
+const revalidateRecommendedQueries = async (): Promise<void> => {
   revalidatePath("/recommended-queries");
   revalidatePath("/", "page");
   await revalidateTags([CACHE_TAGS.RECOMMENDATION_QUERIES]);
-}
+};
 
 export const addQueryAction = adminAction(
   "addQueryAction",

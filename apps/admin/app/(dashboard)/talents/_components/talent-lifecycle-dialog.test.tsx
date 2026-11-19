@@ -9,14 +9,23 @@ import {
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { ActionResult } from "@/lib/action";
+
+import type {
+  activateTalentAction,
+  deleteTalentAction,
+  restoreTalentAction,
+  retireTalentAction,
+} from "../_actions";
+
 const mocks = vi.hoisted(() => ({
-  activateTalentAction: vi.fn(),
-  deleteTalentAction: vi.fn(),
-  restoreTalentAction: vi.fn(),
-  retireTalentAction: vi.fn(),
+  activateTalentAction: vi.fn<typeof activateTalentAction>(),
+  deleteTalentAction: vi.fn<typeof deleteTalentAction>(),
+  restoreTalentAction: vi.fn<typeof restoreTalentAction>(),
+  retireTalentAction: vi.fn<typeof retireTalentAction>(),
 }));
 
-vi.mock("../_actions", () => mocks);
+vi.mock(import("../_actions"), () => mocks);
 
 const { TalentLifecycleDialog } = await import("./talent-lifecycle-dialog");
 
@@ -59,10 +68,10 @@ const operations = [
   },
 ] as const;
 
-function renderDialog(
+const renderDialog = (
   operation: (typeof operations)[number]["operation"],
-  onSuccess = vi.fn()
-) {
+  onSuccess = vi.fn<(text: string) => void>()
+) => {
   render(
     <TalentLifecycleDialog
       onSuccess={onSuccess}
@@ -74,7 +83,7 @@ function renderDialog(
   fireEvent.click(screen.getByRole("button", { name: "開く" }));
 
   return { onSuccess };
-}
+};
 
 describe("TalentLifecycleDialog", () => {
   beforeEach(() => {
@@ -118,8 +127,7 @@ describe("TalentLifecycleDialog", () => {
       await waitFor(() => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
       });
-      expect(config.action).toHaveBeenCalledTimes(1);
-      expect(config.action).toHaveBeenCalledWith("talent-1");
+      expect(config.action).toHaveBeenCalledExactlyOnceWith("talent-1");
       expect(onSuccess).toHaveBeenCalledWith(config.successText);
     });
   });
@@ -133,27 +141,23 @@ describe("TalentLifecycleDialog", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "引退にする" }));
 
-    expect(
-      await screen.findByText("指定されたタレントが見つかりません。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("指定されたタレントが見つかりません。")
+    ).resolves.toBeInTheDocument();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(onSuccess).not.toHaveBeenCalled();
   });
 
   it("disables the buttons while the action is running", async () => {
-    let resolve: (value: { success: boolean }) => void = () => {};
-    mocks.deleteTalentAction.mockReturnValue(
-      new Promise((r) => {
-        resolve = r;
-      })
-    );
+    const { promise, resolve } = Promise.withResolvers<ActionResult>();
+    mocks.deleteTalentAction.mockReturnValue(promise);
     renderDialog("delete");
 
     fireEvent.click(screen.getByRole("button", { name: "削除" }));
 
-    expect(
-      await screen.findByRole("button", { name: "削除中..." })
-    ).toBeDisabled();
+    await expect(
+      screen.findByRole("button", { name: "削除中..." })
+    ).resolves.toBeDisabled();
     expect(screen.getByRole("button", { name: "キャンセル" })).toBeDisabled();
 
     resolve({ success: true });

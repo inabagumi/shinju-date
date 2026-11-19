@@ -10,17 +10,17 @@ export const DAILY_TTL_SECONDS = 90 * DAY_SECONDS;
 export const WEEKLY_TTL_SECONDS = 35 * DAY_SECONDS;
 
 /** The key of the day of `now`: the prefix followed by `YYYYMMDD`. */
-export function dailyKey(prefix: string, now: Temporal.ZonedDateTime): string {
-  return `${prefix}${formatDateKey(now)}`;
-}
+export const dailyKey = (prefix: string, now: Temporal.ZonedDateTime): string =>
+  `${prefix}${formatDateKey(now)}`;
 
 /**
  * The key of the week of `now`: the prefix followed by the `YYYYMMDD` of the
  * Monday of that week.
  */
-export function weeklyKey(prefix: string, now: Temporal.ZonedDateTime): string {
-  return `${prefix}${getMondayOfWeek(now)}`;
-}
+export const weeklyKey = (
+  prefix: string,
+  now: Temporal.ZonedDateTime
+): string => `${prefix}${getMondayOfWeek(now)}`;
 
 /*
  * Each function below queues a write together with the `expire` of its key,
@@ -29,46 +29,46 @@ export function weeklyKey(prefix: string, now: Temporal.ZonedDateTime): string {
  */
 
 /** Queues `INCR` on the key and its TTL. */
-export function incrWithTtl(
+export const incrWithTtl = (
   multi: Pipeline,
   key: string,
   ttlSeconds: number
-): void {
+): void => {
   multi.incr(key);
   multi.expire(key, ttlSeconds);
-}
+};
 
 /** Queues `ZINCRBY` on the key and its TTL. */
-export function zincrbyWithTtl(
+export const zincrbyWithTtl = (
   multi: Pipeline,
   key: string,
   increment: number,
   member: string,
   ttlSeconds: number
-): void {
+): void => {
   multi.zincrby(key, increment, member);
   multi.expire(key, ttlSeconds);
-}
+};
 
 /** Queues `SADD` on the key and its TTL. */
-export function saddWithTtl(
+export const saddWithTtl = (
   multi: Pipeline,
   key: string,
   member: string,
   ttlSeconds: number
-): void {
+): void => {
   multi.sadd(key, member);
   multi.expire(key, ttlSeconds);
-}
+};
 
 /** Queues `HINCRBY` on the key and its TTL. */
-export function hincrbyWithTtl(
+export const hincrbyWithTtl = (
   multi: Pipeline,
   key: string,
   field: string,
   increment: number,
   ttlSeconds: number
-): void {
+): void => {
   multi.hincrby(key, field, increment);
   multi.expire(key, ttlSeconds);
-}
+};

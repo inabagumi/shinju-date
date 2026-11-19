@@ -30,16 +30,15 @@ export type ScriptEmulation = (
  * The name of a script, taken from the comment on its first line, such as
  * `video-backfill:enqueue`.
  */
-export function getScriptName(script: string): string | undefined {
-  return script.match(/^--\s*(\S+)/)?.[1];
-}
+export const getScriptName = (script: string): string | undefined =>
+  script.match(/^--\s*(?<name>\S+)/u)?.groups?.["name"];
 
 /**
  * The version of a stored job, as `ENQUEUE_SCRIPT` reads it: 0 for a job
  * without one, and `undefined` for a value that is not a job, which never
  * matches a version.
  */
-function getVersion(value: string): number | undefined {
+const getVersion = (value: string): number | undefined => {
   let job: unknown;
 
   try {
@@ -55,9 +54,9 @@ function getVersion(value: string): number | undefined {
   const { version } = job as { version?: unknown };
 
   return typeof version === "number" ? version : 0;
-}
+};
 
-function nameOf(script: string): string {
+const nameOf = (script: string): string => {
   const name = getScriptName(script);
 
   if (!name) {
@@ -65,7 +64,7 @@ function nameOf(script: string): string {
   }
 
   return name;
-}
+};
 
 /**
  * The scripts of this package, emulated with the commands they run, by

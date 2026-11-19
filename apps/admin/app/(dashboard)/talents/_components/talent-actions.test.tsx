@@ -2,28 +2,38 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ActionToastProvider } from "@/components/action-toast";
+import type { AppRouter } from "@/test/next-navigation";
+
+import type {
+  activateTalentAction,
+  deleteTalentAction,
+  restoreTalentAction,
+  retireTalentAction,
+} from "../_actions";
+import type { syncTalentAccountsAction } from "../_actions/sync";
 
 const mocks = vi.hoisted(() => ({
-  activateTalentAction: vi.fn(),
-  deleteTalentAction: vi.fn(),
-  refresh: vi.fn(),
-  restoreTalentAction: vi.fn(),
-  retireTalentAction: vi.fn(),
-  syncTalentAccountsAction: vi.fn(),
+  activateTalentAction: vi.fn<typeof activateTalentAction>(),
+  deleteTalentAction: vi.fn<typeof deleteTalentAction>(),
+  refresh: vi.fn<AppRouter["refresh"]>(),
+  restoreTalentAction: vi.fn<typeof restoreTalentAction>(),
+  retireTalentAction: vi.fn<typeof retireTalentAction>(),
+  syncTalentAccountsAction: vi.fn<typeof syncTalentAccountsAction>(),
 }));
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: mocks.refresh }),
+vi.mock(import("next/navigation"), () => ({
+  useRouter: () =>
+    ({ refresh: mocks.refresh }) as Partial<AppRouter> as AppRouter,
 }));
 
-vi.mock("../_actions", () => ({
+vi.mock(import("../_actions"), () => ({
   activateTalentAction: mocks.activateTalentAction,
   deleteTalentAction: mocks.deleteTalentAction,
   restoreTalentAction: mocks.restoreTalentAction,
   retireTalentAction: mocks.retireTalentAction,
 }));
 
-vi.mock("../_actions/sync", () => ({
+vi.mock(import("../_actions/sync"), () => ({
   syncTalentAccountsAction: mocks.syncTalentAccountsAction,
 }));
 
@@ -38,22 +48,21 @@ const activeTalent: TalentActionsTalent = {
   status: "active",
 };
 
-function renderActions(talent: TalentActionsTalent = activeTalent) {
-  return render(
+const renderActions = (talent: TalentActionsTalent = activeTalent) =>
+  render(
     <ActionToastProvider>
       <TalentActions talent={talent} />
     </ActionToastProvider>
   );
-}
 
 // メニューはポインターを押したときかキーで開くため、Enter で開く
-function openMenuItem(name: string) {
+const openMenuItem = (name: string) => {
   fireEvent.keyDown(
     screen.getByRole("button", { name: "「テストタレント」の操作" }),
     { key: "Enter" }
   );
   fireEvent.click(screen.getByRole("menuitem", { name }));
-}
+};
 
 describe("TalentActions", () => {
   beforeEach(() => {
@@ -93,9 +102,9 @@ describe("TalentActions", () => {
     openMenuItem("復活");
     fireEvent.click(screen.getByRole("button", { name: "復活" }));
 
-    expect(
-      await screen.findByText("タレントを復活しました。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("タレントを復活しました。")
+    ).resolves.toBeInTheDocument();
     expect(mocks.restoreTalentAction).toHaveBeenCalledWith("talent-1");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(mocks.refresh).not.toHaveBeenCalled();
@@ -108,9 +117,9 @@ describe("TalentActions", () => {
     openMenuItem("アクティブに戻す");
     fireEvent.click(screen.getByRole("button", { name: "アクティブに戻す" }));
 
-    expect(
-      await screen.findByText("タレントをアクティブに戻しました。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("タレントをアクティブに戻しました。")
+    ).resolves.toBeInTheDocument();
     expect(mocks.activateTalentAction).toHaveBeenCalledWith("talent-1");
   });
 
@@ -127,9 +136,9 @@ describe("TalentActions", () => {
 
     openMenuItem("同期");
 
-    expect(
-      await screen.findByText("Twitch: ユーザー情報を同期しました。")
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText("Twitch: ユーザー情報を同期しました。")
+    ).resolves.toBeInTheDocument();
     expect(
       screen.getByText("YouTube: 同期に失敗しました。")
     ).toBeInTheDocument();

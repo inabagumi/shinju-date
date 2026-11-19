@@ -1,4 +1,5 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 // Keyboard modifier for Cmd/Ctrl+K shortcut
 const KEYBOARD_MODIFIER = process.platform === "darwin" ? "Meta" : "Control";
@@ -12,26 +13,38 @@ const SUGGESTED_TERM = "歌枠";
 // development server, which compiles the page on demand
 const NAVIGATION_TIMEOUT = 15_000;
 
-function getSearchDialog(page: Page) {
-  return page.getByRole("dialog", { name: "検索" });
-}
+const getSearchDialog = (page: Page) =>
+  page.getByRole("dialog", { name: "検索" });
 
-function getSearchInput(page: Page) {
-  return getSearchDialog(page).getByRole("searchbox");
-}
+const getSearchInput = (page: Page) =>
+  getSearchDialog(page).getByRole("searchbox");
 
-function getSuggestionLink(page: Page, name: string) {
-  return getSearchDialog(page).getByRole("link", { exact: true, name });
-}
+const getSuggestionLink = (page: Page, name: string) =>
+  getSearchDialog(page).getByRole("link", { exact: true, name });
 
-async function openSearchModal(page: Page) {
+const openSearchModal = async (page: Page) => {
   await page.getByRole("button", { name: "検索" }).click();
 
   const searchInput = getSearchInput(page);
   await expect(searchInput).toBeVisible();
 
   return searchInput;
-}
+};
+
+const openAndCloseSearchModal = async (page: Page) => {
+  const searchInput = await openSearchModal(page);
+
+  await page.keyboard.press("Escape");
+  await expect(searchInput).toBeHidden();
+};
+
+const getChipList = (page: Page) =>
+  getSearchDialog(page).getByRole("list", {
+    name: "選んでいるタレント",
+  });
+
+const getTalentOption = (page: Page, name: string) =>
+  page.getByRole("region", { name: "タレント" }).getByRole("button", { name });
 
 test.describe("Search Modal - Opening and Closing", () => {
   test("should open search modal when clicking search button", async ({
@@ -92,7 +105,7 @@ test.describe("Search Modal - Opening and Closing", () => {
     // the dialog closes
     await expect(async () => {
       await page.mouse.click((viewportSize?.width ?? 0) - 10, 10);
-      await expect(searchInput).toBeHidden({ timeout: 1_000 });
+      await expect(searchInput).toBeHidden({ timeout: 1000 });
     }).toPass();
   });
 
@@ -249,14 +262,10 @@ test.describe("Search Modal - Stability Tests", () => {
     await page.goto("/");
     await page.waitForLoadState("networkidle");
 
-    const searchInput = getSearchInput(page);
-
     // Rapidly open and close modal 3 times
-    for (let i = 0; i < 3; i++) {
-      await openSearchModal(page);
-
-      await page.keyboard.press("Escape");
-      await expect(searchInput).toBeHidden();
+    for (let i = 0; i < 3; i += 1) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- Each round opens and closes the same modal, so the rounds must run one after another
+      await openAndCloseSearchModal(page);
     }
   });
 
@@ -312,18 +321,6 @@ test.describe("Search Modal - Stability Tests", () => {
 });
 
 test.describe("Search Modal - Talent", () => {
-  function getChipList(page: Page) {
-    return getSearchDialog(page).getByRole("list", {
-      name: "選んでいるタレント",
-    });
-  }
-
-  function getTalentOption(page: Page, name: string) {
-    return page
-      .getByRole("region", { name: "タレント" })
-      .getByRole("button", { name });
-  }
-
   test("should search a keyword within the selected talent", async ({
     page,
   }) => {
@@ -344,7 +341,8 @@ test.describe("Search Modal - Talent", () => {
 
     await expect(page).toHaveURL(
       new RegExp(
-        `/videos/${encodeURIComponent("歌枠")}\\?talent=[0-9a-f-]{36}$`
+        `/videos/${encodeURIComponent("歌枠")}\\?talent=[0-9a-f-]{36}$`,
+        "u"
       ),
       { timeout: NAVIGATION_TIMEOUT }
     );
@@ -362,7 +360,7 @@ test.describe("Search Modal - Talent", () => {
     await getTalentOption(page, "凪沢ユラ").click();
     await searchInput.press("Enter");
 
-    await expect(page).toHaveURL(/\/videos\?talent=[0-9a-f-]{36}$/, {
+    await expect(page).toHaveURL(/\/videos\?talent=[0-9a-f-]{36}$/u, {
       timeout: NAVIGATION_TIMEOUT,
     });
     await expect(
@@ -392,7 +390,8 @@ test.describe("Search Modal - Talent", () => {
     await expect(getSuggestionLink(page, SUGGESTED_TERM)).toHaveAttribute(
       "href",
       new RegExp(
-        `^/videos/${encodeURIComponent(SUGGESTED_TERM)}\\?talent=[0-9a-f-]{36}$`
+        `^/videos/${encodeURIComponent(SUGGESTED_TERM)}\\?talent=[0-9a-f-]{36}$`,
+        "u"
       )
     );
   });

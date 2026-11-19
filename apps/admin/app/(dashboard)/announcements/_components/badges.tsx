@@ -2,32 +2,40 @@ import type { Tables } from "@shinju-date/database";
 import { Badge } from "@shinju-date/ui";
 
 // Get level badge variant
-function getLevelBadgeVariant(level: string): "info" | "warning" | "danger" {
+const getLevelBadgeVariant = (level: string): "info" | "warning" | "danger" => {
   switch (level) {
-    case "warning":
+    case "warning": {
       return "warning";
-    case "alert":
+    }
+    case "alert": {
       return "danger";
-    default:
+    }
+    default: {
       return "info";
+    }
   }
-}
+};
 
 // Get level label
-function getLevelLabel(level: string): string {
+const getLevelLabel = (level: string): string => {
   switch (level) {
-    case "warning":
+    case "warning": {
       return "警告";
-    case "alert":
+    }
+    case "alert": {
       return "重要";
-    default:
+    }
+    default: {
       return "情報";
+    }
   }
-}
+};
 
 // Check if announcement is currently active
-function isActive(announcement: Tables<"announcements">): boolean {
-  if (!announcement.enabled) return false;
+const isActive = (announcement: Tables<"announcements">): boolean => {
+  if (!announcement.enabled) {
+    return false;
+  }
 
   const now = Temporal.Now.instant();
   const start = Temporal.Instant.from(announcement.start_at);
@@ -37,24 +45,24 @@ function isActive(announcement: Tables<"announcements">): boolean {
     Temporal.Instant.compare(now, start) >= 0 &&
     Temporal.Instant.compare(now, end) <= 0
   );
-}
+};
 
-export function LevelBadge({ level }: { level: string }) {
-  return (
-    <Badge variant={getLevelBadgeVariant(level)}>{getLevelLabel(level)}</Badge>
-  );
-}
+export const LevelBadge = ({ level }: { level: string }) => (
+  <Badge variant={getLevelBadgeVariant(level)}>{getLevelLabel(level)}</Badge>
+);
 
-export function StatusBadge({
+export const StatusBadge = ({
   announcement,
 }: {
   announcement: Tables<"announcements">;
-}) {
-  return isActive(announcement) ? (
-    <Badge variant="success">公開中</Badge>
-  ) : announcement.enabled ? (
-    <Badge variant="neutral">公開予定</Badge>
-  ) : (
-    <Badge variant="neutral">無効</Badge>
-  );
-}
+}) => {
+  if (isActive(announcement)) {
+    return <Badge variant="success">公開中</Badge>;
+  }
+
+  if (announcement.enabled) {
+    return <Badge variant="neutral">公開予定</Badge>;
+  }
+
+  return <Badge variant="neutral">無効</Badge>;
+};

@@ -19,10 +19,10 @@ interface Cookie {
  * @param cookies - リクエストの Cookie
  * @returns Supabase クライアントに渡す Cookie
  */
-export async function withMockSessionCookie(
+export const withMockSessionCookie = async (
   supabaseURL: string,
   cookies: Cookie[]
-): Promise<Cookie[]> {
+): Promise<Cookie[]> => {
   if (!serverEnv.ENABLE_MSW || !serverEnv.MSW_SUPABASE_AUTHENTICATED) {
     return cookies;
   }
@@ -46,4 +46,4 @@ export async function withMockSessionCookie(
     ...cookies,
     { name: storageKey, value: JSON.stringify(MOCK_SUPABASE_SESSION) },
   ];
-}
+};

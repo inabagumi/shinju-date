@@ -1,27 +1,26 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type { ProfileImage, TalentYouTubeChannel } from "@/lib/data/talents";
 
 import TalentIcon from "./talent-icon";
 
-function createProfileImage(id: string): ProfileImage {
-  return { blur_data_url: "data:image/png;base64,AAAA", id };
-}
+const createProfileImage = (id: string): ProfileImage => ({
+  blur_data_url: "data:image/png;base64,AAAA",
+  id,
+});
 
-function createYouTubeChannel(
+const createYouTubeChannel = (
   profileImage: ProfileImage | null
-): TalentYouTubeChannel {
-  return {
-    name: "YouTube",
-    profile_image: profileImage,
-    youtube_channel_id: "UC1",
-    youtube_handle: "@youtube",
-  };
-}
+): TalentYouTubeChannel => ({
+  name: "YouTube",
+  profile_image: profileImage,
+  youtube_channel_id: "UC1",
+  youtube_handle: "@youtube",
+});
 
-describe("TalentIcon", () => {
-  test("should show the icon as a decoration", () => {
+describe(TalentIcon, () => {
+  it("should show the icon as a decoration", () => {
     const { container } = render(
       <TalentIcon
         size={64}
@@ -41,7 +40,7 @@ describe("TalentIcon", () => {
     });
   });
 
-  test("should leave the size to the class names without a size", () => {
+  it("should leave the size to the class names without a size", () => {
     const { container } = render(
       <TalentIcon
         className="size-20 sm:size-24"
@@ -62,7 +61,7 @@ describe("TalentIcon", () => {
     );
   });
 
-  test("should show the default icon without any icon", () => {
+  it("should show the default icon without any icon", () => {
     const { container } = render(
       <TalentIcon
         size={64}

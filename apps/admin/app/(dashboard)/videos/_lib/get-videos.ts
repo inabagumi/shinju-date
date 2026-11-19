@@ -7,18 +7,15 @@ import type { QueryData } from "@supabase/supabase-js";
 import { cacheLife } from "next/cache";
 
 import { getRedisClient } from "@/lib/redis";
-import {
-  createSupabaseServerClient,
-  type TypedSupabaseClient,
-} from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase";
+import type { TypedSupabaseClient } from "@/lib/supabase";
 import { unwrap } from "@/lib/supabase/query";
 
 import { escapeSearchString } from "./escape-search";
 import { VIDEO_SELECT } from "./video-select";
 
-function selectVideos(supabaseClient: TypedSupabaseClient) {
-  return supabaseClient.from("videos").select(VIDEO_SELECT, { count: "exact" });
-}
+const selectVideos = (supabaseClient: TypedSupabaseClient) =>
+  supabaseClient.from("videos").select(VIDEO_SELECT, { count: "exact" });
 
 type VideoRow = QueryData<ReturnType<typeof selectVideos>>[number];
 
@@ -42,42 +39,30 @@ export interface VideoFilters {
 export type VideoSortField = "published_at" | "updated_at";
 export type VideoSortOrder = "asc" | "desc";
 
-export async function getVideos(
-  page = 1,
-  perPage = 20,
-  filters?: VideoFilters,
-  sortField: VideoSortField = "updated_at",
-  sortOrder: VideoSortOrder = "desc"
-): Promise<{
-  videos: Video[];
-  total: number;
-}> {
-  "use cache: private";
+type VideoQuery = ReturnType<typeof selectVideos>;
 
-  cacheLife("minutes");
+const hasValues = <T>(values: T[] | undefined): values is T[] =>
+  values !== undefined && values.length > 0;
 
-  const supabaseClient = await createSupabaseServerClient();
+const applyVideoFilters = (
+  initialQuery: VideoQuery,
+  filters: VideoFilters | undefined
+): VideoQuery => {
+  let query = initialQuery;
 
-  const from = (page - 1) * perPage;
-  const to = from + perPage - 1;
-
-  // Start building the query
-  let query = selectVideos(supabaseClient);
-
-  // Apply filters
-  if (filters?.talentId && filters.talentId.length > 0) {
+  if (hasValues(filters?.talentId)) {
     query = query.in("talent_id", filters.talentId);
   }
-  if (filters?.visible && filters.visible.length > 0) {
+  if (hasValues(filters?.visible)) {
     query = query.in("visible", filters.visible);
   }
-  if (filters?.status && filters.status.length > 0) {
+  if (hasValues(filters?.status)) {
     query = query.in("status", filters.status);
   }
-  if (filters?.platform && filters.platform.length > 0) {
+  if (hasValues(filters?.platform)) {
     query = query.in("platform", filters.platform);
   }
-  if (filters?.videoKind && filters.videoKind.length > 0) {
+  if (hasValues(filters?.videoKind)) {
     query = query.in("video_kind", filters.videoKind);
   }
   // Handle text search
@@ -85,38 +70,27 @@ export async function getVideos(
     const escapedSearch = escapeSearchString(filters.search);
     query = query.ilike("title", `%${escapedSearch}%`);
   }
-  // Handle deleted filter with OR logic
-  if (filters?.deleted && filters.deleted.length > 0) {
-    if (filters.deleted.length === 1) {
-      // Only one value selected
-      if (filters.deleted[0] === true) {
-        query = query.not("deleted_at", "is", null);
-      } else {
-        query = query.is("deleted_at", null);
-      }
-    }
-    // If both true and false are selected, don't apply any filter (show all)
+  // Handle deleted filter with OR logic. Only when one value is selected;
+  // if both true and false are selected, don't apply any filter (show all)
+  if (filters?.deleted?.length === 1) {
+    query =
+      filters.deleted[0] === true
+        ? query.not("deleted_at", "is", null)
+        : query.is("deleted_at", null);
   }
 
-  // Fetch videos from Supabase with pagination
-  const result = await query
-    .order(sortField, { ascending: sortOrder === "asc" })
-    .range(from, to);
-  const videos = unwrap(result, "getVideos") ?? [];
-  const { count } = result;
+  return query;
+};
 
-  // Get last 7 days in JST timezone
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE);
-  const days = range(7).map((i) => {
-    const date = today.subtract({ days: i });
-    return formatDateKey(date);
-  });
-
+/**
+ * Sum up the clicks of the given days for each video. A video whose counts
+ * cannot be fetched gets 0
+ */
+const getClickCounts = async (
+  videoIds: string[],
+  days: string[]
+): Promise<number[]> => {
   const redisClient = getRedisClient();
-
-  // Fetch click counts for all videos for the last 7 days
-  // Using video.id as the Redis key (matches the write side in increment.ts)
-  const videoIds = videos.map((video) => video.id);
 
   // Use Promise.allSettled to handle individual video click count failures gracefully
   const clickCountResults = await Promise.allSettled(
@@ -135,17 +109,60 @@ export async function getVideos(
   );
 
   // Extract click counts from results, using 0 for any failures
-  const clickCounts = clickCountResults.map((result, index) => {
-    if (result.status === "fulfilled") {
-      return result.value;
+  return clickCountResults.map((clickCountResult, index) => {
+    if (clickCountResult.status === "fulfilled") {
+      return clickCountResult.value;
     }
     // Log error for rejected promise
     logger.error("動画のクリック数の取得に失敗しました", {
-      error: result.reason,
+      error: clickCountResult.reason,
       videoId: videoIds[index],
     });
     return 0;
   });
+};
+
+export const getVideos = async (
+  page = 1,
+  perPage = 20,
+  filters?: VideoFilters,
+  sortField: VideoSortField = "updated_at",
+  sortOrder: VideoSortOrder = "desc"
+): Promise<{
+  videos: Video[];
+  total: number;
+}> => {
+  "use cache: private";
+
+  cacheLife("minutes");
+
+  const supabaseClient = await createSupabaseServerClient();
+
+  const from = (page - 1) * perPage;
+  const to = from + perPage - 1;
+
+  // Apply filters
+  const query = applyVideoFilters(selectVideos(supabaseClient), filters);
+
+  // Fetch videos from Supabase with pagination
+  const result = await query
+    .order(sortField, { ascending: sortOrder === "asc" })
+    .range(from, to);
+  const videos = unwrap(result, "getVideos") ?? [];
+  const { count } = result;
+
+  // Get last 7 days in JST timezone
+  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE);
+  const days = range(7).map((i) => {
+    const date = today.subtract({ days: i });
+    return formatDateKey(date);
+  });
+
+  // Fetch click counts for all videos for the last 7 days
+  // Using video.id as the Redis key (matches the write side in increment.ts)
+  const videoIds = videos.map((video) => video.id);
+
+  const clickCounts = await getClickCounts(videoIds, days);
 
   // Combine video data with click counts
   const videosWithClicks: Video[] = videos.map((video, index) => ({
@@ -157,4 +174,4 @@ export async function getVideos(
     total: count ?? 0,
     videos: videosWithClicks,
   };
-}
+};

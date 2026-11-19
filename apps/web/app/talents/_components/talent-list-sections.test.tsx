@@ -1,18 +1,23 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const fetchers = vi.hoisted(() => ({
-  fetchTalentList: vi.fn(),
-  fetchTalentStreamStatusesSafe: vi.fn(),
-}));
-
-vi.mock("@/lib/data/talents", () => fetchers);
+import type {
+  fetchTalentList,
+  fetchTalentStreamStatusesSafe,
+} from "@/lib/data/talents";
 
 import { TalentListGrid } from "./talent-list-sections";
 
+const fetchers = vi.hoisted(() => ({
+  fetchTalentList: vi.fn<typeof fetchTalentList>(),
+  fetchTalentStreamStatusesSafe: vi.fn<typeof fetchTalentStreamStatusesSafe>(),
+}));
+
+vi.mock(import("@/lib/data/talents"), () => fetchers);
+
 const TALENT_ID = "00000000-0000-4000-8000-000000000001";
 
-describe("TalentListGrid", () => {
+describe(TalentListGrid, () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -26,7 +31,7 @@ describe("TalentListGrid", () => {
     ]);
   });
 
-  test("should show the talents with their stream statuses", async () => {
+  it("should show the talents with their stream statuses", async () => {
     fetchers.fetchTalentStreamStatusesSafe.mockResolvedValue({
       [TALENT_ID]: { isLive: true, nextStreamAt: null },
     });
@@ -38,7 +43,7 @@ describe("TalentListGrid", () => {
     ).toHaveAccessibleDescription("配信中");
   });
 
-  test("should still show the talents without the stream statuses", async () => {
+  it("should still show the talents without the stream statuses", async () => {
     fetchers.fetchTalentStreamStatusesSafe.mockResolvedValue({});
 
     render(await TalentListGrid());

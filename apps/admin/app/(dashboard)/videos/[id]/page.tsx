@@ -5,7 +5,8 @@ import { ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { type ReactNode, Suspense } from "react";
+import { Suspense } from "react";
+import type { ReactNode } from "react";
 
 import { BackLink } from "@/components/back-link";
 import {
@@ -37,9 +38,9 @@ interface DetailItem {
   value: ReactNode;
 }
 
-export async function generateMetadata({
+export const generateMetadata = async ({
   params,
-}: Pick<PageProps<"/videos/[id]">, "params">): Promise<Metadata> {
+}: Pick<PageProps<"/videos/[id]">, "params">): Promise<Metadata> => {
   const { id } = await params;
 
   const video = await getVideo(id);
@@ -53,11 +54,11 @@ export async function generateMetadata({
   return {
     title: `${video.title} - 動画詳細`,
   };
-}
+};
 
-async function VideoDetails({
+const VideoDetails = async ({
   params,
-}: Pick<PageProps<"/videos/[id]">, "params">) {
+}: Pick<PageProps<"/videos/[id]">, "params">) => {
   const { id } = await params;
 
   const video = await getVideo(id);
@@ -230,6 +231,7 @@ async function VideoDetails({
             action={<VideoDeleteButton />}
             aria-label="動画の削除"
             className="mt-6"
+            // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- Alert (@shinju-date/ui) always renders a div and takes its role as a prop
             role="region"
             title="動画の削除"
             tone="danger"
@@ -240,58 +242,56 @@ async function VideoDetails({
       </div>
     </VideoActionsProvider>
   );
-}
+};
 
 /**
  * 読み込み中の `VideoDetails`。見出し、サムネイルとステータス、動画情報（YouTube の
  * 動画の10項目）、外部リンク、削除の区画を並べる
  */
-function VideoDetailsSkeleton() {
-  return (
-    <div aria-hidden="true">
-      <PageHeader
-        actions={
-          <>
-            <Skeleton className="h-9 w-20" />
-            <Skeleton className="h-9 w-40" />
-          </>
-        }
-        description="動画詳細"
-        title={<Skeleton className="h-8 w-96 max-w-full" />}
-      />
+const VideoDetailsSkeleton = () => (
+  <div aria-hidden="true">
+    <PageHeader
+      actions={
+        <>
+          <Skeleton className="h-9 w-20" />
+          <Skeleton className="h-9 w-40" />
+        </>
+      }
+      description="動画詳細"
+      title={<Skeleton className="h-8 w-96 max-w-full" />}
+    />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="space-y-6">
-          <PanelSkeleton title="サムネイル">
-            <Skeleton className="aspect-video w-full rounded-container" />
-          </PanelSkeleton>
-          <PanelSkeleton title="ステータス">
-            <Skeleton className="h-5 w-16" />
-          </PanelSkeleton>
-        </div>
-
-        <PanelSkeleton
-          description="現在データベースに保存されている情報"
-          title="動画情報"
-        >
-          <DetailListSkeleton rows={10} />
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="space-y-6">
+        <PanelSkeleton title="サムネイル">
+          <Skeleton className="aspect-video w-full rounded-container" />
+        </PanelSkeleton>
+        <PanelSkeleton title="ステータス">
+          <Skeleton className="h-5 w-16" />
         </PanelSkeleton>
       </div>
 
       <PanelSkeleton
-        className="mt-6"
-        description={
-          <Skeleton className="inline-block h-4 w-64 max-w-full align-middle" />
-        }
-        title="外部リンク"
+        description="現在データベースに保存されている情報"
+        title="動画情報"
       >
-        <Skeleton className="h-9 w-36" />
+        <DetailListSkeleton rows={10} />
       </PanelSkeleton>
-
-      <Skeleton className="mt-6 h-24 w-full rounded-container" />
     </div>
-  );
-}
+
+    <PanelSkeleton
+      className="mt-6"
+      description={
+        <Skeleton className="inline-block h-4 w-64 max-w-full align-middle" />
+      }
+      title="外部リンク"
+    >
+      <Skeleton className="h-9 w-36" />
+    </PanelSkeleton>
+
+    <Skeleton className="mt-6 h-24 w-full rounded-container" />
+  </div>
+);
 
 export default function VideoDetailPage({ params }: PageProps<"/videos/[id]">) {
   return (

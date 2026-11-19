@@ -2,6 +2,7 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { serveStorageImage } from "@/lib/storage-image";
 import { getSupabaseAdminClient } from "@/lib/supabase";
 import { createProfileImage } from "@/test/factories";
 import {
@@ -11,26 +12,22 @@ import {
   supabaseRequests,
 } from "@/test/supabase";
 
+import { GET } from "./route";
+
 const mocks = vi.hoisted(() => ({
-  serveStorageImage: vi.fn(),
+  serveStorageImage: vi.fn<typeof serveStorageImage>(),
 }));
 
-vi.mock("@/lib/storage-image", () => ({
+vi.mock(import("@/lib/storage-image"), () => ({
   serveStorageImage: mocks.serveStorageImage,
 }));
 
-import { GET } from "./route";
-
 setupSupabase();
 
-function get(id: string): Promise<Response> {
-  return GET(
-    new NextRequest(`https://shinju.date/images/profile-images/${id}`),
-    {
-      params: Promise.resolve({ id }),
-    }
-  );
-}
+const get = (id: string): Promise<Response> =>
+  GET(new NextRequest(`https://shinju.date/images/profile-images/${id}`), {
+    params: Promise.resolve({ id }),
+  });
 
 describe("GET /images/profile-images/[id]", () => {
   beforeEach(() => {
@@ -46,11 +43,11 @@ describe("GET /images/profile-images/[id]", () => {
 
     const response = await get(icon.id);
 
-    expect(await response.text()).toBe("image");
+    await expect(response.text()).resolves.toBe("image");
     // The lookup is sent with the public key, so RLS applies
-    expect(supabaseRequests("profile_images").map(({ role }) => role)).toEqual([
-      "anon",
-    ]);
+    expect(
+      supabaseRequests("profile_images").map(({ role }) => role)
+    ).toStrictEqual(["anon"]);
     expect(mocks.serveStorageImage).toHaveBeenCalledWith(expect.any(Request), {
       bucket: "profile-images",
       path: "youtube/UC1/a.webp",

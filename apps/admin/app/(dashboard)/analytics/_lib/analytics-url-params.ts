@@ -9,23 +9,21 @@ import type { SearchParamUpdates } from "@/lib/search-params-href";
  * クライアントコンポーネントから読み込むため、zod を読み込むファイル
  * （`search-params-schema.ts`）とは分けている。
  */
-export function getDateRangeUpdates(
+export const getDateRangeUpdates = (
   selectedDate: string | null,
   dateRange: { startDate: string; endDate: string }
-): SearchParamUpdates {
-  return {
-    from: dateRange.startDate,
-    to: dateRange.endDate,
-    ...(selectedDate && !isWithinRange(selectedDate, dateRange)
-      ? { date: null }
-      : {}),
-  };
-}
+): SearchParamUpdates => ({
+  from: dateRange.startDate,
+  to: dateRange.endDate,
+  ...(selectedDate && !isWithinRange(selectedDate, dateRange)
+    ? { date: null }
+    : {}),
+});
 
-function isWithinRange(
+const isWithinRange = (
   date: string,
   dateRange: { startDate: string; endDate: string }
-): boolean {
+): boolean => {
   try {
     const target = Temporal.PlainDate.from(date);
 
@@ -42,4 +40,4 @@ function isWithinRange(
   } catch {
     return false;
   }
-}
+};

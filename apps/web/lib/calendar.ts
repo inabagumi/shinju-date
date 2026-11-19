@@ -1,9 +1,6 @@
 import { max, min } from "@shinju-date/temporal-fns";
-import {
-  convertTimestampToArray,
-  createEvents,
-  type EventAttributes,
-} from "ics";
+import { convertTimestampToArray, createEvents } from "ics";
+import type { EventAttributes } from "ics";
 
 import type { CalendarVideo } from "@/lib/data/videos";
 
@@ -27,10 +24,10 @@ type GetPublishedAtAndEndedAtResult = [
   endedAt: Temporal.ZonedDateTime,
 ];
 
-export function getPublishedAtAndEndedAt(
+export const getPublishedAtAndEndedAt = (
   video: CalendarVideo,
   { now }: GetPublishedAtAndEndedAtOptions
-): GetPublishedAtAndEndedAtResult {
+): GetPublishedAtAndEndedAtResult => {
   const publishedAt = Temporal.Instant.from(
     video.published_at
   ).toZonedDateTimeISO(now.timeZoneId);
@@ -55,9 +52,9 @@ export function getPublishedAtAndEndedAt(
         );
 
   return [publishedAt, endedAt];
-}
+};
 
-export function createCalendarResponse(events: EventAttributes[]): Response {
+export const createCalendarResponse = (events: EventAttributes[]): Response => {
   const { error, value } = createEvents(events);
 
   if (error && !value) {
@@ -76,16 +73,16 @@ export function createCalendarResponse(events: EventAttributes[]): Response {
       "Content-Type": "text/calendar; charset=UTF-8",
     },
   });
-}
+};
 
 interface CreateEventAttributesListOptions {
   now: Temporal.ZonedDateTime;
 }
 
-export function createEventAttributesList(
+export const createEventAttributesList = (
   videos: CalendarVideo[],
   { now }: CreateEventAttributesListOptions
-): EventAttributes[] {
+): EventAttributes[] => {
   const events: EventAttributes[] = [];
 
   for (const video of videos) {
@@ -118,4 +115,4 @@ export function createEventAttributesList(
   }
 
   return events;
-}
+};

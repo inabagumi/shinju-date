@@ -12,15 +12,17 @@ import {
   BACKFILL_JOB_TTL_SECONDS,
   BACKFILL_LEASE_MARGIN_SECONDS,
   BACKFILL_MAX_ATTEMPTS,
-  type BackfillClaim,
-  type BackfillJob,
   BackfillQueue,
-  type BackfillRequest,
   BackfillTransitionError,
-  type BackfillWriteResult,
   canTransition,
   getBackfillJobId,
   getJobActivity,
+} from "./index.js";
+import type {
+  BackfillClaim,
+  BackfillJob,
+  BackfillRequest,
+  BackfillWriteResult,
 } from "./index.js";
 import { createRequestedJob } from "./jobs.js";
 
@@ -37,7 +39,7 @@ const jobId = getBackfillJobId("youtube", "channel-row-1");
 const lockKey = `${REDIS_KEYS.VIDEO_BACKFILL_LOCK_PREFIX}${jobId}`;
 
 /** Claims the next job, failing the test when there is none. */
-async function claimJob(queue: BackfillQueue, at: Temporal.Instant) {
+const claimJob = async (queue: BackfillQueue, at: Temporal.Instant) => {
   const claim = await queue.claim(at);
 
   if (!claim) {
@@ -45,48 +47,52 @@ async function claimJob(queue: BackfillQueue, at: Temporal.Instant) {
   }
 
   return claim;
-}
+};
 
 /**
  * The claim to keep writing with after a write, failing the test when the
  * lock was lost.
  */
-function next(
+const nextClaim = (
   { token }: BackfillClaim,
   result: BackfillWriteResult
-): BackfillClaim {
+): BackfillClaim => {
   if (result.status !== "saved") {
     throw new Error("Expected the write to be saved");
   }
 
   return { job: result.job, token };
-}
+};
 
 /** A page that is not the last one. */
-function page(added: number, nextCursor: string) {
-  return { added, done: false, nextCursor };
-}
+const page = (added: number, nextCursor: string) => ({
+  added,
+  done: false,
+  nextCursor,
+});
 
 /** The last page of a history. */
-function lastPage(added = 0) {
-  return { added, done: true, nextCursor: null };
-}
+const lastPage = (added = 0) => ({ added, done: true, nextCursor: null });
 
 /** The claim with changes made to its job. */
-function withChanges(
+const withChanges = (
   { job, token }: BackfillClaim,
   changes: Partial<BackfillJob>
-): BackfillClaim {
-  return { job: { ...job, ...changes }, token };
-}
+): BackfillClaim => ({ job: { ...job, ...changes }, token });
+
+/** A job in `status`, last updated `minutesAgo` minutes before `now`. */
+const jobAt = (status: BackfillJob["status"], minutesAgo = 1) => ({
+  status,
+  updatedAt: later(-minutesAgo).toString(),
+});
 
 describeOnEachRedis((createClient) => {
-  describe("BackfillQueue", () => {
+  describe(BackfillQueue, () => {
     const getScopedRedis = useScopedRedis(createClient);
 
-    function createQueue(
+    const createQueue = (
       options?: ConstructorParameters<typeof BackfillQueue>[1]
-    ) {
+    ) => {
       const scoped = getScopedRedis();
 
       return {
@@ -94,12 +100,28 @@ describeOnEachRedis((createClient) => {
         redis: scoped.redis,
         scoped,
       };
-    }
+    };
+
+    /**
+     * Claims the job with a worker whose lease then runs out, after which
+     * the job is requested again and another worker claims it.
+     */
+    const claimTwice = async () => {
+      const { queue, redis } = createQueue();
+
+      await queue.enqueue(request, now);
+      const stale = await claimJob(queue, later(1));
+      await redis.del(lockKey);
+      await queue.enqueue(request, later(10));
+      const current = await claimJob(queue, later(11));
+
+      return { current, queue, redis, stale };
+    };
 
     it("queues a job and keeps it for a week", async () => {
       const { queue, redis } = createQueue();
 
-      await expect(queue.enqueue(request, now)).resolves.toEqual({
+      await expect(queue.enqueue(request, now)).resolves.toStrictEqual({
         enqueued: true,
         job: expect.objectContaining({
           added: 0,
@@ -112,9 +134,9 @@ describeOnEachRedis((createClient) => {
         }),
       });
 
-      expect(
-        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-      ).toEqual([jobId]);
+      await expect(
+        redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
+      ).resolves.toStrictEqual([jobId]);
       await expectTtl(
         redis,
         `${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${jobId}`,
@@ -136,9 +158,9 @@ describeOnEachRedis((createClient) => {
         enqueued: false,
         job: { status: "pending" },
       });
-      expect(
-        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-      ).toHaveLength(1);
+      await expect(
+        redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
+      ).resolves.toHaveLength(1);
     });
 
     it("handles requests for the same account at the same moment once", async () => {
@@ -150,9 +172,9 @@ describeOnEachRedis((createClient) => {
       ]);
 
       expect(results.filter((result) => result.enqueued)).toHaveLength(1);
-      expect(
-        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-      ).toEqual([jobId]);
+      await expect(
+        redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
+      ).resolves.toStrictEqual([jobId]);
     });
 
     it("does not save over progress made after the request read the job", async () => {
@@ -168,16 +190,16 @@ describeOnEachRedis((createClient) => {
           page(4, "page-2"),
           later(2)
         );
-        await queue.requeue(next(claim, recorded), later(2));
+        await queue.requeue(nextClaim(claim, recorded), later(2));
       });
 
       await expect(queue.enqueue(request, later(3))).resolves.toMatchObject({
         enqueued: false,
         job: { added: 4, cursor: "page-2", requestedBy: "user-2" },
       });
-      expect(
-        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-      ).toEqual([jobId]);
+      await expect(
+        redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
+      ).resolves.toStrictEqual([jobId]);
     });
 
     it("does not queue a job that a worker claimed after it was read", async () => {
@@ -201,9 +223,9 @@ describeOnEachRedis((createClient) => {
         enqueued: false,
         job: { status: "failed" },
       });
-      expect(
-        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-      ).toEqual([]);
+      await expect(
+        redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
+      ).resolves.toStrictEqual([]);
     });
 
     it("saves nothing when the job cannot be added to the queue", async () => {
@@ -213,7 +235,7 @@ describeOnEachRedis((createClient) => {
       await redis.set(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, "not a list");
 
       await expect(queue.enqueue(request, now)).rejects.toThrow("WRONGTYPE");
-      await expect(queue.getJobs([jobId], now)).resolves.toEqual([null]);
+      await expect(queue.getJobs([jobId], now)).resolves.toStrictEqual([null]);
 
       // Once the queue works again, the request can be made right away.
       await redis.del(REDIS_KEYS.VIDEO_BACKFILL_QUEUE);
@@ -236,7 +258,7 @@ describeOnEachRedis((createClient) => {
       ).rejects.toThrow("WRONGTYPE");
       // Not left pending without a queue entry: still running and locked, and
       // free to be requested again once the lease runs out.
-      await expect(queue.getJobs([jobId], later(2))).resolves.toEqual([
+      await expect(queue.getJobs([jobId], later(2))).resolves.toStrictEqual([
         {
           active: true,
           job: expect.objectContaining({ cursor: null, status: "running" }),
@@ -263,7 +285,7 @@ describeOnEachRedis((createClient) => {
       await queue.enqueue(request, now);
       await queue.enqueue({ ...request, accountId: "channel-row-2" }, now);
 
-      await expect(queue.claim(later(1))).resolves.toEqual({
+      await expect(queue.claim(later(1))).resolves.toStrictEqual({
         job: expect.objectContaining({
           id: jobId,
           startedAt: later(1).toString(),
@@ -304,7 +326,7 @@ describeOnEachRedis((createClient) => {
       await redis.lpush(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, jobId, "youtube:gone");
 
       await expect(queue.claim(later(3))).resolves.toBeNull();
-      expect(await redis.exists(lockKey)).toBe(0);
+      await expect(redis.exists(lockKey)).resolves.toBe(0);
     });
 
     it("puts a job back at the end of the queue to continue later", async () => {
@@ -320,14 +342,14 @@ describeOnEachRedis((createClient) => {
       );
 
       await expect(
-        queue.requeue(next(claim, recorded), later(2))
+        queue.requeue(nextClaim(claim, recorded), later(2))
       ).resolves.toMatchObject({ status: "saved" });
 
-      expect(await redis.exists(lockKey)).toBe(0);
-      expect(
-        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-      ).toEqual([jobId, "youtube:channel-row-2"]);
-      await expect(queue.getJobs([jobId], later(2))).resolves.toEqual([
+      await expect(redis.exists(lockKey)).resolves.toBe(0);
+      await expect(
+        redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
+      ).resolves.toStrictEqual([jobId, "youtube:channel-row-2"]);
+      await expect(queue.getJobs([jobId], later(2))).resolves.toStrictEqual([
         {
           active: true,
           job: expect.objectContaining({
@@ -349,7 +371,7 @@ describeOnEachRedis((createClient) => {
 
       await expect(
         queue.recordPage(claim, page(2, "page-2"), later(2))
-      ).resolves.toEqual({
+      ).resolves.toStrictEqual({
         job: {
           ...claim.job,
           added: 2,
@@ -360,14 +382,14 @@ describeOnEachRedis((createClient) => {
         },
         status: "saved",
       });
-      await expect(queue.getJobs([jobId], later(2))).resolves.toEqual([
+      await expect(queue.getJobs([jobId], later(2))).resolves.toStrictEqual([
         {
           active: true,
           job: expect.objectContaining({ added: 2, status: "running" }),
           status: "running",
         },
       ]);
-      expect(await redis.get(lockKey)).toBe(claim.token);
+      await expect(redis.get(lockKey)).resolves.toBe(claim.token);
     });
 
     it("completes a job with its last page and releases it", async () => {
@@ -375,13 +397,13 @@ describeOnEachRedis((createClient) => {
 
       await queue.enqueue(request, now);
       const claim = await claimJob(queue, later(1));
-      const first = next(
+      const first = nextClaim(
         claim,
         await queue.recordPage(claim, page(2, "page-2"), later(2))
       );
       const done = await queue.recordPage(first, lastPage(1), later(3));
 
-      expect(done).toEqual({
+      expect(done).toStrictEqual({
         job: expect.objectContaining({
           added: 3,
           cursor: null,
@@ -392,8 +414,10 @@ describeOnEachRedis((createClient) => {
         }),
         status: "saved",
       });
-      expect(await redis.exists(lockKey)).toBe(0);
-      await expect(queue.getJobs([jobId, "twitch:none"])).resolves.toEqual([
+      await expect(redis.exists(lockKey)).resolves.toBe(0);
+      await expect(
+        queue.getJobs([jobId, "twitch:none"])
+      ).resolves.toStrictEqual([
         {
           active: false,
           job: done.status === "saved" && done.job,
@@ -408,7 +432,8 @@ describeOnEachRedis((createClient) => {
 
       await queue.enqueue(request, now);
 
-      for (let attempt = 1; attempt < BACKFILL_MAX_ATTEMPTS; attempt++) {
+      /** Fails the job once, after which it is put back in the queue. */
+      const failAttempt = async (attempt: number) => {
         const claim = await claimJob(queue, later(attempt));
 
         await expect(
@@ -426,9 +451,14 @@ describeOnEachRedis((createClient) => {
           },
           status: "saved",
         });
-        expect(
-          await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-        ).toEqual([jobId]);
+        await expect(
+          redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
+        ).resolves.toStrictEqual([jobId]);
+      };
+
+      for (let attempt = 1; attempt < BACKFILL_MAX_ATTEMPTS; attempt += 1) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- each attempt claims the job that the previous one put back in the queue
+        await failAttempt(attempt);
       }
 
       const last = await claimJob(queue, later(BACKFILL_MAX_ATTEMPTS));
@@ -444,10 +474,10 @@ describeOnEachRedis((createClient) => {
         },
         status: "saved",
       });
-      expect(await redis.exists(lockKey)).toBe(0);
-      expect(
-        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-      ).toEqual([]);
+      await expect(redis.exists(lockKey)).resolves.toBe(0);
+      await expect(
+        redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
+      ).resolves.toStrictEqual([]);
     });
 
     it("gives a job up after the attempts the queue was made with", async () => {
@@ -493,18 +523,18 @@ describeOnEachRedis((createClient) => {
       await queue.enqueue(request, now);
       const claim = await claimJob(queue, later(1));
 
-      scoped.beforeNextScript(async () => {
-        throw new Error("redis unavailable");
-      });
+      scoped.beforeNextScript(() =>
+        Promise.reject(new Error("redis unavailable"))
+      );
 
       await expect(
         queue.recordPage(claim, page(3, "page-2"), later(2))
       ).rejects.toThrow("redis unavailable");
-      expect(await redis.exists(lockKey)).toBe(0);
-      expect(
-        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-      ).toEqual([jobId]);
-      await expect(queue.getJobs([jobId], later(2))).resolves.toEqual([
+      await expect(redis.exists(lockKey)).resolves.toBe(0);
+      await expect(
+        redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
+      ).resolves.toStrictEqual([jobId]);
+      await expect(queue.getJobs([jobId], later(2))).resolves.toStrictEqual([
         expect.objectContaining({
           job: expect.objectContaining({
             added: 3,
@@ -523,14 +553,14 @@ describeOnEachRedis((createClient) => {
       const claim = await claimJob(queue, later(1));
 
       await redis.set(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, "not a list");
-      scoped.beforeNextScript(async () => {
-        throw new Error("redis unavailable");
-      });
+      scoped.beforeNextScript(() =>
+        Promise.reject(new Error("redis unavailable"))
+      );
 
       await expect(
         queue.recordPage(claim, page(3, "page-2"), later(2))
       ).rejects.toThrow("redis unavailable");
-      expect(await redis.get(lockKey)).toBe(claim.token);
+      await expect(redis.get(lockKey)).resolves.toBe(claim.token);
     });
 
     it("refuses to move a job in a way the transitions do not allow", async () => {
@@ -538,7 +568,7 @@ describeOnEachRedis((createClient) => {
 
       await queue.enqueue(request, now);
       const claim = await claimJob(queue, later(1));
-      const done = next(
+      const done = nextClaim(
         claim,
         await queue.recordPage(claim, lastPage(), later(2))
       );
@@ -561,17 +591,25 @@ describeOnEachRedis((createClient) => {
       await expect(queue.requeue(done, later(3))).rejects.toThrow(
         BackfillTransitionError
       );
-      // A job that was not claimed cannot finish either.
+
+      await expect(
+        Promise.all([
+          redis.get(`${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${jobId}`),
+          redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1),
+        ])
+      ).resolves.toStrictEqual([saved, []]);
+    });
+
+    it("refuses to finish a job that was not claimed", async () => {
+      const { queue } = createQueue();
+
+      await queue.enqueue(request, now);
+      const claim = await claimJob(queue, later(1));
+      await queue.recordPage(claim, lastPage(), later(2));
+
       await expect(
         queue.recordPage(withChanges(claim, { status: "pending" }), lastPage())
       ).rejects.toThrow("that is pending cannot move to done");
-
-      expect(
-        await redis.get(`${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${jobId}`)
-      ).toEqual(saved);
-      expect(
-        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-      ).toEqual([]);
     });
 
     it("locks a claim for as long as a worker may run, and a little more", async () => {
@@ -591,7 +629,7 @@ describeOnEachRedis((createClient) => {
       await queue.enqueue(request, now);
       const claim = await claimJob(queue, later(1));
       await queue.recordFailure(
-        next(claim, await queue.recordPage(claim, page(5, "page-3"))),
+        nextClaim(claim, await queue.recordPage(claim, page(5, "page-3"))),
         "error",
         { permanent: true }
       );
@@ -616,7 +654,7 @@ describeOnEachRedis((createClient) => {
       await queue.enqueue(request, now);
       const claim = await claimJob(queue, later(1));
       await queue.recordPage(
-        next(claim, await queue.recordPage(claim, page(4, "page-2"))),
+        nextClaim(claim, await queue.recordPage(claim, page(4, "page-2"))),
         lastPage(1)
       );
 
@@ -634,7 +672,7 @@ describeOnEachRedis((createClient) => {
       // The lease ran out.
       await redis.del(lockKey);
 
-      await expect(queue.getJobs([jobId], later(10))).resolves.toEqual([
+      await expect(queue.getJobs([jobId], later(10))).resolves.toStrictEqual([
         {
           active: false,
           job: expect.objectContaining({ status: "running" }),
@@ -672,49 +710,69 @@ describeOnEachRedis((createClient) => {
       const second = await claimJob(queue, later(3));
 
       expect(second.token).not.toBe(first.token);
-      expect(await redis.get(lockKey)).toBe(second.token);
+      await expect(redis.get(lockKey)).resolves.toBe(second.token);
     });
 
-    it("ignores the writes of a worker whose lease ran out", async () => {
-      const { queue, redis } = createQueue();
+    describe("when the lease of a worker ran out", () => {
+      it.each<{
+        name: string;
+        write: (
+          queue: BackfillQueue,
+          stale: Awaited<ReturnType<typeof claimJob>>
+        ) => Promise<unknown>;
+      }>([
+        {
+          name: "a page with a next page",
+          write: (queue, stale) =>
+            queue.recordPage(stale, page(9, "stale-page"), later(12)),
+        },
+        {
+          name: "the last page",
+          write: (queue, stale) =>
+            queue.recordPage(stale, lastPage(9), later(12)),
+        },
+        {
+          name: "a failure",
+          write: (queue, stale) =>
+            queue.recordFailure(stale, "error", {}, later(12)),
+        },
+        {
+          name: "a permanent failure",
+          write: (queue, stale) =>
+            queue.recordFailure(stale, "error", { permanent: true }, later(12)),
+        },
+        {
+          name: "a request to put the job back",
+          write: (queue, stale) => queue.requeue(stale, later(12)),
+        },
+      ])("ignores $name from that worker", async ({ write }) => {
+        const { current, queue, redis, stale } = await claimTwice();
 
-      await queue.enqueue(request, now);
-      const stale = await claimJob(queue, later(1));
-      // The lease ran out, the job was requested again and another worker
-      // claimed it.
-      await redis.del(lockKey);
-      await queue.enqueue(request, later(10));
-      const current = await claimJob(queue, later(11));
-      await expect(
-        queue.recordPage(stale, page(9, "stale-page"), later(12))
-      ).resolves.toEqual({ status: "lost" });
-      await expect(
-        queue.recordPage(stale, lastPage(9), later(12))
-      ).resolves.toEqual({ status: "lost" });
-      await expect(
-        queue.recordFailure(stale, "error", {}, later(12))
-      ).resolves.toEqual({ status: "lost" });
-      await expect(
-        queue.recordFailure(stale, "error", { permanent: true }, later(12))
-      ).resolves.toEqual({ status: "lost" });
-      await expect(queue.requeue(stale, later(12))).resolves.toEqual({
-        status: "lost",
+        await expect(write(queue, stale)).resolves.toStrictEqual({
+          status: "lost",
+        });
+        await expect(
+          Promise.all([
+            queue.getJobs([jobId], later(12)),
+            redis.get(lockKey),
+            redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1),
+          ])
+        ).resolves.toStrictEqual([
+          [{ active: true, job: current.job, status: "running" }],
+          current.token,
+          [],
+        ]);
       });
 
-      await expect(queue.getJobs([jobId], later(12))).resolves.toEqual([
-        { active: true, job: current.job, status: "running" },
-      ]);
-      expect(await redis.get(lockKey)).toBe(current.token);
-      expect(
-        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-      ).toEqual([]);
+      it("still saves the writes of the worker that holds the job", async () => {
+        const { current, queue } = await claimTwice();
 
-      // The worker that holds the job still writes it.
-      await expect(
-        queue.recordPage(current, lastPage(), later(13))
-      ).resolves.toMatchObject({
-        job: { status: "done" },
-        status: "saved",
+        await expect(
+          queue.recordPage(current, lastPage(), later(13))
+        ).resolves.toMatchObject({
+          job: { status: "done" },
+          status: "saved",
+        });
       });
     });
 
@@ -727,8 +785,8 @@ describeOnEachRedis((createClient) => {
 
       await expect(
         queue.recordPage(claim, page(1, "page-2"), later(10))
-      ).resolves.toEqual({ status: "lost" });
-      await expect(queue.getJobs([jobId], later(10))).resolves.toEqual([
+      ).resolves.toStrictEqual({ status: "lost" });
+      await expect(queue.getJobs([jobId], later(10))).resolves.toStrictEqual([
         { active: false, job: claim.job, status: "interrupted" },
       ]);
     });
@@ -763,10 +821,10 @@ describeOnEachRedis((createClient) => {
 
       await queue.enqueue(request, now);
 
-      await expect(queue.getJobs([jobId], later(59))).resolves.toEqual([
+      await expect(queue.getJobs([jobId], later(59))).resolves.toStrictEqual([
         expect.objectContaining({ active: true }),
       ]);
-      await expect(queue.getJobs([jobId], later(61))).resolves.toEqual([
+      await expect(queue.getJobs([jobId], later(61))).resolves.toStrictEqual([
         expect.objectContaining({ active: false }),
       ]);
     });
@@ -777,7 +835,7 @@ describeOnEachRedis((createClient) => {
       await queue.enqueue({ ...request, runId: "run-1" }, now);
       const claim = await claimJob(queue, later(1));
       await queue.recordFailure(
-        next(claim, await queue.recordPage(claim, page(0, "page-3"))),
+        nextClaim(claim, await queue.recordPage(claim, page(0, "page-3"))),
         "error",
         { permanent: true }
       );
@@ -824,10 +882,10 @@ describeOnEachRedis((createClient) => {
         later(5)
       );
 
-      expect(await redis.get("copy:done")).toEqual(
+      await expect(redis.get("copy:done")).resolves.toStrictEqual(
         completed.status === "saved" && completed.job
       );
-      expect(await redis.get("copy:failed")).toEqual(
+      await expect(redis.get("copy:failed")).resolves.toStrictEqual(
         failed.status === "saved" && failed.job
       );
       await expectTtl(redis, "copy:done", BACKFILL_JOB_TTL_SECONDS);
@@ -853,7 +911,7 @@ describeOnEachRedis((createClient) => {
         1
       );
       vi.restoreAllMocks();
-      expect(await redis.mget("copy-1", "copy-2")).toEqual([
+      await expect(redis.mget("copy-1", "copy-2")).resolves.toStrictEqual([
         done.status === "saved" && done.job,
         done.status === "saved" && done.job,
       ]);
@@ -865,43 +923,51 @@ describeOnEachRedis((createClient) => {
       await queue.enqueue(request, now);
       const claim = await claimJob(queue, later(1));
       const recorded = await queue.recordPage(claim, page(1, "page-2"));
-      await queue.recordFailure(next(claim, recorded), "error");
+      await queue.recordFailure(nextClaim(claim, recorded), "error");
       const stale = await claimJob(queue, later(2));
       await redis.del(lockKey);
       await queue.recordPage(stale, lastPage());
 
-      expect(await redis.get("copy")).toBeNull();
+      await expect(redis.get("copy")).resolves.toBeNull();
     });
 
     it("increments the version of a job with every write", async () => {
       const { queue, redis } = createQueue();
-      const stored = async () =>
-        (
-          await redis.get<BackfillJob>(
-            `${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${jobId}`
-          )
-        )?.version;
+      const stored = async () => {
+        const job = await redis.get<BackfillJob>(
+          `${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${jobId}`
+        );
+
+        return job?.version;
+      };
 
       await queue.enqueue(request, now);
-      expect(await stored()).toBe(1);
+      const enqueued = await stored();
 
       const claim = await claimJob(queue, later(1));
-      expect(claim.job.version).toBe(2);
-      expect(await stored()).toBe(2);
+      expect({
+        claimed: claim.job.version,
+        enqueued,
+        stored: await stored(),
+      }).toStrictEqual({ claimed: 2, enqueued: 1, stored: 2 });
 
       const recorded = await queue.recordPage(claim, page(1, "page-2"));
-      expect(recorded).toMatchObject({ job: { version: 3 } });
-      expect(await stored()).toBe(3);
+      expect({ recorded, stored: await stored() }).toMatchObject({
+        recorded: { job: { version: 3 } },
+        stored: 3,
+      });
 
-      await queue.requeue(next(claim, recorded));
-      expect(await stored()).toBe(4);
+      await queue.requeue(nextClaim(claim, recorded));
+      await expect(stored()).resolves.toBe(4);
 
       const done = await queue.recordPage(
         await claimJob(queue, later(2)),
         lastPage()
       );
-      expect(done).toMatchObject({ job: { version: 6 } });
-      expect(await stored()).toBe(6);
+      expect({ done, stored: await stored() }).toMatchObject({
+        done: { job: { version: 6 } },
+        stored: 6,
+      });
 
       await expect(queue.enqueue(request, later(3))).resolves.toMatchObject({
         job: { version: 7 },
@@ -933,7 +999,7 @@ describeOnEachRedis((createClient) => {
         version: 4,
       };
       // The same job with its fields in another order.
-      const reordered = Object.fromEntries(Object.entries(job).reverse());
+      const reordered = Object.fromEntries(Object.entries(job).toReversed());
 
       await redis.set(
         `${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${jobId}`,
@@ -969,9 +1035,9 @@ describeOnEachRedis((createClient) => {
         enqueued: false,
         job: { requestedBy: "user-2" },
       });
-      expect(
-        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-      ).toEqual([jobId]);
+      await expect(
+        redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
+      ).resolves.toStrictEqual([jobId]);
     });
 
     it("requeues a job once when two requests are made at the same moment", async () => {
@@ -986,23 +1052,23 @@ describeOnEachRedis((createClient) => {
       ]);
 
       expect(results.filter((result) => result.enqueued)).toHaveLength(1);
-      expect(
-        await redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
-      ).toEqual([jobId]);
+      await expect(
+        redis.lrange(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, 0, -1)
+      ).resolves.toStrictEqual([jobId]);
     });
   });
 });
 
-describe("getBackfillJobId", () => {
+describe(getBackfillJobId, () => {
   it("identifies a job by platform and account", () => {
     expect(jobId).toBe("youtube:channel-row-1");
   });
 });
 
-describe("BACKFILL_JOB_TRANSITIONS", () => {
+describe("the transitions of the jobs", () => {
   it("lets a job be requested again from any status", () => {
     for (const status of ["done", "failed", "pending", "running"] as const) {
-      expect(canTransition("enqueue", status)).toBe(true);
+      expect(canTransition("enqueue", status)).toBeTruthy();
     }
   });
 
@@ -1013,18 +1079,18 @@ describe("BACKFILL_JOB_TRANSITIONS", () => {
       "recordPage",
       "requeue",
     ] as const) {
-      expect(canTransition(operation, "running")).toBe(true);
+      expect(canTransition(operation, "running")).toBeTruthy();
 
       for (const status of ["done", "failed", "pending"] as const) {
-        expect(canTransition(operation, status)).toBe(false);
+        expect(canTransition(operation, status)).toBeFalsy();
       }
     }
   });
 
   it("does not hand out a job that finished", () => {
-    expect(canTransition("claim", "pending")).toBe(true);
-    expect(canTransition("claim", "done")).toBe(false);
-    expect(canTransition("claim", "failed")).toBe(false);
+    expect(canTransition("claim", "pending")).toBeTruthy();
+    expect(canTransition("claim", "done")).toBeFalsy();
+    expect(canTransition("claim", "failed")).toBeFalsy();
   });
 
   it("names the status each operation moves a job to", () => {
@@ -1035,7 +1101,7 @@ describe("BACKFILL_JOB_TRANSITIONS", () => {
           to,
         ])
       )
-    ).toEqual({
+    ).toStrictEqual({
       claim: "running",
       complete: "done",
       enqueue: "pending",
@@ -1046,18 +1112,17 @@ describe("BACKFILL_JOB_TRANSITIONS", () => {
   });
 });
 
-describe("getJobActivity", () => {
-  const at = (status: BackfillJob["status"], minutesAgo = 1) => ({
-    status,
-    updatedAt: later(-minutesAgo).toString(),
-  });
-
+describe(getJobActivity, () => {
   it("tells a job that is queued or being read", () => {
-    expect(getJobActivity(at("pending"), { locked: false, now })).toEqual({
+    expect(
+      getJobActivity(jobAt("pending"), { locked: false, now })
+    ).toStrictEqual({
       active: true,
       status: "pending",
     });
-    expect(getJobActivity(at("running"), { locked: true, now })).toEqual({
+    expect(
+      getJobActivity(jobAt("running"), { locked: true, now })
+    ).toStrictEqual({
       active: true,
       status: "running",
     });
@@ -1065,23 +1130,31 @@ describe("getJobActivity", () => {
 
   it("tells a job that stopped without finishing as interrupted", () => {
     // Its worker died and the lock ran out.
-    expect(getJobActivity(at("running"), { locked: false, now })).toEqual({
+    expect(
+      getJobActivity(jobAt("running"), { locked: false, now })
+    ).toStrictEqual({
       active: false,
       status: "interrupted",
     });
     // It waited too long in the queue.
-    expect(getJobActivity(at("pending", 61), { locked: false, now })).toEqual({
+    expect(
+      getJobActivity(jobAt("pending", 61), { locked: false, now })
+    ).toStrictEqual({
       active: false,
       status: "interrupted",
     });
   });
 
   it("tells a job that finished as it finished", () => {
-    expect(getJobActivity(at("done"), { locked: false, now })).toEqual({
-      active: false,
-      status: "done",
-    });
-    expect(getJobActivity(at("failed"), { locked: true, now })).toEqual({
+    expect(getJobActivity(jobAt("done"), { locked: false, now })).toStrictEqual(
+      {
+        active: false,
+        status: "done",
+      }
+    );
+    expect(
+      getJobActivity(jobAt("failed"), { locked: true, now })
+    ).toStrictEqual({
       active: false,
       status: "failed",
     });

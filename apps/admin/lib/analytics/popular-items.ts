@@ -4,12 +4,14 @@ import { formatDateKey } from "@shinju-date/temporal-fns";
 
 import { getRedisClient } from "@/lib/redis";
 
-import { type DateRange, dailyKeys, parseScoredMembers } from "./redis";
+import { dailyKeys, parseScoredMembers } from "./redis";
+import type { DateRange } from "./redis";
 
 /**
  * キャッシュ有効期間（秒）
  */
-const CACHE_TTL_SECONDS = 60 * 10; // 10 minutes
+// 10 minutes
+const CACHE_TTL_SECONDS = 60 * 10;
 
 interface PopularItemsOptions {
   limit: number;
@@ -25,10 +27,10 @@ interface PopularItemsOptions {
  * @param options.limit - Maximum number of items to return
  * @returns Array of [itemId, score] tuples
  */
-export async function getPopularItems(
+export const getPopularItems = async (
   keyPrefix: string,
   { limit, range }: PopularItemsOptions
-): Promise<[string, number][]> {
+): Promise<[string, number][]> => {
   const redisClient = getRedisClient();
 
   const getTopItems = async (key: string): Promise<[string, number][]> => {
@@ -55,7 +57,8 @@ export async function getPopularItems(
     }
 
     // Multi-day operation - use ZUNIONSTORE with caching
-    const cleanedPrefix = keyPrefix.replace(/:$/, ""); // Remove trailing ':'
+    // Remove trailing ':'
+    const cleanedPrefix = keyPrefix.replace(/:$/u, "");
     const rangeKey = `${formatDateKey(start)}/${formatDateKey(end)}`;
     const cacheKey = `${REDIS_KEYS.POPULAR_ITEMS_CACHE_PREFIX}${cleanedPrefix}:${rangeKey}`;
 
@@ -90,4 +93,4 @@ export async function getPopularItems(
 
     return [];
   }
-}
+};

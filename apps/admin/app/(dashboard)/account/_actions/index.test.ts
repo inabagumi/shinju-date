@@ -1,6 +1,8 @@
 import { AuthApiError } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { TypedSupabaseClient } from "@/lib/supabase";
 import { setupActionTest, TEST_USER } from "@/test/action-harness";
 
 import { updateUserEmailAction, updateUserPasswordAction } from "./index";
@@ -18,160 +20,179 @@ const ACTION_FAILED_ERROR =
 const PASSWORD = "current-password";
 const NEW_PASSWORD = "new-password";
 
+type AuthClient = TypedSupabaseClient["auth"];
+
 /** `supabaseClient.auth` の、アカウントのアクションが使うメソッド */
 const auth = {
-  signInWithPassword: vi.fn(),
-  updateUser: vi.fn(),
+  signInWithPassword: vi.fn<AuthClient["signInWithPassword"]>(),
+  updateUser: vi.fn<AuthClient["updateUser"]>(),
 };
-const supabaseClient = { auth };
+const supabaseClient = {
+  auth: auth as Partial<AuthClient> as AuthClient,
+} as Partial<TypedSupabaseClient> as TypedSupabaseClient;
 
-function signIn(user: Partial<typeof TEST_USER> = {}): void {
+const session: Session = {
+  access_token: "access-token",
+  expires_in: 3600,
+  refresh_token: "refresh-token",
+  token_type: "bearer",
+  user: TEST_USER,
+};
+
+const signIn = (user: Partial<typeof TEST_USER> = {}): void => {
   test.requireAuthenticatedUser.mockResolvedValue({
     supabaseClient,
     user: { ...TEST_USER, ...user },
   });
-}
+};
 
-function emailForm(email: string): FormData {
+const emailForm = (email: string): FormData => {
   const formData = new FormData();
   formData.set("email", email);
   return formData;
-}
+};
 
-function passwordForm({
+const passwordForm = ({
   confirmPassword = NEW_PASSWORD,
   currentPassword = PASSWORD,
   newPassword = NEW_PASSWORD,
-} = {}): FormData {
+} = {}): FormData => {
   const formData = new FormData();
   formData.set("currentPassword", currentPassword);
   formData.set("newPassword", newPassword);
   formData.set("confirmPassword", confirmPassword);
   return formData;
-}
+};
 
-beforeEach(() => {
-  auth.signInWithPassword.mockResolvedValue({
-    data: { session: {}, user: TEST_USER },
-    error: null,
-  });
-  auth.updateUser.mockResolvedValue({ data: { user: TEST_USER }, error: null });
-  signIn();
-});
-
-describe("updateUserEmailAction", () => {
-  it("asks Supabase to send the confirmation to the new address", async () => {
-    const result = await updateUserEmailAction(
-      {},
-      emailForm("new@example.com")
-    );
-
-    expect(result).toEqual({ success: true });
-    expect(auth.updateUser).toHaveBeenCalledWith(
-      { email: "new@example.com" },
-      { emailRedirectTo: expect.stringMatching(/\/api\/auth\/callback$/) }
-    );
-    test.expectRevalidated({ paths: ["/account"] });
-  });
-
-  it("returns an error for the address that is not valid", async () => {
-    const result = await updateUserEmailAction({}, emailForm("invalid"));
-
-    expect(result).toEqual({
-      errors: { email: ["メールアドレスの形式が正しくありません。"] },
-    });
-    expect(auth.updateUser).not.toHaveBeenCalled();
-  });
-
-  it("returns an error when Supabase fails to update the address", async () => {
-    auth.updateUser.mockResolvedValue({
-      data: { user: null },
-      error: new AuthApiError("Email rate limit exceeded", 429, undefined),
-    });
-
-    const result = await updateUserEmailAction(
-      {},
-      emailForm("new@example.com")
-    );
-
-    expect(result).toEqual({
-      errors: { generic: ["メールアドレスの更新に失敗しました。"] },
-    });
-    test.expectNotRevalidated();
-  });
-});
-
-describe("updateUserPasswordAction", () => {
-  it("updates the password after checking the current one", async () => {
-    const result = await updateUserPasswordAction({}, passwordForm());
-
-    expect(result).toEqual({ success: true });
-    expect(auth.signInWithPassword).toHaveBeenCalledWith({
-      email: TEST_USER.email,
-      password: PASSWORD,
-    });
-    expect(auth.updateUser).toHaveBeenCalledWith({ password: NEW_PASSWORD });
-    expect(test.createAuditLog).toHaveBeenCalledWith(
-      supabaseClient,
-      "ACCOUNT_PASSWORD_UPDATE",
-      TEST_USER.id
-    );
-    test.expectRevalidated({ paths: ["/account"] });
-  });
-
-  it("returns an error for the confirmation that does not match", async () => {
-    const result = await updateUserPasswordAction(
-      {},
-      passwordForm({ confirmPassword: "other-password" })
-    );
-
-    expect(result).toEqual({
-      errors: {
-        confirmPassword: ["新しいパスワードと確認用パスワードが一致しません。"],
-      },
-    });
-    expect(auth.signInWithPassword).not.toHaveBeenCalled();
-  });
-
-  it("returns an error for the current password that is wrong", async () => {
+describe("account actions", () => {
+  beforeEach(() => {
     auth.signInWithPassword.mockResolvedValue({
-      data: { session: null, user: null },
-      error: new AuthApiError("Invalid login credentials", 400, undefined),
+      data: { session, user: TEST_USER },
+      error: null,
     });
-
-    const result = await updateUserPasswordAction({}, passwordForm());
-
-    expect(result).toEqual({
-      errors: { currentPassword: ["現在のパスワードが正しくありません。"] },
+    auth.updateUser.mockResolvedValue({
+      data: { user: TEST_USER },
+      error: null,
     });
-    expect(auth.updateUser).not.toHaveBeenCalled();
-    test.expectNoAuditLog();
+    signIn();
   });
 
-  it("returns an error for the user without an email address", async () => {
-    signIn({ email: "" });
+  describe("updateUserEmailAction()", () => {
+    it("asks Supabase to send the confirmation to the new address", async () => {
+      const result = await updateUserEmailAction(
+        {},
+        emailForm("new@example.com")
+      );
 
-    const result = await updateUserPasswordAction({}, passwordForm());
-
-    expect(result).toEqual({
-      errors: { generic: ["ユーザー情報の取得に失敗しました。"] },
+      expect(result).toStrictEqual({ success: true });
+      expect(auth.updateUser).toHaveBeenCalledWith(
+        { email: "new@example.com" },
+        { emailRedirectTo: expect.stringMatching(/\/api\/auth\/callback$/u) }
+      );
+      test.expectRevalidated({ paths: ["/account"] });
     });
-    expect(auth.signInWithPassword).not.toHaveBeenCalled();
+
+    it("returns an error for the address that is not valid", async () => {
+      const result = await updateUserEmailAction({}, emailForm("invalid"));
+
+      expect(result).toStrictEqual({
+        errors: { email: ["メールアドレスの形式が正しくありません。"] },
+      });
+      expect(auth.updateUser).not.toHaveBeenCalled();
+    });
+
+    it("returns an error when Supabase fails to update the address", async () => {
+      auth.updateUser.mockResolvedValue({
+        data: { user: null },
+        error: new AuthApiError("Email rate limit exceeded", 429, undefined),
+      });
+
+      const result = await updateUserEmailAction(
+        {},
+        emailForm("new@example.com")
+      );
+
+      expect(result).toStrictEqual({
+        errors: { generic: ["メールアドレスの更新に失敗しました。"] },
+      });
+      test.expectNotRevalidated();
+    });
   });
 
-  it("logs the failure and returns the fixed message when the update fails", async () => {
-    const error = new AuthApiError("Database error", 500, undefined);
+  describe("updateUserPasswordAction()", () => {
+    it("updates the password after checking the current one", async () => {
+      const result = await updateUserPasswordAction({}, passwordForm());
 
-    auth.updateUser.mockResolvedValue({ data: { user: null }, error });
+      expect(result).toStrictEqual({ success: true });
+      expect(auth.signInWithPassword).toHaveBeenCalledWith({
+        email: TEST_USER.email,
+        password: PASSWORD,
+      });
+      expect(auth.updateUser).toHaveBeenCalledWith({ password: NEW_PASSWORD });
+      expect(test.createAuditLog).toHaveBeenCalledWith(
+        supabaseClient,
+        "ACCOUNT_PASSWORD_UPDATE",
+        TEST_USER.id
+      );
+      test.expectRevalidated({ paths: ["/account"] });
+    });
 
-    const result = await updateUserPasswordAction({}, passwordForm());
+    it("returns an error for the confirmation that does not match", async () => {
+      const result = await updateUserPasswordAction(
+        {},
+        passwordForm({ confirmPassword: "other-password" })
+      );
 
-    expect(result).toEqual({ error: ACTION_FAILED_ERROR });
-    expect(test.logger.error).toHaveBeenCalledWith(
-      "Server Action が失敗しました",
-      { action: "updateUserPasswordAction", error }
-    );
-    test.expectNoAuditLog();
-    test.expectNotRevalidated();
+      expect(result).toStrictEqual({
+        errors: {
+          confirmPassword: [
+            "新しいパスワードと確認用パスワードが一致しません。",
+          ],
+        },
+      });
+      expect(auth.signInWithPassword).not.toHaveBeenCalled();
+    });
+
+    it("returns an error for the current password that is wrong", async () => {
+      auth.signInWithPassword.mockResolvedValue({
+        data: { session: null, user: null },
+        error: new AuthApiError("Invalid login credentials", 400, undefined),
+      });
+
+      const result = await updateUserPasswordAction({}, passwordForm());
+
+      expect(result).toStrictEqual({
+        errors: { currentPassword: ["現在のパスワードが正しくありません。"] },
+      });
+      expect(auth.updateUser).not.toHaveBeenCalled();
+      test.expectNoAuditLog();
+    });
+
+    it("returns an error for the user without an email address", async () => {
+      signIn({ email: "" });
+
+      const result = await updateUserPasswordAction({}, passwordForm());
+
+      expect(result).toStrictEqual({
+        errors: { generic: ["ユーザー情報の取得に失敗しました。"] },
+      });
+      expect(auth.signInWithPassword).not.toHaveBeenCalled();
+    });
+
+    it("logs the failure and returns the fixed message when the update fails", async () => {
+      const error = new AuthApiError("Database error", 500, undefined);
+
+      auth.updateUser.mockResolvedValue({ data: { user: null }, error });
+
+      const result = await updateUserPasswordAction({}, passwordForm());
+
+      expect(result).toStrictEqual({ error: ACTION_FAILED_ERROR });
+      expect(test.logger.error).toHaveBeenCalledWith(
+        "Server Action が失敗しました",
+        { action: "updateUserPasswordAction", error }
+      );
+      test.expectNoAuditLog();
+      test.expectNotRevalidated();
+    });
   });
 });

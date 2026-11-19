@@ -1,9 +1,10 @@
 import type { TablesUpdate } from "@shinju-date/database";
 
 import type { TypedSupabaseClient, WriteContext } from "../../types.js";
+import { DatabaseError } from "../database-error.js";
 import { updateVideo } from "../database/videos.js";
-import { DatabaseError } from "../errors.js";
-import { removeThumbnail, type Thumbnail } from "./thumbnail.js";
+import { removeThumbnail } from "./thumbnail.js";
+import type { Thumbnail } from "./thumbnail.js";
 
 export interface ReplaceThumbnailOptions {
   /**
@@ -24,10 +25,10 @@ export interface ReplaceThumbnailOptions {
  * runs the trigger of the table, which sets `updated_at` to the current time
  * of the database.
  */
-async function touchThumbnail(
+const touchThumbnail = async (
   supabaseClient: TypedSupabaseClient,
   thumbnailId: string
-): Promise<void> {
+): Promise<void> => {
   const { error } = await supabaseClient.rpc("touch_thumbnail", {
     p_thumbnail_id: thumbnailId,
   });
@@ -35,7 +36,7 @@ async function touchThumbnail(
   if (error) {
     throw new DatabaseError("Failed to update a replaced thumbnail", error);
   }
-}
+};
 
 /**
  * Points a video at a new thumbnail.
@@ -51,13 +52,13 @@ async function touchThumbnail(
  * database.
  *
  * @returns The new thumbnail, or `null` when none was stored.
- * @throws When the video (or the previous thumbnail) cannot be updated. The
+ * @throws {Error} When the video (or the previous thumbnail) cannot be updated. The
  *   new thumbnail is removed then, and the video keeps its current one.
  */
-export async function replaceThumbnail(
+export const replaceThumbnail = async (
   context: WriteContext,
   { create, fields, previousThumbnailId, videoId }: ReplaceThumbnailOptions
-): Promise<Thumbnail | null> {
+): Promise<Thumbnail | null> => {
   const { supabaseClient } = context;
   const thumbnail = await create();
 
@@ -87,4 +88,4 @@ export async function replaceThumbnail(
   }
 
   return thumbnail;
-}
+};

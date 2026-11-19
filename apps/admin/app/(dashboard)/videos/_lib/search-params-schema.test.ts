@@ -5,7 +5,7 @@ import {
   videoSearchParamsSchema,
 } from "./search-params-schema";
 
-describe("videoSearchParamsSchema", () => {
+describe("videoSearchParamsSchema.parse", () => {
   it("should parse valid parameters with all fields", () => {
     const input = {
       deleted: "false",
@@ -21,7 +21,7 @@ describe("videoSearchParamsSchema", () => {
 
     const result = videoSearchParamsSchema.parse(input);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       deleted: [false],
       page: 2,
       platform: ["twitch"],
@@ -39,7 +39,7 @@ describe("videoSearchParamsSchema", () => {
       platform: ["youtube", "twitch"],
     });
 
-    expect(result.platform).toEqual(["youtube", "twitch"]);
+    expect(result.platform).toStrictEqual(["youtube", "twitch"]);
   });
 
   it("should ignore invalid platform values", () => {
@@ -47,7 +47,7 @@ describe("videoSearchParamsSchema", () => {
       platform: ["invalid", "youtube"],
     });
 
-    expect(result.platform).toEqual(["youtube"]);
+    expect(result.platform).toStrictEqual(["youtube"]);
     expect(
       videoSearchParamsSchema.parse({ platform: ["invalid"] }).platform
     ).toBeUndefined();
@@ -58,7 +58,7 @@ describe("videoSearchParamsSchema", () => {
 
     const result = videoSearchParamsSchema.parse(input);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       page: 1,
       sortField: "updated_at",
       sortOrder: "desc",
@@ -66,7 +66,7 @@ describe("videoSearchParamsSchema", () => {
   });
 
   it("should derive the defaults from the schema", () => {
-    expect(defaultVideoSearchParams).toEqual({
+    expect(defaultVideoSearchParams).toStrictEqual({
       page: 1,
       sortField: "updated_at",
       sortOrder: "desc",
@@ -85,16 +85,17 @@ describe("videoSearchParamsSchema", () => {
 
     const result = videoSearchParamsSchema.parse(input);
 
-    expect(result.page).toBe(1); // Should be coerced to minimum of 1
+    // Should be coerced to minimum of 1
+    expect(result.page).toBe(1);
   });
 
   it("should handle boolean transformation for visible field", () => {
-    expect(videoSearchParamsSchema.parse({ visible: "true" }).visible).toEqual([
-      true,
-    ]);
-    expect(videoSearchParamsSchema.parse({ visible: "false" }).visible).toEqual(
-      [false]
-    );
+    expect(
+      videoSearchParamsSchema.parse({ visible: "true" }).visible
+    ).toStrictEqual([true]);
+    expect(
+      videoSearchParamsSchema.parse({ visible: "false" }).visible
+    ).toStrictEqual([false]);
     expect(
       videoSearchParamsSchema.parse({ visible: "other" }).visible
     ).toBeUndefined();
@@ -102,12 +103,12 @@ describe("videoSearchParamsSchema", () => {
   });
 
   it("should handle boolean transformation for deleted field", () => {
-    expect(videoSearchParamsSchema.parse({ deleted: "true" }).deleted).toEqual([
-      true,
-    ]);
-    expect(videoSearchParamsSchema.parse({ deleted: "false" }).deleted).toEqual(
-      [false]
-    );
+    expect(
+      videoSearchParamsSchema.parse({ deleted: "true" }).deleted
+    ).toStrictEqual([true]);
+    expect(
+      videoSearchParamsSchema.parse({ deleted: "false" }).deleted
+    ).toStrictEqual([false]);
     expect(
       videoSearchParamsSchema.parse({ deleted: "other" }).deleted
     ).toBeUndefined();
@@ -119,7 +120,8 @@ describe("videoSearchParamsSchema", () => {
 
     const result = videoSearchParamsSchema.parse(input);
 
-    expect(result.sortField).toBe("updated_at"); // Should fallback to default
+    // Should fallback to default
+    expect(result.sortField).toBe("updated_at");
   });
 
   it("should fallback to default for invalid sortOrder values", () => {
@@ -127,20 +129,24 @@ describe("videoSearchParamsSchema", () => {
 
     const result = videoSearchParamsSchema.parse(input);
 
-    expect(result.sortOrder).toBe("desc"); // Should fallback to default
+    // Should fallback to default
+    expect(result.sortOrder).toBe("desc");
   });
 
   it("should handle array inputs (URLSearchParams may provide arrays)", () => {
     const input = {
       page: ["3"],
-      search: ["multiple", "values"], // Only first value should be used
+      // Only first value should be used
+      search: ["multiple", "values"],
       talentId: ["3de58e38-8314-41c1-a75a-c1658dae6d5a"],
     };
 
     const result = videoSearchParamsSchema.parse(input);
 
     expect(result.page).toBe(3);
-    expect(result.talentId).toEqual(["3de58e38-8314-41c1-a75a-c1658dae6d5a"]);
+    expect(result.talentId).toStrictEqual([
+      "3de58e38-8314-41c1-a75a-c1658dae6d5a",
+    ]);
     // For string fields, zod should handle array by taking first value
   });
 
@@ -149,7 +155,8 @@ describe("videoSearchParamsSchema", () => {
 
     const result = videoSearchParamsSchema.parse(input);
 
-    expect(result.page).toBe(1); // Should be coerced to minimum of 1
+    // Should be coerced to minimum of 1
+    expect(result.page).toBe(1);
   });
 
   it("should coerce talentId to number correctly", () => {
@@ -157,7 +164,9 @@ describe("videoSearchParamsSchema", () => {
 
     const result = videoSearchParamsSchema.parse(input);
 
-    expect(result.talentId).toEqual(["319cb587-3b05-44d0-8ed6-2307a07e1817"]);
+    expect(result.talentId).toStrictEqual([
+      "319cb587-3b05-44d0-8ed6-2307a07e1817",
+    ]);
   });
 
   it("should preserve optional fields when they are undefined", () => {
@@ -168,32 +177,33 @@ describe("videoSearchParamsSchema", () => {
 
     const result = videoSearchParamsSchema.parse(input);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       page: 1,
       sortField: "updated_at",
       sortOrder: "desc",
       // Optional fields should not be present
     });
-    expect("search" in result).toBe(false);
-    expect("talentId" in result).toBe(false);
-    expect("visible" in result).toBe(false);
-    expect("deleted" in result).toBe(false);
-    expect("status" in result).toBe(false);
+    // Not even as keys with undefined
+    expect(Object.keys(result).toSorted()).toStrictEqual([
+      "page",
+      "sortField",
+      "sortOrder",
+    ]);
   });
 
   it("should handle valid video status values", () => {
     expect(
       videoSearchParamsSchema.parse({ status: "UPCOMING" }).status
-    ).toEqual(["UPCOMING"]);
-    expect(videoSearchParamsSchema.parse({ status: "LIVE" }).status).toEqual([
-      "LIVE",
-    ]);
-    expect(videoSearchParamsSchema.parse({ status: "ENDED" }).status).toEqual([
-      "ENDED",
-    ]);
+    ).toStrictEqual(["UPCOMING"]);
+    expect(
+      videoSearchParamsSchema.parse({ status: "LIVE" }).status
+    ).toStrictEqual(["LIVE"]);
+    expect(
+      videoSearchParamsSchema.parse({ status: "ENDED" }).status
+    ).toStrictEqual(["ENDED"]);
     expect(
       videoSearchParamsSchema.parse({ status: "PUBLISHED" }).status
-    ).toEqual(["PUBLISHED"]);
+    ).toStrictEqual(["PUBLISHED"]);
   });
 
   it("should return undefined for invalid status values", () => {
@@ -210,6 +220,6 @@ describe("videoSearchParamsSchema", () => {
 
     const result = videoSearchParamsSchema.parse(input);
 
-    expect(result.status).toEqual(["LIVE", "ENDED"]);
+    expect(result.status).toStrictEqual(["LIVE", "ENDED"]);
   });
 });

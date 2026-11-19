@@ -20,7 +20,7 @@ interface SearchExit {
 
 let current: SearchExit | null = null;
 
-function send(query: string): void {
+const send = (query: string): void => {
   const body = JSON.stringify({ query });
 
   try {
@@ -41,23 +41,23 @@ function send(query: string): void {
   }).catch(() => {
     // 記録に失敗しても、閲覧には影響させない
   });
-}
+};
 
 /** まだ動画を開いていなければ、離脱を1回だけ送る */
-function settle(searchExit: SearchExit): void {
+const settle = (searchExit: SearchExit): void => {
   if (searchExit.settled) {
     return;
   }
 
   searchExit.settled = true;
   send(searchExit.query);
-}
+};
 
 /**
  * 結果のある検索を見始めた。同じ検索の結果（絞り込みを変えただけ）なら、
  * 前の状態を引き継ぐ。別の検索なら、前の検索からの離脱を送る。
  */
-export function startSearchExit(query: string, pathname: string): void {
+export const startSearchExit = (query: string, pathname: string): void => {
   if (current?.pathname === pathname) {
     return;
   }
@@ -67,31 +67,31 @@ export function startSearchExit(query: string, pathname: string): void {
   }
 
   current = { pathname, query, settled: false };
-}
+};
 
 /** 検索の結果から動画を開いた */
-export function markSearchExitClicked(): void {
+export const markSearchExitClicked = (): void => {
   if (current) {
     current.settled = true;
   }
-}
+};
 
 /**
  * 別のページへ移動した。検索語が同じ（パスが同じ）なら、絞り込みを変えただけ
  * なので、離脱として数えない。
  */
-export function handleSearchExitNavigation(pathname: string): void {
+export const handleSearchExitNavigation = (pathname: string): void => {
   if (!current || current.pathname === pathname) {
     return;
   }
 
   settle(current);
   current = null;
-}
+};
 
 /** ページを閉じる、または隠した */
-export function handleSearchExitLeave(): void {
+export const handleSearchExitLeave = (): void => {
   if (current) {
     settle(current);
   }
-}
+};

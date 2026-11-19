@@ -28,18 +28,18 @@ export const metadata: Metadata = {
 };
 
 /** 取得漏れチェックの最初の進捗をサーバーで取得して、パネルに渡す */
-async function VideoBackfillRun() {
+const VideoBackfillRun = async () => {
   const initialData = await getVideoBackfillRun();
 
   return <VideoBackfillRunPanel initialData={initialData} />;
-}
+};
 
 /** 過去動画の取り込みの最初の履歴をサーバーで取得して、パネルに渡す */
-async function VideoBackfillHistory() {
+const VideoBackfillHistory = async () => {
   const initialData = await getVideoBackfillHistory();
 
   return <VideoBackfillHistoryPanel initialData={initialData} />;
-}
+};
 
 export default function SystemPage() {
   return (

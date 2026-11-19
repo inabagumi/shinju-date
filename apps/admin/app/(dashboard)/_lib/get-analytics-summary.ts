@@ -1,10 +1,12 @@
 import { TIME_ZONE } from "@shinju-date/constants";
 import {
-  type AnalyticsSummary,
   collectAnalyticsSummary,
   readAnalyticsSnapshot,
-  type WithTrends,
   withTrends,
+} from "@shinju-date/dashboard-stats";
+import type {
+  AnalyticsSummary,
+  WithTrends,
 } from "@shinju-date/dashboard-stats";
 import { logger } from "@shinju-date/logger";
 import { formatDateKey } from "@shinju-date/temporal-fns";
@@ -17,9 +19,9 @@ import { getRedisClient } from "@/lib/redis";
  * keywords, each with its changes from the snapshots of the day before and
  * the week before (saved by the daily job `/stats/snapshot` of batch).
  */
-export async function getAnalyticsSummary(): Promise<
+export const getAnalyticsSummary = async (): Promise<
   WithTrends<AnalyticsSummary>
-> {
+> => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -51,4 +53,4 @@ export async function getAnalyticsSummary(): Promise<
       null
     );
   }
-}
+};

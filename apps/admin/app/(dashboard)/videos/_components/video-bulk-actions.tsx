@@ -18,11 +18,11 @@ export interface VideoBulkActionItem {
  * 操作の対象になる動画を求める。削除は未削除の動画だけ、復元は削除済みの動画
  * だけを対象にする。確認ダイアログの表示とアクションの実行で同じ結果を使う
  */
-function getTargetVideos(
+const getTargetVideos = (
   videos: readonly VideoBulkActionItem[],
   action: VideoAction
-): VideoActionTarget[] {
-  return videos
+): VideoActionTarget[] =>
+  videos
     .filter((video) => {
       if (action === "delete") {
         return !video.isDeleted;
@@ -33,7 +33,6 @@ function getTargetVideos(
       return true;
     })
     .map((video) => ({ id: video.id, title: video.title }));
-}
 
 interface VideoBulkActionsProps {
   /** 表示中の動画 */
@@ -45,7 +44,7 @@ interface VideoBulkActionsProps {
  * 選択の有無で表が上下に動かないよう、常に同じ高さで表の上に確保する。
  * 狭い画面ではボタンの文字を隠してアイコンだけにする
  */
-export function VideoBulkActions({ videos }: VideoBulkActionsProps) {
+export const VideoBulkActions = ({ videos }: VideoBulkActionsProps) => {
   const { openActionDialog, selectedIds } = useVideoSelection();
   const selectedVideos = videos.filter((video) =>
     selectedIds.includes(video.id)
@@ -116,4 +115,4 @@ export function VideoBulkActions({ videos }: VideoBulkActionsProps) {
       )}
     </div>
   );
-}
+};

@@ -20,56 +20,52 @@ const CREATED_AT = "2026-01-01T00:00:00Z";
 let sequence = 0;
 
 /** A number that differs on every call, for the IDs of the platforms */
-function nextSequence(): number {
+const nextSequence = (): number => {
   sequence += 1;
 
   return sequence;
-}
+};
 
-export function createTalent(
+export const createTalent = (
   overrides: Partial<Tables<"talents">> = {}
-): Tables<"talents"> {
-  return {
-    created_at: CREATED_AT,
-    deleted_at: null,
-    id: crypto.randomUUID(),
-    name: "朝霧ミオ",
-    reading: null,
-    status: "active",
-    theme_color: null,
-    updated_at: CREATED_AT,
-    ...overrides,
-  };
-}
+): Tables<"talents"> => ({
+  created_at: CREATED_AT,
+  deleted_at: null,
+  id: crypto.randomUUID(),
+  name: "朝霧ミオ",
+  reading: null,
+  status: "active",
+  theme_color: null,
+  updated_at: CREATED_AT,
+  ...overrides,
+});
 
 /**
  * A video of a talent. The site shows only the videos with a YouTube or Twitch
  * video, so link it with `createYouTubeVideo` or `createTwitchVideo`.
  */
-export function createVideo(
+export const createVideo = (
   overrides: Partial<Tables<"videos">> & Pick<Tables<"videos">, "talent_id">
-): Tables<"videos"> {
-  return {
-    created_at: CREATED_AT,
-    deleted_at: null,
-    deleted_reason: null,
-    duration: "PT1H",
-    id: crypto.randomUUID(),
-    platform: "youtube",
-    published_at: "2026-11-15T12:00:00Z",
-    status: "ENDED",
-    thumbnail_id: null,
-    title: "歌枠",
-    updated_at: CREATED_AT,
-    video_kind: "standard",
-    visible: true,
-    ...overrides,
-  };
-}
+): Tables<"videos"> => ({
+  created_at: CREATED_AT,
+  deleted_at: null,
+  deleted_reason: null,
+  duration: "PT1H",
+  id: crypto.randomUUID(),
+  platform: "youtube",
+  published_at: "2026-11-15T12:00:00Z",
+  status: "ENDED",
+  thumbnail_id: null,
+  title: "歌枠",
+  updated_at: CREATED_AT,
+  video_kind: "standard",
+  visible: true,
+  ...overrides,
+});
 
-export function createThumbnail(
+export const createThumbnail = (
   overrides: Partial<Tables<"thumbnails">> = {}
-): Tables<"thumbnails"> {
+): Tables<"thumbnails"> => {
   const id = overrides.id ?? crypto.randomUUID();
 
   return {
@@ -84,12 +80,12 @@ export function createThumbnail(
     width: 1280,
     ...overrides,
   };
-}
+};
 
 /** An icon of a YouTube channel or Twitch user */
-export function createProfileImage(
+export const createProfileImage = (
   overrides: Partial<Tables<"profile_images">> = {}
-): Tables<"profile_images"> {
+): Tables<"profile_images"> => {
   const id = overrides.id ?? crypto.randomUUID();
 
   return {
@@ -104,61 +100,53 @@ export function createProfileImage(
     width: 256,
     ...overrides,
   };
-}
+};
 
-export function createYouTubeChannel(
+export const createYouTubeChannel = (
   overrides: Partial<Tables<"youtube_channels">> &
     Pick<Tables<"youtube_channels">, "talent_id">
-): Tables<"youtube_channels"> {
-  return {
-    id: crypto.randomUUID(),
-    name: null,
-    profile_image_id: null,
-    youtube_channel_id: `UC${String(nextSequence()).padStart(22, "0")}`,
-    youtube_handle: null,
-    ...overrides,
-  };
-}
+): Tables<"youtube_channels"> => ({
+  id: crypto.randomUUID(),
+  name: null,
+  profile_image_id: null,
+  youtube_channel_id: `UC${String(nextSequence()).padStart(22, "0")}`,
+  youtube_handle: null,
+  ...overrides,
+});
 
-export function createTwitchUser(
+export const createTwitchUser = (
   overrides: Partial<Tables<"twitch_users">> &
     Pick<Tables<"twitch_users">, "talent_id">
-): Tables<"twitch_users"> {
-  return {
-    id: crypto.randomUUID(),
-    name: null,
-    profile_image_id: null,
-    twitch_login_name: null,
-    twitch_user_id: String(100_000_000 + nextSequence()),
-    ...overrides,
-  };
-}
+): Tables<"twitch_users"> => ({
+  id: crypto.randomUUID(),
+  name: null,
+  profile_image_id: null,
+  twitch_login_name: null,
+  twitch_user_id: String(100_000_000 + nextSequence()),
+  ...overrides,
+});
 
 /** The YouTube video of a video, which links it to its channel */
-export function createYouTubeVideo(
+export const createYouTubeVideo = (
   overrides: Partial<Tables<"youtube_videos">> &
     Pick<Tables<"youtube_videos">, "video_id" | "youtube_channel_id">
-): Tables<"youtube_videos"> {
-  return {
-    id: crypto.randomUUID(),
-    youtube_video_id: `YT${String(nextSequence()).padStart(9, "0")}`,
-    ...overrides,
-  };
-}
+): Tables<"youtube_videos"> => ({
+  id: crypto.randomUUID(),
+  youtube_video_id: `YT${String(nextSequence()).padStart(9, "0")}`,
+  ...overrides,
+});
 
 /** The Twitch video of a video, which links it to its user */
-export function createTwitchVideo(
+export const createTwitchVideo = (
   overrides: Partial<Tables<"twitch_videos">> &
     Pick<Tables<"twitch_videos">, "twitch_user_id" | "video_id">
-): Tables<"twitch_videos"> {
-  return {
-    id: crypto.randomUUID(),
-    stream_id: null,
-    twitch_video_id: String(2_000_000_000 + nextSequence()),
-    type: "archive",
-    ...overrides,
-  };
-}
+): Tables<"twitch_videos"> => ({
+  id: crypto.randomUUID(),
+  stream_id: null,
+  twitch_video_id: String(2_000_000_000 + nextSequence()),
+  type: "archive",
+  ...overrides,
+});
 
 /** A video and the YouTube video that links it to a channel */
 export interface VideoOnYouTube {
@@ -167,11 +155,11 @@ export interface VideoOnYouTube {
 }
 
 /** A video of the talent of a YouTube channel, on the channel */
-export function createVideoOnYouTube(
+export const createVideoOnYouTube = (
   channel: Tables<"youtube_channels">,
   overrides: Partial<Tables<"videos">> = {},
   youtubeVideoOverrides: Partial<Tables<"youtube_videos">> = {}
-): VideoOnYouTube {
+): VideoOnYouTube => {
   const video = createVideo({
     platform: "youtube",
     talent_id: channel.talent_id,
@@ -186,7 +174,7 @@ export function createVideoOnYouTube(
       ...youtubeVideoOverrides,
     }),
   };
-}
+};
 
 /** A video and the Twitch video that links it to a user */
 export interface VideoOnTwitch {
@@ -195,11 +183,11 @@ export interface VideoOnTwitch {
 }
 
 /** A video of the talent of a Twitch user, by the user */
-export function createVideoOnTwitch(
+export const createVideoOnTwitch = (
   user: Tables<"twitch_users">,
   overrides: Partial<Tables<"videos">> = {},
   twitchVideoOverrides: Partial<Tables<"twitch_videos">> = {}
-): VideoOnTwitch {
+): VideoOnTwitch => {
   const video = createVideo({
     platform: "twitch",
     talent_id: user.talent_id,
@@ -214,53 +202,49 @@ export function createVideoOnTwitch(
     }),
     video,
   };
-}
+};
 
-export function createAnnouncement(
+export const createAnnouncement = (
   overrides: Partial<Tables<"announcements">> = {}
-): Tables<"announcements"> {
-  return {
-    created_at: CREATED_AT,
-    enabled: true,
-    end_at: "2026-11-20T00:00:00Z",
-    id: crypto.randomUUID(),
-    level: "info",
-    message: "メンテナンスのお知らせ",
-    start_at: "2026-11-10T00:00:00Z",
-    updated_at: CREATED_AT,
-    ...overrides,
-  };
-}
+): Tables<"announcements"> => ({
+  created_at: CREATED_AT,
+  enabled: true,
+  end_at: "2026-11-20T00:00:00Z",
+  id: crypto.randomUUID(),
+  level: "info",
+  message: "メンテナンスのお知らせ",
+  start_at: "2026-11-10T00:00:00Z",
+  updated_at: CREATED_AT,
+  ...overrides,
+});
 
 /** A video of the video cards, on YouTube */
-export function createVideoItem(overrides: Partial<Video> = {}): Video {
-  return {
-    duration: "PT1H",
-    id: "video-1",
-    platform: "youtube",
-    published_at: "2026-11-15T12:00:00Z",
-    status: "ENDED",
-    talent: { id: "talent-1", name: "朝霧ミオ" },
-    thumbnail: null,
-    title: "歌枠",
-    twitch_video: null,
-    video_kind: "standard",
-    youtube_video: {
-      youtube_channel: {
-        name: null,
-        profile_image: null,
-        youtube_handle: null,
-      },
-      youtube_video_id: "YT_video1abc",
+export const createVideoItem = (overrides: Partial<Video> = {}): Video => ({
+  duration: "PT1H",
+  id: "video-1",
+  platform: "youtube",
+  published_at: "2026-11-15T12:00:00Z",
+  status: "ENDED",
+  talent: { id: "talent-1", name: "朝霧ミオ" },
+  thumbnail: null,
+  title: "歌枠",
+  twitch_video: null,
+  video_kind: "standard",
+  youtube_video: {
+    youtube_channel: {
+      name: null,
+      profile_image: null,
+      youtube_handle: null,
     },
-    ...overrides,
-  };
-}
+    youtube_video_id: "YT_video1abc",
+  },
+  ...overrides,
+});
 
 /** A video of the schedule, on YouTube */
-export function createScheduleVideoItem(
+export const createScheduleVideoItem = (
   overrides: Partial<ScheduleVideo> = {}
-): ScheduleVideo {
+): ScheduleVideo => {
   const { thumbnail: _, ...video } = createVideoItem();
 
   return {
@@ -268,31 +252,27 @@ export function createScheduleVideoItem(
     talent: { ...video.talent, theme_color: null },
     ...overrides,
   };
-}
+};
 
 /** A talent of its page, without YouTube channels or Twitch users */
-export function createTalentDetail(
+export const createTalentDetail = (
   overrides: Partial<TalentDetail> = {}
-): TalentDetail {
-  return {
-    id: "00000000-0000-4000-8000-000000000001",
-    name: "朝霧ミオ",
-    theme_color: null,
-    twitch_users: [],
-    youtube_channels: [],
-    ...overrides,
-  };
-}
+): TalentDetail => ({
+  id: "00000000-0000-4000-8000-000000000001",
+  name: "朝霧ミオ",
+  theme_color: null,
+  twitch_users: [],
+  youtube_channels: [],
+  ...overrides,
+});
 
 /** A talent of the list of talents, without YouTube channels or Twitch users */
-export function createTalentListItem(
+export const createTalentListItem = (
   overrides: Partial<TalentListItem> = {}
-): TalentListItem {
-  return {
-    id: "00000000-0000-4000-8000-000000000001",
-    name: "朝霧ミオ",
-    twitch_users: [],
-    youtube_channels: [],
-    ...overrides,
-  };
-}
+): TalentListItem => ({
+  id: "00000000-0000-4000-8000-000000000001",
+  name: "朝霧ミオ",
+  twitch_users: [],
+  youtube_channels: [],
+  ...overrides,
+});

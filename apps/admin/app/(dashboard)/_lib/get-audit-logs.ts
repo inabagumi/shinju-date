@@ -5,7 +5,7 @@ import { unwrap } from "@/lib/supabase/query";
 
 export type Log = Awaited<ReturnType<typeof getAuditLogs>>[number];
 
-export async function getAuditLogs(limit = 10) {
+export const getAuditLogs = async (limit = 10) => {
   "use cache: private";
 
   cacheLife("minutes");
@@ -18,4 +18,4 @@ export async function getAuditLogs(limit = 10) {
     }),
     "getAuditLogs"
   );
-}
+};

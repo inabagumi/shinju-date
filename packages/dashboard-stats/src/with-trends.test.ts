@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { type AnalyticsSummary, withTrends } from "./index.js";
+import { withTrends } from "./index.js";
+import type { AnalyticsSummary } from "./index.js";
 
 const current: AnalyticsSummary = {
   recentClicks: 10,
@@ -8,7 +9,7 @@ const current: AnalyticsSummary = {
   totalPopularKeywords: 30,
 };
 
-describe("withTrends", () => {
+describe(withTrends, () => {
   it("pairs each value with its changes", () => {
     const yesterday = {
       recentClicks: 4,
@@ -21,7 +22,7 @@ describe("withTrends", () => {
       totalPopularKeywords: 20,
     };
 
-    expect(withTrends(current, yesterday, lastWeek)).toEqual({
+    expect(withTrends(current, yesterday, lastWeek)).toStrictEqual({
       recentClicks: { current: 10, dayChange: 6, weekChange: 10 },
       recentSearches: { current: 20, dayChange: -5, weekChange: 10 },
       totalPopularKeywords: { current: 30, dayChange: 0, weekChange: 10 },
@@ -35,12 +36,12 @@ describe("withTrends", () => {
       totalPopularKeywords: 5,
     };
 
-    expect(withTrends(current, null, lastWeek)).toEqual({
+    expect(withTrends(current, null, lastWeek)).toStrictEqual({
       recentClicks: { current: 10, dayChange: null, weekChange: 5 },
       recentSearches: { current: 20, dayChange: null, weekChange: 15 },
       totalPopularKeywords: { current: 30, dayChange: null, weekChange: 25 },
     });
-    expect(withTrends(current, lastWeek, null).recentClicks).toEqual({
+    expect(withTrends(current, lastWeek, null).recentClicks).toStrictEqual({
       current: 10,
       dayChange: 5,
       weekChange: null,

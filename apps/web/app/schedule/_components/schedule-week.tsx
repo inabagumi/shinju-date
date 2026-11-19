@@ -6,7 +6,8 @@ import {
   NavigationLink,
   NavigationLinkIcon,
 } from "@/components/navigation-link";
-import { fetchScheduleVideos, type ScheduleVideo } from "@/lib/data/schedule";
+import { fetchScheduleVideos } from "@/lib/data/schedule";
+import type { ScheduleVideo } from "@/lib/data/schedule";
 import { formatWeekday } from "@/lib/date-heading";
 import { groupVideosByDate } from "@/lib/group-videos-by-date";
 import {
@@ -15,14 +16,12 @@ import {
   getWeekDays,
   isWeekInRange,
   layoutDay,
-  type ScheduleLayout,
 } from "@/lib/schedule";
+import type { ScheduleLayout } from "@/lib/schedule";
 
 import { HOUR_HEIGHT_REM } from "../_lib/layout";
-import {
-  resolveScheduleWeek,
-  type SchedulePageParams,
-} from "../_lib/resolve-schedule-week";
+import { resolveScheduleWeek } from "../_lib/resolve-schedule-week";
+import type { SchedulePageParams } from "../_lib/resolve-schedule-week";
 import ScheduleDayHeader from "./schedule-day-header";
 import ScheduleItem, {
   getTitleLines,
@@ -34,17 +33,15 @@ export interface ScheduleWeekSectionProps {
   params?: SchedulePageParams | undefined;
 }
 
-function getDayId(date: Temporal.PlainDate): string {
-  return `day-${date.toString()}`;
-}
+const getDayId = (date: Temporal.PlainDate): string => `day-${date.toString()}`;
 
 /** 週の範囲と、前の週・今週・次の週へのリンク */
 const WEEK_NAVIGATION_CLASS_NAME =
   "mb-6 flex min-h-[1lh] flex-wrap items-center justify-between gap-x-6 gap-y-3 text-heading";
 
-export async function ScheduleWeekNavigation({
+export const ScheduleWeekNavigation = async ({
   params,
-}: ScheduleWeekSectionProps) {
+}: ScheduleWeekSectionProps) => {
   const { range, weekStart } = await resolveScheduleWeek(params);
   const previousWeek = weekStart.subtract({ weeks: 1 });
   const nextWeek = weekStart.add({ weeks: 1 });
@@ -87,25 +84,23 @@ export async function ScheduleWeekNavigation({
       </nav>
     </div>
   );
-}
+};
 
-export function ScheduleWeekNavigationSkeleton() {
-  return (
-    <div aria-hidden="true" className={WEEK_NAVIGATION_CLASS_NAME}>
-      <span className="inline-block h-[1lh] w-80 max-w-full animate-pulse rounded-control bg-muted" />
-      <span className="inline-block h-4 w-40 animate-pulse rounded-control bg-muted" />
-    </div>
-  );
-}
+export const ScheduleWeekNavigationSkeleton = () => (
+  <div aria-hidden="true" className={WEEK_NAVIGATION_CLASS_NAME}>
+    <span className="inline-block h-[1lh] w-80 max-w-full animate-pulse rounded-control bg-muted" />
+    <span className="inline-block h-4 w-40 animate-pulse rounded-control bg-muted" />
+  </div>
+);
 
 const WEEKDAY_BAND_CLASS_NAME = "mb-6 grid grid-cols-7 gap-1 lg:hidden";
 
 /**
  * 1024px 未満で、日付ごとのセクションへ飛ぶページ内リンク（「月 9」「火 10」…）。
  */
-export async function ScheduleWeekdayBand({
+export const ScheduleWeekdayBand = async ({
   params,
-}: ScheduleWeekSectionProps) {
+}: ScheduleWeekSectionProps) => {
   const { weekStart } = await resolveScheduleWeek(params);
 
   return (
@@ -127,20 +122,18 @@ export async function ScheduleWeekdayBand({
       </ul>
     </nav>
   );
-}
+};
 
-export function ScheduleWeekdayBandSkeleton() {
-  return (
-    <div aria-hidden="true" className={WEEKDAY_BAND_CLASS_NAME}>
-      {Array.from({ length: 7 }, (_, index) => (
-        <span
-          className="h-11 animate-pulse rounded-control bg-muted"
-          key={index}
-        />
-      ))}
-    </div>
-  );
-}
+export const ScheduleWeekdayBandSkeleton = () => (
+  <div aria-hidden="true" className={WEEKDAY_BAND_CLASS_NAME}>
+    {Array.from({ length: 7 }, (_, index) => (
+      <span
+        className="h-11 animate-pulse rounded-control bg-muted"
+        key={index}
+      />
+    ))}
+  </div>
+);
 
 /**
  * 1時間の高さ（`--hour`）。タイトルの行数の計算（`getTitleLines`）と同じ
@@ -167,9 +160,8 @@ const BODY_CLASS_NAME =
 /** 0時から23時までの24時間 */
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
-function formatHour(hour: number): string {
-  return `${hour.toString(10).padStart(2, "0")}:00`;
-}
+const formatHour = (hour: number): string =>
+  `${hour.toString(10).padStart(2, "0")}:00`;
 
 /** 日の列の間の余白（`gap-x-2`） */
 const DAY_GAP = "0.5rem";
@@ -185,10 +177,10 @@ const EXPANDED_MIN_WIDTH = "14rem";
  * 日の列の右端まで、ただし `EXPANDED_MIN_WIDTH` より狭くはせず、週の右端
  * （右に残る日の列の分）は越えない。`100%` は日の列の幅を指す
  */
-function getPlacementStyle(
+const getPlacementStyle = (
   { column, columns, length, start }: ScheduleLayout<ScheduleVideo>,
   daysAfter: number
-): CSSProperties {
+): CSSProperties => {
   const left = `(100% * ${column} / ${columns})`;
   const toDayEnd = `(100% - ${left})`;
   const toWeekEnd = `(${toDayEnd} + ${daysAfter} * (100% + ${DAY_GAP}))`;
@@ -200,7 +192,7 @@ function getPlacementStyle(
     "--length": length,
     "--start": start,
   } as CSSProperties;
-}
+};
 
 /**
  * 1024px 以上で項目を置くクラス。マウスを乗せるかフォーカスすると、前面に出して
@@ -216,7 +208,7 @@ interface ScheduleDayProps {
   referenceDate: string;
 }
 
-function ScheduleDay({ date, items, referenceDate }: ScheduleDayProps) {
+const ScheduleDay = ({ date, items, referenceDate }: ScheduleDayProps) => {
   const id = getDayId(date);
   const headingId = `${id}-heading`;
 
@@ -260,13 +252,13 @@ function ScheduleDay({ date, items, referenceDate }: ScheduleDayProps) {
       </div>
     </section>
   );
-}
+};
 
 /**
  * 1週間ぶんの配信と動画を、開始日時の日付ごとに、時刻の軸の上に並べる。動画が
  * ない日も日付は出す。
  */
-export async function ScheduleDays({ params }: ScheduleWeekSectionProps) {
+export const ScheduleDays = async ({ params }: ScheduleWeekSectionProps) => {
   const { today, weekStart } = await resolveScheduleWeek(params);
   // リンク先が作れない動画は、`fetchScheduleVideos` が除くので件数にも入らない
   const videos = await fetchScheduleVideos(weekStart.toString());
@@ -286,49 +278,45 @@ export async function ScheduleDays({ params }: ScheduleWeekSectionProps) {
       ))}
     </div>
   );
-}
+};
 
 /** 時刻の列。各項目にも開始時刻があるので、読み上げない */
-function TimeColumn() {
-  return (
-    // ラベルは絶対配置で列の幅にならないので、幅を決めておく
-    <div
-      aria-hidden="true"
-      className={twMerge(COLUMN_CLASS_NAME, "hidden lg:w-12")}
-    >
-      {/* 日付の見出しと一緒に固定し、下を流れる時刻を隠す */}
-      <span className="sticky top-14 z-40 bg-background" />
-      <div className={twMerge(BODY_CLASS_NAME, "lg:bg-none")}>
-        {HOURS.map((hour) => (
-          <span
-            className="absolute right-1 -translate-y-1/2 text-caption text-muted tabular-nums first:translate-y-0"
-            key={hour}
-            style={{ top: `calc(var(--hour) * ${hour})` }}
-          >
-            {formatHour(hour)}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export function ScheduleDaysSkeleton() {
-  return (
-    <div aria-hidden="true" className={DAYS_CLASS_NAME} style={DAYS_STYLE}>
-      <TimeColumn />
-
-      {Array.from({ length: 7 }, (_, index) => (
-        <div className={twMerge(COLUMN_CLASS_NAME, "min-w-0")} key={index}>
-          <div className="border-b border-border pb-1">
-            <span className="inline-block h-[1lh] w-20 animate-pulse rounded-control bg-muted text-body" />
-          </div>
-          <div className={twMerge(BODY_CLASS_NAME, "mt-2 space-y-2 lg:mt-0")}>
-            <ScheduleItemSkeleton />
-            <ScheduleItemSkeleton />
-          </div>
-        </div>
+const TimeColumn = () => (
+  // ラベルは絶対配置で列の幅にならないので、幅を決めておく
+  <div
+    aria-hidden="true"
+    className={twMerge(COLUMN_CLASS_NAME, "hidden lg:w-12")}
+  >
+    {/* 日付の見出しと一緒に固定し、下を流れる時刻を隠す */}
+    <span className="sticky top-14 z-40 bg-background" />
+    <div className={twMerge(BODY_CLASS_NAME, "lg:bg-none")}>
+      {HOURS.map((hour) => (
+        <span
+          className="absolute right-1 -translate-y-1/2 text-caption text-muted tabular-nums first:translate-y-0"
+          key={hour}
+          style={{ top: `calc(var(--hour) * ${hour})` }}
+        >
+          {formatHour(hour)}
+        </span>
       ))}
     </div>
-  );
-}
+  </div>
+);
+
+export const ScheduleDaysSkeleton = () => (
+  <div aria-hidden="true" className={DAYS_CLASS_NAME} style={DAYS_STYLE}>
+    <TimeColumn />
+
+    {Array.from({ length: 7 }, (_, index) => (
+      <div className={twMerge(COLUMN_CLASS_NAME, "min-w-0")} key={index}>
+        <div className="border-b border-border pb-1">
+          <span className="inline-block h-[1lh] w-20 animate-pulse rounded-control bg-muted text-body" />
+        </div>
+        <div className={twMerge(BODY_CLASS_NAME, "mt-2 space-y-2 lg:mt-0")}>
+          <ScheduleItemSkeleton />
+          <ScheduleItemSkeleton />
+        </div>
+      </div>
+    ))}
+  </div>
+);

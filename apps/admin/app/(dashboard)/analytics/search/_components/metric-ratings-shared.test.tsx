@@ -1,46 +1,63 @@
 import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type {
+  getRepeatSearchRate,
+  getSearchEngagementRate,
+  getSearchExitRates,
+} from "@/lib/analytics/get-search-quality-metrics";
+
 import type { AnalyticsSearchParams } from "../../_lib/search-params-schema";
+import type { Rating, Ratings } from "../_lib/metric-ratings";
 
 /**
  * 評価の表のしきい値を1つずつ変えて、3つのウィジェットの判定と凡例の両方が、
  * 表に合わせて変わることを確かめる
  */
 const mocks = vi.hoisted(() => ({
-  getRepeatSearchRate: vi.fn(),
-  getSearchEngagementRate: vi.fn(),
-  getSearchExitRates: vi.fn(),
+  getRepeatSearchRate: vi.fn<typeof getRepeatSearchRate>(),
+  getSearchEngagementRate: vi.fn<typeof getSearchEngagementRate>(),
+  getSearchExitRates: vi.fn<typeof getSearchExitRates>(),
 }));
 
-vi.mock("@/lib/analytics/get-search-quality-metrics", () => ({
+vi.mock(import("@/lib/analytics/get-search-quality-metrics"), () => ({
   getRepeatSearchRate: mocks.getRepeatSearchRate,
   getSearchEngagementRate: mocks.getSearchEngagementRate,
   getSearchExitRates: mocks.getSearchExitRates,
 }));
 
-vi.mock("../_lib/metric-ratings", async (importOriginal) => {
-  const original =
-    await importOriginal<typeof import("../_lib/metric-ratings")>();
-
-  const withMin = <R extends { min: number }>(
-    ratings: readonly R[],
-    from: number,
-    to: number
-  ) =>
+// The factory of `vi.mock()` runs before the module body, so the helper is
+// defined in `vi.hoisted()`
+const { withMin } = vi.hoisted(() => ({
+  withMin: (ratings: Ratings, from: number, to: number): readonly Rating[] =>
     ratings.map((rating) =>
       rating.min === from ? { ...rating, min: to } : rating
-    );
+    ),
+}));
+
+vi.mock(import("../_lib/metric-ratings"), async (importOriginal) => {
+  const original = await importOriginal();
+
+  // The type of each table has the values themselves, so the changed table
+  // is cast back to the type of the original one
 
   return {
     ...original,
-    ENGAGEMENT_RATE_RATINGS: withMin(original.ENGAGEMENT_RATE_RATINGS, 20, 25),
-    EXIT_RATE_RATINGS: withMin(original.EXIT_RATE_RATINGS, 30, 40),
+    ENGAGEMENT_RATE_RATINGS: withMin(
+      original.ENGAGEMENT_RATE_RATINGS,
+      20,
+      25
+    ) as typeof original.ENGAGEMENT_RATE_RATINGS,
+    EXIT_RATE_RATINGS: withMin(
+      original.EXIT_RATE_RATINGS,
+      30,
+      40
+    ) as typeof original.EXIT_RATE_RATINGS,
     REPEAT_SEARCH_RATE_RATINGS: withMin(
       original.REPEAT_SEARCH_RATE_RATINGS,
       1.5,
       1.2
-    ),
+    ) as typeof original.REPEAT_SEARCH_RATE_RATINGS,
   };
 });
 
@@ -49,13 +66,12 @@ const { SearchEngagementRateWidget } =
   await import("./search-engagement-rate-widget");
 const { SearchExitRateWidget } = await import("./search-exit-rate-widget");
 
-function createSearchParams(): Promise<AnalyticsSearchParams> {
-  return Promise.resolve({
+const createSearchParams = (): Promise<AnalyticsSearchParams> =>
+  Promise.resolve({
     dateRange: { endDate: "2026-11-14", startDate: "2026-11-08" },
     selectedDate: null,
     tab: null,
   });
-}
 
 describe("the search metric widgets with changed thresholds", () => {
   beforeEach(() => {

@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, type ReactNode, use, useState } from "react";
+import { createContext, use, useCallback, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 
 import { useVideoAction } from "../_lib/use-video-action";
 import type { VideoAction, VideoActionTarget } from "../_lib/video-actions";
@@ -27,7 +28,7 @@ const VideoSelectionContext = createContext<VideoSelectionContextValue | null>(
 );
 
 /** `VideoSelectionProvider` の中で、選択と操作のダイアログを使う */
-export function useVideoSelection(): VideoSelectionContextValue {
+export const useVideoSelection = (): VideoSelectionContextValue => {
   const value = use(VideoSelectionContext);
 
   if (!value) {
@@ -37,7 +38,7 @@ export function useVideoSelection(): VideoSelectionContextValue {
   }
 
   return value;
-}
+};
 
 interface VideoSelectionProviderProps {
   children: ReactNode;
@@ -50,10 +51,10 @@ interface VideoSelectionProviderProps {
  * を持つ。ダイアログは1つだけ描き、一括操作と行ごとの操作の両方から開く。
  * 操作が成功したら、選択を外す
  */
-export function VideoSelectionProvider({
+export const VideoSelectionProvider = ({
   children,
   videoIds,
-}: VideoSelectionProviderProps) {
+}: VideoSelectionProviderProps) => {
   const [selectedIds, setSelectedIds] = useState<readonly string[]>([]);
   const [prevVideoIds, setPrevVideoIds] = useState(videoIds);
   const { dialogProps, openDialog } = useVideoAction({
@@ -68,30 +69,36 @@ export function VideoSelectionProvider({
     setSelectedIds((prev) => prev.filter((id) => currentIds.has(id)));
   }
 
-  const setSelected = (id: string, selected: boolean) => {
+  const setSelected = useCallback((id: string, selected: boolean) => {
     setSelectedIds((prev) => {
       const others = prev.filter((selectedId) => selectedId !== id);
 
       return selected ? [...others, id] : others;
     });
-  };
+  }, []);
 
-  const setAllSelected = (selected: boolean) => {
-    setSelectedIds(selected ? videoIds : []);
-  };
+  const setAllSelected = useCallback(
+    (selected: boolean) => {
+      setSelectedIds(selected ? videoIds : []);
+    },
+    [videoIds]
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      openActionDialog: openDialog,
+      selectedIds,
+      setAllSelected,
+      setSelected,
+      videoIds,
+    }),
+    [openDialog, selectedIds, setAllSelected, setSelected, videoIds]
+  );
 
   return (
-    <VideoSelectionContext
-      value={{
-        openActionDialog: openDialog,
-        selectedIds,
-        setAllSelected,
-        setSelected,
-        videoIds,
-      }}
-    >
+    <VideoSelectionContext value={contextValue}>
       {children}
       <VideoActionConfirmDialog {...dialogProps} />
     </VideoSelectionContext>
   );
-}
+};

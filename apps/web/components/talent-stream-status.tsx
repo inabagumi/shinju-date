@@ -17,7 +17,7 @@ interface NextStreamProps {
  * `toLocaleString`, whose output differs between the native Temporal and
  * temporal-polyfill and causes hydration errors.
  */
-export function NextStream({ className, id, startsAt }: NextStreamProps) {
+export const NextStream = ({ className, id, startsAt }: NextStreamProps) => {
   const dateTime =
     Temporal.Instant.from(startsAt).toZonedDateTimeISO(TIME_ZONE);
 
@@ -32,4 +32,4 @@ export function NextStream({ className, id, startsAt }: NextStreamProps) {
       </time>
     </span>
   );
-}
+};

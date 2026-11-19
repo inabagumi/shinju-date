@@ -5,7 +5,8 @@
  */
 
 import { Collection } from "@msw/data";
-import { Constants, type Tables } from "@shinju-date/database";
+import { Constants } from "@shinju-date/database";
+import type { Tables } from "@shinju-date/database";
 import { z } from "zod";
 
 import { createAccounts } from "./seeds/accounts.js";
@@ -231,14 +232,15 @@ const COLLECTIONS = [
  * Insert rows one by one, so that the collection keeps them in the order of
  * `rows` (the order that the mock returns them in without `order`).
  */
-async function insert<Row>(
-  collection: { create(values: Row): Promise<unknown> },
+const insert = async <Row>(
+  collection: { create: (values: Row) => Promise<unknown> },
   rows: readonly Row[]
-): Promise<void> {
+): Promise<void> => {
   for (const row of rows) {
+    // oxlint-disable-next-line no-await-in-loop -- rows are inserted one by one to keep their order in the collection
     await collection.create(row);
   }
-}
+};
 
 export interface SeedCollectionsOptions {
   /**
@@ -253,9 +255,9 @@ export interface SeedCollectionsOptions {
  * data is made by the scenarios in `src/seeds/` with a fixed seed of faker,
  * so the same `now` always gives the same data.
  */
-export async function seedCollections({
+export const seedCollections = async ({
   now = Temporal.Now.instant(),
-}: SeedCollectionsOptions = {}): Promise<void> {
+}: SeedCollectionsOptions = {}): Promise<void> => {
   const context = createSeedContext(now);
 
   for (const collection of COLLECTIONS) {
@@ -312,7 +314,7 @@ export async function seedCollections({
       videos: youtubeVideoRows,
     })
   );
-}
+};
 
 let seeding: Promise<void> | undefined;
 
@@ -321,8 +323,8 @@ let seeding: Promise<void> | undefined;
  * The Redis mock waits for this as well so that its click data uses the IDs
  * of the seeded videos and talents.
  */
-export function ensureCollectionsSeeded(): Promise<void> {
+export const ensureCollectionsSeeded = (): Promise<void> => {
   seeding ??= seedCollections();
 
   return seeding;
-}
+};

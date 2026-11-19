@@ -26,7 +26,7 @@ test.describe("Analytics", () => {
     ).toBeVisible();
     await expect(
       ranking.getByRole("row").nth(1).getByRole("link")
-    ).toHaveAttribute("href", /^\/videos\/[0-9a-f-]{36}$/);
+    ).toHaveAttribute("href", /^\/videos\/[0-9a-f-]{36}$/u);
   });
 
   test("should display the search volume and the quality metrics", async ({

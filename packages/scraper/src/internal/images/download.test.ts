@@ -11,11 +11,11 @@ const IMAGE_URL = "https://images.test/image.jpg";
 
 let image: Buffer;
 
-beforeAll(async () => {
-  image = await createImage(32, 18);
-});
+describe(downloadImage, () => {
+  beforeAll(async () => {
+    image = await createImage(32, 18);
+  });
 
-describe("downloadImage", () => {
   it("downloads an image with its Content-Type and ETag", async () => {
     const requests = serveImage(supabase, IMAGE_URL, { body: image });
 
@@ -25,8 +25,10 @@ describe("downloadImage", () => {
       contentType: "image/jpeg",
       etag: '"etag-1"',
     });
-    expect(Buffer.from(downloaded?.body ?? new ArrayBuffer(0))).toEqual(image);
-    expect(requests).toEqual([{ ifNoneMatch: null, url: IMAGE_URL }]);
+    expect(Buffer.from(downloaded?.body ?? new ArrayBuffer(0))).toStrictEqual(
+      image
+    );
+    expect(requests).toStrictEqual([{ ifNoneMatch: null, url: IMAGE_URL }]);
   });
 
   it("returns null when the platform reports the image as not modified", async () => {
@@ -35,7 +37,9 @@ describe("downloadImage", () => {
     await expect(
       downloadImage(IMAGE_URL, { etag: '"etag-1"' })
     ).resolves.toBeNull();
-    expect(requests).toEqual([{ ifNoneMatch: '"etag-1"', url: IMAGE_URL }]);
+    expect(requests).toStrictEqual([
+      { ifNoneMatch: '"etag-1"', url: IMAGE_URL },
+    ]);
   });
 
   it("returns null when the ETag is unchanged even without a 304", async () => {

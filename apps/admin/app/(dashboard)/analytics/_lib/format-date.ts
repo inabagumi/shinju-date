@@ -8,12 +8,10 @@ interface FormatDateLabelOptions {
  * Formats an ISO 8601 date (`YYYY-MM-DD`) used in the URL as `YYYY/MM/DD`
  * (or `MM/DD`), the same format as the other screens of the admin UI.
  */
-export function formatDateLabel(
+export const formatDateLabel = (
   isoDate: string,
   options: FormatDateLabelOptions = {}
-): string {
-  return formatDate(Temporal.PlainDate.from(isoDate), options);
-}
+): string => formatDate(Temporal.PlainDate.from(isoDate), options);
 
 interface DateRange {
   endDate: string;
@@ -23,6 +21,5 @@ interface DateRange {
 /**
  * Formats a date range as `YYYY/MM/DD 〜 YYYY/MM/DD`.
  */
-export function formatDateRange({ endDate, startDate }: DateRange): string {
-  return `${formatDateLabel(startDate)} 〜 ${formatDateLabel(endDate)}`;
-}
+export const formatDateRange = ({ endDate, startDate }: DateRange): string =>
+  `${formatDateLabel(startDate)} 〜 ${formatDateLabel(endDate)}`;

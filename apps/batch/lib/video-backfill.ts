@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { logger } from "@shinju-date/logger";
-import { AccountNotFoundError, type Scraper } from "@shinju-date/scraper";
+import { AccountNotFoundError } from "@shinju-date/scraper";
+import type { Scraper } from "@shinju-date/scraper";
 import type {
   BackfillClaim,
   BackfillJob,
@@ -43,19 +44,18 @@ export const BACKFILL_SENTRY_TAG = "video_backfill";
 
 const systemClock: Clock = () => Temporal.Now.instant();
 
-function isBefore(clock: Clock, deadline: Temporal.Instant): boolean {
-  return Temporal.Instant.compare(clock(), deadline) < 0;
-}
+const isBefore = (clock: Clock, deadline: Temporal.Instant): boolean =>
+  Temporal.Instant.compare(clock(), deadline) < 0;
 
 /**
  * Tells whether a write kept the job, and logs it when the lock was lost:
  * the lease ran out, so another worker may be reading the job, and this one
  * must stop working on it.
  */
-function isSaved(
+const isSaved = (
   result: BackfillWriteResult,
   job: BackfillJob
-): result is Extract<BackfillWriteResult, { status: "saved" }> {
+): result is Extract<BackfillWriteResult, { status: "saved" }> => {
   if (result.status === "saved") {
     return true;
   }
@@ -66,16 +66,16 @@ function isSaved(
   );
 
   return false;
-}
+};
 
 /**
  * Reports a job that was completed or given up, unless its lock was lost.
  */
-async function reportFinished(
+const reportFinished = async (
   onFinish: OnFinish | undefined,
   result: BackfillWriteResult,
   attempted: BackfillJob
-): Promise<void> {
+): Promise<void> => {
   if (!isSaved(result, attempted) || !onFinish) {
     return;
   }
@@ -94,18 +94,18 @@ async function reportFinished(
       status: job.status,
     });
   }
-}
+};
 
 /**
  * Reports the error that stopped a page of a job, as the queue recorded it:
  * given up, retried in a later run, or not recorded at all (the lock was
  * lost, or the write failed), in which case the job is not given up here.
  */
-function reportFailure(
+const reportFailure = (
   error: unknown,
   job: BackfillJob,
   recorded: BackfillWriteResult | null
-): void {
+): void => {
   const saved = recorded?.status === "saved" ? recorded.job : null;
   const givingUp = saved?.status === "failed";
   const context = {
@@ -140,18 +140,18 @@ function reportFailure(
       error: message,
     });
   }
-}
+};
 
 /**
  * Records the error that stopped a page of a job; the queue decides whether
  * to retry the job or give it up.
  */
-async function recordFailure(
+const recordFailure = async (
   queue: BackfillQueue,
   claim: BackfillClaim,
   error: unknown,
   onFinish: OnFinish | undefined
-): Promise<void> {
+): Promise<void> => {
   let recorded: BackfillWriteResult;
 
   try {
@@ -172,7 +172,7 @@ async function recordFailure(
   } else {
     isSaved(recorded, claim.job);
   }
-}
+};
 
 /**
  * Reads pages of a claimed job until its history ends or the deadline
@@ -181,14 +181,14 @@ async function recordFailure(
  *
  * @returns The number of videos saved.
  */
-async function workOnJob(
+const workOnJob = async (
   queue: BackfillQueue,
   scraper: Scraper,
   claimed: BackfillClaim,
   deadline: Temporal.Instant,
   clock: Clock,
   onFinish: OnFinish | undefined
-): Promise<number> {
+): Promise<number> => {
   let claim = claimed;
   let added = 0;
 
@@ -197,12 +197,14 @@ async function workOnJob(
     let page: Awaited<ReturnType<Scraper["addPastVideos"]>>;
 
     try {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- each page is read with the cursor of the previous one, one request at a time for the quota
       page = await scraper.addPastVideos({
         accountId: job.accountId,
         cursor: job.cursor,
         now: clock(),
       });
     } catch (error) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the job is released before the loop ends
       await recordFailure(queue, claim, error, onFinish);
 
       return added;
@@ -211,6 +213,7 @@ async function workOnJob(
     added += page.added;
 
     const done = page.cursor === null;
+    // oxlint-disable-next-line eslint/no-await-in-loop -- the progress is saved before the next page is read
     const recorded = await queue.recordPage(claim, {
       added: page.added,
       done,
@@ -227,6 +230,7 @@ async function workOnJob(
         });
       }
 
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the finished job is reported before the loop ends
       await reportFinished(onFinish, recorded, job);
 
       return added;
@@ -239,12 +243,13 @@ async function workOnJob(
     claim = { job: recorded.job, token };
 
     if (!isBefore(clock, deadline)) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the job is put back before the loop ends
       isSaved(await queue.requeue(claim), job);
 
       return added;
     }
   }
-}
+};
 
 /**
  * Works off the backfill queue until it is empty or the deadline passes.
@@ -254,17 +259,18 @@ async function workOnJob(
  * the next run, so retries are spread over runs instead of happening in a
  * burst.
  */
-export async function workOffBackfillQueue({
+export const workOffBackfillQueue = async ({
   clock = systemClock,
   deadline,
   getScraper,
   onFinish,
   queue,
-}: WorkOffBackfillQueueOptions): Promise<BackfillRunResult> {
+}: WorkOffBackfillQueueOptions): Promise<BackfillRunResult> => {
   const seen = new Set<string>();
   let added = 0;
 
   while (isBefore(clock, deadline)) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- one job is worked on at a time, until the deadline
     const claim = await queue.claim();
 
     if (!claim) {
@@ -274,11 +280,13 @@ export async function workOffBackfillQueue({
     const { job } = claim;
 
     if (seen.has(job.id)) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the job is put back before the loop ends
       isSaved(await queue.requeue(claim), job);
       break;
     }
 
     seen.add(job.id);
+    // oxlint-disable-next-line eslint/no-await-in-loop -- one job is worked on at a time, until the deadline
     added += await workOnJob(
       queue,
       getScraper(job.provider),
@@ -290,4 +298,4 @@ export async function workOffBackfillQueue({
   }
 
   return { added, jobs: seen.size };
-}
+};

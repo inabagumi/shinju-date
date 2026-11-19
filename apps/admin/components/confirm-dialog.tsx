@@ -3,7 +3,6 @@
 import {
   Alert,
   Button,
-  type ButtonProps,
   Dialog,
   DialogClose,
   DialogContent,
@@ -15,7 +14,9 @@ import {
   Input,
   twMerge,
 } from "@shinju-date/ui";
-import { type ReactElement, type ReactNode, useId, useState } from "react";
+import type { ButtonProps } from "@shinju-date/ui";
+import { useId, useState } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 /**
  * `onConfirm` が返す処理の結果。
@@ -31,10 +32,9 @@ export interface ActionResult {
  * 確認ボタンが押されたときの処理。値を返さない関数と、`Promise` を返す関数
  * （`async` 関数）のどちらも渡せる
  */
-export type ConfirmHandler = () =>
-  | void
-  | Promise<void>
-  | Promise<ActionResult | undefined>;
+export type ConfirmHandler =
+  | (() => void)
+  | (() => Promise<ActionResult | undefined>);
 
 /** ダイアログの幅 */
 export type ConfirmDialogSize = "md" | "lg";
@@ -99,19 +99,16 @@ export type ConfirmDialogProps =
   | ControlledConfirmDialogProps
   | UncontrolledConfirmDialogProps;
 
-function isPromiseLike<T>(value: unknown): value is PromiseLike<T> {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    typeof (value as PromiseLike<T>).then === "function"
-  );
-}
+const isPromiseLike = <T,>(value: unknown): value is PromiseLike<T> =>
+  typeof value === "object" &&
+  value !== null &&
+  typeof (value as PromiseLike<T>).then === "function";
 
 /**
  * ブラウザ標準の `confirm()` の代わりに使う確認ダイアログ。
  * キャンセルした場合は `onConfirm` を呼ばずに閉じる。
  */
-export function ConfirmDialog({
+export const ConfirmDialog = ({
   open: controlledOpen,
   onOpenChange,
   trigger,
@@ -120,11 +117,11 @@ export function ConfirmDialog({
   children,
   confirmLabel,
   confirmVariant = "primary",
-  pendingLabel = `${confirmLabel}中...`,
+  pendingLabel,
   requireKeyword,
   size = "md",
   onConfirm,
-}: ConfirmDialogProps) {
+}: ConfirmDialogProps) => {
   const keywordInputId = useId();
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -172,15 +169,14 @@ export function ConfirmDialog({
 
       if (actionResult && !actionResult.success) {
         setError(actionResult.error ?? CONFIRM_DIALOG_FALLBACK_ERROR);
-        return;
+      } else {
+        setOpen(false);
       }
-
-      setOpen(false);
     } catch {
       setError(CONFIRM_DIALOG_FALLBACK_ERROR);
-    } finally {
-      setIsPending(false);
     }
+
+    setIsPending(false);
   };
 
   const handleConfirm = () => {
@@ -194,10 +190,10 @@ export function ConfirmDialog({
 
     try {
       result = onConfirm();
-    } catch (err) {
+    } catch (error_) {
       // 値を返さない `onConfirm` は、これまでどおり例外があっても閉じる
       setOpen(false);
-      throw err;
+      throw error_;
     }
 
     if (!isPromiseLike<ConfirmResult>(result)) {
@@ -272,11 +268,13 @@ export function ConfirmDialog({
               type="button"
               variant={confirmVariant}
             >
-              {isPending ? pendingLabel : confirmLabel}
+              {isPending
+                ? (pendingLabel ?? `${confirmLabel}中...`)
+                : confirmLabel}
             </Button>
           </div>
         </DialogContent>
       </DialogPortal>
     </Dialog>
   );
-}
+};

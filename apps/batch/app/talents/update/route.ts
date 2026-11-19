@@ -10,7 +10,7 @@ import { createScraper } from "@/lib/scraper";
 
 export const maxDuration = 120;
 
-export async function POST(request: NextRequest): Promise<Response> {
+export const POST = async (request: NextRequest): Promise<Response> => {
   const query = parseQuery(providerQuerySchema, request);
 
   if (query instanceof Response) {
@@ -19,13 +19,13 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   const { provider } = query;
 
-  return runCronJob(request, getTalentsUpdateJob(provider), async () => {
+  return await runCronJob(request, getTalentsUpdateJob(provider), async () => {
     const changed = await createScraper(provider).syncAccounts();
 
     if (changed) {
       await revalidateTags([CACHE_TAGS.TALENTS], { signal: request.signal });
     }
   });
-}
+};
 
 export const GET = POST;

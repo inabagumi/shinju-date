@@ -2,14 +2,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { findSuspenseChildren, runServerComponent } from "@/test/suspense";
 
+import type getVideo from "../_lib/get-video";
+import type { VideoDetail } from "../_lib/get-video";
+
 const mocks = vi.hoisted(() => ({
-  getVideo: vi.fn(),
+  getVideo: vi.fn<typeof getVideo>(),
 }));
 
-vi.mock("../_lib/get-video", () => ({
+vi.mock(import("../_lib/get-video"), () => ({
   default: mocks.getVideo,
 }));
-vi.mock("next/navigation", () => ({
+vi.mock(import("next/navigation"), () => ({
   notFound: () => {
     throw new Error("NEXT_NOT_FOUND");
   },
@@ -19,7 +22,7 @@ const { default: VideoDetailPage, generateMetadata } = await import("./page");
 
 const VIDEO_ID = "123e4567-e89b-12d3-a456-426614174000";
 
-const video = {
+const video: VideoDetail = {
   clicks: 0,
   created_at: "2026-11-01T00:00:00Z",
   deleted_at: null,
@@ -47,7 +50,7 @@ describe("VideoDetailPage", () => {
   it("fetches the title and the body with the same cached call", async () => {
     const params = Promise.resolve({ id: VIDEO_ID });
 
-    await expect(generateMetadata({ params })).resolves.toEqual({
+    await expect(generateMetadata({ params })).resolves.toStrictEqual({
       title: "テストの動画 - 動画詳細",
     });
 
@@ -58,7 +61,7 @@ describe("VideoDetailPage", () => {
 
     // `getVideo` is a `'use cache: private'` function, so the calls with the
     // same arguments share one entry and query the database once per request.
-    expect(mocks.getVideo.mock.calls).toEqual([[VIDEO_ID], [VIDEO_ID]]);
+    expect(mocks.getVideo.mock.calls).toStrictEqual([[VIDEO_ID], [VIDEO_ID]]);
   });
 
   it("names the page as not found when the video does not exist", async () => {
@@ -66,6 +69,6 @@ describe("VideoDetailPage", () => {
 
     await expect(
       generateMetadata({ params: Promise.resolve({ id: VIDEO_ID }) })
-    ).resolves.toEqual({ title: "動画が見つかりません" });
+    ).resolves.toStrictEqual({ title: "動画が見つかりません" });
   });
 });

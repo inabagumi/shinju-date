@@ -8,7 +8,7 @@ import { StatTileLink } from "./trend-indicator";
  * AnalyticsWidget - Displays analytics summary with links to detailed pages and trend indicators
  * This is an async Server Component that fetches its own data
  */
-export async function AnalyticsWidget() {
+export const AnalyticsWidget = async () => {
   const analytics = await getAnalyticsSummary();
 
   return (
@@ -36,17 +36,15 @@ export async function AnalyticsWidget() {
       </div>
     </Panel>
   );
-}
+};
 
 /** 読み込み中の `AnalyticsWidget` */
-export function AnalyticsWidgetSkeleton() {
-  return (
-    <PanelSkeleton title="アナリティクス">
-      <div className="grid grid-cols-2 gap-4">
-        <StatTileSkeleton change />
-        <StatTileSkeleton change />
-        <StatTileSkeleton change className="col-span-2" />
-      </div>
-    </PanelSkeleton>
-  );
-}
+export const AnalyticsWidgetSkeleton = () => (
+  <PanelSkeleton title="アナリティクス">
+    <div className="grid grid-cols-2 gap-4">
+      <StatTileSkeleton change />
+      <StatTileSkeleton change />
+      <StatTileSkeleton change className="col-span-2" />
+    </div>
+  </PanelSkeleton>
+);

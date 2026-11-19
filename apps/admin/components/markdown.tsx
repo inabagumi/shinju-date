@@ -19,33 +19,27 @@ export interface MarkdownProps {
  * Markdown の本文。GFM（表、取り消し線など）に対応し、リンクは新しいタブで開く。
  * 生の HTML はレンダリングしない（`react-markdown` の既定のまま）。
  */
-export function Markdown({
+export const Markdown = ({
   children,
   className,
   size = "base",
-}: MarkdownProps) {
-  return (
-    <div
-      className={twMerge(
-        proseClassName,
-        size === "sm" && "prose-sm",
-        className
-      )}
+}: MarkdownProps) => (
+  <div
+    className={twMerge(proseClassName, size === "sm" && "prose-sm", className)}
+  >
+    <ReactMarkdown
+      rehypePlugins={[
+        [
+          rehypeExternalLinks,
+          {
+            rel: ["nofollow", "noopener", "noreferrer"],
+            target: "_blank",
+          },
+        ],
+      ]}
+      remarkPlugins={[remarkGfm]}
     >
-      <ReactMarkdown
-        rehypePlugins={[
-          [
-            rehypeExternalLinks,
-            {
-              rel: ["nofollow", "noopener", "noreferrer"],
-              target: "_blank",
-            },
-          ],
-        ]}
-        remarkPlugins={[remarkGfm]}
-      >
-        {children}
-      </ReactMarkdown>
-    </div>
-  );
-}
+      {children}
+    </ReactMarkdown>
+  </div>
+);

@@ -1,30 +1,41 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { hydrateRoot, type Root } from "react-dom/client";
+import { hydrateRoot } from "react-dom/client";
+import type { HydrationOptions, Root } from "react-dom/client";
 import { renderToString } from "react-dom/server";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import type { InViewHookResponse } from "react-intersection-observer";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import Timeline from "@/app/_components/timeline";
 import ScheduleDayHeader from "@/app/schedule/_components/schedule-day-header";
-import type { Video } from "@/lib/data/videos";
+import type { fetchVideos, Video } from "@/lib/data/videos";
 import { createVideoItem } from "@/test/factories";
 
 import FormattedTime from "./formatted-time";
 import SearchResults from "./search-results";
 import { TimerProvider } from "./timer";
+import type { VideoCardSkeleton } from "./video-card";
 
-vi.mock("@/lib/data/videos", () => ({
-  fetchVideos: vi.fn(() => new Promise(() => {})),
+vi.mock(import("@/lib/data/videos"), () => ({
+  // Never resolves, so the results stay loading
+  fetchVideos: vi.fn<typeof fetchVideos>(
+    () => Promise.withResolvers<never>().promise
+  ),
 }));
 
-vi.mock("react-intersection-observer", () => ({
-  useInView: () => ({ inView: false, ref: () => {} }),
+vi.mock(import("react-intersection-observer"), () => ({
+  useInView: () =>
+    ({
+      inView: false,
+      ref: () => {},
+    }) as Partial<InViewHookResponse> as InViewHookResponse,
 }));
 
-vi.mock("./video-card", () => ({
+vi.mock(import("./video-card"), () => ({
   default: ({ value }: { value: Video }) => <article>{value.title}</article>,
-  VideoCardSkeleton: () => null,
+  // Renders nothing
+  VideoCardSkeleton: vi.fn<typeof VideoCardSkeleton>(),
 }));
 
 /** The server renders a minute before the date changes in Japan */
@@ -34,14 +45,14 @@ const BROWSER_NOW = "2027-01-01T00:01:00+09:00[Asia/Tokyo]";
 /** The date the server renders with (`getReferenceDate`) */
 const REFERENCE_DATE = "2026-12-31";
 
-function mockNow(value: string) {
+const mockNow = (value: string) => {
   vi.spyOn(Temporal.Now, "zonedDateTimeISO").mockReturnValue(
     Temporal.ZonedDateTime.from(value)
   );
-}
+};
 
 /** The tree the page renders, as `app/layout.tsx` does */
-function Page({ children }: { children: ReactNode }) {
+const Page = ({ children }: { children: ReactNode }) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false, staleTime: Infinity } },
   });
@@ -51,7 +62,7 @@ function Page({ children }: { children: ReactNode }) {
       <TimerProvider initialNow={SERVER_NOW}>{children}</TimerProvider>
     </QueryClientProvider>
   );
-}
+};
 
 let root: Root | undefined;
 
@@ -59,7 +70,7 @@ let root: Root | undefined;
  * Render the tree on the server at `SERVER_NOW`, then hydrate it in the
  * browser at `BROWSER_NOW`. Returns the errors the hydration reported.
  */
-async function renderOnServerAndHydrate(children: ReactNode) {
+const renderOnServerAndHydrate = async (children: ReactNode) => {
   mockNow(SERVER_NOW);
 
   const container = document.createElement("div");
@@ -69,18 +80,22 @@ async function renderOnServerAndHydrate(children: ReactNode) {
 
   mockNow(BROWSER_NOW);
 
-  const onRecoverableError = vi.fn();
+  const onRecoverableError =
+    vi.fn<NonNullable<HydrationOptions["onRecoverableError"]>>();
   const consoleError = vi.spyOn(console, "error");
   const serverHtml = container.innerHTML;
 
-  await act(async () => {
+  // Returning a promise makes `act` wait for the hydration as well
+  await act(() => {
     root = hydrateRoot(container, <Page>{children}</Page>, {
       onRecoverableError,
     });
+
+    return Promise.resolve();
   });
 
   return { consoleError, onRecoverableError, serverHtml };
-}
+};
 
 describe("hydration across the change of the date", () => {
   afterEach(() => {
@@ -92,7 +107,7 @@ describe("hydration across the change of the date", () => {
     vi.restoreAllMocks();
   });
 
-  test("the search results", async () => {
+  it("the search results", async () => {
     const { consoleError, onRecoverableError, serverHtml } =
       await renderOnServerAndHydrate(
         <SearchResults
@@ -117,7 +132,7 @@ describe("hydration across the change of the date", () => {
     expect(screen.getByRole("heading")).toHaveTextContent("昨日");
   });
 
-  test("the timeline of the home page", async () => {
+  it("the timeline of the home page", async () => {
     const { consoleError, onRecoverableError, serverHtml } =
       await renderOnServerAndHydrate(
         <Timeline
@@ -141,7 +156,7 @@ describe("hydration across the change of the date", () => {
     ).toHaveTextContent("今日");
   });
 
-  test("the heading of a day on the schedule", async () => {
+  it("the heading of a day on the schedule", async () => {
     const { consoleError, onRecoverableError, serverHtml } =
       await renderOnServerAndHydrate(
         <ScheduleDayHeader
@@ -158,7 +173,7 @@ describe("hydration across the change of the date", () => {
     expect(screen.getByText("今日")).toBeInTheDocument();
   });
 
-  test("the year of a time", async () => {
+  it("the year of a time", async () => {
     const { consoleError, onRecoverableError, serverHtml } =
       await renderOnServerAndHydrate(
         <FormattedTime

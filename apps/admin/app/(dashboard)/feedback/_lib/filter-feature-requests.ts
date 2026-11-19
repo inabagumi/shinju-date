@@ -10,13 +10,12 @@ type FilterableFeatureRequest = Pick<
 /**
  * 機能要望の一覧を、URL のパラメータで絞り込む。`undefined` の項目では絞り込まない
  */
-export function filterFeatureRequests<T extends FilterableFeatureRequest>(
+export const filterFeatureRequests = <T extends FilterableFeatureRequest>(
   featureRequests: readonly T[],
   { read, status }: FeedbackSearchParams
-): T[] {
-  return featureRequests.filter(
+): T[] =>
+  featureRequests.filter(
     (item) =>
       (status === undefined || item.status === status) &&
       (read === undefined || item.is_read === (read === "read"))
   );
-}

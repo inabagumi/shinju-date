@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
-import { fetchTalent, type TalentDetail } from "@/lib/data/talents";
+import { fetchTalent } from "@/lib/data/talents";
+import type { TalentDetail } from "@/lib/data/talents";
 
 export type TalentPageParams = PageProps<"/talents/[id]">["params"];
 
@@ -11,9 +12,9 @@ export type TalentPageParams = PageProps<"/talents/[id]">["params"];
  * Each section of the page calls this inside its own `<Suspense>`, and
  * `fetchTalent` is cached, so the talent is fetched only once.
  */
-export async function getShownTalent(
+export const getShownTalent = async (
   params: TalentPageParams
-): Promise<TalentDetail> {
+): Promise<TalentDetail> => {
   const { id } = await params;
   const talent = await fetchTalent(id);
 
@@ -22,4 +23,4 @@ export async function getShownTalent(
   }
 
   return talent;
-}
+};

@@ -5,7 +5,7 @@ export interface ClientOptions {
   client?: youtube.Youtube | undefined;
 }
 
-function createYouTubeClient(): youtube.Youtube {
+const createYouTubeClient = (): youtube.Youtube => {
   const apiKey = process.env["GOOGLE_API_KEY"];
 
   if (!apiKey) {
@@ -16,16 +16,16 @@ function createYouTubeClient(): youtube.Youtube {
     auth: apiKey,
     fetchImplementation: fetch,
   });
-}
+};
 
 let _youtubeClient: youtube.Youtube | null = null;
 
 /**
  * Gets or creates a singleton YouTube client instance
  */
-export function getYouTubeClient(): youtube.Youtube {
+export const getYouTubeClient = (): youtube.Youtube => {
   if (!_youtubeClient) {
     _youtubeClient = createYouTubeClient();
   }
   return _youtubeClient;
-}
+};

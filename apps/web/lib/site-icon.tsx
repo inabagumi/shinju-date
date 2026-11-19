@@ -11,11 +11,11 @@ interface SiteIconOptions {
 }
 
 /** The icon of the site: the search icon on the theme color. */
-export function createSiteIcon({
+export const createSiteIcon = ({
   rounded = false,
   size,
-}: SiteIconOptions): ImageResponse {
-  return new ImageResponse(
+}: SiteIconOptions): ImageResponse =>
+  new ImageResponse(
     <div
       style={{
         backgroundColor: SITE_THEME_COLOR,
@@ -38,4 +38,3 @@ export function createSiteIcon({
       width: size,
     }
   );
-}

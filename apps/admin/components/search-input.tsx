@@ -1,6 +1,7 @@
 "use client";
 
-import { Input, type InputProps } from "@shinju-date/ui";
+import { Input } from "@shinju-date/ui";
+import type { InputProps } from "@shinju-date/ui";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
@@ -28,23 +29,21 @@ export interface SearchInputProps extends Omit<
  * `useSearchParams` を使うため、中で Suspense に囲む。静的なシェルには、
  * 操作できない入力欄を出す。
  */
-export function SearchInput({
+export const SearchInput = ({
   debounceMs = DEFAULT_DEBOUNCE_MS,
   paramName = "search",
   type = "search",
   ...props
-}: SearchInputProps) {
-  return (
-    <Suspense fallback={<Input {...props} disabled type={type} value="" />}>
-      <SyncedSearchInput
-        debounceMs={debounceMs}
-        paramName={paramName}
-        type={type}
-        {...props}
-      />
-    </Suspense>
-  );
-}
+}: SearchInputProps) => (
+  <Suspense fallback={<Input {...props} disabled type={type} value="" />}>
+    <SyncedSearchInput
+      debounceMs={debounceMs}
+      paramName={paramName}
+      type={type}
+      {...props}
+    />
+  </Suspense>
+);
 
 interface SyncedSearchInputProps extends Omit<
   SearchInputProps,
@@ -54,11 +53,11 @@ interface SyncedSearchInputProps extends Omit<
   paramName: string;
 }
 
-function SyncedSearchInput({
+const SyncedSearchInput = ({
   debounceMs,
   paramName,
   ...props
-}: SyncedSearchInputProps) {
+}: SyncedSearchInputProps) => {
   const searchParams = useSearchParams();
   const updateSearchParams = useUpdateSearchParams();
   const urlValue = searchParams.get(paramName) ?? "";
@@ -110,4 +109,4 @@ function SyncedSearchInput({
       value={value}
     />
   );
-}
+};

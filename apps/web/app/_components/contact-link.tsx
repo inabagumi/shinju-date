@@ -7,7 +7,7 @@ interface ContactLinkProps {
   children: React.ReactNode;
 }
 
-export async function ContactLink({ className, children }: ContactLinkProps) {
+export const ContactLink = ({ className, children }: ContactLinkProps) => {
   const enabled = isContactFormEnabled();
 
   if (!enabled) {
@@ -19,4 +19,4 @@ export async function ContactLink({ className, children }: ContactLinkProps) {
       {children}
     </NavLink>
   );
-}
+};

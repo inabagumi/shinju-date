@@ -2,11 +2,11 @@ interface CreateErrorResponseOptions {
   status?: number;
 }
 
-export function createErrorResponse(
+export const createErrorResponse = (
   message: string,
   { status = 500 }: CreateErrorResponseOptions
-) {
-  return Response.json(
+) =>
+  Response.json(
     {
       error: message,
     },
@@ -17,4 +17,3 @@ export function createErrorResponse(
       status,
     }
   );
-}

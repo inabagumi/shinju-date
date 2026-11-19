@@ -1,25 +1,37 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import type { Video } from "@/lib/data/videos";
+import type { VideoCardSkeleton } from "@/components/video-card";
+import type {
+  fetchDashboardVideos,
+  fetchUpcomingVideos,
+  Video,
+} from "@/lib/data/videos";
 import { queryKeys } from "@/lib/query-keys";
 
 import {
-  type DashboardVideos,
   LiveSection,
   RecentSection,
   ScheduleSection,
   ShortsSection,
 } from "./home-sections";
+import type { DashboardVideos } from "./home-sections";
+import type { ShortsCarouselSkeleton } from "./shorts-carousel";
+import type { TimelineSkeleton } from "./timeline";
 
-vi.mock("@/lib/data/videos", () => ({
-  fetchDashboardVideos: vi.fn(() => new Promise(() => {})),
-  fetchUpcomingVideos: vi.fn(() => new Promise(() => {})),
+vi.mock(import("@/lib/data/videos"), () => ({
+  // Never resolve, so the sections stay loading
+  fetchDashboardVideos: vi.fn<typeof fetchDashboardVideos>(
+    () => Promise.withResolvers<never>().promise
+  ),
+  fetchUpcomingVideos: vi.fn<typeof fetchUpcomingVideos>(
+    () => Promise.withResolvers<never>().promise
+  ),
 }));
 
-vi.mock("./shorts-carousel", () => ({
+vi.mock(import("./shorts-carousel"), () => ({
   default: ({ videos }: { videos: Video[] }) => (
     <ul aria-label="carousel">
       {videos.map((video) => (
@@ -27,10 +39,11 @@ vi.mock("./shorts-carousel", () => ({
       ))}
     </ul>
   ),
-  ShortsCarouselSkeleton: () => null,
+  // Renders nothing
+  ShortsCarouselSkeleton: vi.fn<typeof ShortsCarouselSkeleton>(),
 }));
 
-vi.mock("./timeline", () => ({
+vi.mock(import("./timeline"), () => ({
   default: ({ videos }: { videos: Video[] }) => (
     <ol aria-label="timeline">
       {videos.map((video) => (
@@ -38,32 +51,31 @@ vi.mock("./timeline", () => ({
       ))}
     </ol>
   ),
-  TimelineSkeleton: () => null,
+  // Renders nothing
+  TimelineSkeleton: vi.fn<typeof TimelineSkeleton>(),
 }));
 
-vi.mock("@/components/video-card", () => ({
+vi.mock(import("@/components/video-card"), () => ({
   default: ({ value }: { value: Video }) => <article>{value.id}</article>,
-  VideoCardSkeleton: () => null,
+  // Renders nothing
+  VideoCardSkeleton: vi.fn<typeof VideoCardSkeleton>(),
 }));
 
-function createVideos(count: number, prefix: string): Video[] {
-  return Array.from(
+const createVideos = (count: number, prefix: string): Video[] =>
+  Array.from(
     { length: count },
     (_, index) => ({ id: `${prefix}-${index}` }) as Video
   );
-}
 
-function createDashboardVideos(
+const createDashboardVideos = (
   counts: Partial<Record<keyof DashboardVideos, number>> = {}
-): DashboardVideos {
-  return {
-    live: createVideos(counts.live ?? 0, "live"),
-    recent: createVideos(counts.recent ?? 0, "recent"),
-    shorts: createVideos(counts.shorts ?? 0, "shorts"),
-  };
-}
+): DashboardVideos => ({
+  live: createVideos(counts.live ?? 0, "live"),
+  recent: createVideos(counts.recent ?? 0, "recent"),
+  shorts: createVideos(counts.shorts ?? 0, "shorts"),
+});
 
-function renderWithQueryClient(ui: ReactNode) {
+const renderWithQueryClient = (ui: ReactNode) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -73,10 +85,10 @@ function renderWithQueryClient(ui: ReactNode) {
   );
 
   return { container, queryClient };
-}
+};
 
-describe("LiveSection", () => {
-  test("should show the number of live videos next to the heading", () => {
+describe(LiveSection, () => {
+  it("should show the number of live videos next to the heading", () => {
     renderWithQueryClient(
       <LiveSection prefetchedData={createDashboardVideos({ live: 3 })} />
     );
@@ -90,7 +102,7 @@ describe("LiveSection", () => {
     expect(within(section).getAllByRole("article")).toHaveLength(3);
   });
 
-  test("should not render the section when nothing is live", () => {
+  it("should not render the section when nothing is live", () => {
     const { container } = renderWithQueryClient(
       <LiveSection prefetchedData={createDashboardVideos({ recent: 2 })} />
     );
@@ -98,7 +110,7 @@ describe("LiveSection", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  test("should update when the query data is refreshed", async () => {
+  it("should update when the query data is refreshed", async () => {
     const { container, queryClient } = renderWithQueryClient(
       <LiveSection prefetchedData={createDashboardVideos({ live: 1 })} />
     );
@@ -110,7 +122,7 @@ describe("LiveSection", () => {
       );
     });
 
-    expect(await screen.findByText("2件")).toBeInTheDocument();
+    await expect(screen.findByText("2件")).resolves.toBeInTheDocument();
 
     act(() => {
       queryClient.setQueryData(
@@ -125,8 +137,8 @@ describe("LiveSection", () => {
   });
 });
 
-describe("ScheduleSection", () => {
-  test("should show the timeline with the number of upcoming videos", () => {
+describe(ScheduleSection, () => {
+  it("should show the timeline with the number of upcoming videos", () => {
     renderWithQueryClient(
       <ScheduleSection
         prefetchedData={{
@@ -143,7 +155,7 @@ describe("ScheduleSection", () => {
       within(within(section).getByRole("list", { name: "timeline" }))
         .getAllByRole("listitem")
         .map((item) => item.textContent)
-    ).toEqual([
+    ).toStrictEqual([
       "upcoming-0",
       "upcoming-1",
       "upcoming-2",
@@ -152,7 +164,7 @@ describe("ScheduleSection", () => {
     ]);
   });
 
-  test("should show a message when nothing is scheduled", () => {
+  it("should show a message when nothing is scheduled", () => {
     renderWithQueryClient(
       <ScheduleSection prefetchedData={{ today: "2026-11-14", videos: [] }} />
     );
@@ -166,8 +178,8 @@ describe("ScheduleSection", () => {
   });
 });
 
-describe("RecentSection", () => {
-  test("should show only one row of recent videos and link to the videos page", () => {
+describe(RecentSection, () => {
+  it("should show only one row of recent videos and link to the videos page", () => {
     renderWithQueryClient(
       <RecentSection prefetchedData={createDashboardVideos({ recent: 10 })} />
     );
@@ -178,15 +190,15 @@ describe("RecentSection", () => {
       within(section)
         .getAllByRole("article")
         .map((card) => card.textContent)
-    ).toEqual(["recent-0", "recent-1", "recent-2", "recent-3"]);
+    ).toStrictEqual(["recent-0", "recent-1", "recent-2", "recent-3"]);
     expect(
       within(section).getByRole("link", { name: "動画一覧を見る" })
     ).toHaveAttribute("href", "/videos");
   });
 });
 
-describe("ShortsSection", () => {
-  test("should show the shorts carousel with the number of shorts", () => {
+describe(ShortsSection, () => {
+  it("should show the shorts carousel with the number of shorts", () => {
     renderWithQueryClient(
       <ShortsSection prefetchedData={createDashboardVideos({ shorts: 20 })} />
     );
@@ -199,7 +211,7 @@ describe("ShortsSection", () => {
     ).toBeInTheDocument();
   });
 
-  test("should not render the section when there are no shorts", () => {
+  it("should not render the section when there are no shorts", () => {
     const { container } = renderWithQueryClient(
       <ShortsSection prefetchedData={createDashboardVideos({ live: 1 })} />
     );

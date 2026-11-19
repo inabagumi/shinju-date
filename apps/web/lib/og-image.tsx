@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 
 import { cacheLife } from "next/cache";
 import { ImageResponse } from "next/og";
@@ -19,7 +19,7 @@ const LOGO_HEIGHT = 48;
 const LOGO_WIDTH = (LOGO_HEIGHT * 256) / 80;
 
 /** The key visual, which the home page also shows */
-const KEY_VISUAL_PATH = join(process.cwd(), "app/_assets/hero.jpg");
+const KEY_VISUAL_PATH = path.join(process.cwd(), "app/_assets/hero.jpg");
 /** The key visual takes the right half of the image */
 const KEY_VISUAL_SIZE = {
   height: OG_IMAGE_SIZE.height,
@@ -34,7 +34,7 @@ const KEY_VISUAL_SIZE = {
  * cached. It changes only with a deployment, and is not data from outside,
  * so the cache is not remote.
  */
-async function loadKeyVisual(): Promise<string> {
+const loadKeyVisual = async (): Promise<string> => {
   "use cache";
 
   cacheLife("max");
@@ -45,7 +45,7 @@ async function loadKeyVisual(): Promise<string> {
     .toBuffer();
 
   return `data:image/jpeg;base64,${jpeg.toString("base64")}`;
-}
+};
 
 /**
  * The Open Graph image of a page: its title and the logo on the left half,
@@ -55,7 +55,7 @@ async function loadKeyVisual(): Promise<string> {
  * No fonts are passed, so `ImageResponse` fetches the fonts for the Japanese
  * characters by itself.
  */
-export async function createOgImage(title: string): Promise<ImageResponse> {
+export const createOgImage = async (title: string): Promise<ImageResponse> => {
   const keyVisualURL = await loadKeyVisual();
 
   return new ImageResponse(
@@ -108,4 +108,4 @@ export async function createOgImage(title: string): Promise<ImageResponse> {
     </div>,
     OG_IMAGE_SIZE
   );
-}
+};

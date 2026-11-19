@@ -17,7 +17,7 @@ interface ChartTooltipContentProps extends Partial<
  * Recharts の `<Tooltip content={…} />` に渡すツールチップの中身。
  * 既定の中身は色を inline style で持つため、セマンティックカラーのクラスで描き直す。
  */
-export function ChartTooltipContent({
+export const ChartTooltipContent = ({
   active,
   colorItems = false,
   formatLabel,
@@ -25,7 +25,7 @@ export function ChartTooltipContent({
   label,
   payload,
   series,
-}: ChartTooltipContentProps) {
+}: ChartTooltipContentProps) => {
   if (!active || !payload?.length) {
     return null;
   }
@@ -52,4 +52,4 @@ export function ChartTooltipContent({
       </ul>
     </div>
   );
-}
+};

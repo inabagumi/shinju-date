@@ -1,11 +1,8 @@
 import { PostgrestError, parseError } from "./errors.js";
-import { type Filter, filtersAt, getColumn, matchesFilters } from "./query.js";
-import {
-  type AnyTableDefinition,
-  findTable,
-  getRows,
-  type TableName,
-} from "./tables.js";
+import { filtersAt, getColumn, matchesFilters } from "./query.js";
+import type { Filter } from "./query.js";
+import { findTable, getRows } from "./tables.js";
+import type { AnyTableDefinition, TableName } from "./tables.js";
 
 /**
  * A single entry of a PostgREST `select` parameter.
@@ -33,7 +30,7 @@ type SelectNode =
  * `thumbnail:thumbnails(id,path),talent:talents(id,name)` becomes
  * `['thumbnail:thumbnails(id,path)', 'talent:talents(id,name)']`.
  */
-function splitSelectFields(selectStr: string): string[] {
+const splitSelectFields = (selectStr: string): string[] => {
   const fields: string[] = [];
   let depth = 0;
   let current = "";
@@ -55,26 +52,32 @@ function splitSelectFields(selectStr: string): string[] {
   fields.push(current);
 
   return fields.map((field) => field.trim()).filter((field) => field !== "");
-}
+};
 
 /**
  * Parse a PostgREST `select` parameter into a tree of select nodes. The
  * forms that the mock does not support, such as spreads (`...talents(name)`),
  * aggregates (`count()`) and JSON paths (`data->name`), are errors.
  */
-function parseSelect(selectStr: string): SelectNode[] {
-  return splitSelectFields(selectStr).map((field): SelectNode => {
+const parseSelect = (selectStr: string): SelectNode[] =>
+  splitSelectFields(selectStr).map((field): SelectNode => {
     if (field === "*") {
       return { kind: "wildcard" };
     }
 
     // alias:relation!hint(fields) where alias and hints are optional
     const relationMatch = field.match(
-      /^(?:(\w+):)?(\w+)((?:!\w+)*)\s*\(([\s\S]*)\)$/
+      /^(?:(?<alias>\w+):)?(?<relation>\w+)(?<hints>(?:!\w+)*)\s*\((?<nestedFields>[\s\S]*)\)$/u
     );
     if (relationMatch) {
-      const [, alias, relation = "", hints = "", nestedFields = ""] =
-        relationMatch;
+      const relationGroups: Record<string, string | undefined> =
+        relationMatch.groups ?? {};
+      const {
+        alias,
+        relation = "",
+        hints = "",
+        nestedFields = "",
+      } = relationGroups;
       return {
         alias: alias ?? relation,
         fields: parseSelect(nestedFields),
@@ -85,7 +88,9 @@ function parseSelect(selectStr: string): SelectNode[] {
     }
 
     // alias:column::cast where alias and cast are optional
-    const columnMatch = field.match(/^(?:(\w+):)?(\w+)(?:::\w+)?$/);
+    const columnMatch = field.match(
+      /^(?:(?<alias>\w+):)?(?<column>\w+)(?:::\w+)?$/u
+    );
 
     if (!columnMatch) {
       throw parseError(
@@ -94,17 +99,18 @@ function parseSelect(selectStr: string): SelectNode[] {
       );
     }
 
-    const [, alias, column = field] = columnMatch;
+    const columnGroups: Record<string, string | undefined> =
+      columnMatch.groups ?? {};
+    const { alias, column = field } = columnGroups;
     return { alias: alias ?? column, column, kind: "column" };
   });
-}
 
 /** The paths of the embedded resources of a select, such as `['talent']`. */
-function getEmbeddedPaths(
+const getEmbeddedPaths = (
   nodes: readonly SelectNode[],
   parent: readonly string[] = []
-): string[][] {
-  return nodes.flatMap((node) => {
+): string[][] =>
+  nodes.flatMap((node) => {
     if (node.kind !== "relation") {
       return [];
     }
@@ -113,17 +119,16 @@ function getEmbeddedPaths(
 
     return [path, ...getEmbeddedPaths(node.fields, path)];
   });
-}
 
 /**
  * Check that every filter on an embedded resource, such as
  * `talents.deleted_at=is.null`, names an embedded resource of the select
  * (`PGRST108` of PostgREST otherwise).
  */
-function checkEmbeddedFilters(
+const checkEmbeddedFilters = (
   nodes: readonly SelectNode[],
   filters: readonly Filter[]
-): void {
+): void => {
   const paths = new Set(
     getEmbeddedPaths(nodes).map((path) => JSON.stringify(path))
   );
@@ -139,18 +144,20 @@ function checkEmbeddedFilters(
       });
     }
   }
-}
+};
 
 /**
  * The relation of a table to an embedded resource, and the table it refers
  * to. A relation that the table does not define is an error (`PGRST200` of
  * PostgREST).
  */
-function findRelation(
+const findRelation = (
   table: AnyTableDefinition | undefined,
   relationName: string
-) {
-  const relation = table?.relations.find(({ table }) => table === relationName);
+) => {
+  const relation = table?.relations.find(
+    (candidate) => candidate.table === relationName
+  );
   const target = relation && findTable(relation.table);
 
   if (!relation || !target) {
@@ -163,71 +170,102 @@ function findRelation(
   }
 
   return { relation, target };
-}
+};
 
 /** Check that every embedded resource of a select has a relation. */
-function checkRelations(
+const checkRelations = (
   nodes: readonly SelectNode[],
   table: AnyTableDefinition | undefined
-): void {
+): void => {
   for (const node of nodes) {
     if (node.kind === "relation") {
       checkRelations(node.fields, findRelation(table, node.relation).target);
     }
   }
-}
+};
 
 /**
  * Check a select and the filters on its embedded resources without reading
  * any rows, and throw the error of PostgREST for what is not supported. A
  * write checks them before it changes anything, as PostgREST does.
  */
-export function validateSelect(
+export const validateSelect = (
   selectStr: string,
   tableName: TableName,
   filters: readonly Filter[] = []
-): SelectNode[] {
+): SelectNode[] => {
   const nodes = parseSelect(selectStr);
 
   checkEmbeddedFilters(nodes, filters);
   checkRelations(nodes, findTable(tableName));
 
   return nodes;
-}
+};
 
 /** The rows of an embedded resource that match its filters. */
-async function resolveRelation(
+const resolveRelation = async (
   table: AnyTableDefinition | undefined,
   relationName: string,
   row: object,
   filters: readonly Filter[]
-): Promise<{ rows: object[]; table: AnyTableDefinition; many: boolean }> {
+): Promise<{ rows: object[]; table: AnyTableDefinition; many: boolean }> => {
   const { relation, target } = findRelation(table, relationName);
   const value = getColumn(row, relation.column);
-  const related =
-    value == null
-      ? []
-      : (await getRows(target)).filter(
-          (relatedRow) =>
-            getColumn(relatedRow, relation.referencedColumn) === value &&
-            matchesFilters(relatedRow, filters, target.uuidColumns)
-        );
+  const targetRows =
+    value === null || value === undefined ? [] : await getRows(target);
+  const related = targetRows.filter(
+    (relatedRow) =>
+      getColumn(relatedRow, relation.referencedColumn) === value &&
+      matchesFilters(relatedRow, filters, target.uuidColumns)
+  );
 
   return { many: relation.many, rows: related, table: target };
-}
+};
+
+/**
+ * The value of an embedded resource in a projected row, or `null` when the
+ * resource has `!inner` and no rows.
+ */
+const projectEmbedded = async (
+  row: object,
+  node: Extract<SelectNode, { kind: "relation" }>,
+  table: AnyTableDefinition | undefined,
+  filters: readonly Filter[],
+  path: readonly string[]
+): Promise<{ value: unknown } | null> => {
+  const relationPath = [...path, node.alias];
+  const related = await resolveRelation(
+    table,
+    node.relation,
+    row,
+    filtersAt(filters, relationPath)
+  );
+  const outputs = await Promise.all(
+    related.rows.map((relatedRow) =>
+      projectRow(relatedRow, node.fields, related.table, filters, relationPath)
+    )
+  );
+  const projected = outputs.filter((output) => output !== null);
+
+  if (node.inner && projected.length === 0) {
+    return null;
+  }
+
+  return { value: related.many ? projected : (projected[0] ?? null) };
+};
 
 /**
  * Project a single row according to parsed select nodes, resolving
  * embedded resources recursively. `null` when an embedded resource with
  * `!inner` has no rows, which leaves the row out.
  */
-async function projectRow(
+const projectRow = async (
   row: object,
   nodes: readonly SelectNode[],
   table: AnyTableDefinition | undefined,
   filters: readonly Filter[],
   path: readonly string[]
-): Promise<Record<string, unknown> | null> {
+): Promise<Record<string, unknown> | null> => {
   const result: Record<string, unknown> = {};
 
   for (const node of nodes) {
@@ -238,39 +276,19 @@ async function projectRow(
         result[node.alias] = getColumn(row, node.column);
       }
     } else {
-      const relationPath = [...path, node.alias];
-      const related = await resolveRelation(
-        table,
-        node.relation,
-        row,
-        filtersAt(filters, relationPath)
-      );
-      const projected: Record<string, unknown>[] = [];
+      // oxlint-disable-next-line no-await-in-loop -- the nodes are projected in order, so the keys of the output follow the select and a missing `!inner` row stops early
+      const embedded = await projectEmbedded(row, node, table, filters, path);
 
-      for (const relatedRow of related.rows) {
-        const output = await projectRow(
-          relatedRow,
-          node.fields,
-          related.table,
-          filters,
-          relationPath
-        );
-
-        if (output) {
-          projected.push(output);
-        }
-      }
-
-      if (node.inner && projected.length === 0) {
+      if (!embedded) {
         return null;
       }
 
-      result[node.alias] = related.many ? projected : (projected[0] ?? null);
+      result[node.alias] = embedded.value;
     }
   }
 
   return result;
-}
+};
 
 /** A row of a table and what the select of a query returns for it. */
 export interface SelectedRow<Row extends object = object> {
@@ -288,12 +306,12 @@ export interface SelectedRow<Row extends object = object> {
  * embedded resource with `!inner` are left out. The filters on the rows of
  * the table itself have to be applied before.
  */
-export async function selectRows<Row extends object>(
+export const selectRows = async <Row extends object>(
   rows: readonly Row[],
   selectStr: string,
   tableName: TableName,
   filters: readonly Filter[] = []
-): Promise<SelectedRow<Row>[]> {
+): Promise<SelectedRow<Row>[]> => {
   const nodes = validateSelect(selectStr, tableName, filters);
 
   if (selectStr === "*") {
@@ -301,30 +319,28 @@ export async function selectRows<Row extends object>(
   }
 
   const table = findTable(tableName);
-  const selected: SelectedRow<Row>[] = [];
+  const outputs = await Promise.all(
+    rows.map((row) => projectRow(row, nodes, table, filters, []))
+  );
 
-  for (const row of rows) {
-    const output = await projectRow(row, nodes, table, filters, []);
+  return rows.flatMap((row, index) => {
+    const output = outputs[index];
 
-    if (output) {
-      selected.push({ output, row });
-    }
-  }
-
-  return selected;
-}
+    return output ? [{ output, row }] : [];
+  });
+};
 
 /**
  * The outputs of `selectRows`, for the rows that a write returns or the
  * rows of a database function.
  */
-export async function applySelect(
+export const applySelect = async (
   rows: readonly object[],
   selectStr: string,
   tableName: TableName,
   filters: readonly Filter[] = []
-): Promise<object[]> {
-  return (await selectRows(rows, selectStr, tableName, filters)).map(
-    ({ output }) => output
-  );
-}
+): Promise<object[]> => {
+  const selected = await selectRows(rows, selectStr, tableName, filters);
+
+  return selected.map(({ output }) => output);
+};

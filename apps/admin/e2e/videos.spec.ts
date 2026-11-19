@@ -1,9 +1,9 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 /** The rows of the video table, without the header row */
-function videoRows(page: Page) {
-  return page.getByRole("table").getByRole("rowgroup").nth(1).getByRole("row");
-}
+const videoRows = (page: Page) =>
+  page.getByRole("table").getByRole("rowgroup").nth(1).getByRole("row");
 
 test.describe("Videos", () => {
   for (const viewport of [
@@ -25,7 +25,7 @@ test.describe("Videos", () => {
       // Next.js may keep a hidden copy of streamed content in the DOM, so
       // only match the visible element.
       await expect(
-        page.getByText(/全 [\d,]+ 件の動画/).filter({ visible: true })
+        page.getByText(/全 [\d,]+ 件の動画/u).filter({ visible: true })
       ).toBeVisible();
 
       const table = page.getByRole("table");
@@ -42,7 +42,7 @@ test.describe("Videos", () => {
       const firstRow = rows.first();
       await expect(firstRow.getByRole("link").first()).toHaveAttribute(
         "href",
-        /^\/videos\/[0-9a-f-]{36}$/
+        /^\/videos\/[0-9a-f-]{36}$/u
       );
       const talentCell = firstRow.getByRole("cell").nth(3);
       await expect(talentCell).not.toBeEmpty();
@@ -57,9 +57,9 @@ test.describe("Videos", () => {
 
     await videoRows(page).first().getByRole("link").first().click();
 
-    await expect(page).toHaveURL(/\/videos\/[0-9a-f-]{36}$/);
+    await expect(page).toHaveURL(/\/videos\/[0-9a-f-]{36}$/u);
     await expect(page.getByRole("heading", { level: 1 })).not.toBeEmpty();
-    await expect(page).toHaveTitle(/^(?!undefined).+ - 動画詳細 - /);
+    await expect(page).toHaveTitle(/^(?!undefined).+ - 動画詳細 - /u);
     await expect(page.getByText("Temporal error")).toHaveCount(0);
   });
 
@@ -69,12 +69,12 @@ test.describe("Videos", () => {
     await page.goto("/videos");
 
     await page
-      .getByRole("button", { name: /^プラットフォームで絞り込み/ })
+      .getByRole("button", { name: /^プラットフォームで絞り込み/u })
       .click();
     await page.getByRole("checkbox", { exact: true, name: "Twitch" }).click();
     await page.keyboard.press("Escape");
 
-    await expect(page).toHaveURL(/[?&]platform=twitch(&|$)/);
+    await expect(page).toHaveURL(/[?&]platform=twitch(?:&|$)/u);
     // The mock data has 6 Twitch videos
     await expect(
       page.getByText("全 6 件の動画").filter({ visible: true })
@@ -82,8 +82,8 @@ test.describe("Videos", () => {
 
     const rows = videoRows(page);
     await expect(rows).toHaveCount(6);
-    await expect(rows.getByRole("cell", { name: /^Twitch / })).toHaveCount(6);
-    await expect(rows.getByRole("cell", { name: /^YouTube / })).toHaveCount(0);
+    await expect(rows.getByRole("cell", { name: /^Twitch /u })).toHaveCount(6);
+    await expect(rows.getByRole("cell", { name: /^YouTube /u })).toHaveCount(0);
   });
 
   test("should toggle the visibility of the selected videos at once", async ({
@@ -103,6 +103,7 @@ test.describe("Videos", () => {
     );
 
     for (const title of titles) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the clicks on the page happen one at a time
       await page.getByRole("checkbox", { name: `「${title}」を選択` }).check();
     }
 
@@ -114,6 +115,7 @@ test.describe("Videos", () => {
 
     const dialog = page.getByRole("dialog", { name: "表示状態を切り替え" });
     for (const title of titles) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- e2e checks run one at a time, so a failure names the first missing title
       await expect(dialog).toContainText(title);
     }
     await dialog.getByRole("button", { name: "切り替える" }).click();
@@ -125,6 +127,7 @@ test.describe("Videos", () => {
       "動画を選択すると、まとめて操作できます。"
     );
     for (const [index, title] of titles.entries()) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- e2e checks run one at a time, so a failure names the first unchanged row
       await expect(statusCell(title)).not.toHaveText(
         statusesBefore[index] ?? ""
       );

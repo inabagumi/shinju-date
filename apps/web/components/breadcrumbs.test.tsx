@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import Breadcrumbs from "./breadcrumbs";
 
-describe("Breadcrumbs", () => {
-  test("should link the site name to the top page", () => {
+describe(Breadcrumbs, () => {
+  it("should link the site name to the top page", () => {
     render(<Breadcrumbs items={[{ name: "利用規約" }]} />);
 
     expect(screen.getByRole("link", { name: "SHINJU DATE" })).toHaveAttribute(
@@ -13,7 +13,7 @@ describe("Breadcrumbs", () => {
     );
   });
 
-  test("should render the last item as the current page without a link", () => {
+  it("should render the last item as the current page without a link", () => {
     render(<Breadcrumbs items={[{ name: "利用規約" }]} />);
 
     expect(
@@ -24,7 +24,7 @@ describe("Breadcrumbs", () => {
     ).not.toBeInTheDocument();
   });
 
-  test("should link intermediate items", () => {
+  it("should link intermediate items", () => {
     render(
       <Breadcrumbs
         items={[

@@ -4,7 +4,7 @@ import { serverEnv } from "@/lib/env";
 
 let redisClient: Redis | undefined;
 
-export function getRedisClient(): Redis {
+export const getRedisClient = (): Redis => {
   if (!redisClient) {
     redisClient = new Redis({
       token: serverEnv.UPSTASH_REDIS_REST_TOKEN,
@@ -13,4 +13,4 @@ export function getRedisClient(): Redis {
   }
 
   return redisClient;
-}
+};

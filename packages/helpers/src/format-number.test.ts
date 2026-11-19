@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { formatNumber } from "./format-number.js";
 
-describe("formatNumber", () => {
+describe(formatNumber, () => {
   it("should format numbers with comma separators for ja-JP locale", () => {
     expect(formatNumber(1000)).toBe("1,000");
-    expect(formatNumber(1234567)).toBe("1,234,567");
+    expect(formatNumber(1_234_567)).toBe("1,234,567");
     expect(formatNumber(999)).toBe("999");
   });
 
@@ -15,7 +15,7 @@ describe("formatNumber", () => {
 
   it("should format negative numbers", () => {
     expect(formatNumber(-1000)).toBe("-1,000");
-    expect(formatNumber(-1234567)).toBe("-1,234,567");
+    expect(formatNumber(-1_234_567)).toBe("-1,234,567");
   });
 
   it("should format small numbers without separators", () => {
@@ -25,8 +25,8 @@ describe("formatNumber", () => {
   });
 
   it("should format large numbers with separators", () => {
-    expect(formatNumber(1000000)).toBe("1,000,000");
-    expect(formatNumber(1000000000)).toBe("1,000,000,000");
+    expect(formatNumber(1_000_000)).toBe("1,000,000");
+    expect(formatNumber(1_000_000_000)).toBe("1,000,000,000");
   });
 
   it("should format decimal numbers", () => {

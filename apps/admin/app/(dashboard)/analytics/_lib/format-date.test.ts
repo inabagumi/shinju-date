@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { formatDateLabel, formatDateRange } from "./format-date";
 
-describe("formatDateLabel", () => {
+describe(formatDateLabel, () => {
   it("formats an ISO 8601 date with slashes", () => {
     expect(formatDateLabel("2026-11-09")).toBe("2026/11/09");
   });
@@ -12,7 +12,7 @@ describe("formatDateLabel", () => {
   });
 });
 
-describe("formatDateRange", () => {
+describe(formatDateRange, () => {
   it("formats both ends of the range", () => {
     expect(
       formatDateRange({ endDate: "2026-11-09", startDate: "2026-10-11" })

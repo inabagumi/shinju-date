@@ -3,6 +3,8 @@ import Link from "next/link";
 
 import RecommendedQueries from "./recommended-queries";
 
+const NO_RECOMMENDED_QUERIES: string[] = [];
+
 interface NoResultsProps {
   /** 絞り込みを解除したページのパス。渡すと解除するリンクを出す */
   clearFiltersHref?: string | undefined;
@@ -17,7 +19,7 @@ export default function NoResults({
   clearFiltersHref,
   hint,
   message,
-  recommendedQueries = [],
+  recommendedQueries = NO_RECOMMENDED_QUERIES,
   title,
 }: NoResultsProps) {
   return (

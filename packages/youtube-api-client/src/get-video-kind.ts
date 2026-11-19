@@ -19,7 +19,7 @@ export type YouTubeVideoKind = Enums<"video_kind">;
  * @param video - YouTube video object with contentDetails
  * @returns The video kind classification
  */
-export function getVideoKind(video: youtube.Schema$Video): YouTubeVideoKind {
+export const getVideoKind = (video: youtube.Schema$Video): YouTubeVideoKind => {
   const { contentDetails } = video;
 
   // Check duration for short-form content
@@ -42,4 +42,4 @@ export function getVideoKind(video: youtube.Schema$Video): YouTubeVideoKind {
 
   // Default to standard for all other cases
   return "standard";
-}
+};

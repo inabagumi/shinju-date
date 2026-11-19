@@ -2,7 +2,7 @@
 
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 import VideoCard, { VideoCardSkeleton } from "@/components/video-card";
 import type { Video } from "@/lib/data/videos";
@@ -13,17 +13,21 @@ const SLIDE_CLASS_NAME =
 const NAVIGATION_BUTTON_CLASS_NAME =
   "rounded-full border border-border bg-surface p-2 text-foreground shadow-overlay transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50";
 
-export function ShortsCarouselSkeleton() {
-  return (
-    <div className="flex gap-4 overflow-hidden md:gap-6">
-      {Array.from({ length: 4 }, (_, index) => (
-        <div className={SLIDE_CLASS_NAME} key={index}>
-          <VideoCardSkeleton variant="short" />
-        </div>
-      ))}
-    </div>
-  );
-}
+export const ShortsCarouselSkeleton = () => (
+  <div className="flex gap-4 overflow-hidden md:gap-6">
+    {Array.from({ length: 4 }, (_, index) => (
+      <div className={SLIDE_CLASS_NAME} key={index}>
+        <VideoCardSkeleton variant="short" />
+      </div>
+    ))}
+  </div>
+);
+
+const unsubscribeNothing = () => {
+  // Nothing was subscribed to
+};
+
+const getServerCanScroll = () => false;
 
 export default function ShortsCarousel({ videos }: { videos: Video[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -33,35 +37,45 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
     slidesToScroll: 1,
   });
 
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
+  // Embla notifies the changes of the scroll positions with its events
+  const subscribeToEmbla = useCallback(
+    (onStoreChange: () => void) => {
+      if (!emblaApi) {
+        return unsubscribeNothing;
+      }
+
+      emblaApi.on("select", onStoreChange);
+      emblaApi.on("reInit", onStoreChange);
+
+      return () => {
+        emblaApi.off("select", onStoreChange);
+        emblaApi.off("reInit", onStoreChange);
+      };
+    },
+    [emblaApi]
+  );
+  const canScrollPrev = useSyncExternalStore(
+    subscribeToEmbla,
+    () => emblaApi?.canScrollPrev() ?? false,
+    getServerCanScroll
+  );
+  const canScrollNext = useSyncExternalStore(
+    subscribeToEmbla,
+    () => emblaApi?.canScrollNext() ?? false,
+    getServerCanScroll
+  );
 
   const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev();
+    if (emblaApi) {
+      emblaApi.scrollPrev();
+    }
   }, [emblaApi]);
 
   const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext();
+    if (emblaApi) {
+      emblaApi.scrollNext();
+    }
   }, [emblaApi]);
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setCanScrollPrev(emblaApi.canScrollPrev());
-    setCanScrollNext(emblaApi.canScrollNext());
-  }, [emblaApi]);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-
-    onSelect();
-    emblaApi.on("select", onSelect);
-    emblaApi.on("reInit", onSelect);
-
-    return () => {
-      emblaApi.off("select", onSelect);
-      emblaApi.off("reInit", onSelect);
-    };
-  }, [emblaApi, onSelect]);
 
   if (videos.length === 0) {
     return null;

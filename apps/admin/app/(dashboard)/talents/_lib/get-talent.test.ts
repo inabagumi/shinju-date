@@ -1,5 +1,10 @@
+import type { cacheTag } from "next/cache";
 import { describe, expect, it, vi } from "vitest";
 
+import type {
+  createSupabaseServerClient,
+  TypedSupabaseClient,
+} from "@/lib/supabase";
 import {
   INVALID_TEXT_REPRESENTATION_ERROR_CODE,
   QueryError,
@@ -9,28 +14,32 @@ import { postgresError, setupSupabase } from "@/test/supabase";
 import { getTalent } from "./get-talent";
 
 const mocks = vi.hoisted(() => ({
-  createSupabaseServerClient: vi.fn(),
+  createSupabaseServerClient: vi.fn<() => Promise<TypedSupabaseClient>>(),
 }));
 
-vi.mock("@/lib/supabase", () => ({
-  createSupabaseServerClient: mocks.createSupabaseServerClient,
+vi.mock(import("@/lib/supabase"), () => ({
+  // Always resolves to the client of the default database
+  createSupabaseServerClient:
+    mocks.createSupabaseServerClient as typeof createSupabaseServerClient,
 }));
 
-vi.mock("next/cache", () => ({
-  cacheLife: vi.fn(),
-  cacheTag: vi.fn(),
+vi.mock(import("next/cache"), () => ({
+  cacheLife: vi.fn<() => void>(),
+  cacheTag: vi.fn<typeof cacheTag>(),
 }));
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: { debug: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn() },
-}));
+vi.mock(import("@shinju-date/logger"), async () => {
+  const { createMockLogger } = await import("@/test/logger");
+
+  return { logger: createMockLogger() };
+});
 
 const supabase = setupSupabase();
 mocks.createSupabaseServerClient.mockResolvedValue(supabase.client);
 
 const TALENT_ID = "123e4567-e89b-12d3-a456-426614174000";
 
-describe("getTalent", () => {
+describe(getTalent, () => {
   it("should return the talent", async () => {
     supabase.on("select", "talents", { id: TALENT_ID, name: "Test Talent" });
 
@@ -67,7 +76,7 @@ describe("getTalent", () => {
       postgresError("PGRST000", "Database connection error")
     );
 
-    const error = await getTalent(TALENT_ID).catch((error: unknown) => error);
+    const error = await getTalent(TALENT_ID).catch((error_: unknown) => error_);
 
     expect(error).toBeInstanceOf(QueryError);
     expect(error).toMatchObject({

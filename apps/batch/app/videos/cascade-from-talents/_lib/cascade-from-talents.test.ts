@@ -1,4 +1,5 @@
 import { DatabaseError } from "@shinju-date/scraper";
+import type * as TemporalFns from "@shinju-date/temporal-fns";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -6,8 +7,8 @@ import {
   cascadeVideosFromTalents,
 } from "./cascade-from-talents";
 
-vi.mock("@shinju-date/temporal-fns", () => ({
-  toDBString: vi.fn((instant: { toString: () => string }) =>
+vi.mock(import("@shinju-date/temporal-fns"), () => ({
+  toDBString: vi.fn<typeof TemporalFns.toDBString>((instant) =>
     instant.toString()
   ),
 }));
@@ -38,14 +39,14 @@ interface RpcCall {
  * `rpc()` records the call and resolves with `onRpc()` (by default, every ID
  * passed in, as if the function updated them all).
  */
-function createClientMock(options: {
+const createClientMock = (options: {
   onSelectVideos: () => QueryResult;
   onRpc?: (call: RpcCall) => QueryResult | undefined;
-}) {
+}) => {
   const calls: MockCall[] = [];
   const rpcCalls: RpcCall[] = [];
 
-  const from = vi.fn((table: string) => {
+  const createQuery = (table: string) => {
     // Deferred thenable: resolve only when awaited so the chain is recorded
     // first.
     const thenable = {
@@ -54,9 +55,12 @@ function createClientMock(options: {
         onfulfilled?: ((value: QueryResult) => unknown) | null,
         onrejected?: ((reason: unknown) => unknown) | null
       ) {
-        return Promise.resolve()
-          .then(options.onSelectVideos)
-          .then(onfulfilled, onrejected);
+        return (
+          Promise.resolve()
+            .then(options.onSelectVideos)
+            // oxlint-disable-next-line promise/prefer-catch -- a thenable passes both of its callbacks on to then()
+            .then(onfulfilled, onrejected)
+        );
       },
     };
 
@@ -77,20 +81,26 @@ function createClientMock(options: {
     });
 
     return thenable;
-  });
+  };
 
-  const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
+  const from =
+    vi.fn<(table: string) => ReturnType<typeof createQuery>>(createQuery);
+  const rpc = vi.fn<
+    (name: string, args: Record<string, unknown>) => Promise<QueryResult>
+  >((name, args) => {
     const call = { args, name };
 
     rpcCalls.push(call);
 
-    return options.onRpc?.(call) ?? { data: args["p_video_ids"], error: null };
+    return Promise.resolve(
+      options.onRpc?.(call) ?? { data: args["p_video_ids"], error: null }
+    );
   });
 
   return { calls, client: { from, rpc }, rpcCalls };
-}
+};
 
-describe("cascadeVideosFromTalents", () => {
+describe(cascadeVideosFromTalents, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -100,7 +110,7 @@ describe("cascadeVideosFromTalents", () => {
 
     const { client, calls, rpcCalls } = createClientMock({
       onSelectVideos: () => {
-        selectPhase++;
+        selectPhase += 1;
         if (selectPhase === 1) {
           return {
             data: [{ id: "video-1" }, { id: "video-2" }],
@@ -114,9 +124,9 @@ describe("cascadeVideosFromTalents", () => {
 
     const result = await cascadeVideosFromTalents(client as never);
 
-    expect(result).toEqual({ restored: 0, softDeleted: 2 });
+    expect(result).toStrictEqual({ restored: 0, softDeleted: 2 });
     // The function deletes the thumbnails with the videos.
-    expect(rpcCalls).toEqual([
+    expect(rpcCalls).toStrictEqual([
       {
         args: {
           p_deleted_at: "2026-08-02T12:00:00Z",
@@ -135,7 +145,7 @@ describe("cascadeVideosFromTalents", () => {
           call.method === "not" &&
           call.args[0] === "talents.deleted_at"
       )
-    ).toBe(true);
+    ).toBeTruthy();
   });
 
   it("counts only the videos the function soft-deleted", async () => {
@@ -144,7 +154,7 @@ describe("cascadeVideosFromTalents", () => {
     const { client } = createClientMock({
       onRpc: () => ({ data: ["video-2"], error: null }),
       onSelectVideos: () => {
-        selectPhase++;
+        selectPhase += 1;
         return selectPhase === 1
           ? { data: [{ id: "video-1" }, { id: "video-2" }], error: null }
           : { data: [], error: null };
@@ -154,7 +164,7 @@ describe("cascadeVideosFromTalents", () => {
     const result = await cascadeVideosFromTalents(client as never);
 
     // video-1 was deleted meanwhile (for example, withdrawn by an admin).
-    expect(result).toEqual({ restored: 0, softDeleted: 1 });
+    expect(result).toStrictEqual({ restored: 0, softDeleted: 1 });
   });
 
   it("restores only videos marked talent_deleted under active talents", async () => {
@@ -162,7 +172,7 @@ describe("cascadeVideosFromTalents", () => {
 
     const { client, calls, rpcCalls } = createClientMock({
       onSelectVideos: () => {
-        selectPhase++;
+        selectPhase += 1;
         if (selectPhase === 1) {
           return { data: [], error: null };
         }
@@ -175,10 +185,10 @@ describe("cascadeVideosFromTalents", () => {
 
     const result = await cascadeVideosFromTalents(client as never);
 
-    expect(result).toEqual({ restored: 1, softDeleted: 0 });
+    expect(result).toStrictEqual({ restored: 1, softDeleted: 0 });
     // The function restores only the videos still deleted as talent_deleted,
     // with their thumbnails.
-    expect(rpcCalls).toEqual([
+    expect(rpcCalls).toStrictEqual([
       {
         args: { p_reason: "talent_deleted", p_video_ids: ["cascade-video"] },
         name: "restore_videos",
@@ -194,7 +204,7 @@ describe("cascadeVideosFromTalents", () => {
           call.args[0] === "deleted_reason" &&
           call.args[1] === "talent_deleted"
       )
-    ).toBe(true);
+    ).toBeTruthy();
 
     // Active talent: talents.deleted_at IS NULL
     expect(
@@ -205,7 +215,7 @@ describe("cascadeVideosFromTalents", () => {
           call.args[0] === "talents.deleted_at" &&
           call.args[1] === null
       )
-    ).toBe(true);
+    ).toBeTruthy();
   });
 
   it("returns zeros when there is nothing to process", async () => {
@@ -215,8 +225,8 @@ describe("cascadeVideosFromTalents", () => {
 
     const result = await cascadeVideosFromTalents(client as never);
 
-    expect(result).toEqual({ restored: 0, softDeleted: 0 });
-    expect(rpcCalls).toEqual([]);
+    expect(result).toStrictEqual({ restored: 0, softDeleted: 0 });
+    expect(rpcCalls).toStrictEqual([]);
   });
 
   it("preserves soft-delete count when restore phase fails", async () => {
@@ -224,7 +234,7 @@ describe("cascadeVideosFromTalents", () => {
 
     const { client } = createClientMock({
       onSelectVideos: () => {
-        selectPhase++;
+        selectPhase += 1;
         if (selectPhase === 1) {
           return {
             data: [{ id: "to-delete" }],
@@ -257,7 +267,7 @@ describe("cascadeVideosFromTalents", () => {
     });
 
     const error = await cascadeVideosFromTalents(client as never).catch(
-      (error: unknown) => error
+      (caughtError: unknown) => caughtError
     );
 
     expect(error).toBeInstanceOf(CascadePhaseError);
@@ -285,16 +295,16 @@ describe("cascadeVideosFromTalents", () => {
     );
 
     const error = await cascadeVideosFromTalents(client as never).catch(
-      (error: unknown) => error
+      (caughtError: unknown) => caughtError
     );
     const causes = (error as Error).cause as AggregateError;
 
     expect(causes).toBeInstanceOf(AggregateError);
-    expect(causes.errors).toEqual([
+    expect(causes.errors).toStrictEqual([
       expect.any(DatabaseError),
       expect.any(DatabaseError),
     ]);
-    expect(causes.errors.map((cause) => cause.operation)).toEqual([
+    expect(causes.errors.map((cause) => cause.operation)).toStrictEqual([
       "Failed to load videos of deleted talents",
       "Failed to load videos of restored talents",
     ]);
@@ -305,7 +315,7 @@ describe("cascadeVideosFromTalents", () => {
 
     const { client, rpcCalls } = createClientMock({
       onSelectVideos: () => {
-        selectPhase++;
+        selectPhase += 1;
         if (selectPhase === 1) {
           return {
             data: [{ id: "to-delete" }],
@@ -321,10 +331,10 @@ describe("cascadeVideosFromTalents", () => {
 
     const result = await cascadeVideosFromTalents(client as never);
 
-    expect(result).toEqual({ restored: 1, softDeleted: 1 });
+    expect(result).toStrictEqual({ restored: 1, softDeleted: 1 });
     expect(
       rpcCalls.map(({ args, name }) => [name, args["p_video_ids"]])
-    ).toEqual([
+    ).toStrictEqual([
       ["soft_delete_videos", ["to-delete"]],
       ["restore_videos", ["to-restore"]],
     ]);

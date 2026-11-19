@@ -1,52 +1,85 @@
+import type * as Sentry from "@sentry/nextjs";
+import type { Scraper } from "@shinju-date/scraper";
 import {
   BACKFILL_LEASE_MARGIN_SECONDS,
-  type BackfillQueue,
   getRunResultKey,
 } from "@shinju-date/video-backfill";
+import type { BackfillJob, BackfillQueue } from "@shinju-date/video-backfill";
 import { FakeRedis } from "@shinju-date/video-backfill/testing";
+import type * as WebCache from "@shinju-date/web-cache";
+import type { Redis } from "@upstash/redis";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const acquireLock = vi.fn();
-const limit = vi.fn();
-const createScraper = vi.fn(() => ({ provider: "youtube" }));
-const revalidateTags = vi.fn();
-const workOffBackfillQueue = vi.fn();
-const recordBackfillJob = vi.fn();
-const supabaseClient = { from: vi.fn() };
+import type * as Lock from "@/lib/lock";
+import type { OncePerWindowLimiter } from "@/lib/ratelimit";
+import type * as ScraperModule from "@/lib/scraper";
+import type { TypedSupabaseClient } from "@/lib/supabase";
+import type * as VideoBackfill from "@/lib/video-backfill";
+import type { WorkOffBackfillQueueOptions } from "@/lib/video-backfill";
+import type * as VideoBackfillHistory from "@/lib/video-backfill-history";
+
+const { createAfterMock, createLoggerMock } = await vi.hoisted(
+  () => import("@/test/mocks")
+);
+
+const acquireLock = vi.fn<typeof Lock.acquireLock>();
+const limit = vi.fn<OncePerWindowLimiter["limit"]>();
+const createScraper = vi.fn<typeof ScraperModule.createScraper>(
+  () => ({ provider: "youtube" }) as Partial<Scraper> as Scraper
+);
+const revalidateTags = vi.fn<typeof WebCache.revalidateTags>();
+const workOffBackfillQueue = vi.fn<typeof VideoBackfill.workOffBackfillQueue>();
+const recordBackfillJob =
+  vi.fn<typeof VideoBackfillHistory.recordBackfillJob>();
+const supabaseClient = {
+  from: vi.fn<TypedSupabaseClient["from"]>(),
+} as Partial<TypedSupabaseClient> as TypedSupabaseClient;
 const redisClient = new FakeRedis();
 
-vi.mock("@/lib/lock", () => ({ acquireLock }));
-vi.mock("@/lib/ratelimit", () => ({ videosBackfill: { limit } }));
-vi.mock("@/lib/redis", () => ({ redisClient }));
-vi.mock("@/lib/scraper", () => ({ createScraper }));
-vi.mock("@/lib/supabase", () => ({ supabaseClient }));
-vi.mock("@/lib/video-backfill", () => ({ workOffBackfillQueue }));
-vi.mock("@/lib/video-backfill-history", () => ({ recordBackfillJob }));
-vi.mock("@shinju-date/web-cache", () => ({ revalidateTags }));
+vi.mock(import("@/lib/lock"), () => ({ acquireLock }));
+vi.mock(import("@/lib/ratelimit"), () => ({ videosBackfill: { limit } }));
+vi.mock(import("@/lib/redis"), () => ({
+  redisClient: redisClient as Partial<Redis> as Redis,
+}));
+vi.mock(import("@/lib/scraper"), () => ({ createScraper }));
+vi.mock(import("@/lib/supabase"), () => ({ supabaseClient }));
+vi.mock(import("@/lib/video-backfill"), () => ({ workOffBackfillQueue }));
+vi.mock(import("@/lib/video-backfill-history"), () => ({ recordBackfillJob }));
+vi.mock(import("@shinju-date/web-cache"), () => ({ revalidateTags }));
 
-vi.mock("@shinju-date/logger", () => ({
-  logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
+vi.mock(import("@shinju-date/logger"), () => ({
+  logger: createLoggerMock(),
 }));
 
-vi.mock("@sentry/nextjs", () => ({
-  captureCheckIn: vi.fn(() => "check-in-id"),
-  captureException: vi.fn(),
-  flush: vi.fn(),
+vi.mock(import("@sentry/nextjs"), () => ({
+  captureCheckIn: vi.fn<typeof Sentry.captureCheckIn>(() => "check-in-id"),
+  captureException: vi.fn<typeof Sentry.captureException>(),
+  flush: vi.fn<typeof Sentry.flush>(),
 }));
 
-vi.mock("next/server", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("next/server")>()),
-  after: vi.fn((callback: () => unknown) => callback()),
+vi.mock(import("next/server"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  after: createAfterMock(),
 }));
 
 const { POST, maxDuration } = await import("./route");
 
-function createRequest(): NextRequest {
-  return new NextRequest("http://localhost:5000/videos/backfill", {
+/** The options the route passed to `workOffBackfillQueue`. */
+const getQueueOptions = (): WorkOffBackfillQueueOptions => {
+  const options = workOffBackfillQueue.mock.lastCall?.[0];
+
+  if (!options) {
+    throw new Error("Expected the queue to be worked off");
+  }
+
+  return options;
+};
+
+const createRequest = (): NextRequest =>
+  new NextRequest("http://localhost:5000/videos/backfill", {
     method: "POST",
   });
-}
 
 describe("POST /videos/backfill", () => {
   beforeEach(() => {
@@ -62,24 +95,24 @@ describe("POST /videos/backfill", () => {
     expect(limit).toHaveBeenCalledWith("videos:backfill");
     // Runs overlap on purpose; each job of the queue has its own lock.
     expect(acquireLock).not.toHaveBeenCalled();
-    expect(workOffBackfillQueue).toHaveBeenCalledTimes(1);
+    expect(workOffBackfillQueue).toHaveBeenCalledOnce();
     expect(revalidateTags).not.toHaveBeenCalled();
   });
 
   it("creates one scraper per provider", async () => {
     await POST(createRequest());
 
-    const [{ getScraper }] = workOffBackfillQueue.mock.calls[0] ?? [];
+    const { getScraper } = getQueueOptions();
 
     expect(getScraper("youtube")).toBe(getScraper("youtube"));
     getScraper("twitch");
-    expect(createScraper.mock.calls).toEqual([["youtube"], ["twitch"]]);
+    expect(createScraper.mock.calls).toStrictEqual([["youtube"], ["twitch"]]);
   });
 
   it("locks each job for as long as the run may last", async () => {
     await POST(createRequest());
 
-    const [{ queue }] = workOffBackfillQueue.mock.calls[0] ?? [];
+    const { queue } = getQueueOptions();
 
     expect(queue.leaseSeconds).toBe(
       maxDuration + BACKFILL_LEASE_MARGIN_SECONDS
@@ -89,10 +122,13 @@ describe("POST /videos/backfill", () => {
   it("records the jobs that finish in the history", async () => {
     await POST(createRequest());
 
-    const [{ onFinish }] = workOffBackfillQueue.mock.calls[0] ?? [];
-    const job = { id: "youtube:channel-row-1", status: "done" };
+    const { onFinish } = getQueueOptions();
+    const job = {
+      id: "youtube:channel-row-1",
+      status: "done",
+    } as Partial<BackfillJob> as BackfillJob;
 
-    await onFinish(job);
+    await onFinish?.(job);
 
     expect(recordBackfillJob).toHaveBeenCalledWith(supabaseClient, job);
   });
@@ -100,7 +136,7 @@ describe("POST /videos/backfill", () => {
   it("keeps the outcome of a job of a check when it finishes", async () => {
     await POST(createRequest());
 
-    const queue: BackfillQueue = workOffBackfillQueue.mock.calls[0]?.[0].queue;
+    const queue: BackfillQueue = getQueueOptions().queue;
 
     await queue.enqueue({
       accountId: "channel-row-1",
@@ -125,7 +161,7 @@ describe("POST /videos/backfill", () => {
     expect(finished.status).toBe("saved");
     await expect(
       redisClient.get(getRunResultKey("run-1", claimed.job.id))
-    ).resolves.toEqual(finished.status === "saved" && finished.job);
+    ).resolves.toStrictEqual(finished.status === "saved" && finished.job);
   });
 
   it("refreshes the public site after videos were added", async () => {

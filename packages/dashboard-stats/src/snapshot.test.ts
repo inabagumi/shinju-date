@@ -3,16 +3,15 @@ import { describe, expect, it } from "vitest";
 
 import { FakeRedis } from "../test/fake-clients.js";
 import {
-  type AnalyticsSummary,
   analyticsSummarySchema,
   readAnalyticsSnapshot,
   readSummarySnapshot,
   SNAPSHOT_TTL_SECONDS,
-  type SummaryStats,
   summaryStatsSchema,
   writeAnalyticsSnapshot,
   writeSummarySnapshot,
 } from "./index.js";
+import type { AnalyticsSummary, SummaryStats } from "./index.js";
 
 const dateKey = "20251113";
 const summaryKey = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`;
@@ -34,34 +33,34 @@ const analytics: AnalyticsSummary = {
   totalPopularKeywords: 30,
 };
 
-describe("summaryStatsSchema", () => {
+describe("summaryStatsSchema.safeParse", () => {
   it("accepts summary stats", () => {
-    expect(summaryStatsSchema.parse(stats)).toEqual(stats);
+    expect(summaryStatsSchema.parse(stats)).toStrictEqual(stats);
   });
 
   it("rejects missing, negative and fractional counts", () => {
     const { scheduledVideos: _, ...withoutScheduled } = stats;
 
-    expect(summaryStatsSchema.safeParse(withoutScheduled).success).toBe(false);
+    expect(summaryStatsSchema.safeParse(withoutScheduled).success).toBeFalsy();
     expect(
       summaryStatsSchema.safeParse({ ...stats, totalVideos: -1 }).success
-    ).toBe(false);
+    ).toBeFalsy();
     expect(
       summaryStatsSchema.safeParse({ ...stats, totalVideos: 1.5 }).success
-    ).toBe(false);
+    ).toBeFalsy();
   });
 });
 
-describe("analyticsSummarySchema", () => {
+describe("analyticsSummarySchema.parse", () => {
   it("accepts an analytics summary", () => {
-    expect(analyticsSummarySchema.parse(analytics)).toEqual(analytics);
+    expect(analyticsSummarySchema.parse(analytics)).toStrictEqual(analytics);
   });
 
   it("rejects a count that is not a number", () => {
     expect(
       analyticsSummarySchema.safeParse({ ...analytics, recentClicks: "10" })
         .success
-    ).toBe(false);
+    ).toBeFalsy();
   });
 });
 
@@ -71,11 +70,11 @@ describe("summary snapshots", () => {
 
     await writeSummarySnapshot(redis.asRedis(), dateKey, stats);
 
-    expect(redis.values.get(summaryKey)).toEqual(stats);
+    expect(redis.values.get(summaryKey)).toStrictEqual(stats);
     expect(redis.ttls.get(summaryKey)).toBe(SNAPSHOT_TTL_SECONDS);
     await expect(
       readSummarySnapshot(redis.asRedis(), dateKey)
-    ).resolves.toEqual(stats);
+    ).resolves.toStrictEqual(stats);
   });
 
   it("reads a missing snapshot as null", async () => {
@@ -104,11 +103,11 @@ describe("analytics snapshots", () => {
 
     await writeAnalyticsSnapshot(redis.asRedis(), dateKey, analytics);
 
-    expect(redis.values.get(analyticsKey)).toEqual(analytics);
+    expect(redis.values.get(analyticsKey)).toStrictEqual(analytics);
     expect(redis.ttls.get(analyticsKey)).toBe(SNAPSHOT_TTL_SECONDS);
     await expect(
       readAnalyticsSnapshot(redis.asRedis(), dateKey)
-    ).resolves.toEqual(analytics);
+    ).resolves.toStrictEqual(analytics);
   });
 
   it("reads a missing snapshot as null", async () => {

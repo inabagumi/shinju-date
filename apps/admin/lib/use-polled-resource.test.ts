@@ -3,9 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   POLLED_RESOURCE_FALLBACK_ERROR,
-  type PolledResourceFailure,
   usePolledResource,
 } from "./use-polled-resource";
+import type { PolledResourceFailure } from "./use-polled-resource";
 
 interface Progress {
   active: boolean;
@@ -13,17 +13,20 @@ interface Progress {
   success: true;
 }
 
-const INTERVAL_MS = 5_000;
+const INTERVAL_MS = 5000;
 
-function createProgress(overrides: Partial<Progress> = {}): Progress {
-  return { active: false, added: 0, success: true, ...overrides };
-}
+const createProgress = (overrides: Partial<Progress> = {}): Progress => ({
+  active: false,
+  added: 0,
+  success: true,
+  ...overrides,
+});
 
-function renderPolledResource(
+const renderPolledResource = (
   initialData: Progress,
   fetcher: () => Promise<Progress | PolledResourceFailure>
-) {
-  return renderHook(() =>
+) =>
+  renderHook(() =>
     usePolledResource({
       fetcher,
       initialData,
@@ -31,9 +34,8 @@ function renderPolledResource(
       isActive: (data) => data.active,
     })
   );
-}
 
-describe("usePolledResource", () => {
+describe(usePolledResource, () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -95,7 +97,7 @@ describe("usePolledResource", () => {
 
     await act(() => vi.advanceTimersByTimeAsync(INTERVAL_MS));
 
-    expect(result.current.data).toEqual(createProgress({ added: 5 }));
+    expect(result.current.data).toStrictEqual(createProgress({ added: 5 }));
 
     await act(() => vi.advanceTimersByTimeAsync(INTERVAL_MS * 3));
 
@@ -112,12 +114,12 @@ describe("usePolledResource", () => {
 
     await act(() => result.current.reload());
 
-    expect(result.current.data.active).toBe(true);
+    expect(result.current.data.active).toBeTruthy();
 
     await act(() => vi.advanceTimersByTimeAsync(INTERVAL_MS));
 
     expect(fetcher).toHaveBeenCalledTimes(2);
-    expect(result.current.data).toEqual(createProgress({ added: 4 }));
+    expect(result.current.data).toStrictEqual(createProgress({ added: 4 }));
   });
 
   it("stops fetching when it is unmounted", async () => {
@@ -247,7 +249,7 @@ describe("usePolledResource", () => {
     const fetcher = vi
       .fn<() => Promise<Progress>>()
       .mockResolvedValue(createProgress({ added: 2 }));
-    const initialData = createProgress();
+    const initialProgress = createProgress();
 
     const { rerender, result } = renderHook(
       ({ initialData }) =>
@@ -257,11 +259,11 @@ describe("usePolledResource", () => {
           intervalMs: INTERVAL_MS,
           isActive: (data) => data.active,
         }),
-      { initialProps: { initialData } }
+      { initialProps: { initialData: initialProgress } }
     );
 
     await act(() => result.current.reload());
-    rerender({ initialData });
+    rerender({ initialData: initialProgress });
 
     expect(result.current.data.added).toBe(2);
   });

@@ -18,10 +18,10 @@ export interface FormState<FieldName extends string = string> {
  *
  * Fields that are missing or hold a file are left out.
  */
-export function getFormValues<FieldName extends string>(
+export const getFormValues = <FieldName extends string>(
   formData: FormData,
   fieldNames: readonly FieldName[]
-): Partial<Record<FieldName, string>> {
+): Partial<Record<FieldName, string>> => {
   const values: Partial<Record<FieldName, string>> = {};
 
   for (const fieldName of fieldNames) {
@@ -33,7 +33,7 @@ export function getFormValues<FieldName extends string>(
   }
 
   return values;
-}
+};
 
 /**
  * Convert a Zod validation error into a `FormState`.
@@ -42,9 +42,9 @@ export function getFormValues<FieldName extends string>(
  * field) so they can be shown next to the field. Issues without a field are
  * joined into `error`.
  */
-export function toValidationErrorState<FieldName extends string>(
+export const toValidationErrorState = <FieldName extends string>(
   error: z.ZodError
-): FormState<FieldName> {
+): FormState<FieldName> => {
   const { fieldErrors, formErrors } = z.flattenError(error);
   const firstFieldErrors: Partial<Record<FieldName, string>> = {};
 
@@ -64,4 +64,4 @@ export function toValidationErrorState<FieldName extends string>(
     fieldErrors: firstFieldErrors,
     success: false,
   };
-}
+};
