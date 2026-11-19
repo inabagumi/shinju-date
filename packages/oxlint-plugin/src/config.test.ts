@@ -19,6 +19,7 @@ import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
+  CACHE_DIRECTIVE_FIXTURE,
   getReportedLines,
   TAILWIND_FIXTURE,
   TIME_ZONE_FIXTURE,
@@ -131,6 +132,10 @@ describe("oxlint.config.ts", () => {
       fixtures.set(path.join(dir, "project-rules.tsx"), PROJECT_RULES_FIXTURE);
       fixtures.set(path.join(dir, "time-zone.tsx"), TIME_ZONE_FIXTURE);
       fixtures.set(path.join(dir, "tailwind.tsx"), TAILWIND_FIXTURE);
+      fixtures.set(
+        path.join(dir, "cache-directives.tsx"),
+        CACHE_DIRECTIVE_FIXTURE
+      );
 
       const [projectRules, timeZone] = LEFT_OUT_FILES[parent] ?? [];
 
@@ -204,6 +209,15 @@ describe("oxlint.config.ts", () => {
           "shinju-date/no-default-tailwind-scale"
         )
       ).toStrictEqual(getReportedLines(TAILWIND_FIXTURE));
+    });
+
+    it("reports the missing blank lines after the cache directives", () => {
+      expect(
+        getLines(
+          path.join(dir, "cache-directives.tsx"),
+          "shinju-date/cache-directive-blank-line"
+        )
+      ).toStrictEqual(getReportedLines(CACHE_DIRECTIVE_FIXTURE));
     });
   });
 

@@ -3,7 +3,7 @@
  * reported, and the other lines must not.
  */
 
-const REPORT_MARKER = "// report";
+export const REPORT_MARKER = "// report";
 
 export const TIME_ZONE_FIXTURE = `import { TIME_ZONE } from '@shinju-date/constants'
 
@@ -54,6 +54,44 @@ export const w = cva('rounded-container', { variants: { size: { sm: 'p-2' } } })
 export const x = <div data-class="text-sm" title="dark:" />
 export const y = 'text-sm rounded-md shadow-lg dark:bg-black'
 export const z = format('text-sm')
+`;
+
+/**
+ * A reported line follows the directive or the cache functions right away, so
+ * that the fix adds a blank line before it.
+ */
+export const CACHE_DIRECTIVE_FIXTURE = `import { cacheLife, cacheTag } from 'next/cache'
+
+export async function a() {
+  'use cache: remote'
+  cacheLife('hours') // report
+  cacheTag('talents')
+  return await fetchTalents() // report
+}
+
+export const b = async () => {
+  'use cache: private'
+  return <div /> // report
+}
+
+export async function c() {
+  'use cache'
+
+  // Tagged by talent
+  cacheTag('talents')
+
+  return await fetchTalents()
+}
+
+export async function d() {
+  'use cache'
+}
+
+export async function e() {
+  'use server'
+  revalidateTag('talents')
+  return 'use cache'
+}
 `;
 
 /** The lines (1-based) that end with the report marker */

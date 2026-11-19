@@ -8,6 +8,7 @@ oxlint の組み込みのルールで確かめられない、このプロジェ�
 
 | ルール | 確かめること |
 | --- | --- |
+| [`shinju-date/cache-directive-blank-line`](src/cache-directive-blank-line.ts) | `'use cache'` と、`cacheLife()` / `cacheTag()` の並びの後に空行を入れる（自動修正あり。[キャッシュのディレクティブ](../../docs/coding-guidelines.md#キャッシュのディレクティブ)） |
 | [`shinju-date/no-hardcoded-time-zone`](src/no-hardcoded-time-zone.ts) | `'Asia/Tokyo'` を直接書かず、`@shinju-date/constants` の `TIME_ZONE` を使う（[時刻の扱い](../../docs/coding-guidelines.md#時刻の扱い)） |
 | [`shinju-date/no-default-tailwind-scale`](src/no-default-tailwind-scale.ts) | Tailwind の既定の文字サイズ・角丸・影と `dark:` を使わない（[デザインのガイドライン](../../docs/design-guidelines.md)） |
 
