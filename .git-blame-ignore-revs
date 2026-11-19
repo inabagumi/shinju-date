@@ -1,7 +1,18 @@
-# Commits that only reformat the code. `git blame` skips them when
+# Commits that only make mechanical changes that keep the behavior, such as
+# reformatting the code or fixing lint violations. `git blame` skips them when
 # `blame.ignoreRevsFile` is set to this file (GitHub reads it by default):
 #
 #   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# `git blame` attributes a line to an earlier commit only when the line is the
+# same. Lines rewritten by these commits are still attributed to them.
 
 # build: format with oxfmt instead of Biome (#7404)
+# Reformats the code with oxfmt.
 ad47899bbf1d342550fa08d398336f41e41a2185
+
+# refactor: fix the violations of the lint rules turned off for now (#7410)
+# Fixes the violations of the Ultracite rules turned off in #7403, such as
+# replacing function declarations with arrow functions (`func-style`),
+# renaming the files in `packages/ui` to kebab-case and rewriting the tests.
+11bb741e437af880fcf8826bb704e0830cab8cb0
