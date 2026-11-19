@@ -35,7 +35,7 @@
     "supabase": "3.2.0",
     "turbo": "2.11.12",
     "typescript": "catalog:",
-    "ultracite": "8.2.1",
+    "ultracite": "8.3.0",
     "vitest": "catalog:"
   },
   "devEngines": {
