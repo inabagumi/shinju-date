@@ -287,7 +287,7 @@ catalogs:
 
 overrides:
   '@joshwooding/vite-plugin-react-docgen-typescript>glob': 14.0.6
-  '@tailwindcss/typography>postcss-selector-parser': 6.1.6
+  '@tailwindcss/typography>postcss-selector-parser': 7.2.1
 
 importers:
 
@@ -5863,10 +5863,6 @@ packages:
     peerDependencies:
       postcss: ^8.4.31
 
-  postcss-selector-parser@6.1.6:
-    resolution: {integrity: sha512-BK87/Qgti3DIcgS2PaCVoteFIkjIFvCJBizZDIVSjdlFNg4Jv+SRqbN2JONb/qQUH4ZFqfXYF+izg15W2HVRvA==}
-    engines: {node: '>=4'}
-
   postcss-selector-parser@7.2.1:
     resolution: {integrity: sha512-GwxlMgTTXwIom+ebC7an3k6RaJDwklRQQnfiXsLPGicu8FYV/k/+1/9YY2OU2+r938H2t4X0TDxoif+HP2rjzQ==}
     engines: {node: '>=4'}
@@ -8843,7 +8839,7 @@ snapshots:
 
   '@tailwindcss/typography@0.5.20(tailwindcss@4.3.5)':
     dependencies:
-      postcss-selector-parser: 6.1.6
+      postcss-selector-parser: 7.2.1
       tailwindcss: 4.3.5
 
   '@tanstack/query-core@5.108.0': {}
@@ -10899,10 +10895,6 @@ snapshots:
   postcss-safe-parser@7.1.0(postcss@8.5.33):
     dependencies:
       postcss: 8.5.33
-
-  postcss-selector-parser@6.1.6:
-    dependencies:
-      util-deprecate: 1.0.2
 
   postcss-selector-parser@7.2.1:
     dependencies:
