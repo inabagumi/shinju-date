@@ -3,5 +3,13 @@
     "allowImportingTsExtensions": true
   },
   "extends": "@shinju-date/config/tsconfig/react-library.json",
-  "include": ["./**/*.ts", "./**/*.tsx"]
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.tsx",
+    "./oxfmt.config.ts",
+    "./oxlint.config.ts",
+    "./tsdown.config.ts",
+    "./vitest.config.ts",
+    "./vitest.setup.ts"
+  ]
 }
