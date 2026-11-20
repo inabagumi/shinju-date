@@ -19,7 +19,7 @@ catalog:
   "@sentry/nextjs": 11.14.0
   "@sentry/profiling-node": 11.14.0
   "@supabase/sentry-js-integration": 0.3.0
-  "@supabase/supabase-js": 2.119.0
+  "@supabase/supabase-js": 2.119.1
   "@tailwindcss/turbopack": 4.3.5
   "@tailwindcss/typography": 0.5.20
   "@testing-library/jest-dom": 7.0.1
