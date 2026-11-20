@@ -234,8 +234,8 @@ catalogs:
       specifier: 31.0.1
       version: 31.0.1
     lucide-react:
-      specifier: 1.75.0
-      version: 1.75.0
+      specifier: 1.76.0
+      version: 1.76.0
     msw:
       specifier: 3.0.7
       version: 3.0.7
@@ -406,7 +406,7 @@ importers:
         version: 6.9.0
       lucide-react:
         specifier: 'catalog:'
-        version: 1.75.0(@types/react@19.3.0)(react@19.3.1)
+        version: 1.76.0(@types/react@19.3.0)(react@19.3.1)
       next:
         specifier: 'catalog:'
         version: 16.4.6(@babel/core@7.29.13(supports-color@10.2.2))(@opentelemetry/api@1.10.0)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -657,7 +657,7 @@ importers:
         version: 3.12.1
       lucide-react:
         specifier: 'catalog:'
-        version: 1.75.0(@types/react@19.3.0)(react@19.3.1)
+        version: 1.76.0(@types/react@19.3.0)(react@19.3.1)
       next:
         specifier: 'catalog:'
         version: 16.4.6(@babel/core@7.29.13(supports-color@10.2.2))(@opentelemetry/api@1.10.0)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -1208,7 +1208,7 @@ importers:
         version: 0.7.1
       lucide-react:
         specifier: 'catalog:'
-        version: 1.75.0(@types/react@19.3.0)(react@19.3.1)
+        version: 1.76.0(@types/react@19.3.0)(react@19.3.1)
       tailwind-merge:
         specifier: 3.7.0
         version: 3.7.0
@@ -5263,8 +5263,8 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lucide-react@1.75.0:
-    resolution: {integrity: sha512-piesXAZIXru9d5lHBoM6cPHOBs5+QkMx+3EXwG3xWJ7qdViuz92JtYN0u9jMB6jt+2WbQrwhvJGdMwGnL3EOfA==}
+  lucide-react@1.76.0:
+    resolution: {integrity: sha512-wRVHt2Xf64GXndB4rQOY9+3Wy9oJ59HDMYv6vwhT0hpSwUxQhG/RM9YijnOmvmIQ+VI/n+1V/FKd6gP4XL2aBQ==}
     peerDependencies:
       '@types/react': '*'
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -10109,7 +10109,7 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-react@1.75.0(@types/react@19.3.0)(react@19.3.1):
+  lucide-react@1.76.0(@types/react@19.3.0)(react@19.3.1):
     dependencies:
       react: 19.3.1
     optionalDependencies:
