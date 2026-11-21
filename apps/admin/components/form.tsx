@@ -34,7 +34,7 @@ import { useFormStatus } from "react-dom";
 
 import type { FormState } from "@/lib/action";
 
-export type { FormState };
+export type { FormState } from "@/lib/action";
 
 const FormContext = createContext<FormState>({});
 

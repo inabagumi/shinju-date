@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Logger } from "./internal/logger.js";
 
-export type { Logger };
+export type { Logger } from "./internal/logger.js";
 
 export type TypedSupabaseClient = SupabaseClient<Database>;
 

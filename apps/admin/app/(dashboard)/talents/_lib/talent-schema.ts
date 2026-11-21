@@ -144,14 +144,14 @@ export const addTwitchUserSchema = z.object({
  * タレントの ID（削除・復活・引退・アクティブ化、同期、過去動画の取り込みの
  * アクションの引数）
  */
-export const talentIdSchema = uuidSchema;
+export { uuidSchema as talentIdSchema } from "@/lib/schemas";
 
 /**
  * タレントに結び付いたアカウントの行の ID（`youtube_channels.id`、`twitch_users.id`。
  * 結び付きを外すアクションの引数）。YouTube のチャンネル ID や Twitch のユーザー ID
  * ではない
  */
-export const talentAccountIdSchema = uuidSchema;
+export { uuidSchema as talentAccountIdSchema } from "@/lib/schemas";
 
 /** 過去動画の取り込みのプラットフォーム（DB の enum `platform_type` の値） */
 export const backfillProviderSchema = z.enum(

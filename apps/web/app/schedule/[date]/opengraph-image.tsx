@@ -1,15 +1,14 @@
-import {
-  createOgImage,
-  OG_IMAGE_CONTENT_TYPE,
-  OG_IMAGE_SIZE,
-} from "@/lib/og-image";
+import { createOgImage } from "@/lib/og-image";
 
 import { resolveScheduleWeek } from "../_lib/resolve-schedule-week";
 import { getScheduleWeekTitle } from "../_lib/week-title";
 
+export {
+  OG_IMAGE_CONTENT_TYPE as contentType,
+  OG_IMAGE_SIZE as size,
+} from "@/lib/og-image";
+
 export const alt = "配信スケジュール";
-export const size = OG_IMAGE_SIZE;
-export const contentType = OG_IMAGE_CONTENT_TYPE;
 
 /**
  * The image of the schedule of a week, with the range of the week. The dates

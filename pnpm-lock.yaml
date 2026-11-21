@@ -314,6 +314,9 @@ importers:
       stylelint-config-standard:
         specifier: 41.0.0
         version: 41.0.0(stylelint@18.1.0)
+      stylelint-order:
+        specifier: 8.1.3
+        version: 8.1.3(stylelint@18.1.0)
       supabase:
         specifier: 3.2.0
         version: 3.2.0
@@ -5871,6 +5874,11 @@ packages:
     resolution: {integrity: sha512-GwxlMgTTXwIom+ebC7an3k6RaJDwklRQQnfiXsLPGicu8FYV/k/+1/9YY2OU2+r938H2t4X0TDxoif+HP2rjzQ==}
     engines: {node: '>=4'}
 
+  postcss-sorting@10.0.0:
+    resolution: {integrity: sha512-TXbU+h6vVRW+86c/+ewhWq9k7pr7ijASTnepVhCQiC87zAOTkvB1v2dHyWP+ggstSTX/PNvjzS+IOqzejndz9w==}
+    peerDependencies:
+      postcss: ^8.4.20
+
   postcss-sorting@8.0.2:
     resolution: {integrity: sha512-M9dkSrmU00t/jK7rF6BZSZauA5MAaBW4i5EnJXspMwt4iqTh/L9j6fgMnbElEOfyRyfLfVbIHj/R52zHzAPe1Q==}
     peerDependencies:
@@ -6332,6 +6340,12 @@ packages:
     resolution: {integrity: sha512-0UuKo4+s1hgQ/uAxlYU4h0o0HS4NiQDud0NAUNI0aa8FJdmYHA5ZZTFHiV5FpmE3071e9pZx5j0QpVJW5zOCUA==}
     peerDependencies:
       stylelint: ^14.0.0 || ^15.0.0 || ^16.0.1
+
+  stylelint-order@8.1.3:
+    resolution: {integrity: sha512-sItAojls5EBcn4iQMe0p0wwcs8twQoEZ3G36yBriXOM4okA0vxScP8XQnE2WfRpnxtEpVcaWmcaFYpxGMuo26w==}
+    engines: {node: '>=20.19.0'}
+    peerDependencies:
+      stylelint: ^16.18.0 || ^17.0.0 || ^18.0.0
 
   stylelint@18.1.0:
     resolution: {integrity: sha512-QbF/IY7KY6lZRhYU/vmPU1KYxc71wgkXdgeptqzTh3lbnZps6WHaskfPjpL6Fh4JaCzwkKKitVcMrpfQTSwwPA==}
@@ -10908,6 +10922,10 @@ snapshots:
     dependencies:
       util-deprecate: 1.0.2
 
+  postcss-sorting@10.0.0(postcss@8.5.33):
+    dependencies:
+      postcss: 8.5.33
+
   postcss-sorting@8.0.2(postcss@8.5.33):
     dependencies:
       postcss: 8.5.33
@@ -11503,6 +11521,12 @@ snapshots:
     dependencies:
       postcss: 8.5.33
       postcss-sorting: 8.0.2(postcss@8.5.33)
+      stylelint: 18.1.0
+
+  stylelint-order@8.1.3(stylelint@18.1.0):
+    dependencies:
+      postcss: 8.5.33
+      postcss-sorting: 10.0.0(postcss@8.5.33)
       stylelint: 18.1.0
 
   stylelint@18.1.0:
