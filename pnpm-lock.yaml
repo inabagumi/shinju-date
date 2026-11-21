@@ -306,14 +306,14 @@ importers:
         specifier: 'catalog:'
         version: 1.94.0
       stylelint:
-        specifier: 18.0.0
-        version: 18.0.0
+        specifier: 18.1.0
+        version: 18.1.0
       stylelint-config-idiomatic-order:
         specifier: 10.0.0
-        version: 10.0.0(stylelint@18.0.0)
+        version: 10.0.0(stylelint@18.1.0)
       stylelint-config-standard:
         specifier: 41.0.0
-        version: 41.0.0(stylelint@18.0.0)
+        version: 41.0.0(stylelint@18.1.0)
       supabase:
         specifier: 3.2.0
         version: 3.2.0
@@ -325,7 +325,7 @@ importers:
         version: 6.0.3
       ultracite:
         specifier: 8.3.0
-        version: 8.3.0(@biomejs/biome@2.6.8)(oxfmt@0.79.0)(oxlint@1.94.0)(stylelint@18.0.0)
+        version: 8.3.0(@biomejs/biome@2.6.8)(oxfmt@0.79.0)(oxlint@1.94.0)(stylelint@18.1.0)
       vitest:
         specifier: 'catalog:'
         version: 5.1.1(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(@vitest/browser-playwright@5.1.1)(@vitest/ui@5.1.1)(jsdom@31.0.1(@noble/hashes@1.8.0))(msw@3.0.7(@types/node@26.6.6)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
@@ -6333,8 +6333,8 @@ packages:
     peerDependencies:
       stylelint: ^14.0.0 || ^15.0.0 || ^16.0.1
 
-  stylelint@18.0.0:
-    resolution: {integrity: sha512-kI10GsHXQvsH/AcklVZdQgwDuxtHi+A+h1Ujzd7h9LDf3e5jQiLQkWFlPtpynX3E6oVWHG1wo9v6dL0Mr+nnSA==}
+  stylelint@18.1.0:
+    resolution: {integrity: sha512-QbF/IY7KY6lZRhYU/vmPU1KYxc71wgkXdgeptqzTh3lbnZps6WHaskfPjpL6Fh4JaCzwkKKitVcMrpfQTSwwPA==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
     hasBin: true
 
@@ -11485,27 +11485,27 @@ snapshots:
     optionalDependencies:
       '@babel/core': 7.29.13(supports-color@10.2.2)
 
-  stylelint-config-idiomatic-order@10.0.0(stylelint@18.0.0):
+  stylelint-config-idiomatic-order@10.0.0(stylelint@18.1.0):
     dependencies:
-      stylelint: 18.0.0
-      stylelint-order: 6.0.4(stylelint@18.0.0)
+      stylelint: 18.1.0
+      stylelint-order: 6.0.4(stylelint@18.1.0)
 
-  stylelint-config-recommended@19.0.0(stylelint@18.0.0):
+  stylelint-config-recommended@19.0.0(stylelint@18.1.0):
     dependencies:
-      stylelint: 18.0.0
+      stylelint: 18.1.0
 
-  stylelint-config-standard@41.0.0(stylelint@18.0.0):
+  stylelint-config-standard@41.0.0(stylelint@18.1.0):
     dependencies:
-      stylelint: 18.0.0
-      stylelint-config-recommended: 19.0.0(stylelint@18.0.0)
+      stylelint: 18.1.0
+      stylelint-config-recommended: 19.0.0(stylelint@18.1.0)
 
-  stylelint-order@6.0.4(stylelint@18.0.0):
+  stylelint-order@6.0.4(stylelint@18.1.0):
     dependencies:
       postcss: 8.5.33
       postcss-sorting: 8.0.2(postcss@8.5.33)
-      stylelint: 18.0.0
+      stylelint: 18.1.0
 
-  stylelint@18.0.0:
+  stylelint@18.1.0:
     dependencies:
       '@csstools/css-calc': 3.4.4(@csstools/css-parser-algorithms@4.0.3(@csstools/css-tokenizer@4.0.3))(@csstools/css-tokenizer@4.0.3)
       '@csstools/css-parser-algorithms': 4.0.3(@csstools/css-tokenizer@4.0.3)
@@ -11682,7 +11682,7 @@ snapshots:
 
   ufo@1.6.4: {}
 
-  ultracite@8.3.0(@biomejs/biome@2.6.8)(oxfmt@0.79.0)(oxlint@1.94.0)(stylelint@18.0.0):
+  ultracite@8.3.0(@biomejs/biome@2.6.8)(oxfmt@0.79.0)(oxlint@1.94.0)(stylelint@18.1.0):
     dependencies:
       '@clack/prompts': 1.9.0
       cli-truncate: 6.2.0
@@ -11707,7 +11707,7 @@ snapshots:
       '@biomejs/biome': 2.6.8
       oxfmt: 0.79.0
       oxlint: 1.94.0
-      stylelint: 18.0.0
+      stylelint: 18.1.0
 
   unconfig-core@7.5.0:
     dependencies:
