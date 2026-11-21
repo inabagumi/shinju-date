@@ -21,7 +21,7 @@ export type {
   TwitchVideo,
   TwitchVideoFilter,
   TwitchVideoPage,
-};
+} from "@shinju-date/twitch-api-client";
 
 /**
  * The Helix calls a Twitch scraper makes. Defaults to the implementations of

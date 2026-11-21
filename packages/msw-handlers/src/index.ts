@@ -54,14 +54,12 @@ export {
   MOCK_TALENT_IDS,
   MOCK_TALENT_WITHOUT_VIDEOS_ID,
 } from "./seeds/accounts.js";
-export {
-  googleFontsHandlers,
-  resendHandlers,
-  supabaseHandlers,
-  twitchHandlers,
-  upstashHandlers,
-  youtubeHandlers,
-};
+export { googleFontsHandlers } from "./handlers/google-fonts.js";
+export { resendHandlers } from "./handlers/resend.js";
+export { supabaseHandlers } from "./handlers/supabase/index.js";
+export { twitchHandlers } from "./handlers/twitch.js";
+export { upstashHandlers } from "./handlers/upstash/index.js";
+export { youtubeHandlers } from "./handlers/youtube.js";
 
 /**
  * Default export for convenience

@@ -81,7 +81,7 @@ export const selectYouTubeChannelIconUrl = (
   return largest?.url ?? null;
 };
 
-export type { SavedProfileImageRow };
+export type { SavedProfileImageRow } from "../internal/profile-images/index.js";
 
 /**
  * A row of `youtube_channels` with its icon, selected with
