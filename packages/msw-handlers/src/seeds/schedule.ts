@@ -48,9 +48,11 @@ interface ScheduleDependencies {
  * Streams for the schedule of the public site: 2 on each day of the current
  * week (from Sunday to Saturday in Japan), 1 in each of the previous and the
  * next weeks, the ones that overlap on Wednesday (4 at 21:00) and Thursday (9
- * from 20:00 to 21:00), and 1 on air now (`getLiveScheduleStart`, so that the
- * hour it is drawn for stays within today). Their status follows the start:
- * `ENDED` before `now` and `UPCOMING` after it.
+ * from 20:00 to 21:00), 2 from 23:30 that cross 00:00 (on Thursday, and on
+ * Saturday into the Sunday of the next week), and 1 on air now
+ * (`getLiveScheduleStart`, so that the hour it is drawn for stays within
+ * today). Their status follows the start: `ENDED` before `now` and `UPCOMING`
+ * after it.
  */
 export const createScheduleVideos = (
   context: SeedContext,
@@ -100,6 +102,18 @@ export const createScheduleVideos = (
       status: getStatus(start),
       title: `【リレー】リレー配信 #${index + 1}`,
     })),
+    // Both an ended stream (for 1.5 hours) and an upcoming one (drawn for an
+    // hour) from 23:30 last past 00:00
+    ...(
+      [
+        [4, "【スケジュール】木曜の深夜配信"],
+        [6, "【スケジュール】土曜の深夜配信"],
+      ] as const
+    ).map(([day, title]) => {
+      const start = weekStart.add({ days: day, hours: 23, minutes: 30 });
+
+      return { start, status: getStatus(start), title };
+    }),
     {
       start: getLiveScheduleStart(now),
       status: "LIVE" as const,

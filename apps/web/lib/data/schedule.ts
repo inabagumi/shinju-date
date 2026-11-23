@@ -7,6 +7,7 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { VIDEO_SCHEDULE_SELECT } from "@/lib/data/selects";
 import { unwrap } from "@/lib/data/unwrap";
+import { getDayParts, MAX_SCHEDULE_DAYS } from "@/lib/schedule";
 import { supabaseClient } from "@/lib/supabase";
 import { hasPlatformSource } from "@/lib/video-url";
 
@@ -70,10 +71,15 @@ export const fetchOldestVideoDate = async (): Promise<string | null> => {
 };
 
 /**
- * Fetch the videos that start in the 7 days from `weekStart` (the Sunday,
+ * Fetch the videos drawn in the 7 days from `weekStart` (the Sunday,
  * `YYYY-MM-DD`) in `TIME_ZONE`: the ones on air, the upcoming ones, the ended
  * ones and the published ones, in the order of the start. Shorts are not
  * included.
+ *
+ * Besides the videos that start in the week, it includes the ones that start
+ * before the week and last past 00:00 of the Sunday (`getDayParts`), such as a
+ * stream from 23:00 on the Saturday before. They start at most
+ * `MAX_SCHEDULE_DAYS - 1` days before the week.
  *
  * Callers pass the Sunday, so each week is cached only once.
  */
@@ -85,11 +91,13 @@ export const fetchScheduleVideos = async (
   cacheLife("hours");
   cacheTag(CACHE_TAGS.VIDEOS);
 
-  const since = Temporal.PlainDate.from(weekStart).toZonedDateTime(TIME_ZONE);
-  const until = since.add({ weeks: 1 });
+  const firstDay = Temporal.PlainDate.from(weekStart);
+  const weekSince = firstDay.toZonedDateTime(TIME_ZONE);
+  const since = weekSince.subtract({ days: MAX_SCHEDULE_DAYS - 1 });
+  const until = weekSince.add({ weeks: 1 });
 
-  // 1,000 is the most rows Supabase returns for a request. A week has far
-  // fewer videos.
+  // 1,000 is the most rows Supabase returns for a request. A week and the 2
+  // days before it have far fewer videos.
   const videos = unwrap(
     await selectScheduleVideos()
       .gte("published_at", toDBString(since))
@@ -100,5 +108,11 @@ export const fetchScheduleVideos = async (
     "fetchScheduleVideos"
   );
 
-  return videos.filter(hasPlatformSource);
+  return videos.filter(
+    (video) =>
+      hasPlatformSource(video) &&
+      getDayParts(video).some(
+        ({ date }) => Temporal.PlainDate.compare(date, firstDay) >= 0
+      )
+  );
 };

@@ -9,7 +9,6 @@ import {
 import { fetchScheduleVideos } from "@/lib/data/schedule";
 import type { ScheduleVideo } from "@/lib/data/schedule";
 import { formatWeekday } from "@/lib/date-heading";
-import { groupVideosByDate } from "@/lib/group-videos-by-date";
 import {
   formatWeekRange,
   getSchedulePath,
@@ -212,11 +211,12 @@ const PLACEMENT_CLASS_NAME =
 
 interface ScheduleDayProps {
   date: Temporal.PlainDate;
-  items: ScheduleVideo[];
+  /** その日に置く項目（`layoutDay`）。前の日から続く配信も含む */
+  layouts: ScheduleLayout<ScheduleVideo>[];
   referenceDate: string;
 }
 
-const ScheduleDay = ({ date, items, referenceDate }: ScheduleDayProps) => {
+const ScheduleDay = ({ date, layouts, referenceDate }: ScheduleDayProps) => {
   const id = getDayId(date);
   const headingId = `${id}-heading`;
 
@@ -227,19 +227,21 @@ const ScheduleDay = ({ date, items, referenceDate }: ScheduleDayProps) => {
       data-testid="schedule-day"
       id={id}
     >
+      {/* 件数は、その日の列に出す項目の数にし、前の日から続く配信も数える */}
       <ScheduleDayHeader
-        count={items.length}
+        count={layouts.length}
         date={date.toString()}
         headingId={headingId}
         referenceDate={referenceDate}
       />
 
       <div className={BODY_CLASS_NAME}>
-        {items.length > 0 ? (
-          // 開始時刻の順に並ぶので、狭い画面ではそのまま縦に積む。1024px 以上で
-          // 重なる項目は、後の要素ほど前面に描かれるので、後に始まる項目が前に出る
+        {layouts.length > 0 ? (
+          // 開始時刻の順（前の日から続く配信は 0:00）に並ぶので、狭い画面では
+          // そのまま縦に積む。1024px 以上で重なる項目は、後の要素ほど前面に
+          // 描かれるので、後に始まる項目が前に出る
           <ul className="mt-2 space-y-2 lg:mt-0 lg:space-y-0">
-            {layoutDay(items).map((layout) => (
+            {layouts.map((layout) => (
               <li
                 className={PLACEMENT_CLASS_NAME}
                 data-columns={layout.columns}
@@ -247,6 +249,8 @@ const ScheduleDay = ({ date, items, referenceDate }: ScheduleDayProps) => {
                 style={getPlacementStyle(layout, 6 - (date.dayOfWeek % 7))}
               >
                 <ScheduleItem
+                  continued={layout.continued}
+                  continues={layout.continues}
                   titleLines={getTitleLines(layout.length)}
                   value={layout.item}
                 />
@@ -264,14 +268,14 @@ const ScheduleDay = ({ date, items, referenceDate }: ScheduleDayProps) => {
 };
 
 /**
- * 1週間ぶんの配信と動画を、開始日時の日付ごとに、時刻の軸の上に並べる。動画が
- * ない日も日付は出す。
+ * 1週間ぶんの配信と動画を、開始日時の日付ごとに、時刻の軸の上に並べる。0時を
+ * またぐ配信は、翌日の列にも 0:00 から置く（週の前の土曜日から続く配信も、
+ * 日曜日の列に置く）。動画がない日も日付は出す。
  */
 export const ScheduleDays = async ({ params }: ScheduleWeekSectionProps) => {
   const { today, weekStart } = await resolveScheduleWeek(params);
   // リンク先が作れない動画は、`fetchScheduleVideos` が除くので件数にも入らない
   const videos = await fetchScheduleVideos(weekStart.toString());
-  const groups = groupVideosByDate(videos);
 
   return (
     <div className={DAYS_CLASS_NAME} style={DAYS_STYLE}>
@@ -280,8 +284,8 @@ export const ScheduleDays = async ({ params }: ScheduleWeekSectionProps) => {
       {getWeekDays(weekStart).map((date) => (
         <ScheduleDay
           date={date}
-          items={groups.get(date.toString()) ?? []}
           key={date.toString()}
+          layouts={layoutDay(videos, date)}
           referenceDate={today.toString()}
         />
       ))}

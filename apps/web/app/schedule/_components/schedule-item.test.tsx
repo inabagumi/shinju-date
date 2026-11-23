@@ -172,6 +172,50 @@ describe(ScheduleItem, () => {
     expect(item).toHaveAttribute("target", "_blank");
   });
 
+  it("should show the date of the start on the part from the day before", () => {
+    // 23:30 on 14 November in Japan, on air
+    const live = createScheduleVideoItem({
+      ...VIDEO,
+      published_at: "2026-11-14T14:30:00Z",
+      status: "LIVE",
+    });
+
+    render(<ScheduleItem continued value={live} />);
+
+    const item = getItem();
+    const time = item.querySelector("time");
+
+    expect(time?.textContent).toBe("11/14 23:30");
+    expect(time).toHaveAttribute("dateTime", "2026-11-14T23:30:00+09:00");
+    expect(item.textContent).toMatch(/^11\/14 23:30〜配信中/u);
+  });
+
+  it("should place the part from the day before from 00:00 with the same link", () => {
+    render(<ScheduleItem continued value={VIDEO} />);
+
+    const item = getItem();
+
+    expect(item).toHaveAttribute("data-start", "00:00");
+    expect(item).toHaveAttribute("data-continued", "true");
+    // The same link and title as the part on the day it starts on
+    expect(item).toHaveAttribute(
+      "href",
+      "https://www.youtube.com/watch?v=YT_video1abc"
+    );
+    expect(screen.getByTitle("【歌枠】アニソン縛り歌ってみた！")).toBeVisible();
+  });
+
+  it("should show only the time of the start on the day it starts on", () => {
+    render(<ScheduleItem continues value={VIDEO} />);
+
+    const item = getItem();
+
+    expect(item.querySelector("time")?.textContent).toBe("21:00");
+    expect(item).not.toHaveTextContent("〜");
+    expect(item).toHaveAttribute("data-start", "21:00");
+    expect(item).not.toHaveAttribute("data-continued");
+  });
+
   it("should not show a thumbnail", () => {
     render(<ScheduleItem value={VIDEO} />);
 
@@ -277,6 +321,22 @@ describe("ScheduleItem (on a wide screen)", () => {
     // The fill is opaque, so the items below do not show through an expanded
     // one
     expect(getItem()).toHaveClass("bg-surface", "border", "border-border");
+  });
+
+  it("should not round the corners where a video crosses 00:00", () => {
+    const { rerender } = render(<ScheduleItem value={VIDEO} />);
+
+    expect(getItem().className).not.toMatch(/rounded-[tb]-none/u);
+
+    rerender(<ScheduleItem continues value={VIDEO} />);
+
+    expect(getItem()).toHaveClass("lg:rounded-b-none");
+    expect(getItem()).not.toHaveClass("lg:rounded-t-none");
+
+    rerender(<ScheduleItem continued value={VIDEO} />);
+
+    expect(getItem()).toHaveClass("lg:rounded-t-none");
+    expect(getItem()).not.toHaveClass("lg:rounded-b-none");
   });
 
   it("should fill the placement and float with a shadow when expanded", () => {

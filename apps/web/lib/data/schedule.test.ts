@@ -86,7 +86,8 @@ describe("lib/data/schedule", () => {
         live,
         first,
         published,
-        video("2026-11-07T14:59:59Z"),
+        // 23:00 on Saturday, 7 November in Japan, for an hour until 24:00
+        video("2026-11-07T14:00:00Z"),
         // 00:00 on Sunday, 15 November in Japan
         video("2026-11-14T15:00:00Z"),
         video("2026-11-10T12:00:00Z", { video_kind: "short" }),
@@ -100,6 +101,43 @@ describe("lib/data/schedule", () => {
       ]);
       expect(cacheLife).toHaveBeenCalledWith("hours");
       expect(cacheTag).toHaveBeenCalledWith("videos");
+    });
+
+    it("returns the videos from before the week that last past 00:00 on Sunday", async () => {
+      // 23:00 on Saturday, 7 November in Japan, until 01:00 on Sunday
+      const fromSaturday = video("2026-11-07T14:00:00Z", {
+        duration: "PT2H",
+        status: "ENDED",
+      });
+      // 23:30 on Saturday, drawn for an hour as it is on air
+      const live = video("2026-11-07T14:30:00Z", { status: "LIVE" });
+      // 20:00 on Friday, 6 November, for 30 hours
+      const fromFriday = video("2026-11-06T11:00:00Z", {
+        duration: "PT30H",
+        status: "ENDED",
+      });
+      const inWeek = video("2026-11-09T12:00:00Z");
+
+      await seedVideos([
+        fromSaturday,
+        live,
+        fromFriday,
+        inWeek,
+        // 22:00 on Saturday, until 24:00
+        video("2026-11-07T13:00:00Z", { duration: "PT2H", status: "ENDED" }),
+        // 23:00 on Saturday, for the hour an upcoming stream is drawn for
+        video("2026-11-07T14:00:00Z", { status: "UPCOMING" }),
+        // 20:00 on Thursday, 5 November, for 3 days. It is drawn on 3 days at
+        // most, until Saturday
+        video("2026-11-05T11:00:00Z", { duration: "PT72H", status: "ENDED" }),
+      ]);
+
+      expect(ids(await fetchScheduleVideos("2026-11-08"))).toStrictEqual([
+        fromFriday.video.id,
+        fromSaturday.video.id,
+        live.video.id,
+        inWeek.video.id,
+      ]);
     });
 
     it("returns the theme color of the talent without the thumbnail", async () => {
