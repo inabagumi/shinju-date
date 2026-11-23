@@ -4,6 +4,9 @@ import type { ReactElement } from "react";
 import type { ResponsiveContainerProps } from "recharts";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+/** The width of the chart, which jsdom cannot measure */
+let chartWidth = 800;
+
 // jsdom は要素の大きさを測れないので、グラフに大きさを直接渡す
 vi.mock(import("recharts"), async (importOriginal) => {
   const actual = await importOriginal();
@@ -15,7 +18,7 @@ vi.mock(import("recharts"), async (importOriginal) => {
         // oxlint-disable-next-line react/no-clone-element -- gives the chart a fixed size, as the real ResponsiveContainer does with cloneElement()
         cloneElement(
           children as ReactElement<{ height?: number; width?: number }>,
-          { height: 320, width: 800 }
+          { height: 320, width: chartWidth }
         )
     ),
   };
@@ -66,6 +69,7 @@ describe("VideoStatsChartUI", () => {
 
     return () => {
       vi.unstubAllGlobals();
+      chartWidth = 800;
     };
   });
 
@@ -100,6 +104,33 @@ describe("VideoStatsChartUI", () => {
     expect(values).toStrictEqual(["-12", "-6", "±0", "+6", "+12"]);
     expect(document.querySelector(".recharts-reference-line")).not.toBeNull();
   });
+
+  it.each([
+    [800, false],
+    [320, true],
+  ])(
+    "shows all the dates at the width %d, aslant: %s",
+    async (width, aslant) => {
+      chartWidth = width;
+      render(<VideoStatsChartUI data={DATA} />);
+      await waitForFrame();
+
+      const ticks = document.querySelectorAll(
+        ".recharts-xAxis-tick-labels text"
+      );
+      expect([...ticks].map((tick) => tick.textContent)).toStrictEqual([
+        "11/08",
+        "11/09",
+        "11/10",
+        "11/11",
+      ]);
+      expect(
+        [...ticks].map((tick) =>
+          (tick.getAttribute("transform") ?? "").startsWith("rotate(-45,")
+        )
+      ).toStrictEqual(Array.from({ length: 4 }, () => aslant));
+    }
+  );
 
   it.each([
     [100, "11/08", "純増減 : +12 本"],
