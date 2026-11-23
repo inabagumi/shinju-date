@@ -13,6 +13,9 @@ interface ChartTooltipContentProps extends Partial<
   series: ChartSeries[];
 }
 
+/** 値がない（`null` などの）点の表示。0 と区別する */
+const MISSING_VALUE = "データなし";
+
 /**
  * Recharts の `<Tooltip content={…} />` に渡すツールチップの中身。
  * 既定の中身は色を inline style で持つため、セマンティックカラーのクラスで描き直す。
@@ -45,7 +48,9 @@ export const ChartTooltipContent = ({
               key={String(entry.dataKey)}
             >
               {item?.label ?? entry.name} :{" "}
-              {formatValue(typeof entry.value === "number" ? entry.value : 0)}
+              {typeof entry.value === "number"
+                ? formatValue(entry.value)
+                : MISSING_VALUE}
             </li>
           );
         })}

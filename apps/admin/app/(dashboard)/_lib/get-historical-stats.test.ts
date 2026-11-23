@@ -49,43 +49,62 @@ describe(getHistoricalStats, () => {
     );
   });
 
-  it("reads the snapshots of the days up to today, from the oldest", async () => {
+  it("reads the snapshots of the days up to yesterday, from the oldest", async () => {
     const get = mockSnapshots({
       "20251110": snapshot(28),
       "20251111": snapshot(29),
       "20251112": snapshot(31),
+      // Not counted until the end of the day
+      "20251113": snapshot(99),
     });
 
     const result = await getHistoricalStats(3);
 
     expect(get.mock.calls.map(([key]) => key)).toStrictEqual([
+      `${REDIS_KEYS.SUMMARY_STATS_PREFIX}20251110`,
       `${REDIS_KEYS.SUMMARY_STATS_PREFIX}20251111`,
       `${REDIS_KEYS.SUMMARY_STATS_PREFIX}20251112`,
-      `${REDIS_KEYS.SUMMARY_STATS_PREFIX}20251113`,
     ]);
     expect(result).toStrictEqual([
-      { date: "11/11", ...snapshot(29) },
-      { date: "11/12", ...snapshot(31) },
+      { day: "2025-11-10", stats: snapshot(28) },
+      { day: "2025-11-11", stats: snapshot(29) },
+      { day: "2025-11-12", stats: snapshot(31) },
     ]);
   });
 
-  it("leaves out the days whose snapshot is not in the form of the counts", async () => {
+  it("keeps the days without a snapshot in the form of the counts as null", async () => {
     const { scheduledVideos: _, ...oldForm } = snapshot(20);
 
     mockSnapshots({
-      "20251107": oldForm,
-      "20251108": "broken",
+      "20251109": oldForm,
+      "20251110": "broken",
       "20251112": snapshot(31),
     });
 
-    await expect(getHistoricalStats()).resolves.toStrictEqual([
-      { date: "11/12", ...snapshot(31) },
+    await expect(getHistoricalStats(4)).resolves.toStrictEqual([
+      { day: "2025-11-09", stats: null },
+      { day: "2025-11-10", stats: null },
+      { day: "2025-11-11", stats: null },
+      { day: "2025-11-12", stats: snapshot(31) },
     ]);
   });
 
-  it("returns nothing while there is no snapshot", async () => {
+  it("reads 7 days by default", async () => {
     mockSnapshots({});
 
-    await expect(getHistoricalStats()).resolves.toStrictEqual([]);
+    const result = await getHistoricalStats();
+
+    expect(result.map(({ day }) => day)).toStrictEqual([
+      "2025-11-06",
+      "2025-11-07",
+      "2025-11-08",
+      "2025-11-09",
+      "2025-11-10",
+      "2025-11-11",
+      "2025-11-12",
+    ]);
+    expect(result.map(({ stats }) => stats)).toStrictEqual(
+      Array.from({ length: 7 }, () => null)
+    );
   });
 });

@@ -101,3 +101,79 @@ export const createRedisDataFactory = (
 
   return store;
 };
+
+/**
+ * The counts of the dashboard as of the end of a day, in the form that
+ * `writeSummarySnapshot` of `@shinju-date/dashboard-stats` saves
+ * (`SummaryStats`).
+ */
+export interface SummarySnapshot {
+  deletedVideos: number;
+  hiddenVideos: number;
+  scheduledVideos: number;
+  totalTalents: number;
+  totalTerms: number;
+  totalVideos: number;
+  visibleVideos: number;
+}
+
+export interface SummarySnapshotsOptions {
+  /** The current day. Defaults to today in `TIME_ZONE`. */
+  today?: Temporal.PlainDate;
+}
+
+/**
+ * The net changes of the videos on each of the 7 days up to yesterday, from
+ * the oldest, so that the chart of the dashboard has an increase, a decrease
+ * and no change.
+ */
+const SUMMARY_SNAPSHOT_CHANGES = [4, -2, 0, 3, 5, 1, 2] as const;
+
+/**
+ * The day without a snapshot, as if the daily job failed (days before
+ * yesterday). The chart shows it and the day after as missing.
+ */
+const MISSING_SNAPSHOT_DAYS_BEFORE_YESTERDAY = 3;
+
+/**
+ * Create the snapshots of the counts that the daily job `/stats/snapshot` of
+ * batch saves, for the 8 days up to yesterday (7 changes and the day before
+ * them). One of the days has no snapshot.
+ *
+ * The snapshot of yesterday has the current counts, and each day before it
+ * has fewer (or more) public videos by the change of the next day.
+ *
+ * @param current The current counts of the mock data
+ * @returns Map of Redis keys to the snapshots
+ */
+export const createSummarySnapshots = (
+  current: SummarySnapshot,
+  { today = Temporal.Now.plainDateISO(TIME_ZONE) }: SummarySnapshotsOptions = {}
+): Map<string, SummarySnapshot> => {
+  const store = new Map<string, SummarySnapshot>();
+  const yesterday = today.subtract({ days: 1 });
+  // The sum of the changes of the days after the day, up to yesterday
+  let laterChanges = 0;
+
+  for (
+    let daysAgo = 0;
+    daysAgo <= SUMMARY_SNAPSHOT_CHANGES.length;
+    daysAgo += 1
+  ) {
+    if (daysAgo !== MISSING_SNAPSHOT_DAYS_BEFORE_YESTERDAY) {
+      const dateKey = formatDateKey(yesterday.subtract({ days: daysAgo }));
+
+      store.set(`${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`, {
+        ...current,
+        totalVideos: current.totalVideos - laterChanges,
+        visibleVideos: current.visibleVideos - laterChanges,
+      });
+    }
+
+    laterChanges +=
+      SUMMARY_SNAPSHOT_CHANGES[SUMMARY_SNAPSHOT_CHANGES.length - 1 - daysAgo] ??
+      0;
+  }
+
+  return store;
+};

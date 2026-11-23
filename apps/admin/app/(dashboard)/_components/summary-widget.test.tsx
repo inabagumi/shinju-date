@@ -2,7 +2,11 @@ import type { SummaryStats, WithTrends } from "@shinju-date/dashboard-stats";
 import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { getHistoricalStats } from "../_lib/get-historical-stats";
+import type { DailyNetChange } from "../_lib/daily-net-changes";
+import type {
+  getHistoricalStats,
+  HistoricalStatsEntry,
+} from "../_lib/get-historical-stats";
 import type { getSummaryStats } from "../_lib/get-summary-stats";
 
 const mocks = vi.hoisted(() => ({
@@ -17,7 +21,14 @@ vi.mock(import("../_lib/get-summary-stats"), () => ({
   getSummaryStats: mocks.getSummaryStats,
 }));
 vi.mock(import("./video-stats-chart-ui"), () => ({
-  VideoStatsChartUI: () => <div />,
+  // Lists the values given to the chart
+  VideoStatsChartUI: ({ data }: { data: DailyNetChange[] }) => (
+    <ul aria-label="chart">
+      {data.map(({ date, netChange }) => (
+        <li key={date}>{`${date}: ${String(netChange)}`}</li>
+      ))}
+    </ul>
+  ),
 }));
 
 const { ContentSummaryWidget, VideoSummaryWidget } =
@@ -39,6 +50,26 @@ const stats: WithTrends<SummaryStats> = {
   totalVideos: trend(31),
   visibleVideos: trend(25),
 };
+
+/** The snapshot of a day with the total of the videos. */
+const entry = (
+  day: string,
+  totalVideos: number | null
+): HistoricalStatsEntry => ({
+  day,
+  stats:
+    totalVideos === null
+      ? null
+      : {
+          deletedVideos: 2,
+          hiddenVideos: 1,
+          scheduledVideos: 5,
+          totalTalents: 12,
+          totalTerms: 40,
+          totalVideos,
+          visibleVideos: totalVideos - 6,
+        },
+});
 
 const getTile = (label: string): HTMLElement =>
   screen.getByRole("link", { name: new RegExp(`^${label}`, "u") });
@@ -93,6 +124,62 @@ describe("VideoSummaryWidget", () => {
       expect(tile.getByText("前日比: データなし")).toBeDefined();
     }
   );
+
+  it("reads the snapshots of 8 days for the changes of 7 days", async () => {
+    render(await VideoSummaryWidget());
+
+    expect(mocks.getHistoricalStats.mock.calls).toStrictEqual([[8]]);
+  });
+
+  it("charts the daily net changes of the total of the videos", async () => {
+    mocks.getHistoricalStats.mockResolvedValue([
+      entry("2025-11-05", 40_000),
+      entry("2025-11-06", 40_012),
+      entry("2025-11-07", 40_009),
+      entry("2025-11-08", 40_009),
+      entry("2025-11-09", null),
+      entry("2025-11-10", 40_020),
+      entry("2025-11-11", 40_021),
+      entry("2025-11-12", 40_025),
+    ]);
+
+    render(await VideoSummaryWidget());
+
+    expect(
+      screen.getByRole("heading", { name: "動画数の日別純増減（7日間）" })
+    ).toBeDefined();
+    expect(screen.getByText(/削除による減少を含む純増減/u)).toBeDefined();
+    const items = within(screen.getByRole("list", { name: "chart" }));
+    expect(
+      items.getAllByRole("listitem").map((item) => item.textContent)
+    ).toStrictEqual([
+      "11/06: 12",
+      "11/07: -3",
+      "11/08: 0",
+      "11/09: null",
+      "11/10: null",
+      "11/11: 1",
+      "11/12: 4",
+    ]);
+  });
+
+  it("shows the empty state without the snapshots of two days in a row", async () => {
+    mocks.getHistoricalStats.mockResolvedValue([
+      entry("2025-11-05", 40_000),
+      entry("2025-11-06", null),
+      entry("2025-11-07", 40_009),
+      entry("2025-11-08", null),
+      entry("2025-11-09", null),
+      entry("2025-11-10", null),
+      entry("2025-11-11", null),
+      entry("2025-11-12", 40_025),
+    ]);
+
+    render(await VideoSummaryWidget());
+
+    expect(screen.queryByRole("list", { name: "chart" })).toBeNull();
+    expect(screen.getByText("まだ集計されたデータがありません")).toBeDefined();
+  });
 });
 
 describe("ContentSummaryWidget", () => {

@@ -1,7 +1,15 @@
 import { HttpResponse, http } from "msw";
 
-import { ensureCollectionsSeeded, videos } from "../../collections.js";
-import { createRedisDataFactory } from "../../redis-factory.js";
+import {
+  ensureCollectionsSeeded,
+  talents,
+  terms,
+  videos,
+} from "../../collections.js";
+import {
+  createRedisDataFactory,
+  createSummarySnapshots,
+} from "../../redis-factory.js";
 import {
   isSupportedCommand,
   runCommand,
@@ -42,6 +50,33 @@ for (const [key, value] of seedData) {
           value: new Map(value.map(({ member, score }) => [member, score])),
         }
   );
+}
+
+// The snapshots of the counts for the dashboard of admin, counted like
+// `countSummaryStats` of `@shinju-date/dashboard-stats`
+const existingVideos = allVideos.filter((video) => video.deleted_at === null);
+const summarySnapshots = createSummarySnapshots({
+  deletedVideos: allVideos.length - existingVideos.length,
+  hiddenVideos: existingVideos.filter((video) => !video.visible).length,
+  scheduledVideos: existingVideos.filter(
+    (video) => video.visible && video.status === "UPCOMING"
+  ).length,
+  totalTalents: talents
+    .findMany()
+    .filter((talent) => talent.deleted_at === null).length,
+  totalTerms: terms.findMany().length,
+  totalVideos: existingVideos.length,
+  visibleVideos: existingVideos.filter(
+    (video) =>
+      video.visible &&
+      (video.status === "ENDED" ||
+        video.status === "LIVE" ||
+        video.status === "PUBLISHED")
+  ).length,
+});
+
+for (const [key, snapshot] of summarySnapshots) {
+  mockRedisStore.set(key, { type: "string", value: JSON.stringify(snapshot) });
 }
 
 console.error(

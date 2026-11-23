@@ -1,22 +1,29 @@
 import { TIME_ZONE } from "@shinju-date/constants";
 import { readSummarySnapshot } from "@shinju-date/dashboard-stats";
 import type { SummaryStats } from "@shinju-date/dashboard-stats";
-import { formatDate, formatDateKey } from "@shinju-date/temporal-fns";
+import { formatDateKey } from "@shinju-date/temporal-fns";
 import { cacheLife } from "next/cache";
 
-import { isNonNullable } from "@/lib/is-non-nullable";
 import { getRedisClient } from "@/lib/redis";
 
-/** The snapshot of the counts of a day, with the date to show on the chart. */
-export interface HistoricalStatsEntry extends SummaryStats {
-  date: string;
+/** The snapshot of the counts of a day. */
+export interface HistoricalStatsEntry {
+  /** The day of the snapshot (ISO 8601, e.g. `2025-11-12`) */
+  day: string;
+  /** The counts as of the end of the day, or `null` without the snapshot */
+  stats: SummaryStats | null;
 }
 
 /**
- * Get historical summary statistics for the past N days
+ * Get the snapshots of the counts of the past N days, saved by the daily job
+ * `/stats/snapshot` of batch.
+ *
+ * The last day is yesterday, whose snapshot is the latest one counted as of
+ * the end of a day. The counts of today are not mixed in.
+ *
  * @param days - Number of days to fetch (default: 7)
- * @returns Array of historical stats, ordered from oldest to newest. Days
- * without a snapshot are left out.
+ * @returns One entry for each day, ordered from oldest to newest. The days
+ * without a snapshot (or with one not in the form of the counts) have `null`.
  */
 export const getHistoricalStats = async (
   days = 7
@@ -26,25 +33,16 @@ export const getHistoricalStats = async (
   cacheLife("minutes");
 
   const redisClient = getRedisClient();
-  const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE);
+  const yesterday = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
+    .toPlainDate()
+    .subtract({ days: 1 });
 
-  const entries = await Promise.all(
+  return await Promise.all(
     Array.from({ length: days }, async (_, index) => {
-      const targetDate = now.subtract({ days: days - 1 - index });
-      const stats = await readSummarySnapshot(
-        redisClient,
-        formatDateKey(targetDate)
-      );
+      const day = yesterday.subtract({ days: days - 1 - index });
+      const stats = await readSummarySnapshot(redisClient, formatDateKey(day));
 
-      return (
-        stats && {
-          // Use the same MM/DD format as the other screens of the admin UI
-          date: formatDate(targetDate, { includeYear: false }),
-          ...stats,
-        }
-      );
+      return { day: day.toString(), stats };
     })
   );
-
-  return entries.filter(isNonNullable);
 };
