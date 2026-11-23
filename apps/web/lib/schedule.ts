@@ -161,9 +161,13 @@ export const getLengthMinutes = (video: PlacedVideo): number => {
 };
 
 export interface ScheduleLayout<T> {
-  /** The column of the item among the overlapping items, from 0 */
+  /**
+   * The column of the item among the overlapping items, from 0. The schedule
+   * shifts the item to the right by its column. The items that start at the
+   * same time get the columns in their order
+   */
   column: number;
-  /** How many columns the overlapping items share */
+  /** How many columns the overlapping items take */
   columns: number;
   item: T;
   /** How long the item is drawn, in minutes (cut at the end of the day) */
@@ -176,7 +180,8 @@ export interface ScheduleLayout<T> {
  * Place the videos of a day on the time axis, as a calendar does: each starts
  * at its start time and is as long as `getLengthMinutes` (at least
  * `MIN_LENGTH_MINUTES`, and cut at the end of the day). The videos that
- * overlap share the width of the day side by side.
+ * overlap get different columns, so that the schedule can shift them from
+ * each other.
  */
 export const layoutDay = <T extends PlacedVideo>(
   videos: readonly T[]
