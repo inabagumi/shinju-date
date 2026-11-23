@@ -6,6 +6,7 @@ import {
   getChartPeriodLabel,
   getRequiredSnapshotDays,
   MAX_CHART_PERIOD,
+  parseChartPeriod,
 } from "./chart-periods";
 
 describe("the periods of the charts", () => {
@@ -33,6 +34,22 @@ describe(getRequiredSnapshotDays, () => {
     "needs the snapshots of %d days and the day before: %d days",
     (period, days) => {
       expect(getRequiredSnapshotDays(period)).toBe(days);
+    }
+  );
+});
+
+describe(parseChartPeriod, () => {
+  it.each([
+    ["7", 7],
+    ["30", 30],
+  ] as const)("reads %s as %d days", (value, period) => {
+    expect(parseChartPeriod(value)).toBe(period);
+  });
+
+  it.each([null, "", "14", "31", "30.0", " 30", "abc"])(
+    "reads %o as the first period",
+    (value) => {
+      expect(parseChartPeriod(value)).toBe(7);
     }
   );
 });

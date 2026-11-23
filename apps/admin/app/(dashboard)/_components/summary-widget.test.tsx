@@ -1,5 +1,7 @@
 import type { SummaryStats, WithTrends } from "@shinju-date/dashboard-stats";
 import { fireEvent, render, screen, within } from "@testing-library/react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import { useSyncExternalStore } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DailyCount } from "../_lib/daily-counts";
@@ -13,6 +15,39 @@ import type { getSummaryStats } from "../_lib/get-summary-stats";
 const mocks = vi.hoisted(() => ({
   getHistoricalStats: vi.fn<typeof getHistoricalStats>(),
   getSummaryStats: vi.fn<typeof getSummaryStats>(),
+}));
+
+/**
+ * The parameters of the URL. Like Next.js, `useSearchParams()` follows the
+ * URL changed with `window.history.replaceState()`.
+ */
+const url = vi.hoisted(() => {
+  let searchParams = new URLSearchParams();
+  const listeners = new Set<() => void>();
+
+  return {
+    get: () => searchParams,
+    set: (next: URLSearchParams) => {
+      searchParams = next;
+      for (const listener of listeners) {
+        listener();
+      }
+    },
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+  };
+});
+
+vi.mock(import("next/navigation"), () => ({
+  usePathname: () => "/",
+  useSearchParams: () =>
+    // oxlint-disable-next-line react-hooks/rules-of-hooks -- the mock of a hook, called only from components
+    useSyncExternalStore(url.subscribe, url.get) as ReadonlyURLSearchParams,
 }));
 
 vi.mock(import("../_lib/get-historical-stats"), () => ({
@@ -135,6 +170,12 @@ describe("VideoSummaryWidget", () => {
     vi.clearAllMocks();
     mocks.getSummaryStats.mockResolvedValue(stats);
     mocks.getHistoricalStats.mockResolvedValue([]);
+    url.set(new URLSearchParams());
+    vi.spyOn(window.history, "replaceState").mockImplementation(
+      (_data, _unused, href) => {
+        url.set(new URL(String(href), "http://localhost").searchParams);
+      }
+    );
   });
 
   it.each([
@@ -363,6 +404,55 @@ describe("VideoSummaryWidget", () => {
     expect(
       screen.getByRole("heading", { name: "動画数の日別純増減（7日間）" })
     ).toBeDefined();
+  });
+
+  it("keeps the period chosen in the URL, without the other parameters lost", async () => {
+    url.set(new URLSearchParams({ from: "dashboard" }));
+
+    render(await VideoSummaryWidget());
+    fireEvent.click(getPeriodButton("過去30日間"));
+
+    expect(window.history.replaceState).toHaveBeenLastCalledWith(
+      null,
+      "",
+      "/?from=dashboard&period=30"
+    );
+
+    fireEvent.click(getPeriodButton("過去7日間"));
+
+    // The first period is the default, without the parameter
+    expect(window.history.replaceState).toHaveBeenLastCalledWith(
+      null,
+      "",
+      "/?from=dashboard"
+    );
+  });
+
+  it("charts the period in the URL", async () => {
+    url.set(new URLSearchParams({ period: "30" }));
+    mocks.getHistoricalStats.mockResolvedValue(
+      history("2025-11-12", increasing(31))
+    );
+
+    render(await VideoSummaryWidget());
+
+    expect(getPressedPeriods()).toStrictEqual(["過去30日間"]);
+    expect(getChartItems("chart")).toHaveLength(30);
+    expect(
+      screen.getByRole("heading", { name: "動画数の日別純増減（30日間）" })
+    ).toBeDefined();
+  });
+
+  it("charts 7 days with a period in the URL that cannot be chosen", async () => {
+    url.set(new URLSearchParams({ period: "14" }));
+    mocks.getHistoricalStats.mockResolvedValue(
+      history("2025-11-12", increasing(31))
+    );
+
+    render(await VideoSummaryWidget());
+
+    expect(getPressedPeriods()).toStrictEqual(["過去7日間"]);
+    expect(getChartItems("chart")).toHaveLength(7);
   });
 
   it("does not change the tiles of the current counts with the period", async () => {

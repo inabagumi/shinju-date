@@ -2,14 +2,11 @@
 
 import { formatNumber } from "@shinju-date/helpers";
 import { Alert } from "@shinju-date/ui";
-import { useState } from "react";
 
-import {
-  DEFAULT_CHART_PERIOD,
-  getChartPeriodLabel,
-} from "../_lib/chart-periods";
+import { getChartPeriodLabel } from "../_lib/chart-periods";
 import type { ChartPeriod } from "../_lib/chart-periods";
 import type { HistoricalStatsEntry } from "../_lib/get-historical-stats";
+import { useChartPeriodParam } from "../_lib/use-chart-period-param";
 import {
   COUNT_CHART_NOTE,
   COUNT_CHARTS,
@@ -58,10 +55,11 @@ const MissingSnapshotsNotice = ({
 
 /**
  * 動画サマリーのグラフ。総動画数の日別純増減と、配信予定・非表示の件数の推移を、
- * 選んだ同じ期間で出す。上のサマリーカード（現在の値）は期間によらない
+ * 選んだ同じ期間で出す。期間は URL の `period` パラメータに持つ。
+ * 上のサマリーカード（現在の値）は期間によらない
  */
 export const VideoSummaryCharts = ({ history }: VideoSummaryChartsProps) => {
-  const [period, setPeriod] = useState<ChartPeriod>(DEFAULT_CHART_PERIOD);
+  const { period, setPeriod } = useChartPeriodParam();
   const { counts, missingSnapshotDays, netChanges, requiredSnapshotDays } =
     toVideoSummaryChartData(history, period);
 
