@@ -3,6 +3,7 @@ import { Skeleton } from "@shinju-date/ui";
 import { Panel, PanelSkeleton } from "@/components/panel";
 import { StatTileSkeleton } from "@/components/stat-tile-skeleton";
 
+import { toDailyNetChanges } from "../_lib/daily-net-changes";
 import { getHistoricalStats } from "../_lib/get-historical-stats";
 import { getSummaryStats } from "../_lib/get-summary-stats";
 import {
@@ -13,15 +14,28 @@ import { StatTileLink } from "./trend-indicator";
 import { VideoStatsChartEmpty } from "./video-stats-chart-empty";
 import { VideoStatsChartUI } from "./video-stats-chart-ui";
 
+/** グラフに出す日数 */
+const CHART_DAYS = 7;
+
+/** グラフの見出し */
+const CHART_TITLE = `動画数の日別純増減（${CHART_DAYS.toString(10)}日間）`;
+
+/** グラフの値の説明 */
+const CHART_DESCRIPTION =
+  "各日の終わりの総動画数と、前日の終わりとの差です。削除による減少を含む純増減のため、新規登録数とは一致しません。集計のない日は空欄になります。";
+
 /**
- * VideoSummaryWidget - Displays video statistics with 7-day chart
+ * VideoSummaryWidget - Displays video statistics with the daily net changes
+ * of the total of the videos for 7 days.
  * This is an async Server Component that fetches its own data
  */
 export const VideoSummaryWidget = async () => {
   const [stats, historicalStats] = await Promise.all([
     getSummaryStats(),
-    getHistoricalStats(7),
+    // The day before the first day is the base of the first change
+    getHistoricalStats(CHART_DAYS + 1),
   ]);
+  const netChanges = toDailyNetChanges(historicalStats, "totalVideos");
 
   return (
     <Panel title="動画サマリー">
@@ -52,15 +66,15 @@ export const VideoSummaryWidget = async () => {
         />
       </div>
 
-      {/* 7-Day Video Stats Chart */}
       <div className="mt-6">
-        <h3 className="mb-3 text-body leading-normal font-semibold">
-          動画数推移（7日間）
+        <h3 className="text-body leading-normal font-semibold">
+          {CHART_TITLE}
         </h3>
-        {historicalStats.length === 0 ? (
+        <p className="mb-3 text-meta text-muted">{CHART_DESCRIPTION}</p>
+        {netChanges.every(({ netChange }) => netChange === null) ? (
           <VideoStatsChartEmpty />
         ) : (
-          <VideoStatsChartUI data={historicalStats} />
+          <VideoStatsChartUI data={netChanges} />
         )}
       </div>
     </Panel>
@@ -77,9 +91,8 @@ export const VideoSummaryWidgetSkeleton = () => (
       <StatTileSkeleton change />
     </div>
     <div className="mt-6">
-      <h3 className="mb-3 text-body leading-normal font-semibold">
-        動画数推移（7日間）
-      </h3>
+      <h3 className="text-body leading-normal font-semibold">{CHART_TITLE}</h3>
+      <p className="mb-3 text-meta text-muted">{CHART_DESCRIPTION}</p>
       <Skeleton className="h-80 w-full rounded-container" />
     </div>
   </PanelSkeleton>

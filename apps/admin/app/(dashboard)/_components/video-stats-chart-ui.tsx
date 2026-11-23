@@ -1,66 +1,107 @@
 "use client";
 
+import { formatNumber } from "@shinju-date/helpers";
 import {
-  Area,
-  AreaChart,
+  Bar,
+  BarChart,
   CartesianGrid,
-  Legend,
+  LabelList,
+  Rectangle,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import type { AxisDomain, BarShapeProps } from "recharts";
 
 import type { ChartSeries } from "../_lib/chart-series";
-import { ChartLegendContent } from "./chart-legend-content";
+import type { DailyNetChange } from "../_lib/daily-net-changes";
 import { ChartTooltipContent } from "./chart-tooltip-content";
 
 interface VideoStatsChartProps {
-  data: {
-    date: string;
-    visibleVideos: number;
-    scheduledVideos: number;
-    hiddenVideos: number;
-    deletedVideos: number;
-  }[];
+  data: DailyNetChange[];
 }
 
-interface VideoStatsSeries extends ChartSeries {
-  /** 同じ値の系列は積み上げる */
-  stackId: string;
-}
-
-const SERIES: VideoStatsSeries[] = [
+const SERIES: ChartSeries[] = [
   {
-    className: "text-success",
-    key: "visibleVideos",
-    label: "公開中",
-    stackId: "visible",
-  },
-  {
-    className: "text-accent",
-    key: "scheduledVideos",
-    label: "配信予定",
-    stackId: "visible",
-  },
-  {
-    className: "text-warning",
-    key: "hiddenVideos",
-    label: "非表示",
-    stackId: "hidden",
+    className: "text-foreground",
+    key: "netChange",
+    label: "純増減",
   },
 ];
 
-const formatValue = (value: number): string => `${value} 本`;
+/** 増加・減少・変化なしの値の色のクラス */
+const getChangeClassName = (value: number): string => {
+  if (value > 0) {
+    return "text-success";
+  }
+
+  if (value < 0) {
+    return "text-danger";
+  }
+
+  return "text-muted";
+};
+
+/** 符号付きの件数（`+12`、`-3`、`±0`） */
+const formatChange = (value: number): string => {
+  if (value > 0) {
+    return `+${formatNumber(value)}`;
+  }
+
+  if (value < 0) {
+    return `-${formatNumber(-value)}`;
+  }
+
+  return "±0";
+};
+
+const formatValue = (value: number): string => `${formatChange(value)} 本`;
+
+/**
+ * 棒の上の値。値がない日（比べるスナップショットがない日）は棒も値も出さず、
+ * ツールチップで「データなし」と示す。0 の日は `±0` と出して区別する
+ */
+const formatLabel = (value: unknown): string =>
+  typeof value === "number" ? formatChange(value) : "";
+
+/**
+ * 0 を中心に、正負の両方向を同じ幅で表示する。増減のどちらかしかない日や、
+ * すべて 0 の日でも、0 の基準線と正負の目盛りが出る
+ */
+const DOMAIN: AxisDomain = ([dataMin, dataMax]) => {
+  const absMax = Math.max(Math.abs(dataMin), Math.abs(dataMax), 1);
+
+  return [-absMax, absMax];
+};
+
+/** 棒を値の符号の色で描く */
+const ChangeBar = (props: BarShapeProps) => {
+  const value = (props.payload as DailyNetChange | undefined)?.netChange;
+
+  return (
+    <Rectangle
+      {...props}
+      className={typeof value === "number" ? getChangeClassName(value) : ""}
+      fill="currentColor"
+    />
+  );
+};
 
 export const VideoStatsChartUI = ({ data }: VideoStatsChartProps) => (
-  // 線（グリッド、目盛りの線）は `currentColor` にして、グラフのルートの
+  // 線（グリッド、軸、目盛りの線）は `currentColor` にして、グラフのルートの
   // `text-border` を使う。`CartesianGrid` は `className` を線に渡さないため
   <div className="h-80 w-full">
     <ResponsiveContainer height="100%" width="100%">
-      <AreaChart className="text-border" data={data}>
+      <BarChart
+        className="text-border"
+        data={data}
+        margin={{ bottom: 5, left: 0, right: 10, top: 20 }}
+      >
         <CartesianGrid stroke="currentColor" strokeDasharray="3 3" />
         <XAxis
+          axisLine={{ stroke: "currentColor" }}
           dataKey="date"
           tick={{
             className: "text-muted",
@@ -70,39 +111,49 @@ export const VideoStatsChartUI = ({ data }: VideoStatsChartProps) => (
           tickLine={{ stroke: "currentColor" }}
         />
         <YAxis
-          domain={["auto", "auto"]}
+          allowDecimals={false}
+          axisLine={{ stroke: "currentColor" }}
+          domain={DOMAIN}
           tick={{
             className: "text-muted",
             fill: "currentColor",
             fontSize: 12,
           }}
+          tickFormatter={formatChange}
           tickLine={{ stroke: "currentColor" }}
         />
         <Tooltip
           content={
-            <ChartTooltipContent
-              colorItems
-              formatValue={formatValue}
-              series={SERIES}
-            />
+            <ChartTooltipContent formatValue={formatValue} series={SERIES} />
           }
+          // ホバー中の背景。`fill-*` のクラスは SVG の `fill` 属性より優先される
+          cursor={{ className: "fill-muted" }}
+          // 値がない日も、ツールチップで「データなし」と示す
+          filterNull={false}
         />
-        <Legend content={<ChartLegendContent series={SERIES} />} />
-        {SERIES.map((item) => (
-          <Area
-            // ホバー中の点は系列の外に描かれるので、点にも色のクラスを付ける
-            activeDot={{ className: item.className }}
-            className={item.className}
-            dataKey={item.key}
+        {/* 0 の基準線。グリッドの線より濃くする */}
+        <ReferenceLine
+          className="text-muted"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          y={0}
+        />
+        <Bar
+          dataKey="netChange"
+          name="純増減"
+          radius={[4, 4, 0, 0]}
+          shape={ChangeBar}
+        >
+          <LabelList
+            className="text-muted"
+            dataKey="netChange"
             fill="currentColor"
-            fillOpacity={0.15}
-            key={item.key}
-            stackId={item.stackId}
-            stroke="currentColor"
-            type="monotone"
+            fontSize={12}
+            formatter={formatLabel}
+            position="top"
           />
-        ))}
-      </AreaChart>
+        </Bar>
+      </BarChart>
     </ResponsiveContainer>
   </div>
 );
