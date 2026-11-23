@@ -47,9 +47,10 @@ interface ScheduleDependencies {
 /**
  * Streams for the schedule of the public site: 2 on each day of the current
  * week (from Sunday to Saturday in Japan), 1 in each of the previous and the
- * next weeks, and 1 on air now (`getLiveScheduleStart`, so that the hour it
- * is drawn for stays within today). Their status follows the start: `ENDED`
- * before `now` and `UPCOMING` after it.
+ * next weeks, 2 from 23:30 that cross 00:00 (on Thursday, and on Saturday into
+ * the Sunday of the next week), and 1 on air now (`getLiveScheduleStart`, so
+ * that the hour it is drawn for stays within today). Their status follows the
+ * start: `ENDED` before `now` and `UPCOMING` after it.
  */
 export const createScheduleVideos = (
   context: SeedContext,
@@ -72,13 +73,14 @@ export const createScheduleVideos = (
     // 3 more at 21:00 on Wednesday, so 4 streams start at the same time
     ...Array.from({ length: 3 }, () => weekStart.add({ days: 3, hours: 21 })),
   ];
+  const getStatus = (start: Temporal.ZonedDateTime) =>
+    Temporal.ZonedDateTime.compare(start, now) < 0
+      ? ("ENDED" as const)
+      : ("UPCOMING" as const);
   const seeds = [
     ...starts.map((start, index) => ({
       start,
-      status:
-        Temporal.ZonedDateTime.compare(start, now) < 0
-          ? ("ENDED" as const)
-          : ("UPCOMING" as const),
+      status: getStatus(start),
       // The last title is long enough to check that it does not run out of
       // the item
       title:
@@ -86,6 +88,18 @@ export const createScheduleVideos = (
           ? "〖FORKROAD〗右か左かすきなほうをえらんでね【#ななしいんく公式チャンネル同時視聴コラボ】"
           : `${SCHEDULE_TITLES[index % SCHEDULE_TITLES.length]} #${index + 1}`,
     })),
+    // Both an ended stream (for 1.5 hours) and an upcoming one (drawn for an
+    // hour) from 23:30 last past 00:00
+    ...(
+      [
+        [4, "【スケジュール】木曜の深夜配信"],
+        [6, "【スケジュール】土曜の深夜配信"],
+      ] as const
+    ).map(([day, title]) => {
+      const start = weekStart.add({ days: day, hours: 23, minutes: 30 });
+
+      return { start, status: getStatus(start), title };
+    }),
     {
       start: getLiveScheduleStart(now),
       status: "LIVE" as const,
