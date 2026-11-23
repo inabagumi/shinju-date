@@ -1,14 +1,13 @@
 import type { SummaryStats } from "@shinju-date/dashboard-stats";
-import { formatDate } from "@shinju-date/temporal-fns";
 
 import type { HistoricalStatsEntry } from "./get-historical-stats";
 
 /** The count of a day, saved in the snapshot of the day. */
 export interface DailyCount {
-  /** The day to show on the chart (`MM/DD`) */
-  date: string;
   /** The count in the snapshot of the day, or `null` without the snapshot */
   count: number | null;
+  /** The day (ISO 8601, e.g. `2025-11-12`) */
+  day: string;
 }
 
 /**
@@ -26,6 +25,5 @@ export const toDailyCounts = (
 ): DailyCount[] =>
   entries.map(({ day, stats }) => ({
     count: stats?.[key] ?? null,
-    // Use the same MM/DD format as the other screens of the admin UI
-    date: formatDate(Temporal.PlainDate.from(day), { includeYear: false }),
+    day,
   }));

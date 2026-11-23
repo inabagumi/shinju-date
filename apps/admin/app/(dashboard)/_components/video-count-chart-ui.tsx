@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import type { AxisDomain } from "recharts";
 
+import { formatChartDay } from "../_lib/chart-day";
 import type { ChartSeries } from "../_lib/chart-series";
 import type { DailyCount } from "../_lib/daily-counts";
 import { ChartDateAxis } from "./chart-date-axis";
@@ -65,7 +66,10 @@ export const VideoCountChartUI = ({
           margin={{ bottom: 5, left: 0, right: 10, top: 10 }}
         >
           <CartesianGrid stroke="currentColor" strokeDasharray="3 3" />
-          <ChartDateAxis padding={{ left: 20, right: 20 }} />
+          <ChartDateAxis
+            days={data.map(({ day }) => day)}
+            padding={{ left: 20, right: 20 }}
+          />
           <YAxis
             allowDecimals={false}
             axisLine={{ stroke: "currentColor" }}
@@ -84,7 +88,11 @@ export const VideoCountChartUI = ({
           />
           <Tooltip
             content={
-              <ChartTooltipContent formatValue={formatValue} series={series} />
+              <ChartTooltipContent
+                formatLabel={formatChartDay}
+                formatValue={formatValue}
+                series={series}
+              />
             }
             cursor={{ stroke: "currentColor" }}
             // 値がない日も、ツールチップで「データなし」と示す

@@ -1,12 +1,11 @@
 import type { SummaryStats } from "@shinju-date/dashboard-stats";
-import { formatDate } from "@shinju-date/temporal-fns";
 
 import type { HistoricalStatsEntry } from "./get-historical-stats";
 
 /** The net change of a count on a day, compared with the day before. */
 export interface DailyNetChange {
-  /** The day to show on the chart (`MM/DD`) */
-  date: string;
+  /** The day (ISO 8601, e.g. `2025-11-12`) */
+  day: string;
   /**
    * The count at the end of the day minus the count at the end of the day
    * before, or `null` when either of the snapshots is missing
@@ -36,14 +35,14 @@ export const toDailyNetChanges = (
   );
 
   return entries.slice(1).map(({ day }) => {
-    const plainDay = Temporal.PlainDate.from(day);
     const current = countByDay.get(day) ?? null;
     const previous =
-      countByDay.get(plainDay.subtract({ days: 1 }).toString()) ?? null;
+      countByDay.get(
+        Temporal.PlainDate.from(day).subtract({ days: 1 }).toString()
+      ) ?? null;
 
     return {
-      // Use the same MM/DD format as the other screens of the admin UI
-      date: formatDate(plainDay, { includeYear: false }),
+      day,
       netChange:
         current === null || previous === null ? null : current - previous,
     };

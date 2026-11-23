@@ -29,10 +29,10 @@ vi.mock(import("recharts"), async (importOriginal) => {
 const { VideoCountChartUI } = await import("./video-count-chart-ui");
 
 const DATA: DailyCount[] = [
-  { count: 12, date: "11/08" },
-  { count: 0, date: "11/09" },
-  { count: null, date: "11/10" },
-  { count: 14, date: "11/11" },
+  { count: 12, day: "2025-11-08" },
+  { count: 0, day: "2025-11-09" },
+  { count: null, day: "2025-11-10" },
+  { count: 14, day: "2025-11-11" },
 ];
 
 /** Wait for the next frame, where Recharts draws the axes and the tooltip. */
@@ -106,9 +106,9 @@ describe("VideoCountChartUI", () => {
 
   it("scales the axis to the counts, not from 0", async () => {
     renderChart([
-      { count: 30, date: "11/08" },
-      { count: 33, date: "11/09" },
-      { count: 31, date: "11/10" },
+      { count: 30, day: "2025-11-08" },
+      { count: 33, day: "2025-11-09" },
+      { count: 31, day: "2025-11-10" },
     ]);
     await waitForFrame();
 
@@ -125,8 +125,8 @@ describe("VideoCountChartUI", () => {
     "shows the axis around the counts that are %s",
     async (_, count, ticks) => {
       renderChart([
-        { count, date: "11/08" },
-        { count, date: "11/09" },
+        { count, day: "2025-11-08" },
+        { count, day: "2025-11-09" },
       ]);
       await waitForFrame();
 
@@ -162,16 +162,16 @@ describe("VideoCountChartUI", () => {
   );
 
   it.each([
-    [100, "11/08", "配信予定 : 12 本"],
-    [350, "11/09", "配信予定 : 0 本"],
-    [550, "11/10", "配信予定 : データなし"],
-    [780, "11/11", "配信予定 : 14 本"],
-  ])("shows the count at %d in the tooltip", async (clientX, date, item) => {
+    [100, "2025/11/08（土）", "配信予定 : 12 本"],
+    [350, "2025/11/09（日）", "配信予定 : 0 本"],
+    [550, "2025/11/10（月）", "配信予定 : データなし"],
+    [780, "2025/11/11（火）", "配信予定 : 14 本"],
+  ])("shows the count at %d in the tooltip", async (clientX, day, item) => {
     renderChart();
 
     const tooltip = await hover(clientX);
 
-    expect(tooltip).toHaveTextContent(date);
+    expect(tooltip).toHaveTextContent(day);
     const items = tooltip?.querySelectorAll("li") ?? [];
     expect([...items].map((element) => element.textContent)).toStrictEqual([
       item,

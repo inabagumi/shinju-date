@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import type { AxisDomain, BarShapeProps } from "recharts";
 
+import { formatChartDay } from "../_lib/chart-day";
 import type { ChartSeries } from "../_lib/chart-series";
 import type { DailyNetChange } from "../_lib/daily-net-changes";
 import { ChartDateAxis } from "./chart-date-axis";
@@ -67,6 +68,11 @@ const formatLabel = (value: unknown): string =>
   typeof value === "number" ? formatChange(value) : "";
 
 /**
+ * 棒の上に値を書く日数の上限。これより多いと値どうしが重なるので、ツールチップだけで示す
+ */
+const MAX_DAYS_WITH_LABELS = 7;
+
+/**
  * 0 を中心に、正負の両方向を同じ幅で表示する。増減のどちらかしかない日や、
  * すべて 0 の日でも、0 の基準線と正負の目盛りが出る
  */
@@ -100,7 +106,7 @@ export const VideoStatsChartUI = ({ data }: VideoStatsChartProps) => (
         margin={{ bottom: 5, left: 0, right: 10, top: 20 }}
       >
         <CartesianGrid stroke="currentColor" strokeDasharray="3 3" />
-        <ChartDateAxis />
+        <ChartDateAxis days={data.map(({ day }) => day)} />
         <YAxis
           allowDecimals={false}
           axisLine={{ stroke: "currentColor" }}
@@ -117,7 +123,11 @@ export const VideoStatsChartUI = ({ data }: VideoStatsChartProps) => (
         />
         <Tooltip
           content={
-            <ChartTooltipContent formatValue={formatValue} series={SERIES} />
+            <ChartTooltipContent
+              formatLabel={formatChartDay}
+              formatValue={formatValue}
+              series={SERIES}
+            />
           }
           // ホバー中の背景。`fill-*` のクラスは SVG の `fill` 属性より優先される
           cursor={{ className: "fill-muted" }}
@@ -137,14 +147,16 @@ export const VideoStatsChartUI = ({ data }: VideoStatsChartProps) => (
           radius={[4, 4, 0, 0]}
           shape={ChangeBar}
         >
-          <LabelList
-            className="text-muted"
-            dataKey="netChange"
-            fill="currentColor"
-            fontSize={12}
-            formatter={formatLabel}
-            position="top"
-          />
+          {data.length <= MAX_DAYS_WITH_LABELS && (
+            <LabelList
+              className="text-muted"
+              dataKey="netChange"
+              fill="currentColor"
+              fontSize={12}
+              formatter={formatLabel}
+              position="top"
+            />
+          )}
         </Bar>
       </BarChart>
     </ResponsiveContainer>

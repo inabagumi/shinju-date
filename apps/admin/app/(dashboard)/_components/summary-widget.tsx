@@ -1,86 +1,44 @@
-import type { SummaryStats } from "@shinju-date/dashboard-stats";
 import { Skeleton } from "@shinju-date/ui";
 
 import { Panel, PanelSkeleton } from "@/components/panel";
 import { StatTileSkeleton } from "@/components/stat-tile-skeleton";
 
-import { toDailyCounts } from "../_lib/daily-counts";
-import { toDailyNetChanges } from "../_lib/daily-net-changes";
+import {
+  CHART_PERIODS,
+  DEFAULT_CHART_PERIOD,
+  getRequiredSnapshotDays,
+  MAX_CHART_PERIOD,
+} from "../_lib/chart-periods";
 import { getHistoricalStats } from "../_lib/get-historical-stats";
 import { getSummaryStats } from "../_lib/get-summary-stats";
+import {
+  COUNT_CHART_NOTE,
+  COUNT_CHARTS,
+  getCountChartTitle,
+  getNetChangeChartTitle,
+  NET_CHANGE_CHART_DESCRIPTION,
+} from "../_lib/video-summary-charts";
 import {
   getVideoListHref,
   VIDEO_SUMMARY_FILTERS,
 } from "../_lib/video-summary-filters";
 import { StatTileLink } from "./trend-indicator";
-import { VideoCountChartEmpty } from "./video-count-chart-empty";
-import { VideoCountChartUI } from "./video-count-chart-ui";
-import { VideoStatsChartEmpty } from "./video-stats-chart-empty";
-import { VideoStatsChartUI } from "./video-stats-chart-ui";
-
-/** グラフに出す日数 */
-const CHART_DAYS = 7;
-
-/** グラフの見出し */
-const CHART_TITLE = `動画数の日別純増減（${CHART_DAYS.toString(10)}日間）`;
-
-/** グラフの値の説明 */
-const CHART_DESCRIPTION =
-  "各日の終わりの総動画数と、前日の終わりとの差です。削除による減少を含む純増減のため、新規登録数とは一致しません。集計のない日は空欄になります。";
-
-/** 件数の推移を小さなグラフで出す系列 */
-interface CountChart {
-  /** 線の色のクラス。グラフどうしで区別できるようにする */
-  className: string;
-  /** 見出しの下に出す、数えている動画の説明 */
-  description: string;
-  key: keyof SummaryStats;
-  /** ツールチップに出す系列の名前。サマリーカードの名前と揃える */
-  label: string;
-}
-
-/**
- * 総動画数に比べて桁の小さい件数。総動画数と同じ軸に載せると変化が読めないので、
- * それぞれ独立した軸のグラフにする
- */
-const COUNT_CHARTS: CountChart[] = [
-  {
-    className: "text-accent",
-    description: "公開中で、配信前の動画の本数です。",
-    key: "scheduledVideos",
-    label: "配信予定",
-  },
-  {
-    className: "text-warning",
-    description: "非表示にした動画の本数です。削除した動画は含みません。",
-    key: "hiddenVideos",
-    label: "非表示",
-  },
-];
-
-/** 件数のグラフの見出し */
-const getCountChartTitle = ({ label }: CountChart): string =>
-  `${label}の推移（${CHART_DAYS.toString(10)}日間）`;
-
-/** 件数のグラフの値の説明。すべての件数のグラフに共通する */
-const COUNT_CHART_NOTE =
-  "各日の翌日0時過ぎに集計した本数です。今日の本数はグラフに含めず、上のカードに出しています。集計のない日は線が途切れます。";
+import { VideoSummaryCharts } from "./video-summary-charts";
 
 /**
  * VideoSummaryWidget - Displays video statistics with the daily net changes
  * of the total of the videos and the counts of the scheduled and the hidden
- * videos for 7 days.
- * This is an async Server Component that fetches its own data
+ * videos for the period chosen (7 or 30 days).
+ * This is an async Server Component that fetches its own data. The snapshots
+ * of the longest period are read at once, so switching the period does not
+ * read them again.
  */
 export const VideoSummaryWidget = async () => {
-  const [stats, historicalStats] = await Promise.all([
+  const [stats, history] = await Promise.all([
     getSummaryStats(),
     // The day before the first day is the base of the first change
-    getHistoricalStats(CHART_DAYS + 1),
+    getHistoricalStats(getRequiredSnapshotDays(MAX_CHART_PERIOD)),
   ]);
-  const netChanges = toDailyNetChanges(historicalStats, "totalVideos");
-  // The same days as the net changes, without the base of the first change
-  const countEntries = historicalStats.slice(-CHART_DAYS);
 
   return (
     <Panel title="動画サマリー">
@@ -111,47 +69,15 @@ export const VideoSummaryWidget = async () => {
         />
       </div>
 
-      <div className="mt-6">
-        <h3 className="text-body leading-normal font-semibold">
-          {CHART_TITLE}
-        </h3>
-        <p className="mb-3 text-meta text-muted">{CHART_DESCRIPTION}</p>
-        {netChanges.every(({ netChange }) => netChange === null) ? (
-          <VideoStatsChartEmpty />
-        ) : (
-          <VideoStatsChartUI data={netChanges} />
-        )}
-      </div>
-
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {COUNT_CHARTS.map((chart) => {
-          const counts = toDailyCounts(countEntries, chart.key);
-
-          return (
-            <section key={chart.key}>
-              <h3 className="text-body leading-normal font-semibold">
-                {getCountChartTitle(chart)}
-              </h3>
-              <p className="mb-3 text-meta text-muted">{chart.description}</p>
-              {counts.every(({ count }) => count === null) ? (
-                <VideoCountChartEmpty />
-              ) : (
-                <VideoCountChartUI
-                  className={chart.className}
-                  data={counts}
-                  label={chart.label}
-                />
-              )}
-            </section>
-          );
-        })}
-      </div>
-      <p className="mt-3 text-meta text-muted">{COUNT_CHART_NOTE}</p>
+      <VideoSummaryCharts history={history} />
     </Panel>
   );
 };
 
-/** 読み込み中の `VideoSummaryWidget`。4つのタイルと、7日間のグラフの高さを確保する */
+/**
+ * 読み込み中の `VideoSummaryWidget`。4つのタイルと、期間のボタン、最初の期間のグラフの
+ * 高さを確保する
+ */
 export const VideoSummaryWidgetSkeleton = () => (
   <PanelSkeleton title="動画サマリー">
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -160,16 +86,28 @@ export const VideoSummaryWidgetSkeleton = () => (
       <StatTileSkeleton change />
       <StatTileSkeleton change />
     </div>
+    <div className="mt-6 flex flex-wrap items-center gap-2">
+      <span className="text-meta text-muted">グラフの期間</span>
+      <div className="flex gap-2">
+        {CHART_PERIODS.map((period) => (
+          <Skeleton className="h-7 w-24 rounded-control" key={period} />
+        ))}
+      </div>
+    </div>
     <div className="mt-6">
-      <h3 className="text-body leading-normal font-semibold">{CHART_TITLE}</h3>
-      <p className="mb-3 text-meta text-muted">{CHART_DESCRIPTION}</p>
+      <h3 className="text-body leading-normal font-semibold">
+        {getNetChangeChartTitle(DEFAULT_CHART_PERIOD)}
+      </h3>
+      <p className="mb-3 text-meta text-muted">
+        {NET_CHANGE_CHART_DESCRIPTION}
+      </p>
       <Skeleton className="h-80 w-full rounded-container" />
     </div>
     <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
       {COUNT_CHARTS.map((chart) => (
         <section key={chart.key}>
           <h3 className="text-body leading-normal font-semibold">
-            {getCountChartTitle(chart)}
+            {getCountChartTitle(chart, DEFAULT_CHART_PERIOD)}
           </h3>
           <p className="mb-3 text-meta text-muted">{chart.description}</p>
           <Skeleton className="h-48 w-full rounded-container" />

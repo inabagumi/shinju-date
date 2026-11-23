@@ -21,6 +21,10 @@ export interface HistoricalStatsEntry {
  * The last day is yesterday, whose snapshot is the latest one counted as of
  * the end of a day. The counts of today are not mixed in.
  *
+ * The days are read at once, in parallel. `@upstash/redis` sends the reads
+ * made in the same tick in one request (auto-pipelining), so reading the 31
+ * days of the 30-day chart does not make a request for each day.
+ *
  * @param days - Number of days to fetch (default: 7)
  * @returns One entry for each day, ordered from oldest to newest. The days
  * without a snapshot (or with one not in the form of the counts) have `null`.
