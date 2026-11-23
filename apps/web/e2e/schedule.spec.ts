@@ -63,6 +63,65 @@ const getCurrentWeekStart = async (page: Page): Promise<string> => {
   return addDays(previousWeekStart, 7);
 };
 
+/** Scroll the item to the middle of the screen, below the sticky headers */
+const scrollToMiddle = async (item: Locator) => {
+  await item.evaluate((element) => {
+    element.scrollIntoView({ block: "center" });
+  });
+};
+
+/**
+ * Whether the item is the topmost element at the point (relative to its top
+ * left corner), so that the pointer reaches it there
+ */
+const isTopmostAt = (item: Locator, x: number, y: number): Promise<boolean> =>
+  item.evaluate(
+    (element, point) => {
+      const { left, top } = element.getBoundingClientRect();
+
+      return (
+        document
+          .elementFromPoint(left + point.x, top + point.y)
+          ?.closest('[data-testid="schedule-item"]') === element
+      );
+    },
+    { x, y }
+  );
+
+/** Whether the item is the topmost element at its center */
+const isTopmostAtCenter = (item: Locator): Promise<boolean> =>
+  item.evaluate((element) => {
+    const { height, left, top, width } = element.getBoundingClientRect();
+
+    return (
+      document
+        .elementFromPoint(left + width / 2, top + height / 2)
+        ?.closest('[data-testid="schedule-item"]') === element
+    );
+  });
+
+/**
+ * Open the schedule of the current week on a wide screen, where 4 streams
+ * start at 21:00 on Wednesday, and scroll to them
+ */
+const openWednesdayAt21 = async (page: Page) => {
+  await page.setViewportSize({ height: 900, width: 1280 });
+  await page.goto("/schedule");
+  await expect(getItems(page).first()).toBeVisible();
+
+  // Weeks start on Sunday
+  const day = getDays(page).nth(3);
+  const items = day.locator('[data-start="21:00"]');
+
+  await expect(items).toHaveCount(4);
+  await scrollToMiddle(items.first());
+
+  return { day, items };
+};
+
+/** The narrowest an item can be (`OVERLAP_FRONT_MIN_WIDTH`) */
+const MIN_ITEM_WIDTH = 80;
+
 const expectNotFound = async (page: Page) => {
   await expect(
     page.getByRole("heading", { level: 1, name: "ページが見つかりません" })
@@ -186,36 +245,76 @@ test.describe("Schedule page", () => {
     expect(Math.round(itemBox?.height ?? 0)).toBe(96);
   });
 
-  test("should put the videos that overlap side by side", async ({ page }) => {
+  test("should give the whole width of the day to a video that overlaps nothing", async ({
+    page,
+  }) => {
     await page.setViewportSize({ height: 900, width: 1280 });
     await page.goto("/schedule");
     await expect(getItems(page).first()).toBeVisible();
 
-    // 4 streams start at 21:00 on Wednesday of the current week
-    // Weeks start on Sunday
-    const wednesday = getDays(page).nth(3);
-    const items = wednesday.locator('[data-start="21:00"]');
+    // Only 1 stream starts at 21:00 on Sunday of the current week
+    const sunday = getDays(page).first();
+    const placement = sunday.locator("li").filter({
+      has: page.locator('[data-start="21:00"]'),
+    });
 
-    await expect(items).toHaveCount(4);
+    await expect(placement).toHaveCount(1);
+    await expect(placement).toHaveAttribute("data-columns", "1");
 
+    const body = await sunday.locator("ul").boundingBox();
+    const box = await placement.boundingBox();
+
+    expect(box?.x).toBe(body?.x);
+    expect(box?.width).toBe(body?.width);
+  });
+
+  test("should overlap the videos that start at the same time", async ({
+    page,
+  }) => {
+    const { day, items } = await openWednesdayAt21(page);
     const itemList = await items.all();
     const boxes = await Promise.all(itemList.map((item) => item.boundingBox()));
+    const lefts = boxes.map((box) => box?.x ?? -1);
 
     expect(new Set(boxes.map((box) => Math.round(box?.y ?? -1))).size).toBe(1);
-    expect(new Set(boxes.map((box) => Math.round(box?.x ?? -1))).size).toBe(4);
+    // Shifted to the right in turn, not split into 4 narrow columns
+    expect(new Set(lefts.map(Math.round)).size).toBe(4);
+    expect(lefts).toEqual(lefts.toSorted((a, b) => a - b));
 
-    // Hovering an item expands it to the right, keeping its left edge and the
-    // place of its icon, and shows the whole title
+    const dayBox = await day.boundingBox();
+    const dayWidth = dayBox?.width ?? 0;
+    const dayRight = Math.round(getRightEdge(dayBox) - 4);
+
+    for (const box of boxes) {
+      expect(box?.width ?? 0).toBeGreaterThan(dayWidth / 4);
+      expect(box?.width ?? 0).toBeGreaterThanOrEqual(MIN_ITEM_WIDTH - 2);
+      // Every item reaches the right end of the day
+      expect(Math.round(getRightEdge(box))).toBeGreaterThanOrEqual(dayRight);
+    }
+
+    // The ones behind still show their left edge, where the pointer reaches
+    const reachable = await Promise.all(
+      itemList.map((item) => isTopmostAt(item, 2, 10))
+    );
+
+    expect(reachable).toEqual(itemList.map(() => true));
+  });
+
+  test("should bring an overlapped video to the front", async ({ page }) => {
+    const { items } = await openWednesdayAt21(page);
+
+    // Hovering an item brings it to the front, expands it to the right,
+    // keeping its left edge and the place of its icon, and shows the whole
+    // title
     const item = items.nth(1);
     const icon = item.locator('[data-testid^="talent-"]');
-    // Scroll first, as hovering scrolls the item into view
-    await item.scrollIntoViewIfNeeded();
 
-    const dayBox = await wednesday.boundingBox();
+    expect(await isTopmostAtCenter(item)).toBeFalsy();
+
     const itemBefore = await item.boundingBox();
     const iconBefore = await icon.boundingBox();
 
-    await item.hover();
+    await item.hover({ position: { x: 2, y: 10 } });
 
     const itemAfter = await item.boundingBox();
     const iconAfter = await icon.boundingBox();
@@ -224,10 +323,7 @@ test.describe("Schedule page", () => {
     expect(itemAfter?.y).toBe(itemBefore?.y);
     expect(iconAfter).toEqual(iconBefore);
     expect(itemAfter?.width ?? 0).toBeGreaterThan(itemBefore?.width ?? 0);
-    // At least to the right end of the day
-    expect(Math.round(getRightEdge(itemAfter))).toBeGreaterThanOrEqual(
-      Math.round(getRightEdge(dayBox) - 4)
-    );
+    expect(await isTopmostAtCenter(item)).toBeTruthy();
 
     // The shadow is on the item itself, so the parts match
     const placement = item.locator("xpath=..");
@@ -240,16 +336,16 @@ test.describe("Schedule page", () => {
     await page.mouse.move(0, 0);
 
     const first = items.first();
-
-    await first.scrollIntoViewIfNeeded();
-
     const firstBefore = await first.boundingBox();
+
+    expect(await isTopmostAtCenter(first)).toBeFalsy();
 
     await first.focus();
 
     const firstAfter = await first.boundingBox();
 
     expect(firstAfter?.width ?? 0).toBeGreaterThan(firstBefore?.width ?? 0);
+    expect(await isTopmostAtCenter(first)).toBeTruthy();
   });
 
   test("should show a stream that crosses 00:00 on the next day too", async ({
@@ -308,6 +404,111 @@ test.describe("Schedule page", () => {
         .filter({ hasText: SATURDAY_NIGHT_TITLE })
     ).toHaveAttribute("data-continued", "true");
   });
+
+  for (const width of [1024, 1280]) {
+    test(`should expand a video on Saturday to the left inside the week (${width}px)`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ height: 900, width });
+      await page.goto("/schedule");
+      await expect(getItems(page).first()).toBeVisible();
+
+      // Weeks end on Saturday, so there is no room on the right of the day
+      const saturday = getDays(page).nth(6);
+      const item = saturday.locator('[data-start="21:00"]');
+
+      await expect(item).toHaveCount(1);
+      await scrollToMiddle(item);
+
+      const dayBox = await saturday.boundingBox();
+      const before = await item.boundingBox();
+
+      await item.hover();
+
+      const after = await item.boundingBox();
+
+      // As wide as when there is room on the right (14rem, less the gap on the
+      // right of the item), keeping the right edge inside the week
+      expect(after?.width ?? 0).toBeGreaterThanOrEqual(14 * 16 - 2);
+      expect(after?.width ?? 0).toBeGreaterThan(before?.width ?? 0);
+      expect(after?.x ?? 0).toBeLessThan(before?.x ?? 0);
+      expect(Math.round(getRightEdge(after))).toBeLessThanOrEqual(
+        Math.round(getRightEdge(dayBox))
+      );
+      // The pointer is still on the item, so it stays expanded
+      await expect(item.getByTestId("schedule-item-tags")).toBeVisible();
+      expect(await isTopmostAtCenter(item)).toBeTruthy();
+      await expectNoHorizontalScroll(page);
+    });
+  }
+
+  for (const width of [1024, 1280]) {
+    test(`should keep the crowded videos readable and reachable (${width}px)`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ height: 900, width });
+      await page.goto("/schedule");
+      await expect(getItems(page).first()).toBeVisible();
+
+      // 8 streams start on Thursday of the current week from 20:00 every 5
+      // minutes, and 1 more at 21:00
+      const thursday = getDays(page).nth(4);
+      const starts = [
+        ...Array.from(
+          { length: 8 },
+          (_, index) => `20:${(index * 5).toString().padStart(2, "0")}`
+        ),
+        "21:00",
+      ];
+      const items = await Promise.all(
+        starts.map(async (start) => {
+          const item = thursday.locator(`[data-start="${start}"]`);
+
+          await expect(item).toHaveCount(1);
+
+          return item;
+        })
+      );
+      const [first] = items;
+
+      if (!first) {
+        throw new Error("No item");
+      }
+
+      await scrollToMiddle(first);
+
+      const boxes = await Promise.all(items.map((item) => item.boundingBox()));
+      const lefts = boxes.slice(0, 8).map((box) => box?.x ?? -1);
+
+      // The ones from 20:00 are shifted to the right in turn
+      expect(lefts).toEqual(lefts.toSorted((a, b) => a - b));
+      expect(new Set(lefts.map(Math.round)).size).toBe(8);
+
+      // Wide enough for the icon and the start time, and not to stack the
+      // letters of the title one by one
+      for (const box of boxes) {
+        expect(box?.width ?? 0).toBeGreaterThanOrEqual(MIN_ITEM_WIDTH - 2);
+      }
+
+      // The pointer reaches every item at the top of its left edge
+      const reachable = await Promise.all(
+        items.map((item) => isTopmostAt(item, 2, 2))
+      );
+
+      expect(reachable).toEqual(items.map(() => true));
+
+      // The one that starts last is in front of the ones before it
+      expect(await isTopmostAtCenter(items[8] ?? first)).toBeTruthy();
+
+      // Even the one at the back comes to the front when hovered
+      expect(await isTopmostAtCenter(first)).toBeFalsy();
+
+      await first.hover({ position: { x: 2, y: 2 } });
+
+      await expect(first.getByTestId("schedule-item-tags")).toBeVisible();
+      expect(await isTopmostAtCenter(first)).toBeTruthy();
+    });
+  }
 
   test("should keep every item inside the column of its day", async ({
     page,

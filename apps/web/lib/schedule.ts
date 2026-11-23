@@ -212,9 +212,13 @@ export const getDayParts = (video: PlacedVideo): ScheduleDayPart[] => {
 };
 
 export interface ScheduleLayout<T> {
-  /** The column of the item among the overlapping items, from 0 */
+  /**
+   * The column of the item among the overlapping items, from 0. The schedule
+   * shifts the item to the right by its column. The items that start at the
+   * same time get the columns in their order
+   */
   column: number;
-  /** How many columns the overlapping items share */
+  /** How many columns the overlapping items take */
   columns: number;
   /** Whether the item started on an earlier day, and the part is from 00:00 */
   continued: boolean;
@@ -232,8 +236,9 @@ export interface ScheduleLayout<T> {
  * as a calendar does: each starts at its start time (00:00 for the videos
  * from earlier days) and is as long as the part (at least
  * `MIN_LENGTH_MINUTES`, and cut at the end of the day). The videos without a
- * part on the day are left out. The parts that overlap share the width of the
- * day side by side, whether the videos start on the day or not.
+ * part on the day are left out. The parts that overlap get different columns,
+ * so that the schedule can shift them from each other, whether the videos
+ * start on the day or not.
  */
 export const layoutDay = <T extends PlacedVideo>(
   videos: readonly T[],
