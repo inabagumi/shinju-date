@@ -1,8 +1,11 @@
 import { REDIS_KEYS } from "@shinju-date/constants";
 import { describe, expect, it } from "vitest";
 
-import { createRedisDataFactory } from "./redis-factory.js";
-import type { SortedSetItem } from "./redis-factory.js";
+import {
+  createRedisDataFactory,
+  createSummarySnapshots,
+} from "./redis-factory.js";
+import type { SortedSetItem, SummarySnapshot } from "./redis-factory.js";
 
 const videos = [
   { id: "video-1", talent_id: "talent-1" },
@@ -81,5 +84,70 @@ describe(createRedisDataFactory, () => {
 
     expect(store.has(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}20260301`)).toBeFalsy();
     expect(store.has(`${REDIS_KEYS.CLICK_CHANNEL_PREFIX}20260301`)).toBeFalsy();
+  });
+});
+
+describe(createSummarySnapshots, () => {
+  const current: SummarySnapshot = {
+    deletedVideos: 2,
+    hiddenVideos: 3,
+    scheduledVideos: 4,
+    totalTalents: 5,
+    totalTerms: 6,
+    totalVideos: 100,
+    visibleVideos: 93,
+  };
+  const store = createSummarySnapshots(current, {
+    today: Temporal.PlainDate.from("2026-03-02"),
+  });
+  const totalVideosOf = (dateKey: string): number | undefined =>
+    store.get(`${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`)?.totalVideos;
+
+  it("creates the snapshots of 8 days up to yesterday, except for one", () => {
+    expect([...store.keys()]).toStrictEqual(
+      [
+        "20260301",
+        "20260228",
+        "20260227",
+        // 20260226 has no snapshot
+        "20260225",
+        "20260224",
+        "20260223",
+        "20260222",
+      ].map((dateKey) => `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`)
+    );
+  });
+
+  it("gives yesterday the current counts", () => {
+    expect(
+      store.get(`${REDIS_KEYS.SUMMARY_STATS_PREFIX}20260301`)
+    ).toStrictEqual(current);
+  });
+
+  it("changes the total by an increase, a decrease and no change", () => {
+    expect(
+      [
+        "20260222",
+        "20260223",
+        "20260224",
+        "20260225",
+        "20260227",
+        "20260228",
+        "20260301",
+      ].map(totalVideosOf)
+    ).toStrictEqual([87, 91, 89, 89, 97, 98, 100]);
+  });
+
+  it("changes the public videos with the total and keeps the others", () => {
+    for (const snapshot of store.values()) {
+      expect(snapshot.totalVideos - snapshot.visibleVideos).toBe(7);
+      expect(snapshot).toMatchObject({
+        deletedVideos: 2,
+        hiddenVideos: 3,
+        scheduledVideos: 4,
+        totalTalents: 5,
+        totalTerms: 6,
+      });
+    }
   });
 });
