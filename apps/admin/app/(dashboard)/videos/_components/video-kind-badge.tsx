@@ -5,6 +5,7 @@ import type { BadgeProps } from "@shinju-date/ui";
 const VIDEO_KIND_LABELS: Record<Enums<"video_kind">, string> = {
   short: "ショート",
   standard: "通常",
+  stream: "配信",
 };
 
 const VIDEO_KIND_VARIANTS: Record<
@@ -13,6 +14,7 @@ const VIDEO_KIND_VARIANTS: Record<
 > = {
   short: "info",
   standard: "neutral",
+  stream: "info",
 };
 
 interface VideoKindBadgeProps {

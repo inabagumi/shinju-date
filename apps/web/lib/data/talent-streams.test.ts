@@ -243,7 +243,9 @@ describe("lib/data/talent-streams", () => {
 
     it("returns the starts of the finished streams of the talent for 90 days before today", async () => {
       await seedVideos([
-        ended("2026-11-13T13:00:00Z"),
+        ended("2026-11-13T13:00:00Z", { video_kind: "stream" }),
+        // A stream that the scraper has not given the kind yet
+        ended("2026-11-12T13:00:00Z"),
         // From 0:00 in Japan 90 days before today
         ended("2026-08-16T15:00:00Z"),
         ended("2026-08-16T14:59:59Z"),
@@ -261,6 +263,7 @@ describe("lib/data/talent-streams", () => {
       await expect(fetchTalentStreamStarts(talent.id)).resolves.toStrictEqual([
         "2026-11-14T14:59:59Z",
         "2026-11-13T13:00:00Z",
+        "2026-11-12T13:00:00Z",
         "2026-08-16T15:00:00Z",
       ]);
     });

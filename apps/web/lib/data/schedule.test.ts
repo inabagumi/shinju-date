@@ -74,16 +74,28 @@ describe("lib/data/schedule", () => {
   });
 
   describe(fetchScheduleVideos, () => {
-    it("returns the standard videos of every status from Sunday to Saturday in Japan, by start", async () => {
+    it("returns the streams and the videos (not shorts) of every status from Sunday to Saturday in Japan, by start", async () => {
       // 00:00 on Sunday, 8 November in Japan
-      const first = video("2026-11-07T15:00:00Z", { status: "ENDED" });
+      const first = video("2026-11-07T15:00:00Z", {
+        status: "ENDED",
+        video_kind: "stream",
+      });
       const published = video("2026-11-09T12:00:00Z", { status: "PUBLISHED" });
-      const live = video("2026-11-12T12:00:00Z", { status: "LIVE" });
-      const last = video("2026-11-14T14:59:59Z", { status: "UPCOMING" });
+      // A stream that the scraper has not given the kind yet
+      const ended = video("2026-11-11T12:00:00Z", { status: "ENDED" });
+      const live = video("2026-11-12T12:00:00Z", {
+        status: "LIVE",
+        video_kind: "stream",
+      });
+      const last = video("2026-11-14T14:59:59Z", {
+        status: "UPCOMING",
+        video_kind: "stream",
+      });
 
       await seedVideos([
         last,
         live,
+        ended,
         first,
         published,
         // 23:00 on Saturday, 7 November in Japan, for an hour until 24:00
@@ -96,6 +108,7 @@ describe("lib/data/schedule", () => {
       expect(ids(await fetchScheduleVideos("2026-11-08"))).toStrictEqual([
         first.video.id,
         published.video.id,
+        ended.video.id,
         live.video.id,
         last.video.id,
       ]);

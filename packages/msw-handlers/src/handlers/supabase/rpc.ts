@@ -69,7 +69,7 @@ interface SearchVideosParams {
   p_query?: string;
   p_talent_ids?: string[];
   p_until?: string;
-  p_video_kinds?: ("short" | "standard")[] | null;
+  p_video_kinds?: Tables<"videos">["video_kind"][] | null;
 }
 
 /**
