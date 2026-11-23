@@ -16,8 +16,13 @@ export const PUBLIC_VIDEO_STATUSES = [
 
 export interface CountSummaryStatsOptions {
   /**
-   * Count the rows as they were at this moment: rows created before it and
+   * Count the rows that existed at this moment: rows created before it and
    * not deleted by then. When omitted, the rows are counted as they are now.
+   *
+   * Only the creation and the deletion are turned back. The visibility and
+   * the status of a video have no history, so the videos are split by their
+   * values when counted (`visibleVideos`, `scheduledVideos` and
+   * `hiddenVideos`), not by those at `asOf`.
    */
   asOf?: Temporal.Instant | undefined;
 }
@@ -88,7 +93,8 @@ const unwrapCount = async (
  * difference between them is a change of the rows themselves.
  *
  * Terms are deleted for good, so the count at `asOf` leaves out only the terms
- * created after it.
+ * created after it. The visibility and the status of the videos are those
+ * when counted, even with `asOf` (see {@link CountSummaryStatsOptions.asOf}).
  */
 export const countSummaryStats = async (
   supabaseClient: SupabaseClient<Database>,

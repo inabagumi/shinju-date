@@ -77,7 +77,9 @@ const analyticsSummary: AnalyticsSummary = {
   totalPopularKeywords: 25,
 };
 
-const SNAPSHOT_TTL_SECONDS = 30 * 24 * 60 * 60;
+// Written out here, so that a change of the TTLs in the package fails here
+const SUMMARY_SNAPSHOT_TTL_SECONDS = 45 * 24 * 60 * 60;
+const ANALYTICS_SNAPSHOT_TTL_SECONDS = 30 * 24 * 60 * 60;
 
 /** Run the route as if it is `instant` now. */
 const runAt = async (instant: string): Promise<Response> => {
@@ -137,6 +139,61 @@ describe("stats/snapshot route", () => {
     });
   });
 
+  describe("day boundaries", () => {
+    it.each([
+      // 2025-11-13 00:00:00 JST, the first moment of the day
+      [
+        "at the start of a day",
+        "2025-11-12T15:00:00Z",
+        "20251112",
+        "2025-11-12T15:00:00Z",
+      ],
+      // 2025-11-13 23:59:59.999 JST, the last moment of the day
+      [
+        "at the end of a day",
+        "2025-11-13T14:59:59.999Z",
+        "20251112",
+        "2025-11-12T15:00:00Z",
+      ],
+      // 2025-11-12 23:59:59.999 JST, just before the boundary above
+      [
+        "just before a day starts",
+        "2025-11-12T14:59:59.999Z",
+        "20251111",
+        "2025-11-11T15:00:00Z",
+      ],
+      // 2026-01-01 00:10 JST
+      [
+        "across a year",
+        "2025-12-31T15:10:00Z",
+        "20251231",
+        "2025-12-31T15:00:00Z",
+      ],
+      // 2028-03-01 00:10 JST
+      [
+        "after a leap day",
+        "2028-02-29T15:10:00Z",
+        "20280229",
+        "2028-02-29T15:00:00Z",
+      ],
+    ])("saves the previous day %s", async (_, instant, dateKey, asOf) => {
+      await runAt(instant);
+
+      expect(mockCountSummaryStats).toHaveBeenCalledWith(mockSupabaseClient, {
+        asOf: Temporal.Instant.from(asOf),
+      });
+      expect(mockCollectAnalyticsSummary).toHaveBeenCalledWith(
+        mockRedisClient,
+        dateKey
+      );
+      expect(mockRedisClient.set).toHaveBeenCalledWith(
+        `summary:stats:${dateKey}`,
+        summaryStats,
+        { ex: SUMMARY_SNAPSHOT_TTL_SECONDS }
+      );
+    });
+  });
+
   describe("snapshots", () => {
     it("saves the counts and the analytics under the keys of the day", async () => {
       await runAt("2025-11-12T15:05:00Z");
@@ -145,13 +202,24 @@ describe("stats/snapshot route", () => {
       expect(mockRedisClient.set).toHaveBeenCalledWith(
         "summary:stats:20251112",
         summaryStats,
-        { ex: SNAPSHOT_TTL_SECONDS }
+        { ex: SUMMARY_SNAPSHOT_TTL_SECONDS }
       );
       expect(mockRedisClient.set).toHaveBeenCalledWith(
         "summary:analytics:20251112",
         analyticsSummary,
-        { ex: SNAPSHOT_TTL_SECONDS }
+        { ex: ANALYTICS_SNAPSHOT_TTL_SECONDS }
       );
+    });
+
+    // The day is left without the snapshots (a missing day on the dashboard),
+    // rather than with the counts but without the analytics
+    it("saves neither snapshot when the analytics cannot be collected", async () => {
+      mockCollectAnalyticsSummary.mockRejectedValue(new Error("Redis error"));
+
+      const response = await runAt("2025-11-12T15:05:00Z");
+
+      expect(response.status).toBe(500);
+      expect(mockRedisClient.set).not.toHaveBeenCalled();
     });
   });
 

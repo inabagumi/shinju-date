@@ -17,8 +17,10 @@ export const maxDuration = 60;
 
 export const POST = async (request: Request): Promise<Response> =>
   await runCronJob(request, STATS_SNAPSHOT_JOB, async () => {
-    // The target is the previous day in Japan, counted as of its end (the
-    // start of today).
+    // The target is the previous day in Japan. The rows are those that existed
+    // at its end (the start of today), but the visibility and the status of
+    // the videos are those when this job runs (about 0:10), as they have no
+    // history.
     const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE);
     const previousDay = now.subtract({ days: 1 });
     const asOf = now.startOfDay().toInstant();
