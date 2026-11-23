@@ -160,39 +160,111 @@ export const getLengthMinutes = (video: PlacedVideo): number => {
   return DEFAULT_LENGTH_MINUTES;
 };
 
+/**
+ * The most days a video is drawn on: the day it starts on and the 2 days
+ * after it, which a stream of more than 24 hours (such as one for 30 hours
+ * from 20:00) covers. The part after them is cut, so the schedule of a week
+ * fetches the videos from 2 days before the week (`fetchScheduleVideos`).
+ */
+export const MAX_SCHEDULE_DAYS = 3;
+
+export interface ScheduleDayPart {
+  /** The day of the part, in `TIME_ZONE` */
+  date: Temporal.PlainDate;
+  /** When the part ends, in minutes from 00:00 of the day (at most 24:00) */
+  end: number;
+  /** When the part starts, in minutes from 00:00 of the day */
+  start: number;
+}
+
+/**
+ * The parts of the video on each day it is drawn on, from the day it starts
+ * on. It lasts as long as `getLengthMinutes` from its start, and a video that
+ * crosses 00:00 in `TIME_ZONE` has a part from 00:00 on each day after it, up
+ * to `MAX_SCHEDULE_DAYS` days.
+ */
+export const getDayParts = (video: PlacedVideo): ScheduleDayPart[] => {
+  const startAt = Temporal.Instant.from(video.published_at).toZonedDateTimeISO(
+    TIME_ZONE
+  );
+  const startDate = startAt.toPlainDate();
+  const start = startAt.hour * 60 + startAt.minute;
+  const end = start + getLengthMinutes(video);
+  const parts: ScheduleDayPart[] = [];
+
+  for (let day = 0; day < MAX_SCHEDULE_DAYS; day += 1) {
+    const dayStart = day * MINUTES_IN_DAY;
+
+    // The days after the start have a part only when the video lasts past
+    // 00:00 of the day
+    if (day > 0 && end <= dayStart) {
+      break;
+    }
+
+    parts.push({
+      date: startDate.add({ days: day }),
+      end: Math.min(end - dayStart, MINUTES_IN_DAY),
+      start: Math.max(start - dayStart, 0),
+    });
+  }
+
+  return parts;
+};
+
 export interface ScheduleLayout<T> {
   /** The column of the item among the overlapping items, from 0 */
   column: number;
   /** How many columns the overlapping items share */
   columns: number;
+  /** Whether the item started on an earlier day, and the part is from 00:00 */
+  continued: boolean;
+  /** Whether the item lasts past the end of the day, on the next day */
+  continues: boolean;
   item: T;
-  /** How long the item is drawn, in minutes (cut at the end of the day) */
+  /** How long the part is drawn, in minutes (cut at the end of the day) */
   length: number;
-  /** When the item starts, in minutes from 00:00 in `TIME_ZONE` */
+  /** When the part starts, in minutes from 00:00 in `TIME_ZONE` */
   start: number;
 }
 
 /**
- * Place the videos of a day on the time axis, as a calendar does: each starts
- * at its start time and is as long as `getLengthMinutes` (at least
- * `MIN_LENGTH_MINUTES`, and cut at the end of the day). The videos that
- * overlap share the width of the day side by side.
+ * Place the parts of the videos on `date` (`getDayParts`) on the time axis,
+ * as a calendar does: each starts at its start time (00:00 for the videos
+ * from earlier days) and is as long as the part (at least
+ * `MIN_LENGTH_MINUTES`, and cut at the end of the day). The videos without a
+ * part on the day are left out. The parts that overlap share the width of the
+ * day side by side, whether the videos start on the day or not.
  */
 export const layoutDay = <T extends PlacedVideo>(
-  videos: readonly T[]
+  videos: readonly T[],
+  date: Temporal.PlainDate
 ): ScheduleLayout<T>[] => {
   const placed = videos
-    .map((item) => {
-      const startAt = Temporal.Instant.from(
-        item.published_at
-      ).toZonedDateTimeISO(TIME_ZONE);
-      const start = startAt.hour * 60 + startAt.minute;
+    .flatMap((item) => {
+      const parts = getDayParts(item);
+      const index = parts.findIndex((part) => part.date.equals(date));
+      const part = parts[index];
+
+      if (!part) {
+        return [];
+      }
+
       const length = Math.min(
-        Math.max(getLengthMinutes(item), MIN_LENGTH_MINUTES),
-        MINUTES_IN_DAY - start
+        Math.max(part.end - part.start, MIN_LENGTH_MINUTES),
+        MINUTES_IN_DAY - part.start
       );
 
-      return { column: 0, columns: 1, item, length, start };
+      return [
+        {
+          column: 0,
+          columns: 1,
+          continued: index > 0,
+          continues: index < parts.length - 1,
+          item,
+          length,
+          start: part.start,
+        },
+      ];
     })
     .toSorted((a, b) => a.start - b.start || b.length - a.length);
 

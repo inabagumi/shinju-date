@@ -1,5 +1,6 @@
 import { TIME_ZONE } from "@shinju-date/constants";
 import {
+  formatDate,
   formatDateTimeWithSeconds,
   formatTime,
 } from "@shinju-date/temporal-fns";
@@ -63,6 +64,13 @@ export const getTitleLines = (lengthMinutes: number): number => {
 
 interface ScheduleItemProps {
   /**
+   * 前の日から続く配信の、0:00 からの部分か。開始時刻に日付を付け、続きで
+   * あることがわかるようにする
+   */
+  continued?: boolean | undefined;
+  /** 次の日の列に続く部分か（1024px 以上で、下の角を丸めない） */
+  continues?: boolean | undefined;
+  /**
    * 1024px 以上でタイトルを出す行数（`getTitleLines`）。省略すると2行まで。
    * 広げたときは行数にかかわらず全文を出す
    */
@@ -81,11 +89,20 @@ interface ScheduleItemProps {
  * 文字の位置はずれない。広げたときは、浮いて見えるよう影を付けて、タイトルを
  * 全文出す。
  *
+ * 0時をまたぐ配信は、開始日と次の日の列に分けて置く（`layoutDay`）。次の日の
+ * 部分（`continued`）は、開始時刻に日付を付けて「11/09 23:00〜」と出す。
+ * 1024px 以上では、分けた部分の境目の角を丸めず、続いていることを示す。
+ *
  * 左端の線はタレントのテーマカラーにする。任意の色なのでコントラスト比を
  * 保証できないため、文字の色や文字の地には使わない。未設定や `#RRGGBB` でない
  * 値のときは `border-border` の色にする。
  */
-export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
+export default function ScheduleItem({
+  continued = false,
+  continues = false,
+  titleLines,
+  value,
+}: ScheduleItemProps) {
   const href = getVideoUrl(value);
 
   if (!href) {
@@ -114,9 +131,14 @@ export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
         // 広げたときは、浮いて見えるよう影を付ける（地の色は変えない）。影は
         // 項目そのものに付け、項目と影の大きさをそろえる
         "lg:group-focus-within/item:shadow-overlay lg:group-hover/item:shadow-overlay",
-        themeColor ? "border-l-(--talent-color)" : "border-l-border"
+        themeColor ? "border-l-(--talent-color)" : "border-l-border",
+        // 日をまたいで分けた部分の境目
+        continued && "lg:rounded-t-none",
+        continues && "lg:rounded-b-none"
       )}
-      data-start={formatTime(startAt)}
+      data-continued={continued || undefined}
+      // その日の列で置く位置の時刻。前の日から続く部分は 0:00 から置く
+      data-start={continued ? "00:00" : formatTime(startAt)}
       data-testid="schedule-item"
       href={href}
       ping="/api/ping"
@@ -137,8 +159,17 @@ export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
           dateTime={startAt.toString({ timeZoneName: "never" })}
           title={formatDateTimeWithSeconds(startAt)}
         >
-          {formatTime(startAt)}
+          {continued
+            ? `${formatDate(startAt, { includeYear: false })} ${formatTime(startAt)}`
+            : formatTime(startAt)}
         </time>
+
+        {/* 前の日の開始時刻から続いていることを示す */}
+        {continued && (
+          <span className="-ml-1.5 shrink-0 text-meta leading-5 font-bold">
+            〜
+          </span>
+        )}
 
         {value.status === "LIVE" && (
           <LiveBadge className="shrink-0" size="compact" />

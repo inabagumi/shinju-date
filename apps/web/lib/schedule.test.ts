@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   formatWeekRange,
+  getDayParts,
   getLengthMinutes,
   getSchedulePath,
   getScheduleWeekRange,
@@ -204,16 +205,17 @@ describe(getLengthMinutes, () => {
   });
 });
 
-// 21:00 on 9 November 2026 in Japan
+// At `time` on `day` November 2026 in Japan (9 November, a Monday, by default)
 const video = (
   id: string,
   time: string,
   duration = "P0D",
-  status = "UPCOMING"
+  status = "UPCOMING",
+  day = 9
 ) => {
   const [hour = 0, minute = 0] = time.split(":").map(Number);
   const publishedAt = Temporal.ZonedDateTime.from({
-    day: 9,
+    day,
     hour,
     minute,
     month: 11,
@@ -234,10 +236,77 @@ const summarize = (layouts: ScheduleLayout<ReturnType<typeof video>>[]) =>
     ])
   );
 
+const MONDAY = date("2026-11-09");
+const TUESDAY = date("2026-11-10");
+const WEDNESDAY = date("2026-11-11");
+
+const summarizeParts = (parts: ReturnType<typeof getDayParts>) =>
+  parts.map((part) => ({ ...part, date: part.date.toString() }));
+
+describe(getDayParts, () => {
+  it("should have a single part for a video within the day", () => {
+    expect(
+      summarizeParts(getDayParts(video("a", "21:30", "PT2H", "ENDED")))
+    ).toStrictEqual([
+      { date: "2026-11-09", end: 23 * 60 + 30, start: 21 * 60 + 30 },
+    ]);
+  });
+
+  it("should not have a part on the next day for a video that ends at 24:00", () => {
+    expect(getDayParts(video("a", "23:00", "P0D", "UPCOMING"))).toHaveLength(1);
+  });
+
+  it("should split a video that crosses 00:00 into the days", () => {
+    expect(
+      summarizeParts(getDayParts(video("a", "23:00", "PT2H30M", "ENDED")))
+    ).toStrictEqual([
+      { date: "2026-11-09", end: 24 * 60, start: 23 * 60 },
+      { date: "2026-11-10", end: 90, start: 0 },
+    ]);
+  });
+
+  it("should split a live stream for the hour it is drawn for", () => {
+    expect(
+      summarizeParts(getDayParts(video("a", "23:30", "P0D", "LIVE")))
+    ).toStrictEqual([
+      { date: "2026-11-09", end: 24 * 60, start: 23 * 60 + 30 },
+      { date: "2026-11-10", end: 30, start: 0 },
+    ]);
+  });
+
+  it("should split a video over the end of the week", () => {
+    // From Saturday, 14 November to Sunday, 15 November
+    expect(
+      summarizeParts(getDayParts(video("a", "23:00", "PT2H", "ENDED", 14)))
+    ).toStrictEqual([
+      { date: "2026-11-14", end: 24 * 60, start: 23 * 60 },
+      { date: "2026-11-15", end: 60, start: 0 },
+    ]);
+  });
+
+  it("should draw a video for 3 days at most", () => {
+    expect(
+      summarizeParts(getDayParts(video("a", "20:00", "PT30H", "ENDED")))
+    ).toStrictEqual([
+      { date: "2026-11-09", end: 24 * 60, start: 20 * 60 },
+      { date: "2026-11-10", end: 24 * 60, start: 0 },
+      { date: "2026-11-11", end: 2 * 60, start: 0 },
+    ]);
+    // The part after the 3 days is cut
+    expect(
+      summarizeParts(getDayParts(video("a", "20:00", "PT72H", "ENDED")))
+    ).toStrictEqual([
+      { date: "2026-11-09", end: 24 * 60, start: 20 * 60 },
+      { date: "2026-11-10", end: 24 * 60, start: 0 },
+      { date: "2026-11-11", end: 24 * 60, start: 0 },
+    ]);
+  });
+});
+
 describe(layoutDay, () => {
   it("should place a video at its start with its length", () => {
     expect(
-      summarize(layoutDay([video("a", "21:30", "PT2H", "ENDED")]))
+      summarize(layoutDay([video("a", "21:30", "PT2H", "ENDED")], MONDAY))
     ).toStrictEqual({
       a: { column: 0, columns: 1, length: 120, start: 21 * 60 + 30 },
     });
@@ -245,30 +314,37 @@ describe(layoutDay, () => {
 
   it("should draw a short video for 30 minutes at least", () => {
     expect(
-      layoutDay([video("a", "12:00", "PT5M", "PUBLISHED")])[0]?.length
+      layoutDay([video("a", "12:00", "PT5M", "PUBLISHED")], MONDAY)[0]?.length
     ).toBe(30);
   });
 
   it("should cut a video at the end of the day", () => {
-    expect(layoutDay([video("a", "23:00", "PT3H", "ENDED")])[0]?.length).toBe(
-      60
-    );
+    expect(
+      layoutDay([video("a", "23:00", "PT3H", "ENDED")], MONDAY)[0]?.length
+    ).toBe(60);
   });
 
   it("should cut a live stream at the end of the day", () => {
-    // A live stream is drawn for an hour, so the part after 24:00 is cut
+    // A live stream is drawn for an hour, and the part after 24:00 is on the
+    // next day
     expect(
-      summarize(layoutDay([video("a", "23:30", "P0D", "LIVE")]))
+      summarize(layoutDay([video("a", "23:30", "P0D", "LIVE")], MONDAY))
     ).toStrictEqual({
       a: { column: 0, columns: 1, length: 30, start: 23 * 60 + 30 },
     });
     // Even shorter than `MIN_LENGTH_MINUTES`, as the day has no more room
-    expect(layoutDay([video("a", "23:52", "P0D", "LIVE")])[0]?.length).toBe(8);
+    expect(
+      layoutDay([video("a", "23:52", "P0D", "LIVE")], MONDAY)[0]?.length
+    ).toBe(8);
   });
 
   it("should draw a live stream for an hour until the end of the day", () => {
-    expect(layoutDay([video("a", "23:00", "P0D", "LIVE")])[0]?.length).toBe(60);
-    expect(layoutDay([video("a", "00:00", "P0D", "LIVE")])[0]).toMatchObject({
+    expect(
+      layoutDay([video("a", "23:00", "P0D", "LIVE")], MONDAY)[0]?.length
+    ).toBe(60);
+    expect(
+      layoutDay([video("a", "00:00", "P0D", "LIVE")], MONDAY)[0]
+    ).toMatchObject({
       length: 60,
       start: 0,
     });
@@ -277,12 +353,15 @@ describe(layoutDay, () => {
   it("should put the videos that overlap side by side", () => {
     expect(
       summarize(
-        layoutDay([
-          video("a", "18:00"),
-          video("b", "18:00"),
-          video("c", "18:30"),
-          video("d", "20:00"),
-        ])
+        layoutDay(
+          [
+            video("a", "18:00"),
+            video("b", "18:00"),
+            video("c", "18:30"),
+            video("d", "20:00"),
+          ],
+          MONDAY
+        )
       )
     ).toStrictEqual({
       a: { column: 0, columns: 3, length: 60, start: 18 * 60 },
@@ -293,14 +372,87 @@ describe(layoutDay, () => {
     });
   });
 
+  it("should leave out the videos without a part on the day", () => {
+    expect(
+      layoutDay(
+        [
+          video("a", "21:00", "PT1H", "ENDED", 8),
+          video("b", "21:00", "PT1H", "ENDED", 10),
+        ],
+        MONDAY
+      )
+    ).toStrictEqual([]);
+  });
+
+  it("should place a video that crosses 00:00 on both days", () => {
+    const videos = [video("a", "23:00", "PT2H", "ENDED")];
+
+    expect(layoutDay(videos, MONDAY)).toMatchObject([
+      { continued: false, continues: true, length: 60, start: 23 * 60 },
+    ]);
+    expect(layoutDay(videos, TUESDAY)).toMatchObject([
+      { continued: true, continues: false, length: 60, start: 0 },
+    ]);
+    expect(layoutDay(videos, WEDNESDAY)).toStrictEqual([]);
+  });
+
+  it("should place a live stream that crosses 00:00 on the next day", () => {
+    // A live stream is drawn for an hour from its start
+    expect(
+      summarize(layoutDay([video("a", "23:30", "P0D", "LIVE")], TUESDAY))
+    ).toStrictEqual({ a: { column: 0, columns: 1, length: 30, start: 0 } });
+  });
+
+  it("should draw the part on the next day for 30 minutes at least", () => {
+    expect(
+      layoutDay([video("a", "23:50", "PT20M", "ENDED")], TUESDAY)
+    ).toMatchObject([{ continued: true, length: 30, start: 0 }]);
+  });
+
+  it("should place a video of more than 24 hours on each day", () => {
+    const videos = [video("a", "20:00", "PT30H", "ENDED")];
+
+    expect(layoutDay(videos, MONDAY)).toMatchObject([
+      { continued: false, continues: true, length: 4 * 60, start: 20 * 60 },
+    ]);
+    expect(layoutDay(videos, TUESDAY)).toMatchObject([
+      { continued: true, continues: true, length: 24 * 60, start: 0 },
+    ]);
+    expect(layoutDay(videos, WEDNESDAY)).toMatchObject([
+      { continued: true, continues: false, length: 2 * 60, start: 0 },
+    ]);
+  });
+
+  it("should put the part from the day before side by side with the others", () => {
+    expect(
+      summarize(
+        layoutDay(
+          [
+            video("a", "00:30", "PT1H", "ENDED", 10),
+            video("b", "23:00", "PT3H", "ENDED"),
+            video("c", "03:00", "PT1H", "ENDED", 10),
+          ],
+          TUESDAY
+        )
+      )
+    ).toStrictEqual({
+      a: { column: 1, columns: 2, length: 60, start: 30 },
+      b: { column: 0, columns: 2, length: 120, start: 0 },
+      c: { column: 0, columns: 1, length: 60, start: 3 * 60 },
+    });
+  });
+
   it("should reuse a column that has become free", () => {
     expect(
       summarize(
-        layoutDay([
-          video("a", "18:00", "PT3H", "ENDED"),
-          video("b", "18:00"),
-          video("c", "19:00"),
-        ])
+        layoutDay(
+          [
+            video("a", "18:00", "PT3H", "ENDED"),
+            video("b", "18:00"),
+            video("c", "19:00"),
+          ],
+          MONDAY
+        )
       )
     ).toStrictEqual({
       a: { column: 0, columns: 2, length: 180, start: 18 * 60 },
