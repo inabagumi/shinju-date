@@ -65,7 +65,7 @@ export const VideoCountChartUI = ({
           margin={{ bottom: 5, left: 0, right: 10, top: 10 }}
         >
           <CartesianGrid stroke="currentColor" strokeDasharray="3 3" />
-          <ChartDateAxis />
+          <ChartDateAxis padding={{ left: 20, right: 20 }} />
           <YAxis
             allowDecimals={false}
             axisLine={{ stroke: "currentColor" }}
