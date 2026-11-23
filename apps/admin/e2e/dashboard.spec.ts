@@ -33,4 +33,27 @@ test.describe("Dashboard", () => {
         .first()
     ).toBeVisible();
   });
+
+  test("should keep the period of the charts of the video summary in the URL", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const periods = page.getByRole("group", { name: "グラフの期間" });
+    await periods.getByRole("button", { name: "過去30日間" }).click();
+
+    await expect(page).toHaveURL(/\?period=30$/u);
+    await expect(
+      page.getByRole("heading", { name: "動画数の日別純増減（30日間）" })
+    ).toBeVisible();
+
+    await page.reload();
+
+    await expect(
+      periods.getByRole("button", { name: "過去30日間" })
+    ).toHaveAttribute("aria-pressed", "true");
+    await expect(
+      page.getByRole("heading", { name: "動画数の日別純増減（30日間）" })
+    ).toBeVisible();
+  });
 });

@@ -35,9 +35,9 @@ describe(toDailyNetChanges, () => {
     );
 
     expect(result).toStrictEqual([
-      { date: "11/10", netChange: 12 },
-      { date: "11/11", netChange: -3 },
-      { date: "11/12", netChange: 0 },
+      { day: "2025-11-10", netChange: 12 },
+      { day: "2025-11-11", netChange: -3 },
+      { day: "2025-11-12", netChange: 0 },
     ]);
   });
 
@@ -54,11 +54,11 @@ describe(toDailyNetChanges, () => {
     );
 
     expect(result).toStrictEqual([
-      { date: "11/09", netChange: null },
+      { day: "2025-11-09", netChange: null },
       // Not compared with 11/08, which is not the day before
-      { date: "11/10", netChange: null },
-      { date: "11/11", netChange: 2 },
-      { date: "11/12", netChange: null },
+      { day: "2025-11-10", netChange: null },
+      { day: "2025-11-11", netChange: 2 },
+      { day: "2025-11-12", netChange: null },
     ]);
   });
 
@@ -74,8 +74,8 @@ describe(toDailyNetChanges, () => {
     );
 
     expect(result).toStrictEqual([
-      { date: "11/10", netChange: null },
-      { date: "11/11", netChange: 2 },
+      { day: "2025-11-10", netChange: null },
+      { day: "2025-11-11", netChange: 2 },
     ]);
   });
 
@@ -85,7 +85,7 @@ describe(toDailyNetChanges, () => {
       "totalVideos"
     );
 
-    expect(result).toStrictEqual([{ date: "01/01", netChange: 1 }]);
+    expect(result).toStrictEqual([{ day: "2026-01-01", netChange: 1 }]);
   });
 
   it("returns nothing without the days to compare", () => {

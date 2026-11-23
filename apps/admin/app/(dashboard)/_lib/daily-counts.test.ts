@@ -32,20 +32,20 @@ describe(toDailyCounts, () => {
     ];
 
     expect(toDailyCounts(entries, "scheduledVideos")).toStrictEqual([
-      { count: 12, date: "11/09" },
-      { count: null, date: "11/10" },
-      { count: 0, date: "11/11" },
-      { count: 12, date: "11/12" },
+      { count: 12, day: "2025-11-09" },
+      { count: null, day: "2025-11-10" },
+      { count: 0, day: "2025-11-11" },
+      { count: 12, day: "2025-11-12" },
     ]);
     expect(toDailyCounts(entries, "hiddenVideos")).toStrictEqual([
-      { count: 30, date: "11/09" },
-      { count: null, date: "11/10" },
-      { count: 0, date: "11/11" },
-      { count: 31, date: "11/12" },
+      { count: 30, day: "2025-11-09" },
+      { count: null, day: "2025-11-10" },
+      { count: 0, day: "2025-11-11" },
+      { count: 31, day: "2025-11-12" },
     ]);
   });
 
-  it("formats the days across the end of a year", () => {
+  it("keeps the days across the end of a year in order", () => {
     expect(
       toDailyCounts(
         [
@@ -55,8 +55,8 @@ describe(toDailyCounts, () => {
         "scheduledVideos"
       )
     ).toStrictEqual([
-      { count: 2, date: "12/31" },
-      { count: 3, date: "01/01" },
+      { count: 2, day: "2025-12-31" },
+      { count: 3, day: "2026-01-01" },
     ]);
   });
 
