@@ -2,6 +2,7 @@ import type { SummaryStats, WithTrends } from "@shinju-date/dashboard-stats";
 import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { DailyCount } from "../_lib/daily-counts";
 import type { DailyNetChange } from "../_lib/daily-net-changes";
 import type {
   getHistoricalStats,
@@ -19,6 +20,22 @@ vi.mock(import("../_lib/get-historical-stats"), () => ({
 }));
 vi.mock(import("../_lib/get-summary-stats"), () => ({
   getSummaryStats: mocks.getSummaryStats,
+}));
+vi.mock(import("./video-count-chart-ui"), () => ({
+  // Lists the counts given to the chart of each count
+  VideoCountChartUI: ({
+    data,
+    label,
+  }: {
+    data: DailyCount[];
+    label: string;
+  }) => (
+    <ul aria-label={`chart of ${label}`}>
+      {data.map(({ count, date }) => (
+        <li key={date}>{`${date}: ${String(count)}`}</li>
+      ))}
+    </ul>
+  ),
 }));
 vi.mock(import("./video-stats-chart-ui"), () => ({
   // Lists the values given to the chart
@@ -54,7 +71,8 @@ const stats: WithTrends<SummaryStats> = {
 /** The snapshot of a day with the total of the videos. */
 const entry = (
   day: string,
-  totalVideos: number | null
+  totalVideos: number | null,
+  { hiddenVideos = 1, scheduledVideos = 5 } = {}
 ): HistoricalStatsEntry => ({
   day,
   stats:
@@ -62,14 +80,19 @@ const entry = (
       ? null
       : {
           deletedVideos: 2,
-          hiddenVideos: 1,
-          scheduledVideos: 5,
+          hiddenVideos,
+          scheduledVideos,
           totalTalents: 12,
           totalTerms: 40,
           totalVideos,
           visibleVideos: totalVideos - 6,
         },
 });
+
+const getChartItems = (name: string): (string | null)[] =>
+  within(screen.getByRole("list", { name }))
+    .getAllByRole("listitem")
+    .map((item) => item.textContent);
 
 const getTile = (label: string): HTMLElement =>
   screen.getByRole("link", { name: new RegExp(`^${label}`, "u") });
@@ -149,10 +172,7 @@ describe("VideoSummaryWidget", () => {
       screen.getByRole("heading", { name: "動画数の日別純増減（7日間）" })
     ).toBeDefined();
     expect(screen.getByText(/削除による減少を含む純増減/u)).toBeDefined();
-    const items = within(screen.getByRole("list", { name: "chart" }));
-    expect(
-      items.getAllByRole("listitem").map((item) => item.textContent)
-    ).toStrictEqual([
+    expect(getChartItems("chart")).toStrictEqual([
       "11/06: 12",
       "11/07: -3",
       "11/08: 0",
@@ -178,7 +198,69 @@ describe("VideoSummaryWidget", () => {
     render(await VideoSummaryWidget());
 
     expect(screen.queryByRole("list", { name: "chart" })).toBeNull();
-    expect(screen.getByText("まだ集計されたデータがありません")).toBeDefined();
+    expect(
+      screen.getByText(/続けて2日分の集計が済むと、ここに日別の増減/u)
+    ).toBeDefined();
+    // A day with a snapshot is enough for the charts of the counts
+    expect(getChartItems("chart of 配信予定")).toHaveLength(7);
+    expect(getChartItems("chart of 非表示")).toHaveLength(7);
+  });
+
+  it("charts the counts of the scheduled and the hidden videos on their own", async () => {
+    mocks.getHistoricalStats.mockResolvedValue([
+      entry("2025-11-05", 40_000, { hiddenVideos: 99, scheduledVideos: 99 }),
+      entry("2025-11-06", 40_012, { hiddenVideos: 30, scheduledVideos: 12 }),
+      entry("2025-11-07", 40_009, { hiddenVideos: 31, scheduledVideos: 14 }),
+      entry("2025-11-08", 40_009, { hiddenVideos: 31, scheduledVideos: 0 }),
+      entry("2025-11-09", null),
+      entry("2025-11-10", 40_020, { hiddenVideos: 28, scheduledVideos: 3 }),
+      entry("2025-11-11", 40_021, { hiddenVideos: 28, scheduledVideos: 3 }),
+      entry("2025-11-12", 40_025, { hiddenVideos: 29, scheduledVideos: 15 }),
+    ]);
+
+    render(await VideoSummaryWidget());
+
+    expect(
+      screen.getByRole("heading", { name: "配信予定の推移（7日間）" })
+    ).toBeDefined();
+    expect(
+      screen.getByRole("heading", { name: "非表示の推移（7日間）" })
+    ).toBeDefined();
+    expect(screen.getByText(/今日の本数はグラフに含めず/u)).toBeDefined();
+    // The same 7 days as the net changes, without the base of the first one
+    expect(getChartItems("chart of 配信予定")).toStrictEqual([
+      "11/06: 12",
+      "11/07: 14",
+      "11/08: 0",
+      "11/09: null",
+      "11/10: 3",
+      "11/11: 3",
+      "11/12: 15",
+    ]);
+    expect(getChartItems("chart of 非表示")).toStrictEqual([
+      "11/06: 30",
+      "11/07: 31",
+      "11/08: 31",
+      "11/09: null",
+      "11/10: 28",
+      "11/11: 28",
+      "11/12: 29",
+    ]);
+  });
+
+  it("shows the empty states of all the charts without the snapshots", async () => {
+    mocks.getHistoricalStats.mockResolvedValue(
+      Array.from({ length: 8 }, (_, index) =>
+        entry(`2025-11-${(index + 5).toString(10).padStart(2, "0")}`, null)
+      )
+    );
+
+    render(await VideoSummaryWidget());
+
+    expect(screen.queryAllByRole("list")).toStrictEqual([]);
+    expect(
+      screen.getAllByText("まだ集計されたデータがありません")
+    ).toHaveLength(3);
   });
 });
 
