@@ -53,6 +53,14 @@ describe("videoSearchParamsSchema.parse", () => {
     ).toBeUndefined();
   });
 
+  it("should parse video kind multi-select values, including streams", () => {
+    const result = videoSearchParamsSchema.parse({
+      videoKind: ["stream", "invalid", "short"],
+    });
+
+    expect(result.videoKind).toStrictEqual(["stream", "short"]);
+  });
+
   it("should use default values when fields are missing", () => {
     const input = {};
 

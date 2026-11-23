@@ -159,6 +159,16 @@ describe(VideoList, () => {
     expect(platform.closest("td")).toBe(kind.closest("td"));
   });
 
+  it("shows the video kind badge of a stream", () => {
+    render(<TestVideoList videos={[createVideo({ video_kind: "stream" })]} />, {
+      wrapper: ActionToastProvider,
+    });
+
+    const row = screen.getByText("Test Video").closest("tr") as HTMLElement;
+
+    expect(within(row).getByText("配信")).toBeInTheDocument();
+  });
+
   describe("bulk actions", () => {
     beforeEach(() => {
       vi.clearAllMocks();
