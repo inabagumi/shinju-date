@@ -330,8 +330,8 @@ export const fetchTalentStreamStatusesSafe = async (): Promise<
 
 /**
  * Fetch the starts (ISO 8601) of the streams a talent has finished, for the
- * tendency of its streams on its page: the regular videos (not shorts) that
- * are `ENDED`, which are the finished streams and premieres, from
+ * tendency of its streams on its page: the videos other than shorts that are
+ * `ENDED`, which are the finished streams and premieres, from
  * `STREAM_TENDENCY_DAYS` days before the start of today in `TIME_ZONE` to the
  * start of today.
  *
@@ -354,7 +354,7 @@ export const fetchTalentStreamStarts = async (
       .select("published_at")
       .eq("talent_id", talentId)
       .eq("status", "ENDED")
-      .eq("video_kind", "standard")
+      .neq("video_kind", "short")
       .gte("published_at", toDBString(since))
       .lt("published_at", toDBString(until))
       .order("published_at", {

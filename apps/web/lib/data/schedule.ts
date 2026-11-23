@@ -102,7 +102,7 @@ export const fetchScheduleVideos = async (
     await selectScheduleVideos()
       .gte("published_at", toDBString(since))
       .lt("published_at", toDBString(until))
-      .eq("video_kind", "standard")
+      .neq("video_kind", "short")
       .order("published_at", { ascending: true })
       .limit(1000),
     "fetchScheduleVideos"
