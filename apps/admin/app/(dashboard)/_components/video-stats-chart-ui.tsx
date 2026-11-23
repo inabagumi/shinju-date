@@ -10,14 +10,13 @@ import {
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
-  useChartWidth,
-  XAxis,
   YAxis,
 } from "recharts";
 import type { AxisDomain, BarShapeProps } from "recharts";
 
 import type { ChartSeries } from "../_lib/chart-series";
 import type { DailyNetChange } from "../_lib/daily-net-changes";
+import { ChartDateAxis } from "./chart-date-axis";
 import { ChartTooltipContent } from "./chart-tooltip-content";
 
 interface VideoStatsChartProps {
@@ -90,34 +89,6 @@ const ChangeBar = (props: BarShapeProps) => {
   );
 };
 
-/** これより狭いグラフでは、日付が重ならないように斜めにする */
-const NARROW_CHART_WIDTH = 480;
-
-/**
- * 日付の軸。欠損日を含むすべての日付を出し、狭いグラフでは斜めにする。
- * グラフの幅を読むため、グラフの子のコンポーネントにする
- */
-const DateAxis = () => {
-  const isNarrow = (useChartWidth() ?? 0) < NARROW_CHART_WIDTH;
-
-  return (
-    <XAxis
-      angle={isNarrow ? -45 : 0}
-      axisLine={{ stroke: "currentColor" }}
-      dataKey="date"
-      height={isNarrow ? 45 : 30}
-      interval={0}
-      textAnchor={isNarrow ? "end" : "middle"}
-      tick={{
-        className: "text-muted",
-        fill: "currentColor",
-        fontSize: 12,
-      }}
-      tickLine={{ stroke: "currentColor" }}
-    />
-  );
-};
-
 export const VideoStatsChartUI = ({ data }: VideoStatsChartProps) => (
   // 線（グリッド、軸、目盛りの線）は `currentColor` にして、グラフのルートの
   // `text-border` を使う。`CartesianGrid` は `className` を線に渡さないため
@@ -129,7 +100,7 @@ export const VideoStatsChartUI = ({ data }: VideoStatsChartProps) => (
         margin={{ bottom: 5, left: 0, right: 10, top: 20 }}
       >
         <CartesianGrid stroke="currentColor" strokeDasharray="3 3" />
-        <DateAxis />
+        <ChartDateAxis />
         <YAxis
           allowDecimals={false}
           axisLine={{ stroke: "currentColor" }}

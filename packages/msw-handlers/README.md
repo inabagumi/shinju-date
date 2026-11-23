@@ -286,10 +286,10 @@ The handlers seed the collections once with the current time (`ensureCollections
 
 The clicks of a talent are the sum of the clicks of their videos.
 
-`createSummarySnapshots()` generates the snapshots of the counts for the dashboard of admin (`summary:stats:*`), which the daily job `/stats/snapshot` of batch saves, for the 8 days up to yesterday. The snapshot of yesterday has the current counts of the Supabase mock. The days before it have an increase, a decrease and no change of the videos, and one of them has no snapshot, as if the job failed:
+`createSummarySnapshots()` generates the snapshots of the counts for the dashboard of admin (`summary:stats:*`), which the daily job `/stats/snapshot` of batch saves, for the 8 days up to yesterday. The snapshot of yesterday has the current counts of the Supabase mock. The days before it have an increase, a decrease and no change of the videos, and of the scheduled and the hidden videos, which move from (or to) the public videos. One of the days has no snapshot, as if the job failed:
 
 ```typescript
-'summary:stats:20231023' => { totalVideos: 63, visibleVideos: 44, ... }
+'summary:stats:20231023' => { hiddenVideos: 3, scheduledVideos: 4, totalVideos: 63, visibleVideos: 56, ... }
 ```
 
 ## Adding New Mock Data

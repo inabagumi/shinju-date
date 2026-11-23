@@ -100,8 +100,21 @@ describe(createSummarySnapshots, () => {
   const store = createSummarySnapshots(current, {
     today: Temporal.PlainDate.from("2026-03-02"),
   });
-  const totalVideosOf = (dateKey: string): number | undefined =>
-    store.get(`${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`)?.totalVideos;
+  /** The days with the snapshots, from the oldest */
+  const DATE_KEYS = [
+    "20260222",
+    "20260223",
+    "20260224",
+    "20260225",
+    "20260227",
+    "20260228",
+    "20260301",
+  ];
+  const countsOf = (key: keyof SummarySnapshot): (number | undefined)[] =>
+    DATE_KEYS.map(
+      (dateKey) =>
+        store.get(`${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`)?.[key]
+    );
 
   it("creates the snapshots of 8 days up to yesterday, except for one", () => {
     expect([...store.keys()]).toStrictEqual(
@@ -125,26 +138,25 @@ describe(createSummarySnapshots, () => {
   });
 
   it("changes the total by an increase, a decrease and no change", () => {
-    expect(
-      [
-        "20260222",
-        "20260223",
-        "20260224",
-        "20260225",
-        "20260227",
-        "20260228",
-        "20260301",
-      ].map(totalVideosOf)
-    ).toStrictEqual([87, 91, 89, 89, 97, 98, 100]);
+    expect(countsOf("totalVideos")).toStrictEqual([
+      87, 91, 89, 89, 97, 98, 100,
+    ]);
   });
 
-  it("changes the public videos with the total and keeps the others", () => {
+  it("changes the scheduled and the hidden videos, not below 0", () => {
+    expect(countsOf("scheduledVideos")).toStrictEqual([7, 8, 6, 6, 5, 7, 4]);
+    expect(countsOf("hiddenVideos")).toStrictEqual([4, 6, 6, 5, 6, 3, 3]);
+  });
+
+  it("keeps the total as the sum of the public, the scheduled and the hidden videos", () => {
     for (const snapshot of store.values()) {
-      expect(snapshot.totalVideos - snapshot.visibleVideos).toBe(7);
+      expect(
+        snapshot.visibleVideos +
+          snapshot.scheduledVideos +
+          snapshot.hiddenVideos
+      ).toBe(snapshot.totalVideos);
       expect(snapshot).toMatchObject({
         deletedVideos: 2,
-        hiddenVideos: 3,
-        scheduledVideos: 4,
         totalTalents: 5,
         totalTerms: 6,
       });

@@ -130,6 +130,24 @@ export interface SummarySnapshotsOptions {
 const SUMMARY_SNAPSHOT_CHANGES = [4, -2, 0, 3, 5, 1, 2] as const;
 
 /**
+ * The changes of the scheduled videos on each of the 7 days up to yesterday,
+ * from the oldest, moved from (or to) the public videos. Each day before
+ * yesterday has as many or more than yesterday, so no count goes below 0.
+ */
+const SCHEDULED_SNAPSHOT_CHANGES = [1, -2, 0, -1, 0, 2, -3] as const;
+
+/**
+ * The changes of the hidden videos on each of the 7 days up to yesterday,
+ * from the oldest, moved from (or to) the public videos. Each day before
+ * yesterday has as many or more than yesterday, so no count goes below 0.
+ */
+const HIDDEN_SNAPSHOT_CHANGES = [2, 0, -1, 0, 1, -3, 0] as const;
+
+/** The change of the day of `daysAgo` days before yesterday. */
+const changeOf = (changes: readonly number[], daysAgo: number): number =>
+  changes[changes.length - 1 - daysAgo] ?? 0;
+
+/**
  * The day without a snapshot, as if the daily job failed (days before
  * yesterday). The chart shows it and the day after as missing.
  */
@@ -141,7 +159,9 @@ const MISSING_SNAPSHOT_DAYS_BEFORE_YESTERDAY = 3;
  * them). One of the days has no snapshot.
  *
  * The snapshot of yesterday has the current counts, and each day before it
- * has fewer (or more) public videos by the change of the next day.
+ * has fewer (or more) public videos by the change of the next day. The
+ * scheduled and the hidden videos also change, by moving from (or to) the
+ * public videos.
  *
  * @param current The current counts of the mock data
  * @returns Map of Redis keys to the snapshots
@@ -152,8 +172,10 @@ export const createSummarySnapshots = (
 ): Map<string, SummarySnapshot> => {
   const store = new Map<string, SummarySnapshot>();
   const yesterday = today.subtract({ days: 1 });
-  // The sum of the changes of the days after the day, up to yesterday
+  // The sums of the changes of the days after the day, up to yesterday
   let laterChanges = 0;
+  let laterScheduledChanges = 0;
+  let laterHiddenChanges = 0;
 
   for (
     let daysAgo = 0;
@@ -165,14 +187,20 @@ export const createSummarySnapshots = (
 
       store.set(`${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`, {
         ...current,
+        hiddenVideos: current.hiddenVideos - laterHiddenChanges,
+        scheduledVideos: current.scheduledVideos - laterScheduledChanges,
         totalVideos: current.totalVideos - laterChanges,
-        visibleVideos: current.visibleVideos - laterChanges,
+        visibleVideos:
+          current.visibleVideos -
+          laterChanges +
+          laterScheduledChanges +
+          laterHiddenChanges,
       });
     }
 
-    laterChanges +=
-      SUMMARY_SNAPSHOT_CHANGES[SUMMARY_SNAPSHOT_CHANGES.length - 1 - daysAgo] ??
-      0;
+    laterChanges += changeOf(SUMMARY_SNAPSHOT_CHANGES, daysAgo);
+    laterScheduledChanges += changeOf(SCHEDULED_SNAPSHOT_CHANGES, daysAgo);
+    laterHiddenChanges += changeOf(HIDDEN_SNAPSHOT_CHANGES, daysAgo);
   }
 
   return store;
