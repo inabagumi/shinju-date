@@ -342,6 +342,43 @@ test.describe("Schedule page", () => {
   });
 
   for (const width of [1024, 1280]) {
+    test(`should expand a video on Saturday to the left inside the week (${width}px)`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ height: 900, width });
+      await page.goto("/schedule");
+      await expect(getItems(page).first()).toBeVisible();
+
+      // Weeks end on Saturday, so there is no room on the right of the day
+      const saturday = getDays(page).nth(6);
+      const item = saturday.locator('[data-start="21:00"]');
+
+      await expect(item).toHaveCount(1);
+      await scrollToMiddle(item);
+
+      const dayBox = await saturday.boundingBox();
+      const before = await item.boundingBox();
+
+      await item.hover();
+
+      const after = await item.boundingBox();
+
+      // As wide as when there is room on the right (14rem, less the gap on the
+      // right of the item), keeping the right edge inside the week
+      expect(after?.width ?? 0).toBeGreaterThanOrEqual(14 * 16 - 2);
+      expect(after?.width ?? 0).toBeGreaterThan(before?.width ?? 0);
+      expect(after?.x ?? 0).toBeLessThan(before?.x ?? 0);
+      expect(Math.round(getRightEdge(after))).toBeLessThanOrEqual(
+        Math.round(getRightEdge(dayBox))
+      );
+      // The pointer is still on the item, so it stays expanded
+      await expect(item.getByTestId("schedule-item-tags")).toBeVisible();
+      expect(await isTopmostAtCenter(item)).toBeTruthy();
+      await expectNoHorizontalScroll(page);
+    });
+  }
+
+  for (const width of [1024, 1280]) {
     test(`should keep the crowded videos readable and reachable (${width}px)`, async ({
       page,
     }) => {

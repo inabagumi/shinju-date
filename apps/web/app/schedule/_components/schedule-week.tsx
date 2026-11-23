@@ -176,9 +176,11 @@ const EXPANDED_MIN_WIDTH = "14rem";
  * 時間の重なる項目は、列の順に `getOverlapOffset` の幅ずつ右へずらし、日の列の
  * 右端まで伸ばして重ねる。
  *
- * 広げたときの幅（`--expanded-width`）は、左端を動かさずに右へ伸ばす幅にする。
- * 日の列の右端まで、ただし `EXPANDED_MIN_WIDTH` より狭くはせず、週の右端
- * （右に残る日の列の分）は越えない。`100%` は日の列の幅を指す
+ * 広げたときの幅（`--expanded-width`）は、日の列の右端まで、ただし
+ * `EXPANDED_MIN_WIDTH` より狭くはしない。ふつうは左端を動かさずに右へ伸ばす。
+ * 右に週の右端（右に残る日の列の分）までの余地が足りないとき（土曜日など）は、
+ * 足りない分だけ左端を左へずらし（`--expanded-left`）、週の右端は越えない。
+ * `100%` は日の列の幅を指す
  */
 const getPlacementStyle = (
   { column, columns, length, start }: ScheduleLayout<ScheduleVideo>,
@@ -187,9 +189,11 @@ const getPlacementStyle = (
   const left = `(${getOverlapOffset(columns)} * ${column})`;
   const toDayEnd = `(100% - ${left})`;
   const toWeekEnd = `(${toDayEnd} + ${daysAfter} * (100% + ${DAY_GAP}))`;
+  const expandedWidth = `max(calc${toDayEnd}, ${EXPANDED_MIN_WIDTH})`;
 
   return {
-    "--expanded-width": `min(max(calc${toDayEnd}, ${EXPANDED_MIN_WIDTH}), calc${toWeekEnd})`,
+    "--expanded-left": `calc(${left} - max(0px, ${expandedWidth} - calc${toWeekEnd}))`,
+    "--expanded-width": expandedWidth,
     "--left": `calc${left}`,
     "--length": length,
     "--start": start,
@@ -199,11 +203,12 @@ const getPlacementStyle = (
 
 /**
  * 1024px 以上で項目を置くクラス。マウスを乗せるかフォーカスすると、最も前面に
- * 出して左端はそのままに右へ広げ、高さも中身に合わせて伸ばす（配信の長さより
- * 低くはしない）。項目は縦の flex で、この要素の高さいっぱいに広がる
+ * 出して右へ広げ（右に余地が足りないときだけ左にも広げる）、高さも中身に合わせて
+ * 伸ばす（配信の長さより低くはしない）。項目は縦の flex で、この要素の高さ
+ * いっぱいに広がる
  */
 const PLACEMENT_CLASS_NAME =
-  "group/item lg:absolute lg:top-[calc(var(--hour)*var(--start)/60)] lg:left-(--left) lg:flex lg:h-[calc(var(--hour)*var(--length)/60)] lg:w-(--width) lg:flex-col lg:pr-0.5 lg:pb-0.5 lg:focus-within:z-30 lg:focus-within:h-auto lg:focus-within:min-h-[calc(var(--hour)*var(--length)/60)] lg:focus-within:w-(--expanded-width) lg:hover:z-30 lg:hover:h-auto lg:hover:min-h-[calc(var(--hour)*var(--length)/60)] lg:hover:w-(--expanded-width)";
+  "group/item lg:absolute lg:top-[calc(var(--hour)*var(--start)/60)] lg:left-(--left) lg:flex lg:h-[calc(var(--hour)*var(--length)/60)] lg:w-(--width) lg:flex-col lg:pr-0.5 lg:pb-0.5 lg:focus-within:left-(--expanded-left) lg:focus-within:z-30 lg:focus-within:h-auto lg:focus-within:min-h-[calc(var(--hour)*var(--length)/60)] lg:focus-within:w-(--expanded-width) lg:hover:left-(--expanded-left) lg:hover:z-30 lg:hover:h-auto lg:hover:min-h-[calc(var(--hour)*var(--length)/60)] lg:hover:w-(--expanded-width)";
 
 interface ScheduleDayProps {
   date: Temporal.PlainDate;
