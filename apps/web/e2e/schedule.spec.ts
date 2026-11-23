@@ -2,10 +2,17 @@ import { expect, test } from "@playwright/test";
 import type { Locator, Page } from "@playwright/test";
 
 // Seeded by the MSW mock data (packages/msw-handlers): a stream on air now,
-// 2 streams on each day of the current week (one of them at 21:00 in Japan)
-// and 1 in each of the previous and the next weeks. The title is
-// `【スケジュール】ただいま配信中`, and the item shows it without the label in 【】
+// 2 streams on each day of the current week (one of them at 21:00 in Japan),
+// 1 in each of the previous and the next weeks, and 2 from 23:30 that cross
+// 00:00. The title is `【スケジュール】ただいま配信中`, and the item shows it
+// without the label in 【】
 const LIVE_VIDEO_TITLE = "ただいま配信中";
+
+/** From 23:30 on Thursday of the current week to Friday */
+const THURSDAY_NIGHT_TITLE = "木曜の深夜配信";
+
+/** From 23:30 on Saturday of the current week to Sunday of the next week */
+const SATURDAY_NIGHT_TITLE = "土曜の深夜配信";
 
 const WEEK_PATH_PATTERN = /^\/schedule\/(?<weekStart>\d{4}-\d{2}-\d{2})$/u;
 
@@ -243,6 +250,63 @@ test.describe("Schedule page", () => {
     const firstAfter = await first.boundingBox();
 
     expect(firstAfter?.width ?? 0).toBeGreaterThan(firstBefore?.width ?? 0);
+  });
+
+  test("should show a stream that crosses 00:00 on the next day too", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ height: 900, width: 1280 });
+    await page.goto("/schedule");
+
+    // Weeks start on Sunday
+    const thursday = getDays(page).nth(4);
+    const friday = getDays(page).nth(5);
+    const first = thursday
+      .getByTestId("schedule-item")
+      .filter({ hasText: THURSDAY_NIGHT_TITLE });
+    const next = friday
+      .getByTestId("schedule-item")
+      .filter({ hasText: THURSDAY_NIGHT_TITLE });
+
+    await expect(first).toHaveAttribute("data-start", "23:30");
+    await expect(first.locator("time")).toHaveText("23:30");
+    // The part on Friday starts at 00:00, with the date of the start
+    await expect(next).toHaveAttribute("data-start", "00:00");
+    await expect(next.locator("time")).toHaveText(/^\d{2}\/\d{2} 23:30$/u);
+    // Both link to the same stream
+    expect(await next.getAttribute("href")).toBe(
+      await first.getAttribute("href")
+    );
+
+    // At the top of the day, as tall as the part after 00:00 (30 minutes for
+    // an upcoming stream, or an hour for an ended one)
+    const body = await friday.locator("ul").boundingBox();
+    const nextBox = await next.boundingBox();
+
+    expect(Math.round((nextBox?.y ?? -1) - (body?.y ?? 0))).toBe(0);
+
+    // It expands like the other items
+    await next.scrollIntoViewIfNeeded();
+
+    const widthBefore = nextBox?.width ?? 0;
+
+    await next.hover();
+
+    const expandedBox = await next.boundingBox();
+
+    expect(expandedBox?.width ?? 0).toBeGreaterThan(widthBefore);
+
+    // A stream from Saturday is on Sunday of the next week too
+    const currentWeekStart = await getCurrentWeekStart(page);
+
+    await page.goto(`/schedule/${addDays(currentWeekStart, 7)}`);
+
+    await expect(
+      getDays(page)
+        .first()
+        .getByTestId("schedule-item")
+        .filter({ hasText: SATURDAY_NIGHT_TITLE })
+    ).toHaveAttribute("data-continued", "true");
   });
 
   test("should keep every item inside the column of its day", async ({
