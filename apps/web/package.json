@@ -38,7 +38,7 @@
     "@shinju-date/ui": "workspace:*",
     "@supabase/sentry-js-integration": "catalog:",
     "@supabase/supabase-js": "catalog:",
-    "@tanstack/react-query": "5.108.2",
+    "@tanstack/react-query": "5.108.3",
     "@upstash/redis": "catalog:",
     "@vercel/analytics": "2.0.1",
     "botid": "1.5.13",
