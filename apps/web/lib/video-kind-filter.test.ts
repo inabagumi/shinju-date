@@ -12,6 +12,7 @@ describe(parseVideoKindFilter, () => {
   it("should return the given kind", () => {
     expect(parseVideoKindFilter("short")).toBe("short");
     expect(parseVideoKindFilter("standard")).toBe("standard");
+    expect(parseVideoKindFilter("stream")).toBe("stream");
     expect(parseVideoKindFilter(["short", "standard"])).toBe("short");
   });
 
@@ -30,6 +31,7 @@ describe(getVideoKinds, () => {
   it("should filter by the given kind", () => {
     expect(getVideoKinds("short")).toStrictEqual(["short"]);
     expect(getVideoKinds("standard")).toStrictEqual(["standard"]);
+    expect(getVideoKinds("stream")).toStrictEqual(["stream"]);
   });
 });
 
@@ -37,6 +39,7 @@ describe(getVideosPath, () => {
   it("should link to the videos page", () => {
     expect(getVideosPath("", "all")).toBe("/videos");
     expect(getVideosPath("", "short")).toBe("/videos?kind=short");
+    expect(getVideosPath("", "stream")).toBe("/videos?kind=stream");
   });
 
   it("should link to the search results", () => {
@@ -73,6 +76,7 @@ describe(getVideosCalendarPath, () => {
     const talentB = "7d2e4b1a-3c5f-4e6a-8b9c-0d1e2f3a4b02";
 
     expect(getVideosCalendarPath("standard")).toBe("/videos.ics?kind=standard");
+    expect(getVideosCalendarPath("stream")).toBe("/videos.ics?kind=stream");
     expect(getVideosCalendarPath("short", [talentB, talentA, talentB])).toBe(
       `/videos.ics?kind=short&talent=${talentA}&talent=${talentB}`
     );
@@ -87,5 +91,6 @@ describe(getVideoKindName, () => {
   it("should use the label of the kind", () => {
     expect(getVideoKindName("standard")).toBe("動画");
     expect(getVideoKindName("short")).toBe("ショート");
+    expect(getVideoKindName("stream")).toBe("配信");
   });
 });

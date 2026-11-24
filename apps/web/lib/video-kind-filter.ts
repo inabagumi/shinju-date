@@ -16,6 +16,7 @@ interface VideoKindFilterOption {
 
 export const VIDEO_KIND_FILTER_OPTIONS: readonly VideoKindFilterOption[] = [
   { label: "すべて", value: "all" },
+  { label: "配信", value: "stream" },
   { label: "動画", value: "standard" },
   { label: "ショート", value: "short" },
 ];
