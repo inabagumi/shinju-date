@@ -35,7 +35,7 @@ catalog:
   lucide-react: 1.78.0
   msw: 3.0.7
   next: 16.4.6
-  oxlint: 1.94.0
+  oxlint: 1.95.0
   react: 19.3.1
   react-dom: 19.3.1
   react-markdown: 10.1.0
