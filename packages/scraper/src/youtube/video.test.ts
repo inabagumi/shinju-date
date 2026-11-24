@@ -35,6 +35,7 @@ describe(toVideoFields, () => {
       duration: "P0D",
       published_at: "2024-05-02T09:00:00Z",
       status: "UPCOMING",
+      video_kind: "stream",
     });
   });
 
@@ -47,7 +48,26 @@ describe(toVideoFields, () => {
       },
     });
 
-    expect(toVideoFields(video, now).status).toBe("LIVE");
+    expect(toVideoFields(video, now)).toMatchObject({
+      status: "LIVE",
+      video_kind: "stream",
+    });
+  });
+
+  it("classifies an ended stream as a stream, however short it is", () => {
+    const video = createVideo({
+      ...upload,
+      contentDetails: { duration: "PT2M" },
+      liveStreamingDetails: {
+        actualEndTime: "2024-05-01T11:02:00Z",
+        actualStartTime: "2024-05-01T11:00:00Z",
+      },
+    });
+
+    expect(toVideoFields(video, now)).toMatchObject({
+      status: "ENDED",
+      video_kind: "stream",
+    });
   });
 
   it("classifies short videos", () => {
@@ -117,6 +137,22 @@ describe("the changes of a saved video", () => {
       published_at: "2024-05-01T13:05:00Z",
       status: "ENDED",
     });
+  });
+
+  it("reclassifies a stream saved as a standard video", () => {
+    const stream = createVideo({
+      ...upload,
+      contentDetails: { duration: "PT2H" },
+      liveStreamingDetails: {
+        actualEndTime: "2024-04-30T12:00:00Z",
+        actualStartTime: "2024-04-30T10:00:00Z",
+      },
+    });
+    const savedStream = toVideoFields(stream, now);
+
+    expect(
+      getChanges({ ...savedStream, video_kind: "standard" }, stream, now)
+    ).toStrictEqual({ video_kind: "stream" });
   });
 
   it("reclassifies a video once its duration is known", () => {

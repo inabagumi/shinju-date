@@ -146,6 +146,80 @@ describe(getVideoKind, () => {
     });
   });
 
+  describe("streams", () => {
+    it("should classify a scheduled live stream as stream", () => {
+      const video: youtube.Schema$Video = {
+        contentDetails: {
+          duration: "P0D",
+        },
+        id: "video-1",
+        liveStreamingDetails: {
+          scheduledStartTime: "2026-11-24T12:00:00Z",
+        },
+      };
+
+      expect(getVideoKind(video)).toBe("stream");
+    });
+
+    it("should classify a live stream on air as stream", () => {
+      const video: youtube.Schema$Video = {
+        contentDetails: {
+          duration: "P0D",
+        },
+        id: "video-1",
+        liveStreamingDetails: {
+          actualStartTime: "2026-11-24T12:00:00Z",
+        },
+      };
+
+      expect(getVideoKind(video)).toBe("stream");
+    });
+
+    it("should classify an ended live stream as stream", () => {
+      const video: youtube.Schema$Video = {
+        contentDetails: {
+          duration: "PT2H",
+        },
+        id: "video-1",
+        liveStreamingDetails: {
+          actualEndTime: "2026-11-24T14:00:00Z",
+          actualStartTime: "2026-11-24T12:00:00Z",
+        },
+      };
+
+      expect(getVideoKind(video)).toBe("stream");
+    });
+
+    it("should classify a stream as stream even when it is 180 seconds or shorter", () => {
+      const video: youtube.Schema$Video = {
+        contentDetails: {
+          duration: "PT2M",
+        },
+        id: "video-1",
+        liveStreamingDetails: {
+          actualEndTime: "2026-11-24T12:02:00Z",
+          actualStartTime: "2026-11-24T12:00:00Z",
+        },
+      };
+
+      expect(getVideoKind(video)).toBe("stream");
+    });
+
+    it("should classify a premiere as stream", () => {
+      const video: youtube.Schema$Video = {
+        contentDetails: {
+          duration: "PT10M",
+        },
+        id: "video-1",
+        liveStreamingDetails: {
+          scheduledStartTime: "2026-11-24T12:00:00Z",
+        },
+      };
+
+      expect(getVideoKind(video)).toBe("stream");
+    });
+  });
+
   describe("edge cases", () => {
     it("should handle malformed duration gracefully", () => {
       const video: youtube.Schema$Video = {

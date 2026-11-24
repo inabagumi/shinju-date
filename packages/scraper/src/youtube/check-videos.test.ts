@@ -401,6 +401,7 @@ describe("refreshYouTubeVideos and thumbnails", () => {
               duration: "PT10M",
               published_at: "2024-05-01T10:00:00+00:00",
               status: "PUBLISHED",
+              video_kind: "standard",
             }),
           ]
         : []
