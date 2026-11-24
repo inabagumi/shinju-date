@@ -66,11 +66,8 @@ export const createTwitchPlatform = (
   },
   platform: "twitch",
   savedVideoColumns: SAVED_TWITCH_VIDEO_COLUMNS,
-  // Twitch has no kinds; every Twitch video is saved as `standard`.
-  toFields: (video) => ({
-    ...(isTwitchClip(video) ? toClipFields(video) : toVideoFields(video)),
-    video_kind: "standard",
-  }),
+  toFields: (video) =>
+    isTwitchClip(video) ? toClipFields(video) : toVideoFields(video),
 });
 
 /** A Twitch video, or the placeholder of a live broadcast, to save. */
@@ -91,8 +88,7 @@ export const TWITCH_NEW_VIDEOS: NewVideoAdapter<NewTwitchVideo> = {
       thumbnailUrl: video.thumbnailUrl,
       twitchVideoId: video.twitchVideo.twitch_video_id,
     }),
-  // Twitch has no kinds; every Twitch video is saved as `standard`.
-  toFields: (video) => ({ ...video.fields, video_kind: "standard" }),
+  toFields: (video) => video.fields,
   toPlatformVideo: (video, user) => ({
     platform: "twitch",
     values: { ...video.twitchVideo, twitch_user_id: user.id },

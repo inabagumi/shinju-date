@@ -82,7 +82,7 @@ export const createSavedVideo = (
       : null,
     thumbnail_id: thumbnailId,
     title: `Video ${youtubeVideoId}`,
-    video_kind: "standard",
+    video_kind: "stream",
     youtube_video: { youtube_video_id: youtubeVideoId },
     ...overrides,
   };

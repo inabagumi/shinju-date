@@ -100,8 +100,50 @@ describe(refreshRecentTwitchVideos, () => {
       body: { type: "highlight" },
       query: { id: "eq.twitch-row-1" },
     });
-    expect(supabase.written("PATCH", "videos")).toHaveLength(0);
+    // A highlight is no longer a broadcast.
+    expect(supabase.written("PATCH", "videos")).toStrictEqual([
+      expect.objectContaining({
+        body: { video_kind: "standard" },
+        query: { id: "eq.video-1" },
+      }),
+    ]);
   });
+
+  // Every Twitch video used to be saved as `standard`.
+  it.each([
+    ["archive", createVideo(), "stream"],
+    ["clip", createClip({ id: "vod-1", title: "Archive" }), "short"],
+  ] as const)(
+    "reclassifies a saved %s that was saved as a standard video",
+    async (type, fetched, kind) => {
+      supabase.respond(({ method }) =>
+        method === "GET"
+          ? [
+              createSavedArchive({
+                duration: fetched.duration,
+                status: type === "clip" ? "PUBLISHED" : "ENDED",
+                twitch_video: { type },
+                video_kind: "standard",
+              }),
+            ]
+          : []
+      );
+      const { fetcher } = createFakeTwitchFetcher(
+        type === "clip" ? { clips: [fetched] } : { videos: [fetched] }
+      );
+
+      const changed = await refreshRecentTwitchVideos(createContext(fetcher));
+
+      expect(changed).toBe(1);
+      expect(supabase.written("PATCH", "videos")).toStrictEqual([
+        expect.objectContaining({
+          body: { video_kind: kind },
+          query: { id: "eq.video-1" },
+        }),
+      ]);
+      expect(supabase.written("PATCH", "twitch_videos")).toHaveLength(0);
+    }
+  );
 
   it("looks clips up separately from videos", async () => {
     supabase.respond(({ method }) =>
@@ -113,6 +155,7 @@ describe(refreshRecentTwitchVideos, () => {
               id: "video-2",
               status: "PUBLISHED",
               title: "Old clip title",
+              video_kind: "short",
               twitch_video: {
                 id: "twitch-row-2",
                 stream_id: null,

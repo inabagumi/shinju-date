@@ -126,6 +126,7 @@ export const createSavedVideo = ({
   status: "LIVE",
   thumbnail_id: "thumb-live",
   title: "Live now",
+  video_kind: "stream",
   ...overrides,
   twitch_video: {
     id: "twitch-row-1",

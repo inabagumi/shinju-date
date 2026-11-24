@@ -9,7 +9,7 @@ import type { TypedSupabaseClient } from "../types.js";
 
 /** Columns of the `videos` row of a saved Twitch video. */
 const VIDEO_COLUMNS =
-  "id, deleted_at, duration, published_at, status, thumbnail_id, title";
+  "id, deleted_at, duration, published_at, status, thumbnail_id, title, video_kind";
 
 /** Columns of the `twitch_videos` row of a saved Twitch video. */
 const TWITCH_VIDEO_COLUMNS = "id, stream_id, twitch_video_id, type";

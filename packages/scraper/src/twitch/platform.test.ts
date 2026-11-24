@@ -86,7 +86,7 @@ describe(createTwitchPlatform, () => {
     expect(result).toStrictEqual({ fetchedById: new Map(), missingIds: [] });
   });
 
-  it("maps a video to its fields, as a standard video", () => {
+  it("maps an archive to its fields, as a stream", () => {
     const { fetcher } = createFakeTwitchFetcher();
 
     expect(
@@ -96,11 +96,28 @@ describe(createTwitchPlatform, () => {
       published_at: "2024-05-01T09:00:00Z",
       status: "ENDED",
       title: "Archive",
+      video_kind: "stream",
+    });
+  });
+
+  it("maps an upload to its fields, as a standard video", () => {
+    const { fetcher } = createFakeTwitchFetcher();
+
+    expect(
+      createTwitchPlatform(fetcher).toFields(
+        createVideo({ stream_id: null, title: "Upload", type: "upload" }),
+        now
+      )
+    ).toStrictEqual({
+      duration: "PT2H",
+      published_at: "2024-05-01T09:00:00Z",
+      status: "PUBLISHED",
+      title: "Upload",
       video_kind: "standard",
     });
   });
 
-  it("maps a clip to its fields, as a standard video", () => {
+  it("maps a clip to its fields, as a short", () => {
     const { fetcher } = createFakeTwitchFetcher();
 
     expect(
@@ -110,7 +127,7 @@ describe(createTwitchPlatform, () => {
       published_at: "2024-05-01T09:00:00Z",
       status: "PUBLISHED",
       title: "Clip",
-      video_kind: "standard",
+      video_kind: "short",
     });
   });
 });

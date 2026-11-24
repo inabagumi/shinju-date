@@ -364,7 +364,7 @@ describe(YouTubeScraper, () => {
       thumbnail: { etag: null, id: "thumb-1", path: "yt-1/old.jpg" },
       thumbnail_id: "thumb-1",
       title: "Video yt-1",
-      video_kind: "standard",
+      video_kind: "stream",
       youtube_video: { youtube_video_id: "yt-1" },
     };
     const onAir = {
@@ -449,6 +449,7 @@ describe(YouTubeScraper, () => {
                 duration: "PT10M",
                 published_at: "2024-05-01T10:00:00+00:00",
                 status: "PUBLISHED",
+                video_kind: "standard",
               },
             ]
           : []
@@ -476,6 +477,7 @@ describe(YouTubeScraper, () => {
                 duration: "PT10M",
                 published_at: "2024-05-01T10:00:00+00:00",
                 status: "PUBLISHED",
+                video_kind: "standard",
                 thumbnail: null,
                 thumbnail_id: null,
               },
@@ -525,6 +527,7 @@ describe(YouTubeScraper, () => {
                 duration: "PT10M",
                 published_at: "2024-05-01T10:00:00+00:00",
                 status: "PUBLISHED",
+                video_kind: "standard",
               },
             ]
           : []

@@ -113,7 +113,7 @@ import {
 } from "@shinju-date/youtube-api-client";
 
 getVideoStatus(video, now); // 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
-getVideoKind(video); // 'standard' | 'short'
+getVideoKind(video); // 'stream' | 'standard' | 'short'
 getPublishedAt(video); // start of the broadcast, or the publication time
 ```
 

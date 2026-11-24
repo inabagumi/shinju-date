@@ -263,6 +263,25 @@ describe(syncTwitchLive, () => {
     });
   });
 
+  it("reclassifies a broadcast on air that was saved as a standard video", async () => {
+    supabase.respondWith(
+      liveVideoRoutes([createSavedLiveVideo({ video_kind: "standard" })])
+    );
+    const { fetcher } = createFakeTwitchFetcher({
+      liveStreams: [createStream()],
+    });
+
+    const changed = await syncTwitchLive(createContext(fetcher));
+
+    expect(changed).toBe(1);
+    expect(supabase.written("PATCH", "videos")).toStrictEqual([
+      expect.objectContaining({
+        body: { video_kind: "stream" },
+        query: { id: "eq.video-1" },
+      }),
+    ]);
+  });
+
   it("ends a broadcast and keeps the placeholder until the archive exists", async () => {
     supabase.respondWith(liveVideoRoutes([createSavedLiveVideo()]));
     const { getRecentVideos, fetcher } = createFakeTwitchFetcher();
@@ -275,6 +294,7 @@ describe(syncTwitchLive, () => {
     });
     expect(supabase.written("PATCH", "videos")[0]?.body).toStrictEqual({
       status: "ENDED",
+      video_kind: "stream",
     });
     expect(supabase.written("PATCH", "twitch_videos")).toHaveLength(0);
   });
@@ -300,6 +320,7 @@ describe(syncTwitchLive, () => {
       status: "ENDED",
       thumbnail_id: "thumb-new",
       title: "Archive",
+      video_kind: "stream",
     });
     // Cached pages may still show the preview, so the cleanup removes it
     // later, counting from the time it was replaced (`touch_thumbnail`).

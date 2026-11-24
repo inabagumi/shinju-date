@@ -5,9 +5,11 @@ import type { Enums } from "@shinju-date/database";
 export type YouTubeVideoKind = Enums<"video_kind">;
 
 /**
- * Determines the kind/type of a YouTube video based on its duration.
+ * Determines the kind/type of a YouTube video.
  *
  * Video kind classification:
+ * - stream: Live streams (scheduled, on air or ended) and premieres, i.e.
+ *   videos with liveStreamingDetails, whatever their duration
  * - short: Short-form videos (≤180 seconds / 3 minutes), including YouTube Shorts
  * - standard: Regular videos
  *
@@ -16,11 +18,19 @@ export type YouTubeVideoKind = Enums<"video_kind">;
  * We classify any video ≤180 seconds as 'short' for compatibility with
  * YouTube Shorts and future short-form platforms (TikTok, Instagram Reels, etc.).
  *
- * @param video - YouTube video object with contentDetails
+ * @param video - YouTube video object with contentDetails and
+ *   liveStreamingDetails
  * @returns The video kind classification
  */
 export const getVideoKind = (video: youtube.Schema$Video): YouTubeVideoKind => {
-  const { contentDetails } = video;
+  const { contentDetails, liveStreamingDetails } = video;
+
+  // Live streams and premieres are told apart before the duration: a
+  // scheduled broadcast has no duration yet, and a short one is still a
+  // broadcast. `getVideoStatus` reads the same details.
+  if (liveStreamingDetails) {
+    return "stream";
+  }
 
   // Check duration for short-form content
   // YouTube Shorts are videos up to 3 minutes (180 seconds)

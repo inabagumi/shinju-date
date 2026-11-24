@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import type { TwitchStream, TwitchVideo } from "./types.js";
-import { getThumbnailSource, toLiveFields, toVideoFields } from "./video.js";
+import type { TwitchClip, TwitchStream, TwitchVideo } from "./types.js";
+import {
+  getThumbnailSource,
+  getTwitchVideoKind,
+  toClipFields,
+  toLiveFields,
+  toVideoFields,
+} from "./video.js";
 
 const video = {
   created_at: "2024-05-01T09:00:00Z",
@@ -11,6 +17,18 @@ const video = {
   type: "archive",
 } as TwitchVideo;
 
+describe(getTwitchVideoKind, () => {
+  it.each([
+    ["archive", "stream"],
+    [null, "stream"],
+    ["highlight", "standard"],
+    ["upload", "standard"],
+    ["clip", "short"],
+  ] as const)("classifies the type %s as %s", (type, kind) => {
+    expect(getTwitchVideoKind(type)).toBe(kind);
+  });
+});
+
 describe(toVideoFields, () => {
   it("maps a Helix video", () => {
     expect(toVideoFields(video)).toStrictEqual({
@@ -18,6 +36,7 @@ describe(toVideoFields, () => {
       published_at: "2024-05-01T09:00:05Z",
       status: "ENDED",
       title: "Archive",
+      video_kind: "stream",
     });
   });
 
@@ -25,6 +44,31 @@ describe(toVideoFields, () => {
     expect(toVideoFields({ ...video, published_at: "" }).published_at).toBe(
       "2024-05-01T09:00:00Z"
     );
+  });
+
+  it.each([
+    ["highlight", "standard"],
+    ["upload", "standard"],
+  ] as const)("classifies a %s as %s", (type, kind) => {
+    expect(toVideoFields({ ...video, type }).video_kind).toBe(kind);
+  });
+});
+
+describe(toClipFields, () => {
+  it("maps a clip, as a short", () => {
+    const clip = {
+      created_at: "2024-05-01T09:00:00.123Z",
+      duration: "PT30S",
+      title: "Clip",
+    } as TwitchClip;
+
+    expect(toClipFields(clip)).toStrictEqual({
+      duration: "PT30S",
+      published_at: "2024-05-01T09:00:00Z",
+      status: "PUBLISHED",
+      title: "Clip",
+      video_kind: "short",
+    });
   });
 });
 
@@ -40,6 +84,7 @@ describe(toLiveFields, () => {
       published_at: "2024-05-01T09:00:00Z",
       status: "LIVE",
       title: "Live now",
+      video_kind: "stream",
     });
   });
 });

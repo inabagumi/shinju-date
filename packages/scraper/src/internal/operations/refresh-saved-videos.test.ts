@@ -38,6 +38,7 @@ const createSaved = (platformId: string): FakeSaved => ({
   status: "ENDED",
   thumbnail_id: `thumb-${platformId}`,
   title: `Video ${platformId}`,
+  video_kind: "standard",
 });
 
 /** A platform that returns `videos` and reports every other ID missing. */
