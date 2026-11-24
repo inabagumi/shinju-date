@@ -23,7 +23,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@oxlint/plugins": "1.94.0",
+    "@oxlint/plugins": "1.95.0",
     "@shinju-date/config": "workspace:*",
     "@types/node": "catalog:",
     "oxlint": "catalog:",
