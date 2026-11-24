@@ -38,7 +38,7 @@ fi
 # next-dev-loop スキルが PATH から直接呼ぶ agent-browser を入れる。
 # エージェントしか使わないため devDependencies には入れず、バージョンは Renovate で更新する
 # renovate: datasource=npm depName=agent-browser
-AGENT_BROWSER_VERSION="0.43.0"
+AGENT_BROWSER_VERSION="0.44.0"
 
 if [ "$("$PNPM_HOME/bin/agent-browser" --version 2>/dev/null || true)" != "agent-browser $AGENT_BROWSER_VERSION" ]; then
   npm install --global --prefix "$PNPM_HOME" "agent-browser@$AGENT_BROWSER_VERSION"
