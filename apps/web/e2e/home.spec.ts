@@ -6,8 +6,8 @@ import type { Locator, Page } from "@playwright/test";
 const LIVE_VIDEO_TITLES = ["ただいま配信中", "まったり雑談配信中"];
 // A Twitch stream that starts 20 hours later
 const UPCOMING_VIDEO_TITLE = "明日の夜は耐久配信！";
-// A Twitch clip published 9 hours ago
-const RECENT_VIDEO_TITLE = "奇跡のワンプレイ";
+// A Twitch highlight published 20 hours ago (a Twitch clip is a short)
+const RECENT_VIDEO_TITLE = "ハイライト：先週の配信まとめ";
 
 // Video cards link to the video on YouTube or Twitch
 const VIDEO_URL_PATTERN =

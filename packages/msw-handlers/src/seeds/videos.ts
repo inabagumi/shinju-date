@@ -351,7 +351,7 @@ export const createTwitchVideos = (
       title: "【クリップ】奇跡のワンプレイ",
       twitchVideoId: `${faker.string.alpha(24)}-${faker.string.alphanumeric(16)}`,
       type: "clip" as const,
-      videoKind: "standard" as const,
+      videoKind: "short" as const,
       user: userWithIcon,
     },
     {
