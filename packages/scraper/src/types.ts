@@ -77,8 +77,7 @@ export interface AddPastVideosResult {
 
 /**
  * The `videos` columns a refresh keeps in line with the platform: title,
- * duration, start time, status and kind. Twitch has no kinds, so its
- * `video_kind` is never changed.
+ * duration, start time, status and kind.
  */
 export type VideoFields = Pick<
   Tables<"videos">,

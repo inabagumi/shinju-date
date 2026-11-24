@@ -390,6 +390,7 @@ describe(TwitchScraper, () => {
           published_at: "2024-05-01T09:00:00+00:00",
           status: "PUBLISHED",
           title: "Clip",
+          video_kind: "short",
           twitch_video: {
             stream_id: null,
             twitch_video_id: "clip-1",

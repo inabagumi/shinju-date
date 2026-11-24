@@ -44,8 +44,8 @@ const setValue = <K extends keyof VideoFields>(
 /**
  * Compares a saved video with its next state.
  *
- * Fields missing from either side are skipped: Twitch, for one, has no kinds,
- * so its saved videos are loaded without `video_kind`.
+ * Fields missing from either side are skipped, so either side can hold only
+ * some of the fields.
  *
  * @returns The fields that changed, with their value in `next`. Empty when the
  *   saved video is up to date.

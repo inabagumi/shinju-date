@@ -4,15 +4,12 @@ import type { VideoFields } from "../types.js";
 
 export type Platform = Enums<"platform_type">;
 
-/**
- * The `videos` columns every saved video of a platform is loaded with.
- * `video_kind` is optional because Twitch has no kinds and does not load it.
- */
+/** The `videos` columns every saved video of a platform is loaded with. */
 export interface SavedVideoBase extends Pick<
   Tables<"videos">,
   "duration" | "id" | "published_at" | "status" | "thumbnail_id" | "title"
 > {
-  video_kind?: VideoFields["video_kind"];
+  video_kind: VideoFields["video_kind"];
 }
 
 /** What a platform returns for a list of its video IDs. */

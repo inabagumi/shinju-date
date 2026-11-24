@@ -227,10 +227,11 @@ describe(addNewTwitchVideos, () => {
       status: "ENDED",
       talent_id: "talent-1",
       thumbnail_id: "thumb-new",
-      video_kind: "standard",
+      video_kind: "stream",
     });
     expect(videos.find((video) => video.title === "Upload")).toMatchObject({
       status: "PUBLISHED",
+      video_kind: "standard",
     });
     expect(twitchVideos).toStrictEqual(
       expect.arrayContaining([

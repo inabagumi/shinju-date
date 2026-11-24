@@ -31,7 +31,7 @@ import {
 } from "./saved-video.js";
 import type { SavedTwitchVideo } from "./saved-video.js";
 import type { TwitchStream, TwitchVideo } from "./types.js";
-import { toLiveFields } from "./video.js";
+import { getTwitchVideoKind, toLiveFields } from "./video.js";
 
 /** A saved LIVE row together with the Helix ID of its broadcaster. */
 export interface SavedLiveVideo extends SavedTwitchVideo {
@@ -102,13 +102,18 @@ export const planLiveSync = ({
     }
 
     const values: TablesUpdate<"videos"> = {};
+    const fields = toLiveFields(stream);
 
-    if (saved.status !== "LIVE") {
-      values.status = "LIVE";
+    if (saved.status !== fields.status) {
+      values.status = fields.status;
     }
 
-    if (saved.title !== stream.title) {
-      values.title = stream.title;
+    if (saved.title !== fields.title) {
+      values.title = fields.title;
+    }
+
+    if (saved.video_kind !== fields.video_kind) {
+      values.video_kind = fields.video_kind;
     }
 
     if (Object.keys(values).length > 0) {
@@ -180,7 +185,12 @@ const endBroadcast = async (
   archive: TwitchVideo | undefined
 ): Promise<void> => {
   if (!archive) {
-    await updateVideo(context.supabaseClient, saved.id, { status: "ENDED" });
+    // The row may stay a placeholder for good, so this is the last chance to
+    // bring its kind in line with the broadcast.
+    await updateVideo(context.supabaseClient, saved.id, {
+      status: "ENDED",
+      video_kind: getTwitchVideoKind(null),
+    });
     return;
   }
 
@@ -266,6 +276,7 @@ const findArchiveOfBroadcast = async (
  * - a stream that went on air gets a LIVE row (Twitch has no scheduled
  *   broadcasts to register in advance, so this is how they are discovered)
  * - a row whose stream is on air is (re)marked LIVE and follows title changes
+ *   (and its kind, should it not be saved as a stream)
  * - a row whose stream went offline is ended and, when Twitch already lists
  *   the archive, takes over the archive's details
  *

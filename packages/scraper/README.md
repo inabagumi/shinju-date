@@ -160,6 +160,11 @@ await scraper.cleanUpImages();
 - **YouTube**: 配信予定・配信中の動画もチャンネルのアップロード一覧に載るので、`addNewVideos` で見つけ、`refreshLiveVideos` で終了まで追います。
 - **Twitch**: 配信予定を事前に取得する手段がないため、`refreshLiveVideos` が配信開始を検出して LIVE の行を作り、配信終了で終了扱いにします。`addNewVideos` はアーカイブを見つけると、その行に紐づけます（二重に保存しません）。Twitch は配信開始と同時にアーカイブを作るので、配信中に見つかったアーカイブは LIVE のまま扱います。
 
+種別（`video_kind`）は、保存のときと見直しのときに、同じ判定で決めます（保存済みの動画の種別が判定と違えば、見直しで直します）。
+
+- **YouTube**: `liveStreamingDetails` があれば（配信予定・配信中・配信済みと、プレミア公開）`stream`、なければ長さで `short`（180 秒以下）か `standard` にします（`getVideoKind`）。
+- **Twitch**: 配信中の行（プレースホルダー）とアーカイブを `stream`、ハイライトとアップロードを `standard`、クリップを `short` にします（`getTwitchVideoKind`）。
+
 ### アイコンの同期（YouTube）
 
 `YouTubeScraper#syncAccounts()` は、チャンネル名・ハンドルと同じ流れでチャンネルのアイコンも同期します。
