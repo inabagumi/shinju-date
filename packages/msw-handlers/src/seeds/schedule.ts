@@ -134,6 +134,7 @@ export const createScheduleVideos = (
             talent_id: talent.id,
             thumbnail_id: thumbnail?.id ?? null,
             title,
+            video_kind: "stream",
           }),
         ]
       : [];

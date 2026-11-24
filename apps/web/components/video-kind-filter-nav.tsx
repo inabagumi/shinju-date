@@ -22,7 +22,7 @@ interface VideoKindFilterNavProps {
 }
 
 /**
- * 動画一覧・検索結果・タレント詳細の種別（すべて／動画／ショート）の切り替え。
+ * 動画一覧・検索結果・タレント詳細の種別（すべて／配信／動画／ショート）の切り替え。
  */
 export default function VideoKindFilterNav({
   className,

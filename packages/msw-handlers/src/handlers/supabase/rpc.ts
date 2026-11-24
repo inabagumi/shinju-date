@@ -1,4 +1,4 @@
-import type { Tables } from "@shinju-date/database";
+import type { Enums, Tables } from "@shinju-date/database";
 import { toDBString } from "@shinju-date/temporal-fns";
 import { HttpResponse } from "msw";
 
@@ -69,7 +69,7 @@ interface SearchVideosParams {
   p_query?: string;
   p_talent_ids?: string[];
   p_until?: string;
-  p_video_kinds?: Tables<"videos">["video_kind"][] | null;
+  p_video_kinds?: Enums<"video_kind">[] | null;
 }
 
 /**

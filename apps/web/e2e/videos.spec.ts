@@ -5,6 +5,13 @@ import type { Page } from "@playwright/test";
 // `歌枠` in their titles, and no video matches `NO_RESULTS_QUERY`.
 const QUERY = "歌枠";
 const NO_RESULTS_QUERY = "該当する動画のないキーワード";
+// Videos on Twitch have `Twitch` in their titles: an archive of a stream and
+// a highlight, which is a video, among them. The upcoming streams come first
+// in the streams, so the keyword keeps the archive on the first page. The
+// titles are shown without the labels in the brackets.
+const TWITCH_QUERY = "Twitch";
+const STREAM_TITLE = "深夜のゲーム配信アーカイブ";
+const VIDEO_TITLE = "ハイライト：先週の配信まとめ";
 
 // The first visit to a page of the search results can take a while on the
 // development server, which compiles the page on demand
@@ -22,6 +29,12 @@ const getVideoCards = (page: Page) => {
     .getByRole("link")
     .filter({ has: page.getByRole("heading", { level: 3 }) });
 };
+
+/** The card of the video with the given title */
+const getVideoCard = (page: Page, title: string) =>
+  getVideoCards(page).filter({
+    has: page.getByRole("heading", { exact: true, level: 3, name: title }),
+  });
 
 /** The number of the videos found, shown under the heading */
 const getResultCount = (page: Page) =>
@@ -118,6 +131,63 @@ test.describe("Videos page", () => {
 
     await expect(page).toHaveURL("/videos");
     await expect(getVideoCards(page).first()).toBeVisible();
+  });
+});
+
+test.describe("Kinds of the videos page", () => {
+  const twitchPath = `/videos/${encodeURIComponent(TWITCH_QUERY)}`;
+
+  test("should list the kinds with the streams", async ({ page }) => {
+    await page.goto("/videos");
+
+    const kindNav = page.getByRole("navigation", { name: "種別" });
+
+    await expect(
+      kindNav.getByRole("link").allTextContents()
+    ).resolves.toStrictEqual(["すべて", "配信", "動画", "ショート"]);
+    await expect(
+      kindNav.getByRole("link", { exact: true, name: "配信" })
+    ).toHaveAttribute("href", "/videos?kind=stream");
+  });
+
+  test("should show only the streams for the streams", async ({ page }) => {
+    await page.goto(twitchPath, { timeout: NAVIGATION_TIMEOUT });
+
+    const kindNav = page.getByRole("navigation", { name: "種別" });
+
+    await kindNav.getByRole("link", { exact: true, name: "配信" }).click();
+
+    await expect(page).toHaveURL(`${twitchPath}?kind=stream`);
+    await expect(
+      kindNav.getByRole("link", { exact: true, name: "配信" })
+    ).toHaveAttribute("aria-current", "page");
+    await expect(getVideoCard(page, STREAM_TITLE)).toBeVisible();
+    await expect(getVideoCard(page, VIDEO_TITLE)).toHaveCount(0);
+  });
+
+  test("should show no streams for the videos", async ({ page }) => {
+    await page.goto(twitchPath, { timeout: NAVIGATION_TIMEOUT });
+
+    const kindNav = page.getByRole("navigation", { name: "種別" });
+
+    await kindNav.getByRole("link", { exact: true, name: "動画" }).click();
+
+    await expect(page).toHaveURL(`${twitchPath}?kind=standard`);
+    await expect(getVideoCard(page, VIDEO_TITLE)).toBeVisible();
+    await expect(getVideoCard(page, STREAM_TITLE)).toHaveCount(0);
+  });
+
+  test("should serve only the streams in the calendar", async ({ request }) => {
+    const response = await request.get("/videos.ics?kind=stream");
+
+    expect(response.status()).toBe(200);
+
+    // Unfold the long lines of the calendar before looking for the titles
+    const text = await response.text();
+    const body = text.replaceAll(/\r?\n[\t ]/gu, "");
+
+    expect(body).toContain(STREAM_TITLE);
+    expect(body).not.toContain(VIDEO_TITLE);
   });
 });
 

@@ -143,18 +143,20 @@ const createStandardVideos = (
         talent_id: pick(talents, index).id,
         thumbnail_id: pick(thumbnails, index).id,
         title,
+        video_kind: "stream",
         visible: status === "LIVE",
       });
     }
 
-    // Some of the published videos are shorts
+    // The ended ones are streams, and some of the published videos are
+    // shorts
     const videoKind =
       status === "PUBLISHED"
         ? faker.helpers.weightedArrayElement([
             { value: "short" as const, weight: 0.3 },
             { value: "standard" as const, weight: 0.7 },
           ])
-        : "standard";
+        : "stream";
 
     return createVideo(context, {
       duration:
@@ -227,6 +229,7 @@ const createFinishedStreams = (
       talent_id: talent.id,
       thumbnail_id: pick(thumbnails, index).id,
       title,
+      video_kind: "stream",
     })
   );
 };
@@ -314,6 +317,7 @@ export const createTwitchVideos = (
       title: "【Twitch】明日の夜は耐久配信！",
       twitchVideoId: faker.string.numeric(10),
       type: null,
+      videoKind: "stream" as const,
       user: userWithIcon,
     },
     {
@@ -325,6 +329,7 @@ export const createTwitchVideos = (
       title: "【Twitch】まったり雑談配信中",
       twitchVideoId: `live:${liveStreamId}`,
       type: null,
+      videoKind: "stream" as const,
       user: userWithoutIcon,
     },
     {
@@ -335,6 +340,7 @@ export const createTwitchVideos = (
       title: "【Twitch】深夜のゲーム配信アーカイブ",
       twitchVideoId: faker.string.numeric(10),
       type: "archive" as const,
+      videoKind: "stream" as const,
       user: userWithIcon,
     },
     {
@@ -345,6 +351,7 @@ export const createTwitchVideos = (
       title: "【クリップ】奇跡のワンプレイ",
       twitchVideoId: `${faker.string.alpha(24)}-${faker.string.alphanumeric(16)}`,
       type: "clip" as const,
+      videoKind: "short" as const,
       user: userWithIcon,
     },
     {
@@ -355,6 +362,7 @@ export const createTwitchVideos = (
       title: "【Twitch】ハイライト：先週の配信まとめ",
       twitchVideoId: faker.string.numeric(10),
       type: "highlight" as const,
+      videoKind: "standard" as const,
       user: userWithoutIcon,
     },
     {
@@ -365,6 +373,7 @@ export const createTwitchVideos = (
       title: "【Twitch】アップロード動画：自己紹介",
       twitchVideoId: faker.string.numeric(10),
       type: "upload" as const,
+      videoKind: "standard" as const,
       user: userWithIcon,
     },
   ];
@@ -378,6 +387,7 @@ export const createTwitchVideos = (
       thumbnail_id: pick(thumbnails, index).id,
       title: seed.title,
       updated_at: toDBString(now),
+      video_kind: seed.videoKind,
     })
   );
 

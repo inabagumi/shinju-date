@@ -1681,13 +1681,16 @@ describe("Supabase Handlers", () => {
 
     it("should search only videos of the given kinds in search_videos_v4", async () => {
       await expect(searchVideoKinds()).resolves.toStrictEqual(
-        new Set(["short", "standard"])
+        new Set(["short", "standard", "stream"])
       );
       await expect(searchVideoKinds(["short"])).resolves.toStrictEqual(
         new Set(["short"])
       );
       await expect(searchVideoKinds(["standard"])).resolves.toStrictEqual(
         new Set(["standard"])
+      );
+      await expect(searchVideoKinds(["stream"])).resolves.toStrictEqual(
+        new Set(["stream"])
       );
     });
 

@@ -81,6 +81,10 @@ const shortB = createVideoOnYouTube(channelB, {
   title: "ショート動画",
   video_kind: "short",
 });
+const streamB = createVideoOnYouTube(channelB, {
+  title: "雑談配信",
+  video_kind: "stream",
+});
 
 const get = (search = ""): Promise<Response> =>
   GET(new NextRequest(`https://shinju.date/videos.ics${search}`));
@@ -111,7 +115,7 @@ describe("GET /videos.ics", () => {
     await seedSupabase({
       talents: [talentA, talentB],
       youtubeChannels: [channelA, channelB],
-      ...videoSeed([songA, shortA, songB, shortB]),
+      ...videoSeed([songA, shortA, songB, shortB, streamB]),
     });
   });
 
@@ -132,7 +136,7 @@ describe("GET /videos.ics", () => {
     const ids = await eventIds(response);
 
     expect(ids.toSorted()).toStrictEqual(
-      videoIds(songA, shortA, songB, shortB).toSorted()
+      videoIds(songA, shortA, songB, shortB, streamB).toSorted()
     );
   });
 
@@ -198,6 +202,7 @@ describe("GET /videos.ics", () => {
   });
 
   it.each([
+    ["stream", [streamB]],
     ["standard", [songA, songB]],
     ["short", [shortA, shortB]],
   ])("returns only the videos of kind=%s", async (kind, expected) => {
@@ -211,7 +216,7 @@ describe("GET /videos.ics", () => {
   it("treats an unknown kind as no kind", async () => {
     const response = await get("?kind=live");
 
-    await expect(eventIds(response)).resolves.toHaveLength(4);
+    await expect(eventIds(response)).resolves.toHaveLength(5);
   });
 
   it("combines the talents and the kind", async () => {
