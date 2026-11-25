@@ -232,8 +232,8 @@ catalogs:
       specifier: 19.3.0
       version: 19.3.0
     '@upstash/redis':
-      specifier: 1.41.0
-      version: 1.41.0
+      specifier: 1.41.1
+      version: 1.41.1
     '@vitejs/plugin-react':
       specifier: 6.3.0
       version: 6.3.0
@@ -413,7 +413,7 @@ importers:
         version: 2.119.2(@opentelemetry/api@1.10.0)
       '@upstash/redis':
         specifier: 'catalog:'
-        version: 1.41.0
+        version: 1.41.1
       csv-stringify:
         specifier: 6.9.0
         version: 6.9.0
@@ -558,7 +558,7 @@ importers:
         version: 2.119.2(@opentelemetry/api@1.10.0)
       '@upstash/redis':
         specifier: 'catalog:'
-        version: 1.41.0
+        version: 1.41.1
       next:
         specifier: 'catalog:'
         version: 16.4.6(@babel/core@7.29.13(supports-color@10.2.2))(@opentelemetry/api@1.10.0)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -652,7 +652,7 @@ importers:
         version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
       '@upstash/redis':
         specifier: 'catalog:'
-        version: 1.41.0
+        version: 1.41.1
       '@vercel/analytics':
         specifier: 2.0.1
         version: 2.0.1(next@16.4.6(@babel/core@7.29.13(supports-color@10.2.2))(@opentelemetry/api@1.10.0)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)
@@ -850,7 +850,7 @@ importers:
         version: 26.6.6
       '@upstash/redis':
         specifier: 'catalog:'
-        version: 1.41.0
+        version: 1.41.1
       tsdown:
         specifier: 'catalog:'
         version: 0.23.7(oxc-resolver@11.21.2)(typescript@6.0.3)
@@ -892,7 +892,7 @@ importers:
         version: 26.6.6
       '@upstash/redis':
         specifier: 'catalog:'
-        version: 1.41.0
+        version: 1.41.1
       tsdown:
         specifier: 'catalog:'
         version: 0.23.7(oxc-resolver@11.21.2)(typescript@6.0.3)
@@ -1018,7 +1018,7 @@ importers:
         version: 26.6.6
       '@upstash/redis':
         specifier: 'catalog:'
-        version: 1.41.0
+        version: 1.41.1
       tsdown:
         specifier: 'catalog:'
         version: 0.23.7(oxc-resolver@11.21.2)(typescript@6.0.3)
@@ -1325,7 +1325,7 @@ importers:
         version: 26.6.6
       '@upstash/redis':
         specifier: 'catalog:'
-        version: 1.41.0
+        version: 1.41.1
       tsdown:
         specifier: 'catalog:'
         version: 0.23.7(oxc-resolver@11.21.2)(typescript@6.0.3)
@@ -4201,8 +4201,8 @@ packages:
   '@ungap/structured-clone@1.4.0':
     resolution: {integrity: sha512-1mEZtMKPM09vDmQt5y7YvmN2+DFTP7Tg0EWXdic8/C6VRnpb33e4ghisCIE3WZjsE2N8mf+QV1Zqh7ZFYLWInQ==}
 
-  '@upstash/redis@1.41.0':
-    resolution: {integrity: sha512-TIu9C1B0ToXQLXt2M1LQuGZ6nkMjOZPIdJyU0GGWKZToa/MvJF8x2IRDOPMIAw2BLGXGhi1aZr5AnhlXu4YLXg==}
+  '@upstash/redis@1.41.1':
+    resolution: {integrity: sha512-HT5ixMRbylOM058GETYbh1DKV0Q5qL5bRf7YpOzpp3VR2YZNoYqsWznPvFWNFQEBTPcGANWoCDvA1+M2f6ub4w==}
 
   '@valibot/to-json-schema@1.8.0':
     resolution: {integrity: sha512-a0M+uwCuQZEPAo65NYkFSJ14O5c213KoSZmPdoCfuFvUhfULi4T2Z6Tpjv6lTVMW9RoLm74RpRAjNEa43KcN+g==}
@@ -9116,7 +9116,7 @@ snapshots:
 
   '@ungap/structured-clone@1.4.0': {}
 
-  '@upstash/redis@1.41.0':
+  '@upstash/redis@1.41.1':
     dependencies:
       uncrypto: 0.1.3
 
