@@ -141,7 +141,7 @@ refactor(database): improve query performance
 
 **ほとんどの人が開けない URL を書かない**:
 
-AI エージェントのセッションや、非公開のページの URL は、ログインしていない人や、ほかの環境の人が開くとエラーになります。コミットメッセージとプルリクエストのタイトル・本文には書かないでください。エージェントのハーネスがトレーラー（`Claude-Session:` など）や本文の末尾に自動で付ける URL も消します。`Co-Authored-By:` のトレーラーは残してかまいません。
+AI エージェントのセッションや、非公開のページの URL は、ログインしていない人や、ほかの環境の人が開くとエラーになります。コミットメッセージとプルリクエストのタイトル・本文には書かないでください。エージェントのハーネスがトレーラー（`Claude-Session:` など）や本文の末尾に自動で付ける URL も消します。
 
 プルリクエストごとに、ワークフロー（`.github/workflows/check-private-urls.yml`）がタイトル、本文、コミットのメッセージを確かめます。対象の URL は `scripts/check-private-urls.mjs` の `PRIVATE_URL_PATTERNS` にまとめています。push の前に、手元でも確かめられます。
 
@@ -151,6 +151,10 @@ pnpm run check:private-urls
 ```
 
 見つかったときは、プルリクエストのタイトルや本文を直すと、ワークフローがもう一度実行されます。コミットのメッセージは、`git commit --amend` や `git rebase` で直して push し直します。
+
+**AI を共著者にしない**:
+
+AI は変更に責任を持てる著者ではないため、AI を共著者とする `Co-Authored-By:` のトレーラーは付けないでください。Claude Code は、`.claude/settings.json` の `attribution` で、コミットのトレーラー、プルリクエストの本文の末尾の文言、セッションの URL を付けないようにしています。
 
 ## Pull Request のフロー
 
