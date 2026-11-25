@@ -152,10 +152,6 @@ pnpm run check:private-urls
 
 見つかったときは、プルリクエストのタイトルや本文を直すと、ワークフローがもう一度実行されます。コミットのメッセージは、`git commit --amend` や `git rebase` で直して push し直します。
 
-**AI を共著者にしない**:
-
-AI は変更に責任を持てる著者ではないため、AI を共著者とする `Co-Authored-By:` のトレーラーは付けないでください。Claude Code は、`.claude/settings.json` の `attribution` で、コミットのトレーラー、プルリクエストの本文の末尾の文言、セッションの URL を付けないようにしています。
-
 ## Pull Request のフロー
 
 ### 1. ブランチの作成
