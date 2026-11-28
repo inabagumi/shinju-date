@@ -31,7 +31,7 @@ Node.js のメジャーバージョンは、Renovate が `.node-version` と一�
 
 ../compose.yml            # 共有のサービス（Redis）
 ../config/dev-secrets.env # 開発用のシークレット（Supabase の API キー、Redis のトークン）
-../config/docker/daemon.json # Docker-in-Docker の dockerd の設定
+../config/docker/         # Docker-in-Docker の dockerd の設定（/etc/docker にマウントする）
 ../scripts/setup-dev.sh   # 開発環境の初期設定（手元、Copilot のワークフローと共通）
 ../supabase/              # Supabase CLI の設定とマイグレーション
 ```
@@ -70,7 +70,7 @@ Dev Container で使う `app` サービスだけを定義します。
 - `privileged: true`（Docker-in-Docker で、コンテナの中の dockerd を動かすために必要）
 - `env_file` で `./config/dev-secrets.env` を読み込む
 - ワークスペースのマウント（`.:/workspaces/shinju-date:cached`）
-- Docker-in-Docker の dockerd の設定のマウント（`config/docker/daemon.json` を `/etc/docker/daemon.json` に）
+- Docker-in-Docker の dockerd の設定のマウント（`config/docker` を `/etc/docker` に）
 - Supabase の URL（Docker-in-Docker が公開する `http://127.0.0.1:54321`）と、Redis の URL（`http://serverless-redis-http:80`）
 - `depends_on` で `serverless-redis-http` を待つ
 
@@ -138,7 +138,7 @@ SQL を書いたら、`pnpm exec supabase db reset` でローカルに適用し�
 | --- | --- |
 | `Dockerfile`、`devcontainer.json` | `Dev Containers: Rebuild Container` で、コンテナを作り直す |
 | `compose.yml`、`compose.override.yml` | コンテナを作り直す（`devcontainer down` の後に `devcontainer up`） |
-| `config/docker/daemon.json` | コンテナを起動し直す（dockerd が起動時に読む） |
+| `config/docker/` | コンテナを起動し直す（dockerd が起動時に読む） |
 | `post-create.sh`、`scripts/setup-dev.sh` | 次のコンテナの作成時に反映される。今のコンテナでは `./scripts/setup-dev.sh` を実行する |
 
 ## Dev Container のテスト

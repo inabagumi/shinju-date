@@ -7,7 +7,7 @@ on:
       - .github/workflows/devcontainer-test.yml
       - .node-version
       - compose.yml
-      - config/docker/daemon.json
+      - config/docker/**
       - scripts/lib.sh
       - scripts/setup-dev.sh
       - terraform/versions.tf
@@ -19,7 +19,7 @@ on:
       - .github/workflows/devcontainer-test.yml
       - .node-version
       - compose.yml
-      - config/docker/daemon.json
+      - config/docker/**
       - scripts/lib.sh
       - scripts/setup-dev.sh
       - terraform/versions.tf

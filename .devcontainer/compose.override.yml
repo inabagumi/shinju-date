@@ -20,7 +20,7 @@ services:
       # Therefore, "." refers to the project root directory
       - .:/workspaces/shinju-date:cached
       # Configuration of the Docker-in-Docker daemon
-      - ./config/docker/daemon.json:/etc/docker/daemon.json:ro
+      - ./config/docker:/etc/docker:ro
     command: sleep infinity
     environment:
       # Environment variables loaded from env_file (./config/dev-secrets.env):
