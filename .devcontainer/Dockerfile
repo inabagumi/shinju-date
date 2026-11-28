@@ -5,6 +5,10 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Docker-in-Docker の dockerd が読む設定（Docker Hub のミラーに mirror.gcr.io を使う）
+# ビルドのコンテキストはプロジェクトのルート（compose.override.yml）
+COPY .devcontainer/daemon.json /etc/docker/daemon.json
+
 # renovate: datasource=github-releases depName=pnpm packageName=pnpm/pnpm
 ENV PNPM_VERSION=12.23.0
 
