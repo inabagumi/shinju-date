@@ -19,6 +19,8 @@ services:
       # All relative paths in ALL compose files are resolved from the project root directory
       # Therefore, "." refers to the project root directory
       - .:/workspaces/shinju-date:cached
+      # Configuration of the Docker-in-Docker daemon
+      - ./config/docker/daemon.json:/etc/docker/daemon.json:ro
     command: sleep infinity
     environment:
       # Environment variables loaded from env_file (./config/dev-secrets.env):

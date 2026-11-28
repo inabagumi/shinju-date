@@ -42,7 +42,6 @@ Node.js のメジャーバージョンは、Renovate が `.node-version` と一�
 
 - apt のパッケージ（`postgresql-client` など）のインストール
 - pnpm のインストール（公式のインストールスクリプトを使う）
-- `config/docker/daemon.json` を `/etc/docker/daemon.json` にコピーする（Docker-in-Docker の dockerd が読む）
 
 プロジェクトの依存関係のインストールや、データベースの初期化は書きません（`scripts/setup-dev.sh` に書く）。イメージのキャッシュが効くため、再ビルドの時間が短くなります。
 
@@ -71,6 +70,7 @@ Dev Container で使う `app` サービスだけを定義します。
 - `privileged: true`（Docker-in-Docker で、コンテナの中の dockerd を動かすために必要）
 - `env_file` で `./config/dev-secrets.env` を読み込む
 - ワークスペースのマウント（`.:/workspaces/shinju-date:cached`）
+- Docker-in-Docker の dockerd の設定のマウント（`config/docker/daemon.json` を `/etc/docker/daemon.json` に）
 - Supabase の URL（Docker-in-Docker が公開する `http://127.0.0.1:54321`）と、Redis の URL（`http://serverless-redis-http:80`）
 - `depends_on` で `serverless-redis-http` を待つ
 
@@ -136,8 +136,9 @@ SQL を書いたら、`pnpm exec supabase db reset` でローカルに適用し�
 
 | 変更したファイル | 反映のしかた |
 | --- | --- |
-| `Dockerfile`、`devcontainer.json`、`config/docker/daemon.json` | `Dev Containers: Rebuild Container` で、コンテナを作り直す |
+| `Dockerfile`、`devcontainer.json` | `Dev Containers: Rebuild Container` で、コンテナを作り直す |
 | `compose.yml`、`compose.override.yml` | コンテナを作り直す（`devcontainer down` の後に `devcontainer up`） |
+| `config/docker/daemon.json` | コンテナを起動し直す（dockerd が起動時に読む） |
 | `post-create.sh`、`scripts/setup-dev.sh` | 次のコンテナの作成時に反映される。今のコンテナでは `./scripts/setup-dev.sh` を実行する |
 
 ## Dev Container のテスト
