@@ -67,7 +67,7 @@
     "@vitest/browser-playwright": "5.1.2",
     "jsdom": "catalog:",
     "playwright": "1.65.1",
-    "postcss": "8.5.33",
+    "postcss": "8.5.34",
     "postcss-load-config": "6.0.1",
     "react": "catalog:",
     "react-dom": "catalog:",
