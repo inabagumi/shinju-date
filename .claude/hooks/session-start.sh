@@ -8,7 +8,7 @@ fi
 cd "${CLAUDE_PROJECT_DIR:-.}"
 
 if command -v dockerd >/dev/null && ! docker info >/dev/null 2>&1; then
-  setsid dockerd >/tmp/dockerd.log 2>&1 </dev/null &
+  setsid dockerd --config-file "$PWD/config/docker/daemon.json" >/tmp/dockerd.log 2>&1 </dev/null &
 fi
 
 # コンテナにある pnpm v10 は devEngines に対応していないため入れ直す
