@@ -27,11 +27,11 @@ Node.js のメジャーバージョンは、Renovate が `.node-version` と一�
 ├── devcontainer.json     # VS Code / Codespaces の設定
 ├── devcontainer-lock.json  # Dev Container の機能のロックファイル
 ├── compose.override.yml  # Dev Container 専用のサービス（app のみ）
-├── daemon.json           # Docker-in-Docker とクラウドセッションの dockerd の設定
 └── README.md             # このファイル
 
 ../compose.yml            # 共有のサービス（Redis）
 ../config/dev-secrets.env # 開発用のシークレット（Supabase の API キー、Redis のトークン）
+../config/docker/daemon.json # Docker-in-Docker の dockerd の設定
 ../scripts/setup-dev.sh   # 開発環境の初期設定（手元、Copilot のワークフローと共通）
 ../supabase/              # Supabase CLI の設定とマイグレーション
 ```
@@ -42,7 +42,7 @@ Node.js のメジャーバージョンは、Renovate が `.node-version` と一�
 
 - apt のパッケージ（`postgresql-client` など）のインストール
 - pnpm のインストール（公式のインストールスクリプトを使う）
-- `daemon.json` を `/etc/docker/daemon.json` にコピーする（[daemon.json](#daemonjson)）
+- `config/docker/daemon.json` を `/etc/docker/daemon.json` にコピーする（Docker-in-Docker の dockerd が読む）
 
 プロジェクトの依存関係のインストールや、データベースの初期化は書きません（`scripts/setup-dev.sh` に書く）。イメージのキャッシュが効くため、再ビルドの時間が短くなります。
 
@@ -75,15 +75,6 @@ Dev Container で使う `app` サービスだけを定義します。
 - `depends_on` で `serverless-redis-http` を待つ
 
 ルートの `compose.yml` と組み合わせて使います（`dockerComposeFile: ["../compose.yml", "compose.override.yml"]`）。相対パスは、最初の Compose のファイル（プロジェクトのルートの `compose.yml`）から解決するため、`.` はプロジェクトのルートを指します。
-
-### daemon.json
-
-Docker-in-Docker の dockerd の設定です。Docker Hub の匿名アクセスのレートリミットを避けるため、`registry-mirrors` に `https://mirror.gcr.io` を設定しています。ミラーにないイメージは、dockerd が Docker Hub から取得します。
-
-- **Dev Container**: `Dockerfile` が `/etc/docker/daemon.json` にコピーし、Docker-in-Docker の機能が起動する dockerd が読みます
-- **Claude Code のクラウドセッション**: `.claude/hooks/session-start.sh` が、`dockerd --config-file` でこのファイルを指定して起動します
-
-Dev Container の Redis（`compose.yml`）は、ホストの Docker がイメージを取得するため、この設定は効きません。設定が効いているかは、`docker info` の `Registry Mirrors` で確かめてください。
 
 ## ポート
 
@@ -145,7 +136,7 @@ SQL を書いたら、`pnpm exec supabase db reset` でローカルに適用し�
 
 | 変更したファイル | 反映のしかた |
 | --- | --- |
-| `Dockerfile`、`devcontainer.json`、`daemon.json` | `Dev Containers: Rebuild Container` で、コンテナを作り直す |
+| `Dockerfile`、`devcontainer.json`、`config/docker/daemon.json` | `Dev Containers: Rebuild Container` で、コンテナを作り直す |
 | `compose.yml`、`compose.override.yml` | コンテナを作り直す（`devcontainer down` の後に `devcontainer up`） |
 | `post-create.sh`、`scripts/setup-dev.sh` | 次のコンテナの作成時に反映される。今のコンテナでは `./scripts/setup-dev.sh` を実行する |
 
